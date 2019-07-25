@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +25,21 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/status_leds.h"
+#ifndef STM32F4_MPCONFIGPORT_H__
+#define STM32F4_MPCONFIGPORT_H__
 
-#if CIRCUITPY_DIGITALIO
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
+#define MICROPY_PY_FUNCTION_ATTRS                (1)
+#define MICROPY_PY_IO                            (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
+#define MICROPY_PY_UJSON                         (1)
 
-#ifdef MICROPY_HW_LED_RX
-digitalio_digitalinout_obj_t rx_led;
-#endif
+// 24kiB stack
+#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
-#ifdef MICROPY_HW_LED_TX
-digitalio_digitalinout_obj_t tx_led;
-#endif
+#include "py/circuitpy_mpconfig.h"
 
-void init_status_leds(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
-    common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
-    common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-}
+#define MICROPY_PORT_ROOT_POINTERS \
+	CIRCUITPY_COMMON_ROOT_POINTERS
 
-void toggle_rx_led(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));
-    #endif
-}
-
-
-void toggle_tx_led(void) {
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_set_value(&tx_led, !common_hal_digitalio_digitalinout_get_value(&tx_led));
-    #endif
-}
+#endif  // __INCLUDED_MPCONFIGPORT_H

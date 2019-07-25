@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/status_leds.h"
+#include "py/mphal.h"
 
-#if CIRCUITPY_DIGITALIO
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
+#include "tick.h"
 
-#ifdef MICROPY_HW_LED_RX
-digitalio_digitalinout_obj_t rx_led;
-#endif
-
-#ifdef MICROPY_HW_LED_TX
-digitalio_digitalinout_obj_t tx_led;
-#endif
-
-void init_status_leds(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
-    common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
-    common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
+uint64_t common_hal_time_monotonic(void) {
+    return ticks_ms;
 }
 
-void toggle_rx_led(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));
-    #endif
-}
-
-
-void toggle_tx_led(void) {
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_set_value(&tx_led, !common_hal_digitalio_digitalinout_get_value(&tx_led));
-    #endif
+void common_hal_time_delay_ms(uint32_t delay) {
+    mp_hal_delay_ms(delay);
 }

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +25,56 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/status_leds.h"
+#include <stdint.h>
+#include "supervisor/port.h"
+#include "boards/board.h"
+#include "tick.h"
 
-#if CIRCUITPY_DIGITALIO
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
+#include "stm32f4/clocks.h"
+#include "stm32f4/gpio.h"
 
-#ifdef MICROPY_HW_LED_RX
-digitalio_digitalinout_obj_t rx_led;
-#endif
+#include "stm32f4xx_hal.h"
 
-#ifdef MICROPY_HW_LED_TX
-digitalio_digitalinout_obj_t tx_led;
-#endif
+//#include "shared-bindings/rtc/__init__.h"
 
-void init_status_leds(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
-    common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
-    common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
+static void power_warning_handler(void) {
+    reset_into_safe_mode(BROWNOUT);
 }
 
-void toggle_rx_led(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));
-    #endif
+safe_mode_t port_init(void) {
+	HAL_Init();
+
+	stm32f4_peripherals_clocks_init();
+	stm32f4_peripherals_gpio_init();
+
+    tick_init();
+    board_init(); 
+
+    return NO_SAFE_MODE;
 }
 
+void reset_port(void) {
 
-void toggle_tx_led(void) {
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_set_value(&tx_led, !common_hal_digitalio_digitalinout_get_value(&tx_led));
-    #endif
 }
+
+void reset_to_bootloader(void) {
+
+}
+
+void reset_cpu(void) {
+
+}
+
+extern uint32_t _ebss;
+// Place the word to save just after our BSS section that gets blanked.
+void port_set_saved_word(uint32_t value) {
+    _ebss = value;
+}
+
+uint32_t port_get_saved_word(void) {
+    return _ebss;
+}
+
+// void HardFault_Handler(void) {
+
+// }

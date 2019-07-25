@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/status_leds.h"
+#include "common-hal/microcontroller/Processor.h"
+#include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
-#if CIRCUITPY_DIGITALIO
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
 
-#ifdef MICROPY_HW_LED_RX
-digitalio_digitalinout_obj_t rx_led;
-#endif
-
-#ifdef MICROPY_HW_LED_TX
-digitalio_digitalinout_obj_t tx_led;
-#endif
-
-void init_status_leds(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
-    common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
-    common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
+float common_hal_mcu_processor_get_temperature(void) {
+    return 0;
 }
 
-void toggle_rx_led(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));
-    #endif
+uint32_t common_hal_mcu_processor_get_frequency(void) {
+    return 64000000ul;
 }
 
-
-void toggle_tx_led(void) {
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_set_value(&tx_led, !common_hal_digitalio_digitalinout_get_value(&tx_led));
-    #endif
+void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    for (int i=0; i<2; i++) {
+        ((uint32_t*) raw_id)[i] = 0;
+    }
 }

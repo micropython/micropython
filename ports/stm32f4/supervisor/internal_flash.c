@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "supervisor/flash.h"
 
-#include "supervisor/shared/status_leds.h"
+#include <stdint.h>
+#include <string.h>
 
-#if CIRCUITPY_DIGITALIO
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#endif
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+#include "py/mphal.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "lib/oofatfs/ff.h"
 
-#ifdef MICROPY_HW_LED_RX
-digitalio_digitalinout_obj_t rx_led;
-#endif
 
-#ifdef MICROPY_HW_LED_TX
-digitalio_digitalinout_obj_t tx_led;
-#endif
-
-void init_status_leds(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_construct(&rx_led, MICROPY_HW_LED_RX);
-    common_hal_digitalio_digitalinout_switch_to_output(&rx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_construct(&tx_led, MICROPY_HW_LED_TX);
-    common_hal_digitalio_digitalinout_switch_to_output(&tx_led, true, DRIVE_MODE_PUSH_PULL);
-    #endif
+/*------------------------------------------------------------------*/
+/* Internal Flash API
+ *------------------------------------------------------------------*/
+static inline uint32_t lba2addr(uint32_t block) {
 }
 
-void toggle_rx_led(void) {
-    #ifdef MICROPY_HW_LED_RX
-    common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));
-    #endif
+void supervisor_flash_init(void) {
 }
 
-
-void toggle_tx_led(void) {
-    #ifdef MICROPY_HW_LED_TX
-    common_hal_digitalio_digitalinout_set_value(&tx_led, !common_hal_digitalio_digitalinout_get_value(&tx_led));
-    #endif
+uint32_t supervisor_flash_get_block_size(void) {
+    return FILESYSTEM_BLOCK_SIZE;
 }
+
+uint32_t supervisor_flash_get_block_count(void) {
+    return false;
+}
+
+void supervisor_flash_flush(void) {
+
+}
+
+mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
+
+    return 0; // success
+}
+
+mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+
+
+    return 0; // success
+}
+
+void supervisor_flash_release_cache(void) {
+}
+
