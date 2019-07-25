@@ -77,7 +77,7 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 
 // convert a native value to a MicroPython object based on type
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {

@@ -10,6 +10,8 @@ cache:
 env:
   global:
     - MAKEOPTS="-j4"
+git:
+  submodules: false
 
 # define the successive stages
 stages:
@@ -30,12 +32,14 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
+        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
 
     # qemu-arm port
     - stage: test
@@ -60,6 +64,7 @@ jobs:
         - gcc --version
         - python3 --version
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
@@ -80,10 +85,12 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 
     # unix nanbox
     - stage: test
@@ -91,6 +98,7 @@ jobs:
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix nanbox
@@ -98,12 +106,14 @@ jobs:
 
     # unix stackless
     - stage: test
-      env: NAME="unix stackless port build and tests"
+      env: NAME="unix stackless port build and tests with clang"
+      install:
+        - sudo apt-get install clang
       script:
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-        - make ${MAKEOPTS} -C ports/unix test
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+        - make ${MAKEOPTS} -C mpy-cross CC=clang
+        - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix CC=clang test
 
     # windows port via mingw
     - stage: test
@@ -114,6 +124,35 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
+    # esp32 port
+    - stage: test
+      env: NAME="esp32 port build"
+      install:
+        - sudo apt-get install python3-pip
+        - sudo pip3 install pyparsing
+        - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        - zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
+        - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
+        - git clone https://github.com/espressif/esp-idf.git
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+      script:
+        - git submodule update --init lib/berkeley-db-1.xx
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+
+    # esp8266 port
+    - stage: test
+      env: NAME="esp8266 port build"
+      install:
+        - wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+        - zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+        - export PATH=$(pwd)/xtensa-lx106-elf/bin:$PATH
+      script:
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/esp8266
+
     # nrf port
     - stage: test
       env: NAME="nrf port build"
@@ -122,6 +161,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
+        - git submodule update --init lib/nrfx
         - make ${MAKEOPTS} -C ports/nrf
 
     # bare-arm and minimal ports
@@ -149,6 +189,16 @@ jobs:
       script:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+
+    # samd port
+    - stage: test
+      env: NAME="samd port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
+      script:
+        - git submodule update --init lib/asf4 lib/tinyusb
+        - make ${MAKEOPTS} -C ports/samd
 
     # teensy port
     - stage: test

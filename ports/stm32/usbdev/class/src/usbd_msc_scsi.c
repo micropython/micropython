@@ -30,7 +30,7 @@
 #include "usbd_msc_scsi.h"
 #include "usbd_cdc_msc_hid.h"
 
-
+#if MICROPY_HW_USB_MSC
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
@@ -788,5 +788,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
 /**
   * @}
   */
+
+#endif // MICROPY_HW_USB_MSC
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

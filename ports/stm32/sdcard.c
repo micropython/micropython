@@ -304,6 +304,10 @@ bool sdcard_power_on(void) {
         return true;
     }
 
+    #ifdef MICROPY_BOARD_SDCARD_POWER
+    MICROPY_BOARD_SDCARD_POWER
+    #endif
+
     HAL_StatusTypeDef status = HAL_ERROR;
     switch (pyb_sdmmc_flags) {
         #if MICROPY_HW_ENABLE_SDCARD

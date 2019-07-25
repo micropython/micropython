@@ -130,9 +130,10 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
                 mp_raise_msg(&mp_type_RuntimeError, "init failed");
             }
             pppapi_set_default(self->pcb);
+            ppp_set_usepeerdns(self->pcb, 1);
             pppapi_connect(self->pcb, 0);
 
-            xTaskCreate(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle);
+            xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle, MP_TASK_COREID);
             self->active = true;
         } else {
             if (!self->active) {

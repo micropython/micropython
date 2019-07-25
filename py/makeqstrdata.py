@@ -279,9 +279,11 @@ def parse_input_headers(infiles):
                 # get the qstr value
                 qstr = match.group(1)
 
-                # special case to specify control characters
+                # special cases to specify control characters
                 if qstr == '\\n':
                     qstr = '\n'
+                elif qstr == '\\r\\n':
+                    qstr = '\r\n'
 
                 # work out the corresponding qstr name
                 ident = qstr_escape(qstr)

@@ -146,6 +146,10 @@ STATIC int mp_spiflash_wait_wip0(mp_spiflash_t *self) {
     return mp_spiflash_wait_sr(self, 1, 0, WAIT_SR_TIMEOUT);
 }
 
+static inline void mp_spiflash_deepsleep_internal(mp_spiflash_t *self, int value) {
+    mp_spiflash_write_cmd(self, value ? 0xb9 : 0xab); // sleep/wake
+}
+
 void mp_spiflash_init(mp_spiflash_t *self) {
     self->flags = 0;
 
@@ -158,6 +162,9 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     }
 
     mp_spiflash_acquire_bus(self);
+
+    // Ensure SPI flash is out of sleep mode
+    mp_spiflash_deepsleep_internal(self, 0);
 
     #if defined(CHECK_DEVID)
     // Validate device id
@@ -180,6 +187,16 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     }
 
     mp_spiflash_release_bus(self);
+}
+
+void mp_spiflash_deepsleep(mp_spiflash_t *self, int value) {
+    if (value) {
+        mp_spiflash_acquire_bus(self);
+    }
+    mp_spiflash_deepsleep_internal(self, value);
+    if (!value) {
+        mp_spiflash_release_bus(self);
+    }
 }
 
 STATIC int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) {

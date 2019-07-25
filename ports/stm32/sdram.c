@@ -13,6 +13,7 @@
 #include "py/mphal.h"
 #include "pin.h"
 #include "pin_static_af.h"
+#include "mpu.h"
 #include "systick.h"
 #include "sdram.h"
 
@@ -244,45 +245,13 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     #if defined(STM32F7)
     /* Enable MPU for the SDRAM Memory Region to allow non-aligned
        accesses (hard-fault otherwise)
-    */
-
-    MPU_Region_InitTypeDef MPU_InitStruct;
-
-    /* Disable the MPU */
-    HAL_MPU_Disable();
-
-    /* Configure the MPU attributes for External SDRAM
        Initially disable all access for the entire SDRAM memory space,
        then enable access/caching for the size used
     */
-    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER4;
-    MPU_InitStruct.BaseAddress = SDRAM_START_ADDRESS;
-    MPU_InitStruct.Size = MPU_REGION_SIZE_512MB;
-    MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-    MPU_InitStruct.SubRegionDisable = 0x00;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-    HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER5;
-    MPU_InitStruct.BaseAddress = SDRAM_START_ADDRESS;
-    MPU_InitStruct.Size = SDRAM_MPU_REGION_SIZE;
-    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
-    MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
-    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
-    MPU_InitStruct.SubRegionDisable = 0x00;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
-    HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-    /* Enable the MPU */
-    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+    mpu_config_start();
+    mpu_config_region(MPU_REGION_SDRAM1, SDRAM_START_ADDRESS, MPU_CONFIG_DISABLE(0x00, MPU_REGION_SIZE_512MB));
+    mpu_config_region(MPU_REGION_SDRAM2, SDRAM_START_ADDRESS, MPU_CONFIG_SDRAM(SDRAM_MPU_REGION_SIZE));
+    mpu_config_end();
     #endif
 }
 

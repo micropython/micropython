@@ -63,13 +63,13 @@ typedef struct _mp_raw_code_t {
     size_t fun_data_len;
     uint16_t n_obj;
     uint16_t n_raw_code;
-    #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+    #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
     uint16_t n_qstr;
     mp_qstr_link_entry_t *qstr_link;
     #endif
     #endif
-    #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+    #if MICROPY_EMIT_MACHINE_CODE
     mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
     #endif
 } mp_raw_code_t;

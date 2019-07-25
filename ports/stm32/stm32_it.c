@@ -72,6 +72,7 @@
 #include "stm32_it.h"
 #include "pendsv.h"
 #include "irq.h"
+#include "powerctrl.h"
 #include "pybthread.h"
 #include "gccollect.h"
 #include "extint.h"
@@ -144,7 +145,7 @@ int pyb_hard_fault_debug = 0;
 
 void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (!pyb_hard_fault_debug) {
-        NVIC_SystemReset();
+        powerctrl_mcu_reset();
     }
 
     #if MICROPY_HW_ENABLE_USB
@@ -297,6 +298,24 @@ void DebugMon_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
+#if defined(STM32L0)
+
+#if MICROPY_HW_USB_FS
+void USB_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#elif defined(STM32WB)
+
+#if MICROPY_HW_USB_FS
+void USB_LP_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#else
+
 /**
   * @brief  This function handles USB-On-The-Go FS global interrupt request.
   * @param  None
@@ -377,8 +396,10 @@ void OTG_FS_WKUP_IRQHandler(void) {
 
   OTG_CMD_WKUP_Handler(&pcd_fs_handle);
 
+  #if !defined(STM32H7)
   /* Clear EXTI pending Bit*/
   __HAL_USB_FS_EXTI_CLEAR_FLAG();
+  #endif
 
     IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
@@ -401,6 +422,8 @@ void OTG_HS_WKUP_IRQHandler(void) {
     IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }
 #endif
+
+#endif // !defined(STM32L0)
 
 /**
   * @brief  This function handles PPP interrupt request.

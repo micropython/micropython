@@ -21,3 +21,12 @@
 [submodule "lib/lv_bindings"]
 	path = lib/lv_bindings
 	url = https://github.com/littlevgl/lv_bindings.git
+[submodule "lib/mbedtls"]
+	path = lib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "lib/asf4"]
+	path = lib/asf4
+	url = https://github.com/adafruit/asf4
+[submodule "lib/tinyusb"]
+	path = lib/tinyusb
+	url = https://github.com/hathach/tinyusb
