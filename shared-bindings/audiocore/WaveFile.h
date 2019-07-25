@@ -24,26 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
 
-#include "common-hal/audioio/AudioOut.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "shared-bindings/audiocore/RawSample.h"
+#include "py/obj.h"
+#include "extmod/vfs_fat.h"
 
-extern const mp_obj_type_t audioio_audioout_type;
+#include "shared-module/audiocore/WaveFile.h"
 
-// left_channel will always be non-NULL but right_channel may be for mono output.
-void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
-    const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t default_value);
+extern const mp_obj_type_t audioio_wavefile_type;
 
-void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self);
-bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self);
-void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, mp_obj_t sample, bool loop);
-void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self);
-bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self);
-void common_hal_audioio_audioout_pause(audioio_audioout_obj_t* self);
-void common_hal_audioio_audioout_resume(audioio_audioout_obj_t* self);
-bool common_hal_audioio_audioout_get_paused(audioio_audioout_obj_t* self);
+void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
+    pyb_file_obj_t* file);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
+void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self);
+bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self);
+uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t* self);
+void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self, uint32_t sample_rate);
+uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t* self);
+uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t* self);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H

@@ -30,47 +30,40 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audioio/__init__.h"
-#include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audiocore/__init__.h"
-#include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audiocore/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
 
-//| :mod:`audioio` --- Support for audio input and output
-//| ======================================================
+//| :mod:`audiocore` --- Support for audio samples and mixer
+//| ========================================================
 //|
-//| .. module:: audioio
-//|   :synopsis: Support for audio input and output
+//| .. module:: audiocore
+//|   :synopsis: Support for audio samples and mixer
 //|   :platform: SAMD21
 //|
-//| The `audioio` module contains classes to provide access to audio IO.
+//| The `audiocore` module contains core classes for audio IO
 //|
 //| Libraries
 //|
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     AudioOut
-//|
-//| All classes change hardware state and should be deinitialized when they
-//| are no longer needed if the program continues after use. To do so, either
-//| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
-//|
-//| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
-//| to :mod:`audiocore`.
+//|     Mixer
+//|     RawSample
+//|     WaveFile
 //|
 
-STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audioio) },
-    { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audioio_audioout_type) },
+STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
+    { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audioio_mixer_type) },
+    { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
+    { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audioio_module_globals, audioio_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_table);
 
-const mp_obj_module_t audioio_module = {
+const mp_obj_module_t audiocore_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&audioio_module_globals,
+    .globals = (mp_obj_dict_t*)&audiocore_module_globals,
 };

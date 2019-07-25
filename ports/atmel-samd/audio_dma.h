@@ -29,8 +29,8 @@
 
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
-#include "shared-module/audioio/RawSample.h"
-#include "shared-module/audioio/WaveFile.h"
+#include "shared-module/audiocore/RawSample.h"
+#include "shared-module/audiocore/WaveFile.h"
 
 typedef struct {
     mp_obj_t sample;

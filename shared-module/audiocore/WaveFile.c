@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audioio/WaveFile.h"
+#include "shared-bindings/audiocore/WaveFile.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -32,7 +32,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "shared-module/audioio/WaveFile.h"
+#include "shared-module/audiocore/WaveFile.h"
 #include "supervisor/shared/translate.h"
 
 struct wave_format_chunk {

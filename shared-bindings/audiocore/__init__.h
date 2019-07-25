@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,22 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOCORE___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOCORE___INIT___H
 
-#include "common-hal/audioio/AudioOut.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "shared-module/audioio/RawSample.h"
+#include "py/obj.h"
 
-extern const mp_obj_type_t audioio_rawsample_type;
+// Nothing now.
 
-void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
-    uint8_t* buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed,
-    uint8_t channel_count, uint32_t sample_rate);
-
-void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t* self);
-bool common_hal_audioio_rawsample_deinited(audioio_rawsample_obj_t* self);
-uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t* self);
-void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t* self, uint32_t sample_rate);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOCORE___INIT___H

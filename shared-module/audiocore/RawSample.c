@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 
 #include <stdint.h>
 
-#include "shared-module/audioio/RawSample.h"
+#include "shared-module/audiocore/RawSample.h"
 
 void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
                                             uint8_t* buffer,

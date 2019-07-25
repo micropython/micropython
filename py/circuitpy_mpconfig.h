@@ -230,6 +230,13 @@ extern const struct _mp_obj_module_t audiobusio_module;
 #define AUDIOBUSIO_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOCORE
+#define AUDIOCORE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiocore), (mp_obj_t)&audiocore_module },
+extern const struct _mp_obj_module_t audiocore_module;
+#else
+#define AUDIOCORE_MODULE
+#endif
+
 #if CIRCUITPY_AUDIOIO
 #define AUDIOIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
 extern const struct _mp_obj_module_t audioio_module;
@@ -564,6 +571,7 @@ extern const struct _mp_obj_module_t ustack_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
+    AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \

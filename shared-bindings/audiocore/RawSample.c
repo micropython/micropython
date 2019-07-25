@@ -31,8 +31,8 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/util.h"
+#include "shared-bindings/audiocore/RawSample.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audioio
