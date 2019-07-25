@@ -70,7 +70,7 @@ typedef enum {
 // Note: the first 9+12+12 of these are used in bytecode and changing
 // them requires changing the bytecode version.
 typedef enum {
-    // 9 relational operations, should return a bool
+    // 9 relational operations, should return a bool; order of first 6 matches corresponding mp_token_kind_t
     MP_BINARY_OP_LESS,
     MP_BINARY_OP_MORE,
     MP_BINARY_OP_EQUAL,
@@ -81,7 +81,7 @@ typedef enum {
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
 
-    // 12 inplace arithmetic operations
+    // 12 inplace arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
     MP_BINARY_OP_INPLACE_AND,
@@ -95,7 +95,7 @@ typedef enum {
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,
 
-    // 12 normal arithmetic operations
+    // 12 normal arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
