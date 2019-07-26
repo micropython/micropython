@@ -273,17 +273,17 @@ cdc_iad = standard.InterfaceAssociationDescriptor(
 descriptor_list = []
 descriptor_list.append(cdc_iad)
 descriptor_list.extend(cdc_interfaces)
-descriptor_list.extend(msc_interfaces)
+# descriptor_list.extend(msc_interfaces)
 # Only add the control interface because other audio interfaces are managed by it to ensure the
 # correct ordering.
-descriptor_list.append(audio_control_interface)
+# descriptor_list.append(audio_control_interface)
 # Put the CDC IAD just before the CDC interfaces.
 # There appears to be a bug in the Windows composite USB driver that requests the
 # HID report descriptor with the wrong interface number if the HID interface is not given
 # first. However, it still fetches the descriptor anyway. We could reorder the interfaces but
 # the Windows 7 Adafruit_usbser.inf file thinks CDC is at Interface 0, so we'll leave it
 # there for backwards compatibility.
-descriptor_list.extend(hid_interfaces)
+# descriptor_list.extend(hid_interfaces)
 
 configuration = standard.ConfigurationDescriptor(
     description="Composite configuration",

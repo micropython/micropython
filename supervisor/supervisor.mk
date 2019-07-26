@@ -78,6 +78,7 @@ else
 					  shared-module/usb_midi/PortIn.c \
 					  shared-module/usb_midi/PortOut.c \
 					  $(BUILD)/autogen_usb_descriptor.c
+
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
