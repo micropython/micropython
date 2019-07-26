@@ -37,8 +37,6 @@
 #define EXTI_PVD_OUTPUT         (16)
 #define EXTI_RTC_ALARM          (17)
 #define EXTI_RTC_WAKEUP         (EXTI_RTC_ALARM)
-#define EXTI_USB_OTG_FS_WAKEUP  (18)
-// #define EXTI_ETH_WAKEUP         (19)
 
 
 #define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)

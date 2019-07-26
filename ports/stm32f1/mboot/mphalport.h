@@ -42,7 +42,6 @@
 #define MP_HAL_PIN_SPEED_LOW            (GPIO_SPEED_FREQ_LOW)
 #define MP_HAL_PIN_SPEED_MEDIUM         (GPIO_SPEED_FREQ_MEDIUM)
 #define MP_HAL_PIN_SPEED_HIGH           (GPIO_SPEED_FREQ_HIGH)
-#define MP_HAL_PIN_SPEED_VERY_HIGH      (GPIO_SPEED_FREQ_VERY_HIGH)
 
 #define mp_hal_pin_obj_t        uint32_t
 #define mp_hal_pin_input(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0)

@@ -117,22 +117,6 @@
 #define CONFIG_DESC_MAXPOWER (0xfa) // 500mA in units of 2mA
 #endif
 
-#if USBD_SUPPORT_HS_MODE
-// USB Standard Device Descriptor
-__ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
-    USB_LEN_DEV_QUALIFIER_DESC,
-    USB_DESC_TYPE_DEVICE_QUALIFIER,
-    0x00,
-    0x02,
-    0x00,
-    0x00,
-    0x00,
-    0x40, // same for CDC and MSC (latter being MSC_FS_MAX_PACKET), HID is 0x04
-    0x01,
-    0x00,
-};
-#endif
-
 // USB partial configuration descriptor
 static const uint8_t head_desc_data[HEAD_DESC_SIZE] = {
     //--------------------------------------------------------------------------
@@ -593,13 +577,6 @@ static void usbd_cdc_state_init(USBD_HandleTypeDef *pdev, usbd_cdc_msc_hid_state
 }
 
 static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
-    #if !USBD_SUPPORT_HS_MODE
-    if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        // can't handle high speed
-        return 1;
-    }
-    #endif
-
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
     // CDC VCP component(s)
@@ -961,104 +938,15 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
     return USBD_OK;
 }
 
-#if USBD_SUPPORT_HS_MODE
-static void usbd_cdc_desc_config_max_packet(USBD_HandleTypeDef *pdev, uint8_t *cdc_desc) {
-    uint32_t mp = usbd_cdc_max_packet(pdev);
-    cdc_desc[CDC_DESC_OFFSET_OUT_MAX_PACKET_LO] = LOBYTE(mp);
-    cdc_desc[CDC_DESC_OFFSET_OUT_MAX_PACKET_HI] = HIBYTE(mp);
-    cdc_desc[CDC_DESC_OFFSET_IN_MAX_PACKET_LO] = LOBYTE(mp);
-    cdc_desc[CDC_DESC_OFFSET_IN_MAX_PACKET_HI] = HIBYTE(mp);
-    uint8_t interval; // polling interval in frames of 1ms
-    if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        interval = 0x09;
-    } else {
-        interval = 0x20;
-    }
-    cdc_desc[CDC_DESC_OFFSET_INTR_INTERVAL] = interval;
-}
-#endif
-
 static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *length) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-
-    #if USBD_SUPPORT_HS_MODE
-    uint8_t *cdc_desc[MICROPY_HW_USB_CDC_NUM] = {0};
-    uint8_t *msc_desc = NULL;
-    switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
-        case USBD_MODE_MSC:
-            msc_desc = usbd->usbd_config_desc + MSC_TEMPLATE_MSC_DESC_OFFSET;
-            break;
-
-        case USBD_MODE_CDC_MSC:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_CDC_DESC_OFFSET;
-            msc_desc = usbd->usbd_config_desc + CDC_MSC_TEMPLATE_MSC_DESC_OFFSET;
-            break;
-
-        #if MICROPY_HW_USB_CDC_NUM >= 2
-        case USBD_MODE_CDC2:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC2_TEMPLATE_CDC_DESC_OFFSET;
-            cdc_desc[1] = usbd->usbd_config_desc + CDC2_TEMPLATE_CDC2_DESC_OFFSET;
-            break;
-
-        case USBD_MODE_CDC2_MSC:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC_DESC_OFFSET;
-            cdc_desc[1] = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_CDC2_DESC_OFFSET;
-            msc_desc = usbd->usbd_config_desc + CDC2_MSC_TEMPLATE_MSC_DESC_OFFSET;
-            break;
-        #endif
-
-        #if MICROPY_HW_USB_CDC_NUM >= 3
-        case USBD_MODE_CDC3:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC_DESC_OFFSET;
-            cdc_desc[1] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC2_DESC_OFFSET;
-            cdc_desc[2] = usbd->usbd_config_desc + CDC3_TEMPLATE_CDC3_DESC_OFFSET;
-            break;
-
-        case USBD_MODE_CDC3_MSC:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC_DESC_OFFSET;
-            cdc_desc[1] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC2_DESC_OFFSET;
-            cdc_desc[2] = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_CDC3_DESC_OFFSET;
-            msc_desc = usbd->usbd_config_desc + CDC3_MSC_TEMPLATE_MSC_DESC_OFFSET;
-            break;
-        #endif
-
-        case USBD_MODE_CDC_HID:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC_HID_TEMPLATE_CDC_DESC_OFFSET;
-            break;
-
-        case USBD_MODE_CDC:
-            cdc_desc[0] = usbd->usbd_config_desc + CDC_TEMPLATE_CDC_DESC_OFFSET;
-            break;
-    }
-
-    // configure CDC descriptors, if needed
-    for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
-        if (cdc_desc[i] != NULL) {
-            usbd_cdc_desc_config_max_packet(pdev, cdc_desc[i]);
-        }
-    }
-
-    if (msc_desc != NULL) {
-        uint32_t mp = usbd_msc_max_packet(pdev);
-        msc_desc[13] = LOBYTE(mp);
-        msc_desc[14] = HIBYTE(mp);
-        msc_desc[20] = LOBYTE(mp);
-        msc_desc[21] = HIBYTE(mp);
-    }
-    #endif
-
     *length = usbd->usbd_config_desc_size;
     return usbd->usbd_config_desc;
 }
 
 uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    #if USBD_SUPPORT_HS_MODE
-    *length = sizeof(USBD_CDC_MSC_HID_DeviceQualifierDesc);
-    return USBD_CDC_MSC_HID_DeviceQualifierDesc;
-    #else
     *length = 0;
     return NULL;
-    #endif
 }
 
 // data received on non-control OUT endpoint
@@ -1078,13 +966,6 @@ uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t
 // prepare OUT endpoint for reception
 uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
     // Suspend or Resume USB Out process
-
-    #if !USBD_SUPPORT_HS_MODE
-    if (cdc->usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
-        return USBD_FAIL;
-    }
-    #endif
-
     // Prepare Out endpoint to receive next packet
     USBD_LL_PrepareReceive(cdc->usbd->pdev, cdc->out_ep, buf, usbd_cdc_max_packet(cdc->usbd->pdev));
 
@@ -1094,13 +975,6 @@ uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
 // prepare OUT endpoint for reception
 uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *hid, uint8_t *buf) {
     // Suspend or Resume USB Out process
-
-    #if !USBD_SUPPORT_HS_MODE
-    if (hid->usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
-        return USBD_FAIL;
-    }
-    #endif
-
     // Prepare Out endpoint to receive next packet
     uint16_t mps_out =
         hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
@@ -1125,23 +999,23 @@ uint8_t USBD_HID_SendReport(usbd_hid_state_t *hid, uint8_t *report, uint16_t len
     return USBD_FAIL;
 }
 
-uint8_t USBD_HID_SetNAK(usbd_hid_state_t *hid) {
-    // get USBx object from pdev (needed for USBx_OUTEP macro below)
-    PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
-    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-    // set NAK on HID OUT endpoint
-    USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
-    return USBD_OK;
-}
+// uint8_t USBD_HID_SetNAK(usbd_hid_state_t *hid) {
+//     // get USBx object from pdev (needed for USBx_OUTEP macro below)
+//     PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
+//     USB_TypeDef *USBx = hpcd->Instance;
+//     // set NAK on HID OUT endpoint
+//     USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
+//     return USBD_OK;
+// }
 
-uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *hid) {
-    // get USBx object from pdev (needed for USBx_OUTEP macro below)
-    PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
-    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-    // clear NAK on HID OUT endpoint
-    USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
-    return USBD_OK;
-}
+// uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *hid) {
+//     // get USBx object from pdev (needed for USBx_OUTEP macro below)
+//     PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
+//     USB_TypeDef *USBx = hpcd->Instance;
+//     // clear NAK on HID OUT endpoint
+//     USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
+//     return USBD_OK;
+// }
 
 // CDC/MSC/HID interface class callback structure
 const USBD_ClassTypeDef USBD_CDC_MSC_HID = {

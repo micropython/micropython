@@ -491,7 +491,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        uint32_t basepri = raise_irq_pri(IRQ_PRI_USB);
 
         #if SDIO_USE_GPDMA
         DMA_HandleTypeDef sd_dma;
@@ -587,7 +587,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+        uint32_t basepri = raise_irq_pri(IRQ_PRI_USB);
 
         #if SDIO_USE_GPDMA
         DMA_HandleTypeDef sd_dma;

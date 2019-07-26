@@ -62,7 +62,6 @@ typedef struct _pyb_uart_obj_t {
 
 extern const mp_obj_type_t pyb_uart_type;
 
-void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
 

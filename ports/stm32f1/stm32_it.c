@@ -204,18 +204,6 @@ void HardFault_Handler(void) {
     // If CONTROL.SPSEL is 0, then the exception was stacked up using the
     // main stack pointer (aka MSP). If CONTROL.SPSEL is 1, then the exception
     // was stacked up using the process stack pointer (aka PSP).
-
-    #if __CORTEX_M == 0
-    __asm volatile(
-    " mov r0, lr    \n"
-    " lsr r0, r0, #3 \n"        // Shift Bit 3 into carry to see which stack pointer we should use.
-    " mrs r0, msp   \n"         // Make R0 point to main stack pointer
-    " bcc .use_msp  \n"         // Keep MSP in R0 if SPSEL (carry) is 0
-    " mrs r0, psp   \n"         // Make R0 point to process stack pointer
-    " .use_msp:     \n"
-    " b HardFault_C_Handler \n" // Off to C land
-    );
-    #else
     __asm volatile(
     " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
     " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
@@ -223,7 +211,6 @@ void HardFault_Handler(void) {
     " mrsne r0, psp \n"         // Make R0 point to process stack pointer
     " b HardFault_C_Handler \n" // Off to C land
     );
-    #endif
 }
 
 /**
@@ -231,8 +218,7 @@ void HardFault_Handler(void) {
   * @param  None
   * @retval None
   */
-void NMI_Handler(void) {
-}
+void NMI_Handler(void) {}
 
 /**
   * @brief  This function handles Memory Manage exception.
@@ -275,44 +261,42 @@ void UsageFault_Handler(void) {
   * @param  None
   * @retval None
   */
-void SVC_Handler(void) {
-}
+void SVC_Handler(void) {}
 
 /**
   * @brief  This function handles Debug Monitor exception.
   * @param  None
   * @retval None
   */
-void DebugMon_Handler(void) {
-}
+void DebugMon_Handler(void) {}
 
 /******************************************************************************/
-/*                 STM32F4xx Peripherals Interrupt Handlers                   */
+/*                 STM32F1xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
 /*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32f4xx.s).                                               */
+/*  file (startup_stm32f1xx.s).                                               */
 /******************************************************************************/
 
 /**
-  * @brief  This function handles USB-On-The-Go FS global interrupt request.
+  * @brief  This function handles USB global interrupt request.
   * @param  None
   * @retval None
   */
 #if MICROPY_HW_USB_FS
-void OTG_FS_IRQHandler(void) {
-    IRQ_ENTER(OTG_FS_IRQn);
+void USB_LP_CAN1_RX0_IRQHandler(void) {
+    IRQ_ENTER(USB_HP_CAN1_TX_IRQn);
     HAL_PCD_IRQHandler(&pcd_fs_handle);
-    IRQ_EXIT(OTG_FS_IRQn);
+    IRQ_EXIT(USB_HP_CAN1_TX_IRQn);
 }
 #endif
 
 #if (defined(MICROPY_HW_USB_FS)) && 0
 /**
-  * @brief  This function handles USB OTG Common FS/HS Wakeup functions.
+  * @brief  This function handles USB FS Wakeup functions.
   * @param  *pcd_handle for FS or HS
   * @retval None
   */
-STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
+STATIC void USB_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 
   if (pcd_handle->Init.low_power_enable) {
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
@@ -345,34 +329,19 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
   }
 
 }
-#endif
-
-#if defined(MICROPY_HW_USB_FS) && 0
 /**
-  * @brief  This function handles USB OTG FS Wakeup IRQ Handler.
+  * @brief  This function handles USB Wakeup IRQ Handler.
   * @param  None
   * @retval None
   */
-void OTG_FS_WKUP_IRQHandler(void) {
-    IRQ_ENTER(OTG_FS_WKUP_IRQn);
-
-  OTG_CMD_WKUP_Handler(&pcd_fs_handle);
-
-  /* Clear EXTI pending Bit*/
-  __HAL_USB_FS_EXTI_CLEAR_FLAG();
-
-    IRQ_EXIT(OTG_FS_WKUP_IRQn);
+void USBWakeUp_IRQHandler(void) {
+    IRQ_ENTER(USBWakeUp_IRQn);
+    USB_WKUP_Handler(&pcd_fs_handle);
+    /* Clear EXTI pending Bit*/
+    __HAL_USB_FS_EXTI_CLEAR_FLAG();
+    IRQ_EXIT(USBWakeUp_IRQn);
 }
 #endif
-
-/**
-  * @brief  This function handles PPP interrupt request.
-  * @param  None
-  * @retval None
-  */
-/*void PPP_IRQHandler(void)
-{
-}*/
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.
@@ -442,23 +411,22 @@ void RTC_Alarm_IRQHandler(void) {
     IRQ_EXIT(RTC_Alarm_IRQn);
 }
 
-void TIM1_BRK_TIM9_IRQHandler(void) {
-    IRQ_ENTER(TIM1_BRK_TIM9_IRQn);
-    timer_irq_handler(9);
-    IRQ_EXIT(TIM1_BRK_TIM9_IRQn);
-}
-
-void TIM1_UP_TIM10_IRQHandler(void) {
-    IRQ_ENTER(TIM1_UP_TIM10_IRQn);
+void TIM1_BRK_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_IRQn);
     timer_irq_handler(1);
-    timer_irq_handler(10);
-    IRQ_EXIT(TIM1_UP_TIM10_IRQn);
+    IRQ_EXIT(TIM1_BRK_IRQn);
 }
 
-void TIM1_TRG_COM_TIM11_IRQHandler(void) {
-    IRQ_ENTER(TIM1_TRG_COM_TIM11_IRQn);
-    timer_irq_handler(11);
-    IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
+void TIM1_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_UP_IRQn);
+}
+
+void TIM1_TRG_COM_IRQHandler(void) {
+    IRQ_ENTER(TIM1_TRG_COM_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_TRG_COM_IRQn);
 }
 
 void TIM1_CC_IRQHandler(void) {
@@ -493,10 +461,10 @@ void TIM5_IRQHandler(void) {
 }
 
 #if defined(TIM6)
-void TIM6_DAC_IRQHandler(void) {
-    IRQ_ENTER(TIM6_DAC_IRQn);
+void TIM6_IRQHandler(void) {
+    IRQ_ENTER(TIM6_IRQn);
     timer_irq_handler(6);
-    IRQ_EXIT(TIM6_DAC_IRQn);
+    IRQ_EXIT(TIM6_IRQn);
 }
 #endif
 
@@ -509,17 +477,16 @@ void TIM7_IRQHandler(void) {
 #endif
 
 #if defined(TIM8)
-void TIM8_BRK_TIM12_IRQHandler(void) {
-    IRQ_ENTER(TIM8_BRK_TIM12_IRQn);
-    timer_irq_handler(12);
-    IRQ_EXIT(TIM8_BRK_TIM12_IRQn);
+void TIM8_BRK_IRQHandler(void) {
+    IRQ_ENTER(TIM8_BRK_IRQn);
+    timer_irq_handler(8);
+    IRQ_EXIT(TIM8_BRK_IRQn);
 }
 
-void TIM8_UP_TIM13_IRQHandler(void) {
-    IRQ_ENTER(TIM8_UP_TIM13_IRQn);
+void TIM8_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM8_UP_IRQn);
     timer_irq_handler(8);
-    timer_irq_handler(13);
-    IRQ_EXIT(TIM8_UP_TIM13_IRQn);
+    IRQ_EXIT(TIM8_UP_IRQn);
 }
 
 void TIM8_CC_IRQHandler(void) {
@@ -528,10 +495,10 @@ void TIM8_CC_IRQHandler(void) {
     IRQ_EXIT(TIM8_CC_IRQn);
 }
 
-void TIM8_TRG_COM_TIM14_IRQHandler(void) {
-    IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
-    timer_irq_handler(14);
-    IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
+void TIM8_TRG_COM_IRQHandler(void) {
+    IRQ_ENTER(TIM8_TRG_COM_IRQn);
+    timer_irq_handler(8);
+    IRQ_EXIT(TIM8_TRG_COM_IRQn);
 }
 #endif
 
@@ -585,35 +552,3 @@ void CAN1_SCE_IRQHandler(void) {
     IRQ_EXIT(CAN1_SCE_IRQn);
 }
 #endif
-
-#if MICROPY_PY_PYB_LEGACY
-
-#if defined(MICROPY_HW_I2C1_SCL)
-void I2C1_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C1_EV_IRQn);
-    i2c_ev_irq_handler(1);
-    IRQ_EXIT(I2C1_EV_IRQn);
-}
-
-void I2C1_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C1_ER_IRQn);
-    i2c_er_irq_handler(1);
-    IRQ_EXIT(I2C1_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C1_SCL)
-
-#if defined(MICROPY_HW_I2C2_SCL)
-void I2C2_EV_IRQHandler(void) {
-    IRQ_ENTER(I2C2_EV_IRQn);
-    i2c_ev_irq_handler(2);
-    IRQ_EXIT(I2C2_EV_IRQn);
-}
-
-void I2C2_ER_IRQHandler(void) {
-    IRQ_ENTER(I2C2_ER_IRQn);
-    i2c_er_irq_handler(2);
-    IRQ_EXIT(I2C2_ER_IRQn);
-}
-#endif // defined(MICROPY_HW_I2C2_SCL)
-
-#endif // MICROPY_PY_PYB_LEGACY

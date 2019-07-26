@@ -141,10 +141,10 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
                 // The actual connection state is delayed to give the host a chance to
                 // configure its serial port (in most cases to disable local echo)
                 PCD_HandleTypeDef *hpcd = cdc->base.usbd->pdev->pData;
-                USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+                USB_TypeDef *USBx = hpcd->Instance;
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTING;
                 usbd_cdc_connect_tx_timer = 8; // wait for 8 SOF IRQs
-                USBx->GINTMSK |= USB_OTG_GINTMSK_SOFM;
+                USBx->CNTR |= USB_CNTR_SOFM;
             } else {
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
             }
@@ -200,7 +200,7 @@ void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc_in) {
 
 // Attempt to queue data on the USB IN endpoint
 static void usbd_cdc_try_tx(usbd_cdc_itf_t *cdc) {
-    uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+    uint32_t basepri = raise_irq_pri(IRQ_PRI_USB);
     if (cdc == NULL || cdc->connect_state == USBD_CDC_CONNECT_STATE_DISCONNECTED) {
         // CDC device is not connected to a host, so we are unable to send any data
     } else if (cdc->base.tx_in_progress) {
@@ -216,7 +216,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         --usbd_cdc_connect_tx_timer;
     } else {
         usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
-        hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;
+        hpcd->Instance->CNTR &= ~USB_CNTR_SOFM;
         for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
             usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc[i];
             if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {

@@ -61,8 +61,6 @@
 
 extern void NORETURN __fatal_error(const char *msg);
 
-void uart_init0(void) {}
-
 // unregister all interrupt sources
 void uart_deinit_all(void)
 {

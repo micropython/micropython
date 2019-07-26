@@ -11,7 +11,6 @@ $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
 include ../../py/mkenv.mk
--include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
@@ -97,14 +96,15 @@ endif
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 
+# ignore
+# netutils/netutils.c
+# netutils/dhcpserver.c
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	oofatfs/ff.c \
 	oofatfs/ffunicode.c \
 	mp-readline/readline.c \
-	netutils/netutils.c \
 	netutils/trace.c \
-	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
@@ -192,9 +192,9 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
 	modonewire.c \
         )
 
+# ignore bus/softqspi.c
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
-	bus/softqspi.c \
 	memory/spiflash.c \
 	dht/dht.c \
 	)

@@ -9,14 +9,6 @@
 // These are included to get direct access the MICROPY_HW_USB_xxx config
 #include "py/mpconfig.h"
 
-// Work out if we should support USB high-speed device mode
-#if MICROPY_HW_USB_HS \
-    && (!MICROPY_HW_USB_HS_IN_FS || defined(STM32F723xx) || defined(STM32F733xx))
-#define USBD_SUPPORT_HS_MODE (1)
-#else
-#define USBD_SUPPORT_HS_MODE (0)
-#endif
-
 // Should be maximum of possible config descriptors that might be configured
 #if MICROPY_HW_USB_CDC_NUM == 3
 // Maximum is MSC+CDC+CDC+CDC
@@ -34,11 +26,7 @@
 #define MSC_HS_MAX_PACKET           (512)
 #define CDC_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 #define CDC_DATA_HS_MAX_PACKET_SIZE (512) // endpoint IN & OUT packet size
-#if USBD_SUPPORT_HS_MODE
-#define CDC_DATA_MAX_PACKET_SIZE    CDC_DATA_HS_MAX_PACKET_SIZE
-#else
 #define CDC_DATA_MAX_PACKET_SIZE    CDC_DATA_FS_MAX_PACKET_SIZE
-#endif
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
 #define HID_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 
@@ -147,25 +135,11 @@ extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_
 extern const USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
 static inline uint32_t usbd_msc_max_packet(USBD_HandleTypeDef *pdev) {
-    #if USBD_SUPPORT_HS_MODE
-    if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        return MSC_HS_MAX_PACKET;
-    } else
-    #endif
-    {
-        return MSC_FS_MAX_PACKET;
-    }
+    return MSC_FS_MAX_PACKET;
 }
 
 static inline uint32_t usbd_cdc_max_packet(USBD_HandleTypeDef *pdev) {
-    #if USBD_SUPPORT_HS_MODE
-    if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        return CDC_DATA_HS_MAX_PACKET_SIZE;
-    } else
-    #endif
-    {
-        return CDC_DATA_FS_MAX_PACKET_SIZE;
-    }
+    return CDC_DATA_FS_MAX_PACKET_SIZE;
 }
 
 // returns 0 on success, -1 on failure
@@ -183,8 +157,8 @@ static inline void USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD
 uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *usbd, uint8_t *buf);
 int USBD_HID_CanSendReport(usbd_hid_state_t *usbd);
 uint8_t USBD_HID_SendReport(usbd_hid_state_t *usbd, uint8_t *report, uint16_t len);
-uint8_t USBD_HID_SetNAK(usbd_hid_state_t *usbd);
-uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *usbd);
+// uint8_t USBD_HID_SetNAK(usbd_hid_state_t *usbd);
+// uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc);
