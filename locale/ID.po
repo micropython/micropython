@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:10-0700\n"
+"POT-Creation-Date: 2019-07-25 21:12-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -255,6 +255,7 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/AudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -327,6 +328,11 @@ msgstr ""
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
+msgstr ""
+
+#: ports/nrf/common-hal/audiopwmio/AudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
@@ -472,11 +478,11 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Tidak dapat menginisialisasi UART"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr ""
 
@@ -493,7 +499,7 @@ msgstr "DAC sudah digunakan"
 msgid "Data 0 pin must be byte aligned"
 msgstr ""
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
@@ -768,7 +774,7 @@ msgstr "Ukuran buffer tidak valid"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid channel count"
 msgstr ""
 
@@ -776,11 +782,11 @@ msgstr ""
 msgid "Invalid direction."
 msgstr ""
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr ""
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr ""
 
@@ -822,11 +828,11 @@ msgstr ""
 msgid "Invalid run mode."
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
 msgstr ""
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr ""
 
@@ -947,6 +953,7 @@ msgid "Not connected"
 msgstr "Tidak dapat menyambungkan ke AP"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/AudioOut.c
 msgid "Not playing"
 msgstr ""
 
@@ -1071,11 +1078,12 @@ msgstr ""
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA atau SCL membutuhkan pull up"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Sample rate must be positive"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/AudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
@@ -1143,19 +1151,19 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
@@ -1261,7 +1269,7 @@ msgstr "Baudrate tidak didukung"
 msgid "Unsupported display bus type"
 msgstr "Baudrate tidak didukung"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr ""
 
@@ -1277,7 +1285,7 @@ msgstr ""
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr ""
 
@@ -1404,7 +1412,7 @@ msgstr ""
 msgid "bits must be 8"
 msgstr "bits harus memilki nilai 8"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
 
@@ -1417,7 +1425,7 @@ msgstr ""
 msgid "buf is too small. need %d bytes"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr ""
 
@@ -1780,7 +1788,8 @@ msgstr "argumen keyword ekstra telah diberikan"
 msgid "extra positional arguments given"
 msgstr "argumen posisi ekstra telah diberikan"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
 
@@ -2325,7 +2334,7 @@ msgstr ""
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
