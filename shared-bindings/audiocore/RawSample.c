@@ -35,7 +35,7 @@
 #include "shared-bindings/audiocore/RawSample.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audioio
+//| .. currentmodule:: audiocore
 //|
 //| :class:`RawSample` -- A raw audio sample buffer
 //| ========================================================
@@ -55,6 +55,7 @@
 //|
 //|   Simple 8ksps 440 Hz sin wave::
 //|
+//|     import audiocore
 //|     import audioio
 //|     import board
 //|     import array
@@ -68,7 +69,7 @@
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15))
 //|
 //|     dac = audioio.AudioOut(board.SPEAKER)
-//|     sine_wave = audioio.RawSample(sine_wave)
+//|     sine_wave = audiocore.RawSample(sine_wave)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
 //|     dac.stop()

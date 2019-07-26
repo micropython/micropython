@@ -36,7 +36,7 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audioio
+//| .. currentmodule:: audiocore
 //|
 //| :class:`Mixer` -- Mixes one or more audio samples together
 //| ===========================================================
@@ -54,15 +54,16 @@
 //|
 //|     import board
 //|     import audioio
+//|     import audiocore
 //|     import digitalio
 //|
 //|     # Required for CircuitPlayground Express
 //|     speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|     speaker_enable.switch_to_output(value=True)
 //|
-//|     music = audioio.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
-//|     drum = audioio.WaveFile(open("drum.wav", "rb"))
-//|     mixer = audioio.Mixer(voice_count=2, sample_rate=16000, channel_count=1, bits_per_sample=16, samples_signed=True)
+//|     music = audiocore.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
+//|     drum = audiocore.WaveFile(open("drum.wav", "rb"))
+//|     mixer = audiocore.Mixer(voice_count=2, sample_rate=16000, channel_count=1, bits_per_sample=16, samples_signed=True)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")

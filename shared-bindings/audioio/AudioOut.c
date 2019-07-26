@@ -55,6 +55,7 @@
 //|
 //|   Simple 8ksps 440 Hz sin wave::
 //|
+//|     import audiocore
 //|     import audioio
 //|     import board
 //|     import array
@@ -68,7 +69,7 @@
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
 //|     dac = audioio.AudioOut(board.SPEAKER)
-//|     sine_wave = audioio.RawSample(sine_wave, sample_rate=8000)
+//|     sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
 //|     dac.stop()
@@ -84,7 +85,7 @@
 //|     speaker_enable.switch_to_output(value=True)
 //|
 //|     data = open("cplay-5.1-16bit-16khz.wav", "rb")
-//|     wav = audioio.WaveFile(data)
+//|     wav = audiocore.WaveFile(data)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
