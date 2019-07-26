@@ -152,7 +152,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixer___exit___obj, 4, 4, aud
 //|     Plays the sample once when loop=False and continuously when loop=True.
 //|     Does not block. Use `playing` to block.
 //|
-//|     Sample must be an `audioio.WaveFile`, `audioio.Mixer` or `audioio.RawSample`.
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiocore.Mixer`.
 //|
 //|     The sample must match the Mixer's encoding settings given in the constructor.
 //|
