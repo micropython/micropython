@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:10-0700\n"
+"POT-Creation-Date: 2019-07-25 22:48-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -471,11 +471,11 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "Hindi ma-iallocate ang first buffer"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "Hindi ma-iallocate ang second buffer"
 
@@ -493,7 +493,7 @@ msgstr "Ginagamit na ang DAC"
 msgid "Data 0 pin must be byte aligned"
 msgstr "graphic ay dapat 2048 bytes ang haba"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 
@@ -715,6 +715,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
 
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
+
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Puno ang group"
@@ -773,7 +777,7 @@ msgstr "Mali ang buffer size"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid channel count"
 msgstr "Maling bilang ng channel"
 
@@ -781,11 +785,11 @@ msgstr "Maling bilang ng channel"
 msgid "Invalid direction."
 msgstr "Mali ang direksyon."
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Mali ang file"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Mali ang format ng chunk size"
 
@@ -827,11 +831,11 @@ msgstr "Mali ang polarity"
 msgid "Invalid run mode."
 msgstr "Mali ang run mode."
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
 msgstr "Maling bilang ng voice"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
 
@@ -1084,7 +1088,7 @@ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
@@ -1163,19 +1167,19 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
@@ -1282,7 +1286,7 @@ msgstr "Hindi supportadong baudrate"
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
@@ -1300,7 +1304,7 @@ msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr "Index ng Voice ay masyadong mataas"
 
@@ -1424,7 +1428,7 @@ msgstr "bits ay dapat 7, 8 o 9"
 msgid "bits must be 8"
 msgstr "bits ay dapat walo (8)"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
 
@@ -1437,7 +1441,7 @@ msgstr "branch wala sa range"
 msgid "buf is too small. need %d bytes"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer ay dapat bytes-like object"
 
@@ -1811,7 +1815,8 @@ msgstr "dagdag na keyword argument na ibinigay"
 msgid "extra positional arguments given"
 msgstr "dagdag na positional argument na ibinigay"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file ay dapat buksan sa byte mode"
 
@@ -2363,7 +2368,7 @@ msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"

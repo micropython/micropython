@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:10-0700\n"
+"POT-Creation-Date: 2019-07-25 22:48-0700\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -477,11 +477,11 @@ msgstr "Impossible de décoder le 'ble_uuid', err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "Impossible d'allouer le 1er tampon"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "Impossible d'allouer le 2e tampon"
 
@@ -499,7 +499,7 @@ msgstr "DAC déjà utilisé"
 msgid "Data 0 pin must be byte aligned"
 msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Un bloc de données doit suivre un bloc de format"
 
@@ -720,6 +720,10 @@ msgstr "La fréquence capturée est au delà des capacités. Capture en pause."
 msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
 
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
+
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Groupe plein"
@@ -780,7 +784,7 @@ msgstr "Longueur de tampon invalide"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide: 1 à 500"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 #, fuzzy
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
@@ -789,11 +793,11 @@ msgstr "Nombre de canaux invalide"
 msgid "Invalid direction."
 msgstr "Direction invalide"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Fichier invalide"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Taille de bloc de formatage invalide"
 
@@ -835,12 +839,12 @@ msgstr "Polarité invalide"
 msgid "Invalid run mode."
 msgstr "Mode de lancement invalide."
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 #, fuzzy
 msgid "Invalid voice count"
 msgstr "Nombre de voix invalide"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "Fichier WAVE invalide"
 
@@ -1100,7 +1104,7 @@ msgstr "Mode sans-échec! Le code sauvegardé n'est pas éxecuté.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 #, fuzzy
 msgid "Sample rate must be positive"
 msgstr "Le taux d'échantillonage doit être positif"
@@ -1183,20 +1187,20 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer de nouveau pour quitter de le mode sans-échec.\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 "Le 'bits_per_sample' de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Le canal de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "L'échantillonage de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Le signe de l'échantillon ne correspond pas à celui du mixer"
 
@@ -1307,7 +1311,7 @@ msgstr "Débit non supporté"
 msgid "Unsupported display bus type"
 msgstr "Type de bus d'affichage non supporté"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Format non supporté"
 
@@ -1324,7 +1328,7 @@ msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr "Index de la voix trop grand"
 
@@ -1449,7 +1453,7 @@ msgstr "bits doivent être 7, 8 ou 9"
 msgid "bits must be 8"
 msgstr "les bits doivent être 8"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 #, fuzzy
 msgid "bits_per_sample must be 8 or 16"
 msgstr "'bits_per_sample' doivent être 8 ou 16"
@@ -1464,7 +1468,7 @@ msgstr "branche hors-bornes"
 msgid "buf is too small. need %d bytes"
 msgstr "'buf' est trop petit. Besoin de %d octets"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "le tampon doit être un objet bytes-like"
 
@@ -1845,7 +1849,8 @@ msgstr "argument(s) nommé(s) supplémentaire(s) donné(s)"
 msgid "extra positional arguments given"
 msgstr "argument(s) positionnel(s) supplémentaire(s) donné(s)"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 
@@ -2404,7 +2409,7 @@ msgstr "return attendait '%q' mais a reçu '%q'"
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
