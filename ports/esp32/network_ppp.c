@@ -225,11 +225,26 @@ STATIC mp_obj_t ppp_disconnect(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_disconnect_obj, ppp_disconnect);
 
-STATIC mp_obj_t ppp_active(mp_obj_t self_in) {
-    ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args > 1) {
+        if ( mp_obj_is_true(args[1])) {
+            mp_obj_t connect_args = MP_OBJ_NULL;
+            mp_map_t kwargs;
+            mp_obj_t kwargs_table[] = {
+                MP_ROM_QSTR(MP_QSTR_self), args[0],
+            };
+            mp_map_init_fixed_table(&kwargs, 1, kwargs_table);
+            mp_obj_t ret = ppp_connect_py(0, &connect_args, &kwargs);
+            mp_map_deinit(&kwargs);
+            return ret;
+        } else {
+            return ppp_disconnect(args[0]);
+        }
+    }
     return mp_obj_new_bool(self->active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_active_obj, ppp_active);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
 
 STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
     ppp_disconnect(self_in);
