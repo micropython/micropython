@@ -42,40 +42,6 @@
 
 extern const int32_t colorwheel(float pos);
 
-void parse_byteorder_string(const char *byteorder, pixelbuf_byteorder_details_t details) {
-    details.bpp = strlen(byteorder);
-    char *dotstar = strchr(byteorder, 'D');
-    char *r = strchr(byteorder, 'R');
-    char *g = strchr(byteorder, 'G');
-    char *b = strchr(byteorder, 'B');
-    char *w = strchr(byteorder, 'W');
-    int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
-    if (num_chars < details.bpp)
-        mp_raise_ValueError(translate("Unexpected character in byteorder"));
-    if (!(r && b && g))
-        mp_raise_ValueError(translate("Incomplete byteorder string"));
-    details.is_dotstar = dotstar ? true : false;
-    details.has_white = w ? true : false;
-    details.byteorder.r = byteorder - r;
-    details.byteorder.g = byteorder - g;
-    details.byteorder.b = byteorder - b;
-    if (w) 
-        details.byteorder.w = byteorder - w;
-    // The dotstar brightness byte is always first (as it goes with the pixel start bits)
-    // if 'D' is found at the end, adjust byte position
-    // if 'D' is elsewhere, error out
-    if (dotstar) {
-        size_t dotstar_pos = dotstar - byteorder;
-        if (dotstar_pos == 4) {
-            details.byteorder.b += 1;
-            details.byteorder.g += 1;
-            details.byteorder.r += 1;
-        } else if (dotstar_pos != 0) {
-            mp_raise_ValueError(translate("Dotstar position invalid"));
-        }
-    }
-}
-
 //| .. currentmodule:: pixelbuf
 //|
 //| :class:`PixelBuf` -- A fast RGB[W] pixel buffer for LED and similar devices
@@ -123,20 +89,49 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const char *byteorder = NULL;
+    pixelbuf_byteorder_details_t byteorder_details;
+    size_t bo_len;
 
     if (!MP_OBJ_IS_STR(args[ARG_byteorder].u_obj))
         mp_raise_TypeError(translate("byteorder is not a string"));
 
-    const char *byteorder_str = NULL;
-    pixelbuf_byteorder_details_t byteorder_details;
-    size_t bo_len;
     if (args[ARG_byteorder].u_obj == NULL)
-        byteorder_str = "BGR";
+        byteorder = "BGR";
     else 
-        byteorder_str = mp_obj_str_get_data(args[ARG_byteorder].u_obj, &bo_len);
+        byteorder = mp_obj_str_get_data(args[ARG_byteorder].u_obj, &bo_len);
 
-    parse_byteorder_string(byteorder_str, byteorder_details);
-
+    byteorder_details.bpp = strlen(byteorder);
+    char *dotstar = strchr(byteorder, 'D');
+    char *r = strchr(byteorder, 'R');
+    char *g = strchr(byteorder, 'G');
+    char *b = strchr(byteorder, 'B');
+    char *w = strchr(byteorder, 'W');
+    int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
+    if (num_chars < byteorder_details.bpp)
+        mp_raise_ValueError(translate("Unexpected character in byteorder"));
+    if (!(r && b && g))
+        mp_raise_ValueError(translate("Incomplete byteorder string"));
+    byteorder_details.is_dotstar = dotstar ? true : false;
+    byteorder_details.has_white = w ? true : false;
+    byteorder_details.byteorder.r = r - byteorder;
+    byteorder_details.byteorder.g = g - byteorder;
+    byteorder_details.byteorder.b = b - byteorder;
+    if (w) 
+        byteorder_details.byteorder.w = w - byteorder;
+    // The dotstar brightness byte is always first (as it goes with the pixel start bits)
+    // if 'D' is found at the end, adjust byte position
+    // if 'D' is elsewhere, error out
+    if (dotstar) {
+        size_t dotstar_pos = dotstar - byteorder;
+        if (dotstar_pos == 4) {
+            byteorder_details.byteorder.b += 1;
+            byteorder_details.byteorder.g += 1;
+            byteorder_details.byteorder.r += 1;
+        } else if (dotstar_pos != 0) {
+            mp_raise_ValueError(translate("Dotstar position invalid"));
+        }
+    }
     if (byteorder_details.has_white && byteorder_details.is_dotstar)
         mp_raise_ValueError(translate("Can not use dotstar with a white byte"));
 
