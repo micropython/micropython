@@ -54,3 +54,5 @@ ports/javascript/node_modules
 ######################
 genrst/
 
+lextab.py
+yacctab.py

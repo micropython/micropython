@@ -66,11 +66,19 @@
 				display: flex;
 				flex-direction: row;
 			}
-			#mp_js_stdout {
-				flex: 1 0 auto;
+			#mp_js_stdout_wrapper {
+				flex: 1 1 auto;
+                                position: relative;
 				height: 328px;
 				background-color: black;
 			}
+                        #mp_js_stdout {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 100%;
+                        }
 			.ace_editor * {
 				font-size: 12px;
 				line-height: normal;
@@ -89,8 +97,8 @@
 		<script src="https://littlevgl.com/bootstrap/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/mode-python.js" type="text/javascript" charset="utf-8"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/xterm.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.4/addons/fit/fit.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/addons/fit/fit.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.js" type="text/javascript" charset="utf-8"></script>
 		<script src="query.js"></script>
 	</head>
@@ -120,7 +128,10 @@
 			<div class="display-objects">
 				
 				<canvas id="canvas" data-toggle="tooltip" title="This is the virtual LittlevGL screen" width="480" height="320" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-				<div id="mp_js_stdout"></div>
+                                <div id="mp_js_stdout_wrapper">
+                                        <div id="mp_js_stdout"></div>
+                                </div>
+                                
 			</div>
 		</div>
 		<iframe src="about:blank" id="emscripten-iframe"></iframe>
@@ -366,7 +377,7 @@
 				
 				mp_js_stdout.addEventListener('print', function(e) {
 					text = e.data;
-					term.write(text);
+                                        term.write(text);
 				}, false);
 				editor.getSession().on('change', editor_change);
 				editor.resize();
@@ -380,15 +391,12 @@
 					script_passed = true;
 					processScriptArg(script);
 				} else
-					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/dev-6.0/examples/advanced_demo.py");
+					processScriptArg("https://raw.githubusercontent.com/littlevgl/lv_binding_micropython/6d9989e5dcc789224d8069118929f875722adc7a/examples/advanced_demo.py");
 			});
 			$(window).resize(function() {
 				editor.resize();
 				term.fit();
 			});
-			$(window).resize(function() {
-                                editor.resize();
-                        });
 		</script>
 	</body>
 </html>
