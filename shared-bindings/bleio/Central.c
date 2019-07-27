@@ -34,6 +34,7 @@
 #include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Address.h"
 #include "shared-bindings/bleio/Characteristic.h"
@@ -56,12 +57,16 @@
 //|
 //|    my_entry = None
 //|    for entry in entries:
-//|        if entry.name is not None and entry.name == 'MyPeripheral':
+//|        if entry.name is not None and entry.name == 'InterestingPeripheral':
 //|            my_entry = entry
 //|            break
 //|
-//|    central = bleio.Central(my_entry.address)
-//|    central.connect(10.0)  # timeout after 10 seconds
+//|    if not my_entry:
+//|        raise Exception("'InterestingPeripheral' not found")
+//|
+//|    central = bleio.Central()
+//|    central.connect(my_entry.address, 10)  # timeout after 10 seconds
+//|    central.discover_remote_services()
 //|
 
 //| .. class:: Central()
@@ -79,24 +84,11 @@ STATIC mp_obj_t bleio_central_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: connect(address, timeout, *, service_uuids=None)
-//|     Attempts a connection to the remote peripheral. If the connection is successful,
-//|      Do BLE discovery for the listed services, to find their handles and characteristics.
-//|      The attribute `remote_services` will contain a list of all discovered services.
+//|   .. method:: connect(address, timeout, *, service_uuids_whitelist=None)
+//|     Attempts a connection to the remote peripheral.
 //|
 //|   :param bleio.Address address: The address of the peripheral to connect to
 //|   :param float/int timeout: Try to connect for timeout seconds.
-//|   :param iterable service_uuids_whitelist: an iterable of :py:class:~`UUID` objects for the services
-//|      provided by the peripheral that you want to use.
-//|      The peripheral may provide more services, but services not listed are ignored.
-//|      If a service in service_uuids is not found during discovery, it will not
-//|      appear in `remote_services`.
-//|
-//|      If service_uuids_whitelist is None, then all services will undergo discovery, which can be slow.
-//|
-//|      If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
-//|      you must have already created a :py:class:~`UUID` object for that UUID in order for the
-//|      service or characteristic to be discovered. (This restriction may be lifted in the future.)
 //|
 STATIC mp_obj_t bleio_central_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_central_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -105,7 +97,6 @@ STATIC mp_obj_t bleio_central_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_timeout, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_service_uuids_whitelist, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -119,7 +110,7 @@ STATIC mp_obj_t bleio_central_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
     // common_hal_bleio_central_connect() will validate that services is an iterable or None.
-    common_hal_bleio_central_connect(self, address, timeout, args[ARG_service_uuids_whitelist].u_obj);
+    common_hal_bleio_central_connect(self, address, timeout);
 
     return mp_const_none;
 }
@@ -138,6 +129,47 @@ STATIC mp_obj_t bleio_central_disconnect(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_central_disconnect_obj, bleio_central_disconnect);
+
+//|   .. method:: discover_remote_services(service_uuids_whitelist=None)
+//|      Do BLE discovery for all services or for the given service UUIDS,
+//|      to find their handles and characteristics.
+//|      The attribute `remote_services` will contain a list of all discovered services.
+//|      `Central.connected` must be True.
+//|
+//|   :param iterable service_uuids_whitelist: an iterable of :py:class:~`UUID` objects for the services
+//|      provided by the peripheral that you want to use.
+//|      The peripheral may provide more services, but services not listed are ignored.
+//|      If a service in service_uuids_whitelist is not found during discovery, it will not
+//|      appear in `remote_services`.
+//|
+//|      If service_uuids_whitelist is None, then all services will undergo discovery, which can be slow.
+//|
+//|      If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
+//|      you must have already created a :py:class:~`UUID` object for that UUID in order for the
+//|      service or characteristic to be discovered. Creating the UUID causes the UUID to be registered
+//|      for use. (This restriction may be lifted in the future.)
+//|
+STATIC mp_obj_t bleio_central_discover_remote_services(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bleio_central_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    enum { ARG_service_uuids_whitelist };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_service_uuids_whitelist, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (!common_hal_bleio_central_get_connected(self)) {
+        mp_raise_ValueError(translate("Not connected"));
+    }
+
+    common_hal_bleio_device_discover_remote_services(MP_OBJ_FROM_PTR(self),
+                                                     args[ARG_service_uuids_whitelist].u_obj);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_central_discover_remote_services_obj, 1, bleio_central_discover_remote_services);
 
 //|   .. attribute:: connected
 //|
@@ -181,8 +213,9 @@ const mp_obj_property_t bleio_central_remote_services_obj = {
 
 STATIC const mp_rom_map_elem_t bleio_central_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_connect),         MP_ROM_PTR(&bleio_central_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect),      MP_ROM_PTR(&bleio_central_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),                  MP_ROM_PTR(&bleio_central_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),               MP_ROM_PTR(&bleio_central_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_discover_remote_services), MP_ROM_PTR(&bleio_central_discover_remote_services_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_central_connected_obj) },

@@ -39,6 +39,7 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
     self->handle = 0xFFFF;
     self->uuid = uuid;
     self->characteristic_list = characteristic_list;
+    self->is_remote = false;
     self->is_secondary = is_secondary;
 
     for (size_t characteristic_idx = 0; characteristic_idx < characteristic_list->len; ++characteristic_idx) {
@@ -55,6 +56,10 @@ bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
 
 mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self) {
     return self->characteristic_list;
+}
+
+bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self) {
+    return self->is_remote;
 }
 
 bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {

@@ -33,8 +33,10 @@
 #include "nrf_soc.h"
 
 #include "py/runtime.h"
-#include "common-hal/bleio/__init__.h"
-#include "common-hal/bleio/Characteristic.h"
+
+#include "shared-bindings/bleio/__init__.h"
+#include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/Service.h"
 
 STATIC volatile bleio_characteristic_obj_t *m_read_characteristic;
 
@@ -225,53 +227,39 @@ mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_charact
 }
 
 mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
-    switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
-    case GATT_ROLE_CLIENT:
+    if (common_hal_bleio_service_get_is_remote(self->service)) {
         gattc_read(self);
-        break;
-
-    case GATT_ROLE_SERVER:
+    } else {
         gatts_read(self);
-        break;
-
-    default:
-        mp_raise_RuntimeError(translate("bad GATT role"));
-        break;
     }
 
     return self->value_data;
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
-    bool sent = false;
-    uint16_t cccd = 0;
-
-    switch (common_hal_bleio_device_get_gatt_role(self->service->device)) {
-        case GATT_ROLE_SERVER:
-            if (self->props.notify || self->props.indicate) {
-                cccd = get_cccd(self);
-            }
-            // It's possible that both notify and indicate are set.
-            if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
-                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
-                sent = true;
-            }
-            if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
-                gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
-                sent = true;
-            }
-            if (!sent) {
-                gatts_write(self, bufinfo);
-            }
-            break;
-
-        case GATT_ROLE_CLIENT:
+    if (common_hal_bleio_service_get_is_remote(self->service)) {
             gattc_write(self, bufinfo);
-            break;
+    } else {
+        bool sent = false;
+        uint16_t cccd = 0;
 
-        default:
-            mp_raise_RuntimeError(translate("bad GATT role"));
-            break;
+        if (self->props.notify || self->props.indicate) {
+                cccd = get_cccd(self);
+        }
+
+        // It's possible that both notify and indicate are set.
+        if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
+            sent = true;
+        }
+        if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+            gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
+            sent = true;
+        }
+
+        if (!sent) {
+            gatts_write(self, bufinfo);
+        }
     }
 }
 
@@ -289,8 +277,8 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         mp_raise_ValueError(translate("No CCCD for this Characteristic"));
     }
 
-    if (common_hal_bleio_device_get_gatt_role(self->service->device) != GATT_ROLE_CLIENT) {
-        mp_raise_ValueError(translate("Can't set CCCD for local Characteristic"));
+    if (!common_hal_bleio_service_get_is_remote(self->service)) {
+        mp_raise_ValueError(translate("Can't set CCCD on local Characteristic"));
     }
 
     uint16_t cccd_value =

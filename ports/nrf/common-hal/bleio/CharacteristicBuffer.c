@@ -37,7 +37,7 @@
 
 #include "tick.h"
 
-#include "common-hal/bleio/__init__.h"
+#include "shared-bindings/bleio/__init__.h"
 #include "common-hal/bleio/CharacteristicBuffer.h"
 
 STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {

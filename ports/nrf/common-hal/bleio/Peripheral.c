@@ -120,20 +120,21 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     }
 }
 
-void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *service_list, mp_obj_t name) {
+void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *services_list, mp_obj_t name) {
     common_hal_bleio_adapter_set_enabled(true);
 
-    self->service_list = service_list;
+    self->services_list = services_list;
+    // Used only for discovery when acting as a client.
+    self->remote_services_list = mp_obj_new_list(0, NULL);
     self->name = name;
 
-    self->gatt_role = GATT_ROLE_SERVER;
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
     // Add all the services.
 
-    for (size_t service_idx = 0; service_idx < service_list->len; ++service_idx) {
-        bleio_service_obj_t *service = MP_OBJ_TO_PTR(service_list->items[service_idx]);
+    for (size_t service_idx = 0; service_idx < services_list->len; ++service_idx) {
+        bleio_service_obj_t *service = MP_OBJ_TO_PTR(services_list->items[service_idx]);
 
         service->device = MP_OBJ_FROM_PTR(self);
 
@@ -156,8 +157,8 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
 }
 
 
-mp_obj_list_t *common_hal_bleio_peripheral_get_service_list(bleio_peripheral_obj_t *self) {
-    return self->service_list;
+mp_obj_list_t *common_hal_bleio_peripheral_get_services_list(bleio_peripheral_obj_t *self) {
+    return self->services_list;
 }
 
 bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {

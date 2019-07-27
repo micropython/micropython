@@ -33,7 +33,7 @@
 extern const mp_obj_type_t bleio_peripheral_type;
 
 extern void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *service_list, mp_obj_t name);
-extern mp_obj_list_t *common_hal_bleio_peripheral_get_service_list(bleio_peripheral_obj_t *self);
+extern mp_obj_list_t *common_hal_bleio_peripheral_get_services_list(bleio_peripheral_obj_t *self);
 extern bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self);
 extern mp_obj_t common_hal_bleio_peripheral_get_name(bleio_peripheral_obj_t *self);
 extern void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *device, bool connectable, float interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo);
