@@ -43,8 +43,10 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
+#include "mpu.h"
 #include "systick.h"
 #include "pendsv.h"
+#include "powerctrl.h"
 #include "pybthread.h"
 #include "gccollect.h"
 #include "factoryreset.h"
@@ -68,8 +70,6 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
-
-void SystemClock_Config(void);
 
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
@@ -368,6 +368,17 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
+    // Change IRQ vector table if configured differently
+    SCB->VTOR = MICROPY_HW_VTOR;
+    #endif
+
+    // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
+    SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+
+    // Check if bootloader should be entered instead of main application
+    powerctrl_check_enter_bootloader();
+
     // Enable caches and prefetch buffers
 
     #if defined(STM32F4)
@@ -404,6 +415,8 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     #endif
+
+    mpu_init();
 
     #if __CORTEX_M >= 0x03
     // Set the priority grouping
@@ -645,7 +658,14 @@ soft_reset:
     #if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, 0, NULL, NULL);
+        #if MICROPY_HW_USB_MSC
+        const uint16_t pid = USBD_PID_CDC_MSC;
+        const uint8_t mode = USBD_MODE_CDC_MSC;
+        #else
+        const uint16_t pid = USBD_PID_CDC;
+        const uint8_t mode = USBD_MODE_CDC;
+        #endif
+        pyb_usb_dev_init(pyb_usb_dev_detect(), USBD_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
 

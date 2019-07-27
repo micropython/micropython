@@ -17,7 +17,7 @@
 
 MEMORY
 {
-    FLASH_APP (rx)  : ORIGIN = 0x08020000, LENGTH = 2016K   /* sectors 1-11 3x32K 1*128K 7*256K */
+    FLASH_APP (rx)  : ORIGIN = 0x08020000, LENGTH = 1920K   /* sectors 4-11 1*128K 7*256K */
     FLASH_QSPI (rx) : ORIGIN = 0x90000000, LENGTH = 64M     /* external QSPI flash in XIP mode */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
     RAM (xrw)       : ORIGIN = 0x20020000, LENGTH = 384K    /* SRAM1 = 368K, SRAM2 = 16K */
@@ -29,7 +29,7 @@ _minimum_heap_size = 16K;
 
 /* Define the stack.  The stack is full descending so begins just above last byte
    of RAM.  Note that EABI requires the stack to be 8-byte aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
+_estack = ORIGIN(RAM) + LENGTH(RAM) - _estack_reserve;
 _sstack = _estack - 32K; /* tunable */
 
 /* RAM extents for the garbage collector */

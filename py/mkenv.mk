@@ -44,7 +44,7 @@ MKDIR = mkdir
 SED = sed
 CAT = cat
 TOUCH = touch
-PYTHON = python2
+PYTHON = python3
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc

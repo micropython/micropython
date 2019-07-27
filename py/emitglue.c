@@ -88,7 +88,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 #endif
 }
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t prelude_offset,

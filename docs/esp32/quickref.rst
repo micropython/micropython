@@ -303,13 +303,21 @@ Hardware SPI has the same methods as Software SPI above::
 I2C bus
 -------
 
-The I2C driver is implemented in software and works on all pins,
-and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
+The I2C driver has both software and hardware implementations, and the two
+hardware peripherals have identifiers 0 and 1.  Any available output-capable
+pins can be used for SCL and SDA.  The driver is accessed via the
+:ref:`machine.I2C <machine.I2C>` class::
 
     from machine import Pin, I2C
 
-    # construct an I2C bus
+    # construct a software I2C bus
     i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
+
+    # construct a hardware I2C bus
+    i2c = I2C(0)
+    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
+
+    i2c.scan()              # scan for slave devices
 
     i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
     i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a

@@ -32,6 +32,7 @@
 #include "user_interface.h"
 #include "ets_alt_task.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
 
@@ -54,6 +55,14 @@ void mp_hal_delay_us(uint32_t us) {
     while (system_get_time() - start < us) {
         ets_event_poll();
     }
+}
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
