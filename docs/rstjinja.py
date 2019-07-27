@@ -10,7 +10,7 @@ def rstjinja(app, docname, source):
         return
 
     # we only want our one jinja template to run through this func
-    if "shared-bindings/index" not in docname:
+    if "shared-bindings/support_matrix" not in docname:
         return
 
     src = source[0]

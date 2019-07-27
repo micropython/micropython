@@ -14,18 +14,7 @@ Modules
     :glob:
     :maxdepth: 3
 
+    support_matrix
     */__init__
     help
-
 .. _module-support-matrix:
-
-Support Matrix
----------------
-
-=================  ==============================
-Module             Not Available On
-=================  ==============================
-{%- for key, value in support_matrix|dictsort %}
-{{ value.name.ljust(18) }} {{ value.excluded|join(", ") }}{{ '\n'|e }}
-{%- endfor %}
-=================  ==============================
