@@ -32,7 +32,8 @@ master_doc = 'docs/index'
 # Grab the JSON values to use while building the module support matrix
 # in 'shared-bindings/index.rst'
 
-modules_support_matrix = shared_bindings_matrix.support_matrix()
+#modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
+modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 
 html_context = {
     'support_matrix': modules_support_matrix
