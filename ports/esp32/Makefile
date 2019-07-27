@@ -7,7 +7,7 @@ MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
-MICROPY_PY_LVGL = 1
+MICROPY_PY_ESPIFD = 1
 
 #FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
@@ -220,7 +220,7 @@ LIB_SRC_C += \
 	lib/oofatfs/ffunicode.c
 endif
 
-ifeq ($(MICROPY_PY_LVGL), 1)
+ifeq ($(MICROPY_PY_ESPIFD), 1)
 
 #esp-idf generated module
 ESPIDFMOD_SOURCE = $(TOP)/lib/lv_bindings/driver/esp32/espidf.h
