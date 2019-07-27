@@ -233,7 +233,7 @@ def support_matrix_by_board():
                 if base_with_exclusions[module]["excluded"]:
                     for port in base_with_exclusions[module]["excluded"].values():
                         #print(port)
-                        if board_name in port:
+                        if entry.name in port:
                             board_has_module = False
 
                 if board_has_module:
