@@ -50,7 +50,7 @@ def parse_port_config(contents, chip_keyword=None):
                 if check_ifeq:
                     ifeq_found = True
                     chip_fam = check_ifeq.group(1)
-                    print("found chip:", chip_fam)
+                    #print("found chip:", chip_fam)
                 else:
                     ifeq_found = False
                     chip_fam = "all"
@@ -217,17 +217,28 @@ def support_matrix_by_board():
             if not entry.is_dir():
                 continue
             board_modules = []
+
+            board_name = entry.name
+            board_contents = ""
+            with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
+                board_contents = get_name.read()
+            board_name_re = re.search("(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
+                                      board_contents)
+            if board_name_re:
+                board_name = board_name_re.group(1).strip('"')
+
             for module in base_with_exclusions.keys():
                 #print(module)
                 board_has_module = True
                 if base_with_exclusions[module]["excluded"]:
                     for port in base_with_exclusions[module]["excluded"].values():
                         #print(port)
-                        if entry.name in port:
+                        if board_name in port:
                             board_has_module = False
 
                 if board_has_module:
                     board_modules.append(base_with_exclusions[module]["name"])
-            boards[entry.name] = sorted(board_modules)
+            boards[board_name] = sorted(board_modules)
 
+    #print(json.dumps(boards, indent=2))
     return boards
