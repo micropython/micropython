@@ -3,7 +3,7 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-#define MICROPY_HW_LED_STATUS   (&pin_PA21)
+#define MICROPY_HW_LED_STATUS   (&pin_PB22)
 
 // Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
@@ -32,9 +32,9 @@
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 
-#define DEFAULT_SPI_BUS_SCK (&pin_PB11)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PB10)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB08)
+#define DEFAULT_SPI_BUS_SCK (&pin_PB10)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PB08)
+#define DEFAULT_SPI_BUS_MISO (&pin_PB11)
 
 #define DEFAULT_UART_BUS_RX (&pin_PB03)
 #define DEFAULT_UART_BUS_TX (&pin_PB02)
