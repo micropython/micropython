@@ -1,7 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Robo HAT MM1"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-#define MICROPY_HW_LED_STATUS   (&pin_PA21)
+#define MICROPY_HW_LED_STATUS   (&pin_PB22)
 
 // Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
@@ -24,7 +24,6 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-//#define BOARD_HAS_CRYSTAL 0
 #define CALIBRATE_CRYSTALLESS 1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
@@ -40,7 +39,4 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
-
-//#define CIRCUITPY_I2CSLAVE
-//#define CIRCUITPY_DISPLAYIO (0)
 
