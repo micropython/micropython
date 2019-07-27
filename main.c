@@ -45,7 +45,6 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
-#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -57,6 +56,10 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
@@ -187,7 +190,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     supervisor_move_memory();
 
     reset_port();
+    #if CIRCUITPY_BOARD
     reset_board_busses();
+    #endif
     reset_board();
     reset_status_led();
 }

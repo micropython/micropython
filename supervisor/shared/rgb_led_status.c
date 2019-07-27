@@ -50,9 +50,27 @@ busio_spi_obj_t status_apa102;
 #endif
 #endif
 
-#if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+#if defined(CP_RGB_STATUS_R) || defined(CP_RGB_STATUS_G) || defined(CP_RGB_STATUS_B)
+#define CP_RGB_STATUS_LED
+
+#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
+
+pulseio_pwmout_obj_t rgb_status_r;
+pulseio_pwmout_obj_t rgb_status_g;
+pulseio_pwmout_obj_t rgb_status_b;
+
+uint8_t rgb_status_brightness = 0xFF;
+
+uint16_t status_rgb_color[3] = {
+    0 /* red */, 0 /* green */, 0 /* blue */
+};
+#endif
+
+#if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
 static uint32_t current_status_color = 0;
 #endif
+
 
 void rgb_led_status_init() {
     #ifdef MICROPY_HW_NEOPIXEL
@@ -93,7 +111,34 @@ void rgb_led_status_init() {
         #endif
     #endif
 
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+
+    #if defined(CP_RGB_STATUS_LED)
+    if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_R)) {
+        pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CP_RGB_STATUS_R, 0, 50000, false);
+
+        if (PWMOUT_OK == red_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
+        }
+    }
+    
+    if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_G)) {
+        pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CP_RGB_STATUS_G, 0, 50000, false);
+
+        if (PWMOUT_OK == green_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
+        }
+    }
+
+    if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_B)) {
+        pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CP_RGB_STATUS_B, 0, 50000, false);
+
+        if (PWMOUT_OK == blue_result) {
+            common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+        }
+    }
+    #endif
+
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     // Force a write of the current status color.
     uint32_t rgb = current_status_color;
     current_status_color = 0x1000000; // Not a valid color
@@ -109,10 +154,13 @@ void reset_status_led() {
         reset_pin_number(MICROPY_HW_APA102_MOSI->number);
         reset_pin_number(MICROPY_HW_APA102_SCK->number);
     #endif
+    #if defined(CP_RGB_STATUS_LED)
+        // TODO: Support sharing status LED with user.
+    #endif
 }
 
 void new_status_color(uint32_t rgb) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     if (current_status_color == rgb) {
         return;
     }
@@ -143,10 +191,30 @@ void new_status_color(uint32_t rgb) {
         common_hal_busio_spi_write(&status_apa102, status_apa102_color, 8);
         #endif
     #endif
+
+    #if defined(CP_RGB_STATUS_LED)
+        uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
+        uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
+        uint8_t blue_u8 = rgb_adjusted & 0xFF;
+
+	#if defined(CP_RGB_STATUS_INVERTED_PWM)
+        status_rgb_color[0] = (1 << 16) - 1 - ((uint16_t) (red_u8 << 8) + red_u8);
+        status_rgb_color[1] = (1 << 16) - 1 - ((uint16_t) (green_u8 << 8) + green_u8);
+        status_rgb_color[2] = (1 << 16) - 1 - ((uint16_t) (blue_u8 << 8) + blue_u8);
+    #else
+        status_rgb_color[0] = (uint16_t) (red_u8 << 8) + red_u8;
+        status_rgb_color[1] = (uint16_t) (green_u8 << 8) + green_u8;
+        status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
+	#endif
+
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+    #endif
 }
 
 void temp_status_color(uint32_t rgb) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
       uint32_t rgb_adjusted = rgb;
       rgb_adjusted = color_brightness(rgb, rgb_status_brightness);
     #endif
@@ -168,6 +236,27 @@ void temp_status_color(uint32_t rgb) {
         common_hal_busio_spi_write(&status_apa102, colors, 12);
         #endif
     #endif
+    #if defined(CP_RGB_STATUS_LED)
+        uint8_t red_u8 = (rgb_adjusted >> 16) & 0xFF;
+        uint8_t green_u8 = (rgb_adjusted >> 8) & 0xFF;
+        uint8_t blue_u8 = rgb_adjusted & 0xFF;
+ 
+        uint16_t temp_status_color_rgb[3] = {0};
+		
+	#if defined(CP_RGB_STATUS_INVERTED_PWM)
+        temp_status_color_rgb[0] = (1 << 16) - 1 - ((uint16_t) (red_u8 << 8) + red_u8);
+        temp_status_color_rgb[1] = (1 << 16) - 1 - ((uint16_t) (green_u8 << 8) + green_u8);
+        temp_status_color_rgb[2] = (1 << 16) - 1 - ((uint16_t) (blue_u8 << 8) + blue_u8);
+	#else
+        temp_status_color_rgb[0] = (uint16_t) (red_u8 << 8) + red_u8;
+        temp_status_color_rgb[1] = (uint16_t) (green_u8 << 8) + green_u8;
+        temp_status_color_rgb[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
+    #endif
+
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
+    #endif
 }
 
 void clear_temp_status() {
@@ -181,10 +270,30 @@ void clear_temp_status() {
         common_hal_busio_spi_write(&status_apa102, status_apa102_color, 8);
         #endif
     #endif
+    #if defined(CP_RGB_STATUS_LED)
+
+	uint16_t red = 0;
+	uint16_t green = 0;
+	uint16_t blue = 0;
+
+	#if defined(CP_RGB_STATUS_INVERTED_PWM)
+		red = (1 << 16) - 1 - status_rgb_color[0];
+		green = (1 << 16) - 1 - status_rgb_color[1];
+		blue = (1 << 16) - 1 - status_rgb_color[2];
+	#else
+		red = status_rgb_color[0];
+		green = status_rgb_color[1];
+		blue = status_rgb_color[2];
+	#endif
+
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, red);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, green);
+        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, blue);
+    #endif
 }
 
 uint32_t color_brightness(uint32_t color, uint8_t brightness) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t result = ((color & 0xff0000) * brightness / 255) & 0xff0000;
     result += ((color & 0xff00) * brightness / 255) & 0xff00;
     result += ((color & 0xff) * brightness / 255) & 0xff;
@@ -195,7 +304,7 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 }
 
 void set_rgb_status_brightness(uint8_t level){
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     rgb_status_brightness = level;
     uint32_t current_color = current_status_color;
     // Temporarily change the current color global to force the new_status_color call to update the
@@ -210,7 +319,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
                                bool found_main,
                                safe_mode_t safe_mode,
                                rgb_status_animation_t* status) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     new_status_color(ALL_DONE);
     status->pattern_start = ticks_ms;
     status->safe_mode = safe_mode;
@@ -256,7 +365,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
 }
 
 void tick_rgb_status_animation(rgb_status_animation_t* status) {
-    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t tick_diff = ticks_ms - status->pattern_start;
     if (status->ok) {
         // All is good. Ramp ALL_DONE up and down.

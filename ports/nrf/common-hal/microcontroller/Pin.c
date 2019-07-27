@@ -105,7 +105,7 @@ void reset_pin_number(uint8_t pin_number) {
     #ifdef SPEAKER_ENABLE_PIN
     if (pin_number == SPEAKER_ENABLE_PIN->number) {
         speaker_enable_in_use = false;
-        common_hal_digitalio_digitalinout_switch_to_output(
+        common_hal_digitalio_digitalinout_switch_to_output(SPEAKER_ENABLE_PIN, true, DRIVE_MODE_PUSH_PULL);
         nrf_gpio_pin_dir_set(pin_number, NRF_GPIO_PIN_DIR_OUTPUT);
         nrf_gpio_pin_write(pin_number, false);
     }

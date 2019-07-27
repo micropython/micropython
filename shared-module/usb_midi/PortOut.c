@@ -33,5 +33,5 @@ size_t common_hal_usb_midi_portout_write(usb_midi_portout_obj_t *self, const uin
 }
 
 bool common_hal_usb_midi_portout_ready_to_tx(usb_midi_portout_obj_t *self) {
-    return tud_midi_connected();
+    return tud_midi_mounted();
 }

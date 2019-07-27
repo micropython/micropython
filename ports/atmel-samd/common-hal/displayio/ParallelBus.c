@@ -31,6 +31,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "tick.h"
 
@@ -66,10 +67,6 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
-    self->reset.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->reset, reset);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
-
     self->write.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&self->write, write);
     common_hal_digitalio_digitalinout_switch_to_output(&self->write, true, DRIVE_MODE_PUSH_PULL);
@@ -82,11 +79,21 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     self->write_group = &PORT->Group[write->number / 32];
     self->write_mask = 1 << (write->number % 32);
 
+    if (reset != NULL) {
+        self->reset.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->reset, reset);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
+        never_reset_pin_number(reset->number);
+
+        common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+        common_hal_mcu_delay_us(4);
+        common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    }
+
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
     never_reset_pin_number(write->number);
     never_reset_pin_number(read->number);
-    never_reset_pin_number(reset->number);
     for (uint8_t i = 0; i < 8; i++) {
         never_reset_pin_number(data_pin + i);
     }

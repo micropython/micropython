@@ -55,7 +55,7 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint8_t receiver_buffer_size) {
+        uint16_t receiver_buffer_size) {
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
     uint32_t rx_pinmux = 0;
@@ -88,11 +88,19 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
             potential_sercom = sercom_insts[sercom_index];
-            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+#ifdef SAMD21
+	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0 ||
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
+#endif
+#ifdef SAMD51
+	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+                !(tx->sercom[i].pad == 0)) {
+                continue;
+            }
+#endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
             if (rx == mp_const_none) {

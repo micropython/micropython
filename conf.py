@@ -98,6 +98,7 @@ version = release = '0.0.0'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
+                    ".git",
                     ".venv",
                     ".direnv",
                     "docs/README.md",
@@ -135,6 +136,10 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
+                    "ports/stm32f4/stm32f4",
+                    "ports/stm32f4/peripherals",
+                    "ports/stm32f4/ref",
+                    "ports/stm32f4/README.md",
                     "ports/pic16bit",
                     "ports/qemu-arm",
                     "ports/stm32",

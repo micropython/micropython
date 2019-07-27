@@ -32,6 +32,7 @@
 
 #include "py/obj.h"
 #include "shared-module/displayio/area.h"
+#include "shared-module/displayio/Palette.h"
 
 typedef struct {
     mp_obj_t native;
@@ -54,7 +55,7 @@ typedef struct {
 
 void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
 bool displayio_group_get_previous_area(displayio_group_t *group, displayio_area_t* area);
-bool displayio_group_fill_area(displayio_group_t *group, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
+bool displayio_group_fill_area(displayio_group_t *group, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
 void displayio_group_update_transform(displayio_group_t *group, const displayio_buffer_transform_t* parent_transform);
 void displayio_group_finish_refresh(displayio_group_t *self);
 displayio_area_t* displayio_group_get_refresh_areas(displayio_group_t *self, displayio_area_t* tail);

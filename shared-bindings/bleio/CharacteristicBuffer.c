@@ -49,10 +49,13 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|
 //| .. class:: CharacteristicBuffer(characteristic, *, timeout=1, buffer_size=64)
 //|
-//|   Create a new Characteristic object identified by the specified UUID.
+//|   Monitor the given Characteristic. Each time a new value is written to the Characteristic
+//|   add the newly-written bytes to a FIFO buffer.
 //|
-//|   :param bleio.Characteristic characteristic: The characteristic to monitor
-//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.//|
+//|   :param bleio.Characteristic characteristic: The Characteristic to monitor.
+//|     It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
+//|     in a remote Service that a Central has connected to.
+//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
 //|   :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
 //|     Must be >= 1.
 //|
@@ -85,9 +88,8 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
     self->base.type = &bleio_characteristic_buffer_type;
-    self->characteristic = MP_OBJ_TO_PTR(characteristic);
 
-    common_hal_bleio_characteristic_buffer_construct(self, self->characteristic, timeout, buffer_size);
+    common_hal_bleio_characteristic_buffer_construct(self, MP_OBJ_TO_PTR(characteristic), timeout, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }

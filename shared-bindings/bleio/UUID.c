@@ -3,9 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,10 @@
 //|
 //|   - an `int` value in range 0 to 0xFFFF (Bluetooth SIG 16-bit UUID)
 //|   - a buffer object (bytearray, bytes) of 16 bytes in little-endian order (128-bit UUID)
+//|   - a string of hex digits of the form 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+//|
+//|   Creating a 128-bit UUID registers the UUID with the onboard BLE software, and provides a
+//|   temporary 16-bit UUID that can be used in place of the full 128-bit UUID.
 //|
 //|   :param value: The uuid value to encapsulate
 //|   :type value: int or typing.ByteString
@@ -64,7 +68,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, co
     if (MP_OBJ_IS_INT(value)) {
         mp_int_t uuid16 = mp_obj_get_int(value);
         if (uuid16 < 0 || uuid16 > 0xffff) {
-            mp_raise_ValueError(translate("UUID integer value not in range 0 to 0xffff"));
+            mp_raise_ValueError(translate("UUID integer value must be 0-0xffff"));
         }
 
         // NULL means no 128-bit value.
@@ -219,6 +223,12 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
+//|
+
+//|   .. method:: __eq__(other)
+//|
+//|     Two UUID objects are equal if their values match and they are both 128-bit or both 16-bit.
+//|
 STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         // Two UUID's are equal if their uuid16 values and uuid128 references match.

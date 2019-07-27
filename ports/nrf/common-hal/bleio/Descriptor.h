@@ -3,8 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +30,13 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_DESCRIPTOR_H
 
 #include "py/obj.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {
     mp_obj_base_t base;
     uint16_t handle;
+    bleio_characteristic_obj_t *characteristic;
     bleio_uuid_obj_t *uuid;
 } bleio_descriptor_obj_t;
 
