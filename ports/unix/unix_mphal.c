@@ -141,16 +141,15 @@ static int call_dupterm_read(size_t idx) {
 }
 #endif
 
-static bool inputAvailable()
-{
+static bool inputAvailable(void) {
     struct timeval tv;
     fd_set fds;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(STDIN_FILENO, &fds);
-    select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
-    return (FD_ISSET(0, &fds));
+    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+    return FD_ISSET(0, &fds);
 }
 
 int mp_hal_stdin_rx_chr(void) {
