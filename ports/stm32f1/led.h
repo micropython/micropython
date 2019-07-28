@@ -27,10 +27,10 @@
 #define MICROPY_INCLUDED_STM32_LED_H
 
 typedef enum {
-    PYB_LED_RED = 1,
-    PYB_LED_GREEN = 2,
-    PYB_LED_YELLOW = 3,
-    PYB_LED_BLUE = 4,
+	PYB_LED1 = 1,
+	PYB_LED2 = 2,
+	PYB_LED3 = 3,
+	PYB_LED4 = 4,
 } pyb_led_t;
 
 void led_init(void);

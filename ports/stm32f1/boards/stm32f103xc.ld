@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32F103RC
+    GNU linker script for STM32F103xC
 */
 
 /* Specify the memory areas */

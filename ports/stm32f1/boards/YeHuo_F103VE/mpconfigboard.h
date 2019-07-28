@@ -1,7 +1,7 @@
-#define QiMing_F103RC
+#define YeHuo_F103VE
 
-#define MICROPY_HW_BOARD_NAME       "QiMing STM32F103RC"
-#define MICROPY_HW_MCU_NAME         "STM32F103RC"
+#define MICROPY_HW_BOARD_NAME       "YeHuo STM32F103VE"
+#define MICROPY_HW_MCU_NAME         "STM32F103VE"
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_VFS_FAT             (0)
@@ -13,7 +13,7 @@
 #define MICROPY_HW_ENABLE_USB       (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_DAC       (0)
+#define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_USB_FS           (0)
 
 // HSE is 8MHz
@@ -28,17 +28,17 @@
 // #define MICROPY_HW_RTC_USE_CALOUT   (1)  // turn on/off PC13 512Hz output
 
 // --------------------------------------------------------------
-// USART1
-#define MICROPY_HW_UART1_TX     (pin_A9)   // [PA9/PA10,PB6/PB7]
+// USART1 use to auto download with hardware
+#define MICROPY_HW_UART1_TX     (pin_A9)
 #define MICROPY_HW_UART1_RX     (pin_A10)
 
 // USART2
 // #define MICROPY_HW_UART2_TX     (pin_A2)  // PA2
 // #define MICROPY_HW_UART2_RX     (pin_A3)  // PA3
 
-// USART3
-// #define MICROPY_HW_UART3_TX     (pin_B10)  // PB10,PC10
-// #define MICROPY_HW_UART3_RX     (pin_B11)  // PB11,PC11
+// USART3 for esp8266
+#define MICROPY_HW_UART3_TX     (pin_B10)  // PB10,PC10
+#define MICROPY_HW_UART3_RX     (pin_B11)  // PB11,PC11
 
 // UART4
 // #define MICROPY_HW_UART4_TX     (pin_C10)  // PC10,PA0
@@ -77,18 +77,19 @@
 // DAC_OUT1 PA4
 // DAC_OUT2 PA5
 
-// KEY0 has no pullup or pulldown, and pressing the switch makes the input go low
-// #define MICROPY_HW_USRSW_PIN        (pin_C12)
+// KEY0 has pullup, and pressing the switch makes the input go low
+// #define MICROPY_HW_USRSW_PIN        (pin_C13)
 // #define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
 // #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
 // #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // KEY1 - no support for multiple user buttons, yet
-// pin_E3
+// pin_A0
 
 // LEDs
-#define MICROPY_HW_LED1             (pin_A1)  // Yellow LED D1
-#define MICROPY_HW_LED2             (pin_C13) // Yellow LED D2
-// Yellow LED D3 is the power LED and always on
+#define MICROPY_HW_LED1             (pin_B0)  // Green LED D1
+#define MICROPY_HW_LED2             (pin_B1)  // Blue  LED D2
+#define MICROPY_HW_LED3             (pin_B5)  // Red   LED D3
+
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))

@@ -25,7 +25,7 @@ git clone https://github.com/lonphy/QiMing_F103RC.git
 * Connect the board via USB
 
 ```
-cd micropython/ports/stm32
+cd micropython/ports/stm32f1
 make BOARD=QiMing_F103RC
 make BOARD=QiMing_F103RC deploy
 ```

@@ -43,7 +43,7 @@ int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
         case BDEV_IOCTL_IRQ_HANDLER:
             if ((bdev->spiflash.flags & 1) && HAL_GetTick() - bdev->flash_tick_counter_last_write >= 1000) {
                 mp_spiflash_cache_flush(&bdev->spiflash);
-                led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
+                led_state(PYB_LED1, 0); // indicate a clean cache with LED off
             }
             return 0;
 
@@ -51,7 +51,7 @@ int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
             if (bdev->spiflash.flags & 1) {
                 uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
                 mp_spiflash_cache_flush(&bdev->spiflash);
-                led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
+                led_state(PYB_LED1, 0); // indicate a clean cache with LED off
                 restore_irq_pri(basepri);
             }
             return 0;
@@ -71,7 +71,7 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
     uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
     int ret = mp_spiflash_cached_write(&bdev->spiflash, block_num * FLASH_BLOCK_SIZE, num_blocks * FLASH_BLOCK_SIZE, src);
     if (bdev->spiflash.flags & 1) {
-        led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
+        led_state(PYB_LED1, 1); // indicate a dirty cache with LED on
         bdev->flash_tick_counter_last_write = HAL_GetTick();
     }
     restore_irq_pri(basepri);
