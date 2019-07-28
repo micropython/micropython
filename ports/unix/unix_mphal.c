@@ -141,7 +141,7 @@ static int call_dupterm_read(size_t idx) {
 }
 #endif
 
-static bool inputAvailable(void) {
+static bool input_available(void) {
     struct timeval tv;
     fd_set fds;
     tv.tv_sec = 0;
@@ -171,7 +171,7 @@ int mp_hal_stdin_rx_chr(void) {
     } else {
         main_term:;
 #endif
-        while (!inputAvailable())
+        while (!input_available())
         {
             mp_handle_pending();
             usleep(1);
