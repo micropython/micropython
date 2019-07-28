@@ -55,14 +55,7 @@ SRC_C = \
 	mphalport.c \
 	modutime.c \
 
-#force preprocessor env to be created before qstr extraction
-ifdef EMSCRIPTEN
-	SRC_QSTR += $(BUILD)/clang_predefs.h
-endif
-
 SRC_QSTR += $(SRC_C)
-
-
 
 OBJ = 
 OBJ = $(PY_O) 
