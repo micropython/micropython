@@ -74,7 +74,7 @@ JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
 JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" 
 
 $(BUILD)/clang_predefs.h:
-        $(Q)mkdir -p $@
+        $(Q)mkdir -p $(dir $@)
 	$(Q)emcc $(CFLAGS) $(CFLAGS_EXTRA) $(JSFLAGS) -E -x c /dev/null -dM > $@
 
 # Create `clang_predefs.h` as soon as possible, using a Makefile trick
