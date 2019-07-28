@@ -1,7 +1,7 @@
 LD_FILE = boards/samd21x18-bootloader-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x8023
-USB_PRODUCT = "SnekBoard"
+USB_PRODUCT = "snekboard"
 USB_MANUFACTURER = "keithp.com"
 
 CHIP_VARIANT = SAMD21G18A
