@@ -40,7 +40,7 @@
 #include "can.h"
 #include "irq.h"
 
-#if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN && !MICROPY_HW_ENABLE_USB
 
 #define MASK16 (0)
 #define LIST16 (1)
@@ -1072,4 +1072,4 @@ const mp_obj_type_t pyb_can_type = {
     .locals_dict = (mp_obj_dict_t*)&pyb_can_locals_dict,
 };
 
-#endif // MICROPY_HW_ENABLE_CAN
+#endif // MICROPY_HW_ENABLE_CAN && !MICROPY_HW_ENABLE_USB

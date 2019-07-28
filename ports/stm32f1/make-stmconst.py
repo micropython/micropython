@@ -231,7 +231,6 @@ def main():
         'TIM',
         'USART',
         'WWDG',
-        'RNG',
         ):
         if reg in reg_defs:
             print_regs(reg, reg_defs[reg], needed_qstrs, needed_mpzs)

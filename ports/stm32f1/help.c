@@ -48,7 +48,6 @@ const char stm32_help_text[] =
 "  pyb.DAC(port) -- make a DAC object\n"
 "                   DAC methods: triangle(freq), write(n), write_timed(buf, freq)\n"
 "  pyb.RTC()     -- make an RTC object; methods: datetime([val])\n"
-"  pyb.rng()     -- get a 30-bit hardware random number\n"
 "  pyb.Servo(n)  -- create Servo object for servo n (n=1,2,3,4)\n"
 "                   Servo methods: calibration(..), angle([x, [t]]), speed([x, [t]])\n"
 "  pyb.Accel()   -- create an Accelerometer object\n"

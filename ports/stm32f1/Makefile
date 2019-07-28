@@ -242,6 +242,7 @@ SRC_C = \
 	modutime.c \
 	extint.c \
 	usrsw.c \
+	rng.c \
 	rtc.c \
 	flash.c \
 	flashbdev.c \

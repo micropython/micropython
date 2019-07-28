@@ -29,22 +29,6 @@
 #include "rng.h"
 #include "mbedtls_config.h"
 
-#define DEBUG (0)
-
-#if DEBUG
-static size_t count_links(uint32_t *nb) {
-    void **p = MP_STATE_PORT(mbedtls_memory);
-    size_t n = 0;
-    *nb = 0;
-    while (p != NULL) {
-        ++n;
-        *nb += gc_nbytes(p);
-        p = (void**)p[1];
-    }
-    return n;
-}
-#endif
-
 void *m_calloc_mbedtls(size_t nmemb, size_t size) {
     void **ptr = m_malloc0(nmemb * size + 2 * sizeof(uintptr_t));
     #if DEBUG

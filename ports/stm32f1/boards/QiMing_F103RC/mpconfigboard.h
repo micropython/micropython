@@ -3,27 +3,24 @@
 #define MICROPY_HW_BOARD_NAME       "QiMing STM32F103RC"
 #define MICROPY_HW_MCU_NAME         "STM32F103RC"
 
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_VFS_FAT             (0)
 #define MICROPY_HW_ENABLE_STORAGE   (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_ENABLE_USB       (0)
-
-#define MICROPY_HW_HAS_SWITCH       (1)		// has 2 buttons KEY0=PC12, KEY1=PD2
+#define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (0)
+#define MICROPY_HW_USB_FS           (0)
 
-
-// HSE is 8MHz, TODO: Clock need calc
+// HSE is 8MHz
 #define MICROPY_HW_CLK_USE_HSE (1)
 #define MICROPY_HW_SYSCLK_SRC  (RCC_SYSCLKSOURCE_PLLCLK)
 #define MICROPY_HW_HSE_PREDIV  (RCC_HSE_PREDIV_DIV1)
 #define MICROPY_HW_CLK_PLLMUL  (RCC_PLL_MUL9) // mul pull clock HSE(8MHz) / 1 * 9 = 72MHz
-
-// #define MICROPY_HW_FLASH_LATENCY FLASH_ACR_LATENCY_2
 
 // The board has a 32kHz crystal for the RTC
 #define MICROPY_HW_RTC_USE_LSE      (1)
@@ -95,8 +92,3 @@
 // Yellow LED D3 is the power LED and always on
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
-
-
-// USB config
-#define MICROPY_HW_USB_FS (0)
-

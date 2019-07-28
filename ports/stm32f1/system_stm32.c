@@ -207,7 +207,7 @@ void SystemInit(void)
   * Output clocks:
   *
   * CPU             SYSCLK      max 72MHz
-  * USB,RNG,SDIO    PLL48CK     must be 48MHz for USB
+  * USB,SDIO        PLL48CK     must be 48MHz for USB
   * AHB             HCLK        max 72MHz
   * APB1            PCLK1       max 36MHz
   * APB2            PCLK2       max 72MHz

@@ -1,24 +1,8 @@
-MicroPython port to STM32 MCUs
+MicroPython port to STM32F103xx MCUs
 ==============================
 
 This directory contains the port of MicroPython to ST's line of STM32
-microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7 and
-STM32L4.  Parts of the code here utilise the STM32Cube HAL library.
-
-The officially supported boards are the line of pyboards: PYBv1.0 and PYBv1.1
-(both with STM32F405), and PYBLITEv1.0 (with STM32F411).  See
-[micropython.org/pyboard](http://www.micropython.org/pyboard/) for further
-details.
-
-Other boards that are supported include ST Discovery and Nucleo boards.
-See the boards/ subdirectory, which contains the configuration files used
-to build each individual board.
-
-The STM32H7 series has preliminary support: there is a working REPL via
-USB and UART, as well as very basic peripheral support, but some things do
-not work and none of the advanced features of the STM32H7 are yet supported,
-such as the clock tree.  At this point the STM32H7 should be considered as a
-fast version of the STM32F7.
+microcontrollers. Parts of the code here utilise the STM32Cube HAL library.
 
 Build instructions
 ------------------
@@ -30,7 +14,7 @@ bytecode.  The cross-compiler is built and run on the host machine, using:
 $ make -C mpy-cross
 ```
 This command should be executed from the root directory of this repository.
-All other commands below should be executed from the ports/stm32/ directory.
+All other commands below should be executed from the ports/stm32f1/ directory.
 
 An ARM compiler is required for the build, along with the associated binary
 utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
@@ -42,73 +26,53 @@ when invoking `make`.
 
 To build for a given board, run:
 
-    $ make BOARD=PYBV11
+    $ make BOARD=QiMing_F103RC
 
 The default board is PYBV10 but any of the names of the subdirectories in the
 `boards/` directory can be passed as the argument to `BOARD=`.  The above command
-should produce binary images in the `build-PYBV11/` subdirectory (or the
+should produce binary images in the `build-QiMing_F103RC/` subdirectory (or the
 equivalent directory for the board specified).
 
-You must then get your board/microcontroller into DFU mode.  On the pyboard
+You must then get your board/microcontroller into DFU mode.  On the board
 connect the 3V3 pin to the P1/DFU pin with a wire (they are next to each
 other on the bottom left of the board, second row from the bottom) and then
 reset (by pressing the RST button) or power on the board.  Then flash the
 firmware using the command:
 
-    $ make BOARD=PYBV11 deploy
+    $ make BOARD=QiMing_F103RC deploy
 
 This will use the included `tools/pydfu.py` script.  You can use instead the
 `dfu-util` program (available [here](http://dfu-util.sourceforge.net/)) by
 passing `USE_PYDFU=0`:
 
-    $ make BOARD=PYBV11 USE_PYDFU=0 deploy
+    $ make BOARD=QiMing_F103RC USE_PYDFU=0 deploy
 
 If flashing the firmware does not work it may be because you don't have the
 correct permissions.  Try then:
 
-    $ sudo make BOARD=PYBV11 deploy
+    $ sudo make BOARD=QiMing_F103RC deploy
 
 Or using `dfu-util` directly:
 
-    $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV11/firmware.dfu
+    $ sudo dfu-util -a 0 -d 0483:df11 -D build-QiMing_F103RC/firmware.dfu
 
 
 ### Flashing the Firmware with stlink
 
-ST Discovery or Nucleo boards have a builtin programmer called ST-LINK. With
-these boards and using Linux or OS X, you have the option to upload the
-`stm32` firmware using the `st-flash` utility from the
-[stlink](https://github.com/texane/stlink) project. To do so, connect the board
-with a mini USB cable to its ST-LINK USB port and then use the make target
-`deploy-stlink`. For example, if you have the STM32F4DISCOVERY board, you can
-run:
-
-    $ make BOARD=STM32F4DISC deploy-stlink
-
-The `st-flash` program should detect the USB connection to the board
-automatically. If not, run `lsusb` to determine its USB bus and device number
-and set the `STLINK_DEVICE` environment variable accordingly, using the format
-`<USB_BUS>:<USB_ADDR>`. Example:
-
-    $ lsusb
-    [...]
-    Bus 002 Device 035: ID 0483:3748 STMicroelectronics ST-LINK/V2
-    $ export STLINK_DEVICE="002:0035"
-    $ make BOARD=STM32F4DISC deploy-stlink
-
+No Test.
 
 ### Flashing the Firmware with OpenOCD
 
-Another option to deploy the firmware on ST Discovery or Nucleo boards with a
+Another option to deploy the firmware on STM32F103xx boards with a
 ST-LINK interface uses [OpenOCD](http://openocd.org/). Connect the board with
 a mini USB cable to its ST-LINK USB port and then use the make target
-`deploy-openocd`. For example, if you have the STM32F4DISCOVERY board:
+`deploy-openocd`. For example, if you have the STM32F1DISCOVERY board:
 
-    $ make BOARD=STM32F4DISC deploy-openocd
+    $ make BOARD=QiMing_F103RC deploy-openocd
 
 The `openocd` program, which writes the firmware to the target board's flash,
-is configured via the file `ports/stm32/boards/openocd_stm32f4.cfg`. This
-configuration should work for all boards based on a STM32F4xx MCU with a
+is configured via the file `ports/stm32f1/boards/openocd_stm32f1.cfg`. This
+configuration should work for all boards based on a STM32F1xx MCU with a
 ST-LINKv2 interface. You can override the path to this configuration by setting
 `OPENOCD_CONFIG` in your Makefile or on the command line.
 
@@ -119,3 +83,7 @@ Once built and deployed, access the MicroPython REPL (the Python prompt) via USB
 serial or UART, depending on the board.  For the pyboard you can try:
 
     $ picocom /dev/ttyACM0
+
+On MacOS, you can try:
+
+	$ screen /dev/tty.xxxxx 115200

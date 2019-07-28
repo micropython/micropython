@@ -493,7 +493,7 @@ soft_reset:
     extint_init0();
     timer_init0();
 
-	#if MICROPY_HW_ENABLE_CAN
+	#if MICROPY_HW_ENABLE_CAN && !MICROPY_HW_ENABLE_USB
     can_init0();
 	#endif
 
@@ -627,7 +627,7 @@ soft_reset_exit:
     printf("MPY: soft reboot\n");
     timer_deinit();
     uart_deinit_all();
-	#if MICROPY_HW_ENABLE_CAN
+	#if MICROPY_HW_ENABLE_CAN && !MICROPY_HW_ENABLE_USB
     can_deinit();
 	#endif
     machine_deinit();
