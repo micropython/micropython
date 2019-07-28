@@ -11,6 +11,7 @@ except:
 NTP_DELTA = 3155673600
 
 host = "pool.ntp.org"
+timezone = 0
 
 def time():
     NTP_QUERY = bytearray(48)
@@ -24,10 +25,10 @@ def time():
     val = struct.unpack("!I", msg[40:44])[0]
     return val - NTP_DELTA
 
-# There's currently no timezone support in MicroPython, so
-# utime.localtime() will return UTC time (as if it was .gmtime())
+#Time zone is setted by timezone var, eq. for NY time zone
+#set ntptime.timezone to -4, or use 0 to return UTC time
 def settime():
-    t = time()
+    t = time() + timezone * 3600
     import machine
     import utime
     tm = utime.localtime(t)
