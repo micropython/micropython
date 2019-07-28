@@ -137,7 +137,8 @@
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_SYS_PLATFORM     "javascript"
 #define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_UCTYPES          (0)
+#define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)

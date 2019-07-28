@@ -19,7 +19,8 @@ INC += -I$(BUILD)
 
 BOTH_CFLAGS := -s WASM=0
 
-CPP = clang -E -undef
+CPP := clang -E -undef -include $(BUILD)/clang_predefs.h
+
 
 ifdef WASM_FILE_API
 	CPPFLAGS += -DWASM_FILE_API=1 
@@ -92,7 +93,8 @@ SRC_QSTR += $(BUILD)/clang_predefs.h $(SRC_C) $(LIB_SRC_C) dummy_header.h
 
 # Generate the proper predefined macros for Emscripten (and not the host)
 $(BUILD)/clang_predefs.h:
-	@emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
+	$(Q)mkdir -p $(dir $@)
+	$(Q)emcc $(JSFLAGS) -E -x c /dev/null -dM > $@
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
@@ -113,6 +115,10 @@ min: $(BUILD)/micropython.js
 test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
+
+# Build clang_predefs first
+
+Makefile: $(BUILD)/clang_predefs.h
 
 
 include $(TOP)/py/mkrules.mk
