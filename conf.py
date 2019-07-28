@@ -54,7 +54,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'rstjinja'
+    'rstjinja',
+    'c2rst'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -63,8 +64,7 @@ templates_path = ['templates']
 # The suffix of source filenames.
 source_suffix = ['.rst', '.md', '.c', '.h']
 
-source_parsers = {'.md': CommonMarkParser,
-                  '.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
+source_parsers = {'.md': CommonMarkParser}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
