@@ -17,4 +17,3 @@ Modules
     support_matrix
     */__init__
     help
-.. _module-support-matrix:

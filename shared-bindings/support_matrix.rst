@@ -1,3 +1,5 @@
+.. _module-support-matrix:
+
 Support Matrix
 ===============
 
