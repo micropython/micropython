@@ -24,6 +24,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_POWER_DISABLE), MP_ROM_PTR(&pin_PA03) },
 	{ MP_ROM_QSTR(MP_QSTR_POWER_ON), MP_ROM_PTR(&pin_PA27) },
 	{ MP_ROM_QSTR(MP_QSTR_POWER_ENABLE), MP_ROM_PTR(&pin_PA27) },
+	{ MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_PA27) },
 	
 	{ MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PB23) },
 	{ MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PB22) },
