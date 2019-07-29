@@ -31,6 +31,16 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA23) },
 	{ MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB02) },
 	{ MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB03) },
+	
+	// GROVE on SERCOM0
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_SCL), MP_ROM_PTR(&pin_PA09) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_SDA), MP_ROM_PTR(&pin_PA08) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_RX), MP_ROM_PTR(&pin_PA09) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_TX), MP_ROM_PTR(&pin_PA08) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_D1), MP_ROM_PTR(&pin_PA09) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_D0), MP_ROM_PTR(&pin_PA08) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_A1), MP_ROM_PTR(&pin_PA09) },
+	{ MP_ROM_QSTR(MP_QSTR_GROVE_A0), MP_ROM_PTR(&pin_PA08) },
 
 	// UART on SERCOM0
 	{ MP_ROM_QSTR(MP_QSTR_UART_TX), MP_ROM_PTR(&pin_PA04) },
@@ -69,7 +79,6 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_PI_TX), MP_ROM_PTR(&pin_PA16) },
 	{ MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_PA17) },
 	{ MP_ROM_QSTR(MP_QSTR_PI_RX), MP_ROM_PTR(&pin_PA17) },
-	
 	
 	{ MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
