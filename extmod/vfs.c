@@ -97,9 +97,15 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
+
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
-        *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
-            (const byte*)p_out, strlen(p_out));
+        const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
+        if (proto && proto->vfs_path) {
+          proto->vfs_path(MP_OBJ_TO_PTR(vfs->obj), p_out, path_out);
+        } else {
+          *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
+                                           (const byte *)p_out, strlen(p_out));
+        }
     }
     return vfs;
 }
@@ -132,6 +138,11 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     // If the mounted object has the VFS protocol, call its import_stat helper
     const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
     if (proto != NULL) {
+        if(proto->vfs_path) {
+          mp_obj_t vfs_path;
+          proto->vfs_path(MP_OBJ_TO_PTR(vfs->obj), path_out, &vfs_path);
+          path_out = mp_obj_str_get_str(vfs_path);
+        }
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
 
