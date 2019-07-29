@@ -34,7 +34,7 @@
 #endif
 
 #if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/AudioOut.h"
+#include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
 static bool running_background_tasks = false;

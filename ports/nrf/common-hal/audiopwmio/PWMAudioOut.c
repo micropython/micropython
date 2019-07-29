@@ -31,15 +31,15 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "common-hal/audiopwmio/AudioOut.h"
+#include "common-hal/audiopwmio/PWMAudioOut.h"
 #include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/audiopwmio/AudioOut.h"
+#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
-STATIC audiopwmio_audioout_obj_t* active_audio[4];
+STATIC audiopwmio_pwmaudioout_obj_t* active_audio[4];
 
 #define F_TARGET (62500)
 #define F_PWM (16000000)
@@ -63,7 +63,7 @@ STATIC uint32_t calculate_pwm_parameters(uint32_t sample_rate, uint32_t *top_out
     return multiplier - 1;
 }
 
-STATIC void activate_audiopwmout_obj(audiopwmio_audioout_obj_t *self) {
+STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if(!active_audio[i]) {
             active_audio[i] = self;
@@ -71,7 +71,7 @@ STATIC void activate_audiopwmout_obj(audiopwmio_audioout_obj_t *self) {
         }
     }
 }
-STATIC void deactivate_audiopwmout_obj(audiopwmio_audioout_obj_t *self) {
+STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if(active_audio[i] == self)
             active_audio[i] = NULL;
@@ -83,7 +83,7 @@ void audiopwmout_reset() {
         active_audio[i] = NULL;
 }
 
-STATIC void fill_buffers(audiopwmio_audioout_obj_t *self, int buf) {
+STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
     self->pwm->EVENTS_SEQSTARTED[1-buf] = 0;
     uint16_t *dev_buffer = self->buffers[buf];
     uint8_t *buffer;
@@ -92,7 +92,7 @@ STATIC void fill_buffers(audiopwmio_audioout_obj_t *self, int buf) {
         audiosample_get_buffer(self->sample, false, 0,
                                &buffer, &buffer_length);
     if (get_buffer_result == GET_BUFFER_ERROR) {
-        common_hal_audiopwmio_audioout_stop(self);
+        common_hal_audiopwmio_pwmaudioout_stop(self);
         return;
     }
     uint32_t num_samples = buffer_length / self->bytes_per_sample / self->spacing;
@@ -132,8 +132,8 @@ STATIC void fill_buffers(audiopwmio_audioout_obj_t *self, int buf) {
     }
 }
 
-STATIC void audiopwmout_background_obj(audiopwmio_audioout_obj_t *self) {
-    if(!common_hal_audiopwmio_audioout_get_playing(self))
+STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
+    if(!common_hal_audiopwmio_pwmaudioout_get_playing(self))
         return;
     if(self->loop && self->single_buffer) {
         self->pwm->LOOP = 0xffff;
@@ -156,7 +156,7 @@ void audiopwmout_background() {
     }
 }
 
-void common_hal_audiopwmio_audioout_construct(audiopwmio_audioout_obj_t* self,
+void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
     assert_pin_free(left_channel);
     assert_pin_free(right_channel);
@@ -188,12 +188,12 @@ void common_hal_audiopwmio_audioout_construct(audiopwmio_audioout_obj_t* self,
     // TODO: Ramp from 0 to quiescent value
 }
 
-bool common_hal_audiopwmio_audioout_deinited(audiopwmio_audioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_deinited(audiopwmio_pwmaudioout_obj_t* self) {
     return !self->pwm;
 }
 
-void common_hal_audiopwmio_audioout_deinit(audiopwmio_audioout_obj_t* self) {
-    if (common_hal_audiopwmio_audioout_deinited(self)) {
+void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self) {
+    if (common_hal_audiopwmio_pwmaudioout_deinited(self)) {
         return;
     }
     // TODO: ramp the pwm down from quiescent value to 0
@@ -216,9 +216,9 @@ void common_hal_audiopwmio_audioout_deinit(audiopwmio_audioout_obj_t* self) {
     self->buffers[1] = NULL;
 }
 
-void common_hal_audiopwmio_audioout_play(audiopwmio_audioout_obj_t* self, mp_obj_t sample, bool loop) {
-    if (common_hal_audiopwmio_audioout_get_playing(self)) {
-        common_hal_audiopwmio_audioout_stop(self);
+void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, mp_obj_t sample, bool loop) {
+    if (common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
+        common_hal_audiopwmio_pwmaudioout_stop(self);
     }
     self->sample = sample;
     self->loop = loop;
@@ -268,7 +268,7 @@ void common_hal_audiopwmio_audioout_play(audiopwmio_audioout_obj_t* self, mp_obj
     self->paused = false;
 }
 
-void common_hal_audiopwmio_audioout_stop(audiopwmio_audioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t* self) {
     deactivate_audiopwmout_obj(self);
     self->pwm->TASKS_STOP = 1;
     self->stopping = false;
@@ -281,7 +281,7 @@ void common_hal_audiopwmio_audioout_stop(audiopwmio_audioout_obj_t* self) {
     self->buffers[1] = NULL;
 }
 
-bool common_hal_audiopwmio_audioout_get_playing(audiopwmio_audioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t* self) {
     if(self->pwm->EVENTS_STOPPED) {
         self->playing = false;
         self->pwm->EVENTS_STOPPED = 0;
@@ -305,14 +305,14 @@ bool common_hal_audiopwmio_audioout_get_playing(audiopwmio_audioout_obj_t* self)
  * feels instant. (This also saves on memory, for long in-memory "single buffer"
  * samples!)
  */
-void common_hal_audiopwmio_audioout_pause(audiopwmio_audioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = true;
 }
 
-void common_hal_audiopwmio_audioout_resume(audiopwmio_audioout_obj_t* self) {
+void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = false;
 }
 
-bool common_hal_audiopwmio_audioout_get_paused(audiopwmio_audioout_obj_t* self) {
+bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t* self) {
     return self->paused;
 }

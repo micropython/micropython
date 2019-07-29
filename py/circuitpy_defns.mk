@@ -227,7 +227,7 @@ $(filter $(SRC_PATTERNS), \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
 	audiopwmio/__init__.c \
-	audiopwmio/AudioOut.c \
+	audiopwmio/PWMAudioOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	bleio/__init__.c \

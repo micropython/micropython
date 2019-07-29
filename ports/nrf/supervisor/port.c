@@ -51,7 +51,7 @@
 #include "shared-bindings/rtc/__init__.h"
 
 #ifdef CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/AudioOut.h"
+#include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
 static void power_warning_handler(void) {

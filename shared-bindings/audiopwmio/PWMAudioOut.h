@@ -27,23 +27,23 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOPWMIO_AUDIOOUT_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOPWMIO_AUDIOOUT_H
 
-#include "common-hal/audiopwmio/AudioOut.h"
+#include "common-hal/audiopwmio/PWMAudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/RawSample.h"
 
-extern const mp_obj_type_t audiopwmio_audioout_type;
+extern const mp_obj_type_t audiopwmio_pwmaudioout_type;
 
 // left_channel will always be non-NULL but right_channel may be for mono output.
-void common_hal_audiopwmio_audioout_construct(audiopwmio_audioout_obj_t* self,
+void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
     const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t default_value);
 
-void common_hal_audiopwmio_audioout_deinit(audiopwmio_audioout_obj_t* self);
-bool common_hal_audiopwmio_audioout_deinited(audiopwmio_audioout_obj_t* self);
-void common_hal_audiopwmio_audioout_play(audiopwmio_audioout_obj_t* self, mp_obj_t sample, bool loop);
-void common_hal_audiopwmio_audioout_stop(audiopwmio_audioout_obj_t* self);
-bool common_hal_audiopwmio_audioout_get_playing(audiopwmio_audioout_obj_t* self);
-void common_hal_audiopwmio_audioout_pause(audiopwmio_audioout_obj_t* self);
-void common_hal_audiopwmio_audioout_resume(audiopwmio_audioout_obj_t* self);
-bool common_hal_audiopwmio_audioout_get_paused(audiopwmio_audioout_obj_t* self);
+void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self);
+bool common_hal_audiopwmio_pwmaudioout_deinited(audiopwmio_pwmaudioout_obj_t* self);
+void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, mp_obj_t sample, bool loop);
+void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t* self);
+bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t* self);
+void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t* self);
+void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t* self);
+bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOPWMIO_AUDIOOUT_H

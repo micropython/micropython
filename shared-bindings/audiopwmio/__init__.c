@@ -31,7 +31,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiopwmio/__init__.h"
-#include "shared-bindings/audiopwmio/AudioOut.h"
+#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 
 //| :mod:`audiopwmio` --- Support for audio input and output
 //| ========================================================
@@ -60,7 +60,7 @@
 
 STATIC const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiopwmio) },
-    { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audiopwmio_audioout_type) },
+    { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audiopwmio_pwmaudioout_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(audiopwmio_module_globals, audiopwmio_module_globals_table);

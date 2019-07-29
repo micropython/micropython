@@ -50,7 +50,7 @@ typedef struct {
     bool loop;
     bool signed_to_unsigned;
     bool single_buffer;
-} audiopwmio_audioout_obj_t;
+} audiopwmio_pwmaudioout_obj_t;
 
 void audiopwmout_reset(void);
 
