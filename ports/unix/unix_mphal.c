@@ -171,8 +171,7 @@ int mp_hal_stdin_rx_chr(void) {
     } else {
         main_term:;
 #endif
-        while (!input_available())
-        {
+        while (!input_available()) {
             mp_handle_pending();
             usleep(1);
         }
