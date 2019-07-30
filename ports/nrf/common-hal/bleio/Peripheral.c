@@ -52,6 +52,19 @@
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
+static const ble_gap_sec_params_t pairing_sec_params = {
+    .bond = 0,  // TODO: add bonding
+    .mitm = 0,
+    .lesc = 0,
+    .keypress = 0,
+    .oob = 0,
+    .io_caps = BLE_GAP_IO_CAPS_NONE,
+    .min_key_size = 7,
+    .max_key_size = 16,
+    .kdist_own    = { .enc = 1, .id = 1},
+    .kdist_peer   = { .enc = 1, .id = 1},
+};
+
 STATIC void check_data_fit(size_t data_len) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
@@ -60,6 +73,9 @@ STATIC void check_data_fit(size_t data_len) {
 
 STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
+
+    // For debugging.
+    // mp_printf(&mp_plat_print, "Peripheral event: 0x%04x\n", ble_evt->header.evt_id);
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED: {
@@ -89,10 +105,6 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // Someday may handle timeouts or limit reached.
             break;
 
-        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
-            break;
-
         case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
             ble_gap_evt_conn_param_update_request_t *request =
                 &ble_evt->evt.gap_evt.params.conn_param_update_request;
@@ -113,6 +125,50 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
             break;
 
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+            sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &pairing_sec_params, NULL);
+            break;
+
+        case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
+            // TODO for LESC pairing:
+            // sd_ble_gap_lesc_dhkey_reply(...);
+            break;
+
+        case BLE_GAP_EVT_AUTH_STATUS: {
+            // Pairing process completed
+            ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
+            if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
+                mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
+                self->pair_status = PAIR_PAIRED;
+            } else {
+                mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
+                self->pair_status = PAIR_NOT_PAIRED;
+            }
+            break;
+        }
+
+        case BLE_GAP_EVT_CONN_SEC_UPDATE: {
+            ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+            mp_printf(&mp_plat_print, "sm: %d, lv: %d\n", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
+            if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
+                // Security setup did not succeed:
+                // mode 0, level 0 means no access
+                // mode 1, level 1 means open link
+                // mode >=1 and/or level >=1 means encryption is set up
+                self->pair_status = PAIR_NOT_PAIRED;
+                mp_printf(&mp_plat_print, "PAIR_NOT_PAIRED\n");
+            } else {
+                // TODO: see Bluefruit lib
+                // if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
+                //    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+                // }
+                self->pair_status = PAIR_PAIRED;
+                mp_printf(&mp_plat_print, "PAIR_PAIRED\n");
+            }
+            break;
+        }
+
+
         default:
             // For debugging.
             // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
@@ -130,6 +186,7 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
+    self->pair_status = PAIR_NOT_PAIRED;
 
     // Add all the services.
 
@@ -157,7 +214,7 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
 }
 
 
-mp_obj_list_t *common_hal_bleio_peripheral_get_services_list(bleio_peripheral_obj_t *self) {
+mp_obj_list_t *common_hal_bleio_peripheral_get_services(bleio_peripheral_obj_t *self) {
     return self->services_list;
 }
 
@@ -247,4 +304,26 @@ void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *self) 
 
 void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *self) {
     sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
+mp_obj_list_t *common_hal_bleio_peripheral_get_remote_services(bleio_peripheral_obj_t *self) {
+    return self->remote_services_list;
+}
+
+void common_hal_bleio_peripheral_pair(bleio_peripheral_obj_t *self) {
+    self->pair_status = PAIR_WAITING;
+
+    uint32_t err_code = sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params);
+
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to start pairing, error 0x%04x"), err_code);
+    }
+
+    while (self->pair_status == PAIR_WAITING) {
+        MICROPY_VM_HOOK_LOOP;
+    }
+
+    if (self->pair_status == PAIR_NOT_PAIRED) {
+        mp_raise_OSError_msg(translate("Failed to pair"));
+    }
 }

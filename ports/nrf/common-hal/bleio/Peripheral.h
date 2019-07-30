@@ -38,6 +38,12 @@
 #include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
+typedef enum {
+    PAIR_NOT_PAIRED,
+    PAIR_WAITING,
+    PAIR_PAIRED,
+} pair_status_t;
+
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t name;
@@ -52,7 +58,7 @@ typedef struct {
     uint8_t* advertising_data;
     uint8_t* scan_response_data;
     uint8_t adv_handle;
-
+    pair_status_t pair_status;
 } bleio_peripheral_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H

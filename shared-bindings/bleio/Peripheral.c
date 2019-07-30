@@ -159,7 +159,7 @@ const mp_obj_property_t bleio_peripheral_connected_obj = {
 STATIC mp_obj_t bleio_peripheral_get_services(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *services_list = common_hal_bleio_peripheral_get_services_list(self);
+    mp_obj_list_t *services_list = common_hal_bleio_peripheral_get_services(self);
     return mp_obj_new_tuple(services_list->len, services_list->items);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_services_obj, bleio_peripheral_get_services);
@@ -312,17 +312,53 @@ STATIC mp_obj_t bleio_peripheral_discover_remote_services(mp_uint_t n_args, cons
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_discover_remote_services_obj, 1, bleio_peripheral_discover_remote_services);
 
+//|   .. attribute:: remote_services (read-only)
+//|
+//|     A tuple of services provided by the remote central.
+//|     If discovery did not occur, an empty tuple will be returned.
+//|
+STATIC mp_obj_t bleio_peripheral_get_remote_services(mp_obj_t self_in) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // Return list as a tuple so user won't be able to change it.
+    mp_obj_list_t *service_list = common_hal_bleio_peripheral_get_remote_services(self);
+    return mp_obj_new_tuple(service_list->len, service_list->items);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_remote_services_obj, bleio_peripheral_get_remote_services);
+
+//|   .. method:: pair()
+//|
+//|     Request pairing with connected central.
+STATIC mp_obj_t bleio_peripheral_pair(mp_obj_t self_in) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_bleio_peripheral_pair(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_pair_obj, bleio_peripheral_pair);
+
+const mp_obj_property_t bleio_peripheral_remote_services_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_peripheral_get_remote_services_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
 STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_advertising),         MP_ROM_PTR(&bleio_peripheral_stop_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),               MP_ROM_PTR(&bleio_peripheral_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_discover_remote_services), MP_ROM_PTR(&bleio_peripheral_discover_remote_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pair)                    , MP_ROM_PTR(&bleio_peripheral_pair_obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&bleio_peripheral_connected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name),      MP_ROM_PTR(&bleio_peripheral_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_services),  MP_ROM_PTR(&bleio_peripheral_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_peripheral_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name),            MP_ROM_PTR(&bleio_peripheral_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remote_services), MP_ROM_PTR(&bleio_peripheral_remote_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_services),        MP_ROM_PTR(&bleio_peripheral_services_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_peripheral_locals_dict, bleio_peripheral_locals_dict_table);
