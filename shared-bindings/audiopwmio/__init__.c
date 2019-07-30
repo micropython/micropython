@@ -47,7 +47,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     AudioOut
+//|     PWMAudioOut
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -60,7 +60,7 @@
 
 STATIC const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiopwmio) },
-    { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audiopwmio_pwmaudioout_type) },
+    { MP_ROM_QSTR(MP_QSTR_PWMAudioOut), MP_ROM_PTR(&audiopwmio_pwmaudioout_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(audiopwmio_module_globals, audiopwmio_module_globals_table);
