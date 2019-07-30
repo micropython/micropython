@@ -72,7 +72,7 @@ static const char default_name[] = "CIRCUITPY";
 //|    serv = bleio.Service(bleio.UUID(0x180f), [chara])
 //|
 //|    # Create a peripheral and start it up.
-//|    periph = bleio.Peripheral([service])
+//|    periph = bleio.Peripheral([serv])
 //|    adv = ServerAdvertisement(periph)
 //|    periph.start_advertising(adv.advertising_data_bytes, adv.scan_response_bytes)
 //|
