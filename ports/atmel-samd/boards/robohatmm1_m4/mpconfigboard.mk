@@ -1,4 +1,4 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash-crystalless.ld
+LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x1209
 USB_PID = 0x4D43
 USB_PRODUCT = "Robo HAT MM1"
