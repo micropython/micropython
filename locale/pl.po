@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:10-0700\n"
+"POT-Creation-Date: 2019-07-25 22:48-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -465,11 +465,11 @@ msgstr "Nie można zdekodować ble_uuid, błąd 0x%04x"
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "Nie udała się alokacja pierwszego bufora"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "Nie udała się alokacja drugiego bufora"
 
@@ -486,7 +486,7 @@ msgstr "DAC w użyciu"
 msgid "Data 0 pin must be byte aligned"
 msgstr "Nóżka data 0 musi być wyrównana do bajtu"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Fragment danych musi następować po fragmencie fmt"
 
@@ -700,6 +700,10 @@ msgstr "Uzyskana częstotliwość jest niemożliwa. Spauzowano."
 msgid "Function requires lock"
 msgstr "Funkcja wymaga blokady"
 
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
+
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Grupa pełna"
@@ -758,7 +762,7 @@ msgstr "Zła wielkość bufora"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Zły okres. Poprawny zakres to: 1 - 500"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid channel count"
 msgstr "Zła liczba kanałów"
 
@@ -766,11 +770,11 @@ msgstr "Zła liczba kanałów"
 msgid "Invalid direction."
 msgstr "Zły tryb"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Zły plik"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Zła wielkość fragmentu formatu"
 
@@ -812,11 +816,11 @@ msgstr "Zła polaryzacja"
 msgid "Invalid run mode."
 msgstr "Zły tryb uruchomienia"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
 msgstr "Zła liczba głosów"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "Zły plik wave"
 
@@ -1061,7 +1065,7 @@ msgstr "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA lub SCL wymagają podciągnięcia"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Częstotliwość próbkowania musi być dodatnia"
 
@@ -1140,19 +1144,19 @@ msgstr ""
 "Przycisk reset został wciśnięty podczas startu CircuitPythona. Wciśnij go "
 "ponownie aby wyjść z trybu bezpieczeństwa.\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Wartość bits_per_sample nie pasuje do miksera"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Liczba kanałów nie pasuje do miksera "
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Sample rate nie pasuje do miksera"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Znak nie pasuje do miksera"
 
@@ -1257,7 +1261,7 @@ msgstr "Zła szybkość transmisji"
 msgid "Unsupported display bus type"
 msgstr "Zły typ magistrali wyświetlaczy"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Zły format"
 
@@ -1273,7 +1277,7 @@ msgstr "Zła wartość podciągnięcia."
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr "Zbyt wysoki indeks głosu"
 
@@ -1395,7 +1399,7 @@ msgstr "bits musi być 7, 8 lub 9"
 msgid "bits must be 8"
 msgstr "bits musi być 8"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample musi być 8 lub 16"
 
@@ -1408,7 +1412,7 @@ msgstr "skok poza zakres"
 msgid "buf is too small. need %d bytes"
 msgstr "buf zbyt mały. Wymagane %d bajtów"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "bufor mysi być typu bytes"
 
@@ -1771,7 +1775,8 @@ msgstr "nadmiarowe argumenty nazwane"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"
 
@@ -2315,7 +2320,7 @@ msgstr "return oczekiwał '%q', a jest '%q'"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
