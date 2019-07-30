@@ -38,14 +38,14 @@
 
 //| .. currentmodule:: audiopwmio
 //|
-//| :class:`AudioOut` -- Output an analog audio signal
+//| :class:`PWMAudioOut` -- Output an analog audio signal
 //| ========================================================
 //|
 //| AudioOut can be used to output an analog audio signal on a given pin.
 //|
-//| .. class:: AudioOut(left_channel, *, right_channel=None, quiescent_value=0x8000)
+//| .. class:: PWMAudioOut(left_channel, *, right_channel=None, quiescent_value=0x8000)
 //|
-//|   Create a AudioOut object associated with the given pin(s). This allows you to
+//|   Create a PWMAudioOut object associated with the given pin(s). This allows you to
 //|   play audio signals out on the given pin(s).  In contrast to mod:`audioio`,
 //|   the pin(s) specified are digital pins, and are driven with a device-dependent PWM
 //|   signal.
@@ -70,7 +70,7 @@
 //|     for i in range(length):
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     dac = audiopwmio.AudioOut(board.SPEAKER)
+//|     dac = audiopwmio.PWMAudioOut(board.SPEAKER)
 //|     sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
@@ -89,7 +89,7 @@
 //|
 //|     data = open("cplay-5.1-16bit-16khz.wav", "rb")
 //|     wav = audiocore.WaveFile(data)
-//|     a = audiopwmio.AudioOut(board.SPEAKER)
+//|     a = audiopwmio.PWMAudioOut(board.SPEAKER)
 //|
 //|     print("playing")
 //|     a.play(wav)
@@ -128,7 +128,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
 
 //|   .. method:: deinit()
 //|
-//|      Deinitialises the AudioOut and releases any hardware resources for reuse.
+//|      Deinitialises the PWMAudioOut and releases any hardware resources for reuse.
 //|
 STATIC mp_obj_t audiopwmio_pwmaudioout_deinit(mp_obj_t self_in) {
     audiopwmio_pwmaudioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
