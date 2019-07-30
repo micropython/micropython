@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_DISPLAY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_DISPLAY_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
 
 #include "common-hal/microcontroller/Pin.h"
 
 #include "shared-module/displayio/Display.h"
 #include "shared-module/displayio/Group.h"
 
-extern const mp_obj_type_t displayio_display_type;
+extern const mp_obj_type_t displayio_epaperdisplay_type;
 
 #define DELAY 0x80
 
-#define NO_BRIGHTNESS_COMMAND 0x100
-
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
-    mp_obj_t bus, uint16_t width, uint16_t height,
-    int16_t colstart, int16_t rowstart, uint16_t rotation, uint16_t color_depth, bool grayscale,
-    bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte,
-    uint8_t set_column_command, uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
-    uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin, uint16_t brightness_command,
-    mp_float_t brightness, bool auto_brightness,
-    bool single_byte_bounds, bool data_as_commands);
+    mp_obj_t bus, uint16_t width, uint16_t height, uint16_t seconds_per_frame,
+    uint16_t rotation, uint16_t color_depth, bool grayscale,
+    uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* busy_pin, uint16_t partial_command);
 
 int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self);
 
-bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group);
+void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group);
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self);
 
@@ -69,9 +63,8 @@ void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* s
 
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self);
 uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self);
-uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self);
 
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_DISPLAY_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
