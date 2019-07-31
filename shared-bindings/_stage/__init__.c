@@ -101,6 +101,8 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     area.x2 = x1;
     area.y2 = y1;
     displayio_display_set_region_to_update(display, &area);
+
+    display->send(display->bus, true, &display->write_ram_command, 1);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size, display);
     displayio_display_end_transaction(display);
 
