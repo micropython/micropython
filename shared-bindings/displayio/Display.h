@@ -40,7 +40,8 @@ extern const mp_obj_type_t displayio_display_type;
 
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     mp_obj_t bus, uint16_t width, uint16_t height,
-    int16_t colstart, int16_t rowstart, uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
+    int16_t colstart, int16_t rowstart, uint16_t rotation, uint16_t color_depth, bool grayscale,
+    bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte,
     uint8_t set_column_command, uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
     uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin, uint16_t brightness_command,
     mp_float_t brightness, bool auto_brightness,
@@ -48,7 +49,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
 
 int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self);
 
-void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group);
+bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group);
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self);
 

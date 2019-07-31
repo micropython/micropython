@@ -95,3 +95,6 @@
 [submodule "frozen/circuitpython-stage"]
 	path = frozen/circuitpython-stage
 	url = https://github.com/python-ugame/circuitpython-stage.git
+[submodule "ports/stm32f4/stm32f4"]
+	path = ports/stm32f4/stm32f4
+	url = https://github.com/adafruit/stm32f4.git

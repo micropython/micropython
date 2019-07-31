@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-19 16:10-0700\n"
+"POT-Creation-Date: 2019-07-25 22:48-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -349,7 +349,7 @@ msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
+msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -358,7 +358,7 @@ msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 msgid "Can't set CCCD for local Characteristic"
-msgstr ""
+msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -443,7 +443,7 @@ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
 
 #: shared-bindings/displayio/I2CDisplay.c
 msgid "Command must be 0-255"
-msgstr ""
+msgstr "Mìnglìng bìxū wèi 0-255"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -451,11 +451,11 @@ msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
+msgstr "Fǔbài de .mpy wénjiàn"
 
 #: py/emitglue.c
 msgid "Corrupt raw code"
-msgstr ""
+msgstr "Sǔnhuài de yuánshǐ dàimǎ"
 
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
@@ -466,11 +466,11 @@ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "Wúfǎ chūshǐhuà UART"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
 
@@ -487,7 +487,7 @@ msgstr "Fā yuán huì yǐjīng shǐyòng"
 msgid "Data 0 pin must be byte aligned"
 msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
@@ -534,7 +534,7 @@ msgstr "Yùqí UUID"
 
 #: shared-bindings/bleio/Central.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Qídài yīgè dìzhǐ"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -543,7 +543,7 @@ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
-msgstr ""
+msgstr "Fāsòng mìnglìng shībài."
 
 #: ports/nrf/sd_mutex.c
 #, c-format
@@ -577,11 +577,11 @@ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to configure advertising, err 0x%04x"
-msgstr ""
+msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Central.c
 msgid "Failed to connect: timeout"
-msgstr ""
+msgstr "Liánjiē shībài: Chāoshí"
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
@@ -633,7 +633,7 @@ msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to set device name, err 0x%04x"
-msgstr ""
+msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
@@ -643,7 +643,7 @@ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 #: ports/nrf/common-hal/bleio/Central.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
+msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
@@ -658,7 +658,7 @@ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
+msgstr "Wúfǎ xiě rù CCCD, cuòwù 0x%04x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -700,6 +700,10 @@ msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
+
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
@@ -759,7 +763,7 @@ msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid channel count"
 msgstr "Wúxiào de tōngdào jìshù"
 
@@ -767,11 +771,11 @@ msgstr "Wúxiào de tōngdào jìshù"
 msgid "Invalid direction."
 msgstr "Wúxiào de fāngxiàng."
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Wúxiào de wénjiàn"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
@@ -813,11 +817,11 @@ msgstr "Wúxiào liǎng jí zhí"
 msgid "Invalid run mode."
 msgstr "Wúxiào de yùnxíng móshì."
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
 msgstr "Wúxiào de yǔyīn jìshù"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "Wúxiào de làng làngcháo wénjiàn"
 
@@ -1012,7 +1016,7 @@ msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
-msgstr ""
+msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -1066,7 +1070,7 @@ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dài
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA huò SCL xūyào lādòng"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 
@@ -1124,7 +1128,8 @@ msgstr ""
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
-msgstr ""
+msgstr "“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě "
+"tuìchū ānquán móshì.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1145,19 +1150,19 @@ msgstr ""
 "Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ tuìchū "
 "ānquán móshì\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Yàngběn de bits_per_sample yǔ hǔn yīn qì bù pǐpèi"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Yàngběn de píndào jìshù yǔ hǔn yīn qì bù xiāngfú"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Yàngběn de yàngběn sùdù yǔ hǔn yīn qì de xiāngchà bù pǐpèi"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 
@@ -1208,7 +1213,7 @@ msgstr "USB Cuòwù"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "UUID zhěngshù zhí bìxū wèi 0-0xffff"
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1226,7 +1231,7 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1262,7 +1267,7 @@ msgstr "Bù zhīchí de baudrate"
 msgid "Unsupported display bus type"
 msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
 
@@ -1278,7 +1283,7 @@ msgstr "Bù zhīchí de lādòng zhí."
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr "Yǔyīn suǒyǐn tài gāo"
 
@@ -1403,7 +1408,7 @@ msgstr "bǐtè bìxū shì 7,8 huò 9"
 msgid "bits must be 8"
 msgstr "bǐtè bìxū shì 8"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
 
@@ -1416,7 +1421,7 @@ msgstr "fēnzhī bùzài fànwéi nèi"
 msgid "buf is too small. need %d bytes"
 msgstr "huǎnchōng tài xiǎo. Xūyào%d zì jié"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 
@@ -1781,7 +1786,8 @@ msgstr "éwài de guānjiàn cí cānshù"
 msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -1913,7 +1919,7 @@ msgstr "xūyào zhěngshù"
 #: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
@@ -2326,7 +2332,7 @@ msgstr "fǎnhuí yùqí de '%q' dàn huòdéle '%q'"
 msgid "rsplit(None,n)"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
@@ -2606,7 +2612,7 @@ msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "Zhí bìxū fúhé %d zì jié"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
@@ -2614,7 +2620,7 @@ msgstr "zhí jìshù bìxū wèi > 0"
 
 #: shared-bindings/bleio/Scanner.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "Chuāngkǒu bìxū shì <= jiàngé"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"

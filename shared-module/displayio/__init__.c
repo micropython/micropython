@@ -209,35 +209,35 @@ void reset_displays(void) {
                 }
             }
         } else if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type) {
-                displayio_i2cdisplay_obj_t* i2c = &displays[i].i2cdisplay_bus;
-                if (((uint32_t) i2c->bus) < ((uint32_t) &displays) ||
-                    ((uint32_t) i2c->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
-                    busio_i2c_obj_t* original_i2c = i2c->bus;
-                    #if BOARD_I2C
-                        // We don't need to move original_i2c if it is the board.SPI object because it is
-                        // statically allocated already. (Doing so would also make it impossible to reference in
-                        // a subsequent VM run.)
-                        if (original_i2c == common_hal_board_get_i2c()) {
-                            continue;
-                        }
-                    #endif
-                    memcpy(&i2c->inline_bus, original_i2c, sizeof(busio_i2c_obj_t));
-                    i2c->bus = &i2c->inline_bus;
-                    // Check for other displays that use the same i2c bus and swap them too.
-                    for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
-                        if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
-                                displays[i].i2cdisplay_bus.bus == original_i2c) {
-                            displays[i].i2cdisplay_bus.bus = &i2c->inline_bus;
-                        }
+            displayio_i2cdisplay_obj_t* i2c = &displays[i].i2cdisplay_bus;
+            if (((uint32_t) i2c->bus) < ((uint32_t) &displays) ||
+                ((uint32_t) i2c->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
+                busio_i2c_obj_t* original_i2c = i2c->bus;
+                #if BOARD_I2C
+                    // We don't need to move original_i2c if it is the board.SPI object because it is
+                    // statically allocated already. (Doing so would also make it impossible to reference in
+                    // a subsequent VM run.)
+                    if (original_i2c == common_hal_board_get_i2c()) {
+                        continue;
+                    }
+                #endif
+                memcpy(&i2c->inline_bus, original_i2c, sizeof(busio_i2c_obj_t));
+                i2c->bus = &i2c->inline_bus;
+                // Check for other displays that use the same i2c bus and swap them too.
+                for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
+                    if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
+                            displays[i].i2cdisplay_bus.bus == original_i2c) {
+                        displays[i].i2cdisplay_bus.bus = &i2c->inline_bus;
                     }
                 }
             }
-    }
-
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL) {
+        } else {
+            // Not an active display.
             continue;
         }
+
+        // Reset the displayed group. Only the first will get the terminal but
+        // that's ok.
         displayio_display_obj_t* display = &displays[i].display;
         display->auto_brightness = true;
         common_hal_displayio_display_show(display, &circuitpython_splash);

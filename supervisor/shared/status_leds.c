@@ -26,8 +26,10 @@
 
 #include "supervisor/shared/status_leds.h"
 
+#if CIRCUITPY_DIGITALIO
 #include "common-hal/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#endif
 
 #ifdef MICROPY_HW_LED_RX
 digitalio_digitalinout_obj_t rx_led;
