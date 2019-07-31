@@ -45,8 +45,6 @@
 
 #include "common-hal/bleio/Peripheral.h"
 
-static const char default_name[] = "CIRCUITPY";
-
 #define ADV_INTERVAL_DEFAULT (1.0f)
 #define ADV_INTERVAL_MIN (0.0020f)
 #define ADV_INTERVAL_MIN_STRING "0.0020"
@@ -81,14 +79,14 @@ static const char default_name[] = "CIRCUITPY";
 //|        # Wait for connection.
 //|        pass
 //|
-//| .. class:: Peripheral(services=(), \*, name='CIRCUITPY')
+//| .. class:: Peripheral(services=(), \*, name=None)
 //|
 //|   Create a new Peripheral object.
 //|
 //|   :param iterable services: the Service objects representing services available from this peripheral, if any.
 //|     A non-connectable peripheral will have no services.
-//|   :param str name: The name used when advertising this peripheral. Use ``None`` when a name is not needed,
-//|     such as when the peripheral is a beacon
+//|   :param str name: The name used when advertising this peripheral. If name is None,
+//|     bleio.adapter.default_name will be used.
 //|
 STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_services, ARG_name };
@@ -119,22 +117,19 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_obj_list_append(services_list, service);
     }
 
-    const mp_obj_t name = args[ARG_name].u_obj;
-    mp_obj_t name_str;
+    mp_obj_t name = args[ARG_name].u_obj;
     if (name == MP_OBJ_NULL || name == mp_const_none) {
-        name_str = mp_obj_new_str(default_name, strlen(default_name));
-    } else if (MP_OBJ_IS_STR(name)) {
-        name_str = name;
-    } else {
+        name = common_hal_bleio_adapter_get_default_name();
+    } else if (!MP_OBJ_IS_STR(name)) {
         mp_raise_ValueError(translate("name must be a string"));
     }
 
-    common_hal_bleio_peripheral_construct(self, services_list, name_str);
+    common_hal_bleio_peripheral_construct(self, services_list, name);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. attribute:: connected
+//|   .. attribute:: connected (read-only)
 //|
 //|     True if connected to a BLE Central device.
 //|

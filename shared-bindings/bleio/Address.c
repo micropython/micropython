@@ -147,18 +147,13 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
 
 STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (kind == PRINT_STR) {
-        mp_buffer_info_t buf_info;
-        mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
-        mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
+    mp_buffer_info_t buf_info;
+    mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
+    mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
 
-        const uint8_t *buf = (uint8_t *) buf_info.buf;
-        mp_printf(print,
-                  "%02x:%02x:%02x:%02x:%02x:%02x",
-                  buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
-    } else {
-        mp_printf(print, "<Address>");
-    }
+    const uint8_t *buf = (uint8_t *) buf_info.buf;
+    mp_printf(print, "<Address %02x:%02x:%02x:%02x:%02x:%02x>",
+              buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
 //|   .. data:: PUBLIC
