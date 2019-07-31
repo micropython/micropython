@@ -5,6 +5,7 @@
 .. include:: ../templates/unsupported_in_circuitpython.inc
 
 .. module:: network
+   :noindex:
    :synopsis: network configuration
 
 This module provides network drivers and routing configuration. To use this

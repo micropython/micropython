@@ -436,7 +436,11 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                         //     asm("bkpt");
                         // }
                     }
-                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << ((offset % pixels_per_byte) * colorspace->depth);
+                    uint8_t shift = (offset % pixels_per_byte) * colorspace->depth;
+                    if (colorspace->reverse_pixels_in_byte) {
+                        shift = (pixels_per_byte - 1) * colorspace->depth - shift;
+                    }
+                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << shift;
                 }
             }
         }

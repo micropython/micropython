@@ -36,6 +36,8 @@ typedef struct {
     uint8_t depth;
     bool grayscale;
     bool pixels_in_byte_share_row;
+    uint8_t bytes_per_cell;
+    bool reverse_pixels_in_byte;
     uint8_t hue;
 } _displayio_colorspace_t;
 

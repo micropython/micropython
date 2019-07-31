@@ -44,7 +44,7 @@
 
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart, uint16_t rotation,
-        uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
+        uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte,
         uint8_t set_column_command, uint8_t set_row_command,
         uint8_t write_ram_command, uint8_t set_vertical_scroll, uint8_t* init_sequence, uint16_t init_sequence_len,
         const mcu_pin_obj_t* backlight_pin, uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
@@ -52,6 +52,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->colorspace.depth = color_depth;
     self->colorspace.grayscale = grayscale;
     self->colorspace.pixels_in_byte_share_row = pixels_in_byte_share_row;
+    self->colorspace.bytes_per_cell = bytes_per_cell;
+    self->colorspace.reverse_pixels_in_byte = reverse_pixels_in_byte;
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
     self->write_ram_command = write_ram_command;
@@ -195,17 +197,25 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     common_hal_displayio_display_show(self, &circuitpython_splash);
 }
 
-void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
+bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
     if (root_group == NULL) {
         root_group = &circuitpython_splash;
     }
     if (root_group == self->current_group) {
-        return;
+        return true;
+    }
+    if (root_group->in_group) {
+        return false;
+    }
+    if (self->current_group != NULL) {
+        self->current_group->in_group = false;
     }
     displayio_group_update_transform(root_group, &self->transform);
+    root_group->in_group = true;
     self->current_group = root_group;
     self->full_refresh = true;
     common_hal_displayio_display_refresh_soon(self);
+    return true;
 }
 
 void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self) {
@@ -299,11 +309,11 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, displ
     if (self->colorspace.depth < 8) {
         uint8_t pixels_per_byte = 8 / self->colorspace.depth;
         if (self->colorspace.pixels_in_byte_share_row) {
-            x1 /= pixels_per_byte;
-            x2 /= pixels_per_byte;
+            x1 /= pixels_per_byte * self->colorspace.bytes_per_cell;
+            x2 /= pixels_per_byte * self->colorspace.bytes_per_cell;
         } else {
-            y1 /= pixels_per_byte;
-            y2 /= pixels_per_byte;
+            y1 /= pixels_per_byte * self->colorspace.bytes_per_cell;
+            y2 /= pixels_per_byte * self->colorspace.bytes_per_cell;
         }
     }
 
@@ -318,7 +328,6 @@ void displayio_display_set_region_to_update(displayio_display_obj_t* self, displ
     if (self->single_byte_bounds) {
         data[data_length++] = x1 + self->colstart;
         data[data_length++] = x2 - 1 + self->colstart;
-        data_length += 2;
     } else {
         x1 += self->colstart;
         x2 += self->colstart - 1;
@@ -413,7 +422,7 @@ bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_
     // Expand the area if we have multiple pixels per byte and we need to byte
     // align the bounds.
     if (self->colorspace.depth < 8) {
-        uint8_t pixels_per_byte = 8 / self->colorspace.depth;
+        uint8_t pixels_per_byte = 8 / self->colorspace.depth * self->colorspace.bytes_per_cell;
         if (self->colorspace.pixels_in_byte_share_row) {
             if (clipped->x1 % pixels_per_byte != 0) {
                 clipped->x1 -= clipped->x1 % pixels_per_byte;
