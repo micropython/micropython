@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-25 21:12-0500\n"
+"POT-Creation-Date: 2019-07-31 16:30-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -257,7 +257,7 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/audiopwmio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -332,7 +332,7 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Mali ang size ng buffer. Dapat %d bytes."
 
-#: ports/nrf/common-hal/audiopwmio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
@@ -721,6 +721,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
 
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
+
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Puno ang group"
@@ -962,7 +966,7 @@ msgid "Not connected"
 msgstr "Hindi maka connect sa AP"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
-#: shared-bindings/audiopwmio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Hindi playing"
 
@@ -1096,7 +1100,7 @@ msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"

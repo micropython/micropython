@@ -1,19 +1,31 @@
-import sphinx.parsers
+def c2rst(app, docname, source):
+    """ Pre-parse '.c' & '.h' files that contain rST source.
+    """
+    # Make sure we're outputting HTML
+    if app.builder.format != 'html':
+        return
 
-class CStrip(sphinx.parsers.Parser):
-    def __init__(self):
-        self.rst_parser = sphinx.parsers.RSTParser()
+    fname = app.env.doc2path(docname)
+    if (not fname.endswith(".c") and
+        not fname.endswith(".h")):
+            #print("skipping:", fname)
+            return
 
-    def parse(self, inputstring, document):
-        # This setting is missing starting with Sphinx 1.7.1 so we set it ourself.
-        document.settings.tab_width = 4
-        document.settings.character_level_inline_markup = False
-        stripped = []
-        for line in inputstring.split("\n"):
-            line = line.strip()
-            if line == "//|":
-                stripped.append("")
-            elif line.startswith("//| "):
-                stripped.append(line[len("//| "):])
-        stripped = "\r\n".join(stripped)
-        self.rst_parser.parse(stripped, document)
+    src = source[0]
+
+    stripped = []
+    for line in src.split("\n"):
+        line = line.strip()
+        if line == "//|":
+            stripped.append("")
+        elif line.startswith("//| "):
+            stripped.append(line[len("//| "):])
+    stripped = "\r\n".join(stripped)
+
+    rendered = app.builder.templates.render_string(
+        stripped, app.config.html_context
+    )
+    source[0] = rendered
+
+def setup(app):
+    app.connect("source-read", c2rst)

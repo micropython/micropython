@@ -13,6 +13,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import json
 import sys
 import os
 
@@ -24,7 +25,19 @@ from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
+import shared_bindings_matrix
+
 master_doc = 'docs/index'
+
+# Grab the JSON values to use while building the module support matrix
+# in 'shared-bindings/index.rst'
+
+#modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
+modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
+
+html_context = {
+    'support_matrix': modules_support_matrix
+}
 
 # -- General configuration ------------------------------------------------
 
@@ -40,7 +53,9 @@ extensions = [
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage'
+    'sphinx.ext.coverage',
+    'rstjinja',
+    'c2rst'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,8 +64,7 @@ templates_path = ['templates']
 # The suffix of source filenames.
 source_suffix = ['.rst', '.md', '.c', '.h']
 
-source_parsers = {'.md': CommonMarkParser,
-                  '.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
+source_parsers = {'.md': CommonMarkParser}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
