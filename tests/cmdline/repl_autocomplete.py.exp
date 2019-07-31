@@ -10,5 +10,11 @@ Use \.\+
 >>> i = str
 >>> i.lower('ABC')
 'abc'
+>>> x = 5
+>>> x.
+from_bytes      to_bytes
+>>> x.[K[K
+>>> x.__class__
+<class 'int'>
 >>> None.[K[K[K[K[K
 >>> 

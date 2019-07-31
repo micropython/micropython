@@ -43,14 +43,13 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 
+#include "background.h"
 #include "mpconfigboard.h"
-#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/board_busses.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
@@ -58,8 +57,16 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
+
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -85,6 +92,8 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+
+    background_tasks_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -139,8 +148,7 @@ void stop_mp(void) {
     MP_STATE_VM(vfs_cur) = vfs;
     #endif
 
-    // Run any finalizers before we stop using the heap.
-    gc_sweep_all();
+    gc_deinit();
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
@@ -169,6 +177,24 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
     return true;
+}
+
+void cleanup_after_vm(supervisor_allocation* heap) {
+    // Turn off the display and flush the fileystem before the heap disappears.
+    #if CIRCUITPY_DISPLAYIO
+    reset_displays();
+    #endif
+    filesystem_flush();
+    stop_mp();
+    free_memory(heap);
+    supervisor_move_memory();
+
+    reset_port();
+    #if CIRCUITPY_BOARD
+    reset_board_busses();
+    #endif
+    reset_board();
+    reset_status_led();
 }
 
 bool run_code_py(safe_mode_t safe_mode) {
@@ -214,18 +240,7 @@ bool run_code_py(safe_mode_t safe_mode) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
-        // Turn off the display before the heap disappears.
-        #if CIRCUITPY_DISPLAYIO
-        reset_displays();
-        #endif
-        stop_mp();
-        free_memory(heap);
-        supervisor_move_memory();
-
-        reset_port();
-        reset_board_busses();
-        reset_board();
-        reset_status_led();
+        cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
@@ -353,13 +368,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         boot_output_file = NULL;
         #endif
 
-        // Reset to remove any state that boot.py setup. It should only be used to
-        // change internal state that's not in the heap.
-        reset_port();
-        reset_board();
-        stop_mp();
-        free_memory(heap);
-        supervisor_move_memory();
+        cleanup_after_vm(heap);
     }
 }
 
@@ -376,11 +385,7 @@ int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
-    reset_port();
-    reset_board();
-    stop_mp();
-    free_memory(heap);
-    supervisor_move_memory();
+    cleanup_after_vm(heap);
     autoreload_resume();
     return exit_code;
 }
@@ -455,6 +460,11 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));

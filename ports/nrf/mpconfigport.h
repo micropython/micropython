@@ -30,9 +30,6 @@
 
 #include "ble_drv.h"
 
-#define MICROPY_CPYTHON_COMPAT                   (1)
-//#define MICROPY_MODULE_BUILTIN_INIT              (1)  // TODO check this
-//#define MICROPY_MODULE_WEAK_LINKS                (1)  // TODO check this
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
@@ -59,6 +56,5 @@
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
-
 
 #endif  // NRF5_MPCONFIGPORT_H__

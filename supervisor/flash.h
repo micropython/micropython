@@ -40,7 +40,6 @@
 void supervisor_flash_init(void);
 uint32_t supervisor_flash_get_block_size(void);
 uint32_t supervisor_flash_get_block_count(void);
-void supervisor_flash_flush(void);
 
 // these return 0 on success, non-zero on error
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
@@ -49,5 +48,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 struct _fs_user_mount_t;
 void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs);
 void supervisor_flash_flush(void);
+void supervisor_flash_release_cache(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_FLASH_H

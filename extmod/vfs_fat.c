@@ -39,7 +39,7 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 #include "lib/timeutils/timeutils.h"
-
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/translate.h"
 
 #if _MAX_SS == _MIN_SS
@@ -97,6 +97,12 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, const
     }
 
     return MP_OBJ_FROM_PTR(vfs);
+}
+
+STATIC void verify_fs_writable(fs_user_mount_t *vfs) {
+    if (!filesystem_is_writable_by_python(vfs)) {
+        mp_raise_OSError(MP_EROFS);
+    }
 }
 
 #if _FS_REENTRANT
@@ -201,6 +207,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_ilistdir_obj, 1, 2, fat_vfs_i
 
 STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_int_t attr) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
@@ -235,9 +242,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_rmdir_obj, fat_vfs_rmdir);
 
 STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_out) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
-    FRESULT res = f_rename(&self->fatfs, old_path, new_path);
+
+    // Check to see if we're moving a directory into itself. This occurs when we're moving a
+    // directory where the old path is a prefix of the new and the next character is a "/" and thus
+    // preserves the original directory name.
+    FILINFO fno;
+    FRESULT res = f_stat(&self->fatfs, old_path, &fno);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    if ((fno.fattrib & AM_DIR) != 0 &&
+            strlen(new_path) > strlen(old_path) &&
+            new_path[strlen(old_path)] == '/' &&
+            strncmp(old_path, new_path, strlen(old_path)) == 0) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+
+    res = f_rename(&self->fatfs, old_path, new_path);
     if (res == FR_EXIST) {
         // if new_path exists then try removing it (but only if it's a file)
         fat_vfs_remove_internal(vfs_in, path_out, 0); // 0 == file attribute
@@ -255,6 +279,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_rename_obj, fat_vfs_rename);
 
 STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *path = mp_obj_str_get_str(path_o);
     FRESULT res = f_mkdir(&self->fatfs, path);
     if (res == FR_OK) {
@@ -419,6 +444,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getlabel_obj, vfs_fat_getlabel);
 
 STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    verify_fs_writable(self);
     const char *label_str = mp_obj_str_get_str(label_in);
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     if (res != FR_OK) {

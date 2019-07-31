@@ -88,35 +88,38 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_obj_get_array(args[ARG_cols].u_obj, &cols_size, &cols);
 
     if (bufinfo.len != rows_size * cols_size) {
-        mp_raise_ValueError(translate(""));
+        mp_raise_ValueError(translate("Incorrect buffer size"));
     }
 
     for (size_t i = 0; i < rows_size; ++i) {
         if (!MP_OBJ_IS_TYPE(rows[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError(translate(""));
+            mp_raise_TypeError(translate("Row entry must be digitalio.DigitalInOut"));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(rows[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        if (common_hal_digitalio_digitalinout_deinited(pin)) {
+            raise_deinited_error();
+        }
     }
 
     for (size_t i = 0; i < cols_size; ++i) {
         if (!MP_OBJ_IS_TYPE(cols[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError(translate(""));
+            mp_raise_TypeError(translate("Column entry must be digitalio.DigitalInOut"));
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(cols[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        if (common_hal_digitalio_digitalinout_deinited(pin)) {
+            raise_deinited_error();
+        }
     }
 
     if (!MP_OBJ_IS_TYPE(args[ARG_buttons].u_obj,
                         &digitalio_digitalinout_type)) {
-        mp_raise_TypeError(translate(""));
+        mp_raise_TypeError(translate("buttons must be digitalio.DigitalInOut"));
     }
     digitalio_digitalinout_obj_t *buttons = MP_OBJ_TO_PTR(
             args[ARG_buttons].u_obj);
-    raise_error_if_deinited(
-        common_hal_digitalio_digitalinout_deinited(buttons));
+    if (common_hal_digitalio_digitalinout_deinited(buttons)) {
+        raise_deinited_error();
+    }
 
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
     if (!pew) {
@@ -148,4 +151,3 @@ const mp_obj_type_t pewpew_type = {
     .make_new = pewpew_make_new,
     .locals_dict = (mp_obj_dict_t*)&pewpew_locals_dict,
 };
-

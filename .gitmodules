@@ -5,9 +5,6 @@
 [submodule "lib/libffi"]
 	path = lib/libffi
 	url = https://github.com/atgreen/libffi
-[submodule "lib/lwip"]
-	path = lib/lwip
-	url = https://git.savannah.gnu.org/r/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
@@ -95,3 +92,9 @@
 [submodule "frozen/pew-pewpew-standalone-10.x"]
 	path = frozen/pew-pewpew-standalone-10.x
 	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git
+[submodule "frozen/circuitpython-stage"]
+	path = frozen/circuitpython-stage
+	url = https://github.com/python-ugame/circuitpython-stage.git
+[submodule "ports/stm32f4/stm32f4"]
+	path = ports/stm32f4/stm32f4
+	url = https://github.com/adafruit/stm32f4.git

@@ -108,6 +108,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOCORE),1)
+SRC_PATTERNS += audiocore/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -124,13 +127,16 @@ ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/%
+SRC_PATTERNS += displayio/% terminalio/% fontio/%
 endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
 SRC_PATTERNS += gamepad/%
+endif
+ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
+SRC_PATTERNS += gamepadshift/%
 endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
 SRC_PATTERNS += i2cslave/%
@@ -158,6 +164,9 @@ SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
+endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -218,7 +227,7 @@ $(filter $(SRC_PATTERNS), \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
-	bleio/Broadcaster.c \
+	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
 	bleio/Descriptor.c \
@@ -249,6 +258,8 @@ $(filter $(SRC_PATTERNS), \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	ps2io/Ps2.c \
+	ps2io/__init__.c \
 	rotaryio/IncrementalEncoder.c \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
@@ -268,7 +279,7 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
-	displayio/Glyph.c \
+	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
 	supervisor/__init__.c \
@@ -281,8 +292,6 @@ SRC_BINDINGS_ENUMS += \
 SRC_BINDINGS_ENUMS += \
 $(filter $(SRC_PATTERNS), \
 	bleio/Address.c \
-	bleio/AddressType.c \
-	bleio/AdvertisementData.c \
 	bleio/ScanEntry.c \
 )
 
@@ -295,28 +304,35 @@ $(filter $(SRC_PATTERNS), \
 	_stage/Text.c \
 	_stage/__init__.c \
 	audioio/__init__.c \
-	audioio/Mixer.c \
-	audioio/MixerVoice.c \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
+	audiocore/__init__.c \
+	audiocore/Mixer.c \
+	audiocore/RawSample.c \
+	audiocore/WaveFile.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
+	board/__init__.c \
+	bleio/Address.c \
+	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
-	displayio/BuiltinFont.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
+	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
+	fontio/BuiltinFont.c \
+	fontio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
+	gamepadshift/GamePadShift.c \
+	gamepadshift/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	socket/__init__.c \
@@ -355,3 +371,8 @@ $(addprefix lib/,\
 	libm/atan2f.c \
 	)
 endif
+
+.PHONY: check-release-needs-clean-build
+
+check-release-needs-clean-build:
+	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"

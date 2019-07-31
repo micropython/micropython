@@ -39,6 +39,4 @@ typedef struct {
     uint8_t pulls;
 } gamepad_obj_t;
 
-void gamepad_init(size_t n_pins, const mp_obj_t* pins);
-
 #endif  // MICROPY_INCLUDED_GAMEPAD_GAMEPAD_H

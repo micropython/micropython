@@ -25,10 +25,11 @@
  * THE SOFTWARE.
  */
 
-void network_module_create_random_mac_address(uint8_t *mac);
-
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
 #define MICROPY_INCLUDED_SHARED_MODULE_NETWORK___INIT___H
+
+void network_module_create_random_mac_address(uint8_t *mac);
+uint16_t network_module_create_random_source_tcp_port(void);
 
 #define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
@@ -62,6 +63,7 @@ typedef struct _mod_network_nic_type_t {
     int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
     int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
     void (*timer_tick)(struct _mod_network_socket_obj_t *socket);
+    void (*deinit)(struct _mod_network_socket_obj_t *socket);
 } mod_network_nic_type_t;
 
 typedef struct _mod_network_socket_obj_t {

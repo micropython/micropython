@@ -35,9 +35,10 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "nrf_nvmc.h"
+#include "peripherals/nrf/nvm.h"
 
 #ifdef BLUETOOTH_SD
+#include "ble_drv.h"
 #include "nrf_sdm.h"
 #endif
 
@@ -46,9 +47,8 @@ extern uint32_t __fatfs_flash_start_addr[];
 extern uint32_t __fatfs_flash_length[];
 
 #define NO_CACHE        0xffffffff
-#define FL_PAGE_SZ      4096
 
-uint8_t  _flash_cache[FL_PAGE_SZ] __attribute__((aligned(4)));
+uint8_t  _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
 
@@ -67,61 +67,22 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE ;
+    return ((uint32_t) __fatfs_flash_length - CIRCUITPY_INTERNAL_NVM_SIZE) / FILESYSTEM_BLOCK_SIZE ;
 }
-
-#ifdef BLUETOOTH_SD
-STATIC bool wait_for_flash_operation(void) {
-    do {
-        sd_app_evt_wait();
-        uint32_t evt_id;
-        uint32_t result = sd_evt_get(&evt_id);
-        if (result == NRF_SUCCESS) {
-            switch (evt_id) {
-            case NRF_EVT_FLASH_OPERATION_SUCCESS:
-                return true;
-
-            case NRF_EVT_FLASH_OPERATION_ERROR:
-                return false;
-
-            default:
-                // Some other event. Wait for a flash event.
-                continue;
-            }
-        }
-        return false;
-    } while (true);
-}
-#endif
 
 void supervisor_flash_flush(void) {
     if (_flash_page_addr == NO_CACHE) return;
 
     // Skip if data is the same
-    if (memcmp(_flash_cache, (void *)_flash_page_addr, FL_PAGE_SZ) != 0) {
-
-#ifdef BLUETOOTH_SD
-    uint8_t sd_en = 0;
-    (void) sd_softdevice_is_enabled(&sd_en);
-
-    if (sd_en) {
-        sd_flash_page_erase(_flash_page_addr / FL_PAGE_SZ);
-        wait_for_flash_operation();    // TODO: handle error return.
-        sd_flash_write((uint32_t *)_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
-        wait_for_flash_operation();
-    } else {
-#endif
-        nrf_nvmc_page_erase(_flash_page_addr);
-        nrf_nvmc_write_words(_flash_page_addr, (uint32_t *)_flash_cache, FL_PAGE_SZ / sizeof(uint32_t));
-#ifdef BLUETOOTH_SD
-    }
-#endif
-
-    _flash_page_addr = NO_CACHE;
+    if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
+        nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
     }
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
+    // Must write out anything in cache before trying to read.
+    supervisor_flash_flush();
+
     uint32_t src = lba2addr(block);
     memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
     return 0; // success
@@ -130,19 +91,23 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
     while (num_blocks) {
         uint32_t const addr      = lba2addr(lba);
-        uint32_t const page_addr = addr & ~(FL_PAGE_SZ - 1);
+        uint32_t const page_addr = addr & ~(FLASH_PAGE_SIZE - 1);
 
         uint32_t count = 8 - (lba % 8); // up to page boundary
         count = MIN(num_blocks, count);
 
         if (page_addr != _flash_page_addr) {
+            // Write out anything in cache before overwriting it.
             supervisor_flash_flush();
 
             _flash_page_addr = page_addr;
-            memcpy(_flash_cache, (void *)page_addr, FL_PAGE_SZ);
+
+            // Copy the current contents of the entire page into the cache.
+            memcpy(_flash_cache, (void *)page_addr, FLASH_PAGE_SIZE);
         }
 
-        memcpy(_flash_cache + (addr & (FL_PAGE_SZ - 1)), src, count * FILESYSTEM_BLOCK_SIZE);
+        // Overwrite part or all of the page cache with the src data.
+        memcpy(_flash_cache + (addr & (FLASH_PAGE_SIZE - 1)), src, count * FILESYSTEM_BLOCK_SIZE);
 
         // adjust for next run
         lba        += count;
@@ -152,3 +117,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
     return 0; // success
 }
+
+void supervisor_flash_release_cache(void) {
+}
+

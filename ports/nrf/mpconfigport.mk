@@ -19,11 +19,16 @@ CIRCUITPY_AUDIOBUSIO = 0
 # No I2CSlave implementation
 CIRCUITPY_I2CSLAVE = 0
 
-# nvm not yet implemented
-CIRCUITPY_NVM = 0
+# enable NVM
+CIRCUITPY_NVM = 1
 
-# rtc not yet implemented
-CIRCUITPY_RTC = 0
+# enable RTC
+CIRCUITPY_RTC = 1
 
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
+
+# CircuitPython doesn't yet support NFC so force the NFC antenna pins to be GPIO.
+# See https://github.com/adafruit/circuitpython/issues/1300
+# Defined here because system_nrf52840.c doesn't #include any of our own include files.
+CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS

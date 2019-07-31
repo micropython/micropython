@@ -32,6 +32,7 @@
 #include "py/misc.h"
 
 void gc_init(void *start, void *end);
+void gc_deinit(void);
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
@@ -42,6 +43,7 @@ bool gc_is_locked(void);
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
 void gc_collect_start(void);
+void gc_collect_ptr(void *ptr);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
@@ -55,6 +57,10 @@ size_t gc_nbytes(const void *ptr);
 bool gc_has_finaliser(const void *ptr);
 void *gc_make_long_lived(void *old_ptr);
 void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
+
+// Prevents a pointer from ever being freed because it establishes a permanent reference to it. Use
+// very sparingly because it can leak memory.
+bool gc_never_free(void *ptr);
 
 typedef struct _gc_info_t {
     size_t total;

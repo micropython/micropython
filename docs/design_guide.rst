@@ -60,6 +60,7 @@ For example, a user can then use ``deinit()```::
 
     import digitalio
     import board
+    import time
 
     led = digitalio.DigitalInOut(board.D13)
     led.direction = digitalio.Direction.OUTPUT
@@ -79,6 +80,7 @@ Alternatively, using a ``with`` statement ensures that the hardware is deinitial
 
     import digitalio
     import board
+    import time
 
     with digitalio.DigitalInOut(board.D13) as led:
         led.direction = digitalio.Direction.OUTPUT
@@ -499,6 +501,8 @@ properties.
 | ``value``             | bool                  | Digital logic                                                           |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``value``             | int                   | 16-bit Analog value, unit-less                                          |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``weight``            | float                 | grams (g)                                                               |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 
 Adding native modules

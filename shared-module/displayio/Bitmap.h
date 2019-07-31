@@ -36,11 +36,11 @@ typedef struct {
     mp_obj_base_t base;
     uint16_t width;
     uint16_t height;
-    uint32_t* data;
-    uint16_t stride; // words
+    size_t* data;
+    uint16_t stride; // size_t's
     uint8_t bits_per_value;
     uint8_t x_shift;
-    uint8_t x_mask;
+    size_t x_mask;
     uint16_t bitmask;
     bool read_only;
 } displayio_bitmap_t;

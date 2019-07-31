@@ -1,7 +1,5 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "supervisor/shared/board_busses.h"
-
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_P0_04) },
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_P0_05) },

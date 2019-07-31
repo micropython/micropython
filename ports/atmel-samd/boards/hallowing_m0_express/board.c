@@ -26,9 +26,11 @@
 
 #include "boards/board.h"
 
+#include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/busio/SPI.h"
 
 #include "tick.h"
 
@@ -71,11 +73,13 @@ uint8_t display_init_sequence[] = {
 void board_init(void) {
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
+    busio_spi_obj_t *spi = common_hal_board_create_spi();
     common_hal_displayio_fourwire_construct(bus,
-        board_spi(),
+        spi,
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
-        &pin_PA27); // Reset
+        &pin_PA27, // Reset
+        12000000);
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -87,14 +91,22 @@ void board_init(void) {
         1, // row start
         0, // rotation
         16, // Color depth
+        false, // Grayscale
+        false, // Pixels in a byte share a row. Only used for depth < 8
+        1, // bytes per cell. Only valid for depths < 8
+        false, // reverse_pixels_in_byte. Only valid for depths < 8
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA00);
-    common_hal_displayio_display_set_auto_brightness(display, true);
+        &pin_PA00,
+        NO_BRIGHTNESS_COMMAND,
+        1.0f, // brightness (ignored)
+        true, // auto_brightness
+        false, // single_byte_bounds
+        false); // data_as_commands
 }
 
 bool board_requests_safe_mode(void) {

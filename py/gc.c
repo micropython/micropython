@@ -31,6 +31,8 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/safe_mode.h"
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -174,12 +176,21 @@ void gc_init(void *start, void *end) {
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
 
+    MP_STATE_MEM(permanent_pointers) = NULL;
+
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
 #if MICROPY_ENABLE_FINALISER
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
 #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+}
+
+void gc_deinit(void) {
+    // Run any finalizers before we stop using the heap.
+    gc_sweep_all();
+
+    MP_STATE_MEM(gc_pool_start) = 0;
 }
 
 void gc_lock(void) {
@@ -334,6 +345,19 @@ STATIC void gc_sweep(void) {
     }
 }
 
+// Mark can handle NULL pointers because it verifies the pointer is within the heap bounds.
+STATIC void gc_mark(void* ptr) {
+    if (VERIFY_PTR(ptr)) {
+        size_t block = BLOCK_FROM_PTR(ptr);
+        if (ATB_GET_KIND(block) == AT_HEAD) {
+            // An unmarked head: mark it, and mark all its children
+            TRACE_MARK(block, ptr);
+            ATB_HEAD_TO_MARK(block);
+            gc_mark_subtree(block);
+        }
+    }
+}
+
 void gc_collect_start(void) {
     GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
@@ -350,6 +374,8 @@ void gc_collect_start(void) {
     size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
     gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
 
+    gc_mark(MP_STATE_MEM(permanent_pointers));
+
     #if MICROPY_ENABLE_PYSTACK
     // Trace root pointers from the Python stack.
     ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
@@ -357,18 +383,14 @@ void gc_collect_start(void) {
     #endif
 }
 
+void gc_collect_ptr(void *ptr) {
+    gc_mark(ptr);
+}
+
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        if (VERIFY_PTR(ptr)) {
-            size_t block = BLOCK_FROM_PTR(ptr);
-            if (ATB_GET_KIND(block) == AT_HEAD) {
-                // An unmarked head: mark it, and mark all its children
-                TRACE_MARK(block, ptr);
-                ATB_HEAD_TO_MARK(block);
-                gc_mark_subtree(block);
-            }
-        }
+        gc_mark(ptr);
     }
 }
 
@@ -461,6 +483,10 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     // check for 0 allocation
     if (n_blocks == 0) {
         return NULL;
+    }
+
+    if (MP_STATE_MEM(gc_pool_start) == 0) {
+        reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
     }
 
     GC_ENTER();
@@ -924,6 +950,36 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     return ptr_out;
 }
 #endif // Alternative gc_realloc impl
+
+bool gc_never_free(void *ptr) {
+    // Check to make sure the pointer is on the heap in the first place.
+    if (gc_nbytes(ptr) == 0) {
+        return false;
+    }
+    // Pointers are stored in a linked list where each block is BYTES_PER_BLOCK long and the first
+    // pointer is the next block of pointers.
+    void ** current_reference_block = MP_STATE_MEM(permanent_pointers);
+    while (current_reference_block != NULL) {
+        for (size_t i = 1; i < BYTES_PER_BLOCK / sizeof(void*); i++) {
+            if (current_reference_block[i] == NULL) {
+                current_reference_block[i] = ptr;
+                return true;
+            }
+        }
+        current_reference_block = current_reference_block[0];
+    }
+    void** next_block = gc_alloc(BYTES_PER_BLOCK, false, true);
+    if (next_block == NULL) {
+        return false;
+    }
+    if (MP_STATE_MEM(permanent_pointers) == NULL) {
+        MP_STATE_MEM(permanent_pointers) = next_block;
+    } else {
+        current_reference_block[0] = next_block;
+    }
+    next_block[1] = ptr;
+    return true;
+}
 
 void gc_dump_info(void) {
     gc_info_t info;

@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,12 @@
 
 extern const mp_obj_type_t bleio_peripheral_type;
 
-extern void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self);
+extern void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *service_list, mp_obj_t name);
+extern mp_obj_list_t *common_hal_bleio_peripheral_get_service_list(bleio_peripheral_obj_t *self);
 extern bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self);
-extern void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *device, bool connectable, mp_buffer_info_t *raw_data);
+extern mp_obj_t common_hal_bleio_peripheral_get_name(bleio_peripheral_obj_t *self);
+extern void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *device, bool connectable, float interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo);
 extern void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *device);
+extern void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *device);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H

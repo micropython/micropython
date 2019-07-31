@@ -111,18 +111,23 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     //
     // If there is not enough memory, we will fall back to cycle counter
     // using DWT
-    uint32_t pattern_size = numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t);
+
+#define PATTERN_SIZE(numBytes) (numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t))
+
+    uint32_t pattern_size = PATTERN_SIZE(numBytes);
     uint16_t* pixels_pattern = NULL;
     bool pattern_on_heap = false;
 
     // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
-    uint32_t one_pixel[8 * sizeof(uint16_t) + 1];
+    // Make it at least as big as PATTERN_SIZE(3), for one pixel of RGB data.
+    // PATTERN_SIZE is a multiple of 4, so we don't need round up to make sure one_pixel is large enough.
+    uint32_t one_pixel[PATTERN_SIZE(3)/sizeof(uint32_t)];
 
     NRF_PWM_Type* pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (pattern_size <= sizeof(one_pixel) * sizeof(uint32_t)) {
+        if (pattern_size <= sizeof(one_pixel)) {
             pixels_pattern = (uint16_t *) one_pixel;
         } else {
             pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);

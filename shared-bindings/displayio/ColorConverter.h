@@ -29,9 +29,11 @@
 
 #include "shared-module/displayio/ColorConverter.h"
 
+#include "shared-module/displayio/Palette.h"
+
 extern const mp_obj_type_t displayio_colorconverter_type;
 
 void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self);
-bool common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *colorconverter, uint32_t input_color, uint16_t* output_color);
+void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *colorconverter, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H

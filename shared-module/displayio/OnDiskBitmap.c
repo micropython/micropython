@@ -68,7 +68,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             self->r_bitmask = read_word(bmp_header, 27);
             self->g_bitmask = read_word(bmp_header, 29);
             self->b_bitmask = read_word(bmp_header, 31);
-            
+
         } else { // no compression or short header means 5:5:5
             self->r_bitmask = 0x7c00;
             self->g_bitmask = 0x3e0;
@@ -114,7 +114,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         }
         self->stride = (bit_stride / 8);
     }
-   
+
 }
 
 
@@ -123,12 +123,13 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
     if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
         return 0;
     }
+
     uint32_t location;
     uint8_t bytes_per_pixel = (self->bits_per_pixel / 8)  ? (self->bits_per_pixel /8) : 1;
     if (self->bits_per_pixel >= 8){
-        location = self->data_offset + (self->height - y) * self->stride + x * bytes_per_pixel;
+        location = self->data_offset + (self->height - y - 1) * self->stride + x * bytes_per_pixel;
     } else {
-        location = self->data_offset + (self->height - y) * self->stride + x / 8;
+        location = self->data_offset + (self->height - y - 1) * self->stride + x / 8;
     }
     // We don't cache here because the underlying FS caches sectors.
     f_lseek(&self->file->fp, location);
@@ -140,7 +141,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
         uint8_t red;
         uint8_t green;
         uint8_t blue;
-        if (self->bits_per_pixel == 1){
+        if (self->bits_per_pixel == 1) {
             uint8_t bit_offset = x%8;
             tmp = ( pixel_data & (0x80 >> (bit_offset))) >> (7 - bit_offset);
             if (tmp == 1) {
@@ -148,7 +149,7 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
             } else {
                 return 0x00000000;
             }
-        } else if (bytes_per_pixel == 1){ 
+        } else if (bytes_per_pixel == 1) {
             blue = ((self->palette_data[pixel_data] & 0xFF) >> 0);
             red = ((self->palette_data[pixel_data] & 0xFF0000) >> 16);
             green = ((self->palette_data[pixel_data] & 0xFF00) >> 8);

@@ -81,6 +81,7 @@ INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
+INC += -I./nrfx/drivers/src
 INC += -I./bluetooth
 INC += -I./peripherals
 INC += -I../../lib/mp-readline
@@ -140,6 +141,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_twim.c \
 	drivers/src/nrfx_uarte.c \
 	drivers/src/nrfx_gpiote.c \
+	drivers/src/nrfx_rtc.c \
 	)
 
 ifdef EXTERNAL_FLASH_DEVICES
@@ -158,7 +160,6 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	bluetooth/ble_drv.c \
-	bluetooth/ble_uart.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -176,6 +177,7 @@ SRC_C += \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
+        peripherals/nrf/nvm.c \
 	peripherals/nrf/timers.c \
 	sd_mutex.c \
 	supervisor/shared/memory.c
@@ -207,6 +209,7 @@ ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os

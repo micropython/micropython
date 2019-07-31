@@ -46,22 +46,29 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset)
+//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000)
 //|
 //|   Create a FourWire object associated with the given pins.
+//|
+//|   The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
+//|   called even after a reload. (It does this so CircuitPython can use the display after your code
+//|   is done.) So, the first time you initialize a display bus in code.py you should call
+//|   :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
 //|   :param busio.SPI spi_bus: The SPI bus that make up the clock and data lines
 //|   :param microcontroller.Pin command: Data or command pin
 //|   :param microcontroller.Pin chip_select: Chip select pin
-//|   :param microcontroller.Pin reset: Reset pin
+//|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|   :param int baudrate: Maximum baudrate in Hz for the display on the bus
 //|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset };
+    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_baudrate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 24000000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -92,7 +99,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     }
 
     common_hal_displayio_fourwire_construct(self,
-        MP_OBJ_TO_PTR(spi), command, chip_select, reset);
+        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int);
     return self;
 }
 

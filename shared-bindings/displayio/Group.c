@@ -31,6 +31,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -41,19 +42,23 @@
 //|
 //| Manage a group of sprites and groups and how they are inter-related.
 //|
-//| .. class:: Group(*, max_size=4, scale=1)
+//| .. class:: Group(*, max_size=4, scale=1, x=0, y=0)
 //|
 //|   Create a Group of a given size and scale. Scale is in one dimension. For example, scale=2
 //|   leads to a layer's pixel being 2x2 pixels when in the group.
 //|
 //|   :param int max_size: The maximum group size.
 //|   :param int scale: Scale of layer pixels in one dimension.
+//|   :param int x: Initial x position within the parent.
+//|   :param int y: Initial y position within the parent.
 //|
 STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_max_size, ARG_scale };
+    enum { ARG_max_size, ARG_scale, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_max_size, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 4} },
         { MP_QSTR_scale, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
+        { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+        { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -70,14 +75,18 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
-    common_hal_displayio_group_construct(self, max_size, scale);
+    common_hal_displayio_group_construct(self, max_size, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_group_t* native_group(mp_obj_t group_obj) {
+displayio_group_t* native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
+    if (native_group == MP_OBJ_NULL) {
+        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+    }
+    mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
 }
 
@@ -168,7 +177,7 @@ const mp_obj_property_t displayio_group_y_obj = {
 //|     Append a layer to the group. It will be drawn above other layers.
 //|
 STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     common_hal_displayio_group_insert(self, common_hal_displayio_group_get_len(self), layer);
     return mp_const_none;
 }
@@ -179,12 +188,27 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append
 //|     Insert a layer into the group.
 //|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
     common_hal_displayio_group_insert(self, index, layer);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
+
+
+//|   .. method:: index(layer)
+//|
+//|     Returns the index of the first copy of layer. Raises ValueError if not found.
+//|
+STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
+    displayio_group_t *self = native_group(self_in);
+    mp_int_t index = common_hal_displayio_group_index(self, layer);
+    if (index < 0) {
+        mp_raise_ValueError(translate("object not in sequence"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(index);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_index_obj, displayio_group_obj_index);
 
 //|   .. method:: pop(i=-1)
 //|
@@ -198,7 +222,7 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_group_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    displayio_group_t *self = native_group(pos_args[0]);
 
     size_t index = mp_get_index(&displayio_group_type,
                                 common_hal_displayio_group_get_len(self),
@@ -208,12 +232,26 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
 
+
+//|   .. method:: remove(layer)
+//|
+//|     Remove the first copy of layer. Raises ValueError if it is not present.
+//|
+STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
+    mp_obj_t index = displayio_group_obj_index(self_in, layer);
+    displayio_group_t *self = native_group(self_in);
+
+    common_hal_displayio_group_pop(self, MP_OBJ_SMALL_INT_VALUE(index));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
+
 //|   .. method:: __len__()
 //|
 //|     Returns the number of layers in a Group
 //|
 STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
     uint16_t len = common_hal_displayio_group_get_len(self);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
@@ -247,7 +285,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|       del group[0]
 //|
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
-    displayio_group_t *self = MP_OBJ_TO_PTR(self_in);
+    displayio_group_t *self = native_group(self_in);
 
     if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
         mp_raise_NotImplementedError(translate("Slices not supported"));
@@ -257,7 +295,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
         if (value == MP_OBJ_SENTINEL) {
             // load
             return common_hal_displayio_group_get(self, index);
-        } else if (value == mp_const_none) {
+        } else if (value == MP_OBJ_NULL) {
             common_hal_displayio_group_pop(self, index);
         } else {
             common_hal_displayio_group_set(self, index, value);
@@ -272,7 +310,9 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_group_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&displayio_group_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&displayio_group_insert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&displayio_group_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&displayio_group_pop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&displayio_group_remove_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
@@ -282,5 +322,6 @@ const mp_obj_type_t displayio_group_type = {
     .make_new = displayio_group_make_new,
     .subscr = group_subscr,
     .unary_op = group_unary_op,
+    .getiter = mp_obj_new_generic_iterator,
     .locals_dict = (mp_obj_dict_t*)&displayio_group_locals_dict,
 };

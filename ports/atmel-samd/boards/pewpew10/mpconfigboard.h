@@ -5,9 +5,9 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+#define CIRCUITPY_INTERNAL_NVM_SIZE 256
 
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
+#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 
 #define IGNORE_PIN_PB00     1
@@ -32,3 +32,19 @@
 #define IGNORE_PIN_PB23     1
 #define IGNORE_PIN_PB30     1
 #define IGNORE_PIN_PB31     1
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_PA24     1
+#define IGNORE_PIN_PA25     1
+
+// Default protocol pins.
+
+#define DEFAULT_I2C_BUS_SCL (&pin_PA01)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA00)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_PA31)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA30)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA04)
+
+#define DEFAULT_UART_BUS_RX (&pin_PA01)
+#define DEFAULT_UART_BUS_TX (&pin_PA00)

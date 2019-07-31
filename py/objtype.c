@@ -117,6 +117,16 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
+// When instances are first created they have the base_init wrapper as their native parent's
+// instance because make_new combines __new__ and __init__. This object is invalid for the native
+// code so it must call this method to ensure that the given object has been __init__'d and is
+// valid.
+void mp_obj_assert_native_inited(mp_obj_t native_object) {
+    if (native_object == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+        mp_raise_NotImplementedError(translate("Call super().__init__() before accessing native object."));
+    }
+}
+
 // TODO
 // This implements depth-first left-to-right MRO, which is not compliant with Python3 MRO
 // http://python-history.blogspot.com/2010/06/method-resolution-order.html
@@ -964,6 +974,21 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     return false;
 }
+
+STATIC bool map_has_special_accessors(const mp_map_t *map) {
+    if (map == NULL) {
+        return false;
+    }
+    for (size_t i = 0; i < map->alloc; i++) {
+        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+            const mp_map_elem_t *elem = &map->table[i];
+            if (check_for_special_accessors(elem->key, elem->value)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 #endif
 
 STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -1158,20 +1183,6 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
 
     o->locals_dict = make_dict_long_lived(locals_dict, 10);
 
-    #if ENABLE_SPECIAL_ACCESSORS
-    // Check if the class has any special accessor methods
-    if (!(o->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-        for (size_t i = 0; i < o->locals_dict->map.alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(&o->locals_dict->map, i)) {
-                const mp_map_elem_t *elem = &o->locals_dict->map.table[i];
-                if (check_for_special_accessors(elem->key, elem->value)) {
-                    o->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
-                    break;
-                }
-            }
-        }
-    }
-    #endif
 
     const mp_obj_type_t *native_base;
     size_t num_native_bases = instance_count_native_bases(o, &native_base);
@@ -1180,6 +1191,17 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     }
 
     mp_map_t *locals_map = &o->locals_dict->map;
+    #if ENABLE_SPECIAL_ACCESSORS
+    // Check if the class has any special accessor methods
+    if (!(o->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS) &&
+            (map_has_special_accessors(locals_map) ||
+             (num_native_bases == 1 &&
+              native_base->locals_dict != NULL &&
+              map_has_special_accessors(&native_base->locals_dict->map)))) {
+        o->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
+    }
+    #endif
+
     mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // __new__ slot exists; check if it is a function

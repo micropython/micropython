@@ -31,12 +31,12 @@
 #include <stdbool.h>
 
 #include "py/obj.h"
-#include "shared-module/displayio/BuiltinFont.h"
+#include "shared-module/fontio/BuiltinFont.h"
 #include "shared-module/displayio/TileGrid.h"
 
 typedef struct  {
     mp_obj_base_t base;
-    const displayio_builtinfont_t* font;
+    const fontio_builtinfont_t* font;
     uint16_t cursor_x;
     uint16_t cursor_y;
     displayio_tilegrid_t* tilegrid;

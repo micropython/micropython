@@ -36,6 +36,8 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 
+#include "common-hal/busio/SPI.h" // for never_reset_sercom
+
 // Number of times to try to send packet if failed.
 #define ATTEMPTS 2
 
@@ -224,4 +226,11 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         return MP_ENODEV;
     }
     return MP_EIO;
+}
+
+void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
+    never_reset_sercom(self->i2c_desc.device.hw);
+
+    never_reset_pin_number(self->scl_pin);
+    never_reset_pin_number(self->sda_pin);
 }

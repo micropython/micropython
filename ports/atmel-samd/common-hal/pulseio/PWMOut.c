@@ -102,6 +102,8 @@ void pwmout_reset(void) {
         }
         tcc_channels[i] = mask;
         tccs[i]->CTRLA.bit.SWRST = 1;
+        while (tccs[i]->CTRLA.bit.SWRST == 1) {
+        }
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
     for (int i = 0; i < TC_INST_NUM; i++) {

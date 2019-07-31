@@ -52,6 +52,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/touchio/TouchIn.h"
 #include "samd/cache.h"
@@ -70,6 +71,9 @@
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
+#endif
+#if CIRCUITPY_GAMEPADSHIFT
+#include "shared-module/gamepadshift/__init__.h"
 #endif
 #include "shared-module/_pew/PewPew.h"
 
@@ -171,6 +175,9 @@ safe_mode_t port_init(void) {
 
     init_shared_dma();
 
+    // Reset everything into a known state before board_init.
+    reset_port();
+
     // Init the board last so everything else is ready
     board_init();
 
@@ -225,6 +232,9 @@ void reset_port(void) {
 
 #if CIRCUITPY_GAMEPAD
     gamepad_reset();
+#endif
+#if CIRCUITPY_GAMEPADSHIFT
+    gamepadshift_reset();
 #endif
 #if CIRCUITPY_PEW
     pew_reset();

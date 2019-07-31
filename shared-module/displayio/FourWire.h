@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FOURWIRE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FOURWIRE_H
 
 #include "common-hal/busio/SPI.h"
 #include "common-hal/digitalio/DigitalInOut.h"
@@ -38,6 +38,9 @@ typedef struct {
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
+    uint32_t frequency;
+    uint8_t polarity;
+    uint8_t phase;
 } displayio_fourwire_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_FOURWIRE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FOURWIRE_H

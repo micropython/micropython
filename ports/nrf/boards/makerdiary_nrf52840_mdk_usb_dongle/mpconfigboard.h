@@ -40,7 +40,3 @@
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define BOARD_HAS_CRYSTAL 1  // according to the schematic we do
-
-// See https://github.com/adafruit/circuitpython/issues/1300, circuitpython
-// doesn't yet support NFC so just force those pins to be GPIO.
-#define CONFIG_NFCT_PINS_AS_GPIOS

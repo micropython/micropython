@@ -132,11 +132,15 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length) 
 }
 
 void spi_flash_init(void) {
+    cs_pin.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&cs_pin, SPI_FLASH_CS_PIN);
+
 
     // Set CS high (disabled).
     common_hal_digitalio_digitalinout_switch_to_output(&cs_pin, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_never_reset(&cs_pin);
 
+    spi.base.type = &busio_spi_type;
     common_hal_busio_spi_construct(&spi, SPI_FLASH_SCK_PIN, SPI_FLASH_MOSI_PIN, SPI_FLASH_MISO_PIN);
     common_hal_busio_spi_never_reset(&spi);
 }

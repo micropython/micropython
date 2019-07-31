@@ -105,7 +105,7 @@ void reset_pin_number(uint8_t pin_number) {
     #ifdef SPEAKER_ENABLE_PIN
     if (pin_number == SPEAKER_ENABLE_PIN->number) {
         speaker_enable_in_use = false;
-        common_hal_digitalio_digitalinout_switch_to_output(
+        common_hal_digitalio_digitalinout_switch_to_output(SPEAKER_ENABLE_PIN, true, DRIVE_MODE_PUSH_PULL);
         nrf_gpio_pin_dir_set(pin_number, NRF_GPIO_PIN_DIR_OUTPUT);
         nrf_gpio_pin_write(pin_number, false);
     }
@@ -168,5 +168,15 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
+    #ifdef NRF52840
+    // If NFC pins are enabled for NFC, don't allow them to be used for GPIO.
+    if (((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) ==
+         (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) &&
+        (pin->number == 9 || pin->number == 10)) {
+        return false;
+    }
+    #endif
+
     return pin_number_is_free(pin->number);
+
 }
