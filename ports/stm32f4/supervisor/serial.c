@@ -33,7 +33,7 @@ UART_HandleTypeDef huart2;
 
 void serial_init(void) {
     huart2.Instance = USART2;
-    huart2.Init.BaudRate = 9600;
+    huart2.Init.BaudRate = 115200;
     huart2.Init.WordLength = UART_WORDLENGTH_8B;
     huart2.Init.StopBits = UART_STOPBITS_1;
     huart2.Init.Parity = UART_PARITY_NONE;
@@ -44,7 +44,7 @@ void serial_init(void) {
     {
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET);
     }
-    HAL_UART_Transmit(&huart2, (uint8_t*)"Serial On", 9, 5000);
+    HAL_UART_Transmit(&huart2, (uint8_t*)"Serial On", 9, 2);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
@@ -54,7 +54,7 @@ bool serial_connected(void) {
 
 char serial_read(void) {
     uint8_t data;
-    HAL_UART_Receive(&huart2, &data, 1,5000);
+    HAL_UART_Receive(&huart2, &data, 1,500);
     return data;
 }
 
