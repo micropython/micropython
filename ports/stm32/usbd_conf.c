@@ -361,7 +361,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
+USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const uint8_t *fifo_size) {
     #if MICROPY_HW_USB_FS
     if (pdev->id ==  USB_PHY_FS_ID) {
         #if defined(STM32WB)
@@ -401,35 +401,19 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
+        // Set FIFO buffer sizes
         #if !MICROPY_HW_USB_IS_MULTI_OTG
-        // We have 512 16-bit words it total to use here (when using PCD_SNG_BUF)
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x00, PCD_SNG_BUF, 64); // EP0
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80, PCD_SNG_BUF, 128); // EP0
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x01, PCD_SNG_BUF, 192); // MSC / HID
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x81, PCD_SNG_BUF, 256); // MSC / HID
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x02, PCD_SNG_BUF, 320); // unused
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x82, PCD_SNG_BUF, 320); // CDC CMD
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x03, PCD_SNG_BUF, 384); // CDC DATA
-        HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x83, PCD_SNG_BUF, 448); // CDC DATA
+        uint32_t fifo_offset = USBD_PMA_RESERVE; // need to reserve some data at start of FIFO
+        for (size_t i = 0; i < USBD_PMA_NUM_FIFO; ++i) {
+            uint16_t ep_addr = ((i & 1) * 0x80) | (i >> 1);
+            HAL_PCDEx_PMAConfig(&pcd_fs_handle, ep_addr, PCD_SNG_BUF, fifo_offset);
+            fifo_offset += fifo_size[i] * 4;
+        }
         #else
-
-        // We have 320 32-bit words in total to use here
-        #if MICROPY_HW_USB_CDC_NUM == 2
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 16); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 32); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 4, 16); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 5, 32); // CDC2 DATA
-        #else
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 32); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 64); // CDC DATA
-        #endif
-
+        HAL_PCD_SetRxFiFo(&pcd_fs_handle, fifo_size[0] * 4);
+        for (size_t i = 0; i < USBD_FS_NUM_TX_FIFO; ++i) {
+            HAL_PCD_SetTxFiFo(&pcd_fs_handle, i, fifo_size[1 + i] * 4);
+        }
         #endif
     }
     #endif
@@ -486,22 +470,12 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_hs_handle);
 
-        // We have 1024 32-bit words in total to use here
-        #if MICROPY_HW_USB_CDC_NUM == 3
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 328);
-        #else
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 464);
-        #endif
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 256); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 8); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 128); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 8); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 128); // CDC2 DATA
-        #if MICROPY_HW_USB_CDC_NUM == 3
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 6, 8); // CDC3 CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 7, 128); // CDC3 DATA
-        #endif
+        // Set FIFO buffer sizes
+        fifo_size += USBD_FS_NUM_FIFO; // skip over FS FIFO size values
+        HAL_PCD_SetRxFiFo(&pcd_hs_handle, fifo_size[0] * 4);
+        for (size_t i = 0; i < USBD_HS_NUM_TX_FIFO; ++i) {
+            HAL_PCD_SetTxFiFo(&pcd_hs_handle, i, fifo_size[1 + i] * 4);
+        }
     }
     #endif  // MICROPY_HW_USB_HS
 
