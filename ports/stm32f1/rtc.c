@@ -66,9 +66,6 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc);
 STATIC void RTC_CalendarConfig(void);
 
 STATIC HAL_StatusTypeDef RTC_EnterInitMode();
-#if 0
-STATIC HAL_StatusTypeDef RTC_ExitInitMode();
-#endif
 
 #if MICROPY_HW_RTC_USE_LSE || MICROPY_HW_RTC_USE_BYPASS
 STATIC bool rtc_use_lse = true;
@@ -173,11 +170,7 @@ void rtc_init_finalise() {
 
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
-    #if defined(STM32L4)
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
-    #else
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
-    #endif
         // power on reset occurred
         rtc_info |= 0x10000;
     }
@@ -203,35 +196,22 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
 
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
-        #if !defined(STM32H7)
         // Enable Power Clock
         __HAL_RCC_PWR_CLK_ENABLE();
-        #endif
 
         // Enable access to the backup domain
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
-        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
-        //__HAL_RCC_PWR_CLK_ENABLE();
-        // Enable write access to Backup domain
-        //PWR->CR1 |= PWR_CR1_DBP;
-        // Wait for Backup domain Write protection disable
-        while ((PWR->CR1 & PWR_CR1_DBP) == RESET) {
-            if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
-                return HAL_TIMEOUT;
-            }
-        }
-        #else
-        // Enable write access to Backup domain
-        //PWR->CR |= PWR_CR_DBP;
+        // 取消备份域写保护
+        PWR->CR |= PWR_CR_DBP;
+
         // Wait for Backup domain Write protection disable
         while ((PWR->CR & PWR_CR_DBP) == RESET) {
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
                 return HAL_TIMEOUT;
             }
         }
-        #endif
 
         #if MICROPY_HW_RTC_USE_BYPASS
         // If LSEBYP is enabled and new state is non-bypass then disable LSEBYP

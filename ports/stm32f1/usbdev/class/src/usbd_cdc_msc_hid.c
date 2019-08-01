@@ -80,13 +80,17 @@
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
 
-#define CDC_IN_EP(i) (0x83 + 2 * (i))
+// 按照以下方式分配EP，可用值为:
+// CDC1: IN:0x83  OUT-0x03   CMD:0x82
+// CDC2: IN:0x85  OUT-0x05   CMD:0x84
+// CDC3: IN:0x87  OUT-0x07   CMD:0x86
+#define CDC_IN_EP(i)  (0x83 + 2 * (i))
 #define CDC_OUT_EP(i) (0x03 + 2 * (i))
 #define CDC_CMD_EP(i) (0x82 + 2 * (i))
 
-#define HID_IN_EP_WITH_CDC (0x81)
+#define HID_IN_EP_WITH_CDC  (0x81)
 #define HID_OUT_EP_WITH_CDC (0x01)
-#define HID_IN_EP_WITH_MSC (0x83)
+#define HID_IN_EP_WITH_MSC  (0x83)
 #define HID_OUT_EP_WITH_MSC (0x03)
 
 #define USB_DESC_TYPE_ASSOCIATION (0x0b)
@@ -118,18 +122,19 @@
 #endif
 
 // USB partial configuration descriptor
+// USB 部分 配置描述符
 static const uint8_t head_desc_data[HEAD_DESC_SIZE] = {
     //--------------------------------------------------------------------------
-    // Configuration Descriptor
+    // 配置描述符
     0x09,   // bLength: Configuration Descriptor size
     USB_DESC_TYPE_CONFIGURATION, // bDescriptorType: Configuration
-    0x00,   // wTotalLength -- to be filled in
-    0x00,   // wTotalLength -- to be filled in
+    0x00,   // wTotalLength   -- to be filled in
+    0x00,   // wTotalLength   -- to be filled in
     0x00,   // bNumInterfaces -- to be filled in
     0x01,   // bConfigurationValue: Configuration value
-    0x00,   // iConfiguration: Index of string descriptor describing the configuration
+    0x00,   // iConfiguration:      Index of string descriptor describing the configuration
     CONFIG_DESC_ATTRIBUTES, // bmAttributes
-    CONFIG_DESC_MAXPOWER, // bMaxPower
+    CONFIG_DESC_MAXPOWER,   // bMaxPower
 };
 
 // USB MSC partial configuration descriptor
@@ -154,8 +159,8 @@ static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
     USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
     MSC_IN_EP,                      // bEndpointAddress: IN, address 3
     0x02,                           // bmAttributes: Bulk endpoint type
-    LOBYTE(MSC_FS_MAX_PACKET),      // wMaxPacketSize
-    HIBYTE(MSC_FS_MAX_PACKET),
+    LOBYTE(MSC_MAX_PACKET),      // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
     0x00,                           // bInterval: ignore for Bulk transfer
 
     // Endpoint OUT descriptor
@@ -163,8 +168,8 @@ static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
     USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
     MSC_OUT_EP,                     // bEndpointAddress: OUT, address 3
     0x02,                           // bmAttributes: Bulk endpoint type
-    LOBYTE(MSC_FS_MAX_PACKET),      // wMaxPacketSize
-    HIBYTE(MSC_FS_MAX_PACKET),
+    LOBYTE(MSC_MAX_PACKET),      // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
     0x00,                           // bInterval: ignore for Bulk transfer
 };
 
@@ -172,91 +177,91 @@ static const uint8_t msc_class_desc_data[MSC_CLASS_DESC_SIZE] = {
 static const uint8_t cdc_class_desc_data[CDC_CLASS_DESC_SIZE] = {
     //==========================================================================
     // Interface Association for CDC VCP
-    0x08,   // bLength: 8 bytes
-    USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
-    0x00,   // bFirstInterface: first interface for this association -- to be filled in
-    0x02,   // bInterfaceCount: nummber of interfaces for this association
-    0x02,   // bFunctionClass: Communication Interface Class
-    0x02,   // bFunctionSubClass: Abstract Control Model
-    0x01,   // bFunctionProtocol: Common AT commands
-    0x00,   // iFunction: index of string for this function
+    0x08,                      // bLength:           8 bytes
+    USB_DESC_TYPE_ASSOCIATION, // bDescriptorType:   IAD
+    0x00,                      // bFirstInterface:   first interface for this association -- to be filled in
+    0x02,                      // bInterfaceCount:   Two endpoints used
+    0x02,                      // bFunctionClass:    Communication Interface Class
+    0x02,                      // bFunctionSubClass: Abstract Control Model
+    0x01,                      // bFunctionProtocol: Common AT commands
+    0x00,                      // iFunction:         index of string for this function
 
     //--------------------------------------------------------------------------
     // Interface Descriptor
-    0x09,   // bLength: Interface Descriptor size
-    USB_DESC_TYPE_INTERFACE, // bDescriptorType: Interface
-    0x00,   // bInterfaceNumber: Number of Interface -- to be filled in
-    0x00,   // bAlternateSetting: Alternate setting
-    0x01,   // bNumEndpoints: One endpoints used
-    0x02,   // bInterfaceClass: Communication Interface Class
-    0x02,   // bInterfaceSubClass: Abstract Control Model
-    0x01,   // bInterfaceProtocol: Common AT commands
-    0x00,   // iInterface:
+    0x09,                    // bLength:            Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE, // bDescriptorType:    Interface
+    0x00,                    // bInterfaceNumber:   Number of Interface -- to be filled in
+    0x00,                    // bAlternateSetting:  Alternate setting
+    0x01,                    // bNumEndpoints:      One endpoints used
+    0x02,                    // bInterfaceClass:    Communication Interface Class
+    0x02,                    // bInterfaceSubClass: Abstract Control Model
+    0x01,                    // bInterfaceProtocol: Common AT commands
+    0x00,                    // iInterface:
 
     // Header Functional Descriptor
-    0x05,   // bLength: Endpoint Descriptor size
-    0x24,   // bDescriptorType: CS_INTERFACE
-    0x00,   // bDescriptorSubtype: Header Func Desc
-    0x10,   // bcdCDC: spec release number
-    0x01,   // ?
+    0x05,   // bLength:             Endpoint Descriptor size
+    0x24,   // bDescriptorType:     CS_INTERFACE
+    0x00,   // bDescriptorSubtype:  Header Func Desc
+    0x10,   // bcdCDC:              spec release number
+    0x01,
 
     // Call Management Functional Descriptor
     0x05,   // bFunctionLength
-    0x24,   // bDescriptorType: CS_INTERFACE
+    0x24,   // bDescriptorType:    CS_INTERFACE
     0x01,   // bDescriptorSubtype: Call Management Func Desc
-    0x00,   // bmCapabilities: D0+D1
-    0x00,   // bDataInterface -- to be filled in
+    0x00,   // bmCapabilities:     D0+D1
+    0x00,   // bDataInterface:     --to be filled in
 
     // ACM Functional Descriptor
     0x04,   // bFunctionLength
-    0x24,   // bDescriptorType: CS_INTERFACE
+    0x24,   // bDescriptorType:    CS_INTERFACE
     0x02,   // bDescriptorSubtype: Abstract Control Management desc
     0x02,   // bmCapabilities
 
     // Union Functional Descriptor
     0x05,   // bFunctionLength
-    0x24,   // bDescriptorType: CS_INTERFACE
+    0x24,   // bDescriptorType:    CS_INTERFACE
     0x06,   // bDescriptorSubtype: Union func desc
-    0x00,   // bMasterInterface: Communication class interface -- to be filled in
-    0x00,   // bSlaveInterface0: Data Class Interface -- to be filled in
+    0x00,   // bMasterInterface:   Communication class interface -- to be filled in
+    0x00,   // bSlaveInterface0:   Data Class Interface -- to be filled in
 
     // Endpoint CMD Descriptor
-    0x07,                           // bLength: Endpoint Descriptor size
-    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint
-    CDC_CMD_EP(0),                  // bEndpointAddress
-    0x03,                           // bmAttributes: Interrupt
+    0x07,                           // bLength:          Endpoint Descriptor size
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType:  Endpoint
+    CDC_CMD_EP(0),                  // bEndpointAddress:
+    0x03,                           // bmAttributes:     Interrupt
     LOBYTE(CDC_CMD_PACKET_SIZE),    // wMaxPacketSize:
     HIBYTE(CDC_CMD_PACKET_SIZE),
     0x20,                           // bInterval: polling interval in frames of 1ms
 
     //--------------------------------------------------------------------------
     // Data class interface descriptor
-    0x09,   // bLength: Endpoint Descriptor size
-    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface
-    0x00,   // bInterfaceNumber: Number of Interface -- to be filled in
-    0x00,   // bAlternateSetting: Alternate setting
-    0x02,   // bNumEndpoints: Two endpoints used
-    0x0A,   // bInterfaceClass: CDC
-    0x00,   // bInterfaceSubClass: ?
-    0x00,   // bInterfaceProtocol: ?
-    0x00,   // iInterface:
+    0x09,                    // bLength:            Endpoint Descriptor size
+    USB_DESC_TYPE_INTERFACE, // bDescriptorType:    interface
+    0x00,                    // bInterfaceNumber:   Number of Interface -- to be filled in
+    0x00,                    // bAlternateSetting:  Alternate setting
+    0x02,                    // bNumEndpoints:      Two endpoints used
+    0x0A,                    // bInterfaceClass:    CDC
+    0x00,                    // bInterfaceSubClass: ?
+    0x00,                    // bInterfaceProtocol: ?
+    0x00,                    // iInterface:
 
     // Endpoint OUT Descriptor
-    0x07,                               // bLength: Endpoint Descriptor size
+    0x07,                               // bLength:         Endpoint Descriptor size
     USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
     CDC_OUT_EP(0),                      // bEndpointAddress
-    0x02,                               // bmAttributes: Bulk
-    LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
-    HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
-    0x00,                               // bInterval: ignore for Bulk transfer
+    0x02,                               // bmAttributes:    Bulk
+    LOBYTE(CDC_DATA_MAX_PACKET_SIZE),   // wMaxPacketSize:
+    HIBYTE(CDC_DATA_MAX_PACKET_SIZE),
+    0x00,                               // bInterval:       ignore for Bulk transfer
 
     // Endpoint IN Descriptor
-    0x07,                               // bLength: Endpoint Descriptor size
+    0x07,                               // bLength:         Endpoint Descriptor size
     USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
     CDC_IN_EP(0),                       // bEndpointAddress
-    0x02,                               // bmAttributes: Bulk
-    LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
-    HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
+    0x02,                               // bmAttributes:    Bulk
+    LOBYTE(CDC_DATA_MAX_PACKET_SIZE),   // wMaxPacketSize:
+    HIBYTE(CDC_DATA_MAX_PACKET_SIZE),
     0x00,                               // bInterval: ignore for Bulk transfer
 };
 
@@ -452,6 +457,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     size_t n = HEAD_DESC_SIZE;
     uint8_t *d = usbd->usbd_config_desc;
     uint8_t num_itf = 0;
+
     switch (usbd->usbd_mode & USBD_MODE_IFACE_MASK) {
         case USBD_MODE_MSC:
             n += make_msc_desc(d + n);
@@ -556,13 +562,13 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
     return 0;
 }
 
+// CDC类状态机初始化
 static void usbd_cdc_state_init(USBD_HandleTypeDef *pdev, usbd_cdc_msc_hid_state_t *usbd, usbd_cdc_state_t *cdc, uint8_t cmd_ep) {
-    int mp = usbd_cdc_max_packet(pdev);
-
+    
     // Open endpoints
-    USBD_LL_OpenEP(pdev, cdc->in_ep, USBD_EP_TYPE_BULK, mp);
-    USBD_LL_OpenEP(pdev, cdc->out_ep, USBD_EP_TYPE_BULK, mp);
-    USBD_LL_OpenEP(pdev, cmd_ep, USBD_EP_TYPE_INTR, CDC_CMD_PACKET_SIZE);
+    USBD_LL_OpenEP(pdev, cdc->in_ep,  USBD_EP_TYPE_BULK, CDC_DATA_MAX_PACKET_SIZE);
+    USBD_LL_OpenEP(pdev, cdc->out_ep, USBD_EP_TYPE_BULK, CDC_DATA_MAX_PACKET_SIZE);
+    USBD_LL_OpenEP(pdev, cmd_ep,      USBD_EP_TYPE_INTR, CDC_CMD_PACKET_SIZE);
 
     // Init state
     cdc->usbd = usbd;
@@ -572,13 +578,14 @@ static void usbd_cdc_state_init(USBD_HandleTypeDef *pdev, usbd_cdc_msc_hid_state
     // Init interface
     uint8_t *buf = usbd_cdc_init(cdc);
 
-    // Prepare Out endpoint to receive next packet
-    USBD_LL_PrepareReceive(pdev, cdc->out_ep, buf, mp);
+    // Out EP 准备接收下个数据包
+    USBD_LL_PrepareReceive(pdev, cdc->out_ep, buf, CDC_DATA_MAX_PACKET_SIZE);
 }
 
 static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
+	
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-
+	
     // CDC VCP component(s)
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
         if (usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) {
@@ -588,20 +595,8 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 
     if (usbd->usbd_mode & USBD_MODE_IFACE_MSC) {
         // MSC component
-
-        int mp = usbd_msc_max_packet(pdev);
-
-        // Open EP OUT
-        USBD_LL_OpenEP(pdev,
-                       MSC_OUT_EP,
-                       USBD_EP_TYPE_BULK,
-                       mp);
-
-        // Open EP IN
-        USBD_LL_OpenEP(pdev,
-                       MSC_IN_EP,
-                       USBD_EP_TYPE_BULK,
-                       mp);
+        USBD_LL_OpenEP(pdev, MSC_OUT_EP, USBD_EP_TYPE_BULK, MSC_MAX_PACKET);
+        USBD_LL_OpenEP(pdev, MSC_IN_EP,  USBD_EP_TYPE_BULK, MSC_MAX_PACKET);
 
         // Init the BOT layer
         MSC_BOT_Init(pdev);
@@ -611,19 +606,11 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
         // HID component
 
         // get max packet lengths from descriptor
-        uint16_t mps_in =
-            usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_LO]
-            | (usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_HI] << 8);
-        uint16_t mps_out =
-            usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
-            | (usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
+        uint16_t mps_in = usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_LO] | (usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_HI] << 8);
+        uint16_t mps_out = usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO] | (usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
 
-        // Open EP IN
         USBD_LL_OpenEP(pdev, usbd->hid->in_ep, USBD_EP_TYPE_INTR, mps_in);
-
-        // Open EP OUT
         USBD_LL_OpenEP(pdev, usbd->hid->out_ep, USBD_EP_TYPE_INTR, mps_out);
-
 
         usbd->hid->usbd = usbd;
         uint8_t *buf = usbd_hid_init(usbd->hid);
@@ -643,7 +630,6 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
         if ((usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && usbd->cdc[i]) {
             // CDC VCP component
-
             usbd_cdc_deinit(usbd->cdc[i]);
 
             // close endpoints
@@ -676,7 +662,6 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 }
 
 static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req) {
-
     /*
     printf("SU: %x %x %x %x\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex);
 
@@ -699,8 +684,9 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     uint8_t mode = usbd->usbd_mode;
     uint8_t recipient = 0;
     usbd_cdc_state_t *cdc = NULL;
+
     switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
-        case USB_REQ_RECIPIENT_INTERFACE: {
+        case USB_REQ_RECIPIENT_INTERFACE: { // 接口处理
             uint16_t iface = req->wIndex;
             if ((mode & USBD_MODE_IFACE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
                 recipient = USBD_MODE_MSC;
@@ -717,7 +703,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
             }
             break;
         }
-        case USB_REQ_RECIPIENT_ENDPOINT: {
+        case USB_REQ_RECIPIENT_ENDPOINT: { // 端点处理
             uint8_t ep = req->wIndex & 0x7f;
             if ((mode & USBD_MODE_IFACE_MSC) && ep == MSC_OUT_EP) {
                 recipient = USBD_MODE_MSC;
@@ -743,7 +729,6 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     }
 
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
-
         // Class request
         case USB_REQ_TYPE_CLASS:
             if (recipient == USBD_MODE_CDC) {
@@ -766,7 +751,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
             } else if (recipient == USBD_MODE_MSC) {
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
-                        if ((req->wValue  == 0) && (req->wLength == 1) && ((req->bmRequest & 0x80) == 0x80)) {
+                        if ((req->wValue == 0) && (req->wLength == 1) && ((req->bmRequest & 0x80) == 0x80)) {
                             usbd->MSC_BOT_ClassData.max_lun = usbd->MSC_BOT_ClassData.bdev_ops->GetMaxLun();
                             USBD_CtlSendData(pdev, (uint8_t *)&usbd->MSC_BOT_ClassData.max_lun, 1);
                         } else {
@@ -832,10 +817,10 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         USBD_LL_CloseEP(pdev, (uint8_t)req->wIndex);
                         if((((uint8_t)req->wIndex) & 0x80) == 0x80) {
                             // Open EP IN
-                            USBD_LL_OpenEP(pdev, MSC_IN_EP, USBD_EP_TYPE_BULK, usbd_msc_max_packet(pdev));
+                            USBD_LL_OpenEP(pdev, MSC_IN_EP, USBD_EP_TYPE_BULK, MSC_MAX_PACKET);
                         } else {
                             // Open EP OUT
-                            USBD_LL_OpenEP(pdev, MSC_OUT_EP, USBD_EP_TYPE_BULK, usbd_msc_max_packet(pdev));
+                            USBD_LL_OpenEP(pdev, MSC_OUT_EP, USBD_EP_TYPE_BULK, MSC_MAX_PACKET);
                         }
                         // Handle BOT error
                         MSC_BOT_CplClrFeature(pdev, (uint8_t)req->wIndex);
@@ -872,19 +857,21 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     return USBD_OK;
 }
 
-/* unused
-static uint8_t EP0_TxSent(USBD_HandleTypeDef *pdev) {
-}
-*/
-
 static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
+
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
         if (usbd->cdc[i] != NULL && usbd->cdc[i]->cur_request != 0xff) {
-            usbd_cdc_control(usbd->cdc[i], usbd->cdc[i]->cur_request, (uint8_t*)usbd->cdc[i]->ctl_packet_buf, usbd->cdc[i]->cur_length);
+            usbd_cdc_control(
+				usbd->cdc[i], 
+				usbd->cdc[i]->cur_request, 
+				(uint8_t*)usbd->cdc[i]->ctl_packet_buf, 
+				usbd->cdc[i]->cur_length
+			);
             usbd->cdc[i]->cur_request = 0xff;
         }
     }
+
     return USBD_OK;
 }
 
@@ -892,7 +879,10 @@ static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) 
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
-        if ((usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && (epnum == (CDC_IN_EP(i) & 0x7f) || epnum == (CDC_CMD_EP(i) & 0x7f))) {
+        if (
+			(usbd->usbd_mode & USBD_MODE_IFACE_CDC(i)) && 
+			(epnum == (CDC_IN_EP(i) & 0x7f) || epnum == (CDC_CMD_EP(i) & 0x7f))
+		) {
             usbd->cdc[i]->tx_in_progress = 0;
             usbd_cdc_tx_ready(usbd->cdc[i]);
             return USBD_OK;
@@ -944,11 +934,6 @@ static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *
     return usbd->usbd_config_desc;
 }
 
-uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    *length = 0;
-    return NULL;
-}
-
 // data received on non-control OUT endpoint
 uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t *buf) {
     if (cdc->tx_in_progress == 0) {
@@ -967,8 +952,7 @@ uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t
 uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
     // Suspend or Resume USB Out process
     // Prepare Out endpoint to receive next packet
-    USBD_LL_PrepareReceive(cdc->usbd->pdev, cdc->out_ep, buf, usbd_cdc_max_packet(cdc->usbd->pdev));
-
+    USBD_LL_PrepareReceive(cdc->usbd->pdev, cdc->out_ep, buf, CDC_DATA_MAX_PACKET_SIZE);
     return USBD_OK;
 }
 
@@ -1032,7 +1016,7 @@ const USBD_ClassTypeDef USBD_CDC_MSC_HID = {
     USBD_CDC_MSC_HID_GetCfgDesc,
     USBD_CDC_MSC_HID_GetCfgDesc,
     USBD_CDC_MSC_HID_GetCfgDesc,
-    USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor,
+    NULL,
 };
 
 #endif

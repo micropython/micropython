@@ -46,26 +46,17 @@
 
 #if MICROPY_HW_ENABLE_USB
 
-// Work out which USB device to use as the main one (the one with the REPL)
-#if !defined(MICROPY_HW_USB_MAIN_DEV)
-#if defined(MICROPY_HW_USB_FS)
-#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#else
-#error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
-#endif
-#endif
-
 STATIC void pyb_usb_vcp_init0(void);
 
 // this will be persistent across a soft-reset
 mp_uint_t pyb_usb_flags = 0;
 
 typedef struct _usb_device_t {
-    uint32_t enabled;
-    USBD_HandleTypeDef hUSBDDevice;
-    usbd_cdc_msc_hid_state_t usbd_cdc_msc_hid_state;
-    usbd_cdc_itf_t usbd_cdc_itf[MICROPY_HW_USB_CDC_NUM];
-    usbd_hid_itf_t usbd_hid_itf;
+    uint32_t enabled;                                    // 是否允许
+    USBD_HandleTypeDef hUSBDDevice;                      // USB句柄
+    usbd_cdc_msc_hid_state_t usbd_cdc_msc_hid_state;     // USB状态机(包含设备、配置、字符串描述符)、cdc&hid状态机
+    usbd_cdc_itf_t usbd_cdc_itf[MICROPY_HW_USB_CDC_NUM]; // CDC接口实例数组
+    usbd_hid_itf_t usbd_hid_itf;                         // HID接口实例
 } usb_device_t;
 
 usb_device_t usb_device = {0};
@@ -121,11 +112,11 @@ void pyb_usb_init0(void) {
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info) {
     usb_device_t *usb_dev = &usb_device;
     if (!usb_dev->enabled) {
-        // only init USB once in the device's power-lifetime
+        // 持续供电时，只初始化一次
 
         // set up the USBD state
         USBD_HandleTypeDef *usbd = &usb_dev->hUSBDDevice;
-        usbd->id = MICROPY_HW_USB_MAIN_DEV;
+        usbd->id = 0;
         usbd->dev_state  = USBD_STATE_DEFAULT;
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
@@ -143,7 +134,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, co
             return false;
         }
 
-        // Configure the MSC interface
+        // 配置 MSC 接口
         const void *msc_unit_default[1];
         if (msc_n == 0) {
             msc_n = 1;
@@ -159,13 +150,18 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, co
                     break;
             }
         }
+
+        // 初始化逻辑单元
         usbd_msc_init_lu(msc_n, msc_unit);
+        // 注册 MSC Class
         USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&usbd_msc_fops);
 
-        // start the USB device
-        USBD_LL_Init(usbd, (mode & USBD_MODE_HIGH_SPEED) != 0);
+        // 初始化USB底层设备
+        USBD_LL_Init(usbd, 0);
         USBD_LL_Start(usbd);
         usb_dev->enabled = true;
+    } else {
+        // TODO: 模拟设备插入、让重新枚举一次
     }
 
     return true;
@@ -220,11 +216,6 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
 
     vcp = pyb.USB_VCP() # get the VCP device for read/write
     hid = pyb.USB_HID() # get the HID device for write/poll
-
-  Possible extensions:
-    pyb.usb_mode('host', ...)
-    pyb.usb_mode('OTG', ...)
-    pyb.usb_mode(..., port=2) # for second USB port
 */
 
 STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -239,9 +230,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     // fetch the current usb mode -> pyb.usb_mode()
     if (n_args == 0) {
-    #if defined(USE_HOST_MODE)
-        return MP_OBJ_NEW_QSTR(MP_QSTR_host);
-    #else
         uint8_t mode = USBD_GetMode(&usb_device.usbd_cdc_msc_hid_state);
         switch (mode & USBD_MODE_IFACE_MASK) {
             case USBD_MODE_CDC:
@@ -259,7 +247,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             default:
                 return mp_const_none;
         }
-    #endif
     }
 
     // parse args
@@ -278,20 +265,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     // get mode string
     const char *mode_str = mp_obj_str_get_str(args[ARG_mode].u_obj);
-
-#if defined(USE_HOST_MODE)
-
-    // hardware configured for USB host mode
-
-    if (strcmp(mode_str, "host") == 0) {
-        pyb_usb_host_init();
-    } else {
-        goto bad_mode;
-    }
-
-#else
-
-    // hardware configured for USB device mode
 
     // get the VID, PID and USB mode
     // note: PID=-1 means select PID based on mode
@@ -396,8 +369,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         goto bad_mode;
     }
 
-#endif
-
     return mp_const_none;
 
 bad_mode:
@@ -493,12 +464,6 @@ STATIC mp_obj_t pyb_usb_vcp_isconnected(mp_obj_t self_in) {
     return mp_obj_new_bool(usbd_cdc_is_connected(self->cdc_itf));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconnected);
-
-// deprecated in favour of USB_VCP.isconnected
-STATIC mp_obj_t pyb_have_cdc(void) {
-    return pyb_usb_vcp_isconnected(MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]));
-}
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
@@ -753,12 +718,6 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_hid_send_obj, pyb_usb_hid_send);
-
-// deprecated in favour of USB_HID.send
-STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
-    return pyb_usb_hid_send(MP_OBJ_FROM_PTR(&pyb_usb_hid_obj), arg);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
 STATIC const mp_rom_map_elem_t pyb_usb_hid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_usb_hid_send_obj) },

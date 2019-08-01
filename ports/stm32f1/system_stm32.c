@@ -74,39 +74,10 @@
   *
   ******************************************************************************
   */
-
-/** @addtogroup CMSIS
-  * @{
-  */
-
-/** @addtogroup stm32fxxx_system
-  * @{
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_Includes
-  * @{
-  */
-
 #include "py/mphal.h"
 #include "powerctrl.h"
 
 void __fatal_error(const char *msg);
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_TypesDefinitions
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_Defines
-  * @{
-  */
 
 const uint8_t AHBPrescTable[16U] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
@@ -120,21 +91,6 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
 								  This value must be a multiple of 0x200. */
 /******************************************************************************/
 
-/**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_Macros
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_Variables
-  * @{
-  */
 /* This variable is updated in three ways:
       1) by calling CMSIS function SystemCoreClockUpdate()
       2) by calling HAL API function HAL_RCC_GetHCLKFreq()
@@ -146,30 +102,13 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
 uint32_t SystemCoreClock = 72000000U;
 
 /**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_FunctionPrototypes
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32Fxxx_System_Private_Functions
-  * @{
-  */
-
-/**
   * @brief  Setup the microcontroller system
   *         Initialize the FPU setting, vector table location and External memory
   *         configuration.
   * @param  None
   * @retval None
   */
-void SystemInit(void)
-{
+void SystemInit(void) {
 	/* Set configured startup clk source */
 	RCC->CR |= RCC_CR_HSION;
 
@@ -214,8 +153,7 @@ void SystemInit(void)
   *
   * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
-void SystemClock_Config(void)
-{
+void SystemClock_Config(void) {
 	/* Enable Power Control clock */
 	__HAL_RCC_PWR_CLK_ENABLE();
 
@@ -238,14 +176,11 @@ void SystemClock_Config(void)
 	};
 
 	/* Enable HSE Oscillator and activate PLL with HSE as source */
-
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
 		__fatal_error("HAL_RCC_OscConfig");
 	}
 
-	if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct) != 0)
-	{
+	if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct) != 0) {
 		__fatal_error("HAL_RCC_ClockConfig");
 	}
 }

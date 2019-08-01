@@ -215,7 +215,7 @@ def main():
         'CRC',
         'DAC',
         'DBGMCU',
-        'DMA_Stream',
+        #'DMA_Stream',
         'DMA',
         'EXTI',
         'FLASH',

@@ -66,17 +66,6 @@
 #define MICROPY_HW_CLK_PLLQ (4)
 #define MICROPY_HW_CLK_PLLR (2)
 
-// Work out which USB device to use for the USB DFU interface
-#if !defined(MICROPY_HW_USB_MAIN_DEV)
-#if MICROPY_HW_USB_FS
-#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif MICROPY_HW_USB_HS
-#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
-#else
-#error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
-#endif
-#endif
-
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
@@ -1046,11 +1035,7 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 
 /******************************************************************************/
 // USB
-
 #define USB_XFER_SIZE (DFU_XFER_SIZE)
-
-#define USB_PHY_FS_ID (0)
-#define USB_PHY_HS_ID (1)
 
 typedef struct _pyb_usbdd_obj_t {
     bool started;
@@ -1244,18 +1229,6 @@ static uint8_t *pyb_usbdd_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *length)
     return (uint8_t*)cfg_descr;
 }
 
-// this is used only in high-speed mode, which we don't support
-static uint8_t *pyb_usbdd_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
-    (void)self;
-    /*
-    *length = sizeof(USBD_CDC_MSC_HID_DeviceQualifierDesc);
-    return USBD_CDC_MSC_HID_DeviceQualifierDesc;
-    */
-    *length = 0;
-    return NULL;
-}
-
 static const USBD_ClassTypeDef pyb_usbdd_class = {
     pyb_usbdd_Init,
     pyb_usbdd_DeInit,
@@ -1270,7 +1243,7 @@ static const USBD_ClassTypeDef pyb_usbdd_class = {
     pyb_usbdd_GetCfgDesc,
     pyb_usbdd_GetCfgDesc,
     pyb_usbdd_GetCfgDesc,
-    pyb_usbdd_GetDeviceQualifierDescriptor,
+    NULL,
 };
 
 static pyb_usbdd_obj_t pyb_usbdd SECTION_NOZERO_BSS;
@@ -1282,19 +1255,7 @@ static int pyb_usbdd_detect_port(void) {
     int state = mp_hal_pin_read(pin_A11) == 0 && mp_hal_pin_read(pin_A12) == 0;
     mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
     mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-    if (state) {
-        return USB_PHY_FS_ID;
-    }
-    mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
-    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
-    state = mp_hal_pin_read(pin_B14) == 0 && mp_hal_pin_read(pin_B15) == 0;
-    mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-    if (state) {
-        return USB_PHY_HS_ID;
-    }
-    #endif
-    return MICROPY_HW_USB_MAIN_DEV;
+    return 0;
 }
 
 static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
@@ -1511,14 +1472,9 @@ enter_bootloader:
     #endif
     for (;;) {
         #if USE_USB_POLLING
-        #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
+        #if MBOOT_USB_AUTODETECT_PORT
         if (USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK) {
             HAL_PCD_IRQHandler(&pcd_fs_handle);
-        }
-        #endif
-        #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_HS_ID
-        if (USB_OTG_HS->GINTSTS & USB_OTG_HS->GINTMSK) {
-            HAL_PCD_IRQHandler(&pcd_hs_handle);
         }
         #endif
         if (!pyb_usbdd.tx_pending) {
@@ -1591,15 +1547,9 @@ void I2Cx_EV_IRQHandler(void) {
 #endif
 
 #if !USE_USB_POLLING
-#if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
+#if MBOOT_USB_AUTODETECT_PORT
 void OTG_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
-}
-#endif
-
-#if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_HS_ID
-void OTG_HS_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
 #endif
 #endif

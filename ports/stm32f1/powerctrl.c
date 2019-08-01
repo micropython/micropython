@@ -34,21 +34,18 @@
 extern uint32_t _estack[];
 #define BL_STATE ((uint32_t *)&_estack)
 
-NORETURN void powerctrl_mcu_reset(void)
-{
+NORETURN void powerctrl_mcu_reset(void) {
 	BL_STATE[1] = 1; // invalidate bootloader address
 	NVIC_SystemReset();
 }
 
-NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr)
-{
+NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
 	BL_STATE[0] = r0;
 	BL_STATE[1] = bl_addr;
 	NVIC_SystemReset();
 }
 
-static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr)
-{
+static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
 	__asm volatile(
 		"ldr r2, [r1, #0]\n" // get address of stack pointer
 		"msr msp, r2\n"		 // get stack pointer
@@ -57,12 +54,10 @@ static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl
 	);
 }
 
-void powerctrl_check_enter_bootloader(void)
-{
+void powerctrl_check_enter_bootloader(void) {
 	uint32_t bl_addr = BL_STATE[1];
 	BL_STATE[1] = 1; // invalidate bootloader address
-	if ((bl_addr & 0xfff) == 0 && (RCC->CSR & RCC_CSR_SFTRSTF))
-	{
+	if ((bl_addr & 0xfff) == 0 && (RCC->CSR & RCC_CSR_SFTRSTF)) {
 		// Reset by NVIC_SystemReset with bootloader data set -> branch to bootloader
 		RCC->CSR = RCC_CSR_RMVF;
 		uint32_t r0 = BL_STATE[0];
@@ -71,8 +66,7 @@ void powerctrl_check_enter_bootloader(void)
 }
 
 // Assumes that PLL is used as the SYSCLK source
-int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init)
-{
+int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init) {
 	uint32_t flash_latency;
 #if defined(MICROPY_HW_FLASH_LATENCY)
 	flash_latency = MICROPY_HW_FLASH_LATENCY;
@@ -81,18 +75,20 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init)
 #endif
 
 	rcc_init->SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK)
-	{
+	if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK) {
 		return -MP_EIO;
 	}
 
 	return 0;
 }
 
-int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2)
-{
-	if (sysclk == HAL_RCC_GetSysClockFreq() && ahb == HAL_RCC_GetHCLKFreq() && apb1 == HAL_RCC_GetPCLK1Freq() && apb2 == HAL_RCC_GetPCLK2Freq())
-	{
+int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+	if (
+		sysclk == HAL_RCC_GetSysClockFreq() &&
+		ahb == HAL_RCC_GetHCLKFreq()        &&
+		apb1 == HAL_RCC_GetPCLK1Freq()      &&
+		apb2 == HAL_RCC_GetPCLK2Freq()
+	) {
 		return 0;
 	}
 	mp_hal_delay_ms(5);
@@ -108,8 +104,7 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
 	RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
 	RCC_OscInitStruct.PLL.PLLMUL = MICROPY_HW_CLK_PLLMUL;
 
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
 		return -MP_EIO;
 	}
 
@@ -120,16 +115,14 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-	{
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
 		return -MP_EIO;
 	}
 	// TODO: RTC CLOCK
 	return 0;
 }
 
-void powerctrl_enter_stop_mode(void)
-{
+void powerctrl_enter_stop_mode(void) {
 	// Disable IRQs so that the IRQ that wakes the device from stop mode is not
 	// executed until after the clocks are reconfigured
 	uint32_t irq_state = disable_irq();
@@ -155,8 +148,7 @@ void powerctrl_enter_stop_mode(void)
 	enable_irq(irq_state);
 }
 
-void powerctrl_enter_standby_mode(void)
-{
+void powerctrl_enter_standby_mode(void) {
 	rtc_init_finalise();
 
 	// We need to clear the PWR wake-up-flag before entering standby, since

@@ -59,9 +59,6 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
     {{&pyb_spi_type}, &spi_obj[0]},
     {{&pyb_spi_type}, &spi_obj[1]},
     {{&pyb_spi_type}, &spi_obj[2]},
-    {{&pyb_spi_type}, &spi_obj[3]},
-    {{&pyb_spi_type}, &spi_obj[4]},
-    {{&pyb_spi_type}, &spi_obj[5]},
 };
 
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

@@ -198,7 +198,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
-    if (pdev->id ==  USB_PHY_FS_ID) {
+    if (pdev->id ==  0) {
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB;
         #if MICROPY_HW_USB_CDC_NUM == 2
@@ -221,21 +221,35 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
+		// 按照以下方式分配EP:
+		// CDC0: IN:0x83  OUT-0x03   CMD:0x82
+		// CDC1: IN:0x85  OUT-0x05   CMD:0x84
+		// CDC2: IN:0x87  OUT-0x07   CMD:0x86
+		// MSC: IN: 0x81  OUT-0x01
+
         // We have 512 byte in total to use here
         #if MICROPY_HW_USB_CDC_NUM == 2
-		// 3个EP * 8 = 24Byte = 0x18
+		// TODO: 这里没有计算， 暂时不能用
 		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x00 , PCD_SNG_BUF, 0x18);  // EP0,          32B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x18);  // MSC / HID     64B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x01 , PCD_SNG_BUF, 0x18);  // CDC CMD       16B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x18);  // CDC DATA      32B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x02 , PCD_SNG_BUF, 0x18);  // CDC2 CMD      16B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x82 , PCD_SNG_BUF, 0x18);  // CDC2 DATA     32B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x28);  // MSC / HID     64B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x01 , PCD_SNG_BUF, 0x68);  // CDC CMD       16B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x78);  // CDC DATA      32B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x02 , PCD_SNG_BUF, 0x98);  // CDC2 CMD      16B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x82 , PCD_SNG_BUF, 0x108);  // CDC2 DATA     32B
         #else
-		// 2个EP * 8 = 16B = 0x10
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x00 , PCD_SNG_BUF, 0x10);  // EP0,          32B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x10);  // MSC / HID,    64B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x01 , PCD_SNG_BUF, 0x10);  // CDC CMD,      32B
-		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80 , PCD_SNG_BUF, 0x10);  // CDC DATA,     64B
+
+		// 使用到EP3, 4个EP * 8 = 32B = 0x20, 用掉了224字节
+
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x00 , PCD_SNG_BUF, 0x20 );  // EP0,      16B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x80,  PCD_SNG_BUF, 0x30 );  // 16B 需要空出来
+
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x01,  PCD_SNG_BUF, 0x40 );  // MSC-OUT,  32B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x81,  PCD_SNG_BUF, 0x60 );  // MSC-IN,   32B
+		
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x82,  PCD_SNG_BUF, 0x80 );  // CDC0-CMD, 8B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x02,  PCD_SNG_BUF, 0x88 );  // 8B 需要空出来
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x03 , PCD_SNG_BUF, 0xa0);   // CDC0-IN, 32B
+		HAL_PCDEx_PMAConfig(&pcd_fs_handle, 0x83 , PCD_SNG_BUF, 0xc0);   // CDC0-OUT, 32B
         #endif
     }
 

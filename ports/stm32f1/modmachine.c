@@ -57,21 +57,20 @@
 #include "wdt.h"
 
 // 复位来源定义
-#define PYB_RESET_SOFT      (0)
-#define PYB_RESET_POWER_ON  (1)
-#define PYB_RESET_HARD      (2)
-#define PYB_RESET_WDT       (3)
-#define PYB_RESET_DEEPSLEEP (4)
+#define PYB_RESET_SOFT      (0) // 软件复位
+#define PYB_RESET_POWER_ON  (1) // 上电/掉电复位
+#define PYB_RESET_HARD      (2) // 通过复位引脚NRST复位
+#define PYB_RESET_WDT       (3) // 看门狗复位
+#define PYB_RESET_DEEPSLEEP (4) // 待机模式复位
 
 STATIC uint32_t reset_cause;
 
 void machine_init(void) {
-    if (PWR->CSR & PWR_CSR_SBF) {
-        // came out of standby
+    if (PWR->CSR & PWR_CSR_SBF) { // 待机模式
         reset_cause = PYB_RESET_DEEPSLEEP;
-        PWR->CR |= PWR_CR_CSBF;
+        PWR->CR |= PWR_CR_CSBF;   // 清除待机标识
     } else {
-        // get reset cause from RCC flags
+        // 从RCC里获取复位原因
         uint32_t state = RCC->CSR;
         if (state & RCC_CSR_IWDGRSTF || state & RCC_CSR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;

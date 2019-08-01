@@ -189,13 +189,13 @@ void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc_in) {
         cdc->tx_buf_ptr_out_shadow = 0;
     }
 
-    // According to the USB specification, a packet size of 64 bytes (CDC_DATA_FS_MAX_PACKET_SIZE)
+    // According to the USB specification, a packet size of 64 bytes (CDC_DATA_MAX_PACKET_SIZE)
     // gets held at the USB host until the next packet is sent.  This is because a
     // packet of maximum size is considered to be part of a longer chunk of data, and
     // the host waits for all data to arrive (ie, waits for a packet < max packet size).
     // To flush a packet of exactly max packet size, we need to send a zero-size packet.
     // See eg http://www.cypress.com/?id=4&rID=92719
-    cdc->tx_need_empty_packet = (len > 0 && len % usbd_cdc_max_packet(cdc->base.usbd->pdev) == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
+    cdc->tx_need_empty_packet = (len > 0 && len % CDC_DATA_MAX_PACKET_SIZE == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
 }
 
 // Attempt to queue data on the USB IN endpoint
@@ -292,7 +292,8 @@ int usbd_cdc_tx(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len, uint32_t 
         // Wait until the device is connected and the buffer has space, with a given timeout
         uint32_t start = HAL_GetTick();
         while (cdc->connect_state == USBD_CDC_CONNECT_STATE_DISCONNECTED
-            || ((cdc->tx_buf_ptr_in + 1) & (USBD_CDC_TX_DATA_SIZE - 1)) == cdc->tx_buf_ptr_out) {
+            || ((cdc->tx_buf_ptr_in + 1) & (USBD_CDC_TX_DATA_SIZE - 1)) == cdc->tx_buf_ptr_out
+		) {
             usbd_cdc_try_tx(cdc);
             // Wraparound of tick is taken care of by 2's complement arithmetic.
             if (HAL_GetTick() - start >= timeout) {

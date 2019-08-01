@@ -34,24 +34,23 @@
 #define USBD_MODE_IFACE_CDC(i)  (0x01 << (i))
 #define USBD_MODE_IFACE_HID     (0x10)
 #define USBD_MODE_IFACE_MSC     (0x20)
-#define USBD_MODE_HIGH_SPEED    (0x80)
 
 // Convenience macros for supported mode combinations
-#define USBD_MODE_CDC       (USBD_MODE_IFACE_CDC(0))
-#define USBD_MODE_CDC2      (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1))
-#define USBD_MODE_CDC3      (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_CDC(2))
-#define USBD_MODE_CDC_HID   (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_HID)
-#define USBD_MODE_CDC_MSC   (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_MSC)
-#define USBD_MODE_CDC2_MSC  (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_MSC)
-#define USBD_MODE_CDC3_MSC  (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_CDC(2) | USBD_MODE_IFACE_MSC)
-#define USBD_MODE_HID       (USBD_MODE_IFACE_HID)
-#define USBD_MODE_MSC       (USBD_MODE_IFACE_MSC)
-#define USBD_MODE_MSC_HID   (USBD_MODE_IFACE_MSC | USBD_MODE_IFACE_HID)
+#define USBD_MODE_CDC       (USBD_MODE_IFACE_CDC(0))                                                                           /** 0x01 */
+#define USBD_MODE_CDC2      (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1))                                                  /** 0x03 */
+#define USBD_MODE_CDC3      (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_CDC(2))                         /** 0x07 */
+#define USBD_MODE_CDC_HID   (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_HID)                                                     /** 0x11 */
+#define USBD_MODE_CDC_MSC   (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_MSC)                                                     /** 0x21 */
+#define USBD_MODE_CDC2_MSC  (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_MSC)                            /** 0x23 */
+#define USBD_MODE_CDC3_MSC  (USBD_MODE_IFACE_CDC(0) | USBD_MODE_IFACE_CDC(1) | USBD_MODE_IFACE_CDC(2) | USBD_MODE_IFACE_MSC)   /** 0x27 */
+#define USBD_MODE_HID       (USBD_MODE_IFACE_HID)                                                                              /** 0x10 */
+#define USBD_MODE_MSC       (USBD_MODE_IFACE_MSC)                                                                              /** 0x20 */
+#define USBD_MODE_MSC_HID   (USBD_MODE_IFACE_MSC | USBD_MODE_IFACE_HID)                                                        /** 0x30 */
 
 typedef struct _USBD_HID_ModeInfoTypeDef {
-    uint8_t subclass; // 0=no sub class, 1=boot
-    uint8_t protocol; // 0=none, 1=keyboard, 2=mouse
-    uint8_t max_packet_len; // only support up to 255
+    uint8_t subclass;         // 0=no sub class, 1=boot
+    uint8_t protocol;         // 0=none, 1=keyboard, 2=mouse
+    uint8_t max_packet_len;   // only support up to 255
     uint8_t polling_interval; // in units of 1ms
     uint8_t report_desc_len;
     const uint8_t *report_desc;
