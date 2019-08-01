@@ -125,25 +125,21 @@ STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
     if (self->loop && get_buffer_result == GET_BUFFER_DONE) {
         audiosample_reset_buffer(self->sample, false, 0);
     } else if(get_buffer_result == GET_BUFFER_DONE) {
-        self->pwm->LOOP = 0;
+        self->pwm->SHORTS = NRF_PWM_SHORT_SEQEND0_STOP_MASK | NRF_PWM_SHORT_SEQEND1_STOP_MASK;
         self->stopping = true;
-    } else {
-        self->pwm->LOOP = 0xffff;
     }
 }
 
 STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
     if(!common_hal_audiopwmio_pwmaudioout_get_playing(self))
         return;
-    if(self->loop && self->single_buffer) {
-        self->pwm->LOOP = 0xffff;
-    } else if(self->stopping) {
+    if(self->stopping) {
         bool stopped =
             (self->pwm->EVENTS_SEQEND[0] || !self->pwm->EVENTS_SEQSTARTED[0]) &&
             (self->pwm->EVENTS_SEQEND[1] || !self->pwm->EVENTS_SEQSTARTED[1]);
         if(stopped)
             self->pwm->TASKS_STOP = 1;
-    } else if(!self->single_buffer) {
+    } else if(!self->paused && !self->single_buffer) {
         if(self->pwm->EVENTS_SEQSTARTED[0]) fill_buffers(self, 1);
         if(self->pwm->EVENTS_SEQSTARTED[1]) fill_buffers(self, 0);
     }
@@ -248,12 +244,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->scale = top-1;
     self->pwm->COUNTERTOP = top;
 
-    if(!self->single_buffer)
-        self->pwm->LOOP = 1;
-    else if(self->loop)
-        self->pwm->LOOP = 0xffff;
-    else
-        self->pwm->LOOP = 0;
+    self->pwm->LOOP = 1;
     audiosample_reset_buffer(self->sample, false, 0);
     activate_audiopwmout_obj(self);
     fill_buffers(self, 0);
@@ -261,8 +252,9 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->pwm->SEQ[1].CNT = self->pwm->SEQ[0].CNT;
     self->pwm->EVENTS_SEQSTARTED[0] = 0;
     self->pwm->EVENTS_SEQSTARTED[1] = 0;
-    self->pwm->TASKS_SEQSTART[0] = 1;
     self->pwm->EVENTS_STOPPED = 0;
+    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
+    self->pwm->TASKS_SEQSTART[0] = 1;
     self->playing = true;
     self->stopping = false;
     self->paused = false;
@@ -282,7 +274,7 @@ void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t* self) 
 }
 
 bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t* self) {
-    if(self->pwm->EVENTS_STOPPED) {
+    if(!self->paused && self->pwm->EVENTS_STOPPED) {
         self->playing = false;
         self->pwm->EVENTS_STOPPED = 0;
     }
@@ -307,10 +299,15 @@ bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t*
  */
 void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = true;
+    self->pwm->SHORTS = NRF_PWM_SHORT_SEQEND1_STOP_MASK;
+    while(!self->pwm->EVENTS_STOPPED) { /* NOTHING */ }
 }
 
 void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = false;
+    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
+    self->pwm->EVENTS_STOPPED = 0;
+    self->pwm->TASKS_SEQSTART[0] = 1;
 }
 
 bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t* self) {
