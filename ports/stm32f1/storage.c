@@ -303,19 +303,4 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_flash_obj);
 }
 
-#elif defined(MICROPY_HW_USB_NO_MSC)
-mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-	return 0;
-}
-mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
-	return 0;
-}
-void storage_flush(void) {}
-void storage_init(void) {}
-uint32_t storage_get_block_size(void) { return 512;}
-uint32_t storage_get_block_count(void){return 0; }
-const mp_obj_type_t pyb_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-};
 #endif

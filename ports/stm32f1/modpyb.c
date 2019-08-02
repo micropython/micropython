@@ -37,7 +37,6 @@
 #include "timer.h"
 #include "extint.h"
 #include "usrsw.h"
-#include "rng.h"
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
@@ -177,7 +176,6 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
-    { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
 
     #if MICROPY_HW_ENABLE_RTC
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },

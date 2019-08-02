@@ -53,7 +53,7 @@ const char stm32_help_text[] =
 "  pyb.Accel()   -- create an Accelerometer object\n"
 "                   Accelerometer methods: x(), y(), z(), tilt(), filtered_xyz()\n"
 "\n"
-"Pins are numbered X1-X12, X17-X22, Y1-Y12, or by their MCU name\n"
+"Pins are their MCU name\n"
 "Pin IO modes are: pyb.Pin.IN, pyb.Pin.OUT_PP, pyb.Pin.OUT_OD\n"
 "Pin pull modes are: pyb.Pin.PULL_NONE, pyb.Pin.PULL_UP, pyb.Pin.PULL_DOWN\n"
 "Additional serial bus objects: pyb.I2C(n), pyb.SPI(n), pyb.UART(n)\n"

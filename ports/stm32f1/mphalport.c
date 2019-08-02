@@ -102,7 +102,7 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, u
 	}
 
     // 获取需要修改的寄存器 CRL/CRH (pin0~pin7 use CRL, pin8~pin15 use CRH)
-    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 7 * 4));
+    register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 8 * 4));
 	
 	// pin 配置占4bit, 前2bit是CNF， 后2bit是MODE
 	// 对于CRL, mask = 0x0f << (pin * 4)

@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
 # then default to QiMing_F103RC.
-BOARD ?= QiMing_F103RC
+BOARD ?= QiMingF103RC
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
@@ -242,7 +242,6 @@ SRC_C = \
 	modutime.c \
 	extint.c \
 	usrsw.c \
-	rng.c \
 	rtc.c \
 	flash.c \
 	flashbdev.c \
