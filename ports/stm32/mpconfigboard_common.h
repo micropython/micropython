@@ -102,6 +102,12 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
+// SD/MMC interface bus width
+#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
+// Default to 4-bit wide mode to match the pyboard design
+#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+#endif
+
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
