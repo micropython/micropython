@@ -881,4 +881,23 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
 #define MP_MAP_SLOT_IS_FILLED mp_map_slot_is_filled
 #define MP_SET_SLOT_IS_FILLED mp_set_slot_is_filled
 
+#if MICROPY_PY_INSTANCE_ATTRS
+extern const mp_obj_type_t mp_type_offset;
+
+typedef struct _offset_obj_t {
+    mp_obj_base_t base;
+    mp_int_t offset;
+} offset_obj_t;
+
+#define MP_ROM_ATTRIBUTE_OFFSET(obj_type, field_name) \
+    MP_ROM_PTR(( \
+        &(offset_obj_t) { \
+            .base = { \
+                .type = &mp_type_offset, \
+            }, \
+            .offset = offsetof(obj_type, field_name) \
+        }\
+    ))
+#endif // MICROPY_PY_INSTANCE_ATTRS
+
 #endif // MICROPY_INCLUDED_PY_OBJ_H

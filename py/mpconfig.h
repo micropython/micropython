@@ -777,6 +777,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (0)
 #endif
 
+// Whether to enable getting attributes from class instance via C API.
+#ifndef MICROPY_PY_INSTANCE_ATTRS
+#define MICROPY_PY_INSTANCE_ATTRS (0)
+#endif
+
 // Whether to support the descriptors __get__, __set__, __delete__
 // This costs some code size and makes load/store/delete of instance
 // attributes slower for the classes that use this feature

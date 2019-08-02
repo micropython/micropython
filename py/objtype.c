@@ -1403,3 +1403,10 @@ const mp_obj_type_t mp_type_classmethod = {
     .name = MP_QSTR_classmethod,
     .make_new = static_class_method_make_new,
 };
+
+#if MICROPY_PY_INSTANCE_ATTRS
+const mp_obj_type_t mp_type_offset = {
+    { &mp_type_type },
+    .name = MP_QSTR_offset,
+};
+#endif // MICROPY_PY_INSTANCE_ATTRS
