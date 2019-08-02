@@ -94,11 +94,13 @@ OSError
 None
 None
 frzstr1
+frzstr1.py
 frzmpy1
+frzmpy1.py
 frzstr_pkg1.__init__
-1
+frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-1
+frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod
