@@ -109,6 +109,8 @@ void mp_thread_init(void) {
     sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGUSR1, &sa, NULL);
+    sigaction(SIGUSR2, &sa, NULL);
+    sigaction(SIGALRM, &sa, NULL);
 }
 
 void mp_thread_deinit(void) {
