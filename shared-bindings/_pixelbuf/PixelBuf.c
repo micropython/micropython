@@ -108,10 +108,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     char *b = strchr(byteorder, 'B');
     char *w = strchr(byteorder, 'W');
     int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
-    if (num_chars < byteorder_details.bpp)
-        mp_raise_ValueError(translate("Unexpected character in byteorder"));
-    if (!(r && b && g))
-        mp_raise_ValueError(translate("Incomplete byteorder string"));
+    if ((num_chars < byteorder_details.bpp) || !(r && b && g))
+        mp_raise_ValueError(translate("Invalid byteorder string"));
     byteorder_details.is_dotstar = dotstar ? true : false;
     byteorder_details.has_white = w ? true : false;
     byteorder_details.byteorder.r = r - byteorder;
@@ -124,16 +122,16 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     // if 'D' is elsewhere, error out
     if (dotstar) {
         size_t dotstar_pos = dotstar - byteorder;
-        if (dotstar_pos == 4) {
+        if (dotstar_pos == 3) {
             byteorder_details.byteorder.b += 1;
             byteorder_details.byteorder.g += 1;
             byteorder_details.byteorder.r += 1;
         } else if (dotstar_pos != 0) {
-            mp_raise_ValueError(translate("Dotstar position invalid"));
+            mp_raise_ValueError(translate("Invalid byteorder string"));
         }
     }
     if (byteorder_details.has_white && byteorder_details.is_dotstar)
-        mp_raise_ValueError(translate("Can not use dotstar with a white byte"));
+        mp_raise_ValueError(translate("Invalid byteorder string"));
 
     size_t effective_bpp = byteorder_details.is_dotstar ? 4 : byteorder_details.bpp; // Always 4 for DotStar
     size_t bytes = args[ARG_size].u_int * effective_bpp;
