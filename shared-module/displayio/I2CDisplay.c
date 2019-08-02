@@ -59,10 +59,7 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
-
-        common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-        common_hal_mcu_delay_us(1);
-        common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+        common_hal_displayio_i2cdisplay_reset(self);
     }
 }
 
@@ -74,7 +71,17 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
     reset_pin_number(self->reset.pin->number);
 }
 
-bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
+
+void common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
+    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+
+    common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+    common_hal_mcu_delay_us(1);
+    common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+}
+
+
+bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t obj) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_i2c_try_lock(self->bus)) {
         return false;
@@ -82,7 +89,11 @@ bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
     return true;
 }
 
-void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
+bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
+    return common_hal_displayio_i2cdisplay_bus_free(obj);
+}
+
+void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (command) {
         uint8_t command_bytes[2 * data_length];

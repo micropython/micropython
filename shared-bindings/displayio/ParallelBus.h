@@ -40,9 +40,12 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
 void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self);
 
+void common_hal_displayio_parallelbus_reset(mp_obj_t self);
+bool common_hal_displayio_parallelbus_bus_free(mp_obj_t self);
+
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t self);
 
-void common_hal_displayio_parallelbus_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);
+void common_hal_displayio_parallelbus_send(mp_obj_t self, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length);
 
 void common_hal_displayio_parallelbus_end_transaction(mp_obj_t self);
 

@@ -59,11 +59,7 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
-
-        common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-        common_hal_mcu_delay_us(10);
-        common_hal_digitalio_digitalinout_set_value(&self->reset, true);
-        common_hal_mcu_delay_us(10);
+        common_hal_displayio_fourwire_reset(self);
     }
 
     never_reset_pin_number(command->number);
@@ -80,6 +76,23 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
     reset_pin_number(self->reset.pin->number);
 }
 
+void common_hal_displayio_fourwire_reset(mp_obj_t obj) {
+    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+    common_hal_time_delay_ms(1);
+    common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    common_hal_time_delay_ms(1);
+}
+
+bool common_hal_displayio_fourwire_bus_free(mp_obj_t obj) {
+    displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (!common_hal_busio_spi_try_lock(self->bus)) {
+        return false;
+    }
+    common_hal_busio_spi_unlock(self->bus);
+    return true;
+}
+
 bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (!common_hal_busio_spi_try_lock(self->bus)) {
@@ -91,10 +104,10 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     return true;
 }
 
-void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, !command);
-    if (command) {
+    if (toggle_every_byte) {
         // Toggle chip select after each command byte in case the display driver
         // IC latches commands based on it.
         for (size_t i = 0; i < data_length; i++) {

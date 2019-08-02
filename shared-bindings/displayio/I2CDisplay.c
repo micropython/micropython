@@ -116,7 +116,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_ob
     uint8_t full_command[bufinfo.len + 1];
     full_command[0] = command;
     memcpy(full_command + 1, ((uint8_t*) bufinfo.buf), bufinfo.len);
-    common_hal_displayio_i2cdisplay_send(self, true, full_command, bufinfo.len + 1);
+    common_hal_displayio_i2cdisplay_send(self, true, false, full_command, bufinfo.len + 1);
     common_hal_displayio_i2cdisplay_end_transaction(self);
 
     return mp_const_none;

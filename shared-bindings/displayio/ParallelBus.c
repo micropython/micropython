@@ -124,8 +124,8 @@ STATIC mp_obj_t displayio_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_o
     while (!common_hal_displayio_parallelbus_begin_transaction(self)) {
         RUN_BACKGROUND_TASKS;
     }
-    common_hal_displayio_parallelbus_send(self, true, &command, 1);
-    common_hal_displayio_parallelbus_send(self, false, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    common_hal_displayio_parallelbus_send(self, true, false, &command, 1);
+    common_hal_displayio_parallelbus_send(self, false, false, ((uint8_t*) bufinfo.buf), bufinfo.len);
     common_hal_displayio_parallelbus_end_transaction(self);
 
     return mp_const_none;

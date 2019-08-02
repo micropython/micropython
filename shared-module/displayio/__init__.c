@@ -133,26 +133,50 @@ void displayio_refresh_displays(void) {
             // Skip null display.
             continue;
         }
-        displayio_display_obj_t* display = &displays[i].display;
-        displayio_display_update_backlight(display);
+        if (displays[i].display.base.type == &displayio_display_type) {
+            displayio_display_obj_t* display = &displays[i].display;
+            displayio_display_update_backlight(display);
 
-        // Time to refresh at specified frame rate?
-        if (!displayio_display_frame_queued(display)) {
-            // Too soon. Try next display.
-            continue;
+            // Time to refresh at specified frame rate?
+            if (!displayio_display_frame_queued(display)) {
+                // Too soon. Try next display.
+                continue;
+            }
+            if (!displayio_display_begin_transaction(display)) {
+                // Can't acquire display bus; skip updating this display. Try next display.
+                continue;
+            }
+            displayio_display_end_transaction(display);
+            displayio_display_start_refresh(display);
+            const displayio_area_t* current_area = displayio_display_get_refresh_areas(display);
+            while (current_area != NULL) {
+                refresh_area(display, current_area);
+                current_area = current_area->next;
+            }
+            displayio_display_finish_refresh(display);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
+            // Time to refresh at specified frame rate?
+            if (!displayio_epaperdisplay_frame_queued(display)) {
+                // Too soon. Try next display.
+                continue;
+            }
+            if (!displayio_epaperdisplay_bus_free(display)) {
+                // Can't acquire display bus; skip updating this display. Try next display.
+                continue;
+            }
+            const displayio_area_t* current_area = displayio_epaperdisplay_get_refresh_areas(display);
+            if (current_area == NULL) {
+                continue;
+            }
+            displayio_epaperdisplay_start_refresh(display);
+            while (current_area != NULL) {
+                displayio_epaperdisplay_refresh_area(display, current_area);
+                current_area = current_area->next;
+            }
+            displayio_epaperdisplay_finish_refresh(display);
         }
-        if (!displayio_display_begin_transaction(display)) {
-            // Can't acquire display bus; skip updating this display. Try next display.
-            continue;
-        }
-        displayio_display_end_transaction(display);
-        displayio_display_start_refresh(display);
-        const displayio_area_t* current_area = displayio_display_get_refresh_areas(display);
-        while (current_area != NULL) {
-            refresh_area(display, current_area);
-            current_area = current_area->next;
-        }
-        displayio_display_finish_refresh(display);
+
         frame_count++;
     }
 
@@ -175,7 +199,14 @@ void common_hal_displayio_release_displays(void) {
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        release_display(&displays[i].display);
+        mp_const_obj_t display_type = displays[i].display.base.type;
+        if (display_type == NULL || display_type == &mp_type_NoneType) {
+            continue;
+        } else if (display_type == &displayio_display_type) {
+            release_display(&displays[i].display);
+        } else if (display_type == &displayio_epaperdisplay_type) {
+            release_epaperdisplay(&displays[i].epaper_display);
+        }
         displays[i].display.base.type = &mp_type_NoneType;
     }
 
@@ -232,7 +263,7 @@ void reset_displays(void) {
                 }
             }
         } else {
-            // Not an active display.
+            // Not an active display bus.
             continue;
         }
     }
@@ -240,9 +271,14 @@ void reset_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         // Reset the displayed group. Only the first will get the terminal but
         // that's ok.
-        displayio_display_obj_t* display = &displays[i].display;
-        display->auto_brightness = true;
-        common_hal_displayio_display_show(display, NULL);
+        if (displays[i].display.base.type == &displayio_display_type) {
+            displayio_display_obj_t* display = &displays[i].display;
+            display->auto_brightness = true;
+            common_hal_displayio_display_show(display, NULL);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
+            common_hal_displayio_epaperdisplay_show(display, NULL);
+        }
     }
 }
 
@@ -254,8 +290,11 @@ void displayio_gc_collect(void) {
 
         // Alternatively, we could use gc_collect_root over the whole object,
         // but this is more precise, and is the only field that needs marking.
-        gc_collect_ptr(displays[i].display.current_group);
-
+        if (displays[i].display.base.type == &displayio_display_type) {
+            gc_collect_ptr(displays[i].display.current_group);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            gc_collect_ptr(displays[i].epaper_display.current_group);
+        }
     }
 }
 

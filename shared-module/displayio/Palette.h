@@ -34,17 +34,21 @@
 
 typedef struct {
     uint8_t depth;
-    bool grayscale;
-    bool pixels_in_byte_share_row;
     uint8_t bytes_per_cell;
+    uint8_t tricolor_hue;
+    uint8_t tricolor_luma;
+    bool grayscale;
+    bool tricolor;
+    bool pixels_in_byte_share_row;
     bool reverse_pixels_in_byte;
-    uint8_t hue;
 } _displayio_colorspace_t;
 
 typedef struct {
     uint32_t rgb888;
     uint16_t rgb565;
     uint8_t luma;
+    uint8_t hue;
+    uint8_t chroma;
     bool transparent; // This may have additional bits added later for blending.
 } _displayio_color_t;
 

@@ -45,14 +45,104 @@ uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
     return (r8 * 19) / 255 + (g8 * 182) / 255 + (b8 + 54) / 255;
 }
 
+void compute_bounds(uint8_t r8, uint8_t g8, uint8_t b8, uint8_t* min, uint8_t* max) {
+    if (r8 > g8) {
+        if (b8 > r8) {
+            *max = b8;
+        } else {
+            *max = r8;
+        }
+        if (b8 < g8) {
+            *min = b8;
+        } else {
+            *min = g8;
+        }
+    } else {
+        if (b8 > g8) {
+            *max = b8;
+        } else {
+            *max = g8;
+        }
+        if (b8 < r8) {
+            *min = b8;
+        } else {
+            *min = r8;
+        }
+    }
+}
+
+uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888) {
+    uint32_t r8 = (color_rgb888 >> 16);
+    uint32_t g8 = (color_rgb888 >> 8) & 0xff;
+    uint32_t b8 = color_rgb888 & 0xff;
+    uint8_t max;
+    uint8_t min;
+    compute_bounds(r8, g8, b8, &min, &max);
+    return max - min;
+}
+
+uint8_t displayio_colorconverter_compute_hue(uint32_t color_rgb888) {
+    uint32_t r8 = (color_rgb888 >> 16);
+    uint32_t g8 = (color_rgb888 >> 8) & 0xff;
+    uint32_t b8 = color_rgb888 & 0xff;
+    uint8_t max;
+    uint8_t min;
+    compute_bounds(r8, g8, b8, &min, &max);
+    uint8_t c = max - min;
+    if (c == 0) {
+        return 0;
+    }
+
+    int32_t hue = 0;
+    if (max == r8) {
+        hue = (((int32_t) (g8 - b8) * 40) / c) % 240;
+    } else if (max == g8) {
+        hue = (((int32_t) (b8 - r8) + (2 * c)) * 40) / c;
+    } else if (max == b8) {
+        hue = (((int32_t) (r8 - g8) + (4 * c)) * 40) / c;
+    }
+    if (hue < 0) {
+        hue += 240;
+    }
+
+    return hue;
+}
+
+void displayio_colorconverter_compute_tricolor(const _displayio_colorspace_t* colorspace, uint8_t pixel_hue, uint8_t pixel_luma, uint32_t*  color) {
+
+    int16_t hue_diff = colorspace->tricolor_hue - pixel_hue;
+    if ((-10 <= hue_diff && hue_diff <= 10) || hue_diff <= -220 || hue_diff >= 220) {
+        if (colorspace->grayscale) {
+            *color = 0;
+        } else {
+            *color = 1;
+        }
+    } else if (!colorspace->grayscale) {
+        *color = 0;
+    }
+}
+
 bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color) {
     if (colorspace->depth == 16) {
         *output_color = displayio_colorconverter_compute_rgb565(input_color);
+        return true;
+    } else if (colorspace->tricolor) {
+        uint8_t luma = displayio_colorconverter_compute_luma(input_color);
+        *output_color = luma >> (8 - colorspace->depth);
+        if (displayio_colorconverter_compute_chroma(input_color) <= 16) {
+            if (!colorspace->grayscale) {
+                *output_color = 0;
+            }
+            return true;
+        }
+        uint8_t pixel_hue = displayio_colorconverter_compute_hue(input_color);
+        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, output_color);
         return true;
     } else if (colorspace->grayscale && colorspace->depth <= 8) {
         uint8_t luma = displayio_colorconverter_compute_luma(input_color);
         *output_color = luma >> (8 - colorspace->depth);
         return true;
+    } else if (!colorspace->grayscale && colorspace->depth == 1) {
     }
     return false;
 }

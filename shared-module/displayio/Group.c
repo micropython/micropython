@@ -304,6 +304,9 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
 }
 
 displayio_area_t* displayio_group_get_refresh_areas(displayio_group_t *self, displayio_area_t* tail) {
+    if (self->base.type != &displayio_group_type) {
+        asm("bkpt");
+    }
     if (self->item_removed) {
         self->dirty_area.next = tail;
         tail = &self->dirty_area;

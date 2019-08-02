@@ -24,47 +24,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_EPAPERDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_EPAPERDISPLAY_H
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "shared-module/displayio/Display.h"
+#include "shared-module/displayio/EPaperDisplay.h"
 #include "shared-module/displayio/Group.h"
 
 extern const mp_obj_type_t displayio_epaperdisplay_type;
 
 #define DELAY 0x80
 
-void common_hal_displayio_display_construct(displayio_display_obj_t* self,
-    mp_obj_t bus, uint16_t width, uint16_t height, uint16_t seconds_per_frame,
-    uint16_t rotation, uint16_t color_depth, bool grayscale,
-    uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* busy_pin, uint16_t partial_command);
+#define NO_COMMAND 0x100
 
-int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self);
+void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t* self,
+        mp_obj_t bus, uint8_t* start_sequence, uint16_t start_sequence_len, uint8_t* stop_sequence, uint16_t stop_sequence_len,
+        uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
+        uint16_t set_column_window_command, uint16_t set_row_window_command,
+        uint16_t set_current_column_command, uint16_t set_current_row_command,
+        uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t third_color, uint16_t refresh_display_command,
+        const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool always_toggle_chip_select);
 
-void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group);
+int32_t common_hal_displayio_epaperdisplay_wait_for_frame(displayio_epaperdisplay_obj_t* self);
 
-void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self);
+bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self, displayio_group_t* root_group);
 
-bool displayio_display_begin_transaction(displayio_display_obj_t* self);
-void displayio_display_end_transaction(displayio_display_obj_t* self);
+void common_hal_displayio_epaperdisplay_refresh_soon(displayio_epaperdisplay_obj_t* self);
+
+bool displayio_epaperdisplay_begin_transaction(displayio_epaperdisplay_obj_t* self);
+void displayio_epaperdisplay_end_transaction(displayio_epaperdisplay_obj_t* self);
 
 // The second point of the region is exclusive.
-void displayio_display_set_region_to_update(displayio_display_obj_t* self, displayio_area_t* area);
-bool displayio_display_frame_queued(displayio_display_obj_t* self);
+void displayio_epaperdisplay_set_region_to_update(displayio_epaperdisplay_obj_t* self, displayio_area_t* area);
+bool displayio_epaperdisplay_frame_queued(displayio_epaperdisplay_obj_t* self);
 
-bool displayio_display_refresh_queued(displayio_display_obj_t* self);
-void displayio_display_finish_refresh(displayio_display_obj_t* self);
-void displayio_display_send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length);
+bool displayio_epaperdisplay_refresh_queued(displayio_epaperdisplay_obj_t* self);
+void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self);
+void displayio_epaperdisplay_send_pixels(displayio_epaperdisplay_obj_t* self, uint8_t* pixels, uint32_t length);
 
-bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
-void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);
+bool common_hal_displayio_epaperdisplay_get_auto_brightness(displayio_epaperdisplay_obj_t* self);
+void common_hal_displayio_epaperdisplay_set_auto_brightness(displayio_epaperdisplay_obj_t* self, bool auto_brightness);
 
-uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self);
-uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self);
+uint16_t common_hal_displayio_epaperdisplay_get_width(displayio_epaperdisplay_obj_t* self);
+uint16_t common_hal_displayio_epaperdisplay_get_height(displayio_epaperdisplay_obj_t* self);
 
-mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self);
-bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness);
+mp_float_t common_hal_displayio_epaperdisplay_get_brightness(displayio_epaperdisplay_obj_t* self);
+bool common_hal_displayio_epaperdisplay_set_brightness(displayio_epaperdisplay_obj_t* self, mp_float_t brightness);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_EPAPERDISPLAY_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_EPAPERDISPLAY_H
