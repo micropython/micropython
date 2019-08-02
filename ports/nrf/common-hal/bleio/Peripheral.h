@@ -35,7 +35,6 @@
 #include "py/obj.h"
 #include "py/objlist.h"
 
-#include "shared-module/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
 typedef enum {

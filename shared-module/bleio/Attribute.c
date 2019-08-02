@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+#include <string.h>
 
+#include "py/runtime.h"
 #include "shared-bindings/bleio/Attribute.h"
-#include "shared-module/bleio/Characteristic.h"
-#include "common-hal/bleio/Characteristic.h"
 
-extern const mp_obj_type_t bleio_characteristic_type;
-
-extern void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t security_mode, mp_obj_t descriptors);
-extern mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
-extern bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties(bleio_characteristic_obj_t *self);
-extern bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self);
-extern mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self);
-extern void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H
+void common_hal_bleio_attribute_security_mode_check_valid(bleio_attribute_security_mode_t security_mode) {
+    switch (security_mode) {
+        case SEC_MODE_NO_ACCESS:
+        case SEC_MODE_OPEN:
+        case SEC_MODE_ENC_NO_MITM:
+        case SEC_MODE_ENC_WITH_MITM:
+        case SEC_MODE_LESC_ENC_WITH_MITM:
+        case SEC_MODE_SIGNED_NO_MITM:
+        case SEC_MODE_SIGNED_WITH_MITM:
+            break;
+        default:
+            mp_raise_ValueError(translate("Invalid security_mode"));
+            break;
+    }
+}

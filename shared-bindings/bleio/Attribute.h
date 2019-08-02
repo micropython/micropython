@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H
 
-extern void bleio_reset(void);
+#include "py/obj.h"
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
+#include "shared-module/bleio/Attribute.h"
+
+extern const mp_obj_type_t bleio_attribute_type;
+
+extern void common_hal_bleio_attribute_security_mode_check_valid(bleio_attribute_security_mode_t security_mode);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ATTRIBUTE_H

@@ -34,7 +34,6 @@
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
 
-#include "shared-module/bleio/__init__.h"
 #include "common-hal/bleio/Adapter.h"
 
 extern const super_adapter_obj_t common_hal_bleio_adapter_obj;

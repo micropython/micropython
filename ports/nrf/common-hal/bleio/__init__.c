@@ -204,17 +204,16 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, mp_ob
             // For now, just leave the UUID as NULL.
         }
 
-        bleio_characteristic_properties_t props;
-
-        props.broadcast = gattc_char->char_props.broadcast;
-        props.indicate = gattc_char->char_props.indicate;
-        props.notify = gattc_char->char_props.notify;
-        props.read = gattc_char->char_props.read;
-        props.write = gattc_char->char_props.write;
-        props.write_no_response = gattc_char->char_props.write_wo_resp;
+        bleio_characteristic_properties_t props =
+            (gattc_char->char_props.broadcast ? CHAR_PROP_BROADCAST : 0) |
+            (gattc_char->char_props.indicate ? CHAR_PROP_INDICATE : 0) |
+            (gattc_char->char_props.notify ? CHAR_PROP_NOTIFY : 0) |
+            (gattc_char->char_props.read ? CHAR_PROP_READ : 0) |
+            (gattc_char->char_props.write ? CHAR_PROP_WRITE : 0) |
+            (gattc_char->char_props.write_wo_resp ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
         // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
-        common_hal_bleio_characteristic_construct(characteristic, uuid, props, mp_obj_new_list(0, NULL));
+        common_hal_bleio_characteristic_construct(characteristic, uuid, props, SEC_MODE_OPEN, mp_const_empty_tuple);
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 
@@ -233,15 +232,15 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, mp_ob
 
         // Remember handles for certain well-known descriptors.
         switch (gattc_desc->uuid.uuid) {
-            case DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION:
+            case BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG:
                 m_desc_discovery_characteristic->cccd_handle = gattc_desc->handle;
                 break;
 
-            case DESCRIPTOR_UUID_SERVER_CHARACTERISTIC_CONFIGURATION:
+            case BLE_UUID_DESCRIPTOR_SERVER_CHAR_CONFIG:
                 m_desc_discovery_characteristic->sccd_handle = gattc_desc->handle;
                 break;
 
-            case DESCRIPTOR_UUID_CHARACTERISTIC_USER_DESCRIPTION:
+            case BLE_UUID_DESCRIPTOR_CHAR_USER_DESC:
                 m_desc_discovery_characteristic->user_desc_handle = gattc_desc->handle;
                 break;
 
@@ -268,7 +267,8 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, mp_ob
             // For now, just leave the UUID as NULL.
         }
 
-        common_hal_bleio_descriptor_construct(descriptor, uuid);
+        // TODO: can we find out security mode?
+        common_hal_bleio_descriptor_construct(descriptor, uuid, SEC_MODE_OPEN);
         descriptor->handle = gattc_desc->handle;
         descriptor->characteristic = m_desc_discovery_characteristic;
 
@@ -312,6 +312,9 @@ void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t 
     mp_obj_list_t *remote_services_list = common_hal_bleio_device_get_remote_services_list(device);
 
     ble_drv_add_event_handler(discovery_on_ble_evt, device);
+
+    // Start over with an empty list.
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(common_hal_bleio_device_get_remote_services_list(device)));
 
     if (service_uuids_whitelist == mp_const_none) {
         // List of service UUID's not given, so discover all available services.

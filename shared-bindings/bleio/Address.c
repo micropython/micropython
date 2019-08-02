@@ -174,13 +174,13 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 //|      A randomly generated address that changes on every connection.
 //|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address_bytes), MP_ROM_PTR(&bleio_address_address_bytes_obj) },
-    { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_address_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address_bytes),                 MP_ROM_PTR(&bleio_address_address_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_type),                          MP_ROM_PTR(&bleio_address_type_obj) },
     // These match the BLE_GAP_ADDR_TYPES values used by the nRF library.
-    { MP_ROM_QSTR(MP_QSTR_PUBLIC), MP_OBJ_NEW_SMALL_INT(0) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_STATIC), MP_OBJ_NEW_SMALL_INT(1) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_RESOLVABLE), MP_OBJ_NEW_SMALL_INT(2) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_NON_RESOLVABLE), MP_OBJ_NEW_SMALL_INT(3) },
+    { MP_ROM_QSTR(MP_QSTR_PUBLIC),                        MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_STATIC),                 MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_RESOLVABLE),     MP_ROM_INT(2) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_NON_RESOLVABLE), MP_ROM_INT(3) },
 
 };
 

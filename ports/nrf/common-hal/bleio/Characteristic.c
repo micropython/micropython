@@ -164,7 +164,8 @@ STATIC void gattc_write(bleio_characteristic_obj_t *characteristic, mp_buffer_in
     check_connected(conn_handle);
 
     ble_gattc_write_params_t write_params = {
-        .write_op = characteristic->props.write_no_response ? BLE_GATT_OP_WRITE_CMD : BLE_GATT_OP_WRITE_REQ,
+        .write_op = (characteristic->props & CHAR_PROP_WRITE_NO_RESPONSE)
+                    ? BLE_GATT_OP_WRITE_CMD: BLE_GATT_OP_WRITE_REQ,
         .handle = characteristic->handle,
         .p_value = bufinfo->buf,
         .len = bufinfo->len,
@@ -211,12 +212,14 @@ STATIC void characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
 
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, mp_obj_list_t *descriptor_list) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t security_mode, mp_obj_t descriptors) {
     self->service = mp_const_none;
     self->uuid = uuid;
     self->value_data = mp_const_none;
     self->props = props;
-    self->descriptor_list = descriptor_list;
+    self->security_mode = security_mode;
+    self->descriptor_list = mp_obj_new_list_from_iter(descriptors);
+
     self->handle = BLE_GATT_HANDLE_INVALID;
 
     ble_drv_add_event_handler(characteristic_on_ble_evt, self);
@@ -238,21 +241,23 @@ mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *s
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
     if (common_hal_bleio_service_get_is_remote(self->service)) {
-            gattc_write(self, bufinfo);
+        gattc_write(self, bufinfo);
     } else {
         bool sent = false;
         uint16_t cccd = 0;
 
-        if (self->props.notify || self->props.indicate) {
-                cccd = get_cccd(self);
+        const bool notify = self->props & CHAR_PROP_NOTIFY;
+        const bool indicate = self->props & CHAR_PROP_INDICATE;
+        if (notify | indicate) {
+            cccd = get_cccd(self);
         }
 
         // It's possible that both notify and indicate are set.
-        if (self->props.notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+        if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
             gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_NOTIFICATION);
             sent = true;
         }
-        if (self->props.indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+        if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
             gatts_notify_indicate(self, bufinfo, BLE_GATT_HVX_INDICATION);
             sent = true;
         }

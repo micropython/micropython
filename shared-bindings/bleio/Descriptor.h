@@ -28,31 +28,14 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
 
+#include "shared-module/bleio/Attribute.h"
 #include "common-hal/bleio/Descriptor.h"
 #include "common-hal/bleio/UUID.h"
 
-enum {
-    DESCRIPTOR_UUID_CHARACTERISTIC_EXTENDED_PROPERTIES = 0x2900,
-    DESCRIPTOR_UUID_CHARACTERISTIC_USER_DESCRIPTION = 0x2901,
-    DESCRIPTOR_UUID_CLIENT_CHARACTERISTIC_CONFIGURATION = 0x2902,
-    DESCRIPTOR_UUID_SERVER_CHARACTERISTIC_CONFIGURATION = 0x2903,
-    DESCRIPTOR_UUID_CHARACTERISTIC_PRESENTATION_FORMAT = 0x2904,
-    DESCRIPTOR_UUID_CHARACTERISTIC_AGGREGATE_FORMAT = 0x2905,
-    DESCRIPTOR_UUID_VALID_RANGE = 0x2906,
-    DESCRIPTOR_UUID_EXTERNAL_REPORT_REFERENCE = 0x2907,
-    DESCRIPTOR_UUID_REPORT_REFERENCE = 0x2908,
-    DESCRIPTOR_UUID_NUMBER_OF_DIGITALS = 0x2909,
-    DESCRIPTOR_UUID_VALUE_TRIGGER_SETTING = 0x290A,
-    DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_CONFIGURATION = 0x290B,
-    DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_MEASUREMENT = 0x290C,
-    DESCRIPTOR_UUID_ENVIRONMENTAL_SENSING_TRIGGER_SETTING = 0x290D,
-    DESCRIPTOR_UUID_TIME_TRIGGER_SETTING = 0x290E,
-};
-
 extern const mp_obj_type_t bleio_descriptor_type;
 
-extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid);
 extern mp_int_t common_hal_bleio_descriptor_get_handle(bleio_descriptor_obj_t *self);
 extern mp_obj_t common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self);
+extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t security_mode);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H

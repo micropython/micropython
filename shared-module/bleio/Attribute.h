@@ -24,20 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
 
+// BLE security modes: 0x<level><mode>
 typedef enum {
-    CHAR_PROP_NONE =              0,
-    CHAR_PROP_BROADCAST =         1u << 0,
-    CHAR_PROP_INDICATE =          1u << 1,
-    CHAR_PROP_NOTIFY =            1u << 2,
-    CHAR_PROP_READ =              1u << 3,
-    CHAR_PROP_WRITE =             1u << 4,
-    CHAR_PROP_WRITE_NO_RESPONSE = 1u << 5,
-    CHAR_PROP_ALL =               (CHAR_PROP_BROADCAST | CHAR_PROP_INDICATE | CHAR_PROP_NOTIFY |
-                                   CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_NO_RESPONSE)
-} bleio_characteristic_properties_enum_t;
-typedef uint8_t bleio_characteristic_properties_t;
+    SEC_MODE_NO_ACCESS = 0x00,
+    SEC_MODE_OPEN = 0x11,
+    SEC_MODE_ENC_NO_MITM = 0x21,
+    SEC_MODE_ENC_WITH_MITM = 0x31,
+    SEC_MODE_LESC_ENC_WITH_MITM = 0x41,
+    SEC_MODE_SIGNED_NO_MITM = 0x12,
+    SEC_MODE_SIGNED_WITH_MITM = 0x22,
+} bleio_attribute_security_mode_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H

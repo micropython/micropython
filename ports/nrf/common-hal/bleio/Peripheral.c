@@ -138,10 +138,10 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // Pairing process completed
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
-                mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
+                // mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_PAIRED;
             } else {
-                mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
+                // mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_NOT_PAIRED;
             }
             break;
