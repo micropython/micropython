@@ -1,11 +1,30 @@
 /*
- * MixerVoice.c
+ * This file is part of the Micro Python project, http://micropython.org/
  *
- *  Created on: Nov 15, 2018
- *      Author: dean
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018 DeanM for Adafruit Industries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-#include "shared-bindings/audioio/Mixer.h"
-#include "shared-bindings/audioio/MixerVoice.h"
+#include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiocore/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -14,23 +33,20 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audioio
 //|
-//| :class:`Mixer` -- Mixes one or more audio samples together
-//| ===========================================================
+//| :class:`MixerVoice` -- Voice objects used with Mixer
+//| =====================================================
 //|
-//| Mixer mixes multiple samples into one sample.
+//| Used to access and control samples with `audioio.Mixer`.
 //|
-//| .. class:: Mixer(channel_count=2, buffer_size=1024)
+//| .. class:: MixerVoice()
 //|
-//|   Create a Mixer object that can mix multiple channels with the same sample rate.
-//|
-//|   :param int channel_count: The maximum number of samples to mix at once
-//|   :param int buffer_size: The total size in bytes of the buffers to mix into
+//|   MixerVoice instance object(s) created by `audioio.Mixer`.
 //|
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -69,12 +85,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixervoice___exit___obj, 4, 4
 
 //|   .. method:: play(sample, *, loop=False)
 //|
-//|     Plays the sample once when loop=False and continuously when loop=True.
+//|     Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|     Does not block. Use `playing` to block.
 //|
 //|     Sample must be an `audioio.WaveFile`, `audioio.Mixer` or `audioio.RawSample`.
 //|
-//|     The sample must match the Mixer's encoding settings given in the constructor.
+//|     The sample must match the `audioio.Mixer`'s encoding settings given in the constructor.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
@@ -113,11 +129,9 @@ STATIC mp_obj_t audioio_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_obj_stop);
 
-//|   .. method:: get_gain(voice, gain)
+//|   .. method:: level()
 //|
-//|     Get the gain of a voice.
-//|
-//|     Returns as a floating point number between 0 and 1
+//|     The volume level of a voice, as a floating point number between 0 and 1.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_get_level(mp_obj_t self_in) {
 
@@ -129,12 +143,6 @@ STATIC mp_obj_t audioio_mixervoice_obj_get_level(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixervoice_get_level_obj, audioio_mixervoice_obj_get_level);
 
-//|   .. method:: set_gain(voice, gain)
-//|
-//|     Set the gain of a voice.
-//|
-//|     gain must be a floating point number between 0 and 1
-//|
 STATIC mp_obj_t audioio_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level };
     static const mp_arg_t allowed_args[] = {
@@ -167,10 +175,13 @@ const mp_obj_property_t audioio_mixervoice_level_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: playing
-//|
-//|     True when any voice is being output. (read-only)
-//|
+//TODO: @sommersoft - enable voice.playing tracking? will need an additional field
+//      in the struct, with supporting logic. disabled documentation for now.
+
+//   .. attribute:: playing
+//
+//     True when any voice is being output. (read-only)
+//
 STATIC mp_obj_t audioio_mixervoice_obj_get_playing(mp_obj_t self_in) {
 #if 0
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 #include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiocore/MixerVoice.h"
+#include "shared-module/audiocore/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -43,33 +45,43 @@
 //|
 //| Mixer mixes multiple samples into one sample.
 //|
-//| .. class:: Mixer(channel_count=2, buffer_size=1024)
+//| .. class:: Mixer(voice_count=2, buffer_size=1024, channel_count=2, bits_per_sample=16, samples_signed=True, sample_rate=8000)
 //|
 //|   Create a Mixer object that can mix multiple channels with the same sample rate.
+//|   Samples are accessed and controlled with the mixer's `audioio.MixerVoice` objects.
 //|
-//|   :param int channel_count: The maximum number of samples to mix at once
+//|   :param int voice_count: The maximum number of voices to mix
 //|   :param int buffer_size: The total size in bytes of the buffers to mix into
+//|   :param int channel_count: The maximum number of samples to mix at once
+//|   :param int bits_per_sample: The bits per sample of the samples being played
+//|   :param bool samples_signed: Samples are signed (True) or unsigned (False)
+//|   :param int sample_rate: The sample rate to be used for all samples
 //|
 //|   Playing a wave file from flash::
 //|
 //|     import board
 //|     import audioio
+//|     import audiocore
 //|     import digitalio
 //|
 //|     # Required for CircuitPlayground Express
 //|     speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|     speaker_enable.switch_to_output(value=True)
 //|
-//|     music = audioio.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
-//|     drum = audioio.WaveFile(open("drum.wav", "rb"))
-//|     mixer = audioio.Mixer(voice_count=2, sample_rate=16000, channel_count=1, bits_per_sample=16, samples_signed=True)
+//|     music = audiocore.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
+//|     drum = audiocore.WaveFile(open("drum.wav", "rb"))
+//|     mixer = audiocore.Mixer(voice_count=2, sample_rate=16000, channel_count=1,
+//|                             bits_per_sample=16, samples_signed=True)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
+//|     # Have AudioOut play our Mixer source
 //|     a.play(mixer)
-//|     mixer.play(music, voice=0)
+//|     # Play the first sample voice
+//|     mixer.voice[0].play(music)
 //|     while mixer.playing:
-//|       mixer.play(drum, voice=1)
+//|       # Play the second sample voice
+//|       mixer.voice[1].play(drum)
 //|       time.sleep(1)
 //|     print("stopped")
 //|
@@ -151,54 +163,6 @@ STATIC mp_obj_t audioio_mixer_obj___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixer___exit___obj, 4, 4, audioio_mixer_obj___exit__);
 
-
-//|   .. method:: play(sample, *, voice=0, loop=False)
-//|
-//|     Plays the sample once when loop=False and continuously when loop=True.
-//|     Does not block. Use `playing` to block.
-//|
-//|     Sample must be an `audioio.WaveFile`, `audioio.Mixer` or `audioio.RawSample`.
-//|
-//|     The sample must match the Mixer's encoding settings given in the constructor.
-//|
-STATIC mp_obj_t audioio_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_sample, ARG_voice, ARG_loop };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_voice,     MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
-    };
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    check_for_deinit(self);
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_obj_t sample = args[ARG_sample].u_obj;
-    common_hal_audioio_mixer_play(self, sample, args[ARG_voice].u_int, args[ARG_loop].u_bool);
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_play_obj, 1, audioio_mixer_obj_play);
-
-//|   .. method:: stop_voice(voice=0)
-//|
-//|     Stops playback of the sample on the given voice.
-//|
-STATIC mp_obj_t audioio_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_voice };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
-    };
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    check_for_deinit(self);
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    common_hal_audioio_mixer_stop_voice(self, args[ARG_voice].u_int);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixer_stop_voice_obj, 1, audioio_mixer_obj_stop_voice);
-
 //|   .. attribute:: playing
 //|
 //|     True when any voice is being output. (read-only)
@@ -237,11 +201,15 @@ const mp_obj_property_t audioio_mixer_sample_rate_obj = {
 
 //|   .. attribute:: voice
 //|
-//|     tuple of voice objects
+//|     A tuple of the mixer's `audioio.MixerVoice` object(s).
 //|
+//|     .. code-block:: python
+//|
+//|        >>> mixer.voice
+//|        (<MixerVoice>,)
 STATIC mp_obj_t audioio_mixer_obj_get_voice(mp_obj_t self_in) {
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
+    check_for_deinit(self);
     return self->voice_tuple;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_voice_obj, audioio_mixer_obj_get_voice);

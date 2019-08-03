@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiocore/MixerVoice.h"
 
 #include <stdint.h>
 

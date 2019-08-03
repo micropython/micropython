@@ -50,6 +50,7 @@
 //|     :maxdepth: 3
 //|
 //|     Mixer
+//|     MixerVoice
 //|     RawSample
 //|     WaveFile
 //|
