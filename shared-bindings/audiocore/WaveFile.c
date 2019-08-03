@@ -39,13 +39,15 @@
 //| ========================================================
 //|
 //| A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
-//| be 8 bit unsigned or 16 bit signed.
+//| be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
+//| an internal buffer.
 //|
-//| .. class:: WaveFile(file)
+//| .. class:: WaveFile(file[, buffer])
 //|
 //|   Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|   :param typing.BinaryIO file: Already opened wave file
+//|   :param bytearray buffer: Optional pre-allocated buffer
 //|
 //|   Playing a wave file from flash::
 //|
@@ -68,15 +70,23 @@
 //|     print("stopped")
 //|
 STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
 
     audioio_wavefile_obj_t *self = m_new_obj(audioio_wavefile_obj_t);
     self->base.type = &audioio_wavefile_type;
-    if (MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
-        common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]));
-    } else {
+    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
+    uint8_t *buffer = NULL;
+    size_t buffer_size = 0;
+    if (n_args >= 2) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+        buffer = bufinfo.buf;
+        buffer_size = bufinfo.len;
+    }
+    common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]),
+                                          buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
