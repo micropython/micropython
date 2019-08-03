@@ -295,19 +295,20 @@ bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t*
  * Perhaps the way forward is to divide even "single buffer" samples into tasks of
  * only a few ms long, so that they can be stopped/restarted quickly enough that it
  * feels instant. (This also saves on memory, for long in-memory "single buffer"
- * samples!)
+ * samples, since we have to locally take a resampled copy!)
  */
 void common_hal_audiopwmio_pwmaudioout_pause(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = true;
     self->pwm->SHORTS = NRF_PWM_SHORT_SEQEND1_STOP_MASK;
-    while(!self->pwm->EVENTS_STOPPED) { /* NOTHING */ }
 }
 
 void common_hal_audiopwmio_pwmaudioout_resume(audiopwmio_pwmaudioout_obj_t* self) {
     self->paused = false;
     self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
-    self->pwm->EVENTS_STOPPED = 0;
-    self->pwm->TASKS_SEQSTART[0] = 1;
+    if (self->pwm->EVENTS_STOPPED) {
+        self->pwm->EVENTS_STOPPED = 0;
+        self->pwm->TASKS_SEQSTART[0] = 1;
+    }
 }
 
 bool common_hal_audiopwmio_pwmaudioout_get_paused(audiopwmio_pwmaudioout_obj_t* self) {
