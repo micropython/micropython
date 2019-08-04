@@ -47,11 +47,11 @@ void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_
     if (MP_OBJ_IS_INT(item)) {
         uint8_t *target = rawbuf ? rawbuf : buf;
         pixelbuf_set_pixel_int(target, mp_obj_get_int_truncated(item), byteorder);
-         if (dotstar) {
+        if (dotstar) {
             buf[0] = DOTSTAR_LED_START_FULL_BRIGHT;
             if (rawbuf) 
                 rawbuf[0] = DOTSTAR_LED_START_FULL_BRIGHT;
-         }
+        }
         if (rawbuf) {
             buf[byteorder->byteorder.r] = rawbuf[byteorder->byteorder.r] * brightness;
             buf[byteorder->byteorder.g] = rawbuf[byteorder->byteorder.g] * brightness;

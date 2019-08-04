@@ -119,8 +119,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     byteorder_details.byteorder.r = r - byteorder;
     byteorder_details.byteorder.g = g - byteorder;
     byteorder_details.byteorder.b = b - byteorder;
-    if (w) 
-        byteorder_details.byteorder.w = w - byteorder;
+    byteorder_details.byteorder.w = w ? w - byteorder : 0;
     // The dotstar brightness byte is always first (as it goes with the pixel start bits)
     // if 'D' is found at the end, adjust byte position
     // if 'D' is elsewhere, error out
@@ -130,6 +129,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
             byteorder_details.byteorder.b += 1;
             byteorder_details.byteorder.g += 1;
             byteorder_details.byteorder.r += 1;
+            byteorder_details.byteorder.w = 0;
         } else if (dotstar_pos != 0) {
             mp_raise_ValueError(translate("Invalid byteorder string"));
         }
