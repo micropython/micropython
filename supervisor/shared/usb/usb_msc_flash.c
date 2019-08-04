@@ -197,7 +197,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
 // Invoked when received Start Stop Unit command
 // - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
-void tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) {
+bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) {
     if (load_eject) {
         if (lun > 1) {
             return false;

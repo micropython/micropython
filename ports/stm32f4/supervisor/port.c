@@ -35,12 +35,6 @@
 
 #include "stm32f4xx_hal.h"
 
-//#include "shared-bindings/rtc/__init__.h"
-
-static void power_warning_handler(void) {
-    reset_into_safe_mode(BROWNOUT);
-}
-
 safe_mode_t port_init(void) {
 	HAL_Init();
 

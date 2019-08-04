@@ -39,8 +39,6 @@
 /*------------------------------------------------------------------*/
 /* Internal Flash API
  *------------------------------------------------------------------*/
-static inline uint32_t lba2addr(uint32_t block) {
-}
 
 void supervisor_flash_init(void) {
 }
