@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,23 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "common-hal/audioio/AudioOut.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "extmod/vfs_fat.h"
+void board_init(void) {
+}
 
-extern const mp_obj_type_t audioio_wavefile_type;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
-    pyb_file_obj_t* file);
-
-void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self);
-bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self);
-uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t* self);
-void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self, uint32_t sample_rate);
-uint8_t common_hal_audioio_wavefile_get_bits_per_sample(audioio_wavefile_obj_t* self);
-uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t* self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
+void reset_board(void) {
+}

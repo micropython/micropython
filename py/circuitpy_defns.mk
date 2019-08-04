@@ -108,6 +108,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOCORE),1)
+SRC_PATTERNS += audiocore/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -301,9 +304,10 @@ $(filter $(SRC_PATTERNS), \
 	_stage/Text.c \
 	_stage/__init__.c \
 	audioio/__init__.c \
-	audioio/Mixer.c \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
+	audiocore/__init__.c \
+	audiocore/Mixer.c \
+	audiocore/RawSample.c \
+	audiocore/WaveFile.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \

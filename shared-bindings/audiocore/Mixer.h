@@ -28,8 +28,8 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MIXER_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/audioio/Mixer.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-module/audiocore/Mixer.h"
+#include "shared-bindings/audiocore/RawSample.h"
 
 extern const mp_obj_type_t audioio_mixer_type;
 

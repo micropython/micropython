@@ -24,47 +24,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
+#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
 
 #include "py/obj.h"
 
-#include "shared-module/audioio/__init__.h"
+#include "shared-module/audiocore/__init__.h"
+
+typedef struct {
+    mp_obj_t sample;
+    bool loop;
+    bool more_data;
+    uint32_t* remaining_buffer;
+    uint32_t buffer_length;
+} audioio_mixer_voice_t;
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t* buffer;
-    uint32_t buffer_length;
-    uint8_t* second_buffer;
-    uint32_t second_buffer_length;
-    uint32_t file_length; // In bytes
-    uint16_t data_start; // Where the data values start
+    uint32_t* first_buffer;
+    uint32_t* second_buffer;
+    uint32_t len; // in words
     uint8_t bits_per_sample;
-    uint16_t buffer_index;
-    uint32_t bytes_remaining;
-
+    bool use_first_buffer;
+    bool samples_signed;
     uint8_t channel_count;
     uint32_t sample_rate;
-
-    uint32_t len;
-    pyb_file_obj_t* file;
 
     uint32_t read_count;
     uint32_t left_read_count;
     uint32_t right_read_count;
-} audioio_wavefile_obj_t;
+
+    uint8_t voice_count;
+    audioio_mixer_voice_t voice[];
+} audioio_mixer_obj_t;
+
 
 // These are not available from Python because it may be called in an interrupt.
-void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t* self,
-                                   bool single_channel,
-                                   uint8_t channel);
-audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
-                                                        bool single_channel,
-                                                        uint8_t channel,
-                                                        uint8_t** buffer,
-                                                        uint32_t* buffer_length); // length in bytes
-void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t* self, bool single_channel,
-                                           bool* single_buffer, bool* samples_signed,
-                                           uint32_t* max_buffer_length, uint8_t* spacing);
+void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
+                                    bool single_channel,
+                                    uint8_t channel);
+audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
+                                                         bool single_channel,
+                                                         uint8_t channel,
+                                                         uint8_t** buffer,
+                                                         uint32_t* buffer_length); // length in bytes
+void audioio_mixer_get_buffer_structure(audioio_mixer_obj_t* self, bool single_channel,
+                                            bool* single_buffer, bool* samples_signed,
+                                            uint32_t* max_buffer_length, uint8_t* spacing);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H

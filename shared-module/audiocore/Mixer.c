@@ -24,13 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audioio/Mixer.h"
+#include "shared-bindings/audiocore/Mixer.h"
 
 #include <stdint.h>
 
 #include "py/runtime.h"
-#include "shared-module/audioio/__init__.h"
-#include "shared-module/audioio/RawSample.h"
+#include "shared-module/audiocore/__init__.h"
+#include "shared-module/audiocore/RawSample.h"
 
 void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
                                         uint8_t voice_count,

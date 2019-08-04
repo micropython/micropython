@@ -229,5 +229,6 @@ displayio_group_t circuitpython_splash = {
     .size = 2,
     .max_size = 2,
     .children = splash_children,
-    .item_removed = false
+    .item_removed = false,
+    .in_group = false
 };

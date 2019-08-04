@@ -29,8 +29,8 @@
 #include "samd/events.h"
 #include "samd/dma.h"
 
-#include "shared-bindings/audioio/RawSample.h"
-#include "shared-bindings/audioio/WaveFile.h"
+#include "shared-bindings/audiocore/RawSample.h"
+#include "shared-bindings/audiocore/WaveFile.h"
 
 #include "py/mpstate.h"
 #include "py/runtime.h"

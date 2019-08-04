@@ -29,7 +29,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/audioio/WaveFile.h"
+#include "shared-bindings/audiocore/WaveFile.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
