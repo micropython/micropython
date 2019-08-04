@@ -1,6 +1,6 @@
 USB_VID = 0x239A
 USB_PID = 0x802A
-USB_PRODUCT = "STM32F411RE Discovery Board - CPy"
+USB_PRODUCT = "STM32F411VE Discovery Board - CPy"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
 MCU_SERIES = m4
