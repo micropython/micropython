@@ -137,6 +137,11 @@ typedef struct _mp_state_vm_t {
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
 
+    #if MICROPY_PY_SYS_ATEXIT
+    // exposed through sys.atexit function
+    mp_obj_t exitfunc;
+    #endif
+
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
 

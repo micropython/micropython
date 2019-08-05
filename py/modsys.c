@@ -146,6 +146,19 @@ STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
 #endif
 
+#if MICROPY_PY_SYS_ATEXIT
+// atexit(callback): Callback is called when sys.exit is called.
+STATIC mp_obj_t mp_sys_atexit(mp_obj_t obj) {
+    if (mp_obj_is_callable(obj)) {
+        MP_STATE_VM(exitfunc) = obj;
+    } else {
+        MP_STATE_VM(exitfunc) = mp_const_none;
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -178,6 +191,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_EXIT
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
