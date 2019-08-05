@@ -185,14 +185,14 @@ long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, con
 }
 
 #define is_signed(typecode) (typecode > 'Z')
-mp_obj_t mp_binary_get_val(char struct_type, char val_type, mp_int_t offset, byte **ptr) {
+mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte **ptr) {
     byte *p = *ptr;
     mp_uint_t align;
 
     size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
-        // Make pointer aligned, taking the offset into account
-        p = (byte*)MP_ALIGN(p - offset, (size_t)align) + offset;
+        // align p relative to p_base
+        p += (uintptr_t)MP_ALIGN(p - p_base, (size_t)align)  - (p - p_base);
         #if MP_ENDIANNESS_LITTLE
         struct_type = '<';
         #else
