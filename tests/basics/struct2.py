@@ -25,10 +25,19 @@ print(struct.calcsize('0s1s0H2H'))
 print(struct.unpack('<0s1s0H2H', b'01234'))
 print(struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515))
 
-b = bytearray(range(1, 10))
+b = bytearray(range(1, 13))
 
 assert struct.unpack_from('@i', b, 1) == struct.unpack_from('@i', b[1:], 0)
 assert struct.unpack_from('@ii', b, 1) == struct.unpack_from('@ii', b[1:], 0)
+
+assert struct.unpack('i', b[0:4]) == (0x4030201, )
+assert struct.unpack_from('i', b, 0) == (0x4030201, )
+
+assert struct.unpack('i', b[1:5]) == (0x5040302, )
+assert struct.unpack_from('i', b, 1) == (0x5040302, )
+
+assert struct.unpack('<bi', b[0:5]) == (0x1, 0x5040302)
+assert struct.unpack_from('<bi', b, 0) == (0x1, 0x5040302)
 
 # check that we get an error if the buffer is too small
 try:
