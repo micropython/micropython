@@ -39,6 +39,8 @@ assert struct.unpack_from('i', b, 1) == (0x5040302, )
 assert struct.unpack('<bi', b[0:5]) == (0x1, 0x5040302)
 assert struct.unpack_from('<bi', b, 0) == (0x1, 0x5040302)
 
+assert struct.unpack('h', memoryview(b'\x01\x02\x03')[1:]) == (0x302, )
+
 # check that we get an error if the buffer is too small
 try:
     struct.unpack('2H', b'\x00\x00')
