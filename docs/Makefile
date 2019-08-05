@@ -2,14 +2,14 @@
 #
 
 # You can set these variables from the command line.
-PYTHON        = python3
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-PAPER         =
-BUILDDIR      = build/$(MICROPY_PORT)
-CPYDIFFDIR    = ../tools
-CPYDIFF       = gen-cpydiff.py
-GENRSTDIR     = genrst
+PYTHON        ?= python3
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+PAPER         ?=
+BUILDDIR      ?= build/$(MICROPY_PORT)
+CPYDIFFDIR    ?= ../tools
+CPYDIFF       ?= gen-cpydiff.py
+GENRSTDIR     ?= genrst
 # Run "make FORCE= ..." to avoid rebuilding from scratch (and risk
 # producing incorrect docs).
 FORCE         = -E
