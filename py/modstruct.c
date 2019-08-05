@@ -164,7 +164,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             res->items[i++] = item;
         } else {
             while (cnt--) {
-                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                item = mp_binary_get_val(fmt_type, *fmt, offset, &p);
                 res->items[i++] = item;
             }
         }
