@@ -146,6 +146,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
         }
         p += offset;
     }
+    byte *p_base = p;
 
     // Check that the input buffer is big enough to unpack all the values
     if (p + total_sz > end_p) {
@@ -164,7 +165,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             res->items[i++] = item;
         } else {
             while (cnt--) {
-                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                item = mp_binary_get_val(fmt_type, *fmt, p_base, &p);
                 res->items[i++] = item;
             }
         }
