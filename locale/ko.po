@@ -573,7 +573,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to connect:"
-msgstr 연결할 수 없다""
+msgstr "연결할 수 없다"
 
 #: ports/nrf/common-hal/bleio/Device.c
 msgid "Failed to continue scanning"
