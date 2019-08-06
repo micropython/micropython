@@ -66,12 +66,6 @@ void tvm_gas_report();
 // account
 typedef char* (*get_balance_fn_t) (const char*);
 get_balance_fn_t get_balance;
-typedef _Bool (*miner_stake_fn_t)(const char*, int len, const char*);
-miner_stake_fn_t miner_stake_fn;
-typedef _Bool (*miner_cancel_stake_fn_t)(const char*, int len, const char*);
-miner_cancel_stake_fn_t miner_cancel_stake;
-typedef _Bool (*miner_refund_stake_fn_t)(const char*, int len);
-miner_refund_stake_fn_t miner_refund_stake;
 
 // storage
 typedef char* (*storage_get_data_fn_t) (const char*);
