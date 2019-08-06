@@ -24,41 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+#include "py/obj.h"
 
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
+// Nothing now.
 
-static bool running_background_tasks = false;
-
-void background_tasks_reset(void) {
-    running_background_tasks = false;
-}
-
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-    running_background_tasks = true;
-    filesystem_background();
-    usb_background();
-#if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_background();
-#endif
-
-    #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
-    #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
-}
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H

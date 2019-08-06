@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOPWMIO__INIT__H
+#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOPWMIO__INIT__H
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+#include "shared-module/audiocore/__init__.h"
 
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
-
-static bool running_background_tasks = false;
-
-void background_tasks_reset(void) {
-    running_background_tasks = false;
-}
-
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-    running_background_tasks = true;
-    filesystem_background();
-    usb_background();
-#if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_background();
-#endif
-
-    #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
-    #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
-}
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_AUDIOPWMIO__INIT__H

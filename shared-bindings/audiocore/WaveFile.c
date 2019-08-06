@@ -33,7 +33,7 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audioio
+//| .. currentmodule:: audiocore
 //|
 //| :class:`WaveFile` -- Load a wave file for audio playback
 //| ========================================================
@@ -50,6 +50,7 @@
 //|   Playing a wave file from flash::
 //|
 //|     import board
+//|     import audiocore
 //|     import audioio
 //|     import digitalio
 //|
@@ -58,7 +59,7 @@
 //|     speaker_enable.switch_to_output(value=True)
 //|
 //|     data = open("cplay-5.1-16bit-16khz.wav", "rb")
-//|     wav = audioio.WaveFile(data)
+//|     wav = audiocore.WaveFile(data)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")

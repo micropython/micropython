@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,36 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOPWM_AUDIOOUT_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOPWM_AUDIOOUT_H
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
+#include "common-hal/microcontroller/Pin.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t *sample;
+    NRF_PWM_Type *pwm;
+    uint16_t *buffers[2];
+
+    uint16_t buffer_length;
+    uint16_t quiescent_value;
+    uint16_t scale;
+
+    uint8_t left_channel_number;
+    uint8_t right_channel_number;
+    uint8_t spacing;
+    uint8_t bytes_per_sample;
+
+    bool playing;
+    bool stopping;
+    bool paused;
+    bool loop;
+    bool signed_to_unsigned;
+    bool single_buffer;
+} audiopwmio_pwmaudioout_obj_t;
+
+void audiopwmout_reset(void);
+
+void audiopwmout_background(void);
+
 #endif
-
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
-
-static bool running_background_tasks = false;
-
-void background_tasks_reset(void) {
-    running_background_tasks = false;
-}
-
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-    running_background_tasks = true;
-    filesystem_background();
-    usb_background();
-#if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_background();
-#endif
-
-    #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
-    #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
-}
