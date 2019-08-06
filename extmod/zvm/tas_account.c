@@ -130,64 +130,6 @@ STATIC mp_obj_t mod_account_transfer(mp_obj_t address,mp_obj_t amount) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_transfer_obj, mod_account_transfer);
 
-STATIC mp_obj_t mod_account_stake(mp_obj_t address, mp_obj_t _type, mp_obj_t amount) {
-    bool success=false;
-    mp_obj_get_int(amount);
-    char stack_buf[sizeof(mp_int_t) * 4];
-    char *buf = stack_buf;
-    size_t buf_size = sizeof(stack_buf);
-    size_t fmt_size;
-
-    char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, amount, 10, NULL, '\0', '\0');
-    if (buf != stack_buf) {
-        m_del(char, buf, buf_size);
-    }
-
-
-    byte code = MP_BC_TRANSFER;
-    if(CheckGas(&code)) {
-        success = miner_stake_fn(mp_obj_str_get_str(address), mp_obj_get_int(_type), str);
-    }
-    return mp_obj_new_bool(success);
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_stake_obj, mod_account_stake);
-
-STATIC mp_obj_t mod_account_cancel_stake(mp_obj_t address, mp_obj_t _type, mp_obj_t amount) {
-    bool success = false;
-    mp_obj_get_int(amount);
-    char stack_buf[sizeof(mp_int_t) * 4];
-    char *buf = stack_buf;
-    size_t buf_size = sizeof(stack_buf);
-    size_t fmt_size;
-
-    char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, amount, 10, NULL, '\0', '\0');
-    if (buf != stack_buf) {
-        m_del(char, buf, buf_size);
-    }
-
-
-    byte code = MP_BC_TRANSFER;
-    if(CheckGas(&code)) {
-        success = miner_cancel_stake(mp_obj_str_get_str(address), mp_obj_get_int(_type), str);
-    }
-    return mp_obj_new_bool(success);
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_account_cancel_stake_obj, mod_account_cancel_stake);
-
-STATIC mp_obj_t mod_account_refund_stake(mp_obj_t address, mp_obj_t _type) {
-    bool success=false;
-
-    byte code = MP_BC_TRANSFER;
-    if(CheckGas(&code)) {
-        success = miner_refund_stake(mp_obj_str_get_str(address), mp_obj_get_int(_type));
-    }
-    return mp_obj_new_bool(success);
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_refund_stake_obj, mod_account_refund_stake);
-
 STATIC const mp_rom_map_elem_t mp_module_account_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_account) },
 		{ MP_ROM_QSTR(MP_QSTR_event_call), MP_ROM_PTR(&mod_account_event_call_obj) },
@@ -196,9 +138,6 @@ STATIC const mp_rom_map_elem_t mp_module_account_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_set_data), MP_ROM_PTR(&mod_account_set_Data_obj) },
 		{ MP_ROM_QSTR(MP_QSTR_remove_data), MP_ROM_PTR(&mod_account_remove_data_obj) },
         { MP_ROM_QSTR(MP_QSTR_transfer), MP_ROM_PTR(&mod_account_transfer_obj)},
-        { MP_ROM_QSTR(MP_QSTR_stake), MP_ROM_PTR(&mod_account_stake_obj)},
-        { MP_ROM_QSTR(MP_QSTR_cancel_stake), MP_ROM_PTR(&mod_account_cancel_stake_obj)},
-        { MP_ROM_QSTR(MP_QSTR_refund_stake), MP_ROM_PTR(&mod_account_refund_stake_obj)},
 
 };
 
