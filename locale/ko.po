@@ -14,7 +14,7 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: main.c
@@ -291,7 +291,7 @@ msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr "자동 재 장전이 꺼져 있습니다"
+msgstr "자동 재 장전이 꺼져 있습니다\n"
 
 #: main.c
 msgid ""
