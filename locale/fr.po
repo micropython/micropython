@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-25 22:48-0700\n"
+"POT-Creation-Date: 2019-07-31 16:30-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -260,6 +260,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -335,6 +336,11 @@ msgstr "Luminosité non-ajustable"
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
+
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -969,6 +975,7 @@ msgid "Not connected"
 msgstr "Non connecté"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Ne joue pas"
 
@@ -1110,6 +1117,7 @@ msgid "Sample rate must be positive"
 msgstr "Le taux d'échantillonage doit être positif"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
@@ -1209,8 +1217,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "La hauteur de la tuile doit diviser exactement la hauteur de l'image"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -2528,10 +2540,6 @@ msgstr "erreur de syntaxe dans le descripteur d'uctypes"
 msgid "threshold must be in the range 0-65536"
 msgstr "le seuil doit être dans la gamme 0-65536"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "indice de tuile hors limites"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
@@ -2887,6 +2895,9 @@ msgstr "'step' nul"
 #~ msgid "STA required"
 #~ msgstr "'STA' requis"
 
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) n'existe pas"
 
@@ -2982,6 +2993,9 @@ msgstr "'step' nul"
 
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "'services' inclut un object qui n'est pas un 'Service'"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "indice de tuile hors limites"
 
 #~ msgid "too many arguments"
 #~ msgstr "trop d'arguments"

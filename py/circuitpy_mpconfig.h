@@ -244,6 +244,13 @@ extern const struct _mp_obj_module_t audioio_module;
 #define AUDIOIO_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOPWMIO
+#define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
+extern const struct _mp_obj_module_t audiopwmio_module;
+#else
+#define AUDIOPWMIO_MODULE
+#endif
+
 #if CIRCUITPY_BITBANGIO
 #define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
 extern const struct _mp_obj_module_t bitbangio_module;
@@ -573,6 +580,7 @@ extern const struct _mp_obj_module_t ustack_module;
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
+    AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \

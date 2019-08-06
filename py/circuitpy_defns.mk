@@ -108,6 +108,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOPWMIO),1)
+SRC_PATTERNS += audiopwmio/%
+endif
 ifeq ($(CIRCUITPY_AUDIOCORE),1)
 SRC_PATTERNS += audiocore/%
 endif
@@ -223,6 +226,8 @@ $(filter $(SRC_PATTERNS), \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
+	audiopwmio/__init__.c \
+	audiopwmio/PWMAudioOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
@@ -301,6 +306,7 @@ $(filter $(SRC_PATTERNS), \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
+	audiopwmio/__init__.c \
 	audioio/__init__.c \
 	audiocore/__init__.c \
 	audiocore/Mixer.c \

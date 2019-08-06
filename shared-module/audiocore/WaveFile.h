@@ -27,6 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
 #define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_WAVEFILE_H
 
+#include "extmod/vfs_fat.h"
 #include "py/obj.h"
 
 #include "shared-module/audiocore/__init__.h"
