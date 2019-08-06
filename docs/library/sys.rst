@@ -121,3 +121,8 @@ Constants
 .. data:: version_info
 
    Python language version that this implementation conforms to, as a tuple of ints.
+
+    .. admonition:: Difference to CPython
+      :class: attention
+
+      Only the first three version numbers are supported and they can be referenced only by index, not by name (``.major``, ``.minor`` etc).
