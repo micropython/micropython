@@ -31,7 +31,7 @@ have as to what happens next:
     We will get the serial device working in the next tutorial.
 
   - **Mac**: Your pyboard will appear on the desktop as a removable disc.
-    It will probably be called "NONAME".  Click on it to open the pyboard folder.
+    It will probably be called ``PYBFLASH``.  Click on it to open the pyboard folder.
 
   - **Linux**: Your pyboard will appear as a removable medium.  On Ubuntu
     it will mount automatically and pop-up a window with the pyboard folder.
