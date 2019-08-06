@@ -1217,8 +1217,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "La hauteur de la tuile doit diviser exactement la hauteur de l'image"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -2536,10 +2540,6 @@ msgstr "erreur de syntaxe dans le descripteur d'uctypes"
 msgid "threshold must be in the range 0-65536"
 msgstr "le seuil doit être dans la gamme 0-65536"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "indice de tuile hors limites"
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
@@ -2895,6 +2895,9 @@ msgstr "'step' nul"
 #~ msgid "STA required"
 #~ msgstr "'STA' requis"
 
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) n'existe pas"
 
@@ -2990,6 +2993,9 @@ msgstr "'step' nul"
 
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "'services' inclut un object qui n'est pas un 'Service'"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "indice de tuile hors limites"
 
 #~ msgid "too many arguments"
 #~ msgstr "trop d'arguments"

@@ -131,7 +131,8 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
     displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
     self->base.type = &displayio_tilegrid_type;
-    common_hal_displayio_tilegrid_construct(self, native, bitmap_width / tile_width,
+    common_hal_displayio_tilegrid_construct(self, native,
+        bitmap_width / tile_width, bitmap_height / tile_height,
         pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,
         tile_width, tile_height, x, y, args[ARG_default_tile].u_int);
     return MP_OBJ_FROM_PTR(self);
@@ -346,7 +347,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         }
         if (x >= common_hal_displayio_tilegrid_get_width(self) ||
                 y >= common_hal_displayio_tilegrid_get_height(self)) {
-            mp_raise_IndexError(translate("tile index out of bounds"));
+            mp_raise_IndexError(translate("Tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {
@@ -357,7 +358,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         } else {
             mp_int_t value = mp_obj_get_int(value_obj);
             if (value < 0 || value > 255) {
-                mp_raise_ValueError(translate("Tile indices must be 0 - 255"));
+                mp_raise_ValueError(translate("Tile value out of bounds"));
             }
             common_hal_displayio_tilegrid_set_tile(self, x, y, value);
         }
