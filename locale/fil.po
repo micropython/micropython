@@ -1196,7 +1196,11 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
@@ -2493,10 +2497,6 @@ msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "ang threshold ay dapat sa range 0-65536"
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
