@@ -6,12 +6,16 @@ QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
 
-CC = emcc -g4
-LD = emcc -g4
+CC = emcc
+LD = emcc
 
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+
+#default debug options
+JSFLAGS ?= -O0 -g4 --source-map-base http://localhost:8000
+LDFLAGS ?= -m32
 
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
@@ -22,6 +26,12 @@ ifdef EMSCRIPTEN
 		CFLAGS += -s EMTERPRETIFY_SYNCLIST='["_mp_execute_bytecode"]' -s EMTERPRETIFY_ADVISE=1
 	endif
 
+	#check if not using emscripten-upstream branch
+	ifeq (,$(findstring upstream/bin, $(EMMAKEN_COMPILER)))
+		JSFLAGS += -s "BINARYEN_TRAP_MODE='clamp'"
+		LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+	endif  
+	
 	CC = emcc
 	CPP = clang -E -undef -D__CPP__ -D__EMSCRIPTEN__
 	CPP += --sysroot $(EMSCRIPTEN)/system
