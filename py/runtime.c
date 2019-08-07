@@ -1335,7 +1335,17 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     args[3] = fromlist;
     args[4] = level;
 
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    // Lookup __import__ and call that if it exists
+    mp_obj_dict_t *bo_dict = MP_STATE_VM(mp_module_builtins_override_dict);
+    if (bo_dict != NULL) {
+        mp_map_elem_t *import = mp_map_lookup(&bo_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
+        if (import != NULL) {
+            return mp_call_function_n_kw(import->value, 5, 0, args);
+        }
+    }
+    #endif
+
     return mp_builtin___import__(5, args);
 }
 
