@@ -13,10 +13,19 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-#default debug options
-JSFLAGS ?= -O0 -g4 --source-map-base http://localhost:8000
+
 LDFLAGS ?= -m32 -Wl,--gc-sections
 CFLAGS ?= -m32
+
+#default debug options for browser debugger
+JSFLAGS ?= --source-map-base http://localhost:8000
+
+#Debugging/Optimization
+ifeq ($(DEBUG), 1)
+CFLAGS += -O0 -g4
+else
+CFLAGS += -Oz -g0 -DNDEBUG
+endif
 
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
