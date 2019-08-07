@@ -73,12 +73,12 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
             MP_OBJ_TO_PTR(self->characteristic_list->items[characteristic_idx]);
 
         ble_gatts_char_md_t char_md = {
-            .char_props.broadcast      = (bool) characteristic->props & CHAR_PROP_BROADCAST,
-            .char_props.read           = (bool) characteristic->props & CHAR_PROP_READ,
-            .char_props.write_wo_resp  = (bool) characteristic->props & CHAR_PROP_WRITE_NO_RESPONSE,
-            .char_props.write          = (bool) characteristic->props & CHAR_PROP_WRITE,
-            .char_props.notify         = (bool) characteristic->props & CHAR_PROP_NOTIFY,
-            .char_props.indicate       = (bool) characteristic->props & CHAR_PROP_INDICATE,
+            .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
+            .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
+            .char_props.write_wo_resp  = (characteristic->props & CHAR_PROP_WRITE_NO_RESPONSE) ? 1 : 0,
+            .char_props.write          = (characteristic->props & CHAR_PROP_WRITE) ? 1 : 0,
+            .char_props.notify         = (characteristic->props & CHAR_PROP_NOTIFY) ? 1 : 0,
+            .char_props.indicate       = (characteristic->props & CHAR_PROP_INDICATE) ? 1 : 0,
         };
 
         ble_gatts_attr_md_t cccd_md = {

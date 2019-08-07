@@ -195,8 +195,6 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, mp_ob
         bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
         characteristic->base.type = &bleio_characteristic_type;
 
-        characteristic->descriptor_list = mp_obj_new_list(0, NULL);
-
         bleio_uuid_obj_t *uuid = NULL;
 
         if (gattc_char->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
@@ -219,7 +217,8 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, mp_ob
             (gattc_char->char_props.write_wo_resp ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
         // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
-        common_hal_bleio_characteristic_construct(characteristic, uuid, props, SEC_MODE_OPEN, SEC_MODE_OPEN, mp_const_empty_tuple);
+        common_hal_bleio_characteristic_construct(
+            characteristic, uuid, props, SEC_MODE_OPEN, SEC_MODE_OPEN, mp_obj_new_list(0, NULL));
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 

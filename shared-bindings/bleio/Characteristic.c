@@ -96,16 +96,16 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
 
-    // If descriptors is not an iterable, an exception will be thrown.
-    mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(args[ARG_descriptors].u_obj, &iter_buf);
-
-// Copy the descriptors list and validate its items.
+    // Copy the descriptors list and validate its items.
     mp_obj_t desc_list_obj = mp_obj_new_list(0, NULL);
     mp_obj_list_t *desc_list = MP_OBJ_TO_PTR(desc_list_obj);
 
+    // If descriptors is not an iterable, an exception will be thrown.
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t descriptors_iter = mp_getiter(descriptors, &iter_buf);
+
     mp_obj_t descriptor_obj;
-    while ((descriptor_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+    while ((descriptor_obj = mp_iternext(descriptors_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(descriptor_obj, &bleio_descriptor_type)) {
             mp_raise_ValueError(translate("descriptors includes an object that is not a Descriptors"));
         }
