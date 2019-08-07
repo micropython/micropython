@@ -69,6 +69,16 @@ print(buf)
 struct.pack_into('<bbb', buf, -6, 0x44, 0x45, 0x46)
 print(buf)
 
+# whitespace ignored
+buf1 = bytearray(b'>>>123<<<')
+buf2 = bytearray(b'>>>123<<<')
+struct.pack_into('<bbb', buf1, 3, 0x41, 0x42, 0x43)
+struct.pack_into('< b\tb\n\t b', buf2, 3, 0x41, 0x42, 0x43)
+assert buf1 == buf2
+struct.pack_into('<bbb', buf1, -6, 0x44, 0x45, 0x46)
+struct.pack_into('<b \n b  b \t', buf2, -6, 0x44, 0x45, 0x46)
+assert buf1 == buf2
+
 # check that we get an error if the buffer is too small
 try:
     struct.pack_into('I', bytearray(1), 0, 0)

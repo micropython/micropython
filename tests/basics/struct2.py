@@ -25,6 +25,11 @@ print(struct.calcsize('0s1s0H2H'))
 print(struct.unpack('<0s1s0H2H', b'01234'))
 print(struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515))
 
+# whitespace in format strings
+assert struct.calcsize('0s1s0H2H') == struct.calcsize('0s 1s\t0H\n \t2H ')
+assert struct.unpack('<0s1s0H2H', b'01234') == struct.unpack('<  0s\n\t 1s0H 2H', b'01234')
+assert struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515) == struct.pack('<0s   1s\n0H2H\t', b'abc', b'abc', 258, 515)
+
 # check that we get an error if the buffer is too small
 try:
     struct.unpack('2H', b'\x00\x00')

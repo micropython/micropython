@@ -26,6 +26,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <string.h>
 
 #include "py/runtime.h"
@@ -88,6 +89,9 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
     size_t size;
     for (size = 0; *fmt; fmt++) {
         mp_uint_t cnt = 1;
+        if (isspace(*fmt)) {
+            continue;
+        }
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
@@ -154,6 +158,9 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 
     for (size_t i = 0; i < num_items;) {
         mp_uint_t cnt = 1;
+        while(isspace(*fmt)) {
+            fmt++;
+        }
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
@@ -182,6 +189,10 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
     size_t i;
     for (i = 0; i < n_args;) {
         mp_uint_t cnt = 1;
+        while(isspace(*fmt)) {
+            fmt++;
+        }
+
         if (*fmt == '\0') {
             // more arguments given than used by format string; CPython raises struct.error here
             break;
