@@ -29,7 +29,7 @@ ifdef EMSCRIPTEN
 	#check if not using emscripten-upstream branch
 	ifeq (,$(findstring upstream/bin, $(EMMAKEN_COMPILER)))
 		JSFLAGS += -s "BINARYEN_TRAP_MODE='clamp'"
-		LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+		LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 	endif  
 	
 	CC = emcc
