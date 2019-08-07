@@ -6,9 +6,6 @@ QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
 
-CC = emcc
-LD = emcc
-
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
@@ -27,8 +24,14 @@ else
 CFLAGS += -Oz -g0 -DNDEBUG
 endif
 
-CFLAGS += -Wall -Werror $(INC) -std=c99 $(COPT)
+CFLAGS += -Wall -Werror $(INC) -std=gnu11 $(COPT)
 CFLAGS += -fdata-sections -ffunction-sections
+CFLAGS += $(CFLAGS_MOD)
+
+JSFLAGS += -s WASM=0
+JSFLAGS += --memory-init-file 0 --js-library library.js
+JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
+JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt' ]" 
 
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
@@ -45,10 +48,11 @@ ifdef EMSCRIPTEN
 		LDFLAGS += -Wl,-Map=$@.map,--cref
 	endif  
 	
-	CC = emcc
-	CPP = clang -E -undef -D__CPP__ -D__EMSCRIPTEN__
+	CC = emcc $(JSFLAGS)
+	LD = emcc $(JSFLAGS)
+	CPP = clang -E -undef -D__CPP__ -D__EMSCRIPTEN__ -U__STDC_VERSION__
 	CPP += --sysroot $(EMSCRIPTEN)/system
-	CPP += -include $(BUILD)/clang_predefs.h	
+	CPP += -include $(BUILD)/clang_predefs.h
 	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
 else
 	ifdef CLANG
@@ -72,15 +76,14 @@ SRC_C = \
 	mphalport.c \
 	modutime.c \
 
-SRC_QSTR += $(SRC_C)
+
+SRC_C += $(SRC_MOD)
+
+SRC_QSTR += $(BUILD)/clang_predefs.h $(SRC_C) $(SRC_LIB)
 
 OBJ = $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-
-JSFLAGS += --memory-init-file 0 --js-library library.js
-JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
-JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" 
 
 $(BUILD)/clang_predefs.h:
 	$(Q)mkdir -p $(dir $@)
