@@ -27,6 +27,9 @@ else
 CFLAGS += -Oz -g0 -DNDEBUG
 endif
 
+CFLAGS += -Wall -Werror $(INC) -std=c99 $(COPT)
+CFLAGS += -fdata-sections -ffunction-sections
+
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
 	# not using an emterpreting list *is* bad and will lead to poor performance and huge binary.
@@ -56,10 +59,6 @@ else
 		CPP = gcc -E -D__CPP__
 	endif
 endif
-
-CFLAGS += -Wall -Werror $(INC) -std=c99 $(COPT)
-CFLAGS += -DNDEBUG
-CFLAGS += -fdata-sections -ffunction-sections
 
 SRC_LIB = $(addprefix lib/,\
 	utils/interrupt_char.c \
