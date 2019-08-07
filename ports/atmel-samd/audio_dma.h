@@ -83,6 +83,9 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
                                           bool output_signed,
                                           uint32_t output_register_address,
                                           uint8_t dma_trigger_source);
+
+void audio_dma_disable_channel(uint8_t channel);
+void audio_dma_enable_channel(uint8_t channel);
 void audio_dma_stop(audio_dma_t* dma);
 bool audio_dma_get_playing(audio_dma_t* dma);
 void audio_dma_pause(audio_dma_t* dma);
