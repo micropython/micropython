@@ -373,23 +373,6 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
-//|   .. attribute:: screenshot
-//|
-//|	Take a screenshot.
-//|
-//|
-/* STATIC mp_obj_t displayio_display_obj_get_screenshot(mp_obj_t self_in) { */
-/*     displayio_display_obj_t *self = native_display(self_in); */
-/*     return mp_const_none; */
-/* } */
-/* MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_screenshot_obj, displayio_display_obj_get_screenshot); */
-
-/* const mp_obj_property_t displayio_display_screenshot_obj = { */
-/*     .base.type = &mp_type_property, */
-/*     .proxy = {(mp_obj_t)&displayio_display_get_screenshot_obj, */
-/*               (mp_obj_t)&mp_const_none_obj, */
-/*               (mp_obj_t)&mp_const_none_obj}, */
-/* }; */
 
 
 #include "py/objarray.h"
