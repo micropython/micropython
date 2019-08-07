@@ -35,6 +35,8 @@ const mcu_pin_obj_t pin_PE05 = PIN(4, GPIOE, 5);
 const mcu_pin_obj_t pin_PE06 = PIN(4, GPIOE, 6);
 
 const mcu_pin_obj_t pin_PC13 = PIN(2, GPIOC, 13);
+const mcu_pin_obj_t pin_PC14 = PIN(2, GPIOC, 14); //OSC32_IN
+const mcu_pin_obj_t pin_PC15 = PIN(2, GPIOC, 15); //OSC32_OUT
 
 const mcu_pin_obj_t pin_PF00 = PIN(5, GPIOF, 0);   // 144 only 
 const mcu_pin_obj_t pin_PF01 = PIN(5, GPIOF, 1);   // 144 only 

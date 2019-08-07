@@ -98,9 +98,12 @@ endif
 
 ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
 C_DEFS =  \
+	-DUSE_FULL_LL_DRIVER \
 	-DUSE_HAL_DRIVER \
 	-DSTM32F411xE
 endif
+
+C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE)
 
 #TODO: Add ASM Flags? -Werror
 CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
@@ -184,6 +187,8 @@ SRC_C += \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
 	lib/libc/string0.c \
@@ -198,16 +203,9 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c
-
-	#boards/$(BOARD)/pins.c \
 	
 ifneq ($(USB),FALSE)
 SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
-endif
-
-ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-SRC_C += peripherals/stm32f4/stm32f412zx/pins.c
-SRC_C += boards/$(BOARD)/pins.c
 endif
 
 SRC_S = \
