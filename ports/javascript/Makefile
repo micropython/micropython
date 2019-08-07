@@ -15,7 +15,7 @@ INC += -I$(BUILD)
 
 #default debug options
 JSFLAGS ?= -O0 -g4 --source-map-base http://localhost:8000
-LDFLAGS ?= -m32
+LDFLAGS ?= -m32 -Wl,--gc-sections
 
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
@@ -29,7 +29,7 @@ ifdef EMSCRIPTEN
 	#check if not using emscripten-upstream branch
 	ifeq (,$(findstring upstream/bin, $(EMMAKEN_COMPILER)))
 		JSFLAGS += -s "BINARYEN_TRAP_MODE='clamp'"
-		LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+		LDFLAGS += -Wl,-Map=$@.map,--cref
 	endif  
 	
 	CC = emcc
