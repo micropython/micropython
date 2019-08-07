@@ -16,6 +16,7 @@ INC += -I$(BUILD)
 #default debug options
 JSFLAGS ?= -O0 -g4 --source-map-base http://localhost:8000
 LDFLAGS ?= -m32 -Wl,--gc-sections
+CFLAGS ?= -m32
 
 ifdef EMSCRIPTEN
 	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
@@ -47,10 +48,8 @@ else
 	endif
 endif
 
-CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
-LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
-
-CFLAGS += -O0 -DNDEBUG
+CFLAGS += -Wall -Werror $(INC) -std=c99 $(COPT)
+CFLAGS += -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 
 SRC_LIB = $(addprefix lib/,\
@@ -67,12 +66,11 @@ SRC_C = \
 
 SRC_QSTR += $(SRC_C)
 
-OBJ = 
 OBJ = $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-JSFLAGS = -O0  -s "BINARYEN_TRAP_MODE='clamp'" --memory-init-file 0 --js-library library.js
+JSFLAGS += --memory-init-file 0 --js-library library.js
 JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
 JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt']" 
 
