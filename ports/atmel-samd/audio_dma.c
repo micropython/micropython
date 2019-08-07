@@ -270,10 +270,13 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
 }
 
 void audio_dma_stop(audio_dma_t* dma) {
-    audio_dma_disable_channel(dma->dma_channel);
-    disable_event_channel(dma->event_channel);
-    MP_STATE_PORT(playing_audio)[dma->dma_channel] = NULL;
-    audio_dma_state[dma->dma_channel] = NULL;
+    uint8_t channel = dma->dma_channel;
+    if (channel < AUDIO_DMA_CHANNEL_COUNT) {
+        audio_dma_disable_channel(channel);
+        disable_event_channel(dma->event_channel);
+        MP_STATE_PORT(playing_audio)[channel] = NULL;
+        audio_dma_state[channel] = NULL;
+    }
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
