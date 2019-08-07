@@ -45,9 +45,6 @@
 #endif
 
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
-#if __EMSCRIPTEN__
-#include "stdlib.h"
-#endif
 
 #define PATH_SEP_CHAR '/'
 
@@ -148,16 +145,11 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-#if MICROPY_PY___FILE__
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
-#else
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
-#endif
+    (void)source_name;
+
     #if MICROPY_PY___FILE__
-    if (source_name!=NULL){
-        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
-    } else
-        mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str("<stdin>") ));
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
     #endif
 
     // execute the module in its context
@@ -214,11 +206,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // its data) in the list of frozen files, execute it.
     #if MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
-        #if MICROPY_PY___FILE__
         do_execute_raw_code(module_obj, modref, file_str);
-        #else
-        do_execute_raw_code(module_obj, modref);
-        #endif
         return;
     }
     #endif
@@ -228,11 +216,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
-        #if MICROPY_PY___FILE__
         do_execute_raw_code(module_obj, raw_code, file_str);
-        #else
-        do_execute_raw_code(module_obj, raw_code);
-        #endif
         return;
     }
     #endif
@@ -240,37 +224,8 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // If we can compile scripts then load the file and compile and execute it.
     #if MICROPY_ENABLE_COMPILER
     {
-        #if __EMSCRIPTEN__
-        FILE *file = fopen(file_str,"r");
-        if (!file) {
-            printf("do_load: fopen(%s) failed\n", file_str);
-            fprintf(stderr, "do_load: fopen(%s) failed\n", file_str);
-            return;
-        }
-
-        fseeko(file, 0, SEEK_END);
-        off_t size_of_file = ftello(file);
-        fprintf(stderr, "mp_lexer_new_from_file(%s size=%lld)\n", file_str, (long long)size_of_file );
-        fseeko(file, 0, SEEK_SET);
-
-        char * cbuf = malloc(size_of_file+1);
-
-        if (cbuf == NULL) {
-            fprintf(stderr, "do_load:(%s size=%lld) malloc error\n", file_str, (long long)size_of_file );
-            return;
-        }
-
-        fread(cbuf, size_of_file, 1, file);
-        cbuf[size_of_file]=0;
-        fclose(file);
-
-        mp_lexer_t* lex = mp_lexer_new_from_str_len(qstr_from_str(file_str), cbuf, strlen(cbuf), 0);
-        do_load_from_lexer(module_obj, lex);
-        free(cbuf);
-        #else
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
         do_load_from_lexer(module_obj, lex);
-        #endif
         return;
     }
     #else
@@ -557,4 +512,3 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 #endif // MICROPY_ENABLE_EXTERNAL_IMPORT
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);
-
