@@ -25,7 +25,7 @@ CFLAGS += -Oz -g0 -DNDEBUG
 endif
 
 CFLAGS += -Wall -Werror $(INC) -std=gnu11 $(COPT)
-CFLAGS += -fdata-sections -ffunction-sections -Wno-error=unused-function
+CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += $(CFLAGS_MOD)
 
 JSFLAGS += -s WASM=0
