@@ -217,7 +217,6 @@ static_qstr_list = [
     "utf-8",
     "value",
     "values",
-    "vars",
     "write",
     "zip",
 ]
