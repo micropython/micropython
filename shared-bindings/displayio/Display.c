@@ -389,12 +389,13 @@ mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value);
 //|     :param int w: The width of the area
 //|     :param int h: The height of the area
 STATIC mp_obj_t displayio_display_obj_fill_area(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_x, ARG_y, ARG_width, ARG_height };
+  enum { ARG_x, ARG_y, ARG_width, ARG_height, ARG_buffer };
     static const mp_arg_t allowed_args[] = {
       { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, {} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -404,6 +405,11 @@ STATIC mp_obj_t displayio_display_obj_fill_area(size_t n_args, const mp_obj_t *p
     mp_int_t y = args[ARG_y].u_int;
     mp_int_t w = args[ARG_width].u_int;
     mp_int_t h = args[ARG_height].u_int;
+    mp_obj_array_t *result = (mp_obj_array_t *)(args[ARG_buffer].u_obj);
+
+    if (result->typecode != BYTEARRAY_TYPECODE) {
+      mp_raise_ValueError(translate("Buffer is not a bytearray"));
+    }
 
     uint16_t buffer_size = 128; // In uint32_ts
     displayio_area_t area = {
@@ -459,17 +465,20 @@ STATIC mp_obj_t displayio_display_obj_fill_area(size_t n_args, const mp_obj_t *p
 
     displayio_display_fill_area(self, &area, mask, buffer);
 
-    mp_obj_array_t *result = array_new(BYTEARRAY_TYPECODE, buffer_size * 4);
-    int  byte_offset = 0;
-    for (int word_offset = 0; word_offset < buffer_size; word_offset++) {
-      uint32_t word = buffer[word_offset];
-      for (int byte_count = 0; byte_count < 4; byte_count++) {
-        array_subscr(result, MP_OBJ_NEW_SMALL_INT(byte_offset), MP_OBJ_NEW_SMALL_INT(word & 0x000000FF));
-        word >>= 8;
-        byte_offset++;
+    if ((result->len + result->free) >= (buffer_size * 4)) {
+      int  byte_offset = 0;
+      for (int word_offset = 0; word_offset < buffer_size; word_offset++) {
+        uint32_t word = buffer[word_offset];
+        for (int byte_count = 0; byte_count < 4; byte_count++) {
+          array_subscr(result, MP_OBJ_NEW_SMALL_INT(byte_offset), MP_OBJ_NEW_SMALL_INT(word & 0x000000FF));
+          word >>= 8;
+          byte_offset++;
+        }
       }
+      return result;
+    } else {
+      mp_raise_ValueError(translate("Buffer is too small"));
     }
-    return result;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_area_obj, 1, displayio_display_obj_fill_area);
 
