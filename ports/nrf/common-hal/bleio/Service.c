@@ -47,7 +47,6 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
             MP_OBJ_TO_PTR(characteristic_list->items[characteristic_idx]);
         characteristic->service = self;
     }
-
 }
 
 bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
@@ -146,7 +145,7 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
             BLE_GAP_CONN_SEC_MODE_SET_OPEN(&desc_attr_md.write_perm);
 
             mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(descriptor->value_data, &bufinfo, MP_BUFFER_READ);
+            mp_get_buffer_raise(descriptor->value, &bufinfo, MP_BUFFER_READ);
 
             ble_gatts_attr_t desc_attr = {
                 .p_uuid = &desc_uuid,

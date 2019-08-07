@@ -59,13 +59,19 @@ const super_adapter_obj_t common_hal_bleio_adapter_obj = {
     },
 };
 
+void common_hal_bleio_check_connected(uint16_t conn_handle) {
+    if (conn_handle == BLE_CONN_HANDLE_INVALID) {
+        mp_raise_OSError_msg(translate("Not connected"));
+    }
+}
+
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device) {
     if (MP_OBJ_IS_TYPE(device, &bleio_peripheral_type)) {
         return ((bleio_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
     } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
         return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->conn_handle;
     } else {
-        return 0;
+        return BLE_CONN_HANDLE_INVALID;
     }
 }
 
@@ -213,7 +219,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, mp_ob
             (gattc_char->char_props.write_wo_resp ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
         // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
-        common_hal_bleio_characteristic_construct(characteristic, uuid, props, SEC_MODE_OPEN, mp_const_empty_tuple);
+        common_hal_bleio_characteristic_construct(characteristic, uuid, props, SEC_MODE_OPEN, SEC_MODE_OPEN, mp_const_empty_tuple);
         characteristic->handle = gattc_char->handle_value;
         characteristic->service = m_char_discovery_service;
 
@@ -267,8 +273,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, mp_ob
             // For now, just leave the UUID as NULL.
         }
 
-        // TODO: can we find out security mode?
-        common_hal_bleio_descriptor_construct(descriptor, uuid, SEC_MODE_OPEN);
+        common_hal_bleio_descriptor_construct(descriptor, uuid, SEC_MODE_OPEN, SEC_MODE_OPEN);
         descriptor->handle = gattc_desc->handle;
         descriptor->characteristic = m_desc_discovery_characteristic;
 
@@ -416,5 +421,81 @@ void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t 
 
     // This event handler is no longer needed.
     ble_drv_remove_event_handler(discovery_on_ble_evt, device);
+
+}
+
+// GATTS read of a Characteristic or Descriptor.
+mp_obj_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle) {
+    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
+    // we can still read and write the local value.
+
+    mp_buffer_info_t bufinfo;
+    ble_gatts_value_t gatts_value = {
+        .p_value = NULL,
+        .len = 0,
+    };
+
+    // Read once to find out what size buffer we need, then read again to fill buffer.
+
+    mp_obj_t value = mp_const_none;
+    uint32_t err_code = sd_ble_gatts_value_get(conn_handle, handle, &gatts_value);
+    if (err_code == NRF_SUCCESS) {
+        value = mp_obj_new_bytearray_of_zeros(gatts_value.len);
+        mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_WRITE);
+        gatts_value.p_value = bufinfo.buf;
+
+        // Read again, with the correct size of buffer.
+        err_code = sd_ble_gatts_value_get(conn_handle, handle, &gatts_value);
+    }
+
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to read gatts value, err 0x%04x"), err_code);
+    }
+
+    return value;
+}
+
+void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo) {
+    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
+    // we can still read and write the local value.
+
+    ble_gatts_value_t gatts_value = {
+        .p_value = bufinfo->buf,
+        .len = bufinfo->len,
+    };
+
+    const uint32_t err_code = sd_ble_gatts_value_set(conn_handle, handle, &gatts_value);
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to write gatts value, err 0x%04x"), err_code);
+    }
+}
+
+void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, bool write_no_response) {
+    common_hal_bleio_check_connected(conn_handle);
+
+    ble_gattc_write_params_t write_params = {
+        .write_op = write_no_response ? BLE_GATT_OP_WRITE_CMD: BLE_GATT_OP_WRITE_REQ,
+        .handle = handle,
+        .p_value = bufinfo->buf,
+        .len = bufinfo->len,
+    };
+
+    while (1) {
+        uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+        if (err_code == NRF_SUCCESS) {
+            break;
+        }
+
+        // Write with response will return NRF_ERROR_BUSY if the response has not been received.
+        // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
+        if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
+            // We could wait for an event indicating the write is complete, but just retrying is easier.
+            MICROPY_VM_HOOK_LOOP;
+            continue;
+        }
+
+        // Some real error occurred.
+        mp_raise_OSError_msg_varg(translate("Failed to write attribute value, err 0x%04x"), err_code);
+    }
 
 }

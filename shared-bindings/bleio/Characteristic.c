@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Attribute.h"
 #include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/UUID.h"
 
 //| .. currentmodule:: bleio
@@ -41,24 +42,28 @@
 //| and writing of the characteristic's value.
 //|
 //|
-//| .. class:: Characteristic(uuid, *, properties=0, security_mode=`Attribute.OPEN`, descriptors=None)
+//| .. class:: Characteristic(uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, descriptors=None)
 //|
 //|   Create a new Characteristic object identified by the specified UUID.
 //|
 //|   :param bleio.UUID uuid: The uuid of the characteristic
 //|   :param int properties: bitmask of these values bitwise-or'd together: `BROADCAST`, `INDICATE`,
 //|     `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`
-//|   :param int security_mode: one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|   :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
+//|      security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
 //|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|      `Attribute.SIGNED_NO_MITM`, `Attribute.SIGNED_WITH_MITM`.
+//|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|   :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
+//|      security mode is required. Values allowed are the same as `read_perm`.
 //|   :param iterable descriptors: BLE descriptors for this characteristic.
 //|
 STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_uuid, ARG_properties, ARG_security_mode, ARG_descriptors };
+    enum { ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm, ARG_descriptors };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0 } },
-        { MP_QSTR_security_mode, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
         { MP_QSTR_descriptors, MP_ARG_KW_ONLY| MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -77,8 +82,11 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
         mp_raise_ValueError(translate("Invalid properties"));
     }
 
-    const bleio_attribute_security_mode_t security_mode = args[ARG_security_mode].u_int;
-    common_hal_bleio_attribute_security_mode_check_valid(security_mode);
+    const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
+    common_hal_bleio_attribute_security_mode_check_valid(read_perm);
+
+    const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
+    common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
     mp_obj_t descriptors = args[ARG_descriptors].u_obj;
     if (descriptors == mp_const_none) {
@@ -88,7 +96,27 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
     bleio_characteristic_obj_t *self = m_new_obj(bleio_characteristic_obj_t);
     self->base.type = &bleio_characteristic_type;
 
-    common_hal_bleio_characteristic_construct(self, uuid, properties, security_mode, descriptors);
+    // If descriptors is not an iterable, an exception will be thrown.
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(args[ARG_descriptors].u_obj, &iter_buf);
+
+// Copy the descriptors list and validate its items.
+    mp_obj_t desc_list_obj = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *desc_list = MP_OBJ_TO_PTR(desc_list_obj);
+
+    mp_obj_t descriptor_obj;
+    while ((descriptor_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (!MP_OBJ_IS_TYPE(descriptor_obj, &bleio_descriptor_type)) {
+            mp_raise_ValueError(translate("descriptors includes an object that is not a Descriptors"));
+        }
+        bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(descriptor_obj);
+        if (common_hal_bleio_descriptor_get_characteristic(descriptor) != mp_const_none) {
+            mp_raise_ValueError(translate("Descriptor is already attached to a Characteristic"));
+        }
+        mp_obj_list_append(desc_list_obj, descriptor_obj);
+    }
+
+    common_hal_bleio_characteristic_construct(self, uuid, properties, read_perm, write_perm, desc_list);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -178,6 +206,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio
 const mp_obj_property_t bleio_characteristic_descriptors_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_characteristic_get_descriptors_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|   .. attribute:: service (read-only)
+//|
+//|     The Service this Characteristic is a part of. None if not yet assigned to a Service.
+//|
+STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return common_hal_bleio_characteristic_get_service(self);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_service_obj, bleio_characteristic_get_service);
+
+const mp_obj_property_t bleio_characteristic_service_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_characteristic_get_service_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };

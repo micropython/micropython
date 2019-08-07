@@ -59,6 +59,7 @@
 //|
 //|     Address
 //|     Adapter
+//|     Attribute
 //|     Central
 //|     Characteristic
 //|     CharacteristicBuffer

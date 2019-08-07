@@ -96,6 +96,9 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
             // The descriptor base UUID doesn't match the characteristic base UUID.
             mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
         }
+        if (common_hal_bleio_characteristic_get_service(characteristic) != MP_OBJ_NULL) {
+            mp_raise_ValueError(translate("Characteristic is already attached to a Service"));
+        }
         mp_obj_list_append(char_list_obj, characteristic_obj);
     }
 

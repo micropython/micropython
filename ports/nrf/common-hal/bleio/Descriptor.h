@@ -36,11 +36,13 @@
 
 typedef struct {
     mp_obj_base_t base;
+    // Will be MP_OBJ_NULL before being assigned to a Characteristic.
     bleio_characteristic_obj_t *characteristic;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t value_data;
+    mp_obj_t value;
     uint16_t handle;
-    bleio_attribute_security_mode_t security_mode;
+    bleio_attribute_security_mode_t read_perm;
+    bleio_attribute_security_mode_t write_perm;
 } bleio_descriptor_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_DESCRIPTOR_H

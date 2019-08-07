@@ -37,12 +37,12 @@
 //| =========================================================
 //|
 //| Definitions associated with all BLE attributes: characteristics, descriptors, etc.
-//| `Attribute` is, notionally, a superclass of `Characteristic` and `Descriptor`,
+//| :py:class:`~bleio.Attribute` is, notionally, a superclass of `Characteristic` and `Descriptor`,
 //| but is not defined as a Python superclass of those classes.
 //|
 //| .. class:: Attribute()
 //|
-//|   You cannot create an instance of `Attribute`.
+//|   You cannot create an instance of :py:class:`~bleio.Attribute`.
 //|
 
 STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {

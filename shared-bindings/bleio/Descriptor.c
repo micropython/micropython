@@ -42,15 +42,24 @@
 //| information about the characteristic.
 //|
 
-//| .. class:: Descriptor(uuid, security_mode=`Attribute.OPEN`)
+//| .. class:: Descriptor(uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`)
 //|
-//|   Create a new descriptor object with the UUID uuid and the given value, if any.
-
+//|   Create a new descriptor object with the UUID uuid
+//|
+//|   :param bleio.UUID uuid: The uuid of the descriptor
+//|   :param int read_perm: Specifies whether the descriptor can be read by a client, and if so, which
+//|      security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
+//|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|   :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
+//|      security mode is required. Values allowed are the same as `read_perm`.
+//|
 STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_uuid, ARG_security_mode };
+    enum { ARG_uuid, ARG_read_perm, ARG_write_perm };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_security_mode, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -62,14 +71,17 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_raise_ValueError(translate("Expected a UUID"));
     }
 
-    const bleio_attribute_security_mode_t security_mode = args[ARG_security_mode].u_int;
-    common_hal_bleio_attribute_security_mode_check_valid(security_mode);
+    const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
+    common_hal_bleio_attribute_security_mode_check_valid(read_perm);
+
+    const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
+    common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
     bleio_descriptor_obj_t *self = m_new_obj(bleio_descriptor_obj_t);
     self->base.type = type;
     bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_arg);
 
-    common_hal_bleio_descriptor_construct(self, uuid, security_mode);
+    common_hal_bleio_descriptor_construct(self, uuid, read_perm, write_perm);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -91,6 +103,24 @@ const mp_obj_property_t bleio_descriptor_uuid_obj = {
     .proxy = {(mp_obj_t)&bleio_descriptor_get_uuid_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: characteristic (read-only)
+//|
+//|     The Characteristic this Descriptor is a part of. None if not yet assigned to a Characteristic.
+//|
+STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
+    bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return common_hal_bleio_descriptor_get_characteristic(self);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_descriptor_get_characteristic);
+
+const mp_obj_property_t bleio_descriptor_characteristic_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_descriptor_get_characteristic_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
 };
 
 STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {
