@@ -52,13 +52,13 @@ uint8_t find_free_audio_dma_channel(void) {
 
 void audio_dma_disable_channel(uint8_t channel) {
     if (channel >= AUDIO_DMA_CHANNEL_COUNT)
-        mp_raise_RuntimeError(translate("Internal error: disable invalid dma channel"));
+        return;
     dma_disable_channel(channel);
 }
 
 void audio_dma_enable_channel(uint8_t channel) {
     if (channel >= AUDIO_DMA_CHANNEL_COUNT)
-        mp_raise_RuntimeError(translate("Internal error: enable invalid dma channel"));
+        return;
     dma_enable_channel(channel);
 }
 
