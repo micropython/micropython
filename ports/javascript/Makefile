@@ -1,8 +1,13 @@
+# customizations for lvgl
+WASM_FILE_API = 1
+FROZEN_DIR ?= modules
 include ../../py/mkenv.mk
 
 CROSS = 0
 
-WASM_FILE_API = 1
+
+
+
 
 QSTR_DEFS = qstrdefsport.h
 
