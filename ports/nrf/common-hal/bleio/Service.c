@@ -72,6 +72,10 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
         bleio_characteristic_obj_t *characteristic =
             MP_OBJ_TO_PTR(self->characteristic_list->items[characteristic_idx]);
 
+        if (characteristic->handle != BLE_GATT_HANDLE_INVALID) {
+            mp_raise_ValueError(translate("Characteristic already in use by another Service."));
+        }
+
         ble_gatts_char_md_t char_md = {
             .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
             .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
@@ -97,17 +101,22 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
 
         ble_gatts_attr_md_t char_attr_md = {
             .vloc = BLE_GATTS_VLOC_STACK,
-            .vlen = 1,
+            .vlen = !characteristic->fixed_length,
         };
 
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_attr_md.read_perm);
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_attr_md.write_perm);
 
+        mp_buffer_info_t char_value_bufinfo;
+        mp_get_buffer_raise(characteristic->value, &char_value_bufinfo, MP_BUFFER_READ);
+
         ble_gatts_attr_t char_attr = {
             .p_uuid = &char_uuid,
             .p_attr_md = &char_attr_md,
-            .init_len = sizeof(uint8_t),
-            .max_len = GATT_MAX_DATA_LENGTH,
+            .init_len = char_value_bufinfo.len,
+            .p_value = char_value_bufinfo.buf,
+            .init_offs = 0,
+            .max_len = characteristic->max_length,
         };
 
         ble_gatts_char_handles_t char_handles;
@@ -116,10 +125,6 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
         err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &char_attr, &char_handles);
         if (err_code != NRF_SUCCESS) {
             mp_raise_OSError_msg_varg(translate("Failed to add characteristic, err 0x%04x"), err_code);
-        }
-
-        if (characteristic->handle != BLE_GATT_HANDLE_INVALID) {
-            mp_raise_ValueError(translate("Characteristic already in use by another Service."));
         }
 
         characteristic->user_desc_handle = char_handles.user_desc_handle;
@@ -138,25 +143,27 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
             ble_gatts_attr_md_t desc_attr_md = {
                 // Data passed is not in a permanent location and should be copied.
                 .vloc = BLE_GATTS_VLOC_STACK,
-                .vlen = 1,
+                .vlen = !descriptor->fixed_length,
             };
 
             BLE_GAP_CONN_SEC_MODE_SET_OPEN(&desc_attr_md.read_perm);
             BLE_GAP_CONN_SEC_MODE_SET_OPEN(&desc_attr_md.write_perm);
 
-            mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(descriptor->value, &bufinfo, MP_BUFFER_READ);
+            mp_buffer_info_t desc_value_bufinfo;
+            mp_get_buffer_raise(descriptor->value, &desc_value_bufinfo, MP_BUFFER_READ);
 
             ble_gatts_attr_t desc_attr = {
                 .p_uuid = &desc_uuid,
                 .p_attr_md = &desc_attr_md,
-                .init_len = bufinfo.len,
-                .p_value = bufinfo.buf,
+                .init_len = desc_value_bufinfo.len,
+                .p_value = desc_value_bufinfo.buf,
                 .init_offs = 0,
-                .max_len = GATT_MAX_DATA_LENGTH,
+                .max_len = descriptor->max_length,
             };
 
             err_code = sd_ble_gatts_descriptor_add(characteristic->handle, &desc_attr, &descriptor->handle);
-        }
-    }
+
+        } // loop over descriptors
+
+    } // loop over characteristics
 }

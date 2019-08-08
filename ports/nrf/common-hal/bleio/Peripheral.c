@@ -149,21 +149,18 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: {
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-            mp_printf(&mp_plat_print, "sm: %d, lv: %d\n", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
                 // Security setup did not succeed:
                 // mode 0, level 0 means no access
                 // mode 1, level 1 means open link
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
-                mp_printf(&mp_plat_print, "PAIR_NOT_PAIRED\n");
             } else {
                 // TODO: see Bluefruit lib
                 // if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
                 //    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
                 // }
                 self->pair_status = PAIR_PAIRED;
-                mp_printf(&mp_plat_print, "PAIR_PAIRED\n");
             }
             break;
         }

@@ -42,7 +42,7 @@
 //| and writing of the characteristic's value.
 //|
 //|
-//| .. class:: Characteristic(uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, descriptors=None)
+//| .. class:: Characteristic(uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, descriptors=None)
 //|
 //|   Create a new Characteristic object identified by the specified UUID.
 //|
@@ -55,15 +55,22 @@
 //|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
 //|   :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
 //|      security mode is required. Values allowed are the same as `read_perm`.
+//|   :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
+//|      is 512, or possibly 510 if `fixed_length` is False. The default, 20, is the maximum
+//|      number of data bytes that fit in a single BLE 4.x ATT packet.
+//|   :param bool fixed_length: True if the characteristic value is of fixed length.
 //|   :param iterable descriptors: BLE descriptors for this characteristic.
 //|
 STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm, ARG_descriptors };
+    enum { ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm,
+           ARG_max_length, ARG_fixed_length, ARG_descriptors };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0 } },
-        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
-        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN} },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN} },
+        { MP_QSTR_max_length, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 20} },
+        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_descriptors, MP_ARG_KW_ONLY| MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -110,13 +117,18 @@ STATIC mp_obj_t bleio_characteristic_make_new(const mp_obj_type_t *type, size_t 
             mp_raise_ValueError(translate("descriptors includes an object that is not a Descriptors"));
         }
         bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(descriptor_obj);
-        if (common_hal_bleio_descriptor_get_characteristic(descriptor) != mp_const_none) {
+        if (common_hal_bleio_descriptor_get_characteristic(descriptor) != MP_OBJ_NULL) {
             mp_raise_ValueError(translate("Descriptor is already attached to a Characteristic"));
         }
         mp_obj_list_append(desc_list_obj, descriptor_obj);
     }
 
-    common_hal_bleio_characteristic_construct(self, uuid, properties, read_perm, write_perm, desc_list);
+    // Range checking on max_length arg is done by the common_hal layer, because
+    // it may vary depending on underlying BLE implementation.
+    common_hal_bleio_characteristic_construct(self, uuid, properties,
+                                              read_perm, write_perm,
+                                              args[ARG_max_length].u_int, args[ARG_fixed_length].u_bool,
+                                              desc_list);
 
     return MP_OBJ_FROM_PTR(self);
 }

@@ -40,6 +40,8 @@ typedef struct {
     bleio_characteristic_obj_t *characteristic;
     bleio_uuid_obj_t *uuid;
     mp_obj_t value;
+    uint16_t max_length;
+    bool fixed_length;
     uint16_t handle;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;

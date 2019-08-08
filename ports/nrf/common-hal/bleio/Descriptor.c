@@ -35,20 +35,28 @@
 
 static volatile bleio_descriptor_obj_t *m_read_descriptor;
 
-void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm) {
+void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length) {
     self->characteristic = MP_OBJ_NULL;
     self->uuid = uuid;
-    self->value = mp_const_none;
-    self->handle = BLE_CONN_HANDLE_INVALID;
+    self->value = mp_const_empty_bytes;
+    self->handle = BLE_GATT_HANDLE_INVALID;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
+
+    const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
+    if (max_length < 0 || max_length > max_length_max) {
+        mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
+                                 max_length_max, fixed_length ? "True" : "False");
+    }
+    self->max_length = max_length;
+    self->fixed_length = fixed_length;
 }
 
 bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
     return self->uuid;
 }
 
-mp_obj_t common_hal_bleio_descriptor_get_characteristic(bleio_descriptor_obj_t *self) {
+bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio_descriptor_obj_t *self) {
     return self->characteristic;
 }
 
@@ -97,22 +105,37 @@ STATIC void descriptor_gattc_read(bleio_descriptor_obj_t *descriptor) {
 }
 
 mp_obj_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self) {
-    if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-        descriptor_gattc_read(self);
-    } else {
-        self->value = common_hal_bleio_gatts_read(
-            self->handle, common_hal_bleio_device_get_conn_handle(self->characteristic->service->device));
+    // Do GATT operations only if this descriptor has been registered
+    if (self->handle != BLE_GATT_HANDLE_INVALID) {
+        if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
+            descriptor_gattc_read(self);
+        } else {
+            self->value = common_hal_bleio_gatts_read(
+                self->handle, common_hal_bleio_device_get_conn_handle(self->characteristic->service->device));
+        }
     }
 
     return self->value;
 }
 
 void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo) {
-    uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->characteristic->service->device);
-    if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-        // false means WRITE_REQ, not write-no-response
-        common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo, false);
-    } else {
-        common_hal_bleio_gatts_write(self->handle, conn_handle, bufinfo);
+    // Do GATT operations only if this descriptor has been registered.
+    if (self->handle != BLE_GATT_HANDLE_INVALID) {
+        uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->characteristic->service->device);
+        if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
+            // false means WRITE_REQ, not write-no-response
+            common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo, false);
+        } else {
+            if (self->fixed_length && bufinfo->len != self->max_length) {
+                mp_raise_ValueError(translate("Value length != required fixed length"));
+            }
+            if (bufinfo->len > self->max_length) {
+                mp_raise_ValueError(translate("Value length > max_length"));
+            }
+
+            common_hal_bleio_gatts_write(self->handle, conn_handle, bufinfo);
+        }
     }
+
+    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 }

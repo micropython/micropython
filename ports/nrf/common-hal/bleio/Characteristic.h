@@ -39,6 +39,8 @@ typedef struct {
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
     mp_obj_t value;
+    uint16_t max_length;
+    bool fixed_length;
     uint16_t handle;
     bleio_characteristic_properties_t props;
     bleio_attribute_security_mode_t read_perm;
