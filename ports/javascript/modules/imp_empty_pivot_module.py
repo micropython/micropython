@@ -1,1 +1,0 @@
-__dict__ = globals()

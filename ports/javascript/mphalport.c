@@ -60,11 +60,3 @@ extern int mp_interrupt_char;
 int mp_hal_get_interrupt_char(void) {
     return mp_interrupt_char;
 }
-
-void mp_hal_move_cursor_back(uint pos)
-{
-	mp_hal_stdout_tx_strn("\b", 1);
-}
-void mp_hal_erase_line_from_cursor(uint pos)
-{
-}

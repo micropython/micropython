@@ -28,53 +28,21 @@
 
 // options to control how MicroPython is built
 
-// options to control how Micro Python is built
-#define MICROPY_QSTR_BYTES_IN_HASH  (1)
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
-#define MICROPY_CPYTHON_COMPAT      (1)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
-//just in case of long urls and a local cache ?
-#define MICROPY_ALLOC_PATH_MAX      (1024)
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
-
-#define MICROPY_MODULE_WEAK_LINKS   (0)
-
-#define MICROPY_MODULE_GETATTR (1)
-#define MICROPY_MODULE_SPECIAL_METHODS (1)
-
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-#define MICROPY_LONGINT_IMPL_MPZ    (2)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MPZ_DIG_SIZE                (16)
-
-
+// You can disable the built-in MicroPython compiler by setting the following
+// config option to 0.  If you do this then you won't get a REPL prompt, but you
+// will still be able to execute pre-compiled scripts, compiled with mpy-cross.
 #define MICROPY_ENABLE_COMPILER     (1)
-#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
-#define MICROPY_PERSISTENT_CODE_LOAD (0)
-#define MICROPY_PERSISTENT_CODE_SAVE (0)
 
-#define MICROPY_HAS_FILE_READER (1)
-#define MICROPY_READER_POSIX (0)
-#define MICROPY_HELPER_LEXER_UNIX (1)
-
-#define MICROPY_PY_BUILTINS_INPUT (1)
-
-
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
-#define MICROPY_PY_DELATTR_SETATTR  (1)
-#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
-#define MICROPY_PY_MATH_FACTORIAL   (1)
-
+#define MICROPY_QSTR_BYTES_IN_HASH  (2)
+#define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 #define MICROPY_EMIT_X64            (0) //BROKEN
 #define MICROPY_EMIT_THUMB          (0) //BROKEN
 #define MICROPY_EMIT_INLINE_THUMB   (0)
-#define MICROPY_COMP_MODULE_CONST   (1)
+#define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_MEM_STATS           (0) //BROKEN
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -82,9 +50,11 @@
 #define MICROPY_GC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_ENABLE_DOC_STRING   (1)
 #define MICROPY_WARNINGS            (1)
+#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
 #define MICROPY_PY_ASYNC_AWAIT      (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
@@ -97,10 +67,8 @@
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #define MICROPY_PY___FILE__         (1)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
-#define MICROPY_PY_ASYNC_AWAIT      (1)
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (1)
@@ -138,53 +106,29 @@
 #define MICROPY_PY_SYS_PLATFORM     "javascript"
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
-#define MICROPY_PY_LVGL		    (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
-#define MICROPY_PY_USELECT          (0)
+#define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_DEPTH     (1)
 
-#define MICROPY_PY_IO                   (1)
-#define MICROPY_PY_IO_IOBASE            (1)
-#define MICROPY_PY_IO_RESOURCE_STREAM   (0)
-#define MICROPY_PY_IO_FILEIO            (1)
-#define MICROPY_PY_IO_BYTESIO           (1)
-#define MICROPY_PY_IO_BUFFEREDWRITER    (1)
-
-#define MICROPY_VFS                 (0)
-
 #define MP_SSIZE_MAX (0x7fffffff)
 
 extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_lvgl;
-extern const struct _mp_obj_module_t mp_module_lvindev;
-extern const struct _mp_obj_module_t mp_module_SDL;
-
-#if MICROPY_PY_LVGL
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
-#define MICROPY_PY_LVGL_DEF \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvindev), (mp_obj_t)&mp_module_lvindev},\
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
-#else
-#define MICROPY_PY_LVGL_DEF
-#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    MICROPY_PY_LVGL_DEF \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) }, \
@@ -265,10 +209,4 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    LV_ROOTS \
-    void *mp_lv_user_data; \
     const char *readline_hist[8];
-
-
-
-#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)

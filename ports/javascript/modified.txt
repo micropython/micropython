@@ -1,2 +1,0 @@
-py/modbuiltins.c
-py/makeqstrdata.py
