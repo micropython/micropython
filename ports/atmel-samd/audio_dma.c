@@ -35,6 +35,8 @@
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
+#if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
+
 static audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 
 // This cannot be in audio_dma_state because it's volatile.
@@ -348,3 +350,4 @@ void audio_dma_background(void) {
         audio_dma_pending[i] = false;
     }
 }
+#endif
