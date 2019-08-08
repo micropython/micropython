@@ -117,6 +117,16 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
+// When instances are first created they have the base_init wrapper as their native parent's
+// instance because make_new combines __new__ and __init__. This object is invalid for the native
+// code so it must call this method to ensure that the given object has been __init__'d and is
+// valid.
+void mp_obj_assert_native_inited(mp_obj_t native_object) {
+    if (native_object == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+        mp_raise_NotImplementedError(translate("Call super().__init__() before accessing native object."));
+    }
+}
+
 // TODO
 // This implements depth-first left-to-right MRO, which is not compliant with Python3 MRO
 // http://python-history.blogspot.com/2010/06/method-resolution-order.html

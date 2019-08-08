@@ -45,7 +45,6 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
-#include "shared-module/displayio/__init__.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -57,6 +56,10 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
@@ -187,7 +190,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     supervisor_move_memory();
 
     reset_port();
+    #if CIRCUITPY_BOARD
     reset_board_busses();
+    #endif
     reset_board();
     reset_status_led();
 }
@@ -455,6 +460,11 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));

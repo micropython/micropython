@@ -35,6 +35,7 @@
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
+#include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/ParallelBus.h"
@@ -61,6 +62,7 @@
 //|     Display
 //|     FourWire
 //|     Group
+//|     I2CDisplay
 //|     OnDiskBitmap
 //|     Palette
 //|     ParallelBus
@@ -69,7 +71,7 @@
 //|
 
 
-//| .. method:: release_displays()
+//| .. function:: release_displays()
 //|
 //|   Releases any actively used displays so their busses and pins can be used again. This will also
 //|   release the builtin display on boards that have one. You will need to reinitialize it yourself
@@ -96,6 +98,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2CDisplay), MP_ROM_PTR(&displayio_i2cdisplay_type) },
     { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&displayio_parallelbus_type) },
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },

@@ -1,4 +1,4 @@
-# Makefile for Sphinx documentation
+# Top-level Makefile for documentation builds and miscellaneous tasks.
 #
 
 # You can set these variables from the command line.
@@ -17,6 +17,13 @@ CONFDIR      = .
 FORCE         = -E
 VERBOSE       = -v
 
+# path to generated type stubs
+STUBDIR       = circuitpython-stubs
+# Run "make VALIDATE= stubs" to avoid validating generated stub files
+VALIDATE      = -v
+# path to pypi source distributions
+DISTDIR       = dist
+
 # Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the
 # full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the
 # executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
@@ -31,7 +38,7 @@ I18NSPHINXOPTS  = $(BASEOPTS)
 
 TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/nrf py shared-bindings shared-module supervisor
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -60,6 +67,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -196,10 +204,18 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -iname "*.c" | xargs xgettext -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -iname "*.c" -print0 | (LC_ALL=C sort -z) | xargs -0 xgettext -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
 translate: locale/circuitpython.pot
 	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done
 
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
+
+stubs:
+	rst2pyi $(VALIDATE) shared-bindings/ $(STUBDIR)
+	python setup.py sdist
+
+update-frozen-libraries:
+	@echo "Updating all frozen libraries to latest tagged version."
+	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done

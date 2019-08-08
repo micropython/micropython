@@ -27,17 +27,15 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define FEATHER52840
-
 #define MICROPY_HW_BOARD_NAME       "Particle Xenon"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "Particle Xenon"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P1_12)
 
-#define MICROPY_HW_RGB_LED_RED         (&pin_P0_13)
-#define MICROPY_HW_RGB_LED_GREEN       (&pin_P0_14)
-#define MICROPY_HW_RGB_LED_BLUE        (&pin_P0_15)
+#define CP_RGB_STATUS_R        (&pin_P0_13)
+#define CP_RGB_STATUS_G        (&pin_P0_14)
+#define CP_RGB_STATUS_B        (&pin_P0_15)
 
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)

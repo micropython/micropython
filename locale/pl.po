@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-09 01:06-0400\n"
+"POT-Creation-Date: 2019-08-05 17:52-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -53,8 +53,8 @@ msgstr "%q poza zakresem"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks musi być liczbą całkowitą, a nie %s"
 
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q musi być >= 1"
 
@@ -220,13 +220,12 @@ msgstr "Kanał przerwań sprzętowych w użyciu"
 
 #: shared-bindings/bleio/Address.c
 #, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr "Adres nie ma długości %d bajtów lub zły format"
-
-#: shared-bindings/bleio/Address.c
-#, c-format
 msgid "Address must be %d bytes long"
 msgstr "Adres musi mieć %d bajtów"
+
+#: shared-bindings/bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -252,9 +251,10 @@ msgstr "Wszystkie kanały zdarzeń synchronizacji w użyciu"
 msgid "All timers for this pin are in use"
 msgstr "Wszystkie timery tej nóżki w użyciu"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -312,6 +312,10 @@ msgstr "Głębia musi być wielokrotnością 8."
 msgid "Both pins must support hardware interrupts"
 msgstr "Obie nóżki muszą wspierać przerwania sprzętowe"
 
+#: shared-bindings/displayio/Display.c
+msgid "Brightness must be 0-1.0"
+msgstr ""
+
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
 msgstr "Jasność musi być pomiędzy 0 a 255"
@@ -324,6 +328,11 @@ msgstr "Jasność nie jest regulowana"
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Zła wielkość bufora. Powinno być %d bajtów."
+
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -343,26 +352,18 @@ msgstr "Bufor musi mieć 16 bajtów."
 msgid "Bytes must be between 0 and 255."
 msgstr "Bytes musi być między 0 a 255."
 
+#: py/objtype.c
+msgid "Call super().__init__() before accessing native object."
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Can not use dotstar with %s"
 msgstr "Nie można używać dotstar z %s"
 
-#: shared-bindings/bleio/Device.c
-msgid "Can't add services in Central mode"
-msgstr "Nie można dodać serwisów w trybie Central"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't advertise in Central mode"
-msgstr "Nie można rozgłaszać w trybie Central"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't change the name in Central mode"
-msgstr "Nie można zmienić nazwy w trybie Central"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't connect in Peripheral mode"
-msgstr "Nie można się łączyć w trybie Peripheral"
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Can't set CCCD for local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -445,9 +446,21 @@ msgstr "Jednostka zegara w użyciu"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Kolumny muszą być typu digitalio.DigitalInOut"
 
+#: shared-bindings/displayio/I2CDisplay.c
+msgid "Command must be 0-255"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Komenda musi być int pomiędzy 0 a 255"
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/UUID.c
 #, c-format
@@ -458,11 +471,11 @@ msgstr "Nie można zdekodować ble_uuid, błąd 0x%04x"
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate first buffer"
 msgstr "Nie udała się alokacja pierwszego bufora"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
 msgid "Couldn't allocate second buffer"
 msgstr "Nie udała się alokacja drugiego bufora"
 
@@ -479,17 +492,12 @@ msgstr "DAC w użyciu"
 msgid "Data 0 pin must be byte aligned"
 msgstr "Nóżka data 0 musi być wyrównana do bajtu"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Fragment danych musi następować po fragmencie fmt"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
-msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
-
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Data too large for the advertisement packet"
 msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -505,6 +513,7 @@ msgid "Drive mode not used when direction is input."
 msgstr "Tryb sterowania nieużywany w trybie wejścia."
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Kanał EXTINT w użyciu"
@@ -528,16 +537,20 @@ msgstr "Oczekiwano charakterystyki"
 msgid "Expected a UUID"
 msgstr "Oczekiwano UUID"
 
+#: shared-bindings/bleio/Central.c
+msgid "Expected an Address"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Oczekiwano krotkę długości %d, otrzymano %d"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to acquire mutex"
-msgstr "Nie udało się uzyskać blokady"
+#: shared-bindings/ps2io/Ps2.c
+msgid "Failed sending command."
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
@@ -546,10 +559,6 @@ msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Nie udało się dodać charakterystyki, błąd 0x$04x"
-
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to add service"
-msgstr "Nie udało się dodać serwisu"
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
@@ -570,24 +579,21 @@ msgstr "Nie udała się alokacja %d bajtów na bufor RX"
 msgid "Failed to change softdevice state"
 msgstr "Nie udało się zmienić stanu softdevice"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to connect:"
-msgstr "Nie udało się połączenie:"
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to configure advertising, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to continue scanning"
-msgstr "Nie udała się kontynuacja skanowania"
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "Failed to connect: timeout"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Nie udała się kontynuacja skanowania, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to create mutex"
-msgstr "Nie udało się stworzyć blokady"
-
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/bleio/Central.c
 msgid "Failed to discover services"
 msgstr "Nie udało się odkryć serwisów"
 
@@ -624,43 +630,40 @@ msgstr "Nie udało się odczytać gatts, błąd 0x%04x"
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Nie udało się zarejestrować UUID dostawcy, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to release mutex"
-msgstr "Nie udało się zwolnić blokady"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to start advertising"
-msgstr "Nie udało się rozpocząć rozgłaszania"
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to set device name, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Nie udało się rozpocząć rozgłaszania, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to start scanning"
-msgstr "Nie udało się rozpocząć skanowania"
+#: ports/nrf/common-hal/bleio/Central.c
+#, c-format
+msgid "Failed to start connecting, error 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Nie udało się rozpocząć skanowania, błąd 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Device.c
-msgid "Failed to stop advertising"
-msgstr "Nie udało się zatrzymać rozgłaszania"
-
-#: ports/nrf/common-hal/bleio/Broadcaster.c
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to write CCCD, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
@@ -703,6 +706,10 @@ msgstr "Uzyskana częstotliwość jest niemożliwa. Spauzowano."
 msgid "Function requires lock"
 msgstr "Funkcja wymaga blokady"
 
+#: shared-bindings/displayio/Display.c
+msgid "Group already used"
+msgstr ""
+
 #: shared-module/displayio/Group.c
 msgid "Group full"
 msgstr "Grupa pełna"
@@ -731,8 +738,8 @@ msgstr "Niewłaściwa wielkość bufora"
 msgid "Input/output error"
 msgstr "Błąd I/O"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
 msgstr "Zła nóżka %q"
 
@@ -761,7 +768,7 @@ msgstr "Zła wielkość bufora"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Zły okres. Poprawny zakres to: 1 - 500"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid channel count"
 msgstr "Zła liczba kanałów"
 
@@ -769,11 +776,11 @@ msgstr "Zła liczba kanałów"
 msgid "Invalid direction."
 msgstr "Zły tryb"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Zły plik"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Zła wielkość fragmentu formatu"
 
@@ -815,17 +822,21 @@ msgstr "Zła polaryzacja"
 msgid "Invalid run mode."
 msgstr "Zły tryb uruchomienia"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
 msgstr "Zła liczba głosów"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "Zły plik wave"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "Lewa strona argumentu nazwanego musi być nazwą"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -876,9 +887,13 @@ msgstr "Krytyczny błąd MicroPythona.\n"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
 
-#: shared-bindings/displayio/Display.c
-msgid "Must be a Group subclass."
-msgstr "Musi dziedziczyć z Group."
+#: shared-bindings/displayio/Group.c
+msgid "Must be a %q subclass."
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
@@ -913,6 +928,10 @@ msgstr "Brak wolnych GLCK"
 msgid "No hardware random available"
 msgstr "Brak generatora liczb losowych"
 
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+msgid "No hardware support on clk pin"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -926,11 +945,13 @@ msgstr "Brak miejsca"
 msgid "No such file/directory"
 msgstr "Brak pliku/katalogu"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "Not connected"
 msgstr "Nie podłączono"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Nic nie jest odtwarzane"
 
@@ -995,6 +1016,10 @@ msgstr "Piksel poza granicami bufora"
 msgid "Plus any modules on the filesystem\n"
 msgstr "Oraz moduły w systemie plików\n"
 
+#: shared-bindings/ps2io/Ps2.c
+msgid "Pop from an empty Ps2 buffer"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Dowolny klawisz aby uruchomić konsolę. CTRL-D aby przeładować."
@@ -1047,17 +1072,18 @@ msgstr "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA lub SCL wymagają podciągnięcia"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Częstotliwość próbkowania musi być dodatnia"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Zbyt wysoka częstotliwość próbkowania. Musi być mniejsza niż %d"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
 msgstr "Serializator w użyciu"
 
@@ -1126,19 +1152,19 @@ msgstr ""
 "Przycisk reset został wciśnięty podczas startu CircuitPythona. Wciśnij go "
 "ponownie aby wyjść z trybu bezpieczeństwa.\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Wartość bits_per_sample nie pasuje do miksera"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Liczba kanałów nie pasuje do miksera "
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Sample rate nie pasuje do miksera"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Znak nie pasuje do miksera"
 
@@ -1147,8 +1173,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "Wysokość bitmapy musi być wielokrotnością wysokości kafelka"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Indeks kafelka musi być pomiędzy 0 a 255 włącznie"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1162,7 +1192,8 @@ msgstr "By wyjść, proszę zresetować płytkę bez "
 msgid "Too many channels in sample."
 msgstr "Zbyt wiele kanałów."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
 msgstr "Zbyt wiele magistrali"
 
@@ -1187,8 +1218,8 @@ msgid "USB Error"
 msgstr "Błąd USB"
 
 #: shared-bindings/bleio/UUID.c
-msgid "UUID integer value not in range 0 to 0xffff"
-msgstr "Wartość UUID poza zakresem 0 do 0xffff"
+msgid "UUID integer value must be 0-0xffff"
+msgstr ""
 
 #: shared-bindings/bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1203,8 +1234,13 @@ msgstr "UUID nie jest typu str, int lub bytes"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Nie udała się alokacja buforów do konwersji ze znakiem"
 
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: shared-module/displayio/I2CDisplay.c
+#, c-format
+msgid "Unable to find I2C Display at %x"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Unable to find free GCLK"
 msgstr "Brak wolnego GCLK"
 
@@ -1237,7 +1273,7 @@ msgstr "Zła szybkość transmisji"
 msgid "Unsupported display bus type"
 msgstr "Zły typ magistrali wyświetlaczy"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Zły format"
 
@@ -1253,7 +1289,7 @@ msgstr "Zła wartość podciągnięcia."
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Funkcje Viper nie obsługują obecnie więcej niż 4 argumentów"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiocore/Mixer.c
 msgid "Voice index too high"
 msgstr "Zbyt wysoki indeks głosu"
 
@@ -1375,7 +1411,7 @@ msgstr "bits musi być 7, 8 lub 9"
 msgid "bits must be 8"
 msgstr "bits musi być 8"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiocore/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample musi być 8 lub 16"
 
@@ -1388,7 +1424,7 @@ msgstr "skok poza zakres"
 msgid "buf is too small. need %d bytes"
 msgstr "buf zbyt mały. Wymagane %d bajtów"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "bufor mysi być typu bytes"
 
@@ -1690,7 +1726,7 @@ msgstr "dzielenie przez zero"
 msgid "empty"
 msgstr "puste"
 
-#: extmod/modutimeq.c extmod/moduheapq.c
+#: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "pusta sterta"
 
@@ -1751,7 +1787,8 @@ msgstr "nadmiarowe argumenty nazwane"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"
 
@@ -1880,9 +1917,10 @@ msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
 msgid "integer required"
 msgstr "wymagana liczba całkowita"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-msgid "interval not in range 0.0020 to 10.24"
-msgstr "przedział poza zakresem 0.0020 do 10.24"
+#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#, c-format
+msgid "interval must be in range %s-%s"
+msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
@@ -2095,6 +2133,14 @@ msgstr "brak modułu o nazwie '%q'"
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
 
+#: shared-bindings/bleio/Peripheral.c
+msgid "non-Service found in services"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Central.c
+msgid "non-UUID found in service_uuids"
+msgstr ""
+
 #: py/compile.c
 msgid "non-default argument follows default argument"
 msgstr "argument z wartością domyślną przed argumentem bez"
@@ -2152,7 +2198,7 @@ msgstr "obiekt nie jest iteratorem"
 msgid "object not callable"
 msgstr "obiekt nie jest wywoływalny"
 
-#: py/sequence.c
+#: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
 msgstr "obiektu nie ma sekwencji"
 
@@ -2286,7 +2332,7 @@ msgstr "return oczekiwał '%q', a jest '%q'"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
@@ -2304,10 +2350,6 @@ msgstr "stos planu pełen"
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilowanie skryptów nieobsługiwane"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "services includes an object that is not a Service"
-msgstr "obiekt typu innego niż Service w services"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2405,10 +2447,6 @@ msgstr "błąd składni w deskryptorze uctypes"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "threshold musi być w zakresie 0-65536"
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "indeks kafelka poza zakresem"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -2568,12 +2606,16 @@ msgstr "złe typy dla %q: '%s', '%s'"
 
 #: py/objint.c
 #, c-format
-msgid "value would overflow a %d byte buffer"
+msgid "value must fit in %d byte(s)"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count musi być > 0"
+
+#: shared-bindings/bleio/Scanner.c
+msgid "window must be <= interval"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "write_args must be a list, tuple, or None"
@@ -2603,6 +2645,51 @@ msgstr "y poza zakresem"
 msgid "zero step"
 msgstr "zerowy krok"
 
+#~ msgid "Address is not %d bytes long or is in wrong format"
+#~ msgstr "Adres nie ma długości %d bajtów lub zły format"
+
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "Nie można dodać serwisów w trybie Central"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "Nie można rozgłaszać w trybie Central"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "Nie można zmienić nazwy w trybie Central"
+
+#~ msgid "Can't connect in Peripheral mode"
+#~ msgstr "Nie można się łączyć w trybie Peripheral"
+
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
+
+#~ msgid "Failed to acquire mutex"
+#~ msgstr "Nie udało się uzyskać blokady"
+
+#~ msgid "Failed to add service"
+#~ msgstr "Nie udało się dodać serwisu"
+
+#~ msgid "Failed to connect:"
+#~ msgstr "Nie udało się połączenie:"
+
+#~ msgid "Failed to continue scanning"
+#~ msgstr "Nie udała się kontynuacja skanowania"
+
+#~ msgid "Failed to create mutex"
+#~ msgstr "Nie udało się stworzyć blokady"
+
+#~ msgid "Failed to release mutex"
+#~ msgstr "Nie udało się zwolnić blokady"
+
+#~ msgid "Failed to start advertising"
+#~ msgstr "Nie udało się rozpocząć rozgłaszania"
+
+#~ msgid "Failed to start scanning"
+#~ msgstr "Nie udało się rozpocząć skanowania"
+
+#~ msgid "Failed to stop advertising"
+#~ msgstr "Nie udało się zatrzymać rozgłaszania"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Zła nóżka zegara"
 
@@ -2611,3 +2698,21 @@ msgstr "zerowy krok"
 
 #~ msgid "Invalid data pin"
 #~ msgstr "Zła nóżka danych"
+
+#~ msgid "Must be a Group subclass."
+#~ msgstr "Musi dziedziczyć z Group."
+
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Indeks kafelka musi być pomiędzy 0 a 255 włącznie"
+
+#~ msgid "UUID integer value not in range 0 to 0xffff"
+#~ msgstr "Wartość UUID poza zakresem 0 do 0xffff"
+
+#~ msgid "interval not in range 0.0020 to 10.24"
+#~ msgstr "przedział poza zakresem 0.0020 do 10.24"
+
+#~ msgid "services includes an object that is not a Service"
+#~ msgstr "obiekt typu innego niż Service w services"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "indeks kafelka poza zakresem"

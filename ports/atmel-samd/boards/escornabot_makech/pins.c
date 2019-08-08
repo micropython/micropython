@@ -5,9 +5,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA04) },
     { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PA05) },
-    
-    // Buttons
     { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PA10) },
+
+    // Buttons
+    { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA03) },
     
     
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PA00) },

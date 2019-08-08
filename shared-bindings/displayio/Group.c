@@ -31,6 +31,7 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -80,8 +81,12 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 // Helper to ensure we have the native super class instead of a subclass.
-static displayio_group_t* native_group(mp_obj_t group_obj) {
+displayio_group_t* native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
+    if (native_group == MP_OBJ_NULL) {
+        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+    }
+    mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
 }
 
@@ -190,6 +195,21 @@ STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj,
 }
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
 
+
+//|   .. method:: index(layer)
+//|
+//|     Returns the index of the first copy of layer. Raises ValueError if not found.
+//|
+STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
+    displayio_group_t *self = native_group(self_in);
+    mp_int_t index = common_hal_displayio_group_index(self, layer);
+    if (index < 0) {
+        mp_raise_ValueError(translate("object not in sequence"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(index);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_index_obj, displayio_group_obj_index);
+
 //|   .. method:: pop(i=-1)
 //|
 //|     Remove the ith item and return it.
@@ -211,6 +231,20 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
     return common_hal_displayio_group_pop(self, index);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
+
+
+//|   .. method:: remove(layer)
+//|
+//|     Remove the first copy of layer. Raises ValueError if it is not present.
+//|
+STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
+    mp_obj_t index = displayio_group_obj_index(self_in, layer);
+    displayio_group_t *self = native_group(self_in);
+
+    common_hal_displayio_group_pop(self, MP_OBJ_SMALL_INT_VALUE(index));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
 
 //|   .. method:: __len__()
 //|
@@ -261,7 +295,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
         if (value == MP_OBJ_SENTINEL) {
             // load
             return common_hal_displayio_group_get(self, index);
-        } else if (value == mp_const_none) {
+        } else if (value == MP_OBJ_NULL) {
             common_hal_displayio_group_pop(self, index);
         } else {
             common_hal_displayio_group_set(self, index, value);
@@ -276,7 +310,9 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_group_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&displayio_group_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&displayio_group_insert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&displayio_group_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&displayio_group_pop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&displayio_group_remove_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
@@ -286,5 +322,6 @@ const mp_obj_type_t displayio_group_type = {
     .make_new = displayio_group_make_new,
     .subscr = group_subscr,
     .unary_op = group_unary_op,
+    .getiter = mp_obj_new_generic_iterator,
     .locals_dict = (mp_obj_dict_t*)&displayio_group_locals_dict,
 };

@@ -108,6 +108,12 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOPWMIO),1)
+SRC_PATTERNS += audiopwmio/%
+endif
+ifeq ($(CIRCUITPY_AUDIOCORE),1)
+SRC_PATTERNS += audiocore/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -161,6 +167,9 @@ SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
+endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -217,11 +226,13 @@ $(filter $(SRC_PATTERNS), \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
+	audiopwmio/__init__.c \
+	audiopwmio/PWMAudioOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
-	bleio/Broadcaster.c \
+	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
 	bleio/Descriptor.c \
@@ -252,6 +263,8 @@ $(filter $(SRC_PATTERNS), \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	ps2io/Ps2.c \
+	ps2io/__init__.c \
 	rotaryio/IncrementalEncoder.c \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
@@ -284,8 +297,6 @@ SRC_BINDINGS_ENUMS += \
 SRC_BINDINGS_ENUMS += \
 $(filter $(SRC_PATTERNS), \
 	bleio/Address.c \
-	bleio/AddressType.c \
-	bleio/AdvertisementData.c \
 	bleio/ScanEntry.c \
 )
 
@@ -297,21 +308,26 @@ $(filter $(SRC_PATTERNS), \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
+	audiopwmio/__init__.c \
 	audioio/__init__.c \
-	audioio/Mixer.c \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
+	audiocore/__init__.c \
+	audiocore/Mixer.c \
+	audiocore/RawSample.c \
+	audiocore/WaveFile.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	bleio/Address.c \
+	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
+	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
@@ -361,3 +377,8 @@ $(addprefix lib/,\
 	libm/atan2f.c \
 	)
 endif
+
+.PHONY: check-release-needs-clean-build
+
+check-release-needs-clean-build:
+	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"

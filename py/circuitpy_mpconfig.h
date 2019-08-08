@@ -72,6 +72,7 @@
 #define MICROPY_KBD_EXCEPTION            (1)
 #define MICROPY_MEM_STATS                (0)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
+#define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
 #define MICROPY_PY_ARRAY                 (1)
@@ -89,6 +90,7 @@
 #define MICROPY_PY_BUILTINS_MIN_MAX      (1)
 #define MICROPY_PY_BUILTINS_PROPERTY     (1)
 #define MICROPY_PY_BUILTINS_REVERSED     (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT    (1)
 #define MICROPY_PY_BUILTINS_SET          (1)
 #define MICROPY_PY_BUILTINS_SLICE        (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS  (1)
@@ -228,11 +230,25 @@ extern const struct _mp_obj_module_t audiobusio_module;
 #define AUDIOBUSIO_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOCORE
+#define AUDIOCORE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiocore), (mp_obj_t)&audiocore_module },
+extern const struct _mp_obj_module_t audiocore_module;
+#else
+#define AUDIOCORE_MODULE
+#endif
+
 #if CIRCUITPY_AUDIOIO
 #define AUDIOIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
 extern const struct _mp_obj_module_t audioio_module;
 #else
 #define AUDIOIO_MODULE
+#endif
+
+#if CIRCUITPY_AUDIOPWMIO
+#define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
+extern const struct _mp_obj_module_t audiopwmio_module;
+#else
+#define AUDIOPWMIO_MODULE
 #endif
 
 #if CIRCUITPY_BITBANGIO
@@ -415,6 +431,13 @@ extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE
 #endif
 
+#if CIRCUITPY_PS2IO
+extern const struct _mp_obj_module_t ps2io_module;
+#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
+#else
+#define PS2IO_MODULE
+#endif
+
 #if CIRCUITPY_RANDOM
 extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
@@ -555,7 +578,9 @@ extern const struct _mp_obj_module_t ustack_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
+    AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
+    AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
@@ -579,6 +604,7 @@ extern const struct _mp_obj_module_t ustack_module;
     PEW_MODULE \
     PIXELBUF_MODULE \
     PULSEIO_MODULE \
+    PS2IO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \

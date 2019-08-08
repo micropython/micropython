@@ -4,13 +4,13 @@ USB_PID = 0x801F
 USB_PRODUCT = "uGame10"
 USB_MANUFACTURER = "Radomir Dopieralski"
 
+CHIP_VARIANT = SAMD21E18A
+CHIP_FAMILY = samd21
+
 SPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICE_COUNT = 1
 EXTERNAL_FLASH_DEVICES = S25FL216K
 LONGINT_IMPL = MPZ
-
-CHIP_VARIANT = SAMD21E18A
-CHIP_FAMILY = samd21
 
 CIRCUITPY_STAGE = 1
 CIRCUITPY_MATH = 1
@@ -31,4 +31,4 @@ CIRCUITPY_PIXELBUF = 0
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/ugame10
 
-CIRCUITPY_DISPLAY_FONT = "../../tools/Tecate-bitmap-fonts/bitmap/phallus/lemon.bdf"
+CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf

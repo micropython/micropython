@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 #include "py/obj.h"
+#include "shared-module/displayio/Palette.h"
 
 typedef struct {
     mp_obj_base_t base;
@@ -38,5 +39,8 @@ typedef struct {
 
 bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self);
 void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self);
+bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, uint32_t input_color, uint32_t* output_color);
+uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888);
+uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_COLORCONVERTER_H

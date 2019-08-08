@@ -40,7 +40,7 @@ extern UartDevice UartDev;
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint8_t receiver_buffer_size) {
+        uint16_t receiver_buffer_size) {
     if (rx != mp_const_none || tx != &pin_GPIO2) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, translate("Only tx supported on UART1 (GPIO2).")));
     }

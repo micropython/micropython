@@ -24,16 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/busio/UART.h"
-
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_BUSIO
+#include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/busio/UART.h"
+#endif
+
+#if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
 
@@ -103,7 +105,7 @@ void reset_board_busses(void) {
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
-    #ifdef CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].fourwire_bus.bus == spi_singleton) {
             display_using_spi = true;

@@ -43,7 +43,7 @@
 //|
 //| PDMIn can be used to record an input audio signal on a given set of pins.
 //|
-//| .. class:: PDMIn(clock_pin, data_pin, \*, sample_rate=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
+//| .. class:: PDMIn(clock_pin, data_pin, *, sample_rate=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
@@ -156,6 +156,11 @@ STATIC mp_obj_t audiobusio_pdmin_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_deinit_obj, audiobusio_pdmin_deinit);
 
+STATIC void check_for_deinit(audiobusio_pdmin_obj_t *self) {
+    if (common_hal_audiobusio_pdmin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -188,7 +193,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 //|
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
+    check_for_deinit(self);
     if (!MP_OBJ_IS_SMALL_INT(destination_length) || MP_OBJ_SMALL_INT_VALUE(destination_length) < 0) {
         mp_raise_TypeError(translate("destination_length must be an int >= 0"));
     }
@@ -223,7 +228,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_reco
 //|
 STATIC mp_obj_t audiobusio_pdmin_obj_get_sample_rate(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_audiobusio_pdmin_get_sample_rate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_sample_rate_obj, audiobusio_pdmin_obj_get_sample_rate);

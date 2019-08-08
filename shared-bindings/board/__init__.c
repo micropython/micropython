@@ -34,7 +34,6 @@
 //|
 //| .. module:: board
 //|   :synopsis: Board specific pin names
-//|   :platform: SAMD21
 //|
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.
@@ -42,7 +41,7 @@
 //| .. warning:: The board module varies by board. The APIs documented here may or may not be
 //|              available on a specific board.
 
-//| .. method:: I2C()
+//| .. function:: I2C()
 //|
 //|   Returns the `busio.I2C` object for the board designated SDA and SCL pins. It is a singleton.
 //|
@@ -66,7 +65,7 @@ mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 
-//| .. method:: SPI()
+//| .. function:: SPI()
 //|
 //|   Returns the `busio.SPI` object for the board designated SCK, MOSI and MISO pins. It is a
 //|   singleton.
@@ -90,7 +89,7 @@ mp_obj_t board_spi(void) {
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 
-//| .. method:: UART()
+//| .. function:: UART()
 //|
 //|   Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
 //|

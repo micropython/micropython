@@ -86,6 +86,11 @@ STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_deinit_obj, analogio_analogin_deinit);
 
+STATIC void check_for_deinit(analogio_analogin_obj_t *self) {
+    if (common_hal_analogio_analogin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -113,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4,
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_analogio_analogin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_value_obj, analogio_analogin_obj_get_value);
@@ -132,7 +137,7 @@ const mp_obj_property_t analogio_analogin_value_obj = {
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_float(common_hal_analogio_analogin_get_reference_voltage(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,

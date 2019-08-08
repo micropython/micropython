@@ -50,6 +50,10 @@
 
 #include "shared-bindings/rtc/__init__.h"
 
+#ifdef CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
+
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
@@ -93,16 +97,26 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+
+#ifdef CIRCUITPY_AUDIOPWMIO
+    audiopwmout_reset();
+#endif
+
+#if CIRCUITPY_PULSEIO
     pwmout_reset();
     pulseout_reset();
     pulsein_reset();
+#endif
+
     timers_reset();
 
-    #if CIRCUITPY_RTC
+#if CIRCUITPY_RTC
     rtc_reset();
-    #endif
+#endif
 
+#if CIRCUITPY_BLEIO
     bleio_reset();
+#endif
 
     reset_all_pins();
 }

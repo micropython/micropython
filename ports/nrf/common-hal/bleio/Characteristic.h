@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,23 +25,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
 
-#include "shared-module/bleio/Characteristic.h"
-#include "shared-module/bleio/Service.h"
+#include "common-hal/bleio/Service.h"
 #include "common-hal/bleio/UUID.h"
+#include "shared-module/bleio/Characteristic.h"
 
 typedef struct {
     mp_obj_base_t base;
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t value_data;
+    volatile mp_obj_t value_data;
     uint16_t handle;
     bleio_characteristic_properties_t props;
+    mp_obj_list_t *descriptor_list;
     uint16_t user_desc_handle;
     uint16_t cccd_handle;
     uint16_t sccd_handle;
 } bleio_characteristic_obj_t;
 
-#endif // MICROPY_INCLUDED_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H

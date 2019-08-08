@@ -41,7 +41,7 @@
 //| :class:`I2C` --- Two wire serial protocol
 //| ------------------------------------------
 //|
-//| .. class:: I2C(scl, sda, \*, frequency=400000)
+//| .. class:: I2C(scl, sda, *, frequency=400000, timeout=255)
 //|
 //|   I2C is a two-wire protocol for communicating between devices.  At the
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -82,7 +82,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     return (mp_obj_t)self;
 }
 
-//|   .. method:: I2C.deinit()
+//|   .. method:: deinit()
 //|
 //|     Releases control of the underlying hardware so other classes can use it.
 //|
@@ -93,13 +93,19 @@ STATIC mp_obj_t busio_i2c_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_deinit_obj, busio_i2c_obj_deinit);
 
-//|   .. method:: I2C.__enter__()
+STATIC void check_for_deinit(busio_i2c_obj_t *self) {
+    if (common_hal_busio_i2c_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|   .. method:: __enter__()
 //|
 //|     No-op used in Context Managers.
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: I2C.__exit__()
+//|   .. method:: __exit__()
 //|
 //|     Automatically deinitializes the hardware on context exit. See
 //|     :ref:`lifetime-and-contextmanagers` for more info.
@@ -118,7 +124,7 @@ static void check_lock(busio_i2c_obj_t *self) {
     }
 }
 
-//|   .. method:: I2C.scan()
+//|   .. method:: scan()
 //|
 //|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
 //|      list of those that respond.
@@ -128,7 +134,7 @@ static void check_lock(busio_i2c_obj_t *self) {
 //|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
@@ -142,7 +148,7 @@ STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 
-//|   .. method:: I2C.try_lock()
+//|   .. method:: try_lock()
 //|
 //|     Attempts to grab the I2C lock. Returns True on success.
 //|
@@ -151,24 +157,24 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 //|
 STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_busio_i2c_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 
-//|   .. method:: I2C.unlock()
+//|   .. method:: unlock()
 //|
 //|     Releases the I2C lock.
 //|
 STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    check_for_deinit(self);
     common_hal_busio_i2c_unlock(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
-//|   .. method:: I2C.readfrom_into(address, buffer, \*, start=0, end=len(buffer))
+//|   .. method:: readfrom_into(address, buffer, *, start=0, end=None)
 //|
 //|      Read into ``buffer`` from the slave specified by ``address``.
 //|      The number of bytes read will be the length of ``buffer``.
@@ -181,7 +187,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|      :param int address: 7-bit device address
 //|      :param bytearray buffer: buffer to write into
 //|      :param int start: Index to start writing at
-//|      :param int end: Index to write up to but not include
+//|      :param int end: Index to write up to but not include. Defaults to ``len(buffer)``
 //|
 STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
@@ -192,7 +198,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -216,7 +222,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
 
-//|   .. method:: I2C.writeto(address, buffer, \*, start=0, end=len(buffer), stop=True)
+//|   .. method:: writeto(address, buffer, *, start=0, end=None, stop=True)
 //|
 //|      Write the bytes from ``buffer`` to the slave specified by ``address``.
 //|      Transmits a stop bit if ``stop`` is set.
@@ -231,7 +237,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|      :param int address: 7-bit device address
 //|      :param bytearray buffer: buffer containing the bytes to write
 //|      :param int start: Index to start writing from
-//|      :param int end: Index to read up to but not include
+//|      :param int end: Index to read up to but not include. Defaults to ``len(buffer)``
 //|      :param bool stop: If true, output an I2C stop condition after the
 //|                        buffer is written
 //|
@@ -245,7 +251,7 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    check_for_deinit(self);
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

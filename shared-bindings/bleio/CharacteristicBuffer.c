@@ -47,12 +47,15 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|
 //| Accumulates a Characteristic's incoming values in a FIFO buffer.
 //|
-//| .. class:: CharacteristicBuffer(Characteristic, *, timeout=1, buffer_size=64)
+//| .. class:: CharacteristicBuffer(characteristic, *, timeout=1, buffer_size=64)
 //|
-//|   Create a new Characteristic object identified by the specified UUID.
+//|   Monitor the given Characteristic. Each time a new value is written to the Characteristic
+//|   add the newly-written bytes to a FIFO buffer.
 //|
-//|   :param bleio.Characteristic characteristic: The characteristic to monitor
-//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.//|
+//|   :param bleio.Characteristic characteristic: The Characteristic to monitor.
+//|     It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
+//|     in a remote Service that a Central has connected to.
+//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
 //|   :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
 //|     Must be >= 1.
 //|
@@ -85,11 +88,16 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
     self->base.type = &bleio_characteristic_buffer_type;
-    self->characteristic = MP_OBJ_TO_PTR(characteristic);
 
-    common_hal_bleio_characteristic_buffer_construct(self, self->characteristic, timeout, buffer_size);
+    common_hal_bleio_characteristic_buffer_construct(self, MP_OBJ_TO_PTR(characteristic), timeout, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
+}
+
+STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
+    if (common_hal_bleio_characteristic_buffer_deinited(self)) {
+        raise_deinited_error();
+    }
 }
 
 // These are standard stream methods. Code is in py/stream.c.
@@ -122,7 +130,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_bleio_characteristic_buffer_deinited(self));
+    check_for_deinit(self);
     raise_error_if_not_connected(self);
     byte *buf = buf_in;
 
@@ -141,7 +149,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_write(mp_obj_t self_in, const void 
 
 STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_bleio_characteristic_buffer_deinited(self));
+    check_for_deinit(self);
     raise_error_if_not_connected(self);
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
         mp_raise_ValueError(translate("Not connected"));
@@ -170,7 +178,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_bleio_characteristic_buffer_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_characteristic_buffer_rx_characters_available(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_get_in_waiting_obj, bleio_characteristic_buffer_obj_get_in_waiting);
@@ -188,7 +196,7 @@ const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_bleio_characteristic_buffer_deinited(self));
+    check_for_deinit(self);
     common_hal_bleio_characteristic_buffer_clear_rx_buffer(self);
     return mp_const_none;
 }

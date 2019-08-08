@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,14 +28,14 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
 
-#include "shared-bindings/bleio/AddressType.h"
+#include "py/obj.h"
 
-#define BLEIO_ADDRESS_BYTES 6
+#define NUM_BLEIO_ADDRESS_BYTES 6
 
 typedef struct {
     mp_obj_base_t base;
-    bleio_address_type_t type;
-    uint8_t value[BLEIO_ADDRESS_BYTES];
+    uint8_t type;
+    mp_obj_t bytes;    // a bytes() object
 } bleio_address_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ADDRESS_H
