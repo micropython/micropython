@@ -32,6 +32,7 @@
 #include "rom/gpio.h"
 #include "esp_log.h"
 #include "esp_spi_flash.h"
+#include "wear_levelling.h"
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -56,11 +57,23 @@ STATIC mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_osdebug_obj, 1, 2, esp_osdebug);
 
+STATIC wl_handle_t fs_handle = WL_INVALID_HANDLE;  // not initialized
+STATIC size_t wl_sect_size = 4096;                 // will be set to actual size after initialization
+STATIC const esp_partition_t fs_part = {
+    ESP_PARTITION_TYPE_DATA,          // type
+    ESP_PARTITION_SUBTYPE_DATA_FAT,   // subtype
+    MICROPY_WEARLEVEL_PART_START,     // address
+    MICROPY_WEARLEVEL_PART_SIZE,      // size
+    "micropython",                    // label
+    MICROPY_WEARLEVEL_PART_ENCRYPTED  // encrypted
+};
+
 STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    esp_err_t res = spi_flash_read(offset, bufinfo.buf, bufinfo.len);
+
+    esp_err_t res = wl_read(fs_handle, offset, bufinfo.buf, bufinfo.len);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
@@ -72,7 +85,8 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, mp_obj_t buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    esp_err_t res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+
+    esp_err_t res = wl_write(fs_handle, offset, bufinfo.buf, bufinfo.len);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
@@ -82,7 +96,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
 STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     mp_int_t sector = mp_obj_get_int(sector_in);
-    esp_err_t res = spi_flash_erase_sector(sector);
+
+    esp_err_t res = wl_erase_range(fs_handle, sector * wl_sect_size, wl_sect_size);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
@@ -91,12 +106,24 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
 STATIC mp_obj_t esp_flash_size(void) {
-    return mp_obj_new_int_from_uint(spi_flash_get_chip_size());
+    if (fs_handle == WL_INVALID_HANDLE) {
+        esp_err_t res = wl_mount(&fs_part, &fs_handle);
+        if (res != ESP_OK) {
+            return mp_obj_new_int_from_uint(0);
+        }
+        wl_sect_size = wl_sector_size(fs_handle);
+    }
+    return mp_obj_new_int_from_uint(wl_size(fs_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
-STATIC mp_obj_t esp_flash_user_start(void) {
-    return MP_OBJ_NEW_SMALL_INT(0x200000);
+STATIC mp_obj_t esp_flash_sec_size() {
+    return mp_obj_new_int_from_uint(wl_sect_size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_sec_size_obj, esp_flash_sec_size);
+
+STATIC IRAM_ATTR mp_obj_t esp_flash_user_start(void) {
+    return MP_OBJ_NEW_SMALL_INT(0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
@@ -132,6 +159,7 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flash_sec_size), MP_ROM_PTR(&esp_flash_sec_size_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_in), MP_ROM_PTR(&esp_gpio_matrix_in_obj) },
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },

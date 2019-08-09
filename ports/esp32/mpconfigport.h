@@ -161,6 +161,11 @@
 #define mp_type_fileio                      mp_type_vfs_fat_fileio
 #define mp_type_textio                      mp_type_vfs_fat_textio
 
+// internal flash file system configuration
+#define MICROPY_WEARLEVEL_PART_START        (0x200000)
+#define MICROPY_WEARLEVEL_PART_SIZE         (0x200000)
+#define MICROPY_WEARLEVEL_PART_ENCRYPTED    (0)
+
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open mp_vfs_open

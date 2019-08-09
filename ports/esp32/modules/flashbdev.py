@@ -2,11 +2,12 @@ import esp
 
 class FlashBdev:
 
-    SEC_SIZE = 4096
+    FS_SIZE = esp.flash_size()
+    SEC_SIZE = esp.flash_sec_size()
     START_SEC = esp.flash_user_start() // SEC_SIZE
 
-    def __init__(self, blocks):
-        self.blocks = blocks
+    def __init__(self):
+        self.blocks = self.FS_SIZE // self.SEC_SIZE
 
     def readblocks(self, n, buf):
         #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
@@ -26,9 +27,8 @@ class FlashBdev:
             return self.SEC_SIZE
 
 size = esp.flash_size()
-if size < 1024*1024:
+if size < 512*1024:
     # flash too small for a filesystem
     bdev = None
 else:
-    # for now we use a fixed size for the filesystem
-    bdev = FlashBdev(2048 * 1024 // FlashBdev.SEC_SIZE)
+    bdev = FlashBdev()

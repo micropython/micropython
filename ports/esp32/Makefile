@@ -104,6 +104,8 @@ INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
+INC_ESPCOMP += -I$(ESPCOMP)/wear_levelling/include
+INC_ESPCOMP += -I$(ESPCOMP)/wear_levelling/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
@@ -327,6 +329,10 @@ ESPIDF_SPI_FLASH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/spi_flash/*.c))
 
 ESPIDF_ULP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/ulp/*.c))
 
+ESPIDF_WEAR_LEVELLING_O = \
+	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/wear_levelling/*.c)) \
+	$(patsubst %.cpp,%.o,$(wildcard $(ESPCOMP)/wear_levelling/*.cpp))
+
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
 ESPIDF_LWIP_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/lwip/apps/dhcpserver/*.c) \
@@ -387,6 +393,7 @@ $(eval $(call gen_espidf_lib_rule,newlib,$(ESPIDF_NEWLIB_O)))
 $(eval $(call gen_espidf_lib_rule,nvs_flash,$(ESPIDF_NVS_FLASH_O)))
 $(eval $(call gen_espidf_lib_rule,smartconfig_ack,$(ESPIDF_SMARTCONFIG_ACK_O)))
 $(eval $(call gen_espidf_lib_rule,spi_flash,$(ESPIDF_SPI_FLASH_O)))
+$(eval $(call gen_espidf_lib_rule,wear_levelling,$(ESPIDF_WEAR_LEVELLING_O)))
 $(eval $(call gen_espidf_lib_rule,ulp,$(ESPIDF_ULP_O)))
 $(eval $(call gen_espidf_lib_rule,lwip,$(ESPIDF_LWIP_O)))
 $(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
