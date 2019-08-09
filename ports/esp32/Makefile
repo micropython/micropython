@@ -1,7 +1,30 @@
+# Select the board to build for: if not given on the command line,
+# then default to GENERIC.
+BOARD ?= GENERIC
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
+BOARD_DIR ?= boards/$(BOARD)
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 include ../../py/mkenv.mk
+
+# Optional (not currently used for ESP32)
+-include mpconfigport.mk
+
+ifneq ($(SDKCONFIG),)
+$(error Use the BOARD variable instead of SDKCONFIG)
+endif
+
+# Expected to set SDKCONFIG
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
@@ -22,8 +45,7 @@ FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-# SDKCONFIG should be overridden to get a different configuration
-SDKCONFIG ?= boards/sdkconfig
+SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # the git hash of the currently supported ESP IDF version
@@ -130,6 +152,7 @@ CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_co
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += -I$(BOARD_DIR)
 
 # this is what ESPIDF uses for c++ compilation
 CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)
@@ -201,6 +224,7 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -242,7 +266,11 @@ SRC_QSTR_AUTO_DEPS +=
 ################################################################################
 # Generate sdkconfig.h from sdkconfig
 
-$(SDKCONFIG_H): $(SDKCONFIG)
+$(SDKCONFIG_COMBINED): $(SDKCONFIG)
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(CAT) $^ > $@
+
+$(SDKCONFIG_H): $(SDKCONFIG_COMBINED)
 	$(ECHO) "GEN $@"
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(PYTHON) $(ESPIDF)/tools/kconfig_new/confgen.py \
@@ -255,7 +283,7 @@ $(SDKCONFIG_H): $(SDKCONFIG)
 		--env "COMPONENT_KCONFIGS_PROJBUILD=$(ESPCOMP_KCONFIGS_PROJBUILD)"
 	$(Q)touch $@
 
-$(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H)
+$(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.h
 
 ################################################################################
 # List of object files from the ESP32 IDF components
@@ -429,12 +457,12 @@ $(eval $(foreach lib,$(LIB_ESPIDF),$(eval $(call gen_sections_info_rule,$(BUILD_
 $(LDGEN_SECTION_INFOS): $(LDGEN_SECTIONS_INFO) $(ESPIDF)/make/ldgen.mk
 	$(Q)printf "$(foreach info,$(LDGEN_SECTIONS_INFO),$(info)\n)" > $@
 
-$(BUILD)/esp32.project.ld: $(ESPCOMP)/esp32/ld/esp32.project.ld.in $(LDGEN_FRAGMENTS) $(SDKCONFIG) $(LDGEN_SECTION_INFOS)
+$(BUILD)/esp32.project.ld: $(ESPCOMP)/esp32/ld/esp32.project.ld.in $(LDGEN_FRAGMENTS) $(SDKCONFIG_COMBINED) $(LDGEN_SECTION_INFOS)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(ESPIDF)/tools/ldgen/ldgen.py \
 		--input $< \
 		--output $@ \
-		--config $(SDKCONFIG) \
+		--config $(SDKCONFIG_COMBINED) \
 		--kconfig $(ESPIDF)/Kconfig \
 		--fragments $(LDGEN_FRAGMENTS) \
 		--sections $(LDGEN_SECTION_INFOS) \
@@ -472,6 +500,7 @@ OBJ = $(OBJ_MP)
 
 APP_LD_ARGS =
 APP_LD_ARGS += $(LDFLAGS_MOD)
+APP_LD_ARGS += $(addprefix -T,$(LD_FILES))
 APP_LD_ARGS += --start-group
 APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
@@ -653,7 +682,9 @@ $(BUILD)/bootloader.elf: $(BOOTLOADER_OBJ) $(addprefix $(BOOTLOADER_LIB_DIR)/lib
 # Declarations to build the partitions
 
 PYTHON2 ?= python2
-PART_SRC = partitions.csv
+
+# Can be overriden by mkconfigboard.mk.
+PART_SRC ?= partitions.csv
 
 $(BUILD)/partitions.bin: $(PART_SRC)
 	$(ECHO) "Create $@"
