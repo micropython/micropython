@@ -42,3 +42,7 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# Per-board build files
+######################
+build-*/
