@@ -800,11 +800,29 @@ STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
-    //mp_obj_register_t *self = MP_OBJ_TO_PTR(args[0]);
+typedef struct _mp_obj_wrap_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+    mp_obj_t fun;
+} mp_obj_wrap_fun_t;
+
+STATIC mp_obj_t wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("wrap_call\n");
     return mp_const_none;
 }
 
+STATIC const mp_obj_type_t mp_type_fun_wrap = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = wrap_call,
+};
+
+STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
+    printf("builtin_register_public\n");
+    mp_obj_wrap_fun_t *o = m_new_obj(mp_obj_wrap_fun_t);
+    o->base.type = &mp_type_fun_wrap;
+    return MP_OBJ_FROM_PTR(o);
+}
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(builtin_register_public_obj, 0, builtin_register_public);
 
 STATIC const mp_rom_map_elem_t builtin_register_locals_dict_table[] = {

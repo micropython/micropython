@@ -325,6 +325,29 @@ void test_lib_line() {
     tvm_deinit_result(&result);
 }
 
+void test_register() {
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "print(register.public)\n"
+                      "print(type(register.public()))\n"
+                      "class Token():\n"
+                      "\n"
+                      "    @register.public()\n"
+                      "    def myprint(self):\n"
+                      "        print('i am Token')\n"
+                      "\n"
+                      "\n"
+                      "\n"
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_register", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+}
+
 int main() {
 //    test_execute();
 
@@ -340,7 +363,9 @@ int main() {
 
 //    test_not_supported();
 
-    test_lib_line();
+//    test_lib_line();
+
+    test_register();
 
     printf("finished\n");
 }
