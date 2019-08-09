@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "supervisor/flash.h"
+#include "supervisor/internal_flash.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -35,10 +35,55 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
+#include "stm32f4xx_hal.h"
+
+typedef struct {
+    uint32_t base_address;
+    uint32_t sector_size;
+    uint32_t sector_count;
+} flash_layout_t;
 
 /*------------------------------------------------------------------*/
 /* Internal Flash API
  *------------------------------------------------------------------*/
+
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 0x04000, 4 },
+    { 0x08010000, 0x10000, 1 },
+    { 0x08020000, 0x20000, 3 },
+    #if defined(FLASH_SECTOR_8)
+    { 0x08080000, 0x20000, 4 },
+    #endif
+    #if defined(FLASH_SECTOR_12)
+    { 0x08100000, 0x04000, 4 },
+    { 0x08110000, 0x10000, 1 },
+    { 0x08120000, 0x20000, 7 },
+    #endif
+};
+
+uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
+    if (addr >= flash_layout[0].base_address) {
+        uint32_t sector_index = 0;
+        for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
+            for (int j = 0; j < flash_layout[i].sector_count; ++j) {
+                uint32_t sector_start_next = flash_layout[i].base_address
+                    + (j + 1) * flash_layout[i].sector_size;
+                if (addr < sector_start_next) {
+                    if (start_addr != NULL) {
+                        *start_addr = flash_layout[i].base_address
+                            + j * flash_layout[i].sector_size;
+                    }
+                    if (size != NULL) {
+                        *size = flash_layout[i].sector_size;
+                    }
+                    return sector_index;
+                }
+                ++sector_index;
+            }
+        }
+    }
+    return 0;
+}
 
 void supervisor_flash_init(void) {
 }
@@ -48,21 +93,82 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return false;
+    return INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS;
 }
 
 void supervisor_flash_flush(void) {
+}
 
+static int32_t convert_block_to_flash_addr(uint32_t block) {
+    if (0 <= block && block < INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS) {
+        // a block in partition 1
+        return INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
+    }
+    // bad block
+    return -1;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-
+	uint32_t src = convert_block_to_flash_addr(block);
+	if (src == -1) {
+        // bad block number
+        return false;
+    }
+    memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
     return 0; // success
 }
 
-mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32_t num_blocks) {
+bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
+    int32_t dest = convert_block_to_flash_addr(block);
+    if (dest == -1) {
+        // bad block number
+        return false;
+    }
 
+    // unlock
+    HAL_FLASH_Unlock();
 
+    FLASH_EraseInitTypeDef EraseInitStruct;
+
+    // erase the sector(s)
+    EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
+    EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+    //get the sector number
+    EraseInitStruct.Sector = flash_get_sector_info(dest, NULL, NULL);
+    //find end address, subtract for number of sectors
+    EraseInitStruct.NbSectors = flash_get_sector_info(dest + FILESYSTEM_BLOCK_SIZE - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+
+    uint32_t SectorError = 0;
+    if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
+        // error occurred during sector erase
+        HAL_FLASH_Lock(); // lock the flash
+        return false;
+    }
+
+    // program the flash word by word
+    for (int i = 0; i < (FILESYSTEM_BLOCK_SIZE / 4); i++) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, *src) != HAL_OK) {
+            // error occurred during flash write
+            HAL_FLASH_Lock(); // lock the flash
+            return false;
+        }
+        dest += 4;
+        src += 1; //src += 4;
+    }
+
+	// lock the flash
+    HAL_FLASH_Lock();
+
+    return true;
+}
+
+mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+
+	for (size_t i = 0; i < num_blocks; i++) {
+        if (!supervisor_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
+            return 1; // error
+        }
+    }
     return 0; // success
 }
 

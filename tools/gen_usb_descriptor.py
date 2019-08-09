@@ -131,7 +131,7 @@ msc_interfaces = [
                 bInterval=0),
             standard.EndpointDescriptor(
                 description="MSC out",
-                bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
+                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0)
         ]
@@ -273,7 +273,7 @@ cdc_iad = standard.InterfaceAssociationDescriptor(
 descriptor_list = []
 descriptor_list.append(cdc_iad)
 descriptor_list.extend(cdc_interfaces)
-# descriptor_list.extend(msc_interfaces)
+descriptor_list.extend(msc_interfaces)
 # Only add the control interface because other audio interfaces are managed by it to ensure the
 # correct ordering.
 # descriptor_list.append(audio_control_interface)
