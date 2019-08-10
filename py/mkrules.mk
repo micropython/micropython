@@ -122,6 +122,14 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
+ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
+	# Windows target; add the .exe extension 
+	PROG_FILE := $(PROG).exe
+else
+	PROG_FILE := $(PROG)
+endif
+
 all: $(PROG)
 
 $(PROG): $(OBJ)
@@ -130,13 +138,13 @@ $(PROG): $(OBJ)
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
+	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG_FILE)
 endif
-	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG_FILE)
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)
+	$(RM) -f $(PROG_FILE)
 	$(RM) -f $(PROG).map
 
 .PHONY: clean-prog
