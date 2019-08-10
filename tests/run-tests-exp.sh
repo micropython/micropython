@@ -6,7 +6,7 @@
 #
 
 RM="rm -f"
-MP_PY=micropython
+MP_PY=${MICROPY_MICROPYTHON:-micropython}
 
 numtests=0
 numtestcases=0
