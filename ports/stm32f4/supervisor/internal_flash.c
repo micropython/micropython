@@ -61,6 +61,7 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
+//Return the sector of a given flash address. 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
@@ -122,6 +123,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     int32_t dest = convert_block_to_flash_addr(block);
     if (dest == -1) {
         // bad block number
+        mp_printf(&mp_plat_print, "BAD FLASH BLOCK ERROR");
         return false;
     }
 
@@ -142,14 +144,25 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
         // error occurred during sector erase
         HAL_FLASH_Lock(); // lock the flash
+        mp_printf(&mp_plat_print, "FLASH SECTOR ERASE ERROR");
         return false;
     }
+
+	__HAL_FLASH_DATA_CACHE_DISABLE();
+	__HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+
+	__HAL_FLASH_DATA_CACHE_RESET();
+	__HAL_FLASH_INSTRUCTION_CACHE_RESET();
+
+	__HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+	__HAL_FLASH_DATA_CACHE_ENABLE();
 
     // program the flash word by word
     for (int i = 0; i < (FILESYSTEM_BLOCK_SIZE / 4); i++) {
         if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, *src) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
+            mp_printf(&mp_plat_print, "FLASH WRITE ERROR");
             return false;
         }
         dest += 4;

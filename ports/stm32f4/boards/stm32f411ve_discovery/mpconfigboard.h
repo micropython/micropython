@@ -30,8 +30,8 @@
 #define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32F411xE"
 
-// #define FLASH_SIZE                  (0x7D000)
-// #define FLASH_PAGE_SIZE             (0x4000)
+#define FLASH_SIZE                  (0x80000) //512K
+#define FLASH_PAGE_SIZE             (0x4000)  //16K
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
