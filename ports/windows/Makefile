@@ -2,7 +2,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # define main target
-PROG = micropython.exe
+PROG = micropython
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = ../unix/qstrdefsport.h
