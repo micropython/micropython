@@ -13,15 +13,15 @@ CFLAGS += -Wall -Werror $(INC) -std=gnu11 $(COPT)
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += $(CFLAGS_MOD)
 
-JSFLAGS += -s WASM=0
-JSFLAGS += --memory-init-file 0 --js-library library.js
-JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
-JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl',\
- '_mp_js_do_str', '_mp_js_process_char',\
- '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt' ]"
-
 
 ifdef EMSCRIPTEN
+
+	JSFLAGS += -s WASM=0
+	JSFLAGS += --memory-init-file 0 --js-library library.js
+	JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
+	JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl',\
+ '_mp_js_do_str', '_mp_js_process_char',\
+ '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt' ]"
 
 	#Debugging/Optimization
 	ifeq ($(DEBUG), 1)
@@ -98,13 +98,6 @@ min: $(BUILD)/micropython.js
 
 test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-
-# works with wasm + no nlr
-#	cd $(TOP)/tests &&\
- MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../$(DIRNAME)/node_run.sh PATH=../$(DIRNAME):${PATH}\
- ./run-tests-exp.sh
-
-# often broken !
 	cd $(TOP)/tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../$(DIRNAME)/node_run.sh ./run-tests
 
 include $(TOP)/py/mkrules.mk
