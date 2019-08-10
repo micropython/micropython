@@ -1,7 +1,5 @@
 include ../../py/mkenv.mk
 
-CROSS = 0
-
 QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
@@ -11,19 +9,6 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 
-LDFLAGS ?= -m32 -Wl,--gc-sections
-CFLAGS ?= -m32
-
-#default debug options for browser debugger
-JSFLAGS ?= --source-map-base http://localhost:8000
-
-#Debugging/Optimization
-ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -g4
-else
-CFLAGS += -Oz -g0 -DNDEBUG
-endif
-
 CFLAGS += -Wall -Werror $(INC) -std=gnu11 $(COPT)
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += $(CFLAGS_MOD)
@@ -31,29 +16,37 @@ CFLAGS += $(CFLAGS_MOD)
 JSFLAGS += -s WASM=0
 JSFLAGS += --memory-init-file 0 --js-library library.js
 JSFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
-JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', '_mp_js_process_char', '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt' ]" 
+JSFLAGS += -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_init_repl',\
+ '_mp_js_do_str', '_mp_js_process_char',\
+ '_mp_hal_get_interrupt_char', '_mp_keyboard_interrupt' ]"
+
 
 ifdef EMSCRIPTEN
-	# only for profiling, remove -s EMTERPRETIFY_ADVISE=1 when your EMTERPRETIFY_WHITELIST is ok
-	# not using an emterpreting list *is* bad and will lead to poor performance and huge binary.
-	ifdef ASYNC
-		CFLAGS += -D__EMTERPRETER__=1 
-		CFLAGS += -s EMTERPRETIFY=1 -s EMTERPRETIFY_ASYNC=1 -s 'EMTERPRETIFY_FILE="micropython.binary"'
-		CFLAGS += -s EMTERPRETIFY_SYNCLIST='["_mp_execute_bytecode"]' -s EMTERPRETIFY_ADVISE=1
-	endif
 
+	#Debugging/Optimization
+	ifeq ($(DEBUG), 1)
+	CFLAGS += -O0 -g4
+	else
+	CFLAGS += -Oz -g0 -DNDEBUG
+	endif
+	
 	#check if not using emscripten-upstream branch
 	ifeq (,$(findstring upstream/bin, $(EMMAKEN_COMPILER)))
 		JSFLAGS += -s "BINARYEN_TRAP_MODE='clamp'"
-		LDFLAGS += -Wl,-Map=$@.map,--cref
 	endif  
+
+	#default debug options for browser debugger
+	JSFLAGS ?= --source-map-base http://localhost:8000
 	
 	CC = emcc $(JSFLAGS)
-	LD = emcc $(JSFLAGS)
+	LD = emcc $(JSFLAGS) $(LDFLAGS)
 	CPP = clang -E -undef -D__CPP__ -D__EMSCRIPTEN__ -U__STDC_VERSION__
 	CPP += --sysroot $(EMSCRIPTEN)/system
 	CPP += -include $(BUILD)/clang_predefs.h
-	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1 |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
+	CPP += $(addprefix -isystem, $(shell env LC_ALL=C $(CC) $(CFLAGS_EXTRA) -E -x c++ /dev/null -v 2>&1\
+ |sed -e '/^\#include <...>/,/^End of search/{ //!b };d'))
+ 
+
 else
 	ifdef CLANG
 		CC=clang
@@ -97,7 +90,7 @@ all: $(BUILD)/micropython.js
 
 $(BUILD)/micropython.js: $(OBJ) library.js wrapper.js
 	$(ECHO) "LINK $(BUILD)/firmware.js"
-	$(Q)emcc $(LDFLAGS) -o $(BUILD)/firmware.js $(OBJ) $(JSFLAGS)
+	$(Q)$(LD) -o $(BUILD)/firmware.js $(OBJ)
 	cat wrapper.js $(BUILD)/firmware.js > $@
 
 min: $(BUILD)/micropython.js
@@ -105,6 +98,13 @@ min: $(BUILD)/micropython.js
 
 test: $(BUILD)/micropython.js $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests
+
+# works with wasm + no nlr
+#	cd $(TOP)/tests &&\
+ MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../$(DIRNAME)/node_run.sh PATH=../$(DIRNAME):${PATH}\
+ ./run-tests-exp.sh
+
+# often broken !
+	cd $(TOP)/tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../$(DIRNAME)/node_run.sh ./run-tests
 
 include $(TOP)/py/mkrules.mk
