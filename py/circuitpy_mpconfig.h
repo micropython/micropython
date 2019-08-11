@@ -587,9 +587,8 @@ extern const struct _mp_obj_module_t ustack_module;
     BUSIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
-      FONTIO_MODULE \
-      TERMINALIO_MODULE \
     ERRNO_MODULE \
+    FONTIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
@@ -599,26 +598,27 @@ extern const struct _mp_obj_module_t ustack_module;
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
-      SOCKET_MODULE \
-      WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
-    PULSEIO_MODULE \
     PS2IO_MODULE \
+    PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
+    SOCKET_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
+    TERMINALIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    WIZNET_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
