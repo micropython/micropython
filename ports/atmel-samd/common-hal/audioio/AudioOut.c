@@ -69,9 +69,7 @@ static void ramp_value(uint16_t start, uint16_t end) {
         DAC->DATA.reg = value;
         DAC->DATABUF.reg = value;
         common_hal_mcu_delay_us(50);
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 #endif
@@ -94,9 +92,7 @@ static void ramp_value(uint16_t start, uint16_t end) {
         DAC->DATABUF[1].reg = value;
 
         common_hal_mcu_delay_us(50);
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 #endif
