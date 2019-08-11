@@ -60,7 +60,7 @@ STATIC bool discover_next_services(bleio_central_obj_t *self, uint16_t start_han
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
     return m_discovery_successful;
 }
@@ -82,7 +82,7 @@ STATIC bool discover_next_characteristics(bleio_central_obj_t *self, bleio_servi
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
     return m_discovery_successful;
 }
@@ -104,7 +104,7 @@ STATIC bool discover_next_descriptors(bleio_central_obj_t *self, bleio_character
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
     return m_discovery_successful;
 }
@@ -339,7 +339,7 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_o
     }
 
     while (self->waiting_to_connect) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
 
     if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {

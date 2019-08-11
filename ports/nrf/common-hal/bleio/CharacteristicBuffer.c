@@ -99,7 +99,7 @@ int common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_
 
     // Wait for all bytes received or timeout
     while ( (ringbuf_count(&self->ringbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
             return 0;
