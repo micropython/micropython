@@ -11,7 +11,7 @@ import os
 import datetime
 import subprocess
 
-def get_version_info_from_git():
+def get_version_info_from_git(git_dir):
     # Python 2.6 doesn't have check_output, so check for that
     try:
         subprocess.check_output
@@ -21,7 +21,7 @@ def get_version_info_from_git():
 
     # Note: git describe doesn't work if no tag is available
     try:
-        git_tag = subprocess.check_output(["git", "describe", "--dirty", "--always"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
+        git_tag = subprocess.check_output(["git", "--git-dir", git_dir, "describe", "--dirty", "--always"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
     except subprocess.CalledProcessError as er:
         if er.returncode == 128:
             # git exit code of 128 means no repository found
@@ -30,7 +30,7 @@ def get_version_info_from_git():
     except OSError:
         return None
     try:
-        git_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
+        git_hash = subprocess.check_output(["git", "--git-dir", git_dir, "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
     except subprocess.CalledProcessError:
         git_hash = "unknown"
     except OSError:
@@ -38,9 +38,9 @@ def get_version_info_from_git():
 
     try:
         # Check if there are any modified files.
-        subprocess.check_call(["git", "diff", "--no-ext-diff", "--quiet", "--exit-code"], stderr=subprocess.STDOUT)
+        subprocess.check_call(["git",  "--git-dir", git_dir, "diff", "--no-ext-diff", "--quiet", "--exit-code"], stderr=subprocess.STDOUT)
         # Check if there are any staged files.
-        subprocess.check_call(["git", "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT)
+        subprocess.check_call(["git",  "--git-dir", git_dir, "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
         git_hash += "-dirty"
     except OSError:
@@ -57,9 +57,9 @@ def get_version_info_from_docs_conf():
                 return git_tag, "<no hash>"
     return None
 
-def make_version_header(filename):
+def make_version_header(git_dir, filename):
     # Get version info using git, with fallback to docs/conf.py
-    info = get_version_info_from_git()
+    info = get_version_info_from_git(git_dir)
     if info is None:
         info = get_version_info_from_docs_conf()
 
@@ -88,4 +88,4 @@ def make_version_header(filename):
             f.write(file_data)
 
 if __name__ == "__main__":
-    make_version_header(sys.argv[1])
+    make_version_header(sys.argv[1], sys.argv[2])

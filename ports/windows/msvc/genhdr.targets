@@ -10,6 +10,7 @@
   <PropertyGroup>
     <DestDir>$(PyBuildDir)genhdr\</DestDir>
     <PySrcDir>$(PyBaseDir)py\</PySrcDir>
+    <PyGitDir>$(PyBaseDir).git</PyGitDir>
     <QstrDefs>$(PyBaseDir)ports\unix\qstrdefsport.h</QstrDefs>
     <PyQstrDefs>$(PySrcDir)qstrdefs.h</PyQstrDefs>
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
@@ -111,7 +112,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
       <DestFile>$(DestDir)mpversion.h</DestFile>
       <TmpFile>$(DestFile).tmp</TmpFile>
     </PropertyGroup>
-    <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(PyGitDir) $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 

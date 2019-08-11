@@ -7,6 +7,9 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+# where git directory is located (to retrieve git version)
+PY_GIT_DIR = $(TOP)/.git
+
 # If qstr autogeneration is not disabled we specify the output header
 # for all collected qstrings.
 ifneq ($(QSTR_AUTOGEN_DISABLE),1)
@@ -215,7 +218,7 @@ FORCE:
 .PHONY: FORCE
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
-	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $(PY_GIT_DIR) $@
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
