@@ -64,6 +64,10 @@ STATIC bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
+STATIC bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
+    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
+}
+
 STATIC bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
 }
@@ -107,7 +111,9 @@ STATIC bool is_following_odigit(mp_lexer_t *lex) {
 
 STATIC bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
-        || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
+        || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
+        || ((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
+            && is_char_following_following_or(lex, '\'', '\"'))
         || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
             && is_char_following_following_or(lex, '\'', '\"'));
 }
@@ -119,6 +125,37 @@ STATIC bool is_head_of_identifier(mp_lexer_t *lex) {
 
 STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
+}
+
+STATIC void swap_char_banks(mp_lexer_t *lex) {
+    if (lex->vstr_postfix_processing) {
+        unichar h0, h1, h2;
+
+        h0 = lex->chr0;
+        h1 = lex->chr1;
+        h2 = lex->chr2;
+
+        lex->chr0 = lex->vstr_postfix.len > 0 ? lex->vstr_postfix.buf[0] : 0;
+        lex->chr1 = lex->vstr_postfix.len > 1 ? lex->vstr_postfix.buf[1] : 0;
+        lex->chr2 = lex->vstr_postfix.len > 2 ? lex->vstr_postfix.buf[2] : 0;
+        lex->chr3 = h0;
+        lex->chr4 = h1;
+        lex->chr5 = h2;
+
+        lex->vstr_postfix_idx = lex->vstr_postfix.len > 2 ? 3 : lex->vstr_postfix.len;
+    } else {
+        // blindly reset to the "backup" bank when done postfix processing
+        // this restores control to the mp_reader
+        lex->chr0 = lex->chr3;
+        lex->chr1 = lex->chr4;
+        lex->chr2 = lex->chr5;
+        lex->chr3 = 0;
+        lex->chr4 = 0;
+        lex->chr5 = 0;
+
+        vstr_reset(&lex->vstr_postfix);
+        lex->vstr_postfix_idx = 0;
+    }
 }
 
 STATIC void next_char(mp_lexer_t *lex) {
@@ -136,7 +173,16 @@ STATIC void next_char(mp_lexer_t *lex) {
 
     lex->chr0 = lex->chr1;
     lex->chr1 = lex->chr2;
-    lex->chr2 = lex->reader.readbyte(lex->reader.data);
+
+    if (lex->vstr_postfix_processing) {
+        if (lex->vstr_postfix_idx == lex->vstr_postfix.len) {
+            lex->chr2 = '\0';
+        } else {
+            lex->chr2 = lex->vstr_postfix.buf[lex->vstr_postfix_idx++];
+        }
+    } else {
+        lex->chr2 = lex->reader.readbyte(lex->reader.data);
+    }
 
     if (lex->chr1 == '\r') {
         // CR is a new line, converted to LF
@@ -150,6 +196,11 @@ STATIC void next_char(mp_lexer_t *lex) {
     // check if we need to insert a newline at end of file
     if (lex->chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
         lex->chr2 = '\n';
+    }
+
+    if (lex->vstr_postfix_processing && lex->chr0 == '\0') {
+        lex->vstr_postfix_processing = false;
+        swap_char_banks(lex);
     }
 }
 
@@ -270,7 +321,7 @@ STATIC bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
     return true;
 }
 
-STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
+STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) {
     // get first quoting character
     char quote_char = '\'';
     if (is_char(lex, '\"')) {
@@ -291,15 +342,67 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
     }
 
     size_t n_closing = 0;
+    bool in_expression = false;
+    bool expression_eat = true;
+
     while (!is_end(lex) && (num_quotes > 1 || !is_char(lex, '\n')) && n_closing < num_quotes) {
         if (is_char(lex, quote_char)) {
             n_closing += 1;
             vstr_add_char(&lex->vstr, CUR_CHAR(lex));
         } else {
             n_closing = 0;
+            if (is_fstring && is_char(lex, '{')) {
+                vstr_add_char(&lex->vstr, CUR_CHAR(lex));
+                in_expression = !in_expression;
+                expression_eat = in_expression;
+
+                if (lex->vstr_postfix.len == 0) {
+                    vstr_add_str(&lex->vstr_postfix, ".format(");
+                }
+
+                next_char(lex);
+                continue;
+            }
+
+            if (is_fstring && is_char(lex, '}')) {
+                vstr_add_char(&lex->vstr, CUR_CHAR(lex));
+
+                if (in_expression) {
+                    in_expression = false;
+                    vstr_add_char(&lex->vstr_postfix, ',');
+                }
+
+                next_char(lex);
+                continue;
+            }
+
+            if (in_expression) {
+                // throw errors for illegal chars inside f-string expressions
+                if (is_char(lex, '#')) {
+                    lex->tok_kind = MP_TOKEN_FSTRING_COMMENT;
+                    return;
+                } else if (is_char(lex, '\\')) {
+                    lex->tok_kind = MP_TOKEN_FSTRING_BACKSLASH;
+                    return;
+                } else if (is_char(lex, ':')) {
+                    expression_eat = false;
+                }
+
+                unichar c = CUR_CHAR(lex);
+                if (expression_eat) {
+                    vstr_add_char(&lex->vstr_postfix, c);
+                } else {
+                    vstr_add_char(&lex->vstr, c);
+                }
+
+                next_char(lex);
+                continue;
+            }
+
             if (is_char(lex, '\\')) {
                 next_char(lex);
                 unichar c = CUR_CHAR(lex);
+
                 if (is_raw) {
                     // raw strings allow escaping of quotes, but the backslash is also emitted
                     vstr_add_char(&lex->vstr, '\\');
@@ -430,6 +533,13 @@ STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
+    if (lex->vstr_postfix.len && !lex->vstr_postfix_processing) {
+        // end format call injection
+        vstr_add_char(&lex->vstr_postfix, ')');
+        lex->vstr_postfix_processing = true;
+        swap_char_banks(lex);
+    }
+
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -485,6 +595,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         do {
             // parse type codes
             bool is_raw = false;
+            bool is_fstring = false;
             mp_token_kind_t kind = MP_TOKEN_STRING;
             int n_char = 0;
             if (is_char(lex, 'u')) {
@@ -503,6 +614,17 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_BYTES;
                     n_char = 2;
                 }
+                if (is_char_following(lex, 'f')) {
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
+                }
+            } else if (is_char(lex, 'f')) {
+                if (is_char_following(lex, 'r')) {
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
+                }
+                n_char = 1;
+                is_fstring = true;
             }
 
             // Set or check token kind
@@ -522,13 +644,12 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             }
 
             // Parse the literal
-            parse_string_literal(lex, is_raw);
+            parse_string_literal(lex, is_raw, is_fstring);
 
             // Skip whitespace so we can check if there's another string following
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
-
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
 
@@ -682,6 +803,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->num_indent_level = 1;
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
+    vstr_init(&lex->vstr_postfix, 0);
 
     // store sentinel for first indentation level
     lex->indent_level[0] = 0;
