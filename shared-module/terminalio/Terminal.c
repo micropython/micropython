@@ -36,6 +36,12 @@ void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, d
     self->tilegrid = tilegrid;
     self->first_row = 0;
 
+    for (uint16_t x = 0; x < self->tilegrid->width_in_tiles; x++) {
+        for (uint16_t y = 0; y < self->tilegrid->height_in_tiles; y++) {
+            common_hal_displayio_tilegrid_set_tile(self->tilegrid, x, y, 0);
+        }
+    }
+
     common_hal_displayio_tilegrid_set_top_left(self->tilegrid, 0, 1);
 }
 
