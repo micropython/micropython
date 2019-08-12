@@ -335,10 +335,23 @@ void test_register() {
                       "\n"
                       "    @register.public()\n"
                       "    def myprint(self):\n"
+                      "        print(self)\n"
                       "        print('i am Token')\n"
                       "\n"
+                      "    @register.public(int)\n"
+                      "    def myprint2(self, a):\n"
+                      "        print(self)\n"
+                      "        print('i am Token', a)\n"
                       "\n"
+                      "    @register.public\n"
+                      "    def myprint3(self, a):\n"
+                      "        print(self)\n"
+                      "        print('i am Token', a)\n"
                       "\n"
+                      "token = Token()\n"
+                      "token.myprint()\n"
+                      "token.myprint2(2)\n"
+                      "token.myprint3(2)\n"
                       "\n";
 
     tvm_execute_result_t result;

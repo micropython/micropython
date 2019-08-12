@@ -803,12 +803,14 @@ STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n
 typedef struct _mp_obj_wrap_fun_t {
     mp_obj_base_t base;
     const mp_obj_type_t *type;
+
     mp_obj_t fun;
 } mp_obj_wrap_fun_t;
 
 STATIC mp_obj_t wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("wrap_call\n");
-    return mp_const_none;
+    printf("wrap n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    mp_obj_wrap_fun_t *self =  MP_OBJ_TO_PTR(self_in);
+    return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_wrap = {
@@ -817,10 +819,35 @@ STATIC const mp_obj_type_t mp_type_fun_wrap = {
         .call = wrap_call,
 };
 
-STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
-    printf("builtin_register_public\n");
+typedef struct _mp_obj_decorator_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_decorator_fun_t;
+
+
+STATIC mp_obj_t decorator_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("decorator n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_wrap_fun_t *o = m_new_obj(mp_obj_wrap_fun_t);
     o->base.type = &mp_type_fun_wrap;
+
+    o->fun = args[0];
+    return o;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_decorator = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = decorator_call,
+};
+
+STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
+    printf("builtin_register_public n_args:%d\n", (int)n_args);
+    for (size_t i = 1; i < n_args; i++) {
+        mp_obj_type_t *self =  MP_OBJ_TO_PTR(args[i]);
+        printf("args: %s\n", qstr_str(self->name));
+    }
+    mp_obj_decorator_fun_t *o = m_new_obj(mp_obj_decorator_fun_t);
+    o->base.type = &mp_type_fun_decorator;
     return MP_OBJ_FROM_PTR(o);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(builtin_register_public_obj, 0, builtin_register_public);
