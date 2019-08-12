@@ -51,10 +51,12 @@ typedef struct _machine_rtc_obj_t {
     The current system software allows almost 4096 to be used.
     To avoid running into issues if the system software uses more, 2048 was picked as a max length
 */
-#define MEM_USER_MAXLEN     2048
+#ifndef MICROPY_HW_RTC_USER_MEM_MAX
+#define MICROPY_HW_RTC_USER_MEM_MAX     2048
+#endif
 RTC_DATA_ATTR uint32_t rtc_user_mem_magic;
 RTC_DATA_ATTR uint32_t rtc_user_mem_len;
-RTC_DATA_ATTR uint8_t rtc_user_mem_data[MEM_USER_MAXLEN];
+RTC_DATA_ATTR uint8_t rtc_user_mem_data[MICROPY_HW_RTC_USER_MEM_MAX];
 
 // singleton RTC object
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
@@ -129,7 +131,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
         uint32_t len = rtc_user_mem_len;
-        uint8_t rtcram[MEM_USER_MAXLEN];
+        uint8_t rtcram[MICROPY_HW_RTC_USER_MEM_MAX];
         memcpy( (char *) rtcram, (char *) rtc_user_mem_data, len);
         return mp_obj_new_bytes(rtcram,  len);
     } else {
@@ -137,7 +139,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
-        if (bufinfo.len > MEM_USER_MAXLEN) {
+        if (bufinfo.len > MICROPY_HW_RTC_USER_MEM_MAX) {
             mp_raise_ValueError("buffer too long");
         }
         memcpy( (char *) rtc_user_mem_data, (char *) bufinfo.buf, bufinfo.len);
