@@ -83,6 +83,13 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
     }
 }
 
+void tvm_abi_call(const char *class_name, const char *func_name, const char *args) {
+
+    mp_obj_t class_object = mp_call_function_0(mp_load_name(qstr_from_str(class_name)));
+    mp_call_function_1(mp_load_attr(class_object, qstr_from_str(func_name)), mp_obj_new_str(args, strlen(args)));
+
+}
+
 static char heap[1024 * 1024 * 2];
 void tvm_start(void) {
 	// Initialized stack limit

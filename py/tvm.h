@@ -47,6 +47,7 @@ void tvm_init_result(tvm_execute_result_t *result);
 void tvm_deinit_result(tvm_execute_result_t *result);
 
 void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKind, tvm_execute_result_t *result);
+void tvm_abi_call(const char *class_name, const char *func_name, const char *args);
 
 void tvm_set_lib_line(int line);
 

@@ -333,6 +333,9 @@ void test_register() {
                       "print(type(register.public()))\n"
                       "class Token():\n"
                       "\n"
+                      "    def __init__(self):\n"
+                      "        print('init')\n"
+                      "\n"
                       "    @register.public()\n"
                       "    def myprint(self):\n"
                       "        print(self)\n"
@@ -343,15 +346,15 @@ void test_register() {
                       "        print(self)\n"
                       "        print('i am Token', a)\n"
                       "\n"
-                      "    @register.public\n"
-                      "    def myprint3(self, a):\n"
-                      "        print(self)\n"
-                      "        print('i am Token', a)\n"
+//                      "    @register.public\n"
+//                      "    def myprint3(self, a):\n"
+//                      "        print(self)\n"
+//                      "        print('i am Token', a)\n"
                       "\n"
-                      "token = Token()\n"
-                      "token.myprint()\n"
-                      "token.myprint2(2)\n"
-                      "token.myprint3(2)\n"
+//                      "token = Token()\n"
+//                      "token.myprint()\n"
+//                      "token.myprint2(2)\n"
+//                      "token.myprint3(2)\n"
                       "\n";
 
     tvm_execute_result_t result;
@@ -359,6 +362,9 @@ void test_register() {
     tvm_execute(str, "test_register", PARSE_KIND_FILE, &result);
     tvm_print_result(&result);
     tvm_deinit_result(&result);
+
+    tvm_abi_call("Token", "myprint2", "hello");
+
 }
 
 int main() {
