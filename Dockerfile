@@ -67,4 +67,4 @@ RUN cd ports/unix && make
 # RUN cd ports/zephyr && make
 
 USER root
-RUN ln -s /home/docker/micropython/ports/unix/micropython /usr/bin/micropython
+RUN ln -s $HOME/micropython/ports/unix/micropython /usr/bin/micropython
