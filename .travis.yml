@@ -25,7 +25,7 @@ env:
   - TRAVIS_BOARDS="metro_m0_express metro_m4_express metro_m4_airlift_lite pirkey_m0 trellis_m4_express trinket_m0 sparkfun_lumidrive sparkfun_redboard_turbo bast_pro_mini_m0 datum_distance pyruler" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="cp32-m4 feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express itsybitsy_m4_express meowmeow sam32 uchip escornabot_makech pygamer_advance datum_imu snekboard" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_m0_supersized feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m4_express arduino_zero arduino_mkr1300 arduino_mkrzero pewpew10 kicksat-sprite ugame10 robohatmm1_m0 robohatmm1_m4 datum_light" TRAVIS_SDK=arm
-  - TRAVIS_BOARDS="datalore_ip_m4 circuitplayground_express_crickit feather_m0_adalogger feather_m0_basic feather_m0_express catwan_usbstick pyportal sparkfun_samd21_mini sparkfun_samd21_dev pybadge pybadge_airlift datum_weather" TRAVIS_SDK=arm
+  - TRAVIS_BOARDS="datalore_ip_m4 circuitplayground_express_crickit feather_m0_adalogger feather_m0_basic feather_m0_express catwan_usbstick pyportal sparkfun_samd21_mini sparkfun_samd21_dev pybadge pybadge_airlift datum_weather pyportal_titano" TRAVIS_SDK=arm
 
 addons:
   artifacts:
