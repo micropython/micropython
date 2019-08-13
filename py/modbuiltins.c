@@ -790,6 +790,78 @@ STATIC mp_obj_t mp_builtin_abiexport(size_t n_args, const mp_obj_t *pos_args, mp
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
 
+//zdict
+typedef struct _mp_obj_zdict_t {
+    mp_obj_base_t base;
+} mp_obj_zdict_t;
+
+STATIC mp_obj_t mp_builtin_zdict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_zdict_t *o = m_new_obj(mp_obj_zdict_t);
+    o->base.type = type;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    if (value == MP_OBJ_NULL) {
+        // delete
+//        mp_obj_dict_delete(self_in, index);
+        return mp_const_none;
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load
+//        mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+//        mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
+//        if (elem == NULL) {
+//            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+//        } else {
+//            return elem->value;
+//        }
+        char *data = NULL;
+        int data_len = 0;
+        storage_get_data_fn("", 0, &data, &data_len);
+        mp_obj_t result = mp_obj_new_str(data, data_len);
+        free(data);
+        return result;
+    } else {
+        // store
+//        mp_obj_dict_store(self_in, index, value);
+//        storage_set_data_fn(index, value);
+        return mp_const_none;
+    }
+}
+
+STATIC mp_obj_t zdict_op_contains(mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    return mp_obj_new_bool(0);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mp_zdict_op_contains_obj, zdict_op_contains);
+
+STATIC mp_obj_t zdict_op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    return type->subscr(self_in, key_in, MP_OBJ_SENTINEL);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mp_zdict_op_getitem_obj, zdict_op_getitem);
+
+STATIC mp_obj_t zdict_op_setitem(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    return type->subscr(self_in, key_in, value_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_3(mp_zdict_op_setitem_obj, zdict_op_setitem);
+
+STATIC const mp_rom_map_elem_t builtin_zdict_locals_dict_table[] = {
+        { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_zdict_op_contains_obj) },
+        { MP_ROM_QSTR(MP_QSTR___getitem__), MP_ROM_PTR(&mp_zdict_op_getitem_obj) },
+        { MP_ROM_QSTR(MP_QSTR___setitem__), MP_ROM_PTR(&mp_zdict_op_setitem_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(builtin_zdict_locals_dict, builtin_zdict_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_builtin_zdict_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_zdict,
+        .make_new = mp_builtin_zdict_make_new,
+        .subscr = zdict_subscr,
+        .locals_dict = (mp_obj_dict_t*)&builtin_zdict_locals_dict,
+};
+
+//register
 typedef struct _mp_obj_register_t {
     mp_obj_base_t base;
 } mp_obj_register_t;
@@ -868,8 +940,6 @@ STATIC const mp_obj_type_t mp_builtin_register_type = {
 mp_obj_register_t register_obj =  {{&mp_builtin_register_type}};
 
 // msg
-
-
 void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         const char *s = qstr_str(attr);
@@ -1038,6 +1108,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
     { MP_ROM_QSTR(MP_QSTR_msg), MP_ROM_PTR(&msg_obj) },
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&register_obj) },
+    { MP_ROM_QSTR(MP_QSTR_zdict), MP_ROM_PTR(&mp_builtin_zdict_type) },
     #endif
 
     // built-in exceptions

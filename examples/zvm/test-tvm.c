@@ -364,7 +364,72 @@ void test_register() {
     tvm_deinit_result(&result);
 
     tvm_abi_call("Token", "myprint2", "hello");
+}
 
+
+// storage
+void storage_get_data(const char* key, int len, char** out_value, int* out_len) {
+    char *text = "hello world";
+    *out_value = (char*)malloc(strlen(text));
+    memcpy(*out_value, text, strlen(text));
+    *out_len = strlen(text);
+}
+
+void storage_set_data(const char* key, int key_len) {
+
+}
+
+void test_storage() {
+    storage_get_data_fn = storage_get_data;
+    storage_set_data_fn = storage_set_data;
+
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "class Token():\n"
+                      "\n"
+                      "    def __init__(self):\n"
+                      "        print('init')\n"
+                      "        print(Token.__setattr__)\n"
+//                      "        self.text = 'hello_world'\n"
+                      "\n"
+                      "    def deploy(self, a):\n"
+                      "        print(self.text)\n"
+                      "        print(a)\n"
+                      "\n"
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_storage", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_abi_call("Token", "deploy", "hello");
+}
+
+void test_zdict() {
+    storage_get_data_fn = storage_get_data;
+    storage_set_data_fn = storage_set_data;
+
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "print(zdict)\n"
+                      "data = zdict()\n"
+//                      "print('text' in data)\n"
+                      "\n"
+                      "data['text'] = 'hello world'\n"
+//                      "print('text' in data)\n"
+                      "print(data['text'])\n"
+                      "\n"
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_zdict", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
 }
 
 int main() {
@@ -384,7 +449,11 @@ int main() {
 
 //    test_lib_line();
 
-    test_register();
+//    test_register();
+
+//    test_storage();
+
+    test_zdict();
 
     printf("finished\n");
 }

@@ -74,12 +74,13 @@ miner_cancel_stake_fn_t miner_cancel_stake;
 typedef _Bool (*miner_refund_stake_fn_t)(const char*, int len);
 miner_refund_stake_fn_t miner_refund_stake;
 
+
 // storage
-typedef char* (*storage_get_data_fn_t) (const char*);
+typedef void (*storage_get_data_fn_t) (const char*, int, char**, int*);
 storage_get_data_fn_t storage_get_data_fn;
-typedef void (*storage_set_data_fn_t) (const char*, const char*);
+typedef void (*storage_set_data_fn_t) (const char*, int);
 storage_set_data_fn_t storage_set_data_fn;
-typedef void (*storage_remove_data_fn_t) (const char*);
+typedef void (*storage_remove_data_fn_t) (const char*, int);
 storage_remove_data_fn_t storage_remove_data_fn;
 
 // block

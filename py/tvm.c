@@ -83,11 +83,60 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
     }
 }
 
+//storage
+typedef struct _mp_obj_storage_set_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_storage_set_fun_t;
+
+
+STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    storage_set_data_fn("a", 1);
+    return mp_const_none;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_storage_set = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = storage_set_call,
+};
+
+typedef struct _mp_obj_storage_get_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_storage_get_fun_t;
+
+
+STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    char *data = NULL;
+    int data_len = 0;
+    storage_get_data_fn("a", 1, &data, &data_len);
+    return mp_obj_new_str(data, data_len);
+}
+
+STATIC const mp_obj_type_t mp_type_fun_storage_get = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = storage_get_call,
+};
+
 void tvm_abi_call(const char *class_name, const char *func_name, const char *args) {
 
-    mp_obj_t class_object = mp_call_function_0(mp_load_name(qstr_from_str(class_name)));
-    mp_call_function_1(mp_load_attr(class_object, qstr_from_str(func_name)), mp_obj_new_str(args, strlen(args)));
+    mp_obj_t class = mp_load_name(qstr_from_str(class_name));
 
+    mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
+    storage_set->base.type = &mp_type_fun_storage_set;
+    mp_store_attr(class, qstr_from_str("__setattr__"), storage_set);
+
+    mp_obj_storage_get_fun_t *storage_get = m_new_obj(mp_obj_storage_get_fun_t);
+    storage_get->base.type = &mp_type_fun_storage_get;
+    mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
+
+    mp_obj_t class_object = mp_call_function_0(class);
+
+    mp_call_function_1(mp_load_attr(class_object, qstr_from_str(func_name)), mp_obj_new_str(args, strlen(args)));
 }
 
 static char heap[1024 * 1024 * 2];

@@ -94,44 +94,44 @@ STATIC mp_obj_t mod_account_get_balance(mp_obj_t address) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_get_balance_obj , mod_account_get_balance);
 
-STATIC mp_obj_t mod_account_get_data(mp_obj_t address) {
-    byte code = MP_BC_GET_STATE;
-    if(!CheckGas(&code)) {
-        return mp_const_none;
-    }
-    const char* str = storage_get_data_fn(mp_obj_str_get_str(address));
-    int len = strlen(str);
-    return mp_obj_new_str(str, len);
-};
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_get_data_obj , mod_account_get_data);
+//STATIC mp_obj_t mod_account_get_data(mp_obj_t address) {
+//    byte code = MP_BC_GET_STATE;
+//    if(!CheckGas(&code)) {
+//        return mp_const_none;
+//    }
+//    const char* str = storage_get_data_fn(mp_obj_str_get_str(address));
+//    int len = strlen(str);
+//    return mp_obj_new_str(str, len);
+//};
 //
-STATIC mp_obj_t mod_account_set_Data(mp_obj_t key, mp_obj_t value) {
-    byte code = MP_BC_SET_STATE;
-    if(!CheckGas(&code)) {
-        return mp_const_none;
-    }
-    const char *c_key = mp_obj_str_get_str(key);
-    size_t key_len = strlen(c_key);
-    const char *c_value = mp_obj_str_get_str(value);
-    size_t value_len = strlen(c_value);
-    FireGas_DB(key_len + value_len);
-    storage_set_data_fn(mp_obj_str_get_str(key), mp_obj_str_get_str(value));
-    return mp_const_none;
-};
+//STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_get_data_obj , mod_account_get_data);
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_set_Data_obj , mod_account_set_Data);
+//STATIC mp_obj_t mod_account_set_Data(mp_obj_t key, mp_obj_t value) {
+//    byte code = MP_BC_SET_STATE;
+//    if(!CheckGas(&code)) {
+//        return mp_const_none;
+//    }
+//    const char *c_key = mp_obj_str_get_str(key);
+//    size_t key_len = strlen(c_key);
+//    const char *c_value = mp_obj_str_get_str(value);
+//    size_t value_len = strlen(c_value);
+//    FireGas_DB(key_len + value_len);
+//    storage_set_data_fn(mp_obj_str_get_str(key), mp_obj_str_get_str(value));
+//    return mp_const_none;
+//};
 //
-STATIC mp_obj_t mod_account_remove_data(mp_obj_t key) {
-	byte code = MP_BC_REMOVE_STATE;
-	if (!CheckGas(&code)) {
-		return mp_const_none;
-	}
-	storage_remove_data_fn(mp_obj_str_get_str(key));
-	return mp_const_none;
-};
+//STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_set_Data_obj , mod_account_set_Data);
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_remove_data_obj, mod_account_remove_data);
+//STATIC mp_obj_t mod_account_remove_data(mp_obj_t key) {
+//	byte code = MP_BC_REMOVE_STATE;
+//	if (!CheckGas(&code)) {
+//		return mp_const_none;
+//	}
+//	storage_remove_data_fn(mp_obj_str_get_str(key));
+//	return mp_const_none;
+//};
+//
+//STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_account_remove_data_obj, mod_account_remove_data);
 
 STATIC mp_obj_t mod_account_transfer(mp_obj_t address,mp_obj_t amount) {
     mp_obj_get_int(amount);
@@ -217,9 +217,9 @@ STATIC const mp_rom_map_elem_t mp_module_account_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR_contract_call), MP_ROM_PTR(&mod_account_contract_call_obj) },
 		{ MP_ROM_QSTR(MP_QSTR_event_call), MP_ROM_PTR(&mod_account_event_call_obj) },
         { MP_ROM_QSTR(MP_QSTR_get_balance), MP_ROM_PTR(&mod_account_get_balance_obj) },
-        { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&mod_account_get_data_obj) },
-        { MP_ROM_QSTR(MP_QSTR_set_data), MP_ROM_PTR(&mod_account_set_Data_obj) },
-		{ MP_ROM_QSTR(MP_QSTR_remove_data), MP_ROM_PTR(&mod_account_remove_data_obj) },
+//        { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&mod_account_get_data_obj) },
+//        { MP_ROM_QSTR(MP_QSTR_set_data), MP_ROM_PTR(&mod_account_set_Data_obj) },
+//		{ MP_ROM_QSTR(MP_QSTR_remove_data), MP_ROM_PTR(&mod_account_remove_data_obj) },
         { MP_ROM_QSTR(MP_QSTR_transfer), MP_ROM_PTR(&mod_account_transfer_obj)},
         { MP_ROM_QSTR(MP_QSTR_stake), MP_ROM_PTR(&mod_account_stake_obj)},
         { MP_ROM_QSTR(MP_QSTR_cancel_stake), MP_ROM_PTR(&mod_account_cancel_stake_obj)},
