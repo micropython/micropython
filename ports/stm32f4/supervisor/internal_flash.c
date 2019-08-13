@@ -1,4 +1,4 @@
-/*
+/*f
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -60,6 +60,8 @@ static const flash_layout_t flash_layout[] = {
     { 0x08120000, 0x20000, 7 },
     #endif
 };
+
+static uint8_t sector_copy[0x4000] __attribute__((aligned(4)));
 
 //Return the sector of a given flash address. 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
@@ -127,19 +129,31 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
         return false;
     }
 
-    // unlock
+    // unlock flash
     HAL_FLASH_Unlock();
 
+    // set up for erase
     FLASH_EraseInitTypeDef EraseInitStruct;
-
-    // erase the sector(s)
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    //get the sector number
-    EraseInitStruct.Sector = flash_get_sector_info(dest, NULL, NULL);
-    //find end address, subtract for number of sectors
-    EraseInitStruct.NbSectors = flash_get_sector_info(dest + FILESYSTEM_BLOCK_SIZE - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+    // get the sector information
+    uint32_t sector_size;
+    uint32_t sector_start_addr;
+    EraseInitStruct.Sector = flash_get_sector_info(dest, &sector_start_addr, &sector_size);
+    EraseInitStruct.NbSectors = 1;
+    if (sector_size>0x4000) return false;
 
+    // copy the sector
+    memcpy(sector_copy,(void *)sector_start_addr,sector_size);
+
+    // // overwrite sector data
+    memcpy(sector_copy+(dest-sector_start_addr),src,FILESYSTEM_BLOCK_SIZE);
+
+    // find end address, subtract for number of sectors
+    // Shouldn't be required since blocks will always fit in a single sector, they should never overlap
+    //EraseInitStruct.NbSectors = flash_get_sector_info(dest + FILESYSTEM_BLOCK_SIZE - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+
+    // erase the sector
     uint32_t SectorError = 0;
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
         // error occurred during sector erase
@@ -157,16 +171,15 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
 	__HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
 	__HAL_FLASH_DATA_CACHE_ENABLE();
 
-    // program the flash word by word
-    for (int i = 0; i < (FILESYSTEM_BLOCK_SIZE / 4); i++) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, *src) != HAL_OK) {
+    // reprogram the sector
+    for (int i = 0; i < sector_size; i++) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, sector_start_addr, (uint64_t)sector_copy[i]) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
             mp_printf(&mp_plat_print, "FLASH WRITE ERROR");
             return false;
         }
-        dest += 4;
-        src += 1; //src += 4;
+        sector_start_addr += 1;
     }
 
 	// lock the flash
