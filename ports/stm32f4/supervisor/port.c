@@ -69,6 +69,6 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-// void HardFault_Handler(void) {
+void HardFault_Handler(void) {
 
-// }
+}

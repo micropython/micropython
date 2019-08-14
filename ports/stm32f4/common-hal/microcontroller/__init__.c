@@ -37,11 +37,13 @@
 #include "shared-bindings/microcontroller/Processor.h"
 
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/safe_mode.h"
 
 // This routine should work even when interrupts are disabled. Used by OneWire
 // for precise timing.
 void common_hal_mcu_delay_us(uint32_t delay) {
-    //NRFX_DELAY_US(delay);
+  //TODO: implement equivalent of mp_hal_delay_us(delay);
+  //this is fairly annoying in the STM32 HAL
 }
 
 void common_hal_mcu_disable_interrupts() {
@@ -51,12 +53,13 @@ void common_hal_mcu_enable_interrupts() {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    // TODO: see atmel-samd for functionality
+  if(runmode == RUNMODE_SAFE_MODE)
+    safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
 }
 
 void common_hal_mcu_reset(void) {
-    // filesystem_flush();
-    // NVIC_SystemReset();
+    filesystem_flush();
+    NVIC_SystemReset();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
