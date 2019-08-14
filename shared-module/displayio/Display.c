@@ -199,19 +199,26 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
 
 bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
     if (root_group == NULL) {
-        root_group = &circuitpython_splash;
+        if (!circuitpython_splash.in_group) {
+            root_group = &circuitpython_splash;
+        } else if (self->current_group == &circuitpython_splash) {
+            return false;
+        }
     }
     if (root_group == self->current_group) {
         return true;
     }
-    if (root_group->in_group) {
+    if (root_group != NULL && root_group->in_group) {
         return false;
     }
     if (self->current_group != NULL) {
         self->current_group->in_group = false;
     }
-    displayio_group_update_transform(root_group, &self->transform);
-    root_group->in_group = true;
+
+    if (root_group != NULL) {
+        displayio_group_update_transform(root_group, &self->transform);
+        root_group->in_group = true;
+    }
     self->current_group = root_group;
     self->full_refresh = true;
     common_hal_displayio_display_refresh_soon(self);
@@ -402,6 +409,10 @@ void displayio_display_update_backlight(displayio_display_obj_t* self) {
 }
 
 void release_display(displayio_display_obj_t* self) {
+    if (self->current_group != NULL) {
+        self->current_group->in_group = false;
+    }
+
     if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
         common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
