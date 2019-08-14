@@ -69,5 +69,27 @@ mp_obj_t prof_frame_update(const mp_code_state_t *code_state);
 
 void prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelude);
 
+
+// This section is for debugging the settrace feature itself
+// and should never make it in to any public build.
+#define PROF_INSTR_DEBUG_PRINT_ENABLE 0
+#if PROF_INSTR_DEBUG_PRINT_ENABLE
+
+    // If you really want to use this feature comment the following line.
+    #error "Compiling with internal debug features enabled! Comment out this line if you know what you are doing."
+
+    typedef struct _mp_dis_instruction_t {
+        mp_uint_t qstr_opname;
+        mp_uint_t arg;
+        mp_obj_t argobj;
+        mp_obj_t argobjex_cache;
+    } mp_dis_instruction_t;
+
+    void prof_print_instr(const byte* ip, mp_code_state_t *code_state);
+    #define PROF_INSTR_DEBUG_PRINT(current_ip) prof_print_instr((current_ip), code_state)
+#else
+    #define PROF_INSTR_DEBUG_PRINT(current_ip)
+#endif // PROF_INSTR_DEBUG_PRINT_ENABLE
+
 #endif // MICROPY_PY_SYS_SETTRACE
 #endif // MICROPY_INCLUDED_PY_PROFILING_H
