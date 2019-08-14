@@ -84,6 +84,10 @@ typedef struct _mp_code_state_t {
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;
     #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    struct _mp_code_state_t *prev_state;
+    struct _mp_obj_frame_t *frame;
+    #endif
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)

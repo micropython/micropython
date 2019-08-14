@@ -119,6 +119,11 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->prev = NULL;
     #endif
 
+    #if MICROPY_PY_SYS_SETTRACE
+    code_state->prev_state = NULL;
+    code_state->frame = NULL;
+    #endif
+
     // get params
     size_t n_state = mp_decode_uint(&code_state->ip);
     code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack

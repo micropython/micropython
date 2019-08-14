@@ -28,6 +28,26 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_SYS_SETTRACE
+typedef struct _mp_bytecode_prelude_t {
+    uint n_state;
+    uint n_exc_stack;
+    uint scope_flags;
+    uint n_pos_args;
+    uint n_kwonly_args;
+    uint n_def_pos_args;
+    // const char* source_file;
+    qstr qstr_source_file;
+    // const char* block_name;
+    qstr qstr_block_name;
+    const byte* code_info;
+    size_t code_info_size;
+    const byte* line_info;
+    const byte* locals;
+    const byte* bytecode;
+} mp_bytecode_prelude_t;
+#endif
+
 // These variables and functions glue the code emitters to the runtime.
 
 // These must fit in 8 bits; see scope.h
@@ -63,6 +83,14 @@ typedef struct _mp_raw_code_t {
     size_t fun_data_len;
     uint16_t n_obj;
     uint16_t n_raw_code;
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_bytecode_prelude_t prelude;
+    // `line_of_definition` is a Python source line where the raw_code was
+    // created e.g. MP_BC_MAKE_FUNCTION. This is different from lineno info
+    // stored in prelude, which provides line number for first statement of
+    // a function. Required to properly implement "call" trace event.
+    mp_uint_t line_of_definition;
+    #endif
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
     uint16_t n_qstr;

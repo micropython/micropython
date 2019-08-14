@@ -250,6 +250,12 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_globals;
 
     nlr_buf_t *nlr_top;
+
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_obj_t prof_trace_callback;
+    bool prof_callback_is_executing;
+    struct _mp_code_state_t *current_code_state;
+    #endif // MICROPY_PY_SYS_SETTRACE
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.
