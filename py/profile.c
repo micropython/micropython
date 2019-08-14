@@ -438,4 +438,547 @@ mp_obj_t mp_prof_instr_tick(mp_code_state_t *code_state, bool is_exception) {
     return top;
 }
 
+/******************************************************************************/
+// DEBUG
+
+// This section is for debugging the settrace feature itself, and is not intended
+// to be included in production/release builds.  The code structure for this block
+// was taken from py/showbc.c and should not be used as a reference.  To enable
+// this debug feature enable MICROPY_PROF_INSTR_DEBUG_PRINT_ENABLE in py/profile.h.
+#if MICROPY_PROF_INSTR_DEBUG_PRINT_ENABLE
+
+#include "runtime0.h"
+
+#define DECODE_UINT { \
+    unum = 0; \
+    do { \
+        unum = (unum << 7) + (*ip & 0x7f); \
+    } while ((*ip++ & 0x80) != 0); \
+}
+#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
+#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+
+#define DECODE_QSTR \
+    qst = ip[0] | ip[1] << 8; \
+    ip += 2;
+#define DECODE_PTR \
+    DECODE_UINT; \
+    ptr = (const byte*)const_table[unum]
+#define DECODE_OBJ \
+    DECODE_UINT; \
+    obj = (mp_obj_t)const_table[unum]
+
+typedef struct _mp_dis_instruction_t {
+    mp_uint_t qstr_opname;
+    mp_uint_t arg;
+    mp_obj_t argobj;
+    mp_obj_t argobjex_cache;
+} mp_dis_instruction_t;
+
+STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_table, mp_dis_instruction_t *instruction) {
+    mp_uint_t unum;
+    const byte* ptr;
+    mp_obj_t obj;
+    qstr qst;
+
+    instruction->qstr_opname = MP_QSTR_;
+    instruction->arg = 0;
+    instruction->argobj= mp_const_none;
+    instruction->argobjex_cache = mp_const_none;
+
+    switch (*ip++) {
+        case MP_BC_LOAD_CONST_FALSE:
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_FALSE;
+            break;
+
+        case MP_BC_LOAD_CONST_NONE:
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_NONE;
+            break;
+
+        case MP_BC_LOAD_CONST_TRUE:
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_TRUE;
+            break;
+
+        case MP_BC_LOAD_CONST_SMALL_INT: {
+            mp_int_t num = 0;
+            if ((ip[0] & 0x40) != 0) {
+                // Number is negative
+                num--;
+            }
+            do {
+                num = (num << 7) | (*ip & 0x7f);
+            } while ((*ip++ & 0x80) != 0);
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_SMALL_INT;
+            instruction->arg = num;
+            break;
+        }
+
+        case MP_BC_LOAD_CONST_STRING:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_STRING;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_LOAD_CONST_OBJ:
+            DECODE_OBJ;
+            instruction->qstr_opname = MP_QSTR_LOAD_CONST_OBJ;
+            instruction->arg = unum;
+            instruction->argobj= obj;
+            break;
+
+        case MP_BC_LOAD_NULL:
+            instruction->qstr_opname = MP_QSTR_LOAD_NULL;
+            break;
+
+        case MP_BC_LOAD_FAST_N:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_LOAD_FAST_N;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_LOAD_DEREF:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_LOAD_DEREF;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_LOAD_NAME:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_NAME;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
+            }
+            break;
+
+        case MP_BC_LOAD_GLOBAL:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_GLOBAL;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
+            }
+            break;
+
+        case MP_BC_LOAD_ATTR:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_ATTR;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
+            }
+            break;
+
+        case MP_BC_LOAD_METHOD:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_METHOD;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_LOAD_SUPER_METHOD:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_LOAD_SUPER_METHOD;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_LOAD_BUILD_CLASS:
+            instruction->qstr_opname = MP_QSTR_LOAD_BUILD_CLASS;
+            break;
+
+        case MP_BC_LOAD_SUBSCR:
+            instruction->qstr_opname = MP_QSTR_LOAD_SUBSCR;
+            break;
+
+        case MP_BC_STORE_FAST_N:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_STORE_FAST_N;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_STORE_DEREF:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_STORE_DEREF;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_STORE_NAME:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_STORE_NAME;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_STORE_GLOBAL:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_STORE_GLOBAL;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_STORE_ATTR:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_STORE_ATTR;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
+            }
+            break;
+
+        case MP_BC_STORE_SUBSCR:
+            instruction->qstr_opname = MP_QSTR_STORE_SUBSCR;
+            break;
+
+        case MP_BC_DELETE_FAST:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_DELETE_FAST;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_DELETE_DEREF:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_DELETE_DEREF;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_DELETE_NAME:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_DELETE_NAME;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_DELETE_GLOBAL:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_DELETE_GLOBAL;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_DUP_TOP:
+            instruction->qstr_opname = MP_QSTR_DUP_TOP;
+            break;
+
+        case MP_BC_DUP_TOP_TWO:
+            instruction->qstr_opname = MP_QSTR_DUP_TOP_TWO;
+            break;
+
+        case MP_BC_POP_TOP:
+            instruction->qstr_opname = MP_QSTR_POP_TOP;
+            break;
+
+        case MP_BC_ROT_TWO:
+            instruction->qstr_opname = MP_QSTR_ROT_TWO;
+            break;
+
+        case MP_BC_ROT_THREE:
+            instruction->qstr_opname = MP_QSTR_ROT_THREE;
+            break;
+
+        case MP_BC_JUMP:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_JUMP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_POP_JUMP_IF_TRUE:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_POP_JUMP_IF_TRUE;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_POP_JUMP_IF_FALSE:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_POP_JUMP_IF_FALSE;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_JUMP_IF_TRUE_OR_POP:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_JUMP_IF_TRUE_OR_POP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_JUMP_IF_FALSE_OR_POP:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_JUMP_IF_FALSE_OR_POP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_SETUP_WITH:
+            DECODE_ULABEL; // loop-like labels are always forward
+            instruction->qstr_opname = MP_QSTR_SETUP_WITH;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_WITH_CLEANUP:
+            instruction->qstr_opname = MP_QSTR_WITH_CLEANUP;
+            break;
+
+        case MP_BC_UNWIND_JUMP:
+            DECODE_SLABEL;
+            instruction->qstr_opname = MP_QSTR_UNWIND_JUMP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_SETUP_EXCEPT:
+            DECODE_ULABEL; // except labels are always forward
+            instruction->qstr_opname = MP_QSTR_SETUP_EXCEPT;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_SETUP_FINALLY:
+            DECODE_ULABEL; // except labels are always forward
+            instruction->qstr_opname = MP_QSTR_SETUP_FINALLY;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_END_FINALLY:
+            // if TOS is an exception, reraises the exception (3 values on TOS)
+            // if TOS is an integer, does something else
+            // if TOS is None, just pops it and continues
+            // else error
+            instruction->qstr_opname = MP_QSTR_END_FINALLY;
+            break;
+
+        case MP_BC_GET_ITER:
+            instruction->qstr_opname = MP_QSTR_GET_ITER;
+            break;
+
+        case MP_BC_GET_ITER_STACK:
+            instruction->qstr_opname = MP_QSTR_GET_ITER_STACK;
+            break;
+
+        case MP_BC_FOR_ITER:
+            DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
+            instruction->qstr_opname = MP_QSTR_FOR_ITER;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_BUILD_TUPLE:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_BUILD_TUPLE;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_BUILD_LIST:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_BUILD_LIST;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_BUILD_MAP:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_BUILD_MAP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_STORE_MAP:
+            instruction->qstr_opname = MP_QSTR_STORE_MAP;
+            break;
+
+        case MP_BC_BUILD_SET:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_BUILD_SET;
+            instruction->arg = unum;
+            break;
+
+        #if MICROPY_PY_BUILTINS_SLICE
+        case MP_BC_BUILD_SLICE:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_BUILD_SLICE;
+            instruction->arg = unum;
+            break;
+        #endif
+
+        case MP_BC_STORE_COMP:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_STORE_COMP;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_UNPACK_SEQUENCE:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_UNPACK_SEQUENCE;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_UNPACK_EX:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_UNPACK_EX;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_MAKE_FUNCTION:
+            DECODE_PTR;
+            instruction->qstr_opname = MP_QSTR_MAKE_FUNCTION;
+            instruction->arg = unum;
+            instruction->argobj= mp_obj_new_int_from_ull((uint64_t)ptr);
+            break;
+
+        case MP_BC_MAKE_FUNCTION_DEFARGS:
+            DECODE_PTR;
+            instruction->qstr_opname = MP_QSTR_MAKE_FUNCTION_DEFARGS;
+            instruction->arg = unum;
+            instruction->argobj= mp_obj_new_int_from_ull((uint64_t)ptr);
+            break;
+
+        case MP_BC_MAKE_CLOSURE: {
+            DECODE_PTR;
+            mp_uint_t n_closed_over = *ip++;
+            instruction->qstr_opname = MP_QSTR_MAKE_CLOSURE;
+            instruction->arg = unum;
+            instruction->argobj= mp_obj_new_int_from_ull((uint64_t)ptr);
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(n_closed_over);
+            break;
+        }
+
+        case MP_BC_MAKE_CLOSURE_DEFARGS: {
+            DECODE_PTR;
+            mp_uint_t n_closed_over = *ip++;
+            instruction->qstr_opname = MP_QSTR_MAKE_CLOSURE_DEFARGS;
+            instruction->arg = unum;
+            instruction->argobj= mp_obj_new_int_from_ull((uint64_t)ptr);
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(n_closed_over);
+            break;
+        }
+
+        case MP_BC_CALL_FUNCTION:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_CALL_FUNCTION;
+            instruction->arg = unum & 0xff;
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT((unum >> 8) & 0xff);
+            break;
+
+        case MP_BC_CALL_FUNCTION_VAR_KW:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_CALL_FUNCTION_VAR_KW;
+            instruction->arg = unum & 0xff;
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT((unum >> 8) & 0xff);
+            break;
+
+        case MP_BC_CALL_METHOD:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_CALL_METHOD;
+            instruction->arg = unum & 0xff;
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT((unum >> 8) & 0xff);
+            break;
+
+        case MP_BC_CALL_METHOD_VAR_KW:
+            DECODE_UINT;
+            instruction->qstr_opname = MP_QSTR_CALL_METHOD_VAR_KW;
+            instruction->arg = unum & 0xff;
+            instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT((unum >> 8) & 0xff);
+            break;
+
+        case MP_BC_RETURN_VALUE:
+            instruction->qstr_opname = MP_QSTR_RETURN_VALUE;
+            break;
+
+        case MP_BC_RAISE_VARARGS:
+            unum = *ip++;
+            instruction->qstr_opname = MP_QSTR_RAISE_VARARGS;
+            instruction->arg = unum;
+            break;
+
+        case MP_BC_YIELD_VALUE:
+            instruction->qstr_opname = MP_QSTR_YIELD_VALUE;
+            break;
+
+        case MP_BC_YIELD_FROM:
+            instruction->qstr_opname = MP_QSTR_YIELD_FROM;
+            break;
+
+        case MP_BC_IMPORT_NAME:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_IMPORT_NAME;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_IMPORT_FROM:
+            DECODE_QSTR;
+            instruction->qstr_opname = MP_QSTR_IMPORT_FROM;
+            instruction->arg = qst;
+            instruction->argobj= MP_OBJ_NEW_QSTR(qst);
+            break;
+
+        case MP_BC_IMPORT_STAR:
+            instruction->qstr_opname = MP_QSTR_IMPORT_STAR;
+            break;
+
+        default:
+            if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + 64) {
+                instruction->qstr_opname = MP_QSTR_LOAD_CONST_SMALL_INT;
+                instruction->arg = (mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - 16;
+            } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + 16) {
+                instruction->qstr_opname = MP_QSTR_LOAD_FAST;
+                instruction->arg = (mp_uint_t)ip[-1] - MP_BC_LOAD_FAST_MULTI;
+            } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
+                instruction->qstr_opname = MP_QSTR_STORE_FAST;
+                instruction->arg = (mp_uint_t)ip[-1] - MP_BC_STORE_FAST_MULTI;
+            } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
+                instruction->qstr_opname = MP_QSTR_UNARY_OP;
+                instruction->arg = (mp_uint_t)ip[-1] - MP_BC_UNARY_OP_MULTI;
+            } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
+                mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
+                instruction->qstr_opname = MP_QSTR_BINARY_OP;
+                instruction->arg = op;
+            } else {
+                mp_printf(&mp_plat_print, "code %p, opcode 0x%02x not implemented\n", ip-1, ip[-1]);
+                assert(0);
+                return ip;
+            }
+            break;
+    }
+
+    return ip;
+}
+
+void mp_prof_print_instr(const byte* ip, mp_code_state_t *code_state) {
+    mp_dis_instruction_t _instruction, *instruction = &_instruction;
+    mp_prof_opcode_decode(ip, code_state->fun_bc->rc->const_table, instruction);
+    const mp_raw_code_t *rc = code_state->fun_bc->rc;
+    const mp_bytecode_prelude_t *prelude = &rc->prelude;
+
+    mp_uint_t offset = ip - prelude->opcodes;
+    mp_printf(&mp_plat_print, "instr");
+
+    /* long path */ if (1) {
+        mp_printf(&mp_plat_print,
+            "@0x%p:%q:%q+0x%04x:%d",
+            ip,
+            prelude->qstr_source_file,
+            prelude->qstr_block_name,
+            offset,
+            mp_prof_bytecode_lineno(rc, offset)
+        );
+    }
+
+    /* bytecode */ if (0) {
+        mp_printf(&mp_plat_print, " %02x %02x %02x %02x", ip[0], ip[1], ip[2], ip[3]);
+    }
+
+    mp_printf(&mp_plat_print, " 0x%02x %q [%d]", *ip, instruction->qstr_opname, instruction->arg);
+
+    if (instruction->argobj != mp_const_none) {
+        mp_printf(&mp_plat_print, " $");
+        mp_obj_print_helper(&mp_plat_print, instruction->argobj, PRINT_REPR);
+    }
+    if (instruction->argobjex_cache != mp_const_none) {
+        mp_printf(&mp_plat_print, " #");
+        mp_obj_print_helper(&mp_plat_print, instruction->argobjex_cache, PRINT_REPR);
+    }
+
+    mp_printf(&mp_plat_print, "\n");
+}
+
+#endif // MICROPY_PROF_INSTR_DEBUG_PRINT_ENABLE
+
 #endif // MICROPY_PY_SYS_SETTRACE
