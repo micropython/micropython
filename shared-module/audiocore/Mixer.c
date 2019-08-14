@@ -123,13 +123,13 @@ uint32_t add8unsigned(uint32_t a, uint32_t b) {
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
-        int8_t ai = (a >> (sizeof(uint8_t) * 8 * i)) - 128;
-        int8_t bi = (b >> (sizeof(uint8_t) * 8 * i)) - 128;
-        int32_t intermediate = (int32_t) ai + bi;
+        uint8_t ai = (a >> (sizeof(uint8_t) * 8 * i));
+        uint8_t bi = (b >> (sizeof(uint8_t) * 8 * i));
+        int32_t intermediate = (int32_t) (ai + bi) / 2;
         if (intermediate > UCHAR_MAX) {
             intermediate = UCHAR_MAX;
         }
-        result |= ((uint8_t) intermediate + 128) << (sizeof(uint8_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
     }
     return result;
     #endif
@@ -179,64 +179,129 @@ uint32_t add16unsigned(uint32_t a, uint32_t b) {
 
 //TODO:
 static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
-	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    int32_t hi, lo;
+    int32_t bits = 16; // saturate to 16 bits
+    int32_t shift = 0; // shift is done automatically
+    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+    asm volatile("pkhbt %0, %1, %2, lsl #8" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
-    val = __USUB8(val, 0x80808080);
-	#else
-	uint32_t result = 0;
-	for (int8_t i = 0; i < 4; i++) {
-		int8_t ai = (val >> (sizeof(uint8_t) * 8 * i)) - 128;
-	}
-	return result;
-	#endif
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float) mul / (float) ((1<<15)-1);
+    for (int8_t i = 0; i < 4; i++) {
+        uint8_t ai = val >> (sizeof(uint8_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        }
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
+    }
+
+    return result;
+    #endif
 }
 
 //TODO:
 static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
-	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-	return val;
-	#else
-	uint32_t result = 0;
-	for (int8_t i = 0; i < 4; i++) {
-		int8_t ai = val >> (sizeof(int8_t) * 8 * i);
-	}
-	return result;
-	#endif
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    int32_t hi, lo;
+    int32_t bits = 16; // saturate to 16 bits
+    int32_t shift = 0; // shift is done automatically
+    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+    asm volatile("pkhbt %0, %1, %2, lsl #8" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    return val;
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 4; i++) {
+        int16_t ai = val >> (sizeof(int8_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > CHAR_MAX) {
+            intermediate = CHAR_MAX;
+        } else if (intermediate < CHAR_MIN) {
+            intermediate = CHAR_MIN;
+        }
+        result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 //TODO:
 static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
-	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    int32_t hi, lo;
+    asm volatile("umaal %0, %1, %2, %3" : "=r" (lo), "=r" (hi) : "r" (val), "r" (mul)); // unsigned accumulation mult (res=64bit)
+    asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
-	val = __USUB16(val, 0x80008000);
-	#else
-	uint32_t result = 0;
-	for (int8_t i = 0; i < 2; i++) {
-		int16_t ai = (val >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
-	}
-	return result;
-	#endif
+    #else
+    //mp_printf(&mp_plat_print, "mult16signed called:\n\tval: %u\t mul: %u\n", val, mul);
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t) intermediate) + 0x8000) << (sizeof(int16_t) * 8 * i);
+    }
+    //mp_printf(&mp_plat_print, "\t mod_mul: %f\t result: %u\n", (double)mod_mul, result);
+    return val;
+    #endif
 }
 
 static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
-	#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-	int32_t hi, lo;
-	int32_t bits = 16; // saturate to 16 bits
-	int32_t shift = 0; // shift is done automatically
-	asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
-	asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
-	asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
-	asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
-	asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    int32_t hi, lo;
+    int32_t bits = 16; // saturate to 16 bits
+    int32_t shift = 0; // shift is done automatically
+    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+    asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
-	#else
-	uint32_t result = 0;
-	//TODO:
-	for (int8_t i = 0; i < 2; i++) {
-		int16_t ai = val >> (sizeof(int16_t) * 8 * i);
-	}
-	return result;
-	#endif
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = val >> (sizeof(int16_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t) intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
 }
 
 audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
@@ -311,19 +376,18 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
 
                 // apply the mixer level
             	if (!self->samples_signed) {
-					if (self->bits_per_sample == 8) {
-						sample_value = mult8unsigned(sample_value, voice->level);
-					} else {
-						sample_value = mult16unsigned(sample_value, voice->level);
-					}
-				}
-				else{
-					if (self->bits_per_sample == 8) {
-						sample_value = mult8signed(sample_value, voice->level);
-					} else {
-						sample_value = mult16signed(sample_value, voice->level);
-					}
-				}
+                    if (self->bits_per_sample == 8) {
+                        sample_value = mult8unsigned(sample_value, voice->level);
+                    } else {
+                        sample_value = mult16unsigned(sample_value, voice->level);
+                    }
+                } else {
+                    if (self->bits_per_sample == 8) {
+                        sample_value = mult8signed(sample_value, voice->level);
+                    } else {
+                        sample_value = mult16signed(sample_value, voice->level);
+                    }
+                }
 
                 if (!voices_active) {
                     word_buffer[i] = sample_value;
