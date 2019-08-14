@@ -284,6 +284,9 @@ STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, int stack_adj, byte 
     assert(c == MP_ALIGN(c, sizeof(void*)));
     *c = rc;
     #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    rc->line_of_definition = emit->last_source_line;
+    #endif
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits

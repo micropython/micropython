@@ -86,6 +86,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	stackctrl.o \
 	argcheck.o \
 	warning.o \
+	profile.o \
 	map.o \
 	obj.o \
 	objarray.o \

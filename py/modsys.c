@@ -35,6 +35,11 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 
+#if MICROPY_PY_SYS_SETTRACE
+#include "py/objmodule.h"
+#include "py/profile.h"
+#endif
+
 #if MICROPY_PY_SYS
 
 // defined per port; type of these is irrelevant, just need pointer
@@ -156,6 +161,14 @@ STATIC mp_obj_t mp_sys_atexit(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
 #endif
 
+#if MICROPY_PY_SYS_SETTRACE
+// settrace(tracefunc): Set the system’s trace function.
+STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
+    return mp_prof_settrace(obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
+#endif // MICROPY_PY_SYS_SETTRACE
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -188,6 +201,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_EXIT
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
+    #endif
+
+    #if MICROPY_PY_SYS_SETTRACE
+    { MP_ROM_QSTR(MP_QSTR_settrace), MP_ROM_PTR(&mp_sys_settrace_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES

@@ -34,6 +34,7 @@
 #include "py/emitglue.h"
 #include "py/runtime0.h"
 #include "py/bc.h"
+#include "py/profile.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -52,6 +53,9 @@ mp_uint_t mp_verbose_flag = 0;
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
+    #if MICROPY_PY_SYS_SETTRACE
+    rc->line_of_definition = 0;
+    #endif
     return rc;
 }
 
@@ -73,6 +77,11 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->fun_data_len = len;
     rc->n_obj = n_obj;
     rc->n_raw_code = n_raw_code;
+    #endif
+
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_bytecode_prelude_t *prelude = &rc->prelude;
+    mp_prof_extract_prelude(code, prelude);
     #endif
 
 #ifdef DEBUG_PRINT
@@ -172,6 +181,12 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
                 ((mp_obj_base_t*)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
             }
+
+            #if MICROPY_PY_SYS_SETTRACE
+            mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);
+            self_fun->rc = rc;
+            #endif
+
             break;
     }
 

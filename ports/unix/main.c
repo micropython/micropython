@@ -655,7 +655,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    #endif
+
     #if MICROPY_PY_SYS_ATEXIT
+    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
     if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
         mp_call_function_0(MP_STATE_VM(sys_exitfunc));
     }

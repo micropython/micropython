@@ -91,6 +91,10 @@
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
+#if MICROPY_PY_SYS_SETTRACE
+#define MICROPY_PERSISTENT_CODE_SAVE (1)
+#define MICROPY_COMP_CONST (0)
+#endif
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else

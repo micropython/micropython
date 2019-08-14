@@ -60,6 +60,20 @@
 //  const0          : obj
 //  constN          : obj
 
+typedef struct _mp_bytecode_prelude_t {
+    uint n_state;
+    uint n_exc_stack;
+    uint scope_flags;
+    uint n_pos_args;
+    uint n_kwonly_args;
+    uint n_def_pos_args;
+    qstr qstr_block_name;
+    qstr qstr_source_file;
+    const byte *line_info;
+    const byte *locals;
+    const byte *opcodes;
+} mp_bytecode_prelude_t;
+
 // Exception stack entry
 typedef struct _mp_exc_stack_t {
     const byte *handler;
@@ -83,6 +97,10 @@ typedef struct _mp_code_state_t {
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;
+    #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    struct _mp_code_state_t *prev_state;
+    struct _mp_obj_frame_t *frame;
     #endif
     // Variable-length
     mp_obj_t state[0];
