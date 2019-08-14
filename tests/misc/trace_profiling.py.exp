@@ -1,0 +1,1193 @@
+this is micropython
+### trace_handler::main event: call
+ 0:   @__main__:do => miscmisc/trace_profiling.py:92
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:do => miscmisc/trace_profiling.py:94
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+Who loves the sun?
+### trace_handler::main event: line
+ 0:   @__main__:do => miscmisc/trace_profiling.py:95
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:86
+ 1:   @__main__:do => miscmisc/trace_profiling.py:95
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Alice event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:87
+ 1:   @__main__:do => miscmisc/trace_profiling.py:95
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Alice event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:do => miscmisc/trace_profiling.py:95
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:86
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:do => miscmisc/trace_profiling.py:95
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Bob event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:87
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:do => miscmisc/trace_profiling.py:95
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Bob event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:do => miscmisc/trace_profiling.py:95
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:86
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:do => miscmisc/trace_profiling.py:95
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:87
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:do => miscmisc/trace_profiling.py:95
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:do => miscmisc/trace_profiling.py:95
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:86
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 4:   @__main__:do => miscmisc/trace_profiling.py:95
+ 5:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:87
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 4:   @__main__:do => miscmisc/trace_profiling.py:95
+ 5:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:88
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 4:   @__main__:do => miscmisc/trace_profiling.py:95
+ 5:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:88
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 4:   @__main__:do => miscmisc/trace_profiling.py:95
+ 5:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 3:   @__main__:do => miscmisc/trace_profiling.py:95
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Bob event: return
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 2:   @__main__:do => miscmisc/trace_profiling.py:95
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::Alice event: return
+ 0:   @__main__:factorial => miscmisc/trace_profiling.py:90
+ 1:   @__main__:do => miscmisc/trace_profiling.py:95
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+Not every- 6
+### trace_handler::main event: line
+ 0:   @__main__:do => miscmisc/trace_profiling.py:97
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:1
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:1
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+Now comes the language constructions tests.
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:4
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:11
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:19
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:35
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:46
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:50
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:77
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:82
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:TLClass => misc/trace_subdir/trace_generic.py:88
+ 1:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 2:   @__main__:do => miscmisc/trace_profiling.py:97
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TLClass => misc/trace_subdir/trace_generic.py:88
+ 1:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 2:   @__main__:do => miscmisc/trace_profiling.py:97
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TLClass => misc/trace_subdir/trace_generic.py:89
+ 1:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 2:   @__main__:do => miscmisc/trace_profiling.py:97
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TLClass => misc/trace_subdir/trace_generic.py:91
+ 1:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 2:   @__main__:do => miscmisc/trace_profiling.py:97
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:TLClass => misc/trace_subdir/trace_generic.py:91
+ 1:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:88
+ 2:   @__main__:do => miscmisc/trace_profiling.py:97
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:93
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:115
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:127
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+And it's done!
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:<module> => misc/trace_subdir/trace_generic.py:127
+ 1:   @__main__:do => miscmisc/trace_profiling.py:97
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:do => miscmisc/trace_profiling.py:98
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:115
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:4
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:5
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:8
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_sub_func => misc/trace_subdir/trace_generic.py:5
+ 1:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:8
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_sub_func => misc/trace_subdir/trace_generic.py:6
+ 1:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:8
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_function
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_sub_func => misc/trace_subdir/trace_generic.py:6
+ 1:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:8
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_func => misc/trace_subdir/trace_generic.py:8
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:116
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:117
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_closure => misc/trace_subdir/trace_generic.py:11
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:117
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_closure => misc/trace_subdir/trace_generic.py:13
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:117
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_closure => misc/trace_subdir/trace_generic.py:16
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:117
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_closure => misc/trace_subdir/trace_generic.py:16
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:117
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:118
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_closure => misc/trace_subdir/trace_generic.py:13
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:118
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_closure => misc/trace_subdir/trace_generic.py:14
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:118
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_closure
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_closure => misc/trace_subdir/trace_generic.py:14
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:118
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:19
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:21
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:22
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:23
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:22
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:23
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:22
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:23
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:22
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:23
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:24
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_for_loop 3
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:27
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:28
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:29
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:31
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:30
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:31
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:30
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:31
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:30
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:31
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:32
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_while_loop 3
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_loop => misc/trace_subdir/trace_generic.py:32
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:119
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:35
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:36
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:37
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: exception
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:37
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:39
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:40
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:43
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_exception => misc/trace_subdir/trace_generic.py:43
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:120
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:46
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:<listcomp> => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_listcomp [0, 1, 2]
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_listcomp => misc/trace_subdir/trace_generic.py:47
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:121
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:50
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:51
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:57
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:58
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:59
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:61
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:51
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:61
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:61
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:61
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:55
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:55
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: exception
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:65
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:67
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:68
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_generator 7 8
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:70
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:71
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:51
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:73
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:52
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:73
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:53
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:73
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:54
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:55
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:make_gen => misc/trace_subdir/trace_generic.py:55
+ 1:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:72
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:74
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+7
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_generator => misc/trace_subdir/trace_generic.py:74
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:122
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:77
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:78
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:79
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:<lambda> => misc/trace_subdir/trace_generic.py:78
+ 1:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:79
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:<lambda> => misc/trace_subdir/trace_generic.py:78
+ 1:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:79
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:<lambda> => misc/trace_subdir/trace_generic.py:78
+ 1:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:79
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+30
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_lambda => misc/trace_subdir/trace_generic.py:79
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:123
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:93
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:94
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:94
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:95
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:96
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:100
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:103
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:106
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:TestClass => misc/trace_subdir/trace_generic.py:106
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:94
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:108
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:109
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:method => misc/trace_subdir/trace_generic.py:96
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:109
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:method => misc/trace_subdir/trace_generic.py:97
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:109
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_class_method
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:method => misc/trace_subdir/trace_generic.py:98
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:109
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:method => misc/trace_subdir/trace_generic.py:98
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:109
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:110
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:100
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:110
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:101
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:110
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:101
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:110
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_class_property -8
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:111
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:prprty_setter => misc/trace_subdir/trace_generic.py:103
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:111
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:prprty_setter => misc/trace_subdir/trace_generic.py:104
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:111
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:prprty_setter => misc/trace_subdir/trace_generic.py:104
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:111
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:112
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:100
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:112
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:101
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:112
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:prprty_getter => misc/trace_subdir/trace_generic.py:101
+ 1:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:112
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+test_class_property 12
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_class => misc/trace_subdir/trace_generic.py:112
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:124
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:82
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:1
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:1
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+Yep, I got imported.
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:3
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:4
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:5
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:7
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:8
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:9
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:10
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:14
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:17
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:20
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:23
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+Yep, got here
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_importme:<module> => misc/trace_subdir/trace_importme.py:23
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:83
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:84
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_importme:dummy => misc/trace_subdir/trace_importme.py:14
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:84
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:dummy => misc/trace_subdir/trace_importme.py:15
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:84
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_importme:dummy => misc/trace_subdir/trace_importme.py:15
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:84
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:85
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: call
+ 0:   @trace_subdir.trace_importme:saysomething => misc/trace_subdir/trace_importme.py:17
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:85
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @trace_subdir.trace_importme:saysomething => misc/trace_subdir/trace_importme.py:18
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:85
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+There, I said it.
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_importme:saysomething => misc/trace_subdir/trace_importme.py:18
+ 1:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:85
+ 2:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 3:   @__main__:do => miscmisc/trace_profiling.py:98
+ 4:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:test_import => misc/trace_subdir/trace_generic.py:85
+ 1:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 2:   @__main__:do => miscmisc/trace_profiling.py:98
+ 3:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @trace_subdir.trace_generic:run_tests => misc/trace_subdir/trace_generic.py:125
+ 1:   @__main__:do => miscmisc/trace_profiling.py:98
+ 2:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: line
+ 0:   @__main__:do => miscmisc/trace_profiling.py:99
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+### trace_handler::main event: return
+ 0:   @__main__:do => miscmisc/trace_profiling.py:99
+ 1:   @__main__:<module> => miscmisc/trace_profiling.py:103
+nothing to trace here
+
+------------------ script exited ------------------
+Total traces executed:  224
