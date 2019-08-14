@@ -48,7 +48,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t set_column_window_command, uint16_t set_row_window_command,
         uint16_t set_current_column_command, uint16_t set_current_row_command,
-        uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t third_color, uint16_t refresh_display_command,
+        uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command,
         const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool always_toggle_chip_select) {
     self->colorspace.depth = 1;
     self->colorspace.grayscale = true;
@@ -56,10 +56,10 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     self->colorspace.bytes_per_cell = 1;
     self->colorspace.reverse_pixels_in_byte = true;
 
-    if (third_color != 0x000000) {
+    if (highlight_color != 0x000000) {
         self->colorspace.tricolor = true;
-        self->colorspace.tricolor_hue = displayio_colorconverter_compute_hue(third_color);
-        self->colorspace.tricolor_luma = displayio_colorconverter_compute_luma(third_color);
+        self->colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
+        self->colorspace.tricolor_luma = displayio_colorconverter_compute_luma(highlight_color);
     }
 
     self->set_column_window_command = set_column_window_command;
@@ -174,6 +174,11 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         never_reset_pin_number(busy_pin->number);
     }
 
+    // Clear the color memory if it isn't in use.
+    if (highlight_color == 0x00 && write_color_ram_command != NO_COMMAND) {
+        // TODO: Clear
+    }
+
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_displayio_epaperdisplay_show(self, &circuitpython_splash);
@@ -198,12 +203,7 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self
         self->current_group = root_group;
     }
     self->full_refresh = true;
-    common_hal_displayio_epaperdisplay_refresh_soon(self);
     return true;
-}
-
-void common_hal_displayio_epaperdisplay_refresh_soon(displayio_epaperdisplay_obj_t* self) {
-    self->refresh = true;
 }
 
 const displayio_area_t* displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
@@ -359,21 +359,23 @@ void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t* self) 
     self->last_refresh = ticks_ms;
 }
 
-bool displayio_epaperdisplay_frame_queued(displayio_epaperdisplay_obj_t* self) {
+void displayio_epaperdisplay_background_task(displayio_epaperdisplay_obj_t* self) {
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
         if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
-        } else {
-            return false;
         }
     }
-    if (self->current_group == NULL) {
-        return false;
-    }
+}
+
+uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self) {
     // Refresh at seconds per frame rate.
-    return (ticks_ms - self->last_refresh) > self->milliseconds_per_frame;
+    uint32_t elapsed_time = ticks_ms - self->last_refresh;
+    if (elapsed_time > self->milliseconds_per_frame) {
+        return 0;
+    }
+    return self->milliseconds_per_frame - elapsed_time;
 }
 
 void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self) {
@@ -393,7 +395,6 @@ void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self)
 
 void displayio_epaperdisplay_send_pixels(displayio_epaperdisplay_obj_t* self, uint8_t* pixels, uint32_t length) {
 }
-
 
 bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, const displayio_area_t* area) {
     uint16_t buffer_size = 128; // In uint32_ts
@@ -498,6 +499,42 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
     }
 
     return true;
+}
+
+bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* self) {
+    
+    if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
+        if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
+            self->refreshing = false;
+            // Run stop sequence but don't wait for busy because busy is set when sleeping.
+            send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
+        } else {
+            return false;
+        }
+    }
+    if (self->current_group == NULL) {
+        return false;
+    }
+    // Refresh at seconds per frame rate.
+    if (ticks_ms - self->last_refresh) > self->milliseconds_per_frame;
+
+    if (displayio_epaperdisplay_get_time_to_refresh(display) > 0) {
+        return false;
+    }
+    if (!displayio_epaperdisplay_bus_free(display)) {
+        // Can't acquire display bus; skip updating this display. Try next display.
+        continue;
+    }
+    const displayio_area_t* current_area = displayio_epaperdisplay_get_refresh_areas(display);
+    if (current_area == NULL) {
+        continue;
+    }
+    displayio_epaperdisplay_start_refresh(display);
+    while (current_area != NULL) {
+        displayio_epaperdisplay_refresh_area(display, current_area);
+        current_area = current_area->next;
+    }
+    displayio_epaperdisplay_finish_refresh(display);
 }
 
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {

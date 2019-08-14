@@ -75,18 +75,12 @@ typedef struct {
     bool busy_state;
     bool black_bits_inverted;
     bool color_bits_inverted;
-    bool refresh;
     bool refreshing;
     bool full_refresh; // New group means we need to refresh the whole display.
     bool always_toggle_chip_select;
 } displayio_epaperdisplay_obj_t;
 
-bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* display, const displayio_area_t* area);
-void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t* self);
-const displayio_area_t* displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self);
-bool displayio_epaperdisplay_fill_area(displayio_epaperdisplay_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
-bool displayio_epaperdisplay_clip_area(displayio_epaperdisplay_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped);
-bool displayio_epaperdisplay_bus_free(displayio_epaperdisplay_obj_t *self);
+void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H

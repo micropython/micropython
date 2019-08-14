@@ -63,7 +63,7 @@ typedef struct {
     uint8_t set_column_command;
     uint8_t set_row_command;
     uint8_t write_ram_command;
-    bool refresh;
+    bool auto_refresh;
     bool single_byte_bounds;
     bool data_as_commands;
     bool auto_brightness;
@@ -71,11 +71,7 @@ typedef struct {
     bool full_refresh; // New group means we need to refresh the whole display.
 } displayio_display_obj_t;
 
-void displayio_display_start_refresh(displayio_display_obj_t* self);
-const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self);
-bool displayio_display_fill_area(displayio_display_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
-void displayio_display_update_backlight(displayio_display_obj_t* self);
-bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped);
+void displayio_display_background(displayio_display_obj_t* self);
 void release_display(displayio_display_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

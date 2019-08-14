@@ -212,27 +212,42 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|   .. method:: refresh_soon()
+//|   .. method:: refresh(*, target_frames_per_second=None, minimum_frames_per_second=1)
 //|
-//|     Queues up a display refresh that happens in the background.
+//|     Waits for the target frame rate and then refreshes the display. If the call is too late for the given target frame rate, then the refresh returns immediately without updating the screen to hopefully help getting caught up. If the current frame rate is below the minimum frame rate, then an exception will be raised.
 //|
-STATIC mp_obj_t displayio_display_obj_refresh_soon(mp_obj_t self_in) {
+STATIC mp_obj_t displayio_display_obj_refresh(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
-    common_hal_displayio_display_refresh_soon(self);
+    common_hal_displayio_display_refresh(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_refresh_soon_obj, displayio_display_obj_refresh_soon);
 
-//|   .. method:: wait_for_frame()
+//|   .. attribute:: auto_refresh
 //|
-//|     Waits until the next frame has been transmitted to the display unless the wait count is
-//|     behind the rendered frames. In that case, this will return immediately with the wait count.
+//|     True when the display is refreshed automatically.
 //|
-STATIC mp_obj_t displayio_display_obj_wait_for_frame(mp_obj_t self_in) {
+STATIC mp_obj_t displayio_display_obj_get_auto_refresh(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_wait_for_frame(self));
+    return mp_obj_new_bool(common_hal_displayio_display_get_auto_refresh(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_wait_for_frame_obj, displayio_display_obj_wait_for_frame);
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_auto_refresh_obj, displayio_display_obj_get_auto_refresh);
+
+STATIC mp_obj_t displayio_display_obj_set_auto_refresh(mp_obj_t self_in, mp_obj_t auto_refresh) {
+    displayio_display_obj_t *self = native_display(self_in);
+
+    common_hal_displayio_display_set_auto_refresh(self, mp_obj_is_true(auto_refresh));
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_auto_refresh_obj, displayio_display_obj_set_auto_refresh);
+
+const mp_obj_property_t displayio_display_auto_refresh_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_auto_refresh_obj,
+              (mp_obj_t)&displayio_display_set_auto_refresh_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 //|   .. attribute:: brightness
 //|
@@ -441,6 +456,8 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_display_refresh_soon_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_for_frame), MP_ROM_PTR(&displayio_display_wait_for_frame_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&displayio_display_fill_row_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_auto_refresh), MP_ROM_PTR(&displayio_display_auto_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },

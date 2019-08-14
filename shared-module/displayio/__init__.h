@@ -50,7 +50,7 @@ extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
 extern displayio_group_t circuitpython_splash;
 
-void displayio_refresh_displays(void);
+void displayio_background(void);
 void reset_displays(void);
 void displayio_gc_collect(void);
 

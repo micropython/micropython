@@ -221,10 +221,6 @@ bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_
     return true;
 }
 
-void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self) {
-    self->refresh = true;
-}
-
 const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self) {
     if (self->full_refresh) {
         self->area.next = NULL;
@@ -244,6 +240,118 @@ int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* sel
         RUN_BACKGROUND_TASKS;
     }
     return 0;
+}
+
+STATIC bool refresh_area(displayio_display_obj_t* display, const displayio_area_t* area) {
+    uint16_t buffer_size = 128; // In uint32_ts
+
+    displayio_area_t clipped;
+    // Clip the area to the display by overlapping the areas. If there is no overlap then we're done.
+    if (!displayio_display_clip_area(display, area, &clipped)) {
+        return true;
+    }
+    uint16_t subrectangles = 1;
+    uint16_t rows_per_buffer = displayio_area_height(&clipped);
+    uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / display->colorspace.depth;
+    uint16_t pixels_per_buffer = displayio_area_size(&clipped);
+    if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
+        rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
+        if (rows_per_buffer == 0) {
+            rows_per_buffer = 1;
+        }
+        // If pixels are packed by column then ensure rows_per_buffer is on a byte boundary.
+        if (display->colorspace.depth < 8 && !display->colorspace.pixels_in_byte_share_row) {
+            uint8_t pixels_per_byte = 8 / display->colorspace.depth;
+            if (rows_per_buffer % pixels_per_byte != 0) {
+                rows_per_buffer -= rows_per_buffer % pixels_per_byte;
+            }
+        }
+        subrectangles = displayio_area_height(&clipped) / rows_per_buffer;
+        if (displayio_area_height(&clipped) % rows_per_buffer != 0) {
+            subrectangles++;
+        }
+        pixels_per_buffer = rows_per_buffer * displayio_area_width(&clipped);
+        buffer_size = pixels_per_buffer / pixels_per_word;
+        if (pixels_per_buffer % pixels_per_word) {
+            buffer_size += 1;
+        }
+    }
+
+    // Allocated and shared as a uint32_t array so the compiler knows the
+    // alignment everywhere.
+    uint32_t buffer[buffer_size];
+    volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+    uint32_t mask[mask_length];
+    uint16_t remaining_rows = displayio_area_height(&clipped);
+
+    for (uint16_t j = 0; j < subrectangles; j++) {
+        displayio_area_t subrectangle = {
+            .x1 = clipped.x1,
+            .y1 = clipped.y1 + rows_per_buffer * j,
+            .x2 = clipped.x2,
+            .y2 = clipped.y1 + rows_per_buffer * (j + 1)
+        };
+        if (remaining_rows < rows_per_buffer) {
+            subrectangle.y2 = subrectangle.y1 + remaining_rows;
+        }
+        remaining_rows -= rows_per_buffer;
+
+        displayio_display_begin_transaction(display);
+        displayio_display_set_region_to_update(display, &subrectangle);
+        displayio_display_end_transaction(display);
+
+        uint16_t subrectangle_size_bytes;
+        if (display->colorspace.depth >= 8) {
+            subrectangle_size_bytes = displayio_area_size(&subrectangle) * (display->colorspace.depth / 8);
+        } else {
+            subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / display->colorspace.depth);
+        }
+
+        for (uint16_t k = 0; k < mask_length; k++) {
+            mask[k] = 0x00000000;
+        }
+        for (uint16_t k = 0; k < buffer_size; k++) {
+            buffer[k] = 0x00000000;
+        }
+
+        displayio_display_fill_area(display, &subrectangle, mask, buffer);
+
+        if (!displayio_display_begin_transaction(display)) {
+            // Can't acquire display bus; skip the rest of the data. Try next display.
+            return false;
+        }
+        displayio_display_send_pixels(display, (uint8_t*) buffer, subrectangle_size_bytes);
+        displayio_display_end_transaction(display);
+
+        // TODO(tannewt): Make refresh displays faster so we don't starve other
+        // background tasks.
+        usb_background();
+    }
+    return true;
+}
+
+STATIC void refresh_display(displayio_display_obj_t* self) {
+    if (!displayio_display_begin_transaction(self)) {
+        // Can't acquire display bus; skip updating this display. Try next display.
+        continue;
+    }
+    displayio_display_end_transaction(self);
+    displayio_display_start_refresh(self);
+    const displayio_area_t* current_area = displayio_display_get_refresh_areas(self);
+    while (current_area != NULL) {
+        refresh_area(self, current_area);
+        current_area = current_area->next;
+    }
+    displayio_display_finish_refresh(self);
+}
+
+void common_hal_displayio_display_refresh(displayio_display_obj_t* self) {
+    // Time to refresh at specified frame rate?
+    while (!displayio_display_frame_queued(self)) {
+        // Too soon. Try next display.
+        continue;
+    }
+    refresh_display(self);
 }
 
 bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self) {
@@ -409,6 +517,14 @@ void displayio_display_update_backlight(displayio_display_obj_t* self) {
     common_hal_displayio_display_set_brightness(self, 1.0);
 
     self->last_backlight_refresh = ticks_ms;
+}
+
+void displayio_display_background(displayio_display_obj_t* self) {
+    displayio_display_update_backlight(self);
+
+    if (self->auto_refresh && (ticks_ms - self->last_refresh) > 16) {
+        display_refresh(self);
+    }
 }
 
 void release_display(displayio_display_obj_t* self) {
