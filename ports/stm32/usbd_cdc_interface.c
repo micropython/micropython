@@ -142,7 +142,7 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
                 // configure its serial port (in most cases to disable local echo)
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTING;
                 usbd_cdc_connect_tx_timer = 8; // wait for 8 SOF IRQs
-                #if defined(STM32L0) || defined(STM32WB)
+                #if !MICROPY_HW_USB_IS_MULTI_OTG
                 USB->CNTR |= USB_CNTR_SOFM;
                 #else
                 PCD_HandleTypeDef *hpcd = cdc->base.usbd->pdev->pData;
@@ -219,7 +219,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         --usbd_cdc_connect_tx_timer;
     } else {
         usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
-        #if defined(STM32L0) || defined(STM32WB)
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
         USB->CNTR &= ~USB_CNTR_SOFM;
         #else
         hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;

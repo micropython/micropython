@@ -287,6 +287,13 @@
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
+// Whether the USB peripheral is device-only, or multiple OTG
+#if defined(STM32L0) || defined(STM32WB)
+#define MICROPY_HW_USB_IS_MULTI_OTG (0)
+#else
+#define MICROPY_HW_USB_IS_MULTI_OTG (1)
+#endif
+
 // Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
 #ifndef MICROPY_HW_USB_CDC_NUM
 #define MICROPY_HW_USB_CDC_NUM (1)
