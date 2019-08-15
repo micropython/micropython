@@ -34,7 +34,6 @@
 
 #include "tusb.h"
 
-
 // Serial number as hex characters. This writes directly to the USB
 // descriptor.
 extern uint16_t usb_serial_number[1 + COMMON_HAL_MCU_PROCESSOR_UID_LENGTH * 2];
@@ -43,9 +42,6 @@ void load_serial_number(void) {
     // create serial number based on device unique id
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
-    for (int i=0; i<2; i++) {
-        ((uint32_t*) raw_id)[i] = 0;
-    }
 
     static const char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                     'A', 'B', 'C', 'D', 'E', 'F'};
