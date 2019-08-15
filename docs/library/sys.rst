@@ -15,6 +15,19 @@ Functions
    function raise as `SystemExit` exception. If an argument is given, its
    value given as an argument to `SystemExit`.
 
+.. function:: atexit(func)
+
+   Register *func* to be called upon termination.  *func* must be a callable
+   that takes no arguments, or ``None`` to disable the call.  The ``atexit``
+   function will return the previous value set by this function, which is
+   initially ``None``.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This function is a MicroPython extension intended to provide similar
+      functionality to the :mod:`atexit` module in CPython.
+
 .. function:: print_exception(exc, file=sys.stdout)
 
    Print exception with a traceback to a file-like object *file* (or
