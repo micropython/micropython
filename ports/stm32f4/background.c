@@ -46,7 +46,10 @@ void run_background_tasks(void) {
     }
     running_background_tasks = true;
     filesystem_background();
+
+    #if USB_AVAILABLE
     usb_background();
+    #endif
 
     #if CIRCUITPY_DISPLAYIO
     displayio_refresh_displays();

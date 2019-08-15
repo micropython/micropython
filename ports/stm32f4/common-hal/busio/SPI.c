@@ -40,6 +40,7 @@ void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
+    return 0;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {

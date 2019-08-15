@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +68,8 @@ static uint8_t sector_copy[0x4000] __attribute__((aligned(4)));
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
-        for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
-            for (int j = 0; j < flash_layout[i].sector_count; ++j) {
+        for (uint8_t i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
+            for (uint8_t j = 0; j < flash_layout[i].sector_count; ++j) {
                 uint32_t sector_start_next = flash_layout[i].base_address
                     + (j + 1) * flash_layout[i].sector_size;
                 if (addr < sector_start_next) {
@@ -112,7 +113,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-	uint32_t src = convert_block_to_flash_addr(block);
+	int32_t src = convert_block_to_flash_addr(block);
 	if (src == -1) {
         // bad block number
         return false;
@@ -172,7 +173,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
 	__HAL_FLASH_DATA_CACHE_ENABLE();
 
     // reprogram the sector
-    for (int i = 0; i < sector_size; i++) {
+    for (uint32_t i = 0; i < sector_size; i++) {
         if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, sector_start_addr, (uint64_t)sector_copy[i]) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +37,8 @@ I2C_HandleTypeDef hi2c2;
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    //TODO: Rework this entire section to use LL, alongside MSP removal
+
     hi2c2.Instance = I2C1;
     hi2c2.Init.ClockSpeed = 100000;
     hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;

@@ -105,6 +105,7 @@
 #define LD6_GPIO_Port GPIOD
 
 #include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
 
 void stm32f4_peripherals_gpio_init(void) {
 	//Enable all GPIO for now
@@ -128,10 +129,26 @@ void stm32f4_peripherals_gpio_init(void) {
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 	//Status LED chain
-	HAL_GPIO_WritePin(GPIOD, LD4_Pin, GPIO_PIN_RESET); //LED 1
-	HAL_GPIO_WritePin(GPIOD, LD3_Pin, GPIO_PIN_SET); //LED 2
-	HAL_GPIO_WritePin(GPIOD, LD5_Pin, GPIO_PIN_SET); //LED 3
-	HAL_GPIO_WritePin(GPIOD, LD6_Pin, GPIO_PIN_SET); //LED 4
+	stm32f4_peripherals_status_led(0,1);
+	stm32f4_peripherals_status_led(1,0);
+	stm32f4_peripherals_status_led(2,0);
+	stm32f4_peripherals_status_led(3,0);
+}
+
+//LEDs are inverted on F411 DISCO
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+	switch(led)
+	{
+		case 0: 	HAL_GPIO_WritePin(GPIOD, LD4_Pin, (state ^ 1));
+				break;
+		case 1: 	HAL_GPIO_WritePin(GPIOD, LD3_Pin, (state ^ 1));
+				break;
+		case 2: 	HAL_GPIO_WritePin(GPIOD, LD5_Pin, (state ^ 1));
+				break;
+		case 3: 	HAL_GPIO_WritePin(GPIOD, LD6_Pin, (state ^ 1));
+				break;
+		default: break;
+	}
 }
 
 
