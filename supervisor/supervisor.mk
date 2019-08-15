@@ -100,7 +100,8 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--pid $(USB_PID)\
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
-		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h\
+		--reduced_endpoint_mode $(USB_REDUCED_ENDPOINT)
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 
