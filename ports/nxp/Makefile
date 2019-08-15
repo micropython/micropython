@@ -71,6 +71,8 @@ INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/list
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/serial_manager
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/uart
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/ft5406_rt
+INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/i2c
+INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)/debug_console
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)/str
@@ -192,6 +194,7 @@ SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
 	fsl_usdhc.c \
 	fsl_cache.c \
 	fsl_lpi2c.c \
+	fsl_gpt.c \
 )
 
 SRC_NXP_MIDDLEWARE = $(addprefix $(NXP_MIDDLEWARE_DIR)/, \
@@ -204,8 +207,9 @@ SRC_NXP_MIDDLEWARE = $(addprefix $(NXP_MIDDLEWARE_DIR)/, \
 	sdmmc/src/fsl_sdspi.c \
 )
 
-
 SRC_C = \
+	$(SRC_FSL_DRIVERS) \
+	$(BOARD_INC_DIR)/port-evkmimxrt1064.c \
 	$(BOARD_PROJECT_TEMPLATE_DIR)/board.c \
 	$(BOARD_PROJECT_TEMPLATE_DIR)/clock_config.c \
 	$(BOARD_INC_DIR)/hardware_init.c \
@@ -216,6 +220,8 @@ SRC_C = \
 	$(NXP_COMPONENTS_DIR)/serial_manager/serial_manager.c \
 	$(NXP_COMPONENTS_DIR)/serial_manager/serial_port_uart.c \
 	$(NXP_COMPONENTS_DIR)/uart/lpuart_adapter.c \
+	$(NXP_COMPONENTS_DIR)/i2c/lpi2c_adapter.c \
+	$(NXP_COMPONENTS_DIR)/timer/gpt_adapter.c \
 	$(BOARD_DRIVERS_DIR)/fsl_clock.c \
 	$(BOARD_XIP_DIR)/fsl_flexspi_nor_boot.c \
 	$(NXP_UTILITIES_DIR)/fsl_assert.c \
@@ -223,7 +229,6 @@ SRC_C = \
 	$(NXP_UTILITIES_DIR)/str/fsl_str.c \
 	$(NXP_COMPONENTS_DIR)/ft5406_rt/fsl_ft5406_rt.c \
 	$(SRC_FreeRTOS) \
-	$(SRC_FSL_DRIVERS) \
 	$(SRC_NXP_MIDDLEWARE) \
 	$(EXTMOD_SRC_C) \
 	$(LVGL_SRC) \
@@ -234,6 +239,9 @@ SRC_C = \
 	led.c \
 	sdcard.c \
 	mphalport.c \
+	pybi2c.c \
+	pybpinmux.c \
+	pybgpt.c  \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \

@@ -32,7 +32,9 @@
 #include "led.h"
 #include "sdcard.h"
 #include "extmod/vfs.h"
-
+#include "pybi2c.h"
+#include "pybpinmux.h"
+#include "pybgpt.h"
 
 STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
@@ -53,7 +55,6 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
-
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
@@ -61,6 +62,10 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Sdcard), MP_ROM_PTR(&pyb_sdcard_type) },
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_LPI2C), MP_ROM_PTR(&pyb_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_port), MP_ROM_PTR(&port_type) },
+    { MP_ROM_QSTR(MP_QSTR_pinmux), MP_ROM_PTR(&pinmux_type) },
+    { MP_ROM_QSTR(MP_QSTR_GPT), MP_ROM_PTR(&pyb_gpt_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);

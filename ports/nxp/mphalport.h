@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  */
 
-static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }
 static inline void mp_hal_set_interrupt_char(char c) {}
 
 
@@ -43,3 +42,7 @@ static inline void mp_hal_set_interrupt_char(char c) {}
 #define mp_hal_pin_low(p) mp_hal_pin_write(p,0)
 
 #define mp_hal_pin_toggle(p) GPIO_PortToggle(p->gpio, (1<<p->pin))
+
+
+//void mp_hal_delay_ms(mp_int_t delay_ms);
+//void mp_hal_delay_us(mp_int_t delay_ms);

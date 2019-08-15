@@ -35,5 +35,6 @@ extern uint32_t __HeapBase;
 extern uint32_t __HeapLimit;
 extern uint32_t __StackTop;
 extern uint32_t __StackLimit;
+extern uint32_t STACK_SIZE;
 
 #endif

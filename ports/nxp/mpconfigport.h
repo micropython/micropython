@@ -123,6 +123,7 @@
 #define mp_type_fileio        mp_type_vfs_fat_fileio
 #define mp_type_textio        mp_type_vfs_fat_textio
 
+#define MICROPY_STACK_CHECK         (1)
 
 /* little VGL */
 #if MICROPY_PY_LVGL
@@ -195,15 +196,14 @@ extern const struct _mp_obj_module_t mp_module_uos;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-//#define MICROPY_PORT_ROOT_POINTERS 
-//    const char *readline_hist[8]; 
-
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
-    const char *readline_hist[50]; \
+    const char *readline_hist[8]; \
     void *mmap_region_head; \
     mp_obj_t pyb_config_main; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
+    mp_obj_t pyb_lpi2c_callback[5]; \
+    mp_obj_t pyb_gpt_callback[3]; \
 
-
+static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }

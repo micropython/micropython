@@ -21,37 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef _PYBI2C_H_
+#define _PYBI2C_H_
 
-#ifndef _PIN_H_
-#define _PIN_H_
+#include "fsl_common.h"
+#include "i2c.h"
 
-// This file requires pin_defs_xxx.h (which has port specific enums and
-// defines, so we include it here. It should never be included directly
+#define MASTER (0)
+#define SLAVE  (1)
 
-#include "py/obj.h"
+#define LPI2C_Write     (0)
+#define LPI2C_Read      (1)
 
-#include "MIMXRT1064.h"
+#define LPI2C_TransferDefaultFlag   (0x0U)
+#define LPI2C_TransferNoStartFlag   (0x1U)
+#define LPI2C_TransferRepeatedStartFlag (0x2U)
+#define LPI2C_TransferNoStopFlag    (0x4U)
 
+extern const mp_obj_type_t pyb_i2c_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    uint32_t pin;
-    GPIO_Type *gpio;
-}pin_obj_t; 
-
-extern const mp_obj_type_t pin_type;
-
-#define PIN(gpio_num, pin_num,gpio_base) \
-{\
-    { &pin_type }, \
-    .name = MP_QSTR_GPIO ## gpio_num ## _IO ## pin_num, \
-    .pin = pin_num, \
-    .gpio = gpio_base, \
-}
-
-
-void pin_init0(void);
-uint32_t pin_get_direction(const pin_obj_t *pin);
-
-#endif
+#endif 

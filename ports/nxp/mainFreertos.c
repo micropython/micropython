@@ -89,7 +89,7 @@ static void mp_reset(void)
     //Set Stack top
     mp_stack_set_top(&__StackTop);
     //Set Stack limit 
-    mp_stack_set_limit((char*)&__StackTop - (char*)&__HeapLimit -256);
+    mp_stack_set_limit(STACK_SIZE);
 
     #if MICROPY_ENABLE_GC
     gc_init((void *)&__HeapBase, (void *)&__HeapLimit);
