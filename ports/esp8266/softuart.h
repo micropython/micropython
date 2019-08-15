@@ -45,6 +45,9 @@ void Softuart_Putchar(Softuart *s, char data);
 void Softuart_Puts(Softuart *s, const char *c );
 uint8_t Softuart_Read(Softuart *s);
 uint8_t Softuart_Readline(Softuart *s, char* Buffer, uint8_t MaxLen );
+// check status of rx/tx
+int Softuart_rx_any(Softuart *s);
+int Softuart_tx_any_room(Softuart *s);
 
 //define mapping from pin to functio mode
 typedef struct {

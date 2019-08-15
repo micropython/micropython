@@ -223,8 +223,21 @@ STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 }
 
 STATIC mp_uint_t pyb_softuart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    *errcode = MP_EINVAL;
-    return MP_STREAM_ERROR;
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && Softuart_rx_any(&softuartDevice)) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && Softuart_tx_any_room(&softuartDevice)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
 }
 
 STATIC const mp_stream_p_t softuart_stream_p = {

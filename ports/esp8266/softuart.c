@@ -334,8 +334,18 @@ uint32_t Softuart_Flush(Softuart *s)
 // Is data in buffer available?
 BOOL Softuart_Available(Softuart *s)
 {
-	return (s->buffer.receive_buffer_tail + SOFTUART_MAX_RX_BUFF - s->buffer.receive_buffer_head) % SOFTUART_MAX_RX_BUFF;
+    return (s->buffer.receive_buffer_tail + SOFTUART_MAX_RX_BUFF - s->buffer.receive_buffer_head) % SOFTUART_MAX_RX_BUFF;
 }
+
+int Softuart_rx_any(Softuart *s) {
+    return (Softuart_Available(s));
+}
+
+int Softuart_tx_any_room(Softuart *s) {
+    // TODO always assume we have room... there is no send buffer
+    return true;
+}
+
 
 // cversek:
 // based on micropython/esp8266/uart.c bool uart_rx_wait(uint32_t timeout_us)
