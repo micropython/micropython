@@ -87,3 +87,4 @@ uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
 
 uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
     return 0;
+}

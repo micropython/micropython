@@ -1,10 +1,9 @@
-/*
+/*f
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +23,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "supervisor/internal_flash.h"
 
-//Micropython setup
+#include <stdint.h>
+#include <string.h>
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+#include "py/mphal.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "lib/oofatfs/ff.h"
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
+void supervisor_flash_init(void) {
+}
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+uint32_t supervisor_flash_get_block_size(void) {
+    return 0;
+}
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
+uint32_t supervisor_flash_get_block_count(void) {
+    return 0;
+}
 
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000 - CIRCUITPY_INTERNAL_NVM_SIZE)
+void supervisor_flash_flush(void) {
+}
 
-#define AUTORESET_DELAY_MS 500
+static int32_t convert_block_to_flash_addr(uint32_t block) {
+    return -1;
+}
+
+mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
+    return 0; // success
+}
+
+bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
+    return true;
+}
+
+mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    return 0; // success
+}
+
+void supervisor_flash_release_cache(void) {
+}
+
