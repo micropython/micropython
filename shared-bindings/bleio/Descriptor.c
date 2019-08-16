@@ -52,9 +52,9 @@
 //|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
 //|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
 //|   :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
-//|      security mode is required. Values allowed are the same as `read_perm`.
+//|      security mode is required. Values allowed are the same as ``read_perm``.
 //|   :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
-//|      is 512, or possibly 510 if `fixed_length` is False. The default, 20, is the maximum
+//|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|      number of data bytes that fit in a single BLE 4.x ATT packet.
 //|   :param bool fixed_length: True if the characteristic value is of fixed length.
 //|

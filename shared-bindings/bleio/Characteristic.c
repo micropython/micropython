@@ -54,9 +54,9 @@
 //|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
 //|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
 //|   :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
-//|      security mode is required. Values allowed are the same as `read_perm`.
+//|      security mode is required. Values allowed are the same as ``read_perm``.
 //|   :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
-//|      is 512, or possibly 510 if `fixed_length` is False. The default, 20, is the maximum
+//|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|      number of data bytes that fit in a single BLE 4.x ATT packet.
 //|   :param bool fixed_length: True if the characteristic value is of fixed length.
 //|   :param iterable descriptors: BLE descriptors for this characteristic.
@@ -173,9 +173,7 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
 
 //|   .. attribute:: value
 //|
-//|     The value of this characteristic. The value can be written to if the `write` property allows it.
-//|     If the `read` property allows it, the value can be read. If the `notify` property is set, writing
-//|     to the value will generate a BLE notification.
+//|     The value of this characteristic.
 //|
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);

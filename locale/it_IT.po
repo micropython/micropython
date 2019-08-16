@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-31 16:30-0500\n"
+"POT-Creation-Date: 2019-08-15 21:44-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -366,7 +366,7 @@ msgid "Can not use dotstar with %s"
 msgstr "dotstar non può essere usato con %s"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
+msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
@@ -431,6 +431,10 @@ msgstr "caratteristico UUID non assomiglia servizio UUID"
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
 msgstr "caratteristico già usato da un altro servizio"
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic is already attached to a Service"
+msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -508,6 +512,10 @@ msgstr ""
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Descriptor is already attached to a Characteristic"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -605,7 +613,7 @@ msgstr ""
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
@@ -624,17 +632,22 @@ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr "Notificamento o indicazione di attribute value fallito, err 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+msgid "Failed to pair"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Tentative leggere attribute value fallito, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
@@ -664,6 +677,11 @@ msgstr "Impossibile avviare advertisement. status: 0x%02x"
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to start pairing, error 0x%04x"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
@@ -679,12 +697,12 @@ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
@@ -834,9 +852,17 @@ msgstr "Pin non validi"
 msgid "Invalid polarity"
 msgstr "Polarità non valida"
 
+#: shared-bindings/bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Modalità di esecuzione non valida."
+
+#: shared-module/bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
 
 #: shared-bindings/audiocore/Mixer.c
 #, fuzzy
@@ -958,8 +984,9 @@ msgstr "Non che spazio sul dispositivo"
 msgid "No such file/directory"
 msgstr "Nessun file/directory esistente"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Peripheral.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Impossible connettersi all'AP"
@@ -1309,6 +1336,19 @@ msgstr "Operazione non supportata"
 msgid "Unsupported pull value."
 msgstr "Valore di pull non supportato."
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Value length  required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Le funzioni Viper non supportano più di 4 argomenti al momento"
@@ -1401,10 +1441,6 @@ msgstr ""
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "attributi non ancora supportati"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr ""
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1727,6 +1763,10 @@ msgstr "numeri decimali non supportati"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' predefinito deve essere ultimo"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "descriptors includes an object that is not a Descriptors"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2077,6 +2117,12 @@ msgstr "map buffer troppo piccolo"
 msgid "math domain error"
 msgstr "errore di dominio matematico"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profondità massima di ricorsione superata"
@@ -2177,8 +2223,8 @@ msgstr "attributo inesistente"
 msgid "non-Service found in services"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/bleio/__init__.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c

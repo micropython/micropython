@@ -37,7 +37,8 @@
 //| =========================================================
 //|
 //| Definitions associated with all BLE attributes: characteristics, descriptors, etc.
-//| :py:class:`~bleio.Attribute` is, notionally, a superclass of `Characteristic` and `Descriptor`,
+//| :py:class:`~bleio.Attribute` is, notionally, a superclass of
+//| :py:class:`~Characteristic` and :py:class:`~Descriptor`,
 //| but is not defined as a Python superclass of those classes.
 //|
 //| .. class:: Attribute()

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-31 16:30-0500\n"
+"POT-Creation-Date: 2019-08-15 21:44-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -367,7 +367,7 @@ msgid "Can not use dotstar with %s"
 msgstr "No se puede usar dotstar con %s"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
+msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
@@ -430,6 +430,10 @@ msgstr "Características UUID no concide con el Service UUID"
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
 msgstr "Características ya esta en uso por otro Serivice"
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic is already attached to a Service"
+msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -504,6 +508,10 @@ msgstr "Trozo de datos debe seguir fmt chunk"
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
 msgstr "Data es muy grande para el paquete de advertisement."
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Descriptor is already attached to a Characteristic"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -598,7 +606,7 @@ msgstr ""
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "No se puede iniciar el escaneo. err: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "No se puede descubrir servicios"
@@ -616,17 +624,22 @@ msgstr "No se puede obtener el estado del softdevice"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr "Error al notificar o indicar el valor del atributo, err 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+msgid "Failed to pair"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "No se puede leer el valor del atributo. err 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Error al leer valor del atributo, err 0x%04"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
@@ -656,6 +669,11 @@ msgstr "No se puede inicar el anuncio. err: 0x%04x"
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to start pairing, error 0x%04x"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
@@ -671,12 +689,12 @@ msgstr "No se puede detener el anuncio. err: 0x%04x"
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
@@ -824,9 +842,17 @@ msgstr "pines inválidos"
 msgid "Invalid polarity"
 msgstr "Polaridad inválida"
 
+#: shared-bindings/bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Modo de ejecución inválido."
+
+#: shared-module/bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
 
 #: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
@@ -950,8 +976,9 @@ msgstr "No queda espacio en el dispositivo"
 msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Peripheral.c
 msgid "Not connected"
 msgstr "No conectado"
 
@@ -1306,6 +1333,19 @@ msgstr "Operación no soportada"
 msgid "Unsupported pull value."
 msgstr "valor pull no soportado."
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Value length  required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
@@ -1403,10 +1443,6 @@ msgstr "array/bytes requeridos en el lado derecho"
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "atributos aún no soportados"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr "mal GATT role"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1728,6 +1764,10 @@ msgstr "números decimales no soportados"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' por defecto deberia estar de último"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "descriptors includes an object that is not a Descriptors"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2073,6 +2113,12 @@ msgstr "map buffer muy pequeño"
 msgid "math domain error"
 msgstr "error de dominio matemático"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profundidad máxima de recursión excedida"
@@ -2171,8 +2217,8 @@ msgstr "no hay tal atributo"
 msgid "non-Service found in services"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/bleio/__init__.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c
@@ -2865,6 +2911,9 @@ msgstr "paso cero"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Usa esptool para borrar la flash y vuelve a cargar Python en su lugar"
+
+#~ msgid "bad GATT role"
+#~ msgstr "mal GATT role"
 
 #~ msgid "buffer too long"
 #~ msgstr "buffer demasiado largo"
