@@ -27,14 +27,17 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 
-// Flags for each characteristic property. Common across ports.
-typedef struct {
-        bool broadcast : 1;
-        bool read : 1;
-        bool write_no_response : 1;
-        bool write : 1;
-        bool notify : 1;
-        bool indicate : 1;
-} bleio_characteristic_properties_t;
+typedef enum {
+    CHAR_PROP_NONE =              0,
+    CHAR_PROP_BROADCAST =         1u << 0,
+    CHAR_PROP_INDICATE =          1u << 1,
+    CHAR_PROP_NOTIFY =            1u << 2,
+    CHAR_PROP_READ =              1u << 3,
+    CHAR_PROP_WRITE =             1u << 4,
+    CHAR_PROP_WRITE_NO_RESPONSE = 1u << 5,
+    CHAR_PROP_ALL =               (CHAR_PROP_BROADCAST | CHAR_PROP_INDICATE | CHAR_PROP_NOTIFY |
+                                   CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_NO_RESPONSE)
+} bleio_characteristic_properties_enum_t;
+typedef uint8_t bleio_characteristic_properties_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

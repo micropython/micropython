@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
+#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H
 
-#include "py/objlist.h"
-#include "common-hal/bleio/UUID.h"
+// BLE security modes: 0x<level><mode>
+typedef enum {
+    SECURITY_MODE_NO_ACCESS = 0x00,
+    SECURITY_MODE_OPEN = 0x11,
+    SECURITY_MODE_ENC_NO_MITM = 0x21,
+    SECURITY_MODE_ENC_WITH_MITM = 0x31,
+    SECURITY_MODE_LESC_ENC_WITH_MITM = 0x41,
+    SECURITY_MODE_SIGNED_NO_MITM = 0x12,
+    SECURITY_MODE_SIGNED_WITH_MITM = 0x22,
+} bleio_attribute_security_mode_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    // Handle for this service.
-    uint16_t handle;
-    // True if created during discovery.
-    bool is_remote;
-    bool is_secondary;
-    bleio_uuid_obj_t *uuid;
-    // May be a Peripheral, Central, etc.
-    mp_obj_t device;
-    mp_obj_list_t *characteristic_list;
-    // Range of attribute handles of this service.
-    uint16_t start_handle;
-    uint16_t end_handle;
-} bleio_service_obj_t;
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_ATTRIBUTE_H

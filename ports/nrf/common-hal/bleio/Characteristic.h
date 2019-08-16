@@ -28,17 +28,23 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
 
+#include "shared-bindings/bleio/Attribute.h"
+#include "shared-module/bleio/Characteristic.h"
 #include "common-hal/bleio/Service.h"
 #include "common-hal/bleio/UUID.h"
-#include "shared-module/bleio/Characteristic.h"
 
 typedef struct {
     mp_obj_base_t base;
+    // Will be MP_OBJ_NULL before being assigned to a Service.
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
-    volatile mp_obj_t value_data;
+    mp_obj_t value;
+    uint16_t max_length;
+    bool fixed_length;
     uint16_t handle;
     bleio_characteristic_properties_t props;
+    bleio_attribute_security_mode_t read_perm;
+    bleio_attribute_security_mode_t write_perm;
     mp_obj_list_t *descriptor_list;
     uint16_t user_desc_handle;
     uint16_t cccd_handle;

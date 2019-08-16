@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-05 17:52-0700\n"
+"POT-Creation-Date: 2019-08-15 21:44-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -363,8 +363,8 @@ msgid "Can not use dotstar with %s"
 msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
-msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
+msgid "Can't set CCCD on local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -426,6 +426,10 @@ msgstr "Zìfú UUID bù fúhé fúwù UUID"
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
 msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic is already attached to a Service"
+msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -500,6 +504,10 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Descriptor is already attached to a Characteristic"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -594,7 +602,7 @@ msgstr "Liánjiē shībài: Chāoshí"
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/bleio/__init__.c
 msgid "Failed to discover services"
 msgstr "Fāxiàn fúwù shībài"
 
@@ -611,17 +619,22 @@ msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+msgid "Failed to pair"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Dòu qǔ CCCD zhí, err 0x%04x shībài"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Dòu qǔ shǔxìng zhí shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "Wúfǎ dòu qǔ gatts zhí, err 0x%04x"
@@ -651,6 +664,11 @@ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 msgid "Failed to start connecting, error 0x%04x"
 msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to start pairing, error 0x%04x"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
@@ -666,12 +684,12 @@ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr "Wúfǎ xiě rù CCCD, cuòwù 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Xiě rù shǔxìng zhí shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
@@ -819,9 +837,17 @@ msgstr "Wúxiào de yǐn jiǎo"
 msgid "Invalid polarity"
 msgstr "Wúxiào liǎng jí zhí"
 
+#: shared-bindings/bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Wúxiào de yùnxíng móshì."
+
+#: shared-module/bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
 
 #: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
@@ -945,8 +971,9 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Peripheral.c
 msgid "Not connected"
 msgstr "Wèi liánjiē"
 
@@ -1292,6 +1319,19 @@ msgstr "Bù zhīchí de cāozuò"
 msgid "Unsupported pull value."
 msgstr "Bù zhīchí de lādòng zhí."
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Value length  required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
@@ -1388,10 +1428,6 @@ msgstr "yòu cè xūyào shùzǔ/zì jié"
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "shǔxìng shàngwèi zhīchí"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr "zǒng xiédìng de bùliáng juésè"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1710,6 +1746,10 @@ msgstr "bù zhīchí xiǎoshù shù"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "mòrèn 'except' bìxū shì zuìhòu yīgè"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "descriptors includes an object that is not a Descriptors"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2052,6 +2092,12 @@ msgstr "dìtú huǎnchōng qū tài xiǎo"
 msgid "math domain error"
 msgstr "shùxué yù cuòwù"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "chāochū zuìdà dìguī shēndù"
@@ -2151,8 +2197,8 @@ msgstr "méiyǒu cǐ shǔxìng"
 msgid "non-Service found in services"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/bleio/__init__.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c
@@ -2674,6 +2720,9 @@ msgstr "líng bù"
 #~ msgid "Can't connect in Peripheral mode"
 #~ msgstr "Wúfǎ zài biānyuán móshì zhōng liánjiē"
 
+#~ msgid "Can't set CCCD for local Characteristic"
+#~ msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
@@ -2733,6 +2782,9 @@ msgstr "líng bù"
 
 #~ msgid "UUID integer value not in range 0 to 0xffff"
 #~ msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"
+
+#~ msgid "bad GATT role"
+#~ msgstr "zǒng xiédìng de bùliáng juésè"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"

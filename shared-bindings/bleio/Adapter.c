@@ -53,12 +53,6 @@
 //|
 //|         State of the BLE adapter.
 //|
-
-//|     .. attribute:: adapter.address
-//|
-//|         MAC address of the BLE adapter. (read-only)
-//|
-
 STATIC mp_obj_t bleio_adapter_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_bleio_adapter_get_enabled());
 }
@@ -80,13 +74,13 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     .. attribute:: adapter.address
+//|
+//|         MAC address of the BLE adapter. (read-only)
+//|
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
-    mp_obj_t obj = bleio_address_type.make_new(&bleio_address_type, 1, 0, mp_const_none);
-    bleio_address_obj_t *address = MP_OBJ_TO_PTR(obj);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_adapter_get_address());
 
-    common_hal_bleio_adapter_get_address(address);
-
-    return obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_address);
 
@@ -97,9 +91,29 @@ const mp_obj_property_t bleio_adapter_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     .. attribute:: adapter.default_name
+//|
+//|         default_name of the BLE adapter. (read-only)
+//|         The name is "CIRCUITPY" + the last four hex digits of ``adapter.address``,
+//|         to make it easy to distinguish multiple CircuitPython boards.
+//|
+STATIC mp_obj_t bleio_adapter_get_default_name(mp_obj_t self) {
+    return common_hal_bleio_adapter_get_default_name();
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_default_name_obj, bleio_adapter_get_default_name);
+
+const mp_obj_property_t bleio_adapter_default_name_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_adapter_get_default_name_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_default_name), MP_ROM_PTR(&bleio_adapter_default_name_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict_table);
