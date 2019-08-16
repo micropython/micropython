@@ -62,8 +62,8 @@ STATIC mp_obj_t bleio_descriptor_make_new(const mp_obj_type_t *type, size_t n_ar
     enum { ARG_uuid, ARG_read_perm, ARG_write_perm, ARG_max_length, ARG_fixed_length };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
-        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SEC_MODE_OPEN } },
+        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN } },
+        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN } },
         { MP_QSTR_max_length, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 20} },
         { MP_QSTR_fixed_length, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
     };

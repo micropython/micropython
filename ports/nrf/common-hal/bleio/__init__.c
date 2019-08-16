@@ -218,7 +218,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, mp_ob
 
         // Call common_hal_bleio_characteristic_construct() to initalize some fields and set up evt handler.
         common_hal_bleio_characteristic_construct(
-            characteristic, uuid, props, SEC_MODE_OPEN, SEC_MODE_OPEN,
+            characteristic, uuid, props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
             GATT_MAX_DATA_LENGTH, false,   // max_length, fixed_length: values may not matter for gattc
             mp_obj_new_list(0, NULL));
         characteristic->handle = gattc_char->handle_value;
@@ -274,7 +274,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, mp_ob
             // For now, just leave the UUID as NULL.
         }
 
-        common_hal_bleio_descriptor_construct(descriptor, uuid, SEC_MODE_OPEN, SEC_MODE_OPEN,
+        common_hal_bleio_descriptor_construct(descriptor, uuid, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
                                               GATT_MAX_DATA_LENGTH, false);
         descriptor->handle = gattc_desc->handle;
         descriptor->characteristic = m_desc_discovery_characteristic;

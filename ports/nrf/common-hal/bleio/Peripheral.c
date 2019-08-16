@@ -36,12 +36,12 @@
 #include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
-#include "common-hal/bleio/Service.h"
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(300, UNIT_0_625_MS)
@@ -303,8 +303,13 @@ void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *self) {
     sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
 
-mp_obj_list_t *common_hal_bleio_peripheral_get_remote_services(bleio_peripheral_obj_t *self) {
-    return self->remote_services_list;
+mp_obj_tuple_t *common_hal_bleio_peripheral_discover_remote_services(bleio_peripheral_obj_t *self, mp_obj_t service_uuids_whitelist) {
+    common_hal_bleio_device_discover_remote_services(MP_OBJ_FROM_PTR(self), service_uuids_whitelist);
+    // Convert to a tuple and then clear the list so the callee will take ownership.
+    mp_obj_tuple_t *services_tuple = mp_obj_new_tuple(self->remote_services_list->len,
+                                                      self->remote_services_list->items);
+    mp_obj_list_clear(self->remote_services_list);
+    return services_tuple;
 }
 
 void common_hal_bleio_peripheral_pair(bleio_peripheral_obj_t *self) {

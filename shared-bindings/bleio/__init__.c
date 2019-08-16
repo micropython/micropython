@@ -94,9 +94,6 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
-
-    // constants
-    { MP_ROM_QSTR(MP_QSTR_SEC),                 MP_ROM_PTR(&bleio_uuid_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

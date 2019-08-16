@@ -28,6 +28,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H
 
+#include "py/objtuple.h"
 #include "common-hal/bleio/Peripheral.h"
 
 extern const mp_obj_type_t bleio_peripheral_type;
@@ -39,7 +40,7 @@ extern mp_obj_t common_hal_bleio_peripheral_get_name(bleio_peripheral_obj_t *sel
 extern void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *device, bool connectable, float interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo);
 extern void common_hal_bleio_peripheral_stop_advertising(bleio_peripheral_obj_t *device);
 extern void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *device);
-extern mp_obj_list_t *common_hal_bleio_peripheral_get_remote_services(bleio_peripheral_obj_t *self);
+extern mp_obj_tuple_t *common_hal_bleio_peripheral_discover_remote_services(bleio_peripheral_obj_t *self, mp_obj_t service_uuids_whitelist);
 extern void common_hal_bleio_peripheral_pair(bleio_peripheral_obj_t *device);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PERIPHERAL_H

@@ -31,13 +31,13 @@
 
 void common_hal_bleio_attribute_security_mode_check_valid(bleio_attribute_security_mode_t security_mode) {
     switch (security_mode) {
-        case SEC_MODE_NO_ACCESS:
-        case SEC_MODE_OPEN:
-        case SEC_MODE_ENC_NO_MITM:
-        case SEC_MODE_ENC_WITH_MITM:
-        case SEC_MODE_LESC_ENC_WITH_MITM:
-        case SEC_MODE_SIGNED_NO_MITM:
-        case SEC_MODE_SIGNED_WITH_MITM:
+        case SECURITY_MODE_NO_ACCESS:
+        case SECURITY_MODE_OPEN:
+        case SECURITY_MODE_ENC_NO_MITM:
+        case SECURITY_MODE_ENC_WITH_MITM:
+        case SECURITY_MODE_LESC_ENC_WITH_MITM:
+        case SECURITY_MODE_SIGNED_NO_MITM:
+        case SECURITY_MODE_SIGNED_WITH_MITM:
             break;
         default:
             mp_raise_ValueError(translate("Invalid security_mode"));

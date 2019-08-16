@@ -35,7 +35,6 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Peripheral.h"
@@ -263,15 +262,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_disconnect_obj, bleio_peripher
 
 //|   .. method:: discover_remote_services(service_uuids_whitelist=None)
 //|      Do BLE discovery for all services or for the given service UUIDS,
-//|      to find their handles and characteristics.
-//|      The attribute `remote_services` will contain a list of all discovered services.
+//|      to find their handles and characteristics, and return the discovered services.
 //|      `Peripheral.connected` must be True.
 //|
 //|   :param iterable service_uuids_whitelist: an iterable of :py:class:~`UUID` objects for the services
 //|      provided by the peripheral that you want to use.
-//|      The peripheral may provide more services, but services not listed are ignored.
-//|      If a service in service_uuids_whitelist is not found during discovery, it will not
-//|      appear in `remote_services`.
+//|      The peripheral may provide more services, but services not listed are ignored
+//|      and will not be returned.
 //|
 //|      If service_uuids_whitelist is None, then all services will undergo discovery, which can be slow.
 //|
@@ -284,6 +281,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_disconnect_obj, bleio_peripher
 //|      needs to be able to do discovery on its peer (a central).
 //|      Examples include a peripheral accessing a central that provides Current Time Service,
 //|      Apple Notification Center Service, or Battery Service.
+//|
+//|    :return: A tuple of services provided by the remote central.
 //|
 STATIC mp_obj_t bleio_peripheral_discover_remote_services(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -300,26 +299,11 @@ STATIC mp_obj_t bleio_peripheral_discover_remote_services(mp_uint_t n_args, cons
         mp_raise_ValueError(translate("Not connected"));
     }
 
-    common_hal_bleio_device_discover_remote_services(MP_OBJ_FROM_PTR(self),
-                                                     args[ARG_service_uuids_whitelist].u_obj);
-
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(common_hal_bleio_peripheral_discover_remote_services(
+                               MP_OBJ_FROM_PTR(self),
+                               args[ARG_service_uuids_whitelist].u_obj));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_discover_remote_services_obj, 1, bleio_peripheral_discover_remote_services);
-
-//|   .. attribute:: remote_services (read-only)
-//|
-//|     A tuple of services provided by the remote central.
-//|     If discovery did not occur, an empty tuple will be returned.
-//|
-STATIC mp_obj_t bleio_peripheral_get_remote_services(mp_obj_t self_in) {
-    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *service_list = common_hal_bleio_peripheral_get_remote_services(self);
-    return mp_obj_new_tuple(service_list->len, service_list->items);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_remote_services_obj, bleio_peripheral_get_remote_services);
 
 //|   .. method:: pair()
 //|
@@ -333,14 +317,6 @@ STATIC mp_obj_t bleio_peripheral_pair(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_pair_obj, bleio_peripheral_pair);
 
-const mp_obj_property_t bleio_peripheral_remote_services_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_peripheral_get_remote_services_obj,
-               (mp_obj_t)&mp_const_none_obj,
-               (mp_obj_t)&mp_const_none_obj },
-};
-
-
 STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
@@ -352,7 +328,6 @@ STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_peripheral_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),            MP_ROM_PTR(&bleio_peripheral_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remote_services), MP_ROM_PTR(&bleio_peripheral_remote_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_services),        MP_ROM_PTR(&bleio_peripheral_services_obj) },
 };
 
