@@ -198,7 +198,7 @@ void Softuart_Init(Softuart *s, uint32_t baudrate)
 //***********************************
 
 #define RSR_CCOUNT(r)     __asm__ __volatile__("rsr %0,ccount":"=a" (r))
-static inline uint32_t get_ccount(void)
+static inline uint32_t MP_FASTCODE(get_ccount)(void)
 {
     uint32_t ccount;
     RSR_CCOUNT(ccount);
@@ -207,7 +207,7 @@ static inline uint32_t get_ccount(void)
 
 //***********************************
 
-void Softuart_Intr_Handler(void *p)
+void MP_FASTCODE(Softuart_Intr_Handler)(void *p)
 {
     uint8_t level, gpio_id;
     unsigned start_time = get_ccount();
@@ -381,7 +381,7 @@ static inline u8 chbit(u8 data, u8 bit)
 }
 
 // Function for printing individual characters
-void Softuart_Putchar(Softuart *s, char data)
+void MP_FASTCODE(Softuart_Putchar)(Softuart *s, char data)
 {
 	unsigned i;
 	unsigned start_time;

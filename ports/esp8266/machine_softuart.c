@@ -174,7 +174,7 @@ STATIC const mp_rom_map_elem_t pyb_softuart_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_softuart_locals_dict, pyb_softuart_locals_dict_table);
 
-STATIC mp_uint_t pyb_softuart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // make sure we want at least 1 char

@@ -3,7 +3,7 @@
 
 #include "user_interface.h"
 
-#define SOFTUART_MAX_RX_BUFF 64 
+#define SOFTUART_MAX_RX_BUFF 256 
 
 #define SOFTUART_GPIO_COUNT 16
 
