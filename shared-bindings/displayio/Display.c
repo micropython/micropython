@@ -373,81 +373,46 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
-
-
 #include "py/objarray.h"
 mp_obj_array_t *array_new(char typecode, size_t n);
 mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value);
 
-//|   .. method:: fill_area(x, y, w, h)
+//|   .. method:: fill_row(y, buffer)
 //|
-//|     Switches to displaying the given group of layers. When group is None, the default
-//|     CircuitPython terminal will be shown.
+//|     Extract the pixels fro a single row
 //|
-//|     :param int x: The left edge of the area
 //|     :param int y: The top edge of the area
-//|     :param int w: The width of the area
-//|     :param int h: The height of the area
-STATIC mp_obj_t displayio_display_obj_fill_area(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-  enum { ARG_x, ARG_y, ARG_width, ARG_height, ARG_buffer };
+//|     :param bytearray buffer: The buffer in which to place the pixel data
+STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  enum { ARG_y, ARG_buffer };
     static const mp_arg_t allowed_args[] = {
-      { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
-        { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
-        { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, {} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
     displayio_display_obj_t *self = native_display(pos_args[0]);
-    mp_int_t x = args[ARG_x].u_int;
     mp_int_t y = args[ARG_y].u_int;
-    mp_int_t w = args[ARG_width].u_int;
-    mp_int_t h = args[ARG_height].u_int;
     mp_obj_array_t *result = (mp_obj_array_t *)(args[ARG_buffer].u_obj);
 
     if (result->typecode != BYTEARRAY_TYPECODE) {
-      mp_raise_ValueError(translate("Buffer is not a bytearray"));
+      mp_raise_ValueError(translate("Buffer is not a bytearray."));
+    }
+    if (self->colorspace.depth != 16) {
+      mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
 
-    uint16_t buffer_size = 128; // In uint32_ts
     displayio_area_t area = {
-      .x1 = x,
+      .x1 = 0,
       .y1 = y,
-      .x2 = x + w,
-      .y2 = y + h
+      .x2 = self->width,
+      .y2 = y + 1
     };
-    displayio_area_t clipped;
-    // Clip the area to the display by overlapping the areas. If there is no overlap then we're done.
-    if (!displayio_display_clip_area(self, &area, &clipped)) {
-        return  mp_const_none;
-    }
-    uint16_t subrectangles = 1;
-    uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->colorspace.depth;
-    uint16_t pixels_per_buffer = displayio_area_size(&clipped);
-    if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
-        rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
-        if (rows_per_buffer == 0) {
-            rows_per_buffer = 1;
-        }
-        // If pixels are packed by column then ensure rows_per_buffer is on a byte boundary.
-        if (self->colorspace.depth < 8 && !self->colorspace.pixels_in_byte_share_row) {
-            uint8_t pixels_per_byte = 8 / self->colorspace.depth;
-            if (rows_per_buffer % pixels_per_byte != 0) {
-                rows_per_buffer -= rows_per_buffer % pixels_per_byte;
-            }
-        }
-        subrectangles = displayio_area_height(&clipped) / rows_per_buffer;
-        if (displayio_area_height(&clipped) % rows_per_buffer != 0) {
-            subrectangles++;
-        }
-        pixels_per_buffer = rows_per_buffer * displayio_area_width(&clipped);
-        buffer_size = pixels_per_buffer / pixels_per_word;
-        if (pixels_per_buffer % pixels_per_word) {
-            buffer_size += 1;
-        }
+    uint16_t buffer_size = self->width / pixels_per_word;
+    uint16_t pixels_per_buffer = displayio_area_size(&area);
+    if (pixels_per_buffer % pixels_per_word) {
+      buffer_size += 1;
     }
 
     // Allocated and shared as a uint32_t array so the compiler knows the
@@ -480,7 +445,7 @@ STATIC mp_obj_t displayio_display_obj_fill_area(size_t n_args, const mp_obj_t *p
       mp_raise_ValueError(translate("Buffer is too small"));
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_area_obj, 1, displayio_display_obj_fill_area);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_row_obj, 1, displayio_display_obj_fill_row);
 
 
 
@@ -489,7 +454,7 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_display_refresh_soon_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_for_frame), MP_ROM_PTR(&displayio_display_wait_for_frame_obj) },
-    { MP_ROM_QSTR(MP_QSTR_fill_area), MP_ROM_PTR(&displayio_display_fill_area_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&displayio_display_fill_row_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
@@ -498,7 +463,6 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&displayio_display_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_display_bus_obj) },
-    //    { MP_ROM_QSTR(MP_QSTR_screenshot), MP_ROM_PTR(&displayio_display_screenshot_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_display_locals_dict, displayio_display_locals_dict_table);
 
