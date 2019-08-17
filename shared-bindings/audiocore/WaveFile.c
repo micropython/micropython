@@ -47,7 +47,8 @@
 //|   Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|   :param typing.BinaryIO file: Already opened wave file
-//|   :param bytearray buffer: Optional pre-allocated buffer
+//|   :param bytearray buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 512 byte buffers are allocated internally.
+//|
 //|
 //|   Playing a wave file from flash::
 //|
