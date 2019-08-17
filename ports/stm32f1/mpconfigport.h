@@ -355,5 +355,14 @@ static inline mp_uint_t disable_irq(void) {
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
 
+
+// Bit Band
+// peripheral alias address : 0x42000000 + ((A‐0x40000000)*8+n)*4
+// sram alias address       : 0x22000000 + ((A‐0x20000000)*8+n)*4
+#define _ALIAS_ADDR(addr, pos)    ((addr & 0xF0000000)+0x42000000 + ((addr&0xFFFFF)<<5) + (pos<<2))
+#define BIT_BAND(addr, pos)       (*(volatile uint32_t *)( _ALIAS_ADDR((uint32_t)(&addr), pos) ))
+#define BIT_BAND_SET(addr, pos)   BIT_BAND(addr, pos) = 1
+#define BIT_BAND_CLEAR(addr, pos) BIT_BAND(addr, pos) = 0
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

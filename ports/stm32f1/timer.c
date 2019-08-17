@@ -229,7 +229,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 // Get the frequency (in Hz) of the source clock for the given timer.
-// On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
+// On STM32F103 there are 2 cases for how the clock freq is set.
 // If the APB prescaler is 1, then the timer clock is equal to its respective
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
@@ -237,26 +237,12 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
-        #if defined(STM32F0)
-        source = HAL_RCC_GetPCLK1Freq();
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
-        #elif defined(STM32H7)
-        source = HAL_RCC_GetPCLK2Freq();
-        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
-        #else
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
-        #endif
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        #if defined(STM32F0)
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
-        #elif defined(STM32H7)
-        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
-        #else
         clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
-        #endif
     }
     if (clk_div != 0) {
         // APB prescaler for this timer is > 1
@@ -476,12 +462,6 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState       = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity    = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32H7) | defined(STM32L4)
-    deadTimeConfig.BreakFilter      = 0;
-    deadTimeConfig.Break2State      = TIM_BREAK_DISABLE;
-    deadTimeConfig.Break2Polarity   = TIM_BREAKPOLARITY_LOW;
-    deadTimeConfig.Break2Filter     = 0;
-    #endif
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
@@ -672,15 +652,6 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         #if defined(TIM14)
         case 14: __HAL_RCC_TIM14_CLK_ENABLE(); break;
         #endif
-        #if defined(TIM15)
-        case 15: __HAL_RCC_TIM15_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM16)
-        case 16: __HAL_RCC_TIM16_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM17)
-        case 17: __HAL_RCC_TIM17_CLK_ENABLE(); break;
-        #endif
     }
 
     // set IRQ priority (if not a special timer)
@@ -726,15 +697,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 // It assumes that timer instance pointer has the lower 8 bits cleared.
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
-    #if defined(STM32F0)
-    TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
-    #elif defined(STM32F4) || defined(STM32F7)
-    TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(STM32L4)
-    TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
-    #elif defined(STM32F1)
 	TIM_ENTRY(1, TIM1_UP_IRQn),
-    #endif
     TIM_ENTRY(2, TIM2_IRQn),
     #if defined(TIM3)
     TIM_ENTRY(3, TIM3_IRQn),
@@ -751,13 +714,15 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM7)
     TIM_ENTRY(7, TIM7_IRQn),
     #endif
+
     #if defined(TIM8)
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F103xG)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
-    #elif defined(STM32L4)
+    #elif defined(STM32F103xE)
     TIM_ENTRY(8, TIM8_UP_IRQn),
     #endif
     #endif
+
     #if defined(TIM9)
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
     #endif
@@ -773,31 +738,8 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(STM32F0)
-    TIM_ENTRY(14, TIM14_IRQn),
-    #elif defined(TIM14)
+    #if defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
-    #endif
-    #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32H7)
-    TIM_ENTRY(15, TIM15_IRQn),
-    #else
-    TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
-    #endif
-    #endif
-    #if defined(TIM16)
-    #if defined(STM32F0) || defined(STM32H7)
-    TIM_ENTRY(16, TIM16_IRQn),
-    #else
-    TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
-    #endif
-    #endif
-    #if defined(TIM17)
-    #if defined(STM32F0) || defined(STM32H7)
-    TIM_ENTRY(17, TIM17_IRQn),
-    #else
-    TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
-    #endif
     #endif
 };
 #undef TIM_ENTRY

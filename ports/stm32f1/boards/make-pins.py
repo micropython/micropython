@@ -10,13 +10,13 @@ import csv
 # Must have matching entries in AF_FN_* enum in ../pin_defs_stm32.h
 SUPPORTED_FN = {
     'TIM'   : ['CH1',  'CH2',  'CH3',  'CH4',
-               'CH1N', 'CH2N', 'CH3N', 'CH1_ETR', 'ETR', 'BKIN'],
+               'CH1N', 'CH2N', 'CH3N', 'ETR', 'BKIN'],
     'I2C'   : ['SDA', 'SCL'],
-    'I2S'   : ['CK', 'MCK', 'SD', 'WS', 'EXTSD'],
+    'I2S'   : ['CK', 'MCK', 'SD', 'WS'],
     'USART' : ['RX', 'TX', 'CTS', 'RTS', 'CK'],
     'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
     'SPI'   : ['NSS', 'SCK', 'MISO', 'MOSI'],
-    'SDMMC' : ['CK', 'CMD', 'D0', 'D1', 'D2', 'D3'],
+    'SDIO'  : ['CK', 'CMD', 'D0', 'D1', 'D2', 'D3'],
     'CAN'   : ['TX', 'RX'],
 }
 
@@ -26,8 +26,8 @@ CONDITIONAL_VAR = {
     'SPI'   : 'MICROPY_HW_SPI{num}_SCK',
     'UART'  : 'MICROPY_HW_UART{num}_TX',
     'USART' : 'MICROPY_HW_UART{num}_TX',
-    'SDMMC' : 'MICROPY_HW_SDMMC{num}_CK',
-    'CAN'   : 'MICROPY_HW_CAN{num}_TX',
+    'SDIO'  : 'MICROPY_HW_SDIO_CK',
+    'CAN'   : 'MICROPY_HW_CAN_TX',
 }
 
 REMAP_FN = {
@@ -81,11 +81,12 @@ def split_name_num(name_num):
 def conditional_var(name_num):
     # Try the specific instance first. For example, if name_num is UART4_RX
     # then try UART4 first, and then try UART second.
+
     name, num = split_name_num(name_num)
     var = []
     if name in CONDITIONAL_VAR:
         var.append(CONDITIONAL_VAR[name].format(num=num))
-    if name_num in CONDITIONAL_VAR:
+    if name_num in CONDITIONAL_VAR and name_num != name:
         var.append(CONDITIONAL_VAR[name_num])
     return var
 
@@ -114,7 +115,7 @@ class AlternateFunction(object):
         self.idx = idx
         # Special case. We change I2S2ext_SD into I2S2_EXTSD so that it parses
         # the same way the other peripherals do.
-        af_str = af_str.replace('ext_', '_EXT')
+        # af_str = af_str.replace('ext_', '_EXT')
 
         self.af_str = af_str
         self.func = ''            # 复用功能(外设,    eg: USART)
@@ -135,7 +136,7 @@ class AlternateFunction(object):
         return self.supported
 
     def ptr(self):
-        """Returns the numbered function (i.e. USART6) for this AF."""
+        """Returns the numbered function (i.e. USART1) for this AF."""
         if self.fn_num is None:
             return self.func
         return '{:s}{:d}'.format(self.func, self.fn_num)
@@ -147,7 +148,10 @@ class AlternateFunction(object):
         """Prints the C representation of this AF."""
         cond_var = None
         if self.supported:
-            cond_var = conditional_var('{}{}'.format(self.func, self.fn_num))
+            if self.fn_num == None:
+                cond_var = conditional_var(self.func)
+            else:
+                cond_var = conditional_var('{}{}'.format(self.func, self.fn_num))
             print_conditional_if(cond_var)
             print('  AF',  end='')
         else:

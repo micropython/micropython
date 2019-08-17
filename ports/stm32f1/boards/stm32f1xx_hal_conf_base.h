@@ -43,6 +43,8 @@
 #include "stm32f1xx_hal_rcc.h"
 #include "stm32f1xx_hal_rtc.h"
 #include "stm32f1xx_hal_spi.h"
+#include "stm32f1xx_hal_sd.h"
+#include "stm32f1xx_hal_mmc.h"
 #include "stm32f1xx_hal_tim.h"
 #include "stm32f1xx_hal_uart.h"
 #include "stm32f1xx_hal_usart.h"
@@ -70,6 +72,8 @@
 #define HAL_UART_MODULE_ENABLED
 #define HAL_USART_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
+#define HAL_SD_MODULE_ENABLED
+#define HAL_MMC_MODULE_ENABLED
 
 // Oscillator values in Hz
 #define HSI_VALUE   (8000000)

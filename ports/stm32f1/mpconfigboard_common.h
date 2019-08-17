@@ -82,11 +82,6 @@
 	#define MICROPY_HW_ENABLE_SDCARD (0)
 #endif
 
-// Whether to enable the MMC interface, exposed as pyb.MMCard
-#ifndef MICROPY_HW_ENABLE_MMCARD
-	#define MICROPY_HW_ENABLE_MMCARD (0)
-#endif
-
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 	#define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
@@ -177,7 +172,7 @@
 #endif
 
 // Enable CAN if there are any peripherals defined
-#if defined(MICROPY_HW_CAN1_TX) && !MICROPY_HW_ENABLE_USB
+#if defined(MICROPY_HW_CAN_TX) && !MICROPY_HW_ENABLE_USB
 	#define MICROPY_HW_ENABLE_CAN (1)
 	#define MICROPY_HW_MAX_CAN (1)
 #else

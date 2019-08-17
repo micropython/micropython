@@ -358,8 +358,10 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             DMA_HandleTypeDef tx_dma, rx_dma;
             dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
             self->spi->hdmatx = &tx_dma;
+
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
+            
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             uint32_t t_start = HAL_GetTick();
@@ -392,10 +394,10 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
 
     uint spi_num = 1; // default to SPI1
     if (0) { }
-    #if defined(SPI2)
+    #if defined(MICROPY_HW_SPI2_SCK)
     else if (spi->Instance == SPI2) { spi_num = 2; }
     #endif
-    #if defined(SPI3)
+    #if defined(MICROPY_HW_SPI3_SCK)
     else if (spi->Instance == SPI3) { spi_num = 3; }
     #endif
 
@@ -423,7 +425,12 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
         } else {
             mp_printf(print, ", SPI.SLAVE");
         }
-        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", 
+            spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, 
+            spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, 
+            spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16
+        );
+
         if (spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE) {
             mp_printf(print, ", crc=0x%x", spi->Init.CRCPolynomial);
         }

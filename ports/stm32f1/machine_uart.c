@@ -86,11 +86,7 @@ STATIC const pyb_uart_irq_map_t mp_irq_map[] = {
     { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
     #if 0
     // For now only IRQs selected by CR1 are supported
-    #if defined(STM32F4)
-    { USART_CR2_LBDIE,  UART_FLAG_LBD},  // LIN break detection
-    #else
     { USART_CR2_LBDIE,  UART_FLAG_LBDF}, // LIN break detection
-    #endif
     { USART_CR3_CTSIE,  UART_FLAG_CTS},  // CTS
     #endif
 };
@@ -373,26 +369,6 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART5_NAME) == 0) {
             uart_id = PYB_UART_5;
         #endif
-        #ifdef MICROPY_HW_UART6_NAME
-        } else if (strcmp(port, MICROPY_HW_UART6_NAME) == 0) {
-            uart_id = PYB_UART_6;
-        #endif
-        #ifdef MICROPY_HW_UART7_NAME
-        } else if (strcmp(port, MICROPY_HW_UART7_NAME) == 0) {
-            uart_id = PYB_UART_7;
-        #endif
-        #ifdef MICROPY_HW_UART8_NAME
-        } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
-            uart_id = PYB_UART_8;
-        #endif
-        #ifdef MICROPY_HW_UART9_NAME
-        } else if (strcmp(port, MICROPY_HW_UART9_NAME) == 0) {
-            uart_id = PYB_UART_9;
-        #endif
-        #ifdef MICROPY_HW_UART10_NAME
-        } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
-            uart_id = PYB_UART_10;
-        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
         }
@@ -489,11 +465,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
-    self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
-    #else
     self->uartx->CR1 |= USART_CR1_SBK;
-    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);

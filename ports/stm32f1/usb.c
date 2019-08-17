@@ -161,7 +161,6 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, co
         USBD_LL_Start(usbd);
         usb_dev->enabled = true;
     } else {
-        // TODO: 模拟设备插入、让重新枚举一次
     }
 
     return true;
@@ -334,9 +333,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             if (type == &pyb_flash_type
                 #if MICROPY_HW_ENABLE_SDCARD
                 || type == &pyb_sdcard_type
-                #endif
-                #if MICROPY_HW_ENABLE_MMCARD
-                || type == &pyb_mmcard_type
                 #endif
                 ) {
                 msc_unit[i] = type;

@@ -98,7 +98,12 @@
 #define EXTI_RTSR EXTI->RTSR
 #define EXTI_FTSR EXTI->FTSR
 
-#define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
+// #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
+#define EXTI_SWIER_BB(line)       EXTI_MODE_BB(offsetof(EXTI_TypeDef, SWIER), line)
+#define EXTI_MOD_IT_BB(line)      EXTI_MODE_BB(EXTI_Mode_Interrupt, line)
+#define EXTI_MOD_EVT_BB(line)     EXTI_MODE_BB(EXTI_Mode_Event, line)
+#define EXTI_TRI_RISING_BB(line)  EXTI_MODE_BB(EXTI_Trigger_Rising, line)
+#define EXTI_TRI_FALLING_BB(line) EXTI_MODE_BB(EXTI_Trigger_Falling, line)
 
 typedef struct {
     mp_obj_base_t base;
@@ -123,6 +128,30 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 	// USBWakeUp_IRQn
 };
 
+#define GPIO_MODE_IT          0x00010000
+#define GPIO_MODE_EVT         0x00020000
+#define RISING_EDGE           0x00100000
+#define FALLING_EDGE          0x00200000
+
+void mp_hal_extint_config(const pin_obj_t * pin, uint32_t mode) {
+    uint32_t idx = pin->pin;
+    uint pos = (4 * (idx & 3));
+    // 根据Pin位置 获取对应GPIO配置
+    uint32_t temp = AFIO->EXTICR[idx >> 2];
+    
+    // 清理对应GPIO配置 4bit, 写入当前pin对应GPIO
+    temp &= ~ ( (0x0F) << pos );
+    temp |=   (pin->port) << pos;
+    // temp &= ~ ( (0x0F) << (4 * (idx & 3)) );
+    // temp |=   (pin->port) << (4 * (idx & 3));
+    AFIO->EXTICR[idx >> 2] = temp;
+
+    EXTI_MOD_IT_BB(idx) = (mode & GPIO_MODE_IT) == GPIO_MODE_IT;
+    EXTI_MOD_EVT_BB(idx) = (mode & GPIO_MODE_EVT) == GPIO_MODE_EVT;
+    EXTI_TRI_RISING_BB(idx) = (mode & RISING_EDGE) == RISING_EDGE;
+    EXTI_TRI_FALLING_BB(idx) = (mode & FALLING_EDGE) == FALLING_EDGE;
+}
+
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
@@ -144,6 +173,8 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         pin = pin_find(pin_obj);
         v_line = pin->pin;
     }
+
+    // check pin mode
     if (mode != GPIO_MODE_IT_RISING &&
         mode != GPIO_MODE_IT_FALLING &&
         mode != GPIO_MODE_IT_RISING_FALLING &&
@@ -152,9 +183,9 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         mode != GPIO_MODE_EVT_RISING_FALLING) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid ExtInt Mode: %d", mode));
     }
-    if (pull != GPIO_NOPULL &&
-        pull != GPIO_PULLUP &&
-        pull != GPIO_PULLDOWN) {
+
+    // check pin pull
+    if (pull > GPIO_PULLDOWN) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid ExtInt Pull: %d", pull));
     }
 
@@ -182,14 +213,8 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
             extint_enable(v_line);
         } else {
             mp_hal_gpio_clock_enable(pin->gpio);
-            GPIO_InitTypeDef exti;
-            exti.Pin = pin->pin_mask;
-            exti.Mode = mode;
-            exti.Pull = pull;
-            exti.Speed = GPIO_SPEED_FREQ_HIGH;
-            HAL_GPIO_Init(pin->gpio, &exti);
-
-            // Calling HAL_GPIO_Init does an implicit extint_enable
+            mp_hal_pin_input(pin);
+            mp_hal_extint_config(pin, mode);
         }
 
         /* Enable and set NVIC Interrupt to the lowest priority */
@@ -229,8 +254,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         // Route the GPIO to EXTI
         __HAL_RCC_SYSCFG_CLK_ENABLE();
 		AFIO->EXTICR[line >> 2] =
-			(AFIO->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03)))) 
-			| ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+			(AFIO->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 3)))) | ((uint32_t)(pin->port) << (4 * (line & 3)));
 
         extint_trigger_mode(line, mode);
 
@@ -264,22 +288,13 @@ void extint_set(const pin_obj_t *pin, uint32_t mode) {
         // Route the GPIO to EXTI
         __HAL_RCC_SYSCFG_CLK_ENABLE();
         AFIO->EXTICR[line >> 2] =
-            (AFIO->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
-            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+            (AFIO->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 3))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 3)));
 
         // Enable or disable the rising detector
-        if ((mode & GPIO_MODE_IT_RISING) == GPIO_MODE_IT_RISING) {
-            EXTI_RTSR |= 1 << line;
-        } else {
-            EXTI_RTSR &= ~(1 << line);
-        }
-
+        BIT_BAND(EXTI_RTSR, line) = (mode & GPIO_MODE_IT_RISING) == GPIO_MODE_IT_RISING;
         // Enable or disable the falling detector
-        if ((mode & GPIO_MODE_IT_FALLING) == GPIO_MODE_IT_FALLING) {
-            EXTI_FTSR |= 1 << line;
-        } else {
-            EXTI_FTSR &= ~(1 << line);
-        }
+        BIT_BAND(EXTI_FTSR, line) = (mode & GPIO_MODE_IT_FALLING) == GPIO_MODE_IT_FALLING;
 
         // Configure the NVIC
         NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[line]), IRQ_PRI_EXTINT);
@@ -316,8 +331,8 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-    EXTI->SWIER &= ~(1 << line);
-    EXTI->SWIER |= (1 << line);
+    EXTI_SWIER_BB(line) = 0;
+    EXTI_SWIER_BB(line) = 1;
 }
 
 void extint_trigger_mode(uint line, uint32_t mode) {

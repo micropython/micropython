@@ -1,5 +1,4 @@
 /*
- * 看门狗模块
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -54,29 +53,26 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // timeout is in milliseconds
     mp_int_t timeout = args[ARG_timeout].u_int;
 
-    // compute prescaler
+    // compute prescaler, must in [0,6], 6 and 7 as the same effect
     uint32_t prescaler;
-    for (prescaler = 0; prescaler < 6 && timeout >= 512; ++prescaler, timeout /= 2) {
-    }
+    for (prescaler = 0; prescaler < 7 && timeout >= 512; ++prescaler, timeout >>= 1);
 
-    // convert milliseconds to ticks
-    timeout *= 8; // 32kHz / 4 = 8 ticks per millisecond (approx)
+    // convert milliseconds to ticks, 
+    timeout *= 10; // 40kHz / 4 = 10 ticks per millisecond (approx)
     if (timeout <= 0) {
         mp_raise_ValueError("WDT timeout too short");
-    } else if (timeout > 0xfff) {
+    } else if (timeout > 0xfff) { // max 12bit
         mp_raise_ValueError("WDT timeout too long");
     }
     timeout -= 1;
 
     // set the reload register
-    while (IWDG->SR & 2) {
-    }
+    while (BIT_BAND(IWDG->SR, 1)); // RVU
     IWDG->KR = 0x5555;
     IWDG->RLR = timeout;
 
     // set the prescaler
-    while (IWDG->SR & 1) {
-    }
+    while (BIT_BAND(IWDG->SR, 0)); // PVU
     IWDG->KR = 0x5555;
     IWDG->PR = prescaler;
 
@@ -88,10 +84,11 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
 STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
     (void)self_in;
-    IWDG->KR = 0xaaaa;
+    IWDG->KR = 0xaaaa; // reload counter
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_feed_obj, pyb_wdt_feed);
+
 
 STATIC const mp_rom_map_elem_t pyb_wdt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&pyb_wdt_feed_obj) },

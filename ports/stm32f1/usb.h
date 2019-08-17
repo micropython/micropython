@@ -65,7 +65,7 @@ void pyb_usb_init0(void);
 // - pid:  产品ID
 // - mode: 配置模式
 // - msc_n: MSC逻辑盘数量(最大2)
-// - msc_unit: MSC存储单元类型 (pyb_sdcard_type, pyb_flash_type, pyb_mmcard_type)
+// - msc_unit: MSC存储单元类型 (pyb_sdcard_type, pyb_flash_type)
 // - hid_info:
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, uint8_t mode, size_t msc_n, const void *msc_unit, USBD_HID_ModeInfoTypeDef *hid_info);
 void pyb_usb_dev_deinit(void);

@@ -6,14 +6,20 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_PY_STM              (0)
 
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_USB_FS           (1)
+#define MICROPY_HW_ENABLE_ADC       (0)
+
+#define MICROPY_HW_ENABLE_SDCARD    (0)
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_A1)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_USE_HSE      (1)
@@ -24,11 +30,12 @@
 // The board has a 32kHz crystal for the RTC
 #define MICROPY_HW_RTC_USE_LSE      (1)
 #define MICROPY_HW_RTC_USE_US       (0)
+//#define MICROPY_HW_RTC_USE_CALOUT   (0)
 
-// -------------------- soft spi flash W25Q16 --------------------
-#define MICROPY_HW_SPIFLASH_SIZE_BITS (16 * 1024 * 1024)
+// -------------------- soft spi flash W25Q128(default W25Q16) --------------------
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (128 * 1024 * 1024)
 
-// SPI1's 4 pin
+// SPI1's 4 pins
 #define MICROPY_HW_SPIFLASH_CS      (pin_A4)
 #define MICROPY_HW_SPIFLASH_SCK     (pin_A5)
 #define MICROPY_HW_SPIFLASH_MOSI    (pin_A7)
@@ -49,8 +56,8 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 
 // --------------------------------------------------------------
 // USART1
-#define MICROPY_HW_UART1_TX     (pin_A9)
-#define MICROPY_HW_UART1_RX     (pin_A10)
+// #define MICROPY_HW_UART1_TX     (pin_A9)
+// #define MICROPY_HW_UART1_RX     (pin_A10)
 
 // USART2
 // #define MICROPY_HW_UART2_TX     (pin_A2)  // PA2
@@ -81,19 +88,7 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 // #define MICROPY_HW_SPI2_MISO (pin_B14)
 // #define MICROPY_HW_SPI2_MOSI (pin_B15)
 
-// SPI3
-// #define MICROPY_HW_SPI3_NSS  (pin_A15)
-// #define MICROPY_HW_SPI3_SCK  (pin_B3)
-// #define MICROPY_HW_SPI3_MISO (pin_B4)
-// #define MICROPY_HW_SPI3_MOSI (pin_B5)
-
 // CAN (no chip)
-// #define MICROPY_HW_CAN1_TX (pin_B9) // PB9,PD1,PA12
-// #define MICROPY_HW_CAN1_RX (pin_B8) // PB8,PD0,PA11
-
-// DAC
-// DAC_OUT1 PA4
-// DAC_OUT2 PA5
 
 // KEY0 has no pullup or pulldown, and pressing the switch makes the input go low
 // #define MICROPY_HW_USRSW_PIN        (pin_C12)
@@ -105,8 +100,9 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 // pin_E3
 
 // LEDs
-#define MICROPY_HW_LED1             (pin_A1)  // Yellow LED D1
-#define MICROPY_HW_LED2             (pin_C13) // Yellow LED D2
-// Yellow LED D3 is the power LED and always on
+#define MICROPY_HW_LED1             (pin_A1)  // RED LED D1
+#define MICROPY_HW_LED2             (pin_C13) // RED LED D2
+// Green LED D3 is the power LED and always on
+
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))

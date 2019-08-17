@@ -77,17 +77,10 @@ void servo_init(void) {
     }
 
     // assign servo objects to specific pins (must be some permutation of PA0-PA3)
-    #ifdef pyb_pin_X1
-    pyb_servo_obj[0].pin = pyb_pin_X1;
-    pyb_servo_obj[1].pin = pyb_pin_X2;
-    pyb_servo_obj[2].pin = pyb_pin_X3;
-    pyb_servo_obj[3].pin = pyb_pin_X4;
-    #else
     pyb_servo_obj[0].pin = pin_A0;
     pyb_servo_obj[1].pin = pin_A1;
     pyb_servo_obj[2].pin = pin_A2;
     pyb_servo_obj[3].pin = pin_A3;
-    #endif
 }
 
 void servo_timer_irq_callback(void) {

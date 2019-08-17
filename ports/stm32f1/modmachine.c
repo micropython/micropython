@@ -65,9 +65,10 @@
 STATIC uint32_t reset_cause;
 
 void machine_init(void) {
-    if (PWR->CSR & PWR_CSR_SBF) { // 待机模式
+    if (BIT_BAND(PWR->CSR, PWR_CSR_SBF_Pos)) { // 待机模式
         reset_cause = PYB_RESET_DEEPSLEEP;
-        PWR->CR |= PWR_CR_CSBF;   // 清除待机标识
+        // PWR->CR |= PWR_CR_CSBF;   
+        BIT_BAND_SET(PWR->CR, PWR_CR_CSBF_Pos); // 清除待机标识
     } else {
         // 从RCC里获取复位原因
         uint32_t state = RCC->CSR;
@@ -83,7 +84,8 @@ void machine_init(void) {
         }
     }
     // clear RCC reset flags
-    RCC->CSR |= RCC_CSR_RMVF;
+    // RCC->CSR |= RCC_CSR_RMVF;
+    BIT_BAND_SET(RCC->CSR, RCC_CSR_RMVF_Pos); // 清除待机标识
 }
 
 void machine_deinit(void) {
@@ -101,7 +103,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     }
 
     // get and print clock speeds
-    // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
+    // SYSCLK=72MHz, HCLK=72MHz, PCLK1=36MHz, PCLK2=72MHz
     {
         printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
                (unsigned int)HAL_RCC_GetSysClockFreq(),

@@ -35,10 +35,6 @@ enum {
   PORT_E,
   PORT_F,
   PORT_G,
-  PORT_H,
-  PORT_I,
-  PORT_J,
-  PORT_K,
 };
 
 // Must have matching entries in SUPPORTED_FN in boards/make-pins.py
@@ -49,7 +45,7 @@ enum {
   AF_FN_UART = AF_FN_USART,
   AF_FN_SPI,
   AF_FN_I2S,
-  AF_FN_SDMMC,
+  AF_FN_SDIO,
   AF_FN_CAN,
 };
 
@@ -61,7 +57,6 @@ enum {
   AF_PIN_TYPE_TIM_CH1N,
   AF_PIN_TYPE_TIM_CH2N,
   AF_PIN_TYPE_TIM_CH3N,
-  AF_PIN_TYPE_TIM_CH1_ETR,
   AF_PIN_TYPE_TIM_ETR,
   AF_PIN_TYPE_TIM_BKIN,
 
@@ -89,12 +84,12 @@ enum {
   AF_PIN_TYPE_I2S_WS,
   AF_PIN_TYPE_I2S_EXTSD,
 
-  AF_PIN_TYPE_SDMMC_CK = 0,
-  AF_PIN_TYPE_SDMMC_CMD,
-  AF_PIN_TYPE_SDMMC_D0,
-  AF_PIN_TYPE_SDMMC_D1,
-  AF_PIN_TYPE_SDMMC_D2,
-  AF_PIN_TYPE_SDMMC_D3,
+  AF_PIN_TYPE_SDIO_CK = 0,
+  AF_PIN_TYPE_SDIO_CMD,
+  AF_PIN_TYPE_SDIO_D0,
+  AF_PIN_TYPE_SDIO_D1,
+  AF_PIN_TYPE_SDIO_D2,
+  AF_PIN_TYPE_SDIO_D3,
 
   AF_PIN_TYPE_CAN_TX = 0,
   AF_PIN_TYPE_CAN_RX,
@@ -107,22 +102,35 @@ enum {
 #define GPIO_AF1_TIM2 1
 
 #define GPIO_AF2_TIM3 2
+#define GPIO_AF2_TIM4 2
+#define GPIO_AF2_TIM5 2
 
-#define GPIO_AF3_I2C1 3
+#define GPIO_AF3_TIM8 3
 
-#define GPIO_AF4_SPI1 4
+#define GPIO_AF4_I2C1 4
+#define GPIO_AF4_I2C2 4
 
-#define GPIO_AF5_USART1 5
-#define GPIO_AF5_USART2 5
 
-#define GPIO_AF5_I2S2    GPIO_AF5_SPI2
-#define GPIO_AF5_I2S3    GPIO_AF5_I2S3ext
-#define GPIO_AF6_I2S2    GPIO_AF6_I2S2ext
-#define GPIO_AF6_I2S3    GPIO_AF6_SPI3
-#define GPIO_AF6_CAN1    6
-#define GPIO_AF7_I2S2    GPIO_AF7_SPI2
-#define GPIO_AF7_I2S3    GPIO_AF7_I2S3ext
-#define GPIO_AF10_USB    10
+#define GPIO_AF5_SPI1     5
+#define GPIO_AF5_SPI2     5
+#define GPIO_AF5_I2S2     5
+
+#define GPIO_AF6_SPI3     6
+#define GPIO_AF6_I2S3     6
+
+#define GPIO_AF7_USART1   7
+#define GPIO_AF7_USART2   7
+#define GPIO_AF7_USART3   7
+
+#define GPIO_AF8_UART4    8
+#define GPIO_AF8_UART5    8
+
+#define GPIO_AF9_CAN1     9
+
+#define GPIO_AF10_USB     10
+
+#define GPIO_AF12_SDIO    12
+
 #define I2S2  SPI2
 #define I2S3  SPI3
 

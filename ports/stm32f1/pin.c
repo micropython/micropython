@@ -97,6 +97,14 @@ STATIC bool pin_class_debug;
 #define IS_GPIO_AF(AF) ((AF)<=(uint8_t)0x0F) 
 #endif
 
+#ifndef IS_MP_PIN_MOD
+#define IS_MP_PIN_MOD(MODE)  ( (MODE) <= 6 )
+#endif
+
+#ifndef IS_MP_PIN_PULL
+#define IS_MP_PIN_PULL(PULL) ( (PULL) <= MP_HAL_PIN_PULL_DOWN)
+#endif
+
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
@@ -331,11 +339,11 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_
 // init(mode, pull=None, af=-1, *, value, alt)
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
-        { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
+        { MP_QSTR_mode,  MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_pull,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
+        { MP_QSTR_af,    MP_ARG_INT,                  {.u_int = -1}}, // legacy
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        { MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
 
     // parse args
@@ -344,7 +352,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
 
     // get io mode
     uint mode = args[0].u_int;
-    if (!IS_GPIO_MODE(mode)) {
+    if (!IS_MP_PIN_MOD(mode)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
     }
 
@@ -353,7 +361,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
     if (args[1].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[1].u_obj);
     }
-    if (!IS_GPIO_PULL(pull)) {
+    if (!IS_MP_PIN_PULL(pull)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull));
     }
 
@@ -362,7 +370,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
     if (af == -1) {
         af = args[2].u_int;
     }
-    if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
+    if ((mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) && !IS_GPIO_AF(af)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af));
     }
 
@@ -374,16 +382,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
         mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
     }
 
-    // configure the GPIO as requested
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = self->pin_mask;
-    GPIO_InitStructure.Mode = mode;
-    GPIO_InitStructure.Pull = pull;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-	#ifndef STM32F1
-    GPIO_InitStructure.Alternate = af;
-	#endif
-    HAL_GPIO_Init(self->gpio, &GPIO_InitStructure);
+    mp_hal_pin_config(self, mode, pull, af);
 
 	#ifdef STM32F1
 	// TODO: 初始化AFIO
@@ -409,42 +408,28 @@ STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
-STATIC mp_obj_t pin_off(mp_obj_t self_in) {
-    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_hal_pin_low(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_off_obj, pin_off);
-
-STATIC mp_obj_t pin_on(mp_obj_t self_in) {
-    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_hal_pin_high(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
-
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger, ARG_hard };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
-        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
-    };
-    pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+// STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+//     enum { ARG_handler, ARG_trigger, ARG_hard };
+//     static const mp_arg_t allowed_args[] = {
+//         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+//         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
+//         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+//     };
+//     pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+//     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+//     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (n_args > 1 || kw_args->used != 0) {
-        // configure irq
-        extint_register_pin(self, args[ARG_trigger].u_int,
-            args[ARG_hard].u_bool, args[ARG_handler].u_obj);
-    }
+//     if (n_args > 1 || kw_args->used != 0) {
+//         // configure irq
+//         extint_register_pin(self, args[ARG_trigger].u_int,
+//             args[ARG_hard].u_bool, args[ARG_handler].u_obj);
+//     }
 
-    // TODO should return an IRQ object
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+//     // TODO should return an IRQ object
+//     return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
 /// \method name()
 /// Get the pin name.
@@ -493,7 +478,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
 /// Returns the base address of the GPIO block associated with this pin.
 STATIC mp_obj_t pin_gpio(mp_obj_t self_in) {
     pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT((intptr_t)self->gpio);
+    return MP_OBJ_NEW_SMALL_INT((uintptr_t)self->gpio);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_gpio_obj, pin_gpio);
 
@@ -528,13 +513,8 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pin_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pin_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pin_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
 
     // Legacy names as used by pyb.Pin
-    { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&pin_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_names),   MP_ROM_PTR(&pin_names_obj) },
     { MP_ROM_QSTR(MP_QSTR_af_list), MP_ROM_PTR(&pin_af_list_obj) },
@@ -555,23 +535,19 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ALT),       MP_ROM_INT(GPIO_MODE_AF_PP) },
-    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_AF_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ANALOG),    MP_ROM_INT(GPIO_MODE_ANALOG) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULLUP) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_MODE_IT_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_MODE_IT_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IN),             MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),            MP_ROM_INT(MP_HAL_PIN_MODE_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),     MP_ROM_INT(MP_HAL_PIN_MODE_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ALT),            MP_ROM_INT(MP_HAL_PIN_MODE_ALT) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ANALOG),         MP_ROM_INT(MP_HAL_PIN_MODE_ANALOG) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),        MP_ROM_INT(GPIO_PULLUP) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),      MP_ROM_INT(GPIO_PULLDOWN) },
 
-    // legacy class constants
-    { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_ROM_QSTR(MP_QSTR_OUT_OD),    MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_AF_PP),     MP_ROM_INT(GPIO_MODE_AF_PP) },
-    { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
+    #if 0
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),     MP_ROM_INT(GPIO_MODE_IT_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),    MP_ROM_INT(GPIO_MODE_IT_FALLING) },
+    #endif
 
 #include "genhdr/pins_af_const.h"
 };
@@ -670,8 +646,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_reg_obj, pin_af_reg);
 
 STATIC const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&pin_af_index_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&pin_af_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pin_af_reg_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name),  MP_ROM_PTR(&pin_af_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reg),   MP_ROM_PTR(&pin_af_reg_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
 

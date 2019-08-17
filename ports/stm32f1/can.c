@@ -108,12 +108,12 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
     const pin_obj_t *pins[2];
 
     switch (can_obj->can_id) {
-        #if defined(MICROPY_HW_CAN1_TX)
+        #if defined(MICROPY_HW_CAN_TX)
         case PYB_CAN_1:
             CANx = CAN1;
             sce_irq = CAN1_SCE_IRQn;
-            pins[0] = MICROPY_HW_CAN1_TX;
-            pins[1] = MICROPY_HW_CAN1_RX;
+            pins[0] = MICROPY_HW_CAN_TX;
+            pins[1] = MICROPY_HW_CAN_RX;
             __HAL_RCC_CAN1_CLK_ENABLE();
             break;
         #endif

@@ -35,9 +35,6 @@ STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_hard_spi_type}, &spi_obj[0]},
     {{&machine_hard_spi_type}, &spi_obj[1]},
     {{&machine_hard_spi_type}, &spi_obj[2]},
-    {{&machine_hard_spi_type}, &spi_obj[3]},
-    {{&machine_hard_spi_type}, &spi_obj[4]},
-    {{&machine_hard_spi_type}, &spi_obj[5]},
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

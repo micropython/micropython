@@ -90,7 +90,7 @@ extern PCD_HandleTypeDef pcd_fs_handle;
 #endif
 
 /******************************************************************************/
-/*            Cortex-M4 Processor Exceptions Handlers                         */
+/*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
 
 // Set the following to 1 to get some more information on the Hard Fault
@@ -533,14 +533,14 @@ void UART5_IRQHandler(void) {
     IRQ_EXIT(UART5_IRQn);
 }
 
-#if defined(MICROPY_HW_CAN1_TX) && 0
-void CAN1_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX0_IRQn);
+#if defined(MICROPY_HW_CAN_TX)
+void USB_LP_CAN1_RX0_IRQHandler(void) {
+    IRQ_ENTER(USB_LP_CAN1_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
-    IRQ_EXIT(CAN1_RX0_IRQn);
+    IRQ_EXIT(USB_LP_CAN1_RX0_IRQn);
 }
 
-void CAN1_RX1_IRQHandler(void) {
+void CAN_RX1_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX1_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
     IRQ_EXIT(CAN1_RX1_IRQn);

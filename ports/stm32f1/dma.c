@@ -40,8 +40,6 @@
 #define DMA_IDLE_TICK_MAX   (8) // 8*8 = 64 msec
 #define DMA_IDLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & DMA_SYSTICK_MASK) == 0)
 
-#define ENABLE_SDIO (MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD)
-
 typedef enum {
     dma_id_not_defined=-1,
     dma_id_0,
@@ -82,7 +80,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     .Priority            = DMA_PRIORITY_LOW,
 };
 
-#if ENABLE_SDIO
+#if MICROPY_HW_ENABLE_SDCARD
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     .Direction           = 0,
@@ -138,7 +136,7 @@ const dma_descr_t dma_SPI_3_TX = { DMA2_Channel2, MP_DMA2_CH2_SPI3_TX, dma_id_8,
 const dma_descr_t dma_DAC_1_TX = { DMA2_Channel3, MP_DMA2_CH3_DAC_Channel1, dma_id_9,   &dma_init_struct_dac };
 const dma_descr_t dma_DAC_2_TX = { DMA2_Channel4, MP_DMA2_CH4_DAC_Channel2, dma_id_10,  &dma_init_struct_dac };
 #endif
-#if ENABLE_SDIO
+#if MICROPY_HW_ENABLE_SDCARD
 const dma_descr_t dma_SDIO_0 = { DMA2_Channel4, MP_DMA2_CH4_SDIO, dma_id_10,  &dma_init_struct_sdio };
 #endif
 
