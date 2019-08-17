@@ -168,7 +168,6 @@ STATIC mp_obj_t esp32_partition_writeblocks(mp_obj_t self_in, mp_obj_t block_num
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_writeblocks_obj, esp32_partition_writeblocks);
 
-// TODO could be an ioctl?
 STATIC mp_obj_t esp32_partition_eraseblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t size_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t start_addr = mp_obj_get_int_truncated(block_num) * BLOCK_SIZE_BYTES;
@@ -195,7 +194,6 @@ STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&esp32_partition_find_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&esp32_partition_info_obj) },
-
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&esp32_partition_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&esp32_partition_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_eraseblocks), MP_ROM_PTR(&esp32_partition_eraseblocks_obj) },
@@ -203,10 +201,8 @@ STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_boot), MP_ROM_PTR(&esp32_partition_set_boot_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_next_update), MP_ROM_PTR(&esp32_partition_get_next_update_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_FIRST), MP_ROM_INT(ESP32_PARTITION_FIRST) },
     { MP_ROM_QSTR(MP_QSTR_BOOT), MP_ROM_INT(ESP32_PARTITION_BOOT) },
     { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(ESP32_PARTITION_RUNNING) },
-
     { MP_ROM_QSTR(MP_QSTR_TYPE_APP), MP_ROM_INT(ESP_PARTITION_TYPE_APP) },
     { MP_ROM_QSTR(MP_QSTR_TYPE_DATA), MP_ROM_INT(ESP_PARTITION_TYPE_DATA) },
 };
