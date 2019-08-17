@@ -73,36 +73,30 @@ STATIC void esp32_partition_print(const mp_print_t *print, mp_obj_t self_in, mp_
 }
 
 STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // Parse args
-    enum { ARG_id, ARG_type, ARG_subtype, ARG_label };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ESP_PARTITION_TYPE_APP} },
-        { MP_QSTR_subtype, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ESP_PARTITION_SUBTYPE_ANY} },
-        { MP_QSTR_label, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // Check args
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // Get requested partition
     const esp_partition_t *part;
-    switch (args[ARG_id].u_int) {
-        case ESP32_PARTITION_FIRST: {
-            const char *label = NULL;
-            if (args[ARG_label].u_obj != mp_const_none) {
-                label = mp_obj_str_get_str(args[ARG_label].u_obj);
-            }
-            part = esp_partition_find_first(args[ARG_type].u_int, args[ARG_subtype].u_int, label);
-            break;
+    if (mp_obj_is_int(all_args[0])) {
+        // Integer given, get that particular partition
+        switch (mp_obj_get_int(all_args[0])) {
+            case ESP32_PARTITION_BOOT:
+                part = esp_ota_get_boot_partition();
+                break;
+            case ESP32_PARTITION_RUNNING:
+                part = esp_ota_get_running_partition();
+                break;
+            default:
+                mp_raise_ValueError(NULL);
         }
-        case ESP32_PARTITION_BOOT:
-            part = esp_ota_get_boot_partition();
-            break;
-        case ESP32_PARTITION_RUNNING:
-            part = esp_ota_get_running_partition();
-            break;
-        default:
-            mp_raise_ValueError(NULL);
+    } else {
+        // String given, search for partition with that label
+        const char *label = mp_obj_str_get_str(all_args[0]);
+        part = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, label);
+        if (part == NULL) {
+            part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, label);
+        }
     }
 
     // Return new object
