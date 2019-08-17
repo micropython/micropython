@@ -32,38 +32,17 @@
 #include "shared-bindings/pulseio/PWMOut.h"
 
 #include "shared-module/displayio/area.h"
-
-typedef void (*display_bus_bus_reset)(mp_obj_t bus);
-typedef bool (*display_bus_bus_free)(mp_obj_t bus);
-typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
-typedef void (*display_bus_send)(mp_obj_t bus, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length);
-typedef void (*display_bus_end_transaction)(mp_obj_t bus);
+#include "shared-module/displayio/display_core.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t bus;
-    displayio_group_t *current_group;
-    uint64_t last_refresh;
-    display_bus_bus_reset bus_reset;
-    display_bus_bus_free bus_free;
-    display_bus_begin_transaction begin_transaction;
-    display_bus_send send;
-    display_bus_end_transaction end_transaction;
+    displayio_display_core_t core;
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
     uint8_t* start_sequence;
     uint32_t start_sequence_len;
     uint8_t* stop_sequence;
     uint32_t stop_sequence_len;
-    displayio_buffer_transform_t transform;
-    displayio_area_t area;
-    uint16_t width;
-    uint16_t height;
-    uint16_t ram_width;
-    uint16_t ram_height;
-    _displayio_colorspace_t colorspace;
-    int16_t colstart;
-    int16_t rowstart;
     uint16_t set_column_window_command;
     uint16_t set_row_window_command;
     uint16_t set_current_column_command;
@@ -76,11 +55,12 @@ typedef struct {
     bool black_bits_inverted;
     bool color_bits_inverted;
     bool refreshing;
-    bool full_refresh; // New group means we need to refresh the whole display.
     bool always_toggle_chip_select;
 } displayio_epaperdisplay_obj_t;
 
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self);
+
+void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H

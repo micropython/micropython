@@ -4,7 +4,6 @@
 #include "shared-module/displayio/__init__.h"
 
 #include "lib/utils/interrupt_char.h"
-#include "py/gc.h"
 #include "py/reload.h"
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"
@@ -16,7 +15,6 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/memory.h"
-#include "supervisor/usb.h"
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
@@ -46,8 +44,8 @@ void displayio_background(void) {
         }
         if (displays[i].display.base.type == &displayio_display_type) {
             displayio_display_background(&displays[i].display);
-        } else if (displays[i].epaperdisplay.base.type == &displayio_epaperdisplay_type) {
-            displayio_epaperdisplay_background(&displays[i].epaperdisplay);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_background(&displays[i].epaper_display);
         }
     }
 
@@ -162,9 +160,9 @@ void displayio_gc_collect(void) {
         // Alternatively, we could use gc_collect_root over the whole object,
         // but this is more precise, and is the only field that needs marking.
         if (displays[i].display.base.type == &displayio_display_type) {
-            gc_collect_ptr(displays[i].display.current_group);
+            displayio_display_collect_ptrs(&displays[i].display);
         } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
-            gc_collect_ptr(displays[i].epaper_display.current_group);
+            displayio_epaperdisplay_collect_ptrs(&displays[i].epaper_display);
         }
     }
 }

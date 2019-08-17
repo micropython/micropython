@@ -46,23 +46,12 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command,
         const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool always_toggle_chip_select);
 
-int32_t common_hal_displayio_epaperdisplay_wait_for_frame(displayio_epaperdisplay_obj_t* self);
+bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* self);
 
 bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self, displayio_group_t* root_group);
 
-bool displayio_epaperdisplay_begin_transaction(displayio_epaperdisplay_obj_t* self);
-void displayio_epaperdisplay_end_transaction(displayio_epaperdisplay_obj_t* self);
-
-bool displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* self);
-
-mp_float_t displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self);
-
-// The second point of the region is exclusive.
-void displayio_epaperdisplay_set_region_to_update(displayio_epaperdisplay_obj_t* self, displayio_area_t* area);
-bool displayio_epaperdisplay_frame_queued(displayio_epaperdisplay_obj_t* self);
-
-void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self);
-void displayio_epaperdisplay_send_pixels(displayio_epaperdisplay_obj_t* self, uint8_t* pixels, uint32_t length);
+// Returns time in milliseconds.
+uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self);
 
 bool common_hal_displayio_epaperdisplay_get_auto_brightness(displayio_epaperdisplay_obj_t* self);
 void common_hal_displayio_epaperdisplay_set_auto_brightness(displayio_epaperdisplay_obj_t* self, bool auto_brightness);
@@ -72,5 +61,7 @@ uint16_t common_hal_displayio_epaperdisplay_get_height(displayio_epaperdisplay_o
 
 mp_float_t common_hal_displayio_epaperdisplay_get_brightness(displayio_epaperdisplay_obj_t* self);
 bool common_hal_displayio_epaperdisplay_set_brightness(displayio_epaperdisplay_obj_t* self, mp_float_t brightness);
+
+mp_obj_t common_hal_displayio_epaperdisplay_get_bus(displayio_epaperdisplay_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_EPAPERDISPLAY_H

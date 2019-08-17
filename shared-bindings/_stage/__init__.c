@@ -30,6 +30,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-module/_stage/__init__.h"
+#include "shared-module/displayio/display_core.h"
 #include "Layer.h"
 #include "Text.h"
 
@@ -95,7 +96,8 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         scale = mp_obj_get_int(args[7]);
     }
 
-    while (!displayio_display_begin_transaction(display)) {
+    // TODO: Everything below should be in shared-module because it's not argument parsing.
+    while (!displayio_display_core_begin_transaction(&display->core)) {
         RUN_BACKGROUND_TASKS;
     }
     displayio_area_t area;
@@ -103,12 +105,12 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     area.y1 = y0;
     area.x2 = x1;
     area.y2 = y1;
-    displayio_display_set_region_to_update(display, &area);
+    displayio_display_core_set_region_to_update(&display->core, display->set_column_command, display->set_row_command, NO_COMMAND, NO_COMMAND, display->data_as_commands, false, &area);
 
-    display->send(display->bus, true, &display->write_ram_command, 1);
+    display->core.send(display->core.bus, true, true, &display->write_ram_command, 1);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
                  display, scale);
-    displayio_display_end_transaction(display);
+    displayio_display_core_end_transaction(&display->core);
 
     return mp_const_none;
 }

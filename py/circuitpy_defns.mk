@@ -364,6 +364,12 @@ SRC_SHARED_MODULE_ALL += \
 	touchio/__init__.c
 endif
 
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
+SRC_SHARED_MODULE_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	displayio/display_core.c \
+)
+
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = \
 $(addprefix lib/,\

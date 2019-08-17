@@ -208,7 +208,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisp
 //|     Refreshes the display immediately or raises an exception if too soon. Use
 //|     ``time.sleep(display.time_to_refresh)`` to sleep until a refresh can occur.
 //|
-STATIC mp_obj_t displayio_epaperdisplay_obj_refresh_soon(mp_obj_t self_in) {
+STATIC mp_obj_t displayio_epaperdisplay_obj_refresh(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
     bool ok = common_hal_displayio_epaperdisplay_refresh(self);
     if (!ok) {
@@ -216,7 +216,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_refresh_soon(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_refresh_soon_obj, displayio_epaperdisplay_obj_refresh_soon);
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_refresh_obj, displayio_epaperdisplay_obj_refresh);
 
 //|   .. attribute:: time_to_refresh
 //|
@@ -225,7 +225,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_refresh_soon_obj, displayio_ep
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
-    return mp_obj_new_float(common_hal_displayio_epaperdisplay_get_time_to_refresh(self));
+    return mp_obj_new_float(common_hal_displayio_epaperdisplay_get_time_to_refresh(self) / 1000.0);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_time_to_refresh_obj, displayio_epaperdisplay_obj_get_time_to_refresh);
 
@@ -279,7 +279,7 @@ const mp_obj_property_t displayio_epaperdisplay_height_obj = {
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
-    return self->bus;
+    return common_hal_displayio_epaperdisplay_get_bus(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperdisplay_obj_get_bus);
 
@@ -293,7 +293,7 @@ const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
-    { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_epaperdisplay_refresh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_epaperdisplay_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_epaperdisplay_height_obj) },
