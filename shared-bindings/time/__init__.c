@@ -236,7 +236,12 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return rtc_get_time_source_time();
     }
 
-    mp_int_t secs = mp_obj_int_get_checked(args[0]);
+    mp_obj_t arg = args[0];
+    if(mp_obj_is_float(arg))
+        arg = mp_obj_new_int_from_float(mp_obj_get_float(arg));
+
+    mp_int_t secs = mp_obj_get_int(arg);
+
     if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
 
