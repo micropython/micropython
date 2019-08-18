@@ -25,9 +25,9 @@ env:
   # Non-board tasks
   - TRAVIS_TESTS="unix docs translations website"
   # Adafruit and Nordic nRF boards
-  - TRAVIS_BOARDS="circuitplayground_bluefruit feather_nrf52840_express metro_nrf52840_express pca10056 pca10059" TRAVIS_SDK=nrf
+  - TRAVIS_BOARDS="circuitplayground_bluefruit feather_nrf52840_express metro_nrf52840_express pca10056 pca10059" TRAVIS_SDK=arm
   # Other nRF boards
-  - TRAVIS_BOARDS="electronut_labs_blip electronut_labs_papyr makerdiary_nrf52840_mdk makerdiary_nrf52840_mdk_usb_dongle particle_argon particle_boron particle_xenon sparkfun_nrf52840_mini" TRAVIS_SDK=nrf
+  - TRAVIS_BOARDS="electronut_labs_blip electronut_labs_papyr makerdiary_nrf52840_mdk makerdiary_nrf52840_mdk_usb_dongle particle_argon particle_boron particle_xenon sparkfun_nrf52840_mini" TRAVIS_SDK=arm
   # Adafruit and modified Adafruit SAMD21 (M0)
   - TRAVIS_BOARDS="circuitplayground_express circuitplayground_express_crickit feather_m0_adalogger feather_m0_basic feather_m0_express feather_m0_express_crickit feather_m0_rfm69 feather_m0_rfm9x feather_m0_supersized" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="feather_radiofruit_zigbee gemma_m0 hallowing_m0_express itsybitsy_m0_express metro_m0_express pirkey_m0 pyruler trinket_m0 trinket_m0_haxpress" TRAVIS_SDK=arm
