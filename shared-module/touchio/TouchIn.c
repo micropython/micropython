@@ -28,15 +28,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "py/nlr.h"
-#include "py/mperrno.h"
 #include "py/runtime.h"
-#include "py/binary.h"
 #include "py/mphal.h"
 #include "shared-bindings/touchio/TouchIn.h"
-#include "supervisor/shared/translate.h"
-
-#include "nrf.h"
 
 // This is a capacitive touch sensing routine using a single digital
 // pin.  The pin should be connected to the sensing pad, and to ground
@@ -57,15 +51,14 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     for (uint16_t i = 0; i < N_SAMPLES; i++) {
         // set pad to digital output high for 10us to charge it
 
-        nrf_gpio_cfg_output(self->pin->number);
-        nrf_gpio_pin_set(self->pin->number);
+        common_hal_digitalio_digitalinout_switch_to_output(self->digitalinout, true, DRIVE_MODE_PUSH_PULL);
         mp_hal_delay_us(10);
 
         // set pad back to an input and take some samples
 
-        nrf_gpio_cfg_input(self->pin->number, NRF_GPIO_PIN_NOPULL);
+        common_hal_digitalio_digitalinout_switch_to_input(self->digitalinout, PULL_NONE);
 
-        while(nrf_gpio_pin_read(self->pin->number)) {
+        while(common_hal_digitalio_digitalinout_get_value(self->digitalinout)) {
             if (ticks >= TIMEOUT_TICKS) return TIMEOUT_TICKS;
             ticks++;
         }
@@ -73,16 +66,17 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     return ticks;
 }
 
-void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
-        const mcu_pin_obj_t *pin) {
-    self->pin = pin;
-    claim_pin(pin);
+void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu_pin_obj_t *pin) {
+    self->digitalinout = m_new_obj(digitalio_digitalinout_obj_t);
+    self->digitalinout->base.type = &digitalio_digitalinout_type;
+
+    common_hal_digitalio_digitalinout_construct(self->digitalinout, pin);
 
     self->threshold = get_raw_reading(self) * 1.05 + 100;
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
-    return self->pin == NULL;
+    return self->digitalinout == MP_OBJ_NULL;
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
@@ -90,8 +84,8 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
         return;
     }
 
-    reset_pin_number(self->pin->number);
-    self->pin = NULL;
+    common_hal_digitalio_digitalinout_deinit(self->digitalinout);
+    self->digitalinout = MP_OBJ_NULL;
 }
 
 void touchin_reset() {

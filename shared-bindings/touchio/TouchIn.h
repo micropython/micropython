@@ -28,7 +28,12 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H
 
 #include "common-hal/microcontroller/Pin.h"
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
+#else
+#include "shared-module/touchio/TouchIn.h"
+#endif
 
 extern const mp_obj_type_t touchio_touchin_type;
 
