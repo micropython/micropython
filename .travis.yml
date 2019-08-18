@@ -23,7 +23,7 @@ git:
 # just try to make the builds "about equal in run time"
 env:
   # Non-board tasks
-  - TRAVIS_TESTS="unix docs translations website"
+  - TRAVIS_TESTS="unix docs translations website" TRAVIS_BOARDS=""
   # Adafruit and Nordic nRF boards
   - TRAVIS_BOARDS="circuitplayground_bluefruit feather_nrf52840_express metro_nrf52840_express pca10056 pca10059" TRAVIS_SDK=arm
   # Other nRF boards
