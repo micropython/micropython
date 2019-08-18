@@ -44,10 +44,10 @@ ifdef EXTERNAL_FLASH_DEVICES
 		SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
 	endif
 else
-	ifneq ($(DISABLE_FILESYSTEM),1)
-		SRC_SUPERVISOR += supervisor/internal_flash.c
-	else 
+	ifeq ($(DISABLE_FILESYSTEM),1)
 		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
+	else 
+		SRC_SUPERVISOR += supervisor/internal_flash.c
 	endif
 endif
 
@@ -105,7 +105,7 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h\
-		--reduced_endpoint_mode $(USB_REDUCED_ENDPOINT)
+		--cdc_and_msc_only $(USB_CDC_AND_MSC_ONLY)
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

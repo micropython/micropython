@@ -21,7 +21,7 @@ parser.add_argument('--serial_number_length', type=int, default=32,
                     help='length needed for the serial number in digits')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
-parser.add_argument('--reduced_endpoint_mode', nargs='?',const=0, type=int)
+parser.add_argument('--cdc_and_msc_only', nargs='?',const=0, type=int)
 
 args = parser.parse_args()
 
@@ -277,7 +277,7 @@ descriptor_list.extend(cdc_interfaces)
 descriptor_list.extend(msc_interfaces)
 # Only add the control interface because other audio interfaces are managed by it to ensure the
 # correct ordering.
-if not args.reduced_endpoint_mode:
+if not args.cdc_and_msc_only:
     descriptor_list.append(audio_control_interface)
 # Put the CDC IAD just before the CDC interfaces.
 # There appears to be a bug in the Windows composite USB driver that requests the
@@ -285,7 +285,7 @@ if not args.reduced_endpoint_mode:
 # first. However, it still fetches the descriptor anyway. We could reorder the interfaces but
 # the Windows 7 Adafruit_usbser.inf file thinks CDC is at Interface 0, so we'll leave it
 # there for backwards compatibility.
-if not args.reduced_endpoint_mode:
+if not args.cdc_and_msc_only:
     descriptor_list.extend(hid_interfaces)
 
 configuration = standard.ConfigurationDescriptor(

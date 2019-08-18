@@ -28,9 +28,6 @@
 #include "py/mphal.h"
 #include "stm32f4/pins.h"
 
-
-//TODO
-//const mcu_pin_obj_t pin_PE02 = PIN(4, GPIOE, 2);
 const mcu_pin_obj_t pin_PE02 = PIN(4, GPIOE, 2);
 const mcu_pin_obj_t pin_PE03 = PIN(4, GPIOE, 3);
 const mcu_pin_obj_t pin_PE04 = PIN(4, GPIOE, 4);

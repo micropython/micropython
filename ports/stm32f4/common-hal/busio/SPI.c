@@ -34,6 +34,7 @@
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
          const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
          const mcu_pin_obj_t * miso) {
+    mp_raise_NotImplementedError(translate("SPI not yet supported"));
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
