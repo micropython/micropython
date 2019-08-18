@@ -113,8 +113,8 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-	int32_t src = convert_block_to_flash_addr(block);
-	if (src == -1) {
+    int32_t src = convert_block_to_flash_addr(block);
+    if (src == -1) {
         // bad block number
         return false;
     }
@@ -163,14 +163,14 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
         return false;
     }
 
-	__HAL_FLASH_DATA_CACHE_DISABLE();
-	__HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+    __HAL_FLASH_DATA_CACHE_DISABLE();
+    __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
 
-	__HAL_FLASH_DATA_CACHE_RESET();
-	__HAL_FLASH_INSTRUCTION_CACHE_RESET();
+    __HAL_FLASH_DATA_CACHE_RESET();
+    __HAL_FLASH_INSTRUCTION_CACHE_RESET();
 
-	__HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
-	__HAL_FLASH_DATA_CACHE_ENABLE();
+    __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+    __HAL_FLASH_DATA_CACHE_ENABLE();
 
     // reprogram the sector
     for (uint32_t i = 0; i < sector_size; i++) {
@@ -183,7 +183,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
         sector_start_addr += 1;
     }
 
-	// lock the flash
+    // lock the flash
     HAL_FLASH_Lock();
 
     return true;
@@ -191,7 +191,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
 
 mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
 
-	for (size_t i = 0; i < num_blocks; i++) {
+    for (size_t i = 0; i < num_blocks; i++) {
         if (!supervisor_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }

@@ -70,5 +70,5 @@ uint32_t port_get_saved_word(void) {
 }
 
 void HardFault_Handler(void) {
-
+	while(1) {}
 }
