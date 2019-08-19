@@ -115,7 +115,7 @@ void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_o
     }
 
     while (self->waiting_to_connect) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
 
     if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {

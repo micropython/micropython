@@ -138,9 +138,7 @@ void ble_uart_init(void) {
     m_cccd_enabled = false;
 
     while (!m_cccd_enabled) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 
@@ -150,9 +148,7 @@ bool ble_uart_connected(void) {
 
 char ble_uart_rx_chr(void) {
     while (isBufferEmpty(&m_rx_ring_buffer)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 
     uint8_t byte;

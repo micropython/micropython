@@ -96,9 +96,7 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     }
 
     while (!displayio_display_begin_transaction(display)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
     displayio_area_t area;
     area.x1 = x0;

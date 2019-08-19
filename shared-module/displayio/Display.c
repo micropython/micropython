@@ -85,9 +85,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
 
     uint32_t i = 0;
     while (!self->begin_transaction(self->bus)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
     while (i < init_sequence_len) {
         uint8_t *cmd = init_sequence + i;
@@ -242,7 +240,7 @@ int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* sel
     uint64_t last_refresh = self->last_refresh;
     // Don't try to refresh if we got an exception.
     while (last_refresh == self->last_refresh && MP_STATE_VM(mp_pending_exception) == NULL) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
     }
     return 0;
 }

@@ -94,7 +94,7 @@ STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_
         // TX buffer is full
         // We could wait for an event indicating the write is complete, but just retrying is easier.
         if (err_code == NRF_ERROR_RESOURCES) {
-            MICROPY_VM_HOOK_LOOP;
+            RUN_BACKGROUND_TASKS;
             continue;
         }
 
@@ -118,7 +118,7 @@ STATIC void characteristic_gattc_read(bleio_characteristic_obj_t *characteristic
     }
 
     while (m_read_characteristic != NULL) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
 
     ble_drv_remove_event_handler(characteristic_on_gattc_read_rsp_evt, characteristic);
@@ -258,7 +258,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         // Write without reponse will return NRF_ERROR_RESOURCES if too many writes are pending.
         if (err_code == NRF_ERROR_BUSY || err_code == NRF_ERROR_RESOURCES) {
             // We could wait for an event indicating the write is complete, but just retrying is easier.
-            MICROPY_VM_HOOK_LOOP;
+            RUN_BACKGROUND_TASKS;
             continue;
         }
 
