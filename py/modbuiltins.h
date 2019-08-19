@@ -4,6 +4,26 @@
 #ifndef MICROPY_INCLUDED_PY_MODBUILTINS_H
 #define MICROPY_INCLUDED_PY_MODBUILTINS_H
 
+#if ZVM_EXTMOD
 extern mp_obj_t mp_builtin_bin(mp_obj_t o_in);
 
+extern const mp_obj_type_t mp_builtin_zdict_type;
+
+//zdict
+typedef struct _mp_obj_zdict_t {
+    mp_obj_base_t base;
+    const char* storage_key;
+} mp_obj_zdict_t;
+
+extern const char DICT_FORMAT_C;
+extern const char STR_FORMAT_C;
+extern const char INT_FORMAT_C;
+extern const char SMALLINT_FORMAT_C;
+extern const char LIST_FORMAT_C;
+extern const char BOOL_FORMAT_C;
+extern const char NONE_FORMAT_C;
+
+extern void mp_obj_storage_value(const mp_obj_t value, byte** storage_value, size_t* storage_value_len);
+extern mp_obj_t mp_obj_new_storage_value(const char* storage_key);
+#endif //ZVM_EXTMOD
 #endif //MICROPY_INCLUDED_PY_MODBUILTINS_H

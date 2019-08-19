@@ -173,13 +173,6 @@ void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKi
 }
 
 //storage
-const char DICT_FORMAT_C = 'd';
-const char STR_FORMAT_C = 's';
-const char INT_FORMAT_C = 'i';
-const char SMALLINT_FORMAT_C = 'm';
-const char LIST_FORMAT_C = 'l';
-const char BOOL_FORMAT_C = 'b';
-const char NONE_FORMAT_C = 'n';
 
 typedef struct _mp_obj_storage_set_fun_t {
     mp_obj_base_t base;
@@ -188,72 +181,16 @@ typedef struct _mp_obj_storage_set_fun_t {
 
 
 STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+//    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_t key = args[1];
     mp_obj_t value = args[2];
     if (mp_obj_is_qstr(key)) {
         const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
-        printf("%s\n", key_c);
-        if (mp_obj_is_int(value)) {
-            if (mp_obj_is_small_int(value)) {
-                printf(":small_int\n");
-
-                byte *buf = malloc(sizeof(mp_int_t) + 1);
-                memset(buf, 0, sizeof(mp_int_t) + 1);
-                memset(buf, SMALLINT_FORMAT_C, 1);
-                mp_int_t value_in = MP_OBJ_SMALL_INT_VALUE(value);
-                memcpy(buf+1, &value_in, sizeof(mp_int_t));
-
-                storage_set_data_fn(key_c, strlen(key_c), (char*)buf, sizeof(mp_int_t) + 1);
-                free(buf);
-            } else {
-                printf(":int\n");
-
-                mp_obj_t bin = mp_builtin_bin(value);
-                mp_obj_t len = mp_obj_len(bin);
-                if (len == MP_OBJ_NULL) {
-                    assert(false);
-                } else {
-                    mp_int_t len_in = MP_OBJ_SMALL_INT_VALUE(len);
-                    len_in = ((len_in - 2) / 8 + 1) + 1;
-                    byte *buf = malloc(len_in);
-                    memset(buf, 0, len_in);
-                    memset(buf, INT_FORMAT_C, 1);
-                    mp_obj_int_to_bytes_impl(value, MP_ENDIANNESS_LITTLE, len_in - 1, buf+1);
-
-                    storage_set_data_fn(key_c, strlen(key_c), (char*)buf, len_in);
-                    free(buf);
-                }
-            }
-        } else if (value == mp_const_none) {
-            byte *buf = malloc(1);
-            memset(buf, NONE_FORMAT_C, 1);
-            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 1);
-            free(buf);
-        } else if (value == mp_const_false) {
-            byte *buf = malloc(2);
-            memset(buf, BOOL_FORMAT_C, 1);
-            memset(buf+1, '0', 1);
-            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 2);
-            free(buf);
-        } else if (value == mp_const_true) {
-            byte *buf = malloc(2);
-            memset(buf, BOOL_FORMAT_C, 1);
-            memset(buf+1, '1', 1);
-            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 2);
-            free(buf);
-        } else if (mp_obj_is_str(value)) {
-            size_t len = 0;
-            const char* data = mp_obj_str_get_data(value, &len);
-            byte *buf = malloc(len + 1);
-            memset(buf, 0, len + 1);
-            memset(buf, STR_FORMAT_C, 1);
-            memcpy(buf+1, data, len);
-            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, len+1);
-            free(buf);
-        } else {
-            assert(false);
-        }
+        byte *storage_value = NULL;
+        size_t storage_value_len = 0;
+        mp_obj_storage_value(value, &storage_value, &storage_value_len);
+        storage_set_data_fn(key_c, strlen(key_c), (char*)storage_value, storage_value_len);
+        free(storage_value);
     } else {
         assert(false);
     }
@@ -273,31 +210,11 @@ typedef struct _mp_obj_storage_get_fun_t {
 
 
 STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+//    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_t r = NULL;
-    char *data = NULL;
-    int data_len = 0;
     mp_obj_t key = args[1];
     const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
-    storage_get_data_fn(key_c, strlen(key_c), &data, &data_len);
-    if (data[0] == SMALLINT_FORMAT_C) {
-        r = mp_obj_new_int(*(mp_int_t*)(data+1));
-    } else if (data[0] == INT_FORMAT_C) {
-        r = mp_obj_int_from_bytes_impl(MP_ENDIANNESS_LITTLE, data_len-1, (byte*)(data+1));
-    } else if (data[0] == STR_FORMAT_C) {
-        r = mp_obj_new_str(data+1, data_len-1);
-    } else if (data[0] == NONE_FORMAT_C) {
-        r = mp_const_none;
-    } else if (data[0] == BOOL_FORMAT_C) {
-        if (data[1] == '0') {
-            r = mp_obj_new_bool(0);
-        } else {
-            r = mp_obj_new_bool(1);
-        }
-    } else {
-        assert(false);
-    }
-    free(data);
+    r = mp_obj_new_storage_value(key_c);
     return r;
 }
 
@@ -315,7 +232,7 @@ typedef struct _mp_obj_init_hook_fun_t {
 
 
 STATIC mp_obj_t init_hook_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("init_hook n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+//    printf("init_hook n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     return mp_const_none;
 }
 
