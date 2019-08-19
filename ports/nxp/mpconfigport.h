@@ -138,9 +138,8 @@
 
 
 /* IO */
-//#define MICROPY_PY_IO               (1)
-//#define MICROPY_PY_IO_IOBASE        (1) 
-//#define MICROPY_PY_IO_FILEIO        (MICROPY_VSF_FAT)
+#define MICROPY_PY_IO               (1)
+#define MICROPY_PY_IO_IOBASE        (1) 
 
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
 // type definitions for the specific machine
