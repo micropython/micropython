@@ -434,10 +434,11 @@ void test_storage2() {
     const char *str = "class Token():\n"
                       "\n"
                       "    def __init__(self):\n"
-                      "        self.int = 1\n"
+                      "        self.int = 2147483647\n"
                       "        self.bigint = 10000000000000000000000000000000\n"
                       "        self.str = 'hello'\n"
                       "        self.bool = True\n"
+                      "        self.bool = False\n"
                       "        self.none = None\n";
 
     tvm_execute_result_t result;

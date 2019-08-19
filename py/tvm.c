@@ -176,6 +176,7 @@ void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKi
 const char DICT_FORMAT_C = 'd';
 const char STR_FORMAT_C = 's';
 const char INT_FORMAT_C = 'i';
+const char SMALLINT_FORMAT_C = 'm';
 const char LIST_FORMAT_C = 'l';
 const char BOOL_FORMAT_C = 'b';
 const char NONE_FORMAT_C = 'n';
@@ -199,9 +200,9 @@ STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 
                 byte *buf = malloc(sizeof(mp_int_t) + 1);
                 memset(buf, 0, sizeof(mp_int_t) + 1);
-                memset(buf, INT_FORMAT_C, 1);
+                memset(buf, SMALLINT_FORMAT_C, 1);
                 mp_int_t value_in = MP_OBJ_SMALL_INT_VALUE(value);
-                memcpy(buf+1, &value_in, sizeof(value));
+                memcpy(buf+1, &value_in, sizeof(mp_int_t));
 
                 storage_set_data_fn(key_c, strlen(key_c), (char*)buf, sizeof(mp_int_t) + 1);
                 free(buf);
@@ -225,13 +226,31 @@ STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
                 }
             }
         } else if (value == mp_const_none) {
-            printf(":none\n");
+            byte *buf = malloc(1);
+            memset(buf, NONE_FORMAT_C, 1);
+            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 1);
+            free(buf);
         } else if (value == mp_const_false) {
-            printf(":false\n");
+            byte *buf = malloc(2);
+            memset(buf, BOOL_FORMAT_C, 1);
+            memset(buf+1, '0', 1);
+            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 2);
+            free(buf);
         } else if (value == mp_const_true) {
-            printf(":true\n");
+            byte *buf = malloc(2);
+            memset(buf, BOOL_FORMAT_C, 1);
+            memset(buf+1, '1', 1);
+            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, 2);
+            free(buf);
         } else if (mp_obj_is_str(value)) {
-            printf(":str\n");
+            size_t len = 0;
+            const char* data = mp_obj_str_get_data(value, &len);
+            byte *buf = malloc(len + 1);
+            memset(buf, 0, len + 1);
+            memset(buf, STR_FORMAT_C, 1);
+            memcpy(buf+1, data, len);
+            storage_set_data_fn(key_c, strlen(key_c), (char*)buf, len+1);
+            free(buf);
         } else {
             assert(false);
         }
@@ -255,10 +274,29 @@ typedef struct _mp_obj_storage_get_fun_t {
 
 STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    mp_obj_t r = NULL;
     char *data = NULL;
     int data_len = 0;
-    storage_get_data_fn("a", 1, &data, &data_len);
-    mp_obj_t r =  mp_obj_new_str(data, data_len);
+    mp_obj_t key = args[1];
+    const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
+    storage_get_data_fn(key_c, strlen(key_c), &data, &data_len);
+    if (data[0] == SMALLINT_FORMAT_C) {
+        r = mp_obj_new_int(*(mp_int_t*)(data+1));
+    } else if (data[0] == INT_FORMAT_C) {
+        r = mp_obj_int_from_bytes_impl(MP_ENDIANNESS_LITTLE, data_len-1, (byte*)(data+1));
+    } else if (data[0] == STR_FORMAT_C) {
+        r = mp_obj_new_str(data+1, data_len-1);
+    } else if (data[0] == NONE_FORMAT_C) {
+        r = mp_const_none;
+    } else if (data[0] == BOOL_FORMAT_C) {
+        if (data[1] == '0') {
+            r = mp_obj_new_bool(0);
+        } else {
+            r = mp_obj_new_bool(1);
+        }
+    } else {
+        assert(false);
+    }
     free(data);
     return r;
 }
