@@ -89,7 +89,7 @@ typedef struct _mp_obj_aes_t {
     uint8_t key_type: 2;
 } mp_obj_aes_t;
 
-STATIC inline bool is_ctr_mode(int block_mode) {
+static inline bool is_ctr_mode(int block_mode) {
     #if MICROPY_PY_UCRYPTOLIB_CTR
     return block_mode == UCRYPTOLIB_MODE_CTR;
     #else
@@ -97,7 +97,7 @@ STATIC inline bool is_ctr_mode(int block_mode) {
     #endif
 }
 
-STATIC inline struct ctr_params *ctr_params_from_aes(mp_obj_aes_t *o) {
+static inline struct ctr_params *ctr_params_from_aes(mp_obj_aes_t *o) {
     // ctr_params follows aes object struct
     return (struct ctr_params*)&o[1];
 }
