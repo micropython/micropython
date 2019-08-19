@@ -78,6 +78,7 @@
 // TIMERS
 #define NRFX_TIMER_ENABLED 1
 // Don't enable TIMER0: it's used by the SoftDevice.
+#define NRFX_TIMER0_ENABLED 0
 #define NRFX_TIMER1_ENABLED 1
 #define NRFX_TIMER2_ENABLED 1
 

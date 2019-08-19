@@ -95,8 +95,7 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -Os -DNDEBUG
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
 endif
 
 

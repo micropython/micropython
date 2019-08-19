@@ -232,6 +232,7 @@ $(filter $(SRC_PATTERNS), \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
+	bleio/Attribute.c \
 	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
@@ -281,6 +282,9 @@ $(filter $(SRC_PATTERNS), \
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_BINDINGS_ENUMS = \
 $(filter $(SRC_PATTERNS), \
+	bleio/Address.c \
+	bleio/Attribute.c \
+	bleio/ScanEntry.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -293,12 +297,6 @@ $(filter $(SRC_PATTERNS), \
 SRC_BINDINGS_ENUMS += \
 	help.c \
 	util.c
-
-SRC_BINDINGS_ENUMS += \
-$(filter $(SRC_PATTERNS), \
-	bleio/Address.c \
-	bleio/ScanEntry.c \
-)
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = \
@@ -320,6 +318,7 @@ $(filter $(SRC_PATTERNS), \
 	bitbangio/__init__.c \
 	board/__init__.c \
 	bleio/Address.c \
+	bleio/Attribute.c \
 	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
