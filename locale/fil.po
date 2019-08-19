@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-19 10:22-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -2315,6 +2315,14 @@ msgstr "odd-length string"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "wala sa sakop ang address"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c

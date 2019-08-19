@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-19 10:22-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -2283,6 +2283,14 @@ msgstr "jīshù zìfú chuàn"
 msgid "offset out of bounds"
 msgstr "piānlí biānjiè"
 
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
+
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
@@ -2603,7 +2611,7 @@ msgid "unknown conversion specifier %c"
 msgstr "wèizhī de zhuǎnhuàn biāozhù %c"
 
 #: py/objstr.c
-#, c-format
+#, fuzzy, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-19 10:22-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -559,12 +559,12 @@ msgid "Failed sending command."
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
 
 #: ports/nrf/common-hal/bleio/Service.c
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Nie udało się dodać charakterystyki, błąd 0x$04x"
 
@@ -2268,6 +2268,14 @@ msgstr "łańcuch o nieparzystej długości"
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset poza zakresem"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-19 10:22-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -2290,6 +2290,14 @@ msgstr "String mit ungerader Länge"
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset außerhalb der Grenzen"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
