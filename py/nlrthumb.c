@@ -127,11 +127,7 @@ NORETURN void nlr_jump(void *val) {
     :                               // clobbered registers
     );
 
-    #if defined(__GNUC__)
-    __builtin_unreachable();
-    #else
-    for (;;); // needed to silence compiler warning
-    #endif
+    MP_UNREACHABLE
 }
 
 #endif // MICROPY_NLR_THUMB
