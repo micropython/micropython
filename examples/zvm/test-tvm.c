@@ -363,7 +363,11 @@ void test_register() {
     tvm_print_result(&result);
     tvm_deinit_result(&result);
 
-    tvm_abi_call("Token", "myprint2", "hello");
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "myprint2", "hello", &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
 }
 
 
@@ -375,8 +379,16 @@ void storage_get_data(const char* key, int len, char** out_value, int* out_len) 
     *out_len = strlen(text);
 }
 
-void storage_set_data(const char* key, int key_len) {
-
+void storage_set_data (const char* key, int len, const char* value, int value_len) {
+    printf("storage_set_data: key: %s", key);
+//    for (int i = 0; i < len; ++i) {
+//        printf("%x", key[i]);
+//    }
+    printf(" value: ");
+    for (int i = 0; i < value_len; ++i) {
+        printf("%x", value[i]);
+    }
+    printf("\n");
 }
 
 void test_storage() {
@@ -405,7 +417,40 @@ void test_storage() {
     tvm_print_result(&result);
     tvm_deinit_result(&result);
 
-    tvm_abi_call("Token", "deploy", "hello");
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "deploy", "hello", &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+}
+
+void test_storage2() {
+    storage_get_data_fn = storage_get_data;
+    storage_set_data_fn = storage_set_data;
+
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "class Token():\n"
+                      "\n"
+                      "    def __init__(self):\n"
+                      "        self.int = 1\n"
+                      "        self.bigint = 10000000000000000000000000000000\n"
+                      "        self.str = 'hello'\n"
+                      "        self.bool = True\n"
+                      "        self.none = None\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_storage", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "__init__", "[]", &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
 }
 
 void test_zdict() {
@@ -432,6 +477,70 @@ void test_zdict() {
     tvm_deinit_result(&result);
 }
 
+void test_tvm_abli_call() {
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "class Token():\n"
+                      "\n"
+                      "    def __init__(self):\n"
+                      "        asdfsdf"
+                      "        print(self)\n"
+                      "        print('init')\n"
+                      "\n"
+                      "    def deploy(self):\n"
+                      "        print(self)\n"
+                      "        print('deploy')\n"
+                      "\n"
+                      "    def deploy2(self, a, b):\n"
+                      "        print('deploy2')\n"
+                      "        print(a)\n"
+                      "        print(b)\n"
+                      "\n"
+                      "    def deploy3(self):\n"
+                      "        make_error\n"
+                      ""
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_tvm_abli_call", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "__init__", NULL, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "deploy", NULL, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "deploy2", "[\"hello\", \"world\"]", &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_init_result(&result);
+    tvm_fun_call("Token", "deploy3", NULL, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+}
+
+void test_msg() {
+    tvm_start();
+    tvm_set_gas(10000000);
+
+    const char *str = "print(msg)\n"
+                      "print(msg.sender)\n"
+                      "print(msg.value)\n";
+
+    tvm_set_msg("zvxxx", 100);
+}
+
 int main() {
 //    test_execute();
 
@@ -452,8 +561,13 @@ int main() {
 //    test_register();
 
 //    test_storage();
+      test_storage2();
 
-    test_zdict();
+//    test_zdict();
+
+//    test_tvm_abli_call();
+
+//    test_msg();
 
     printf("finished\n");
 }

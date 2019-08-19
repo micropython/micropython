@@ -32,6 +32,8 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "extmod/modujson.h"
+
 #if MICROPY_PY_UJSON
 
 STATIC mp_obj_t mod_ujson_dump(mp_obj_t obj, mp_obj_t stream) {
@@ -87,7 +89,8 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
     return s->cur;
 }
 
-STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
+//STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
+mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
     ujson_stream_t s = {stream_obj, stream_p->read, 0, 0};
     vstr_t vstr;

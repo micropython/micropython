@@ -35,6 +35,8 @@
 #include "py/builtin.h"
 #include "py/stream.h"
 
+#include "py/modbuiltins.h"
+
 #if ZVM_EXTMOD
 #include <string.h>
 #endif
@@ -123,7 +125,7 @@ STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_any_obj, mp_builtin_any);
 
-STATIC mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
+mp_obj_t mp_builtin_bin(mp_obj_t o_in) {
     mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR__brace_open__colon__hash_b_brace_close_), o_in };
     return mp_obj_str_format(MP_ARRAY_SIZE(args), args, NULL);
 }
@@ -937,29 +939,33 @@ STATIC const mp_obj_type_t mp_builtin_register_type = {
         .locals_dict = (void*)&builtin_register_locals_dict,
 };
 
-mp_obj_register_t register_obj =  {{&mp_builtin_register_type}};
+//mp_obj_register_t register_obj =  {{&mp_builtin_register_type}};
 
-// msg
-void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] == MP_OBJ_NULL) {
-        const char *s = qstr_str(attr);
-        if (strcmp(s, "sender") == 0) {
-            *dest = mp_obj_new_str(msg_sender, strlen(msg_sender));
-        } else if (strcmp(s, "value") == 0) {
-            *dest = mp_obj_new_int_from_ull(msg_value);
-        } else {
-            *dest = mp_const_none;
-        }
-    }
-}
-
+//msg
 typedef struct _mp_obj_msg_t {
     mp_obj_base_t base;
+    mp_obj_t sender;
+    mp_obj_t value;
 } mp_obj_msg_t;
+
+STATIC void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
+    mp_obj_msg_t *self = MP_OBJ_TO_PTR(self_in);
+    if (attr == MP_QSTR_sender) {
+        dest[0] = self->sender;
+    } else if (attr == MP_QSTR_value) {
+        dest[0] = self->value;
+    }
+}
 
 STATIC mp_obj_t mp_builtin_msg_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_msg_t *o = m_new_obj(mp_obj_msg_t);
     o->base.type = type;
+    o->sender = args[0];
+    o->value = args[1];
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -978,7 +984,7 @@ STATIC const mp_obj_type_t mp_builtin_msg_type = {
         .attr = mp_obj_instance_attr,
 };
 
-mp_obj_msg_t msg_obj =  {{&mp_builtin_msg_type}};
+//mp_obj_msg_t msg_obj =  {{&mp_builtin_msg_type}};
 
 #endif
 
@@ -1106,8 +1112,8 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sum), MP_ROM_PTR(&mp_builtin_sum_obj) },
     #if ZVM_EXTMOD
     { MP_ROM_QSTR(MP_QSTR_abiexport), MP_ROM_PTR(&mp_builtin_abiexport_obj) },
-    { MP_ROM_QSTR(MP_QSTR_msg), MP_ROM_PTR(&msg_obj) },
-    { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&register_obj) },
+    { MP_ROM_QSTR(MP_QSTR_Msg), MP_ROM_PTR(&mp_builtin_msg_type) },
+    { MP_ROM_QSTR(MP_QSTR_Register), MP_ROM_PTR(&mp_builtin_register_type) },
     { MP_ROM_QSTR(MP_QSTR_zdict), MP_ROM_PTR(&mp_builtin_zdict_type) },
     #endif
 

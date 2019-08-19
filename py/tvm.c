@@ -29,7 +29,10 @@
 #include "py/builtin.h"
 #include "py/gas.h"
 #include "py/objfun.h"
-
+#include "extmod/modujson.h"
+#include "py/objstringio.h"
+#include "py/modbuiltins.h"
+#include "py/objint.h"
 
 uint mp_import_stat(const char *path) {
     struct stat st;
@@ -81,62 +84,6 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
 		assert(exception_data_str);
 		mp_obj_fill_exception(exception_data_str, error_code, result);
     }
-}
-
-//storage
-typedef struct _mp_obj_storage_set_fun_t {
-    mp_obj_base_t base;
-    const mp_obj_type_t *type;
-} mp_obj_storage_set_fun_t;
-
-
-STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
-    storage_set_data_fn("a", 1);
-    return mp_const_none;
-}
-
-STATIC const mp_obj_type_t mp_type_fun_storage_set = {
-        { &mp_type_type },
-        .name = MP_QSTR_function,
-        .call = storage_set_call,
-};
-
-typedef struct _mp_obj_storage_get_fun_t {
-    mp_obj_base_t base;
-    const mp_obj_type_t *type;
-} mp_obj_storage_get_fun_t;
-
-
-STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
-    char *data = NULL;
-    int data_len = 0;
-    storage_get_data_fn("a", 1, &data, &data_len);
-    return mp_obj_new_str(data, data_len);
-}
-
-STATIC const mp_obj_type_t mp_type_fun_storage_get = {
-        { &mp_type_type },
-        .name = MP_QSTR_function,
-        .call = storage_get_call,
-};
-
-void tvm_abi_call(const char *class_name, const char *func_name, const char *args) {
-
-    mp_obj_t class = mp_load_name(qstr_from_str(class_name));
-
-    mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
-    storage_set->base.type = &mp_type_fun_storage_set;
-    mp_store_attr(class, qstr_from_str("__setattr__"), storage_set);
-
-    mp_obj_storage_get_fun_t *storage_get = m_new_obj(mp_obj_storage_get_fun_t);
-    storage_get->base.type = &mp_type_fun_storage_get;
-    mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
-
-    mp_obj_t class_object = mp_call_function_0(class);
-
-    mp_call_function_1(mp_load_attr(class_object, qstr_from_str(func_name)), mp_obj_new_str(args, strlen(args)));
 }
 
 static char heap[1024 * 1024 * 2];
@@ -225,6 +172,214 @@ void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKi
 	}
 }
 
+//storage
+const char DICT_FORMAT_C = 'd';
+const char STR_FORMAT_C = 's';
+const char INT_FORMAT_C = 'i';
+const char LIST_FORMAT_C = 'l';
+const char BOOL_FORMAT_C = 'b';
+const char NONE_FORMAT_C = 'n';
+
+typedef struct _mp_obj_storage_set_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_storage_set_fun_t;
+
+
+STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    mp_obj_t key = args[1];
+    mp_obj_t value = args[2];
+    if (mp_obj_is_qstr(key)) {
+        const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
+        printf("%s\n", key_c);
+        if (mp_obj_is_int(value)) {
+            if (mp_obj_is_small_int(value)) {
+                printf(":small_int\n");
+
+                byte *buf = malloc(sizeof(mp_int_t) + 1);
+                memset(buf, 0, sizeof(mp_int_t) + 1);
+                memset(buf, INT_FORMAT_C, 1);
+                mp_int_t value_in = MP_OBJ_SMALL_INT_VALUE(value);
+                memcpy(buf+1, &value_in, sizeof(value));
+
+                storage_set_data_fn(key_c, strlen(key_c), (char*)buf, sizeof(mp_int_t) + 1);
+                free(buf);
+            } else {
+                printf(":int\n");
+
+                mp_obj_t bin = mp_builtin_bin(value);
+                mp_obj_t len = mp_obj_len(bin);
+                if (len == MP_OBJ_NULL) {
+                    assert(false);
+                } else {
+                    mp_int_t len_in = MP_OBJ_SMALL_INT_VALUE(len);
+                    len_in = ((len_in - 2) / 8 + 1) + 1;
+                    byte *buf = malloc(len_in);
+                    memset(buf, 0, len_in);
+                    memset(buf, INT_FORMAT_C, 1);
+                    mp_obj_int_to_bytes_impl(value, MP_ENDIANNESS_LITTLE, len_in - 1, buf+1);
+
+                    storage_set_data_fn(key_c, strlen(key_c), (char*)buf, len_in);
+                    free(buf);
+                }
+            }
+        } else if (value == mp_const_none) {
+            printf(":none\n");
+        } else if (value == mp_const_false) {
+            printf(":false\n");
+        } else if (value == mp_const_true) {
+            printf(":true\n");
+        } else if (mp_obj_is_str(value)) {
+            printf(":str\n");
+        } else {
+            assert(false);
+        }
+    } else {
+        assert(false);
+    }
+    return mp_const_none;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_storage_set = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = storage_set_call,
+};
+
+typedef struct _mp_obj_storage_get_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_storage_get_fun_t;
+
+
+STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    char *data = NULL;
+    int data_len = 0;
+    storage_get_data_fn("a", 1, &data, &data_len);
+    mp_obj_t r =  mp_obj_new_str(data, data_len);
+    free(data);
+    return r;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_storage_get = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = storage_get_call,
+};
+
+//__init__ hook
+typedef struct _mp_obj_init_hook_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_init_hook_fun_t;
+
+
+STATIC mp_obj_t init_hook_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    printf("init_hook n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    return mp_const_none;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_init_hook = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = init_hook_call,
+};
+
+void tvm_fun_call(const char *class_name, const char *func_name, const char *json_args, tvm_execute_result_t *result) {
+
+    if (g_pAbi)
+    {
+        free(g_pAbi);
+        g_pAbi = NULL;
+    }
+
+    nlr_buf_t nlr;
+    mp_obj_t data = NULL;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t class = mp_load_name(qstr_from_str(class_name));
+
+        mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
+        storage_set->base.type = &mp_type_fun_storage_set;
+        mp_store_attr(class, qstr_from_str("__setattr__"), storage_set);
+
+        mp_obj_storage_get_fun_t *storage_get = m_new_obj(mp_obj_storage_get_fun_t);
+        storage_get->base.type = &mp_type_fun_storage_get;
+        mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
+
+        if (strcmp(func_name, "__init__") == 0) {
+            data = mp_call_function_0(class);
+        } else {
+            mp_obj_init_hook_fun_t *init_hook = m_new_obj(mp_obj_init_hook_fun_t);
+            init_hook->base.type = &mp_type_fun_init_hook;
+            mp_store_attr(class, qstr_from_str("__init__"), init_hook);
+
+            mp_obj_t class_object = mp_call_function_0(class);
+            if (json_args == NULL) {
+                data = mp_call_function_0(mp_load_attr(class_object, qstr_from_str(func_name)));
+            } else {
+                size_t len = strlen(json_args);
+                vstr_t vstr = {len, len, (char*)json_args, true};
+                mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
+                mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+                if (!mp_obj_is_type(args, &mp_type_list)) {
+                    assert(false);
+                }
+                size_t n_args;
+                mp_obj_t *items;
+                mp_obj_list_get(args, &n_args, &items);
+                data = mp_call_function_n_kw(mp_load_attr(class_object, qstr_from_str(func_name)), n_args, 0, items);
+            }
+        }
+        nlr_pop();
+        mp_fun_return(data, result);
+    } else {
+        mp_obj_exception_t *o = MP_OBJ_TO_PTR(MP_OBJ_FROM_PTR(nlr.ret_val));
+        const char * exception_name = qstr_str(o->base.type->name);
+        int error_code = 1001;
+        if (strcmp(exception_name, "GasNotEnoughException") == 0) {
+            error_code = 1002;
+        }else if (strcmp(exception_name, "ABICheckException") == 0) {
+            error_code = 2002;
+        }
+
+        char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
+        assert(exception_data_str);
+        mp_obj_fill_exception(exception_data_str, error_code, result);
+    }
+
+    if (g_pAbi != NULL)
+    {
+        result->abi = malloc(strlen(g_pAbi) + 1);
+        memset(result->abi, 0, strlen(g_pAbi) + 1);
+        memcpy(result->abi, g_pAbi, strlen(g_pAbi));
+
+        if (g_pAbi)
+        {
+            free(g_pAbi);
+            g_pAbi = NULL;
+        }
+    }
+}
+
+void tvm_set_register() {
+    mp_obj_t msg_class = mp_load_name(qstr_from_str("Register"));
+
+    mp_obj_t msg_object = mp_call_function_0(msg_class);
+
+    mp_store_global(qstr_from_str("register"), msg_object);
+}
+
+
+void tvm_set_msg(const char* sender, unsigned long long value) {
+    mp_obj_t msg_class = mp_load_name(qstr_from_str("Msg"));
+
+    mp_obj_t msg_object = mp_call_function_2(msg_class, mp_obj_new_str(sender, strlen(sender)), mp_obj_new_int_from_ull(value));
+
+    mp_store_global(qstr_from_str("msg"), msg_object);
+}
+
 /***********************/
 
 void tvm_set_gas(int limit) {
@@ -276,13 +431,6 @@ void tvm_remove_context() {
 	mp_locals_set(dict_main);
 }
 
-void change_sender(char* new_sender) {
-    msg_sender = new_sender;
-}
-
-void change_value(unsigned long long new_value) {
-    msg_value = new_value;
-}
 
 /***********************/
 
