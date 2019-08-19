@@ -6,7 +6,7 @@
 
 REFERENCE=$HOME/persist/firmware.bin
 #REFERENCE=/tmp/micropython
-#TRAVIS_PULL_REQUEST=false
+TRAVIS_PULL_REQUEST=false
 
 if [ -f $REFERENCE ]; then
     size_old=$(stat -c%s $REFERENCE)
