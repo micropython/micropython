@@ -184,8 +184,7 @@ SRC_C += \
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
-	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
