@@ -349,6 +349,8 @@ def run_tests(pyb, tests, args, base_path="."):
             for t in tests:
                 if t.startswith('basics/io_'):
                     skip_tests.add(t)
+        elif args.target == 'qemu-arm':
+            skip_tests.add('misc/print_exception.py')       # requires sys stdfiles
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -527,8 +529,9 @@ the last matching regex is used:
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
+    LOCAL_TARGETS = ('unix', 'qemu-arm',)
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
-    if args.target == 'unix' or args.list_tests:
+    if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
@@ -537,24 +540,28 @@ the last matching regex is used:
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     else:
-        raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
+        raise ValueError('target must be one of %s' % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
 
     if len(args.files) == 0:
         if args.test_dirs is None:
+            test_dirs = ('basics', 'micropython', 'misc', 'extmod',)
             if args.target == 'pyboard':
                 # run pyboard tests
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs += ('float', 'stress', 'pyb', 'pybnative', 'inlineasm')
             elif args.target in ('esp8266', 'esp32', 'minimal', 'nrf'):
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
+                test_dirs += ('float',)
             elif args.target == 'wipy':
                 # run WiPy tests
-                test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
-            else:
+                test_dirs += ('wipy',)
+            elif args.target == 'unix':
                 # run PC tests
-                test_dirs = (
-                    'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
-                )
+                test_dirs += ('float', 'import', 'io', 'stress', 'unicode', 'unix', 'cmdline',)
+            elif args.target == 'qemu-arm':
+                if not args.write_exp:
+                    raise ValueError('--target=qemu-arm must be used with --write-exp')
+                # Generate expected output files for qemu run.
+                # This list should match the test_dirs tuple in tinytest-codegen.py.
+                test_dirs += ('float', 'inlineasm', 'qemu-arm',)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
