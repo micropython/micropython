@@ -1527,6 +1527,15 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
+// To annotate that code is unreachable
+#ifndef MP_UNREACHABLE
+#if defined(__GNUC__)
+#define MP_UNREACHABLE __builtin_unreachable();
+#else
+#define MP_UNREACHABLE for (;;);
+#endif
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
 # define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
