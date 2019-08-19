@@ -163,7 +163,7 @@ void displayio_refresh_displays(void) {
 void common_hal_displayio_release_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = displays[i].fourwire_bus.base.type;
-        if (bus_type == NULL) {
+        if (bus_type == NULL || bus_type == &mp_type_NoneType) {
             continue;
         } else if (bus_type == &displayio_fourwire_type) {
             common_hal_displayio_fourwire_deinit(&displays[i].fourwire_bus);
@@ -235,12 +235,14 @@ void reset_displays(void) {
             // Not an active display.
             continue;
         }
+    }
 
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         // Reset the displayed group. Only the first will get the terminal but
         // that's ok.
         displayio_display_obj_t* display = &displays[i].display;
         display->auto_brightness = true;
-        common_hal_displayio_display_show(display, &circuitpython_splash);
+        common_hal_displayio_display_show(display, NULL);
     }
 }
 

@@ -34,10 +34,11 @@
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
-#include "shared-bindings/bleio/Adapter.h"
-
 #include "supervisor/usb.h"
+#include "shared-bindings/bleio/Adapter.h"
+#include "shared-bindings/bleio/Address.h"
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     mp_raise_msg_varg(&mp_type_AssertionError,
@@ -132,20 +133,42 @@ bool common_hal_bleio_adapter_get_enabled(void) {
     return is_enabled;
 }
 
-void common_hal_bleio_adapter_get_address(bleio_address_obj_t *address) {
-    ble_gap_addr_t local_address;
+void get_address(ble_gap_addr_t *address) {
     uint32_t err_code;
 
     common_hal_bleio_adapter_set_enabled(true);
-    err_code = sd_ble_gap_addr_get(&local_address);
+    err_code = sd_ble_gap_addr_get(address);
 
     if (err_code != NRF_SUCCESS) {
         mp_raise_OSError_msg(translate("Failed to get local address"));
     }
+}
 
-    address->type = local_address.addr_type;
+bleio_address_obj_t *common_hal_bleio_adapter_get_address(void) {
+    common_hal_bleio_adapter_set_enabled(true);
 
-    mp_buffer_info_t buf_info;
-    mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
-    memcpy(address->bytes, buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
+    ble_gap_addr_t local_address;
+    get_address(&local_address);
+
+    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
+    address->base.type = &bleio_address_type;
+
+    common_hal_bleio_address_construct(address, local_address.addr, local_address.addr_type);
+    return address;
+}
+
+mp_obj_t common_hal_bleio_adapter_get_default_name(void) {
+   common_hal_bleio_adapter_set_enabled(true);
+
+    ble_gap_addr_t local_address;
+    get_address(&local_address);
+
+    char name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 };
+
+    name[sizeof(name) - 4] = nibble_to_hex_lower[local_address.addr[1] >> 4 & 0xf];
+    name[sizeof(name) - 3] = nibble_to_hex_lower[local_address.addr[1] & 0xf];
+    name[sizeof(name) - 2] = nibble_to_hex_lower[local_address.addr[0] >> 4 & 0xf];
+    name[sizeof(name) - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
+
+    return mp_obj_new_str(name, sizeof(name));
 }

@@ -28,24 +28,30 @@
 
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Address.h"
+#include "shared-bindings/bleio/Attribute.h"
 #include "shared-bindings/bleio/Central.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/CharacteristicBuffer.h"
-// #include "shared-bindings/bleio/Descriptor.h"
+#include "shared-bindings/bleio/Descriptor.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/ScanEntry.h"
 #include "shared-bindings/bleio/Scanner.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
-//| :mod:`bleio` --- Bluetooth Low Energy functionality
+//| :mod:`bleio` --- Bluetooth Low Energy (BLE) communication
 //| ================================================================
 //|
 //| .. module:: bleio
 //|   :synopsis: Bluetooth Low Energy functionality
 //|   :platform: nRF
 //|
-//| The `bleio` module contains methods for managing the BLE adapter.
+//| The `bleio` module provides necessary low-level functionality for communicating
+//| using Bluetooth Low Energy (BLE). We recommend you use `bleio` in conjunction
+//| with the `adafruit_ble <https://circuitpython.readthedocs.io/projects/ble/en/latest/>`_
+//| CircuitPython library, which builds on `bleio`, and
+//| provides higher-level convenience functionality, including predefined beacons, clients,
+//| servers.
 //|
 //| Libraries
 //|
@@ -54,6 +60,7 @@
 //|
 //|     Address
 //|     Adapter
+//|     Attribute
 //|     Central
 //|     Characteristic
 //|     CharacteristicBuffer
@@ -72,20 +79,21 @@
 //|
 
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),          MP_ROM_QSTR(MP_QSTR_bleio) },
-    { MP_ROM_QSTR(MP_QSTR_Address),           MP_ROM_PTR(&bleio_address_type) },
-    { MP_ROM_QSTR(MP_QSTR_Central),           MP_ROM_PTR(&bleio_central_type) },
-    { MP_ROM_QSTR(MP_QSTR_Characteristic),    MP_ROM_PTR(&bleio_characteristic_type) },
-    { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer),    MP_ROM_PTR(&bleio_characteristic_buffer_type) },
-//    { MP_ROM_QSTR(MP_QSTR_Descriptor),        MP_ROM_PTR(&bleio_descriptor_type) },
-    { MP_ROM_QSTR(MP_QSTR_Peripheral),        MP_ROM_PTR(&bleio_peripheral_type) },
-    { MP_ROM_QSTR(MP_QSTR_ScanEntry),         MP_ROM_PTR(&bleio_scanentry_type) },
-    { MP_ROM_QSTR(MP_QSTR_Scanner),           MP_ROM_PTR(&bleio_scanner_type) },
-    { MP_ROM_QSTR(MP_QSTR_Service),           MP_ROM_PTR(&bleio_service_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUID),              MP_ROM_PTR(&bleio_uuid_type) },
+    { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR_bleio) },
+    { MP_ROM_QSTR(MP_QSTR_Address),              MP_ROM_PTR(&bleio_address_type) },
+    { MP_ROM_QSTR(MP_QSTR_Attribute),            MP_ROM_PTR(&bleio_attribute_type) },
+    { MP_ROM_QSTR(MP_QSTR_Central),              MP_ROM_PTR(&bleio_central_type) },
+    { MP_ROM_QSTR(MP_QSTR_Characteristic),       MP_ROM_PTR(&bleio_characteristic_type) },
+    { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer), MP_ROM_PTR(&bleio_characteristic_buffer_type) },
+    { MP_ROM_QSTR(MP_QSTR_Descriptor),           MP_ROM_PTR(&bleio_descriptor_type) },
+    { MP_ROM_QSTR(MP_QSTR_Peripheral),           MP_ROM_PTR(&bleio_peripheral_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanEntry),            MP_ROM_PTR(&bleio_scanentry_type) },
+    { MP_ROM_QSTR(MP_QSTR_Scanner),              MP_ROM_PTR(&bleio_scanner_type) },
+    { MP_ROM_QSTR(MP_QSTR_Service),              MP_ROM_PTR(&bleio_service_type) },
+    { MP_ROM_QSTR(MP_QSTR_UUID),                 MP_ROM_PTR(&bleio_uuid_type) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_adapter),           MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

@@ -29,8 +29,24 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H
 
+#include "py/objlist.h"
+
+#include "shared-bindings/bleio/__init__.h"
+#include "shared-bindings/bleio/Adapter.h"
+
 #include "common-hal/bleio/Adapter.h"
 
 extern const super_adapter_obj_t common_hal_bleio_adapter_obj;
+
+extern void common_hal_bleio_check_connected(uint16_t conn_handle);
+
+extern uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
+extern mp_obj_list_t *common_hal_bleio_device_get_remote_services_list(mp_obj_t device);
+extern void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t service_uuids_whitelist);
+
+extern mp_obj_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle);
+extern void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo);
+extern void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, bool write_no_response);
+
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H

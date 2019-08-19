@@ -47,7 +47,11 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
 
     // Wait until interface is ready, timeout = 2 seconds
     uint64_t end_ticks = ticks_ms + 2000;
-    while ( (ticks_ms < end_ticks) && !tud_hid_ready() ) { }
+    while ( (ticks_ms < end_ticks) && !tud_hid_ready() ) {
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP;
+#endif
+    }
 
     if ( !tud_hid_ready() ) {
         mp_raise_msg(&mp_type_OSError,  translate("USB Busy"));

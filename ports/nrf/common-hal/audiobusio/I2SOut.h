@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
 
-typedef enum {
-    GATT_ROLE_NONE,
-    GATT_ROLE_SERVER,
-    GATT_ROLE_CLIENT,
-} gatt_role_t;
+#include "py/obj.h"
 
-extern void bleio_reset(void);
+typedef struct {
+    mp_obj_base_t base;
+} audiobusio_i2sout_obj_t;
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_INIT_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

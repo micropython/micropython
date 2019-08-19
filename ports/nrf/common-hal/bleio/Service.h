@@ -35,6 +35,8 @@ typedef struct {
     mp_obj_base_t base;
     // Handle for this service.
     uint16_t handle;
+    // True if created during discovery.
+    bool is_remote;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
     // May be a Peripheral, Central, etc.

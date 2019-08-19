@@ -273,13 +273,7 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
 
-#if BOARD_I2C
-#define BOARD_I2C_ROOT_POINTER mp_obj_t shared_i2c_bus;
-#else
-#define BOARD_I2C_ROOT_POINTER
-#endif
-
-// SPI is always allocated off the heap.
+// I2C and SPI are always allocated off the heap.
 
 #if BOARD_UART
 #define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
@@ -289,7 +283,6 @@ extern const struct _mp_obj_module_t board_module;
 
 #else
 #define BOARD_MODULE
-#define BOARD_I2C_ROOT_POINTER
 #define BOARD_UART_ROOT_POINTER
 #endif
 
@@ -587,8 +580,9 @@ extern const struct _mp_obj_module_t ustack_module;
     BUSIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
+      FONTIO_MODULE \
+      TERMINALIO_MODULE \
     ERRNO_MODULE \
-    FONTIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
@@ -598,6 +592,8 @@ extern const struct _mp_obj_module_t ustack_module;
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
+      SOCKET_MODULE \
+      WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -607,18 +603,15 @@ extern const struct _mp_obj_module_t ustack_module;
     ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
-    SOCKET_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
-    TERMINALIO_MODULE \
     TOUCHIO_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
-    WIZNET_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
@@ -647,7 +640,6 @@ extern const struct _mp_obj_module_t ustack_module;
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
-    BOARD_I2C_ROOT_POINTER \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
