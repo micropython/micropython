@@ -48,6 +48,7 @@
 #include "pybthread.h"
 #include "storage.h"
 #include "pin.h"
+#include "pin_remap.h"
 #include "timer.h"
 #include "usb.h"
 #include "rtc.h"
@@ -55,6 +56,7 @@
 #include "spi.h"
 #include "uart.h"
 #include "wdt.h"
+#include "can.h"
 
 // 复位来源定义
 #define PYB_RESET_SOFT      (0) // 软件复位
@@ -315,12 +317,38 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_PinRemap),            MP_ROM_PTR(&pin_remap_type) },
     { MP_ROM_QSTR(MP_QSTR_ExtInt),              MP_ROM_PTR(&extint_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
-    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },
+    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&pyb_timer_type) },
+
+#if MICROPY_HW_ENABLE_RTC
+    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
+#endif
 
 #if MICROPY_PY_MACHINE_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
+#endif
+
+#if MICROPY_HW_ENABLE_CAN
+    { MP_ROM_QSTR(MP_QSTR_CAN), MP_ROM_PTR(&pyb_can_type) },
+#endif
+
+#if MICROPY_HW_ENABLE_ADC
+    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
+    { MP_ROM_QSTR(MP_QSTR_ADCAll), MP_ROM_PTR(&pyb_adc_all_type) },
+#endif
+
+#if MICROPY_HW_ENABLE_DAC
+    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
+#endif
+
+#if MICROPY_HW_HAS_FLASH
+    { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&pyb_flash_type) },
+#endif
+
+#if MICROPY_HW_ENABLE_SDCARD
+    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&pyb_sdcard_type) },
 #endif
 
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },

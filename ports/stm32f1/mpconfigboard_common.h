@@ -32,6 +32,15 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
+// Whether to select debug
+// 0 - JTAG 5Pin
+// 1 - JTAG 4Pin
+// 2 - Serial Wire Enable & JTAG Disable (default)
+// 4 - no debug
+#ifndef MICROPY_HW_DEBUG
+    #define MICROPY_HW_DEBUG (2)
+#endif
+
 // Whether to include the stm module, with peripheral register constants
 #ifndef MICROPY_PY_STM
 	#define MICROPY_PY_STM (1)

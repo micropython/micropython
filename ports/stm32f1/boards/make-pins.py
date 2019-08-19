@@ -162,12 +162,12 @@ class AlternateFunction(object):
         remap_mask = 0
         if self.ptr() in REMAP_FN:
             remap_mask = REMAP_FN[self.ptr()]
-        print('({:2d}, {:8s}, {:2d}, {:10s}, {:#08x}, {:8s}), // {:s}'.format(
+        print('({:2d}, {:8s}, {:2d}, {:d}, {:#08x}, {:8s}), // {:s}'.format(
             self.idx,
             self.func, 
             fn_num, 
             # self.pin_type,
-            'MP_HAL_PIN_REMAP_NONE',  # TODO: 这里需要依据管脚来判断插入复用映射类型, 用于设置AFIO->MAPRx
+            0,  # TODO: 这里需要依据管脚来判断插入复用映射类型, 用于设置AFIO->MAPRx
             remap_mask,
             self.ptr(), 
             self.af_str)

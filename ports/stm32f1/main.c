@@ -50,6 +50,7 @@
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
+#include "pin_remap.h"
 #include "extint.h"
 #include "usrsw.h"
 #include "usb.h"
@@ -361,19 +362,19 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
-    // 检查是否要进进入bootloader
+    // Check if bootloader should be entered instead of main application
     powerctrl_check_enter_bootloader();
 
-    // 设置MVIC优先级组
+    // Set the priority grouping
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
     // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
     HAL_InitTick(TICK_INT_PRIORITY);
 
-    // 设置HSE->pll为系统时钟
+    // set the system clock to be PULL with HSE
     SystemClock_Config();
 
-    // 打开GPIO时钟
+    // enable GPIO clocks
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -381,11 +382,9 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
 
-    // 打开AFIO时钟, 使用SWD调试端口
-    __HAL_RCC_AFIO_CLK_ENABLE();
-    __HAL_AFIO_REMAP_SWJ_NOJTAG();
+    // enable AFIO and config debug
+    pin_remap_init0();
 
-    // 定义了早期初始化函数，则执行一下
     #if defined(MICROPY_BOARD_EARLY_INIT)
     MICROPY_BOARD_EARLY_INIT();
     #endif
@@ -500,15 +499,11 @@ soft_reset:
     #endif
 
     #if MICROPY_HW_ENABLE_USB
-	
-	{// 模拟USB拔插
-		// 设置为输出模式, 拉低
+	{// USB detect reset
 		mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_DOWN, 0);
 		mp_hal_pin_low(pin_A12);
-		mp_hal_delay_ms(500); // 休眠500ms
+		mp_hal_delay_ms(500); // pin's state keep low with 500ms
 	}
-    // 初始化USB, 基本什么都没做, 只是把cdc0的是否加载到repl标志设为true, 其他的设为false
-    // 把系统的终端输出设为cdc0
     pyb_usb_init0();
     #endif
     
@@ -532,7 +527,7 @@ soft_reset:
     #endif
 
     #if MICROPY_HW_ENABLE_USB 
-    // 如果USB MSC媒介(存储体)是空， 则使用内部Flash
+    // if the SD card isn't used as the USB MSC medium then use the internal flash
     if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
         pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
     }
@@ -552,9 +547,8 @@ soft_reset:
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
-    // 如果 boot.py 存在, 则执行
-    // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and
-    // execute custom boot.py
+    // run boot.py, if it exists
+    // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1 || reset_mode == 3) { 
         const char* boot_py = "boot.py";
         int ret = pyexec_file_if_exists(boot_py);
@@ -582,7 +576,7 @@ soft_reset:
     // boot.py.
 
     #if MICROPY_HW_ENABLE_USB
-    // 如果USB没有配置， 则初始化成默认配置
+    // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, 0, NULL, NULL);
     }
@@ -596,8 +590,9 @@ soft_reset:
     servo_init();
     #endif
     
-    // 执行到这里，所有组件都已配置和初始化
-    // 执行当前目录下的main脚本
+    // At this point everything is fully configured and initialised.
+
+    // Run the main script from the current directory.
     if ((reset_mode == 1 || reset_mode == 3) && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         const char* main_py;
         if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
@@ -614,7 +609,7 @@ soft_reset:
         }
     }
 
-    // Main脚本执行完毕, 进入REPL模式
+    // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {

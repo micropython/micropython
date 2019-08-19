@@ -220,6 +220,7 @@ SRC_C = \
 	pin.c \
 	pin_defs_stm32.c \
 	pin_named_pins.c \
+	pin_remap.c \
 	bufhelper.c \
 	dma.c \
 	i2c.c \
