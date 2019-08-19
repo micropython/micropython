@@ -1,5 +1,7 @@
 LIB_SRC_C = lib/upytesthelper/upytesthelper.c
 
+FROZEN_MPY_DIR ?= test-frzmpy
+
 include Makefile
 
 CFLAGS += -DTEST
@@ -8,7 +10,7 @@ CFLAGS += -DTEST
 
 $(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
 $(BUILD)/genhdr/tests.h:
-	(cd $(TOP)/tests; ./run-tests --write-exp)
+	(cd $(TOP)/tests; ./run-tests --target=qemu-arm --write-exp)
 	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
 
 $(BUILD)/tinytest.o:
@@ -18,7 +20,8 @@ $(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
+# Note: Using timeout(1) to handle cases where qemu hangs (e.g. this can happen with alignment errors).
 test: $(BUILD)/firmware-test.elf
-	qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $< > $(BUILD)/console.out
+	timeout --foreground -k 5s 30s qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $< > $(BUILD)/console.out
 	$(Q)tail -n2 $(BUILD)/console.out
 	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
