@@ -16,7 +16,7 @@ blocks:
           - sudo cache restore docker-dir
       epilogue:
         commands:
-          - sudo cache store docker /var/lib/docker
+          - sudo cache store docker-dir /var/lib/docker
       secrets:
         - name: docker-hub
       jobs:
@@ -26,7 +26,7 @@ blocks:
             - docker pull $IMG_TAG
             - docker build --cache-from $IMG_TAG -t $IMG_TAG .
             - docker push $IMG_TAG
-            - sleep sleep 10000000
+            - sleep infinity
 
   - name: Build ports
     task:
