@@ -20,13 +20,15 @@ jobs:
   include:
     - stage: build
       script:
-        - travis/restore-docker-img.sh
+        - docker load -i $IMG_TAR
+
         - IMG_TAG=$(travis/get-img-tag.sh)
         - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
         - docker pull $IMG_TAG
         - docker build --cache-from $IMG_TAG -t $IMG_TAG .
         - docker push $IMG_TAG
-        - travis/store-docker-img.sh
+
+        - docker save -o $IMG_TAR $IMG_TAG
 
     - stage: test
       env:
@@ -45,5 +47,5 @@ jobs:
         - PORT=samd
         - PORT=teensy
       script:
-        - travis/restore-docker-img.sh
+        - docker load -i $IMG_TAR
         - docker run -v $PWD:$PWD -w $PWD $IMG_TAG travis/${PORT}.sh
