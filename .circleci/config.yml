@@ -2,34 +2,17 @@ version: 2
 jobs:
   build:
     docker:
-      - image: buildpack-deps:bionic
+      - image: docker:stable-git
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
 
       - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.03.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-
-      - run:
           name: Setup env vars
           command: |
-            echo "hello1?"
-            TAG=$(git describe --exact-match HEAD 2> /dev/null)
-            echo "hello?"
-
-            if [ $? -ne 0 ]; then
-            	TAG="master"
-            fi
-
-            echo $TAG
-            echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
+            TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
+            echo "export IMG_TAG=pycampers/micropython:$TAG" >> /etc/profile
 
       - run:
           name: Build docker image
