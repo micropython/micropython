@@ -3,7 +3,11 @@ jobs:
   build:
     docker:
       - image: docker:stable-git
+
     shell: /bin/sh -leo pipefail
+    environment:
+      - BASH_ENV: /etc/profile
+
     steps:
       - checkout
       - setup_remote_docker:
@@ -12,9 +16,7 @@ jobs:
           name: Setup env vars
           command: |
             TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
-            echo "export IMG_TAG=pycampers/micropython:$TAG" >> /etc/profile
-            cat /etc/profile
-            echo $TAG
+            echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
 
       - run:
           name: Build docker image
