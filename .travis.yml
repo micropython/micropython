@@ -1,4 +1,5 @@
 dist: xenial
+language: minimal
 services:
   - docker
 cache:
