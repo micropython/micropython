@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-20 13:01-0400\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -967,6 +967,10 @@ msgstr "Sem suporte de hardware no pino de clock"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Nenhum suporte de hardware no pino"
+
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "No space left on device"

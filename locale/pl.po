@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 21:44-0400\n"
+"POT-Creation-Date: 2019-08-20 13:01-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -962,6 +962,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Brak sprzętowej obsługi na nóżce"
+
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "No space left on device"
