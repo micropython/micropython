@@ -176,6 +176,8 @@ typedef struct _pyb_otp_t {
 
 #if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
 #define OTP_ADDR (0x1ff079e0)
+#elif defined(STM32F429xx)
+#define OTP_ADDR (0x1fff79e0)
 #else
 #define OTP_ADDR (0x1ff0f3c0)
 #endif
