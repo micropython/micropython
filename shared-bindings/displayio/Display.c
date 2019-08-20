@@ -402,6 +402,9 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
       mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
 
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
+
     displayio_area_t area = {
       .x1 = 0,
       .y1 = y,
@@ -415,8 +418,6 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
       buffer_size += 1;
     }
 
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
     uint32_t *result_buffer = bufinfo.buf;
     size_t result_buffer_size = bufinfo.len;
 
