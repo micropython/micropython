@@ -21,6 +21,8 @@ jobs:
           name: Setup env vars
           command: |
             TAG=$(git describe --exact-match HEAD 2> /dev/null)
+            echo "hello?"
+
             if [ $? -ne 0 ]; then
             	TAG="master"
             fi
