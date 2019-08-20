@@ -112,7 +112,7 @@ msgid "'%s' expects {r0, r1, ...}"
 msgstr "'%s' aspetta un registro"
 
 #: py/emitinlinextensa.c
-#, c-format
+#, fuzzy, c-format
 msgid "'%s' integer %d is not within range %d..%d"
 msgstr "intero '%s' non è nell'intervallo %d..%d"
 
@@ -1566,7 +1566,7 @@ msgid "can't assign to expression"
 msgstr "impossibile assegnare all'espressione"
 
 #: py/obj.c
-#, c-format
+#, fuzzy, c-format
 msgid "can't convert %s to complex"
 msgstr "non è possibile convertire a complex"
 
@@ -2316,6 +2316,14 @@ msgstr "stringa di lunghezza dispari"
 msgid "offset out of bounds"
 msgstr "indirizzo fuori limite"
 
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
+
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
@@ -2637,7 +2645,7 @@ msgid "unindent does not match any outer indentation level"
 msgstr ""
 
 #: py/objstr.c
-#, c-format
+#, fuzzy, c-format
 msgid "unknown conversion specifier %c"
 msgstr "specificatore di conversione %s sconosciuto"
 

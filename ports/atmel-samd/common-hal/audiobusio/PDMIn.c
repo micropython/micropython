@@ -408,9 +408,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         // If wait_counts exceeds the max count, buffer has probably stopped filling;
         // DMA may have missed an I2S trigger event.
         while (!event_interrupt_active(event_channel) && ++wait_counts < MAX_WAIT_COUNTS) {
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
+            RUN_BACKGROUND_TASKS;
         }
 
         // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec

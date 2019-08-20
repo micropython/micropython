@@ -596,8 +596,8 @@ extern const struct _mp_obj_module_t ustack_module;
       WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
-    PULSEIO_MODULE \
     PS2IO_MODULE \
+    PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \
@@ -645,6 +645,7 @@ extern const struct _mp_obj_module_t ustack_module;
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
+#define RUN_BACKGROUND_TASKS (run_background_tasks())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()

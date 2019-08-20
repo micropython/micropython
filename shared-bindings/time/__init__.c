@@ -236,9 +236,16 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return rtc_get_time_source_time();
     }
 
-    mp_int_t secs = mp_obj_int_get_checked(args[0]);
-    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
+    mp_obj_t arg = args[0];
+    if (mp_obj_is_float(arg)) {
+        arg = mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    }
+
+    mp_int_t secs = mp_obj_get_int(arg);
+
+    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_epoch_to_struct_time(secs, &tm);
@@ -270,8 +277,9 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
         mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
-    if (mp_obj_get_int(elem[0]) < 2000)
+    if (mp_obj_get_int(elem[0]) < 2000) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));

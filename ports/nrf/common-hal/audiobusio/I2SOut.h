@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#include "py/runtime.h"
-#include "nrf_soc.h"
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
 
-void sd_mutex_acquire_check(nrf_mutex_t* p_mutex) {
-    uint32_t err_code = sd_mutex_acquire(p_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to acquire mutex, err 0x%04x"), err_code);
-    }
-}
+#include "py/obj.h"
 
-void sd_mutex_acquire_wait(nrf_mutex_t* p_mutex) {
-    while (sd_mutex_acquire(p_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-        RUN_BACKGROUND_TASKS;
-    }
-}
+typedef struct {
+    mp_obj_base_t base;
+} audiobusio_i2sout_obj_t;
 
-void sd_mutex_acquire_wait_no_vm(nrf_mutex_t* p_mutex) {
-    while (sd_mutex_acquire(p_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-    }
-}
-
-void sd_mutex_release_check(nrf_mutex_t* p_mutex) {
-    uint32_t err_code = sd_mutex_release(p_mutex);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to release mutex, err 0x%04x"), err_code);
-    }
-}
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

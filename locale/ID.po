@@ -1138,7 +1138,7 @@ msgid "Slices not supported"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Adapter.c
-#, c-format
+#, fuzzy, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
@@ -2283,6 +2283,14 @@ msgstr "panjang data string memiliki keganjilan (odd-length)"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "modul tidak ditemukan"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c

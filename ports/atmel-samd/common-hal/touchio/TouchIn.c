@@ -52,9 +52,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
     while (!adafruit_ptc_is_conversion_finished(PTC)) {
         // wait
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     return adafruit_ptc_get_conversion_result(PTC);

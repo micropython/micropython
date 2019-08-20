@@ -635,7 +635,7 @@ msgstr "No se puede leer el valor del atributo. err 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
-#, c-format
+#, fuzzy, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Error al leer valor del atributo, err 0x%04"
 
@@ -2310,6 +2310,14 @@ msgstr "string de longitud impar"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "address fuera de límites"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
