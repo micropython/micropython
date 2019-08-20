@@ -415,31 +415,36 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
       buffer_size += 1;
     }
 
-    // Allocated and shared as a uint32_t array so the compiler knows the
-    // alignment everywhere.
-    uint32_t buffer[buffer_size];
-    volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
-    uint32_t mask[mask_length];
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
+    uint32_t *result_buffer = bufinfo.buf;
+    size_t result_buffer_size = bufinfo.len;
 
-    for (uint16_t k = 0; k < mask_length; k++) {
-      mask[k] = 0x00000000;
-    }
-    for (uint16_t k = 0; k < buffer_size; k++) {
-      buffer[k] = 0x00000000;
-    }
+    if (result_buffer_size >= (buffer_size * 4)) {
+      // Allocated and shared as a uint32_t array so the compiler knows the
+      // alignment everywhere.
+      /* uint32_t buffer[buffer_size]; */
+      volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+      uint32_t mask[mask_length];
 
-    displayio_display_fill_area(self, &area, mask, buffer);
-
-    if ((result->len + result->free) >= (buffer_size * 4)) {
-      int  byte_offset = 0;
-      for (int word_offset = 0; word_offset < buffer_size; word_offset++) {
-        uint32_t word = buffer[word_offset];
-        for (int byte_count = 0; byte_count < 4; byte_count++) {
-          array_subscr(result, MP_OBJ_NEW_SMALL_INT(byte_offset), MP_OBJ_NEW_SMALL_INT(word & 0x000000FF));
-          word >>= 8;
-          byte_offset++;
-        }
+      for (uint16_t k = 0; k < mask_length; k++) {
+        mask[k] = 0x00000000;
       }
+      /* for (uint16_t k = 0; k < buffer_size; k++) { */
+      /*   buffer[k] = 0x00000000; */
+      /* } */
+
+
+      displayio_display_fill_area(self, &area, mask, result_buffer);
+      /* int  byte_offset = 0; */
+      /* for (int word_offset = 0; word_offset < buffer_size; word_offset++) { */
+      /*   uint32_t word = buffer[word_offset]; */
+      /*   for (int byte_count = 0; byte_count < 4; byte_count++) { */
+      /*     array_subscr(result, MP_OBJ_NEW_SMALL_INT(byte_offset), MP_OBJ_NEW_SMALL_INT(word & 0x000000FF)); */
+      /*     word >>= 8; */
+      /*     byte_offset++; */
+      /*   } */
+      /* } */
       return result;
     } else {
       mp_raise_ValueError(translate("Buffer is too small"));
