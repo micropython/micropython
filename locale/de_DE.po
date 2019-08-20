@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-19 10:22-0400\n"
+"POT-Creation-Date: 2019-08-19 21:38-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -1188,19 +1188,19 @@ msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
@@ -1339,10 +1339,6 @@ msgstr ""
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Viper-Funktionen unterstützen derzeit nicht mehr als 4 Argumente"
-
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Voice index zu hoch"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -2070,6 +2066,10 @@ msgstr "Label neu definiert"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "Für diesen Typ ist length nicht zulässig"
+
+#: shared-bindings/audiocore/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2893,6 +2893,9 @@ msgstr ""
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Voice index zu hoch"
 
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"

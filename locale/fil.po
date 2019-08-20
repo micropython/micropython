@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-19 10:22-0400\n"
+"POT-Creation-Date: 2019-08-19 21:38-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1202,19 +1202,19 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
@@ -1355,10 +1355,6 @@ msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
-
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Index ng Voice ay masyadong mataas"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -2095,6 +2091,10 @@ msgstr "ang label ay na-define ulit"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "length argument ay walang pahintulot sa ganitong type"
+
+#: shared-bindings/audiocore/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2919,6 +2919,9 @@ msgstr "zero step"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Gamitin ang esptool upang burahin ang flash at muling i-upload ang Python"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Index ng Voice ay masyadong mataas"
 
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"

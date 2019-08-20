@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-19 10:22-0400\n"
+"POT-Creation-Date: 2019-08-19 21:38-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -1222,20 +1222,20 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer de nouveau pour quitter de le mode sans-échec.\n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 "Le 'bits_per_sample' de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Le canal de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "L'échantillonage de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Le signe de l'échantillon ne correspond pas à celui du mixer"
 
@@ -1379,10 +1379,6 @@ msgstr ""
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
-
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Index de la voix trop grand"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -2128,6 +2124,10 @@ msgstr "label redéfini"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "argument 'length' non-permis pour ce type"
+
+#: shared-bindings/audiocore/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2970,6 +2970,9 @@ msgstr "'step' nul"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Utilisez 'esptool' pour effacer la flash et recharger Python à la place"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Index de la voix trop grand"
 
 #~ msgid "bad GATT role"
 #~ msgstr "mauvais rôle GATT"

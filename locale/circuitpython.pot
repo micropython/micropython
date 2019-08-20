@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-19 10:22-0400\n"
+"POT-Creation-Date: 2019-08-19 21:38-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1159,19 +1159,19 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiocore/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
@@ -1307,10 +1307,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
-
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
 msgstr ""
 
 #: main.c
@@ -2024,6 +2020,10 @@ msgstr ""
 
 #: py/stream.c
 msgid "length argument not allowed for this type"
+msgstr ""
+
+#: shared-bindings/audiocore/MixerVoice.c
+msgid "level must be between 0 and 1"
 msgstr ""
 
 #: py/objarray.c
