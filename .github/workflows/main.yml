@@ -12,6 +12,10 @@ jobs:
         run: |
           TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
           export IMG_TAG=pycampers/micropython:$TAG
+          echo $IMG_TAG
+      - name: Print env vars
+        run: |
+          echo $IMG_TAG
 
       - name: Build docker image
         uses: actions/docker/cli@master
