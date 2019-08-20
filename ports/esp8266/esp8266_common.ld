@@ -110,6 +110,7 @@ SECTIONS
         *py/obj*.o*(.literal* .text*)
         *py/opmethods.o*(.literal* .text*)
         *py/parse*.o*(.literal* .text*)
+        *py/profile*.o*(.literal* .text*)
         *py/qstr.o*(.literal* .text*)
         *py/repl.o*(.literal* .text*)
         *py/runtime.o*(.literal* .text*)
