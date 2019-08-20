@@ -32,4 +32,5 @@ blocks:
       jobs:
         - name: Build stm32 port
           commands:
+            - echo "$PWD, $IMG_TAG"
             - docker run -v $PWD:$PWD -w $PWD $IMG_TAG .semaphore/stm32.sh
