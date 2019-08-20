@@ -15,6 +15,10 @@ jobs:
             echo "export TAG=$TAG" >> $BASH_ENV
 
       - run:
+          name: Print env vars
+          command: echo $TAG
+
+      - run:
           name: Build docker image
           command: |
             docker build -t $TAG .
