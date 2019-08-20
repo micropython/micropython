@@ -393,7 +393,7 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     displayio_display_obj_t *self = native_display(pos_args[0]);
     mp_int_t y = args[ARG_y].u_int;
-    mp_obj_array_t *result = (mp_obj_array_t *)(args[ARG_buffer].u_obj);
+    mp_obj_array_t *result = args[ARG_buffer].u_obj;
 
     if (result->typecode != BYTEARRAY_TYPECODE) {
       mp_raise_ValueError(translate("Buffer is not a bytearray."));
