@@ -39,6 +39,7 @@
 
 #if ZVM_EXTMOD
 #include <string.h>
+#include "tvm.h"
 #endif
 
 #if ZVM_EXTMOD
@@ -987,21 +988,13 @@ const mp_obj_type_t mp_builtin_zdict_type = {
 };
 
 //register
-typedef struct _mp_obj_register_t {
-    mp_obj_base_t base;
-} mp_obj_register_t;
-
-STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_register_t *o = m_new_obj(mp_obj_register_t);
-    o->base.type = type;
-    return MP_OBJ_FROM_PTR(o);
-}
 
 typedef struct _mp_obj_wrap_fun_t {
     mp_obj_base_t base;
     const mp_obj_type_t *type;
 
     mp_obj_t fun;
+    uint32_t params_data;
 } mp_obj_wrap_fun_t;
 
 STATIC mp_obj_t wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -1016,18 +1009,19 @@ STATIC const mp_obj_type_t mp_type_fun_wrap = {
         .call = wrap_call,
 };
 
-typedef struct _mp_obj_decorator_fun_t {
-    mp_obj_base_t base;
-    const mp_obj_type_t *type;
-} mp_obj_decorator_fun_t;
 
 
 STATIC mp_obj_t decorator_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     printf("decorator n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
+    if ((int)n_args != 1 || (int)n_kw>0 || mp_obj_is_type(args[0], &mp_type_fun_wrap)) {
+        mp_raise_ValueError("decorator error");
+    }
     mp_obj_wrap_fun_t *o = m_new_obj(mp_obj_wrap_fun_t);
     o->base.type = &mp_type_fun_wrap;
-
+    mp_obj_decorator_fun_t *self = MP_OBJ_TO_PTR(self_in);
+    o->params_data = self->params_data;
     o->fun = args[0];
+    self->func = qstr_str(mp_obj_fun_get_name(args[0]));
     return o;
 }
 
@@ -1037,16 +1031,42 @@ STATIC const mp_obj_type_t mp_type_fun_decorator = {
         .call = decorator_call,
 };
 
+
+
+STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_register_t *o = m_new_obj(mp_obj_register_t);
+    o->base.type = type;
+    o->public_funcs = mp_obj_new_list(0, NULL);
+    return MP_OBJ_FROM_PTR(o);
+}
+
 STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
     printf("builtin_register_public n_args:%d\n", (int)n_args);
+    uint32_t params_msg = 0;
+    if (n_args > MAX_PARAMS_NUM) {
+        mp_raise_ValueError("params num > 8");
+    }
     for (size_t i = 1; i < n_args; i++) {
+        if (!mp_obj_is_type(MP_OBJ_TO_PTR(args[i]), &mp_type_type)) {
+            mp_raise_ValueError("unsupported type");
+        }
         mp_obj_type_t *self =  MP_OBJ_TO_PTR(args[i]);
+        int type_index = is_supported_type(qstr_str(self->name));
+        if (type_index == 0) {
+            mp_raise_ValueError("unsupported type");
+        }
+        set_type_msg(&params_msg, i-1, type_index);
         printf("args: %s\n", qstr_str(self->name));
     }
     mp_obj_decorator_fun_t *o = m_new_obj(mp_obj_decorator_fun_t);
     o->base.type = &mp_type_fun_decorator;
+    o->params_data = params_msg;
+    mp_obj_register_t *reg = MP_OBJ_TO_PTR(args[0]);
+    o->func = NULL;
+    mp_obj_list_append(reg->public_funcs, o);
     return MP_OBJ_FROM_PTR(o);
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(builtin_register_public_obj, 0, builtin_register_public);
 
 STATIC const mp_rom_map_elem_t builtin_register_locals_dict_table[] = {
