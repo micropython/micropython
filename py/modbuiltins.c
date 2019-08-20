@@ -49,6 +49,7 @@ const char SMALLINT_FORMAT_C = 'm';
 const char LIST_FORMAT_C = 'l';
 const char BOOL_FORMAT_C = 'b';
 const char NONE_FORMAT_C = 'n';
+const char BYTE_FORMAT_C = 'y';
 #endif
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -803,11 +804,14 @@ STATIC mp_obj_t mp_builtin_abiexport(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
 
 //zdict
-mp_obj_t mp_obj_new_storage_value(const char* storage_key) {
+mp_obj_t mp_obj_new_storage_value(mp_obj_t self_in, const char* storage_key, size_t storage_key_len) {
     mp_obj_t r = NULL;
     char *data = NULL;
     int data_len = 0;
-    storage_get_data_fn(storage_key, strlen(storage_key), &data, &data_len);
+    storage_get_data_fn(storage_key, storage_key_len, &data, &data_len);
+    if (data == NULL) {
+        return r;
+    }
     if (data[0] == SMALLINT_FORMAT_C) {
         r = mp_obj_new_int(*(mp_int_t*)(data+1));
     } else if (data[0] == INT_FORMAT_C) {
@@ -823,17 +827,42 @@ mp_obj_t mp_obj_new_storage_value(const char* storage_key) {
             r = mp_obj_new_bool(1);
         }
     } else if (data[0] == DICT_FORMAT_C) {
-        mp_obj_t class = mp_load_name(qstr_from_str("zdict"));
-        mp_obj_t object = mp_call_function_0(class);
-        mp_obj_zdict_t *o = MP_OBJ_TO_PTR(object);
-        o->storage_key = storage_key;
-        r = object;
+//        if (mp_obj_is_type(self_in, &mp_builtin_zdict_type)) {
+//            mp_obj_zdict_t *self = MP_OBJ_TO_PTR(self_in);
+//            if (self->storage_key == NULL) {
+//                assert(false);
+//            } else {
+//                printf("self->storage_key: %s, storage_key: %s\n", self->storage_key, storage_key);
+//                size_t len = self->storage_key_len + storage_key_len + 1;
+//                char *key = malloc(len);
+//                strcpy(key, self->storage_key);
+//                strcat(key, "@");
+//                strcat(key, storage_key);
+//
+//                mp_obj_t class = mp_load_name(qstr_from_str("zdict"));
+//                mp_obj_t object = mp_call_function_0(class);
+//                mp_obj_zdict_t *o = MP_OBJ_TO_PTR(object);
+//                o->storage_key = key;
+//                r = object;
+//                free(key);
+//            }
+//        } else {
+            mp_obj_t class = mp_load_name(qstr_from_str("zdict"));
+            mp_obj_t object = mp_call_function_0(class);
+            mp_obj_zdict_t *o = MP_OBJ_TO_PTR(object);
+            o->storage_key = storage_key;
+            o->storage_key_len = storage_key_len;
+            r = object;
+//        }
+    } else if (data[0] == BYTE_FORMAT_C) {
+        r = mp_obj_new_bytes((byte*)(data+1), data_len-1);
     } else {
         assert(false);
     }
     free(data);
     return r;
 }
+
 void mp_obj_storage_value(const mp_obj_t value, byte** storage_value, size_t *storage_value_len) {
     if (mp_obj_is_int(value)) {
         if (mp_obj_is_small_int(value)) {
@@ -879,20 +908,24 @@ void mp_obj_storage_value(const mp_obj_t value, byte** storage_value, size_t *st
         memset(buf+1, '1', 1);
         *storage_value = buf;
         *storage_value_len = 2;
-    } else if (mp_obj_is_str(value)) {
-        size_t len = 0;
-        const char* data = mp_obj_str_get_data(value, &len);
-        byte *buf = malloc(len + 1);
-        memset(buf, 0, len + 1);
-        memset(buf, STR_FORMAT_C, 1);
-        memcpy(buf+1, data, len);
-        *storage_value = buf;
-        *storage_value_len = len+1;
     } else if (mp_obj_is_type(value, &mp_builtin_zdict_type)) {
         byte *buf = malloc(1);
         memset(buf, DICT_FORMAT_C, 1);
         *storage_value = buf;
         *storage_value_len = 1;
+    } else if (mp_obj_is_str_or_bytes(value)) {
+        size_t len = 0;
+        const char *data = mp_obj_str_get_data(value, &len);
+        byte *buf = malloc(len + 1);
+        memset(buf, 0, len + 1);
+        if (mp_obj_is_str(value)) {
+            memset(buf, STR_FORMAT_C, 1);
+        } else {//byte
+            memset(buf, BYTE_FORMAT_C, 1);
+        }
+        memcpy(buf + 1, data, len);
+        *storage_value = buf;
+        *storage_value_len = len + 1;
     }else {
         assert(false);
     }
@@ -902,6 +935,7 @@ STATIC mp_obj_t mp_builtin_zdict_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_obj_zdict_t *o = m_new_obj(mp_obj_zdict_t);
     o->base.type = type;
     o->storage_key = NULL;
+    o->storage_key_len = 0;
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -910,7 +944,7 @@ STATIC mp_obj_t mp_builtin_zdict_make_new(const mp_obj_type_t *type, size_t n_ar
 //    mp_print_str(print, "zdict");
 //}
 
-STATIC mp_obj_t zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t _zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (!mp_obj_is_str(index)) {
         return MP_OBJ_NULL;
     }
@@ -918,62 +952,61 @@ STATIC mp_obj_t zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (o->storage_key == NULL) {
         assert(false);
     }
-
     size_t len = 0;
     const char *index_c = mp_obj_str_get_data(index, &len);
-    size_t storage_key_len = strlen(o->storage_key) + len + 1;
+    size_t storage_key_len = o->storage_key_len + len + 1;
     char *storage_key = malloc(storage_key_len);
-    strcpy(storage_key, o->storage_key);
-    strcat(storage_key, "@");
-    strcat(storage_key, index_c);
-
+    memcpy(storage_key, o->storage_key, o->storage_key_len);
+    memset(storage_key + o->storage_key_len, '@', 1);
+    memcpy(storage_key + o->storage_key_len + 1, index_c, len);
+    mp_obj_t r = NULL;
     if (value == MP_OBJ_NULL) {
         // delete
 //        mp_obj_dict_delete(self_in, index);
-        return mp_const_none;
+        r = mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-//        mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-//        mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
-//        if (elem == NULL) {
-//            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
-//        } else {
-//            return elem->value;
-//        }
-        return mp_obj_new_storage_value(storage_key);
+        r = mp_obj_new_storage_value(self_in, storage_key, storage_key_len);
     } else {
         // store
         byte *storage_value = NULL;
         size_t storage_value_len = 0;
         mp_obj_storage_value(value, &storage_value, &storage_value_len);
         storage_set_data_fn(storage_key, storage_key_len, (char*)storage_value, storage_value_len);
-        free(storage_key);
         free(storage_value);
-        return mp_const_none;
+        r = mp_const_none;
+    }
+    free(storage_key);
+    return r;
+}
+
+STATIC mp_obj_t zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_t r = _zdict_subscr(self_in, index, value);
+    if (value == MP_OBJ_SENTINEL) {
+        // load
+        if (r == NULL) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+        }
+    }
+    return r;
+}
+
+STATIC mp_obj_t zdict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    switch (op) {
+        case MP_BINARY_OP_CONTAINS: {
+            mp_obj_t r = _zdict_subscr(lhs_in, rhs_in, MP_OBJ_SENTINEL);
+            return mp_obj_new_bool(r != NULL);
+        }
+        default:
+            // op not supported
+            return MP_OBJ_NULL;
     }
 }
 
-STATIC mp_obj_t zdict_op_contains(mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    return mp_obj_new_bool(0);
-}
-MP_DEFINE_CONST_FUN_OBJ_2(mp_zdict_op_contains_obj, zdict_op_contains);
-
-STATIC mp_obj_t zdict_op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
-    return type->subscr(self_in, key_in, MP_OBJ_SENTINEL);
-}
-MP_DEFINE_CONST_FUN_OBJ_2(mp_zdict_op_getitem_obj, zdict_op_getitem);
-
-STATIC mp_obj_t zdict_op_setitem(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
-    return type->subscr(self_in, key_in, value_in);
-}
-MP_DEFINE_CONST_FUN_OBJ_3(mp_zdict_op_setitem_obj, zdict_op_setitem);
-
 STATIC const mp_rom_map_elem_t builtin_zdict_locals_dict_table[] = {
-        { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_zdict_op_contains_obj) },
-        { MP_ROM_QSTR(MP_QSTR___getitem__), MP_ROM_PTR(&mp_zdict_op_getitem_obj) },
-        { MP_ROM_QSTR(MP_QSTR___setitem__), MP_ROM_PTR(&mp_zdict_op_setitem_obj) },
+        { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_op_contains_obj) },
+        { MP_ROM_QSTR(MP_QSTR___getitem__), MP_ROM_PTR(&mp_op_getitem_obj) },
+        { MP_ROM_QSTR(MP_QSTR___setitem__), MP_ROM_PTR(&mp_op_setitem_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(builtin_zdict_locals_dict, builtin_zdict_locals_dict_table);
 
@@ -983,6 +1016,7 @@ const mp_obj_type_t mp_builtin_zdict_type = {
         .make_new = mp_builtin_zdict_make_new,
 //        .print = mp_builtin_zdict_print,
         .subscr = zdict_subscr,
+        .binary_op = zdict_binary_op,
         .locals_dict = (mp_obj_dict_t*)&builtin_zdict_locals_dict,
 };
 

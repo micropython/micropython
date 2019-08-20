@@ -213,8 +213,9 @@ STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 //    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_t r = NULL;
     mp_obj_t key = args[1];
-    const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
-    r = mp_obj_new_storage_value(key_c);
+    size_t len = 0;
+    const char *key_c = mp_obj_str_get_data(key, &len);
+    r = mp_obj_new_storage_value(self_in, key_c, len);
     return r;
 }
 
