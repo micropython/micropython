@@ -1,13 +1,13 @@
 version: 2
 jobs:
   build:
-  machine:
-    image: ubuntu-1604:201903-01
-  steps:
-    - checkout
-    - setup_remote_docker:
-        docker_layer_caching: true
-    - build:
-        name: Build docker image
-        command: |
-          docker build -t micropython .
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - build:
+          name: Build docker image
+          command: |
+            docker build -t micropython .
