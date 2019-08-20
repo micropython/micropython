@@ -7,16 +7,6 @@ agent:
     os_image: ubuntu1804
 
 blocks:
-  - name: Setup env vars
-    task:
-      jobs:
-        - name: Setup env vars
-          commands:
-            - checkout
-
-            - TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
-            - echo "export IMG_TAG=pycampers/micropython:$TAG" >> ~/.bash_profile
-
   - name: Build docker image
     task:
       secrets:
@@ -25,7 +15,7 @@ blocks:
         - name: Build docker image
           commands:
             - checkout
-
+            - IMG_TAG=$(./get-img-tag.sh)
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             - docker pull $IMG_TAG
             - docker build --cache-from $IMG_TAG -t $IMG_TAG .
@@ -36,9 +26,8 @@ blocks:
       prologue:
         commands:
           - checkout
+          - IMG_TAG=$(./get-img-tag.sh)
       jobs:
         - name: Build stm32 port
           commands:
-            - env
-            - echo "$PWD, $IMG_TAG"
             - docker run -v $PWD:$PWD -w $PWD $IMG_TAG .semaphore/stm32.sh
