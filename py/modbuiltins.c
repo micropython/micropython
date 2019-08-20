@@ -521,6 +521,47 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj, 1, 2, mp_builtin_round);
 
+#if 1
+
+// Implement sum() in bytecode!
+
+#include "py/bc0.h"
+#include "py/runtime0.h"
+#include "py/objfun.h"
+
+STATIC const uint8_t mp_builtin_sum_bytecode[] = {
+    0x09, // n_state
+    0x00, // n_exc_stack
+    0x80, // scope_flags (special top-bit set for internal bytecode function)
+    0x02, // n_pos_args
+    0x00, // n_kwonly_args
+    0x01, // n_def_pos_args
+    0x03, // code_info_size
+    MP_QSTR_sum & 0xff, MP_QSTR_sum >> 8, // simple_name
+    0xff, // end-of-list-sentinel for cells
+
+    MP_BC_LOAD_FAST_MULTI,
+    MP_BC_GET_ITER_STACK,
+    MP_BC_FOR_ITER, 0x08, 0x00, // +8
+    MP_BC_STORE_FAST_MULTI + 2,
+    MP_BC_LOAD_FAST_MULTI + 1,
+    MP_BC_LOAD_FAST_MULTI + 2,
+    MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_INPLACE_ADD,
+    MP_BC_STORE_FAST_MULTI + 1,
+    MP_BC_JUMP, 0xf5, 0x7f, // -11
+    MP_BC_LOAD_FAST_MULTI + 1,
+    MP_BC_RETURN_VALUE,
+};
+const mp_obj_fun_bc_t mp_builtin_sum_obj = {
+    .base = { &mp_type_fun_bc },
+    .globals = NULL,
+    .bytecode = mp_builtin_sum_bytecode,
+    .const_table = NULL,
+    { MP_OBJ_NEW_SMALL_INT(0) }, // default start value
+};
+
+#else
+
 STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
     mp_obj_t value;
     switch (n_args) {
@@ -536,6 +577,8 @@ STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
     return value;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
+
+#endif
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args > 1) {

@@ -75,7 +75,8 @@ MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_print_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
+//MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
+extern const struct _mp_obj_fun_bc_t mp_builtin_sum_obj;
 // Defined by a port, but declared here for simplicity
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
