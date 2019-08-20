@@ -20,7 +20,7 @@ jobs:
 
       - run:
           name: Print env vars
-          command: echo $TAG
+          command: echo ${TAG}
 
       - run:
           name: Build docker image
