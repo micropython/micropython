@@ -379,7 +379,7 @@ mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value);
 
 //|   .. method:: fill_row(y, buffer)
 //|
-//|     Extract the pixels fro a single row
+//|     Extract the pixels from a single row
 //|
 //|     :param int y: The top edge of the area
 //|     :param bytearray buffer: The buffer in which to place the pixel data
