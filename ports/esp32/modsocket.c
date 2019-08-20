@@ -47,6 +47,7 @@
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
 #include "tcpip_adapter.h"
+#include "mdns.h"
 #include "modnetwork.h"
 
 #include "lwip/sockets.h"
@@ -56,6 +57,8 @@
 #include "esp_log.h"
 
 #define SOCKET_POLL_US (100000)
+#define MDNS_QUERY_TIMEOUT_MS (5000)
+#define MDNS_LOCAL_SUFFIX ".local"
 
 typedef struct _socket_obj_t {
     mp_obj_base_t base;
@@ -150,6 +153,58 @@ static inline void check_for_exceptions(void) {
     mp_handle_pending();
 }
 
+// This function mimics lwip_getaddrinfo, with added support for mDNS queries
+static int _socket_getaddrinfo3(const char *nodename, const char *servname,
+    const struct addrinfo *hints, struct addrinfo **res) {
+
+    #if MICROPY_HW_ENABLE_MDNS_QUERIES
+    int nodename_len = strlen(nodename);
+    const int local_len = sizeof(MDNS_LOCAL_SUFFIX) - 1;
+    if (nodename_len > local_len
+        && strcasecmp(nodename + nodename_len - local_len, MDNS_LOCAL_SUFFIX) == 0) {
+        // mDNS query
+        char nodename_no_local[nodename_len - local_len + 1];
+        memcpy(nodename_no_local, nodename, nodename_len - local_len);
+        nodename_no_local[nodename_len - local_len] = '\0';
+
+        struct ip4_addr addr = {0};
+        esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
+        if (err != ESP_OK) {
+            if (err == ESP_ERR_NOT_FOUND){
+                *res = NULL;
+                return 0;
+            }
+            *res = NULL;
+            return err;
+        }
+
+        struct addrinfo *ai = memp_malloc(MEMP_NETDB);
+        if (ai == NULL) {
+            *res = NULL;
+            return EAI_MEMORY;
+        }
+        memset(ai, 0, sizeof(struct addrinfo) + sizeof(struct sockaddr_storage));
+
+        struct sockaddr_in *sa = (struct sockaddr_in*)((uint8_t*)ai + sizeof(struct addrinfo));
+        inet_addr_from_ip4addr(&sa->sin_addr, &addr);
+        sa->sin_family = AF_INET;
+        sa->sin_len = sizeof(struct sockaddr_in);
+        sa->sin_port = lwip_htons((u16_t)atoi(servname));
+        ai->ai_family = AF_INET;
+        ai->ai_canonname = ((char*)sa + sizeof(struct sockaddr_storage));
+        memcpy(ai->ai_canonname, nodename, nodename_len + 1);
+        ai->ai_addrlen = sizeof(struct sockaddr_storage);
+        ai->ai_addr = (struct sockaddr*)sa;
+
+        *res = ai;
+        return 0;
+    }
+    #endif
+
+    // Normal query
+    return lwip_getaddrinfo(nodename, servname, hints, res);
+}
+
 static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struct addrinfo **resp) {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
@@ -172,7 +227,7 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     }
 
     MP_THREAD_GIL_EXIT();
-    int res = lwip_getaddrinfo(host_str, port_str, &hints, resp);
+    int res = _socket_getaddrinfo3(host_str, port_str, &hints, resp);
     MP_THREAD_GIL_ENTER();
 
     return res;

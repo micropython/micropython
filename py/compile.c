@@ -3112,6 +3112,9 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             scope->num_pos_args = 1;
         }
 
+        // Set the source line number for the start of the comprehension
+        EMIT_ARG(set_source_line, pns->source_line);
+
         if (scope->kind == SCOPE_LIST_COMP) {
             EMIT_ARG(build, 0, MP_EMIT_BUILD_LIST);
         } else if (scope->kind == SCOPE_DICT_COMP) {

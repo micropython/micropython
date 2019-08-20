@@ -136,5 +136,5 @@ Functions
    :ref:`reference documentation <isr_rules>` under "Creation of Python
    objects".
 
-   There is a finite stack to hold the scheduled functions and `schedule()`
-   will raise a `RuntimeError` if the stack is full.
+   There is a finite queue to hold the scheduled functions and `schedule()`
+   will raise a `RuntimeError` if the queue is full.

@@ -37,8 +37,9 @@ jobs:
         - make ${MAKEOPTS} -C ports/stm32
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
 
     # qemu-arm port
     - stage: test
@@ -105,13 +106,14 @@ jobs:
 
     # unix stackless
     - stage: test
-      env: NAME="unix stackless port build and tests"
+      env: NAME="unix stackless port build and tests with clang"
+      install:
+        - sudo apt-get install clang
       script:
         - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-        - make ${MAKEOPTS} -C ports/unix test
+        - make ${MAKEOPTS} -C mpy-cross CC=clang
+        - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix CC=clang test
 
     # windows port via mingw
     - stage: test

@@ -34,6 +34,18 @@
 #include "dma.h"
 #include "irq.h"
 
+#if defined(STM32WB)
+
+// DMA is currently not implemented for this MCU
+
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
+}
+
+void dma_deinit(const dma_descr_t *dma_descr) {
+}
+
+#else
+
 #define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)
 #define DMA_SYSTICK_LOG2    (3)
 #define DMA_SYSTICK_MASK    ((1 << DMA_SYSTICK_LOG2) - 1)
@@ -387,7 +399,9 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_3, dma_id_5,   &dm
 const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_3, dma_id_6,   &dma_init_struct_spi_i2c };
 
 // DMA2 streams
+const dma_descr_t dma_I2C_4_RX = { DMA2_Channel1, DMA_REQUEST_0, dma_id_0,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_3_RX = { DMA2_Channel1, DMA_REQUEST_3, dma_id_7,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_4_TX = { DMA2_Channel2, DMA_REQUEST_0, dma_id_1,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_3_TX = { DMA2_Channel2, DMA_REQUEST_3, dma_id_8,   &dma_init_struct_spi_i2c };
 /* not preferred streams
 const dma_descr_t dma_ADC_1_RX = { DMA2_Channel3, DMA_REQUEST_0, dma_id_9,   NULL };
@@ -908,6 +922,30 @@ void dma_nohal_deinit(const dma_descr_t *descr) {
 }
 
 void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len) {
+    // Must clear all event flags for this stream before enabling it
+    DMA_TypeDef *dma_ctrl;
+    uint32_t ch = descr->id;
+    if (ch < NSTREAMS_PER_CONTROLLER) {
+        dma_ctrl = DMA1;
+    } else {
+        dma_ctrl = DMA2;
+        ch -= NSTREAMS_PER_CONTROLLER;
+    }
+    __IO uint32_t *ifcr;
+    if (ch <= 3) {
+        ifcr = &dma_ctrl->LIFCR;
+    } else {
+        ifcr = &dma_ctrl->HIFCR;
+        ch -= 4;
+    }
+    if (ch <= 1) {
+        ch = ch * 6;
+    } else {
+        ch = 4 + ch * 6;
+    }
+    *ifcr = 0x3d << ch;
+
+    // Configure and enable stream
     DMA_Stream_TypeDef *dma = descr->instance;
     dma->CR &= ~DMA_SxCR_DBM;
     dma->NDTR = len;
@@ -917,3 +955,5 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
 }
 
 #endif
+
+#endif // defined(STM32WB)

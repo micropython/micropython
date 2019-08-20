@@ -14,6 +14,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_USB       (0) // requires a custom USB connector on PA11/PA12
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
 
@@ -57,4 +58,8 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
-#define MICROPY_HW_USB_FS (0)
+#define MICROPY_HW_USB_FS           (MICROPY_HW_ENABLE_USB)
+#define MICROPY_HW_USB_MSC          (0)
+#define MICROPY_HW_USB_HID          (0)
+#define USBD_CDC_RX_DATA_SIZE       (256)
+#define USBD_CDC_TX_DATA_SIZE       (256)

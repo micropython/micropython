@@ -540,7 +540,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
                 mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
                 printf("BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));
             } else {
-                printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
+                printf("code %p, byte code 0x%02x not implemented\n", ip - 1, ip[-1]);
                 assert(0);
                 return ip;
             }

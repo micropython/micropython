@@ -27,10 +27,9 @@
 
 #include "stdio.h"
 
-#include "py/mpconfig.h"
-#include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
+#include "py/mphal.h"
 #include "mpthreadport.h"
 
 #include "esp_task.h"
@@ -130,7 +129,7 @@ void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, i
     mp_thread_mutex_lock(&thread_mutex, 1);
 
     // create thread
-    BaseType_t result = xTaskCreate(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id);
+    BaseType_t result = xTaskCreatePinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id, MP_TASK_COREID);
     if (result != pdPASS) {
         mp_thread_mutex_unlock(&thread_mutex);
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));

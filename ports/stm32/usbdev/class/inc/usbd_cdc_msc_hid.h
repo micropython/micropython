@@ -120,7 +120,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     uint8_t usbd_mode;
     uint8_t usbd_config_desc_size;
 
+    #if MICROPY_HW_USB_MSC
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
+    #endif
 
     // RAM to hold the current descriptors, which we configure on the fly
     __ALIGN_BEGIN uint8_t usbd_device_desc[USB_LEN_DEV_DESC] __ALIGN_END;
@@ -128,7 +130,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
     usbd_cdc_state_t *cdc[MICROPY_HW_USB_CDC_NUM];
+    #if MICROPY_HW_USB_HID
     usbd_hid_state_t *hid;
+    #endif
 } usbd_cdc_msc_hid_state_t;
 
 extern const uint8_t USBD_MSC_Mode_Sense6_Data[4];
@@ -176,9 +180,11 @@ uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd);
 uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf);
 uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t *buf);
 
+#if MICROPY_HW_USB_MSC
 static inline void USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD_StorageTypeDef *fops) {
     usbd->MSC_BOT_ClassData.bdev_ops = fops;
 }
+#endif
 
 uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *usbd, uint8_t *buf);
 int USBD_HID_CanSendReport(usbd_hid_state_t *usbd);

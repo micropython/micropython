@@ -28,11 +28,11 @@ RuntimeError:
 # repl
 ame__
 
-__class__       __name__        argv            byteorder
-exc_info        exit            getsizeof       implementation
-maxsize         modules         path            platform
-print_exception                 stderr          stdin
-stdout          version         version_info
+__class__       __name__        argv            atexit
+byteorder       exc_info        exit            getsizeof
+implementation  maxsize         modules         path
+platform        print_exception                 stderr
+stdin           stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -94,11 +94,13 @@ OSError
 None
 None
 frzstr1
+frzstr1.py
 frzmpy1
+frzmpy1.py
 frzstr_pkg1.__init__
-1
+frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-1
+frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod

@@ -54,7 +54,7 @@ testgroup_member = (
 
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
-test_dirs = ('basics', 'micropython', 'float', 'extmod', 'inlineasm') # 'import', 'io', 'misc')
+test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'float', 'inlineasm', 'qemu-arm',) # 'import', 'io',)
 exclude_tests = (
     # pattern matching in .exp
     'basics/bytes_compare3.py',
@@ -81,6 +81,8 @@ exclude_tests = (
     'micropython/heapalloc_traceback.py',
     # pattern matching in .exp
     'micropython/meminfo.py',
+    # needs sys stdfiles
+    'misc/print_exception.py',
 )
 
 output = []
