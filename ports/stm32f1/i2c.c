@@ -36,10 +36,10 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
 
     // Init pins
-    if (!mp_hal_pin_config_alt(scl, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, AF_FN_I2C, i2c_id + 1)) {
+    if (!mp_hal_pin_config_alt(scl, MP_HAL_PIN_MODE_ALT_OD, MP_HAL_PIN_PULL_UP, AF_FN_I2C, i2c_id + 1)) {
         return -MP_EPERM;
     }
-    if (!mp_hal_pin_config_alt(sda, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, AF_FN_I2C, i2c_id + 1)) {
+    if (!mp_hal_pin_config_alt(sda, MP_HAL_PIN_MODE_ALT_OD, MP_HAL_PIN_PULL_UP, AF_FN_I2C, i2c_id + 1)) {
         return -MP_EPERM;
     }
 

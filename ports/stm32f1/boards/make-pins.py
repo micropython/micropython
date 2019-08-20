@@ -31,23 +31,30 @@ CONDITIONAL_VAR = {
 }
 
 REMAP_FN = {
-    'SPI1'     : 1<<0,
-    'I2C1'     : 1<<1,
-    'USART1'   : 1<<2,
-    'USART2'   : 1<<3,
-    'USART3'   : 3<<4,  # use 2bit
-    'TIM1'     : 3<<6,  # use 2bit
-    'TIM2'     : 3<<8,  # use 2bit
-    'TIM3'     : 3<<10, # use 2bit
-    'TIM4'     : 1<<12,
-    'CAN1'     : 3<<13, # use 2bit
-    'RCC_OSC'  : 1<<15,
-    'TIM5_CH4' : 1<<16,
-# unused
-#    'ADC1_ETRGINJ' : 1<<17,
-#    'ADC1_ETRGREG' : 1<<18,
-#    'ADC2_ETRGINJ' : 1<<19,
-#    'ADC2_ETRGREG' : 1<<20,
+    'SPI1'     : (0 <<7 ) | (1<<5) | 0,
+    'I2C1'     : (0 <<7 ) | (1<<5) | 1,
+    'USART1'   : (0 <<7 ) | (1<<5) | 2,
+    'USART2'   : (0 <<7 ) | (1<<5) | 3,
+    'USART3'   : (0 <<7 ) | (3<<5) | 4,  # use 2bit
+    'TIM1'     : (0 <<7 ) | (3<<5) | 6,  # use 2bit
+    'TIM2'     : (0 <<7 ) | (3<<5) | 8,  # use 2bit
+    'TIM3'     : (0 <<7 ) | (3<<5) | 10, # use 2bit
+    'TIM4'     : (0 <<7 ) | (1<<5) | 12,
+    'CAN1'     : (0 <<7 ) | (3<<5) | 13, # use 2bit
+    'RCC_OSC'  : (0 <<7 ) | (1<<5) | 15,
+    'TIM5_CH4' : (0 <<7 ) | (1<<5) | 16,
+    'ADC1_ETRGINJ' : (0 <<7 ) | (1<<5) | 17,
+    'ADC1_ETRGREG' : (0 <<7 ) | (1<<5) | 18,
+    'ADC2_ETRGINJ' : (0 <<7 ) | (1<<5) | 19,
+    'ADC2_ETRGREG' : (0 <<7 ) | (1<<5) | 20,
+
+    # STM32F103xG only
+    'TIM9'      : (1 <<7 ) | (1<<5) | 5,
+    'TIM10'     : (1 <<7 ) | (1<<5) | 6,
+    'TIM11'     : (1 <<7 ) | (1<<5) | 7,
+    'TIM13'     : (1 <<7 ) | (1<<5) | 8,
+    'TIM14'     : (1 <<7 ) | (1<<5) | 9,
+    'FSMC_NADV' : (1 <<7 ) | (1<<5) | 10,
 }
 
 def parse_port_pin(name_str):
@@ -159,16 +166,14 @@ class AlternateFunction(object):
         fn_num = self.fn_num
         if fn_num is None:
             fn_num = 0
-        remap_mask = 0
+        remap_pin = 0
         if self.ptr() in REMAP_FN:
-            remap_mask = REMAP_FN[self.ptr()]
-        print('({:2d}, {:8s}, {:2d}, {:d}, {:#08x}, {:8s}), // {:s}'.format(
+            remap_pin = REMAP_FN[self.ptr()]
+        print('({:2d}, {:8s}, {:2d}, {:#02x}, {:8s}), // {:s}'.format(
             self.idx,
             self.func, 
             fn_num, 
-            # self.pin_type,
-            0,  # TODO: 这里需要依据管脚来判断插入复用映射类型, 用于设置AFIO->MAPRx
-            remap_mask,
+            remap_pin,
             self.ptr(), 
             self.af_str)
         )
@@ -356,9 +361,7 @@ class Pins(object):
     def print_adc(self, adc_num):
         print('')
         print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
-        for channel in range(17):
-            if channel == 16:
-                print('#if defined(STM32L4)')
+        for channel in range(16):
             adc_found = False
             for named_pin in self.cpu_pins:
                 pin = named_pin.pin()
@@ -369,8 +372,6 @@ class Pins(object):
                     break
             if not adc_found:
                 print('  NULL,    // {:d}'.format(channel))
-            if channel == 16:
-                print('#endif')
         print('};')
 
 

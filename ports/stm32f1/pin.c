@@ -277,10 +277,8 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args == 0) {
-        // get pin
         return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
     } else {
-        // set pin
         mp_hal_pin_write(self, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
@@ -370,7 +368,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
     if (af == -1) {
         af = args[2].u_int;
     }
-    if ((mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) && !IS_GPIO_AF(af)) {
+    if ((mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OD) && !IS_GPIO_AF(af)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af));
     }
 
@@ -407,29 +405,6 @@ STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
     return pin_call(args[0], n_args - 1, 0, args + 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
-
-// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-// STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-//     enum { ARG_handler, ARG_trigger, ARG_hard };
-//     static const mp_arg_t allowed_args[] = {
-//         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-//         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
-//         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
-//     };
-//     pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-//     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-//     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-//     if (n_args > 1 || kw_args->used != 0) {
-//         // configure irq
-//         extint_register_pin(self, args[ARG_trigger].u_int,
-//             args[ARG_hard].u_bool, args[ARG_handler].u_obj);
-//     }
-
-//     // TODO should return an IRQ object
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
 /// \method name()
 /// Get the pin name.
@@ -535,23 +510,17 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),             MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),            MP_ROM_INT(MP_HAL_PIN_MODE_OUTPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),     MP_ROM_INT(MP_HAL_PIN_MODE_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_IN),             MP_ROM_INT(MP_HAL_PIN_MODE_IN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),            MP_ROM_INT(MP_HAL_PIN_MODE_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT_OD),         MP_ROM_INT(MP_HAL_PIN_MODE_OUT_OD) },
     { MP_ROM_QSTR(MP_QSTR_ALT),            MP_ROM_INT(MP_HAL_PIN_MODE_ALT) },
-    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_OD),         MP_ROM_INT(MP_HAL_PIN_MODE_ALT_OD) },
     { MP_ROM_QSTR(MP_QSTR_ANALOG),         MP_ROM_INT(MP_HAL_PIN_MODE_ANALOG) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),        MP_ROM_INT(GPIO_PULLUP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),      MP_ROM_INT(GPIO_PULLDOWN) },
 
-    #if 0
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),     MP_ROM_INT(GPIO_MODE_IT_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),    MP_ROM_INT(GPIO_MODE_IT_FALLING) },
-    #endif
-
 #include "genhdr/pins_af_const.h"
 };
-
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -593,23 +562,25 @@ const mp_obj_type_t pin_type = {
 ///
 /// Usage Model:
 ///
-///     x3 = pyb.Pin.board.X3
-///     x3_af = x3.af_list()
+///     pb3 = pyb.Pin.board.PB3
+///     pb3_af = pb3.af_list()
 ///
-/// x3_af will now contain an array of PinAF objects which are availble on
-/// pin X3.
+/// pb3_af will now contain an array of PinAF objects which are availble on
+/// pin PB3.
 ///
-/// For the pyboard, x3_af would contain:
-///     [Pin.AF1_TIM2, Pin.AF2_TIM5, Pin.AF3_TIM9, Pin.AF7_USART2]
+/// For the pyboard, pb3_af would contain:
+///     [Pin.AF1_TIM2, Pin.AF5_SPI1, Pin.AF6_SPI3, Pin.AF6_I2S3]
 ///
 /// Normally, each peripheral would configure the af automatically, but sometimes
 /// the same function is available on multiple pins, and having more control
 /// is desired.
 ///
-/// To configure X3 to expose TIM2_CH3, you could use:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=pyb.Pin.AF1_TIM2)
+/// To configure PB3 to expose TIM2_CH2, you could use:
+///    pin = pyb.Pin(pyb.Pin.board.PB3, mode=pyb.Pin.ALT, af=pyb.Pin.AF1_TIM2)
 /// or:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=1)
+///    pin = pyb.Pin(pyb.Pin.board.PB3, mode=pyb.Pin.ALT, af=1)
+///
+/// PinAF is actually just for check alt, do nothing.
 
 /// \method __str__()
 /// Return a string describing the alternate function.

@@ -233,7 +233,7 @@ void pyb_i2c_init(I2C_HandleTypeDef *i2c) {
     }
 
     // init the GPIO lines
-    uint32_t mode = MP_HAL_PIN_MODE_ALT_OPEN_DRAIN;
+    uint32_t mode = MP_HAL_PIN_MODE_ALT_OD;
     uint32_t pull = MP_HAL_PIN_PULL_NONE; // have external pull-up resistors on both lines
     mp_hal_pin_config_alt(scl_pin, mode, pull, AF_FN_I2C, i2c_unit);
     mp_hal_pin_config_alt(sda_pin, mode, pull, AF_FN_I2C, i2c_unit);

@@ -89,7 +89,7 @@ const uint8_t APBPrescTable[8U] =  {0, 0, 0, 0, 1, 2, 3, 4};
     #undef DATA_IN_ExtSRAM
 #endif
 
-#if (defined(STM32F100xE) || defined(STM32F101xE) || defined(STM32F101xG) || defined(STM32F103xE) || defined(STM32F103xG)) && \
+#if (defined(STM32F103xE) || defined(STM32F103xG)) && \
     defined(MICROPY_HW_EXT_SRAM_ENABLE) && MICROPY_HW_EXT_SRAM_ENABLE
     #define DATA_IN_ExtSRAM
     static void SystemInit_ExtMemCtl(void);

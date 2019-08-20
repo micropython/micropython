@@ -203,7 +203,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 			// In STM32F1xx, For alternate function inputs,
 			// the port must be configured in Input mode (floating, pull-up or pull-down)
 			// see RM0008.PDF#9.1.4
-			mode = (i == 1 ? MP_HAL_PIN_MODE_INPUT : MP_HAL_PIN_MODE_ALT);
+			mode = (i == 1 ? MP_HAL_PIN_MODE_IN : MP_HAL_PIN_MODE_ALT);
 			bool ret = mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_UART, uart_unit);
 			if (!ret) {
 				return false;

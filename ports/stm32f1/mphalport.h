@@ -29,16 +29,19 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #include "pin.h"
 
 #define MP_HAL_PIN_FMT "%q"
-#define MP_HAL_PIN_MODE_INPUT (0)           // 浮空输入
-#define MP_HAL_PIN_MODE_OUTPUT (1)          // 输出(推挽)
-#define MP_HAL_PIN_MODE_ALT (2)             // 功能复用(推挽)
-#define MP_HAL_PIN_MODE_ANALOG (3)          // 模拟(输入)
-#define MP_HAL_PIN_MODE_ADC (3)             // 模拟(输入)
-#define MP_HAL_PIN_MODE_OPEN_DRAIN (5)      // 开漏(输出)
-#define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN (6)  // 复用开漏(输出)
+
+#define MP_HAL_PIN_MODE_IN     (0)
+#define MP_HAL_PIN_MODE_OUT    (1)
+#define MP_HAL_PIN_MODE_ALT    (2)
+#define MP_HAL_PIN_MODE_ANALOG (3)
+#define MP_HAL_PIN_MODE_ADC    (3)
+#define MP_HAL_PIN_MODE_OUT_OD (5)
+#define MP_HAL_PIN_MODE_ALT_OD (6)
+
 #define MP_HAL_PIN_PULL_NONE    (GPIO_NOPULL)
 #define MP_HAL_PIN_PULL_UP      (GPIO_PULLUP)
 #define MP_HAL_PIN_PULL_DOWN    (GPIO_PULLDOWN)
+
 #define MP_HAL_PIN_SPEED_LOW    (GPIO_SPEED_FREQ_LOW)
 #define MP_HAL_PIN_SPEED_MEDIUM (GPIO_SPEED_FREQ_MEDIUM)
 #define MP_HAL_PIN_SPEED_HIGH   (GPIO_SPEED_FREQ_HIGH)
@@ -46,9 +49,9 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define mp_hal_pin_obj_t         const pin_obj_t*
 #define mp_hal_get_pin_obj(o)    pin_find(o)
 #define mp_hal_pin_name(p)       ((p)->name)
-#define mp_hal_pin_input(p)      mp_hal_pin_config((p), MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0)
-#define mp_hal_pin_output(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0)
-#define mp_hal_pin_open_drain(p) mp_hal_pin_config((p), MP_HAL_PIN_MODE_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_input(p)      mp_hal_pin_config((p), MP_HAL_PIN_MODE_IN,     MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_output(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUT,    MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_open_drain(p) mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUT_OD, MP_HAL_PIN_PULL_NONE, 0)
 
 #define mp_hal_pin_high(p)    ( (p)->gpio->BSRR = (p)->pin_mask )
 #define mp_hal_pin_low(p)     ( (p)->gpio->BRR  = (p)->pin_mask )

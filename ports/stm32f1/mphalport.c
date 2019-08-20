@@ -73,7 +73,7 @@ void mp_hal_ticks_cpu_enable(void) {
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
-    BIT_BAND_SET(RCC->APB2ENR , (RCC_APB2ENR_IOPAEN_Pos + gpio_idx));
+    BIT_BAND(RCC->APB2ENR , (RCC_APB2ENR_IOPAEN_Pos + gpio_idx)) = 1;
     volatile uint32_t tmp = RCC->APB2ENR; // Delay after enabling clock
     (void)tmp;
 }
@@ -81,19 +81,20 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 #define MP_HAL_PIN_MODE_INVALID    (4)
 // this table converts from MP_HAL_PIN_MODE_xxx to STM32F1 CRL/CRH value, output use highest speed
 const byte mp_hal_pin_mod_cfg[7] = {
-    [MP_HAL_PIN_MODE_INPUT]          = 0x04, // floating input
-    [MP_HAL_PIN_MODE_OUTPUT]         = 0x03, // output PP, 50MHz
-    [MP_HAL_PIN_MODE_ALT]            = 0x0b, // alternat PP, 50MHz
-    [MP_HAL_PIN_MODE_ANALOG]         = 0x00, // analog input
-    [MP_HAL_PIN_MODE_INVALID]        = 0x00, // not used
-    [MP_HAL_PIN_MODE_OPEN_DRAIN]     = 0x07, // output OD, 50MHz
-    [MP_HAL_PIN_MODE_ALT_OPEN_DRAIN] = 0x0f, // alternat OD, 50MHz
+    [MP_HAL_PIN_MODE_IN]      = 0x04, // floating input
+    [MP_HAL_PIN_MODE_OUT]     = 0x03, // output PP, 50MHz
+    [MP_HAL_PIN_MODE_ALT]     = 0x0b, // alternat PP, 50MHz
+    [MP_HAL_PIN_MODE_ANALOG]  = 0x00, // analog input
+    [MP_HAL_PIN_MODE_INVALID] = 0x00, // not used
+    [MP_HAL_PIN_MODE_OUT_OD]  = 0x07, // output OD, 50MHz
+    [MP_HAL_PIN_MODE_ALT_OD]  = 0x0f, // alternat OD, 50MHz
 };
 
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
     GPIO_TypeDef *gpio = pin_obj->gpio;
     uint32_t pin = pin_obj->pin;
     uint32_t moder = mp_hal_pin_mod_cfg[mode];
+    uint32_t pos = (pin % 8) * 4;
 
     mp_hal_gpio_clock_enable(gpio);
     
@@ -104,25 +105,15 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, u
 
     // get register CRL/CRH (pin0~pin7 use CRL, pin8~pin15 use CRH)
     register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 8 * 4));
-    
-    // pin config has 4bit, high 2bit is CNF， low 2bit is MODE
-    // at CRL register, mask = 0x0f << (pin * 4)
-    // at CRH register, mask = 0x0f << ( (pin - 8) * 4 )
-    // write together: mask = 0x0f << ( (pin % 8) *4 )
-    *pReg = (*pReg & ~(0x0f << ((pin%8)*4)) ) | ( (moder & 0x0f) << ( (pin%8) *4) );
+    *pReg = (*pReg & ~(0x0f << pos) ) | ( (moder & 0x0f) << pos );
 
     // set pull
     if (moder == 0x08) {
         gpio->BSRR= 1 << (pin + (1-pull%2) * 16);
     }
     
-    // TODO: set AFIO
-    if (mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OPEN_DRAIN) {
-        // 1. alt = 0, 及原先基本功能， 什么也不做(需要设为输出？)
-        // 2. alt = 15, 设为外部中断线
-        // 3. 其他的保持默认, 无需指定
-        
-        // 4. 有管脚映射或部分映射 如何设置?(存储AFIO->MAPRx set mask 到alt中？)
+    if (mode == MP_HAL_PIN_MODE_ALT || mode == MP_HAL_PIN_MODE_ALT_OD) {
+        // TODO: alt contains AFIO remap infomation, but no value provided
     }
 }
 
@@ -138,7 +129,10 @@ bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, u
 void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
     GPIO_TypeDef *gpio = pin_obj->gpio;
     uint32_t pin = pin_obj->pin;
-    // FIXME: 这里需要保证是输出模式，否则会把输入变成输出
+    uint32_t pos = (pin % 8) * 4;
+
     register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin / 8 * 4));
-    *pReg = (*pReg & ~(0x03 << ( (pin%8) * 4))) | ( ( (speed+1) & 0x03) << ( (pin%8) *4) );
+    if ( (*pReg >> pos) & 3 ) {
+        *pReg = (*pReg & ~(3 << pos)) | (((speed + 1) & 3) << pos);
+    }
 }

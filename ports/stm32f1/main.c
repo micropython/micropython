@@ -500,7 +500,7 @@ soft_reset:
 
     #if MICROPY_HW_ENABLE_USB
 	{// USB detect reset
-		mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_DOWN, 0);
+		mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_OUT, MP_HAL_PIN_PULL_DOWN, 0);
 		mp_hal_pin_low(pin_A12);
 		mp_hal_delay_ms(500); // pin's state keep low with 500ms
 	}

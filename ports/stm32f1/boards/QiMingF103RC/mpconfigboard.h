@@ -60,20 +60,20 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 // #define MICROPY_HW_UART1_RX     (pin_A10)
 
 // USART2
-// #define MICROPY_HW_UART2_TX     (pin_A2)  // PA2
-// #define MICROPY_HW_UART2_RX     (pin_A3)  // PA3
+// #define MICROPY_HW_UART2_TX     (pin_A2)
+// #define MICROPY_HW_UART2_RX     (pin_A3)
 
 // USART3
-// #define MICROPY_HW_UART3_TX     (pin_B10)  // PB10,PC10
-// #define MICROPY_HW_UART3_RX     (pin_B11)  // PB11,PC11
+// #define MICROPY_HW_UART3_TX     (pin_B10)
+// #define MICROPY_HW_UART3_RX     (pin_B11)
 
 // UART4 for ESP8266
-// #define MICROPY_HW_UART4_TX     (pin_C10)  // PC10,PA0
-// #define MICROPY_HW_UART4_RX     (pin_C11)  // PC11,PA1
+// #define MICROPY_HW_UART4_TX     (pin_C10)
+// #define MICROPY_HW_UART4_RX     (pin_C11)
 
 // UART5
-// #define MICROPY_HW_UART5_TX     (pin_C12) // PC12
-// #define MICROPY_HW_UART5_RX     (pin_D2)  // PD2
+// #define MICROPY_HW_UART5_TX     (pin_C12)
+// #define MICROPY_HW_UART5_RX     (pin_D2)
 
 // I2C busses
 // #define MICROPY_HW_I2C1_SCL (pin_B6)
@@ -91,13 +91,12 @@ extern const struct _mp_spiflash_config_t spiflash_config;
 // CAN (no chip)
 
 // KEY0 has no pullup or pulldown, and pressing the switch makes the input go low
-// #define MICROPY_HW_USRSW_PIN        (pin_C12)
-// #define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
-// #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
-// #define MICROPY_HW_USRSW_PRESSED    (0)
-
-// KEY1 - no support for multiple user buttons, yet
-// pin_E3
+#if MICROPY_HW_HAS_SWITCH == 1
+#define MICROPY_HW_USRSW_PIN        (pin_C12)
+#define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
+#define MICROPY_HW_USRSW_PRESSED    (0)
+#endif
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_A1)  // RED LED D1

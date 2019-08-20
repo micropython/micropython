@@ -52,12 +52,12 @@ void pin_remap_init0(void) {
 
 uint32_t pin_remap_config(uint8_t periph, int8_t value) {
     uint32_t pos = periph & 0x1f;
-    uint32_t mask = ((periph >> 8) & 0x07);
+    uint32_t mask = ((periph >> 5) & 3);
 
     if (value == -1) {
         uint32_t cfg = (
                     #ifdef STM32F103xG
-                        ( (periph&0x8000 ? AFIO->MAPR2 : AFIO->MAPR) >> pos )
+                        ( (periph&0x80 ? AFIO->MAPR2 : AFIO->MAPR) >> pos )
                     #else
                         (AFIO->MAPR >> pos)
                     #endif
@@ -65,7 +65,7 @@ uint32_t pin_remap_config(uint8_t periph, int8_t value) {
         
         return cfg;
     } else {
-        if ( (periph & 0x8000) == 0) {
+        if ( (periph & 0x80) == 0) {
             AFIO->MAPR &=  (~mask)      << pos;
             AFIO->MAPR |= ( (value&mask)<< pos | AFIO_MAPR_SWJ_CFG_Msk );
         }
@@ -83,7 +83,6 @@ uint32_t pin_remap_config(uint8_t periph, int8_t value) {
 /// \method remap(periph, remap)
 /// Returns the periph remap config or set
 STATIC mp_obj_t pin_remap_remap(size_t n_args, const mp_obj_t *args) {
-    printf("n_args: %d\n", n_args);
     mp_arg_check_num(n_args, 0, 2, 3, false);
 
     uint8_t periph = mp_obj_get_int(args[1]);

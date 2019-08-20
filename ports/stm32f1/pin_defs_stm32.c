@@ -2,8 +2,8 @@
 #include "pin.h"
 
 // Returns the pin mode. This value returned by this macro should be one of:
-// GPIO_MODE_INPUT, GPIO_MODE_OUTPUT_PP, GPIO_MODE_OUTPUT_OD,
-// GPIO_MODE_AF_PP, GPIO_MODE_AF_OD, or GPIO_MODE_ANALOG.
+// MP_HAL_PIN_MODE_IN, MP_HAL_PIN_MODE_OUT, MP_HAL_PIN_MODE_ANALOG,
+// MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_MODE_ALT_OD, or MP_HAL_PIN_MODE_OUT_OD.
 uint32_t pin_get_mode(const pin_obj_t *pin) {
     GPIO_TypeDef *gpio = pin->gpio;
 
@@ -15,15 +15,15 @@ uint32_t pin_get_mode(const pin_obj_t *pin) {
 	if (cfg == 0) {                  // CNF=0 and MODE=0, Analog Input
 		return 3;                    // MP_HAL_PIN_MODE_ANALOG
 	} else if ( (cfg & 0x03) == 0) { // MODE=0, means Input (floating/pull-up/pull-down)
-		return 0;                    // MP_HAL_PIN_MODE_INPUT
+		return 0;                    // MP_HAL_PIN_MODE_IN
 	}
 	cfg >>= 2;                       // the other modes can be computed with high 2bit
 
 	// CNF[1:0]  Macro[3:0] Value  Macro Name
-	// 00b       (1=0001b)         MP_HAL_PIN_MODE_OUTPUT
+	// 00b       (1=0001b)         MP_HAL_PIN_MODE_OUT
 	// 10b       (2=0010b)         MP_HAL_PIN_MODE_ALT
-	// 01b       (5=0101b)         MP_HAL_PIN_MODE_OPEN_DRAIN
-	// 11b       (6=0110b)         MP_HAL_PIN_MODE_ALT_OPEN_DRAIN
+	// 01b       (5=0101b)         MP_HAL_PIN_MODE_OUT_OD
+	// 11b       (6=0110b)         MP_HAL_PIN_MODE_ALT_OD
 	// 
 	// CNF[0] is equal to Macro[2],  mark as (cfg & 1) << 2
 	// CNF[1] is equal to Macro[1],  mark as (cfg & 2)
@@ -37,7 +37,7 @@ uint32_t pin_get_mode(const pin_obj_t *pin) {
 }
 
 // Returns the pin pullup/pulldown. The value returned by this macro should
-// be one of GPIO_NOPULL(except STM32F1), GPIO_PULLUP, or GPIO_PULLDOWN.
+// be one of 0, GPIO_PULLUP, or GPIO_PULLDOWN.
 uint32_t pin_get_pull(const pin_obj_t *pin) {
     GPIO_TypeDef *gpio = pin->gpio;
     register uint32_t *pReg = (uint32_t *)((uint32_t)(&gpio->CRL) + (pin->pin / 8 * 4));

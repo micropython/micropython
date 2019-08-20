@@ -435,7 +435,7 @@ void led_state_all(unsigned int mask) {
 // USR BUTTON
 
 static void usrbtn_init(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_IN, MICROPY_HW_USRSW_PULL, 0);
 }
 
 static int usrbtn_state(void) {
@@ -766,8 +766,8 @@ static i2c_obj_t i2c_obj;
 void i2c_init(int addr) {
     i2c_obj.cmd_send_arg = false;
 
-    mp_hal_pin_config(MBOOT_I2C_SCL, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, MBOOT_I2C_ALTFUNC);
-    mp_hal_pin_config(MBOOT_I2C_SDA, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, MBOOT_I2C_ALTFUNC);
+    mp_hal_pin_config(MBOOT_I2C_SCL, MP_HAL_PIN_MODE_ALT_OD, MP_HAL_PIN_PULL_NONE, MBOOT_I2C_ALTFUNC);
+    mp_hal_pin_config(MBOOT_I2C_SDA, MP_HAL_PIN_MODE_ALT_OD, MP_HAL_PIN_PULL_NONE, MBOOT_I2C_ALTFUNC);
 
     i2c_slave_init(MBOOT_I2Cx, I2Cx_EV_IRQn, IRQ_PRI_I2C, addr);
 }
@@ -1250,11 +1250,11 @@ static pyb_usbdd_obj_t pyb_usbdd SECTION_NOZERO_BSS;
 
 static int pyb_usbdd_detect_port(void) {
     #if MBOOT_USB_AUTODETECT_PORT
-    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
-    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_IN, MP_HAL_PIN_PULL_UP, 0);
+    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_IN, MP_HAL_PIN_PULL_UP, 0);
     int state = mp_hal_pin_read(pin_A11) == 0 && mp_hal_pin_read(pin_A12) == 0;
-    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_IN, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_IN, MP_HAL_PIN_PULL_NONE, 0);
     return 0;
 }
 
@@ -1385,7 +1385,7 @@ void stm32_main(int initial_r0) {
     #endif
 
     #ifdef MBOOT_BOOTPIN_PIN
-    mp_hal_pin_config(MBOOT_BOOTPIN_PIN, MP_HAL_PIN_MODE_INPUT, MBOOT_BOOTPIN_PULL, 0);
+    mp_hal_pin_config(MBOOT_BOOTPIN_PIN, MP_HAL_PIN_MODE_IN, MBOOT_BOOTPIN_PULL, 0);
     if (mp_hal_pin_read(MBOOT_BOOTPIN_PIN) == MBOOT_BOOTPIN_ACTIVE) {
         goto enter_bootloader;
     }
