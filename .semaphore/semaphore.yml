@@ -13,12 +13,7 @@ blocks:
         commands:
           - checkout
           - IMG_TAG=$(.semaphore/get-img-tag.sh)
-          - sudo -E cache list
-          - sudo -E cache restore docker-dir
-      epilogue:
-        commands:
-          - sudo -E cache list
-          - sudo -E cache store docker-dir /var/lib/docker
+          - env
       secrets:
         - name: docker-hub
       jobs:
@@ -35,8 +30,6 @@ blocks:
         commands:
           - checkout
           - IMG_TAG=$(.semaphore/get-img-tag.sh)
-          - sudo -E cache list
-          - sudo -E cache restore docker-dir
       env_vars:
         - name: MAKEOPTS
           value: -j4
