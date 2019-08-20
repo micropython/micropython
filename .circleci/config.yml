@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Build docker image
           command: |
-            TAG=$(git describe --tags --abbrev=0)
-            docker build -t pycampers/micropython:$TAG .
+            TAG=pycampers/micropython:$(git describe --tags --abbrev=0)
+            docker build -t $TAG .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push CircleCI-Public/circleci-demo-docker:$TAG
+            docker push $TAG
