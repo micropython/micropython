@@ -37,16 +37,16 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audioio
+//| .. currentmodule:: audiocore
 //|
 //| :class:`MixerVoice` -- Voice objects used with Mixer
 //| =====================================================
 //|
-//| Used to access and control samples with `audioio.Mixer`.
+//| Used to access and control samples with `audiocore.Mixer`.
 //|
 //| .. class:: MixerVoice()
 //|
-//|   MixerVoice instance object(s) created by `audioio.Mixer`.
+//|   MixerVoice instance object(s) created by `audiocore.Mixer`.
 //|
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -88,9 +88,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixervoice___exit___obj, 4, 4
 //|     Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|     Does not block. Use `playing` to block.
 //|
-//|     Sample must be an `audioio.WaveFile`, `audioio.Mixer` or `audioio.RawSample`.
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.Mixer` or `audiocore.RawSample`.
 //|
-//|     The sample must match the `audioio.Mixer`'s encoding settings given in the constructor.
+//|     The sample must match the `audiocore.Mixer`'s encoding settings given in the constructor.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
