@@ -27,3 +27,6 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
+[submodule "lib/nxplib"]
+	path = lib/nxplib
+	url = https://github.com/yanyao12138/nxplib.git
