@@ -13,10 +13,10 @@ blocks:
         commands:
           - checkout
           - export IMG_TAG=$(.semaphore/get-img-tag.sh)
-          - ./restore-docker-img.sh
+          - .semaphore/restore-docker-img.sh
       epilogue:
         commands:
-          - ./store-docker-img.sh
+          - .semaphore/store-docker-img.sh
       secrets:
         - name: docker-hub
       jobs:
@@ -33,7 +33,7 @@ blocks:
         commands:
           - checkout
           - export IMG_TAG=$(.semaphore/get-img-tag.sh)
-          - ./restore-docker-img.sh
+          - .semaphore/restore-docker-img.sh
       env_vars:
         - name: MAKEOPTS
           value: -j4
