@@ -7,7 +7,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - build:
+      - run:
           name: Build docker image
           command: |
             docker build -t micropython .
