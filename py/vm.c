@@ -1365,6 +1365,10 @@ unwind_loop:
                 const byte *ip = code_state->fun_bc->bytecode;
                 ip = mp_decode_uint_skip(ip); // skip n_state
                 ip = mp_decode_uint_skip(ip); // skip n_exc_stack
+                if (*ip & 0x80) {
+                    // builtin bytecode, don't add traceback info
+                    goto skip_traceback;
+                }
                 ip++; // skip scope_params
                 ip++; // skip n_pos_args
                 ip++; // skip n_kwonly_args
@@ -1407,6 +1411,7 @@ unwind_loop:
                     }
                 }
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
+            skip_traceback:;
             }
 
             while (exc_sp >= exc_stack && exc_sp->handler <= code_state->ip) {
