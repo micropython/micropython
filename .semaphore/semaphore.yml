@@ -34,6 +34,9 @@ blocks:
           - checkout
           - export IMG_TAG=$(.semaphore/get-img-tag.sh)
           - .semaphore/restore-docker-img.sh
+      epilogue:
+        commands:
+          - .semaphore/store-docker-img.sh
       env_vars:
         - name: MAKEOPTS
           value: -j4

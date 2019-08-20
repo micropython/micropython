@@ -27,7 +27,7 @@ SDKCONFIG ?= boards/sdkconfig
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # the git hash of the currently supported ESP IDF version
-ESPIDF_SUPHASH := `cat ESPIDF_SUPHASH`
+ESPIDF_SUPHASH := $(cat ESPIDF_SUPHASH)
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
