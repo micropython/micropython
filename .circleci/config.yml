@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Setup env vars
           command: |
-            echo "export TAG=$pycampers/micropython:$(git describe --tags --abbrev=0)" >> $BASH_ENV
+            echo "export TAG=pycampers/micropython:$(git describe --tags --abbrev=0)" >> $BASH_ENV
 
       - run:
           name: Print env vars
