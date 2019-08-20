@@ -1,0 +1,20 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Setup env vars
+        run: |
+          TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
+          echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
+
+      - name: Build docker image
+        uses: actions/docker/cli@master
+        args: docker build -t $IMG_TAG .
