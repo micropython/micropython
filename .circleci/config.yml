@@ -21,11 +21,11 @@ jobs:
           name: Setup env vars
           command: |
             TAG=$(git describe --exact-match HEAD 2> /dev/null)
-            if [ $? -ne 0 ]
-            then
+            if [ $? -ne 0 ]; then
             	TAG="master"
             fi
 
+            echo $TAG
             echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
 
       - run:
