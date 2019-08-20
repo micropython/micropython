@@ -148,7 +148,7 @@ qstr mp_obj_code_get_name(const byte *code_info) {
 }
 
 #if MICROPY_EMIT_NATIVE
-STATIC const mp_obj_type_t mp_type_fun_native;
+const mp_obj_type_t mp_type_fun_native;
 #endif
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
@@ -406,7 +406,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
     return fun(self_in, n_args, n_kw, args);
 }
 
-STATIC const mp_obj_type_t mp_type_fun_native = {
+const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
