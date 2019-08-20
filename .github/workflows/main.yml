@@ -11,7 +11,7 @@ jobs:
       - name: Setup env vars
         run: |
           TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
-          echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
+          export IMG_TAG=pycampers/micropython:$TAG
 
       - name: Build docker image
         uses: actions/docker/cli@master
