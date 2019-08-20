@@ -54,4 +54,4 @@ WORKDIR $HOME
 USER root
 
 # required to build ports
-RUN apt-get install -y sudo python3
+RUN apt-get install -y python3
