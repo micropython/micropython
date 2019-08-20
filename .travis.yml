@@ -10,8 +10,8 @@ env:
     - MAKEOPTS="-j4"
     - IMAGE_NAME=pycampers/micropython
     - IMAGE_TAG=$(travis/get-tag.sh)
-    - IMAGE=$IMAGE_NAME:$TAG
-    - IMG_TAR=$HOME/persist/docker-image-$TRAVIS_COMMIT.tar
+    - IMAGE=${IMAGE_NAME}:${TAG}
+    - IMG_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
 git:
   submodules: false
 
@@ -23,13 +23,16 @@ jobs:
   include:
     - stage: build
       script:
-        - mkdir -p $HOME/persist
-        - docker load -i $IMG_TAR
-        - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-        - docker pull $IMAGE
-        - docker build --cache-from $IMAGE -t $IMAGE .
-        - docker push $IMAGE
-        - docker save -o $IMG_TAR $IMAGE
+        - mkdir -p ${HOME}/persist
+        - docker load -i ${IMG_TAR} || exit 0
+
+        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+        - docker pull ${IMAGE}
+
+        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
+
+        - docker push ${IMAGE}
+        - docker save -o ${IMG_TAR} ${IMAGE}
 
     - stage: test
       env:
@@ -48,6 +51,6 @@ jobs:
         - PORT=samd
         - PORT=teensy
       script:
-        - docker load -i $IMG_TAR
+        - docker load -i ${IMG_TAR}
 
-        - docker run -v $PWD:$PWD -w $PWD $IMG_TAG travis/${PORT}.sh
+        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMG_TAG} travis/${PORT}.sh
