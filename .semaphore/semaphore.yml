@@ -20,6 +20,7 @@ blocks:
             - export IMG_TAG=pycampers/micropython:$TAG
 
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            - docker pull $IMG_TAG
             - docker build --cache-from $IMG_TAG -t $IMG_TAG .
             - docker push $IMG_TAG
 
@@ -31,4 +32,4 @@ blocks:
       jobs:
         - name: Build stm32 port
           commands:
-            - docekr run $IMG_TAG -v $PWD:$PWD -w $PWD .semaphore/stm32.sh
+            - docker run $IMG_TAG -v $PWD:$PWD -w $PWD .semaphore/stm32.sh
