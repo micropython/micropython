@@ -9,6 +9,10 @@ RUN apt-get install -y \
         flex bison texinfo gawk ncurses-dev libexpat-dev python-dev python python-serial \
         sed git unzip bash help2man wget bzip2 libtool-bin
 
+# needed to compile the ports
+RUN apt-get install -y \
+        sudo python python-pip python3
+
 ARG GNU_ARM_TOOLCHAIN_TAR='https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2'
 ARG ESP_TOOLCHAIN_TAR='https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz'
 ARG ESP_IDF_GIT='https://github.com/espressif/esp-idf.git'
@@ -45,11 +49,7 @@ RUN git checkout $(cat $HOME/ESPIDF_SUPHASH)
 RUN rm $HOME/ESPIDF_SUPHASH
 RUN git submodule update --init --recursive
 ENV IDF_PATH $HOME/esp/esp-idf
+RUN pip install -r $IDF_PATH/requirements.txt
 
-
-# install misc deps needed to compile the ports
 WORKDIR $HOME
 USER root
-RUN apt-get install -y sudo python python-pip python3
-USER docker
-RUN pip install -r $IDF_PATH/requirements.txt
