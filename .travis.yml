@@ -1,0 +1,49 @@
+dist: xenial
+language: minimal
+services:
+  - docker
+cache:
+  directories:
+    - "${HOME}/persist"
+env:
+  global:
+    - MAKEOPTS="-j4"
+    - IMG_TAR="$HOME/persist/img.tar"
+git:
+  submodules: false
+
+stages:
+  - name: build
+  - name: test
+
+jobs:
+  include:
+    - stage: build
+      script:
+        - travis/restore-docker-img.sh
+        - IMG_TAG=$(travis/get-img-tag.sh)
+        - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+        - docker pull $IMG_TAG
+        - docker build --cache-from $IMG_TAG -t $IMG_TAG .
+        - docker push $IMG_TAG
+        - travis/store-docker-img.sh
+
+    - stage: test
+      env:
+        - PORT=stm32
+        - PORT=qemu-arm
+        - PORT=unix-coverage
+        - PORT=unix-standard
+        - PORT=unix-nanobox
+        - PORT=unix-stackless
+        - PORT=windows
+        - PORT=esp32
+        - PORT=esp8266
+        - PORT=nrf
+        - PORT=bare-arm
+        - PORT=cc3200
+        - PORT=samd
+        - PORT=teensy
+      script:
+        - travis/restore-docker-img.sh
+        - docker run -v $PWD:$PWD -w $PWD $IMG_TAG travis/${PORT}.sh
