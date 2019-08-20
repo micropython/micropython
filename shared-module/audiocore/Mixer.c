@@ -4,6 +4,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ *               2018 DeanM for Adafruit Industries
+ *               2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,7 +107,7 @@ uint32_t add8signed(uint32_t a, uint32_t b) {
         if (intermediate > CHAR_MAX) {
             intermediate = CHAR_MAX;
         } else if (intermediate < CHAR_MIN) {
-            //intermediate = CHAR_MIN;
+            intermediate = CHAR_MIN;
         }
         result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int8_t) * 8 * i);
     }
@@ -114,13 +116,13 @@ uint32_t add8signed(uint32_t a, uint32_t b) {
 }
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
     // Subtract out the DC offset, add and then shift back.
     a = __USUB8(a, 0x80808080);
     b = __USUB8(b, 0x80808080);
     uint32_t sum = __QADD8(a, b);
     return __UADD8(sum, 0x80808080);
-    #else
+    #else*/
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
         uint8_t ai = (a >> (sizeof(uint8_t) * 8 * i));
@@ -132,13 +134,13 @@ uint32_t add8unsigned(uint32_t a, uint32_t b) {
         result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
     }
     return result;
-    #endif
+    //#endif
 }
 
 uint32_t add16signed(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
     return __QADD16(a, b);
-    #else
+    #else*/
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = a >> (sizeof(int16_t) * 8 * i);
@@ -152,7 +154,7 @@ uint32_t add16signed(uint32_t a, uint32_t b) {
         result |= (((uint32_t) intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
-    #endif
+    //#endif
 }
 
 uint32_t add16unsigned(uint32_t a, uint32_t b) {
@@ -183,17 +185,9 @@ static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
     if (mul == 0) {
         return 0;
     }
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    int32_t hi, lo;
-    int32_t bits = 16; // saturate to 16 bits
-    int32_t shift = 0; // shift is done automatically
-    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
-    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
-    asm volatile("pkhbt %0, %1, %2, lsl #8" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
     return val;
-    #else
+    #else*/
     uint32_t result = 0;
     float mod_mul = (float) mul / (float) ((1<<15)-1);
     for (int8_t i = 0; i < 4; i++) {
@@ -206,7 +200,7 @@ static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
     }
 
     return result;
-    #endif
+    //#endif
 }
 
 //TODO:
@@ -215,17 +209,11 @@ static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
     if (mul == 0) {
         return 0;
     }
+    /*
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    int32_t hi, lo;
-    int32_t bits = 16; // saturate to 16 bits
-    int32_t shift = 0; // shift is done automatically
-    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
-    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
-    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
-    asm volatile("pkhbt %0, %1, %2, lsl #8" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
     #else
+    */
     uint32_t result = 0;
     float mod_mul = (float)mul / (float)((1<<15)-1);
     for (int8_t i = 0; i < 4; i++) {
@@ -239,7 +227,7 @@ static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
         result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
-    #endif
+    //#endif
 }
 
 //TODO:
@@ -248,13 +236,11 @@ static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
     if (mul == 0) {
         return 0;
     }
+    /*
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    int32_t hi, lo;
-    asm volatile("umaal %0, %1, %2, %3" : "=r" (lo), "=r" (hi) : "r" (val), "r" (mul)); // unsigned accumulation mult (res=64bit)
-    asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
     return val;
     #else
-    //mp_printf(&mp_plat_print, "mult16signed called:\n\tval: %u\t mul: %u\n", val, mul);
+    */
     uint32_t result = 0;
     float mod_mul = (float)mul / (float)((1<<15)-1);
     for (int8_t i = 0; i < 2; i++) {
@@ -267,9 +253,8 @@ static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
         }
         result |= (((uint32_t) intermediate) + 0x8000) << (sizeof(int16_t) * 8 * i);
     }
-    //mp_printf(&mp_plat_print, "\t mod_mul: %f\t result: %u\n", (double)mod_mul, result);
     return val;
-    #endif
+    //#endif
 }
 
 static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
