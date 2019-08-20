@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: buildpack-deps:latest
+      - image: buildpack-deps:bionic
     steps:
       - checkout
       - setup_remote_docker:
@@ -20,27 +20,29 @@ jobs:
       - run:
           name: Setup env vars
           command: |
-            echo "export TAG=pycampers/micropython:$(git describe --tags --abbrev=0)" >> $BASH_ENV
+            TAG=$(git describe --exact-match HEAD 2> /dev/null)
+            if [ $? -ne 0 ]
+            then
+            	TAG="master"
+            fi
 
-      - run:
-          name: Print env vars
-          command: |
-            echo "docker tag: $TAG ${TAG}"
+            echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
 
       - run:
           name: Build docker image
           command: |
-            docker build -t ${TAG} .
+            echo "Building image $IMG_TAG"
+            docker build -t $IMG_TAG .
 
       - run:
           name: Push docker image
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push ${TAG}
+            docker push $IMG_TAG
   test:
     parallelism: 4
     docker:
-      - image: ${TAG}
+      - image: $IMG_TAG
     steps:
       - checkout
       - run:
