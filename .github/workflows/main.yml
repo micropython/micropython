@@ -1,10 +1,8 @@
 name: CI
-
 on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -17,4 +15,5 @@ jobs:
 
       - name: Build docker image
         uses: actions/docker/cli@master
-        args: docker build -t $IMG_TAG .
+        with:
+          args: docker build -t $IMG_TAG .
