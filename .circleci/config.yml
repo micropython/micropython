@@ -12,7 +12,7 @@ jobs:
           name: Setup env vars
           command: |
             TAG=pycampers/micropython:$(git describe --tags --abbrev=0)
-            echo "export TAG=$TAG"
+            echo "export TAG=$TAG" >> $BASH_ENV
 
       - run:
           name: Build docker image
