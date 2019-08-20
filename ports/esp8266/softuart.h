@@ -28,8 +28,8 @@ typedef struct {
 	//wether or not this softuart is rs485 and controlls rs485 tx enable pin
 	uint8_t is_rs485;
 	volatile softuart_buffer_t buffer;
-	uint16_t bit_time;
-  uint32_t elapsed;
+	uint32_t bit_time;
+        uint32_t elapsed;
 } Softuart;
 
 
