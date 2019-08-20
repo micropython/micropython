@@ -29,10 +29,9 @@ RUN cd $HOME/esp-open-sdk && make
 ENV PATH $HOME/esp-open-sdk/xtensa-lx106-elf/bin:$PATH
 
 # setup gnu arm toolchain
-RUN mkdir $HOME/gcc-arm-none-eabi
-WORKDIR $HOME/gcc-arm-none-eabi
+WORKDIR $HOME
 RUN wget -qO- $GNU_ARM_TOOLCHAIN_TAR | tar -xjf -
-ENV PATH $HOME/gcc-arm-none-eabi/bin:$PATH
+ENV PATH $HOME/gcc-arm-none-eabi-8-2019-q3-update/bin:$PATH
 
 # setup esp toolchain
 RUN mkdir $HOME/esp
