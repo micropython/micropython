@@ -67,12 +67,17 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu_pin_obj_t *pin) {
+    claim_pin(pin);
     self->digitalinout = m_new_obj(digitalio_digitalinout_obj_t);
     self->digitalinout->base.type = &digitalio_digitalinout_type;
 
     common_hal_digitalio_digitalinout_construct(self->digitalinout, pin);
 
-    self->threshold = get_raw_reading(self) * 1.05 + 100;
+    uint16_t raw_reading = get_raw_reading(self);
+    if (raw_reading == TIMEOUT_TICKS) {
+        mp_raise_ValueError(translate("No pulldown on pin; 1Mohm recommended"));
+    }
+    self->threshold = raw_reading * 1.05 + 100;
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
