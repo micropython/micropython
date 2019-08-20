@@ -1,17 +1,18 @@
 # global options
 dist: xenial
-language:
-  - c
-compiler:
-  - gcc
 cache:
   directories:
-    - "${HOME}/persist"
+    - "${HOME}/.cache"
 env:
   global:
     - MAKEOPTS="-j4"
 git:
   submodules: false
+services:
+  - docker
+
+before_install:
+- docker build -t micropython .
 
 # define the successive stages
 stages:
@@ -24,13 +25,6 @@ jobs:
     # stm32 port
     - stage: test
       env: NAME="stm32 port build"
-      install:
-        # need newer gcc version for Cortex-M7 support
-        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
-        - sudo apt-get update -qq || true
-        - sudo apt-get install gcc-arm-embedded
-        - sudo apt-get install libnewlib-arm-none-eabi
-        - arm-none-eabi-gcc --version
       script:
         - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
         - make ${MAKEOPTS} -C mpy-cross
