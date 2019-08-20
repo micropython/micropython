@@ -43,12 +43,16 @@
 //| .. class:: Service(uuid, characteristics, *, secondary=False)
 //|
 //|   Create a new Service object identified by the specified UUID.
+//|
 //|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
 //|
 //|   :param bleio.UUID uuid: The uuid of the service
 //|   :param iterable characteristics: the Characteristic objects for this service
 //|   :param bool secondary: If the service is a secondary one
 //|
+//|   A Service may be remote (:py:data:`remote` is ``True``), but a remote Service
+//|   cannot be constructed directly. It is created by `Central.discover_remote_services()`
+//|   or `Peripheral.discover_remote_services()`.
 
 STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_uuid, ARG_characteristics, ARG_secondary };
@@ -92,6 +96,9 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
             // The descriptor base UUID doesn't match the characteristic base UUID.
             mp_raise_ValueError(translate("Characteristic UUID doesn't match Service UUID"));
         }
+        if (common_hal_bleio_characteristic_get_service(characteristic) != MP_OBJ_NULL) {
+            mp_raise_ValueError(translate("Characteristic is already attached to a Service"));
+        }
         mp_obj_list_append(char_list_obj, characteristic_obj);
     }
 
@@ -115,6 +122,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_se
 const mp_obj_property_t bleio_service_characteristics_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_service_get_characteristics_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|   .. attribute:: remote
+//|
+//|     True if this is a service provided by a remote device. (read-only)
+//|
+STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
+    bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return mp_obj_new_bool(common_hal_bleio_service_get_is_remote(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get_remote);
+
+const mp_obj_property_t bleio_service_remote_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_service_get_remote_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };

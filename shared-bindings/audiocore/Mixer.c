@@ -38,7 +38,7 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audioio
+//| .. currentmodule:: audiocore
 //|
 //| :class:`Mixer` -- Mixes one or more audio samples together
 //| ===========================================================

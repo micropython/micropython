@@ -182,7 +182,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_ar
         bool is_read;
         bool is_restart;
 
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return mp_const_none;
         }
@@ -337,7 +337,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *p
     uint8_t *buffer = NULL;
     uint64_t timeout_end = common_hal_time_monotonic() + 10 * 1000;
     while (common_hal_time_monotonic() < timeout_end) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }
@@ -382,7 +382,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_write(mp_obj_t self_in, mp_obj_t buf_
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     for (size_t i = 0; i < bufinfo.len; i++) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }

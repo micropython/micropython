@@ -34,29 +34,34 @@
 void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         mp_obj_t *layers, size_t layers_size,
         uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display) {
+        displayio_display_obj_t *display, uint8_t scale) {
 
     size_t index = 0;
     for (uint16_t y = y0; y < y1; ++y) {
-        for (uint16_t x = x0; x < x1; ++x) {
-            for (size_t layer = 0; layer < layers_size; ++layer) {
+        for (uint8_t yscale = 0; yscale < scale; ++yscale) {
+            for (uint16_t x = x0; x < x1; ++x) {
                 uint16_t c = TRANSPARENT;
-                layer_obj_t *obj = MP_OBJ_TO_PTR(layers[layer]);
-                if (obj->base.type == &mp_type_layer) {
-                    c = get_layer_pixel(obj, x, y);
-                } else if (obj->base.type == &mp_type_text) {
-                    c = get_text_pixel((text_obj_t *)obj, x, y);
+                for (size_t layer = 0; layer < layers_size; ++layer) {
+                    layer_obj_t *obj = MP_OBJ_TO_PTR(layers[layer]);
+                    if (obj->base.type == &mp_type_layer) {
+                        c = get_layer_pixel(obj, x, y);
+                    } else if (obj->base.type == &mp_type_text) {
+                        c = get_text_pixel((text_obj_t *)obj, x, y);
+                    }
+                    if (c != TRANSPARENT) {
+                        break;
+                    }
                 }
-                if (c != TRANSPARENT) {
+                for (uint8_t xscale = 0; xscale < scale; ++xscale) {
                     buffer[index] = c;
-                    break;
+                    index += 1;
+                    // The buffer is full, send it.
+                    if (index >= buffer_size) {
+                        display->send(display->bus, false, ((uint8_t*)buffer),
+                                      buffer_size * 2);
+                        index = 0;
+                    }
                 }
-            }
-            index += 1;
-            // The buffer is full, send it.
-            if (index >= buffer_size) {
-                display->send(display->bus, false, ((uint8_t*)buffer), buffer_size * 2);
-                index = 0;
             }
         }
     }

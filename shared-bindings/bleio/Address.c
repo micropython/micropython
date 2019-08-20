@@ -83,7 +83,21 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 
 //|   .. attribute:: address_bytes
 //|
-//|     The bytes that make up the device address (read-only)
+//|     The bytes that make up the device address (read-only).
+//|
+//|     Note that the ``bytes`` object returned is in little-endian order:
+//|     The least significant byte is ``address_bytes[0]``. So the address will
+//|     appear to be reversed if you print the raw ``bytes`` object. If you print
+//|     or use `str()` on the :py:class:`~bleio.Attribute` object itself, the address will be printed
+//|     in the expected order. For example:
+//|
+//|     .. code-block:: pycon
+//|
+//|       >>> import bleio
+//|       >>> bleio.adapter.address
+//|       <Address c8:1d:f5:ed:a8:35>
+//|       >>> bleio.adapter.address.address_bytes
+//|       b'5\xa8\xed\xf5\x1d\xc8'
 //|
 STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -147,18 +161,13 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
 
 STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (kind == PRINT_STR) {
-        mp_buffer_info_t buf_info;
-        mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
-        mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
+    mp_buffer_info_t buf_info;
+    mp_obj_t address_bytes = common_hal_bleio_address_get_address_bytes(self);
+    mp_get_buffer_raise(address_bytes, &buf_info, MP_BUFFER_READ);
 
-        const uint8_t *buf = (uint8_t *) buf_info.buf;
-        mp_printf(print,
-                  "%02x:%02x:%02x:%02x:%02x:%02x",
-                  buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
-    } else {
-        mp_printf(print, "<Address>");
-    }
+    const uint8_t *buf = (uint8_t *) buf_info.buf;
+    mp_printf(print, "<Address %02x:%02x:%02x:%02x:%02x:%02x>",
+              buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
 //|   .. data:: PUBLIC
@@ -179,13 +188,13 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 //|      A randomly generated address that changes on every connection.
 //|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address_bytes), MP_ROM_PTR(&bleio_address_address_bytes_obj) },
-    { MP_ROM_QSTR(MP_QSTR_type), MP_ROM_PTR(&bleio_address_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address_bytes),                 MP_ROM_PTR(&bleio_address_address_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_type),                          MP_ROM_PTR(&bleio_address_type_obj) },
     // These match the BLE_GAP_ADDR_TYPES values used by the nRF library.
-    { MP_ROM_QSTR(MP_QSTR_PUBLIC), MP_OBJ_NEW_SMALL_INT(0) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_STATIC), MP_OBJ_NEW_SMALL_INT(1) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_RESOLVABLE), MP_OBJ_NEW_SMALL_INT(2) },
-    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_NON_RESOLVABLE), MP_OBJ_NEW_SMALL_INT(3) },
+    { MP_ROM_QSTR(MP_QSTR_PUBLIC),                        MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_STATIC),                 MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_RESOLVABLE),     MP_ROM_INT(2) },
+    { MP_ROM_QSTR(MP_QSTR_RANDOM_PRIVATE_NON_RESOLVABLE), MP_ROM_INT(3) },
 
 };
 

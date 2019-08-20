@@ -33,6 +33,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
+
 static bool running_background_tasks = false;
 
 void background_tasks_reset(void) {
@@ -47,6 +51,9 @@ void run_background_tasks(void) {
     running_background_tasks = true;
     filesystem_background();
     usb_background();
+#if CIRCUITPY_AUDIOPWMIO
+    audiopwmout_background();
+#endif
 
     #if CIRCUITPY_DISPLAYIO
     displayio_refresh_displays();

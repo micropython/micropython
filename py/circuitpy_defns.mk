@@ -108,6 +108,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOPWMIO),1)
+SRC_PATTERNS += audiopwmio/%
+endif
 ifeq ($(CIRCUITPY_AUDIOCORE),1)
 SRC_PATTERNS += audiocore/%
 endif
@@ -223,10 +226,13 @@ $(filter $(SRC_PATTERNS), \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
+	audiopwmio/__init__.c \
+	audiopwmio/PWMAudioOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	bleio/__init__.c \
 	bleio/Adapter.c \
+	bleio/Attribute.c \
 	bleio/Central.c \
 	bleio/Characteristic.c \
 	bleio/CharacteristicBuffer.c \
@@ -276,6 +282,9 @@ $(filter $(SRC_PATTERNS), \
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_BINDINGS_ENUMS = \
 $(filter $(SRC_PATTERNS), \
+	bleio/Address.c \
+	bleio/Attribute.c \
+	bleio/ScanEntry.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -289,12 +298,6 @@ SRC_BINDINGS_ENUMS += \
 	help.c \
 	util.c
 
-SRC_BINDINGS_ENUMS += \
-$(filter $(SRC_PATTERNS), \
-	bleio/Address.c \
-	bleio/ScanEntry.c \
-)
-
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = \
 $(filter $(SRC_PATTERNS), \
@@ -303,6 +306,7 @@ $(filter $(SRC_PATTERNS), \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
+	audiopwmio/__init__.c \
 	audioio/__init__.c \
 	audiocore/__init__.c \
 	audiocore/Mixer.c \
@@ -315,6 +319,7 @@ $(filter $(SRC_PATTERNS), \
 	bitbangio/__init__.c \
 	board/__init__.c \
 	bleio/Address.c \
+	bleio/Attribute.c \
 	bleio/ScanEntry.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \

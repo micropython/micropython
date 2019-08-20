@@ -44,8 +44,6 @@
 
 #include "common-hal/bleio/Peripheral.h"
 
-static const char default_name[] = "CIRCUITPY";
-
 #define ADV_INTERVAL_DEFAULT (1.0f)
 #define ADV_INTERVAL_MIN (0.0020f)
 #define ADV_INTERVAL_MIN_STRING "0.0020"
@@ -80,14 +78,14 @@ static const char default_name[] = "CIRCUITPY";
 //|        # Wait for connection.
 //|        pass
 //|
-//| .. class:: Peripheral(services=(), \*, name='CIRCUITPY')
+//| .. class:: Peripheral(services=(), \*, name=None)
 //|
 //|   Create a new Peripheral object.
 //|
 //|   :param iterable services: the Service objects representing services available from this peripheral, if any.
 //|     A non-connectable peripheral will have no services.
-//|   :param str name: The name used when advertising this peripheral. Use ``None`` when a name is not needed,
-//|     such as when the peripheral is a beacon
+//|   :param str name: The name used when advertising this peripheral. If name is None,
+//|     bleio.adapter.default_name will be used.
 //|
 STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_services, ARG_name };
@@ -107,33 +105,30 @@ STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_ar
     self->base.type = &bleio_peripheral_type;
 
     // Copy the services list and validate its items.
-    mp_obj_t service_list_obj = mp_obj_new_list(0, NULL);
-    mp_obj_list_t *service_list = MP_OBJ_FROM_PTR(service_list_obj);
+    mp_obj_t services_list_obj = mp_obj_new_list(0, NULL);
+    mp_obj_list_t *services_list = MP_OBJ_FROM_PTR(services_list_obj);
 
     mp_obj_t service;
     while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!MP_OBJ_IS_TYPE(service, &bleio_service_type)) {
             mp_raise_ValueError(translate("non-Service found in services"));
         }
-        mp_obj_list_append(service_list, service);
+        mp_obj_list_append(services_list, service);
     }
 
-    const mp_obj_t name = args[ARG_name].u_obj;
-    mp_obj_t name_str;
+    mp_obj_t name = args[ARG_name].u_obj;
     if (name == MP_OBJ_NULL || name == mp_const_none) {
-        name_str = mp_obj_new_str(default_name, strlen(default_name));
-    } else if (MP_OBJ_IS_STR(name)) {
-        name_str = name;
-    } else {
+        name = common_hal_bleio_adapter_get_default_name();
+    } else if (!MP_OBJ_IS_STR(name)) {
         mp_raise_ValueError(translate("name must be a string"));
     }
 
-    common_hal_bleio_peripheral_construct(self, service_list, name_str);
+    common_hal_bleio_peripheral_construct(self, services_list, name);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. attribute:: connected
+//|   .. attribute:: connected (read-only)
 //|
 //|     True if connected to a BLE Central device.
 //|
@@ -158,8 +153,8 @@ const mp_obj_property_t bleio_peripheral_connected_obj = {
 STATIC mp_obj_t bleio_peripheral_get_services(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *service_list = common_hal_bleio_peripheral_get_service_list(self);
-    return mp_obj_new_tuple(service_list->len, service_list->items);
+    mp_obj_list_t *services_list = common_hal_bleio_peripheral_get_services(self);
+    return mp_obj_new_tuple(services_list->len, services_list->items);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_get_services_obj, bleio_peripheral_get_services);
 
@@ -265,16 +260,75 @@ STATIC mp_obj_t bleio_peripheral_disconnect(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_disconnect_obj, bleio_peripheral_disconnect);
 
+//|   .. method:: discover_remote_services(service_uuids_whitelist=None)
+//|      Do BLE discovery for all services or for the given service UUIDS,
+//|      to find their handles and characteristics, and return the discovered services.
+//|      `Peripheral.connected` must be True.
+//|
+//|   :param iterable service_uuids_whitelist: an iterable of :py:class:~`UUID` objects for the services
+//|      provided by the peripheral that you want to use.
+//|      The peripheral may provide more services, but services not listed are ignored
+//|      and will not be returned.
+//|
+//|      If service_uuids_whitelist is None, then all services will undergo discovery, which can be slow.
+//|
+//|      If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
+//|      you must have already created a :py:class:~`UUID` object for that UUID in order for the
+//|      service or characteristic to be discovered. Creating the UUID causes the UUID to be registered
+//|      for use. (This restriction may be lifted in the future.)
+//|
+//|      Thought it is unusual for a peripheral to act as a BLE client, it can do so, and
+//|      needs to be able to do discovery on its peer (a central).
+//|      Examples include a peripheral accessing a central that provides Current Time Service,
+//|      Apple Notification Center Service, or Battery Service.
+//|
+//|    :return: A tuple of services provided by the remote central.
+//|
+STATIC mp_obj_t bleio_peripheral_discover_remote_services(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    enum { ARG_service_uuids_whitelist };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_service_uuids_whitelist, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (!common_hal_bleio_peripheral_get_connected(self)) {
+        mp_raise_ValueError(translate("Not connected"));
+    }
+
+    return MP_OBJ_FROM_PTR(common_hal_bleio_peripheral_discover_remote_services(
+                               MP_OBJ_FROM_PTR(self),
+                               args[ARG_service_uuids_whitelist].u_obj));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_discover_remote_services_obj, 1, bleio_peripheral_discover_remote_services);
+
+//|   .. method:: pair()
+//|
+//|     Request pairing with connected central.
+STATIC mp_obj_t bleio_peripheral_pair(mp_obj_t self_in) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_bleio_peripheral_pair(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_pair_obj, bleio_peripheral_pair);
+
 STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_start_advertising),  MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_advertising),   MP_ROM_PTR(&bleio_peripheral_stop_advertising_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect),         MP_ROM_PTR(&bleio_peripheral_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_advertising),         MP_ROM_PTR(&bleio_peripheral_stop_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),               MP_ROM_PTR(&bleio_peripheral_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_discover_remote_services), MP_ROM_PTR(&bleio_peripheral_discover_remote_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pair)                    , MP_ROM_PTR(&bleio_peripheral_pair_obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_connected),          MP_ROM_PTR(&bleio_peripheral_connected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name),               MP_ROM_PTR(&bleio_peripheral_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_services),           MP_ROM_PTR(&bleio_peripheral_services_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_peripheral_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name),            MP_ROM_PTR(&bleio_peripheral_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_services),        MP_ROM_PTR(&bleio_peripheral_services_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_peripheral_locals_dict, bleio_peripheral_locals_dict_table);

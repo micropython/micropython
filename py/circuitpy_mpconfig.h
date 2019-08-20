@@ -244,6 +244,13 @@ extern const struct _mp_obj_module_t audioio_module;
 #define AUDIOIO_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOPWMIO
+#define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
+extern const struct _mp_obj_module_t audiopwmio_module;
+#else
+#define AUDIOPWMIO_MODULE
+#endif
+
 #if CIRCUITPY_BITBANGIO
 #define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
 extern const struct _mp_obj_module_t bitbangio_module;
@@ -266,13 +273,7 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
 
-#if BOARD_I2C
-#define BOARD_I2C_ROOT_POINTER mp_obj_t shared_i2c_bus;
-#else
-#define BOARD_I2C_ROOT_POINTER
-#endif
-
-// SPI is always allocated off the heap.
+// I2C and SPI are always allocated off the heap.
 
 #if BOARD_UART
 #define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
@@ -282,7 +283,6 @@ extern const struct _mp_obj_module_t board_module;
 
 #else
 #define BOARD_MODULE
-#define BOARD_I2C_ROOT_POINTER
 #define BOARD_UART_ROOT_POINTER
 #endif
 
@@ -573,6 +573,7 @@ extern const struct _mp_obj_module_t ustack_module;
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
+    AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
@@ -595,8 +596,8 @@ extern const struct _mp_obj_module_t ustack_module;
       WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
-    PULSEIO_MODULE \
     PS2IO_MODULE \
+    PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \
@@ -639,12 +640,12 @@ extern const struct _mp_obj_module_t ustack_module;
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
-    BOARD_I2C_ROOT_POINTER \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
+#define RUN_BACKGROUND_TASKS (run_background_tasks())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()
