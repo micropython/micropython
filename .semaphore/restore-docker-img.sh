@@ -2,5 +2,6 @@
 
 set -x
 
-cache restore docker-image-$IMG_TAG
+cache has_key $KEY
+cache restore
 docker load -i img.tar
