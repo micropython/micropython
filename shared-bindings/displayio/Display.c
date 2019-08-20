@@ -395,15 +395,15 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
     mp_int_t y = args[ARG_y].u_int;
     mp_obj_array_t *result = args[ARG_buffer].u_obj;
 
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
+
     if (result->typecode != BYTEARRAY_TYPECODE) {
       mp_raise_ValueError(translate("Buffer is not a bytearray."));
     }
     if (self->colorspace.depth != 16) {
       mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     displayio_area_t area = {
       .x1 = 0,
