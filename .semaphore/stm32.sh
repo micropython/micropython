@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
 make ${MAKEOPTS} -C mpy-cross
 make ${MAKEOPTS} -C ports/stm32
