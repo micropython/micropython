@@ -7,6 +7,16 @@ agent:
     os_image: ubuntu1804
 
 blocks:
+  - name: Setup env vars
+    task:
+      jobs:
+        - name: Setup env vars
+          commands:
+            - checkout
+
+            - TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
+            - echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
+
   - name: Build docker image
     task:
       secrets:
@@ -16,15 +26,10 @@ blocks:
           commands:
             - checkout
 
-            - TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
-            - export IMG_TAG=pycampers/micropython:$TAG
-
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             - docker pull $IMG_TAG
             - docker build --cache-from $IMG_TAG -t $IMG_TAG .
             - docker push $IMG_TAG
-
-            - env
 
   - name: Build ports
     task:
