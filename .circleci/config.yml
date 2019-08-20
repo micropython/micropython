@@ -7,7 +7,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-
+      shell: /bin/sh -leo pipefail
       - run:
           name: Setup env vars
           command: |
