@@ -15,7 +15,7 @@ blocks:
           - IMG_TAG=$(.semaphore/get-img-tag.sh)
       epilogue:
         commands:
-          - cache store docker /var/lib/docker
+          - sudo cache store docker /var/lib/docker
       secrets:
         - name: docker-hub
       jobs:
@@ -25,6 +25,7 @@ blocks:
             - docker pull $IMG_TAG
             - docker build --cache-from $IMG_TAG -t $IMG_TAG .
             - docker push $IMG_TAG
+            - sleep sleep 100000000000
 
   - name: Build ports
     task:
@@ -32,7 +33,7 @@ blocks:
         commands:
           - checkout
           - IMG_TAG=$(.semaphore/get-img-tag.sh)
-          - cache restore docker
+          - sudo cache restore docker
       jobs:
         - name: Build stm32 port
           commands:
