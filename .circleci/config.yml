@@ -13,6 +13,8 @@ jobs:
           command: |
             TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
             echo "export IMG_TAG=pycampers/micropython:$TAG" >> /etc/profile
+            cat /etc/profile
+            echo $TAG
 
       - run:
           name: Build docker image
