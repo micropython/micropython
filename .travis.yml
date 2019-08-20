@@ -9,7 +9,7 @@ env:
   global:
     - MAKEOPTS="-j4"
     - IMAGE_NAME=pycampers/micropython
-    - TAG=$(travis/get-img-tag.sh)
+    - TAG=$(travis/get-tag.sh)
     - IMAGE=$IMAGE_NAME:$TAG
     - IMG_TAR=$HOME/persist/docker-image-$TAG.tar
 git:
