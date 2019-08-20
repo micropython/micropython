@@ -384,10 +384,10 @@ mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value);
 //|     :param int y: The top edge of the area
 //|     :param bytearray buffer: The buffer in which to place the pixel data
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-  enum { ARG_y, ARG_buffer };
+    enum { ARG_y, ARG_buffer };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
-        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, {} },
+        { MP_QSTR_y, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = -1} },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
