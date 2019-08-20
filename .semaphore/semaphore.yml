@@ -15,7 +15,7 @@ blocks:
             - checkout
 
             - TAG=$(git describe --exact-match HEAD 2> /dev/null || echo "master")
-            - echo "export IMG_TAG=pycampers/micropython:$TAG" >> $BASH_ENV
+            - echo "export IMG_TAG=pycampers/micropython:$TAG" >> ~/.bash_profile
 
   - name: Build docker image
     task:
