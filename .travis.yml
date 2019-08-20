@@ -5,10 +5,13 @@ services:
 cache:
   directories:
     - "${HOME}/persist"
+    - TAG=$(travis/get-img-tag.sh)
+    - IMAGE=$IMAGE_NAME:$TAG
+    - IMG_TAR=$HOME/persist/docker-image-$TAG.tar
 env:
   global:
     - MAKEOPTS="-j4"
-    - IMG_TAR="$HOME/persist/img.tar"
+    - IMAGE_NAME=pycampers/micropython
 git:
   submodules: false
 
@@ -22,13 +25,12 @@ jobs:
       script:
         - docker load -i $IMG_TAR
 
-        - IMG_TAG=$(travis/get-img-tag.sh)
         - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-        - docker pull $IMG_TAG
-        - docker build --cache-from $IMG_TAG -t $IMG_TAG .
-        - docker push $IMG_TAG
+        - docker pull $IMAGE
+        - docker build --cache-from $IMAGE -t $IMAGE .
+        - docker push $IMAGE
 
-        - docker save -o $IMG_TAR $IMG_TAG
+        - docker save -o $IMG_TAR $IMAGE
 
     - stage: test
       env:
@@ -48,4 +50,5 @@ jobs:
         - PORT=teensy
       script:
         - docker load -i $IMG_TAR
+        - IMG_TAG=$(travis/get-img-tag.sh)
         - docker run -v $PWD:$PWD -w $PWD $IMG_TAG travis/${PORT}.sh
