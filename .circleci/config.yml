@@ -3,11 +3,11 @@ jobs:
   build:
     docker:
       - image: docker:stable-git
+    shell: /bin/sh -leo pipefail
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - shell: /bin/sh -leo pipefail
       - run:
           name: Setup env vars
           command: |
