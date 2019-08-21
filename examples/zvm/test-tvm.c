@@ -420,10 +420,7 @@ void test_1() {
 
 // storage
 void storage_get_data(const char* key, int len, char** out_value, int* out_len) {
-    char *text = "hello world";
-    *out_value = (char*)malloc(strlen(text));
-    memcpy(*out_value, text, strlen(text));
-    *out_len = strlen(text);
+
 }
 
 void storage_set_data (const char* key, int len, const char* value, int value_len) {
@@ -436,6 +433,10 @@ void storage_set_data (const char* key, int len, const char* value, int value_le
         printf("%x", value[i]);
     }
     printf("\n");
+}
+
+void storage_remove_data (const char* key, int len) {
+    printf("storage_remove_data: key: %s", key);
 }
 
 void test_storage() {
@@ -474,6 +475,7 @@ void test_storage() {
 void test_storage2() {
     storage_get_data_fn = storage_get_data;
     storage_set_data_fn = storage_set_data;
+    storage_remove_data_fn = storage_remove_data;
 
     tvm_start();
     tvm_set_gas(10000000);
@@ -481,12 +483,15 @@ void test_storage2() {
     const char *str = "class Token():\n"
                       "\n"
                       "    def __init__(self):\n"
+                      "        del self.foo\n"
                       "        self.int = 2147483647\n"
                       "        self.bigint = 10000000000000000000000000000000\n"
                       "        self.str = 'hello'\n"
                       "        self.bool = True\n"
                       "        self.bool = False\n"
                       "        self.none = None\n";
+
+    tvm_set_register();
 
     tvm_execute_result_t result;
     tvm_init_result(&result);
@@ -623,13 +628,13 @@ int main() {
 //    test_register();
 
 //    test_storage();
-//    test_storage2();
+    test_storage2();
 
 //    test_zdict();
 
 //    test_tvm_abli_call();
 
-    test_msg();
+//    test_msg();
 
 //    test_1();
 
