@@ -17,17 +17,17 @@ cache:
     - $CACHE_DIR
 
 stages:
-#  - name: Build
+  - name: Build
   - name: Test
 
 jobs:
   include:
-#    - stage: Build
-#      script:
-#        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-#        - docker pull ${IMAGE}
-#        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
-#        - docker push ${IMAGE}
+    - stage: Build
+      script:
+        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+        - docker pull ${IMAGE}
+        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
+        - docker push ${IMAGE}
 
     - &test
       stage: Test
