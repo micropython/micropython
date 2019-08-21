@@ -40,17 +40,26 @@ RUN wget -qO- $ESP_TOOLCHAIN_TAR | tar -xzf -
 ENV PATH $HOME/esp/xtensa-esp32-elf/bin:$PATH
 
 # setup esp-idf (needed for esp32 port)
-RUN git clone $ESP_IDF_GIT $HOME/esp/esp-idf
-WORKDIR $HOME/esp/esp-idf
+RUN git clone $ESP_IDF_GIT $HOME/esp
+WORKDIR $HOME/esp-idf
+
 COPY ports/esp32/ESPIDF_SUPHASH $HOME/ESPIDF_SUPHASH
 RUN git checkout $(cat $HOME/ESPIDF_SUPHASH)
 RUN rm $HOME/ESPIDF_SUPHASH
+
 RUN git submodule update --init --recursive
 ENV IDF_PATH $HOME/esp/esp-idf
+
 RUN pip install -r $IDF_PATH/requirements.txt
 
 WORKDIR $HOME
 USER root
 
 # required to build ports
-RUN apt-get install -y python3
+RUN apt-get install -y \
+        python3 \
+        qemu-system \
+        gcc-multilib libffi-dev:i386 \
+        clang \
+        gcc-mingw-w64 \
+        python3-pip
