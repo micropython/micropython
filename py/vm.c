@@ -1362,8 +1362,10 @@ unwind_loop:
             // Set traceback info (file and line number) where the exception occurred, but not for:
             // - constant GeneratorExit object, because it's const
             // - exceptions re-raised by END_FINALLY
+            // - exceptions re-raised explicitly by "raise"
             if (nlr.ret_val != &mp_const_GeneratorExit_obj
-                && *code_state->ip != MP_BC_END_FINALLY) {
+                && *code_state->ip != MP_BC_END_FINALLY
+                && !(*code_state->ip == MP_BC_RAISE_VARARGS && code_state->ip[1] == 0)) {
                 const byte *ip = code_state->fun_bc->bytecode;
                 ip = mp_decode_uint_skip(ip); // skip n_state
                 ip = mp_decode_uint_skip(ip); // skip n_exc_stack
