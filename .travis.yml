@@ -25,6 +25,8 @@ jobs:
   include:
     - stage: build
       script:
+        - env
+
         - mkdir -p $CACHE_DIR
         - docker load -i ${IMAGE_TAR} || true
 
