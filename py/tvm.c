@@ -254,6 +254,50 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
     nlr_buf_t nlr;
     mp_obj_t data = NULL;
     if (nlr_push(&nlr) == 0) {
+        unsigned int params_data = 0;
+        mp_obj_register_t *reg = mp_load_name(qstr_from_str("register"));
+        size_t public_funcs_num;
+        mp_obj_t *public_funcs;
+        mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
+
+        // find function msg
+        for(int i=0; i<public_funcs_num; i++) {
+            mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
+            if (func->func != NULL && strcmp(func->func, func_name) == 0) {
+                params_data = func->params_data;
+                break;
+            } else if (i == public_funcs_num-1) {
+                mp_raise_ABICheckException("not a public function");
+            }
+        }
+
+        size_t n_args;
+        mp_obj_t *items;
+        if (json_args != NULL) {
+            size_t len = strlen(json_args);
+            vstr_t vstr = {len, len, (char*)json_args, true};
+            mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
+            mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+            if (!mp_obj_is_type(args, &mp_type_list)) {
+                mp_raise_ABICheckException("not a params list");
+            }
+            mp_obj_list_get(args, &n_args, &items);
+        } else {
+            n_args = 0;
+        }
+
+        // check params num
+        if (get_type_num(params_data) != n_args) {
+            mp_raise_ABICheckException("params num error");
+        }
+        // check params type
+        for (int i=0; i<(int)n_args; i++) {
+            const char* wanted_type = get_type_msg(params_data, i);
+            if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
+                mp_raise_ABICheckException("params type error");
+            }
+        }
+
         mp_obj_t class = mp_load_name(qstr_from_str(class_name));
 
         mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
@@ -272,19 +316,9 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
             mp_store_attr(class, qstr_from_str("__init__"), init_hook);
 
             mp_obj_t class_object = mp_call_function_0(class);
-            if (json_args == NULL) {
+            if (n_args == 0) {
                 data = mp_call_function_0(mp_load_attr(class_object, qstr_from_str(func_name)));
             } else {
-                size_t len = strlen(json_args);
-                vstr_t vstr = {len, len, (char*)json_args, true};
-                mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-                mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
-                if (!mp_obj_is_type(args, &mp_type_list)) {
-                    assert(false);
-                }
-                size_t n_args;
-                mp_obj_t *items;
-                mp_obj_list_get(args, &n_args, &items);
                 data = mp_call_function_n_kw(mp_load_attr(class_object, qstr_from_str(func_name)), n_args, 0, items);
             }
         }
@@ -304,7 +338,6 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         assert(exception_data_str);
         mp_obj_fill_exception(exception_data_str, error_code, result);
     }
-
     if (g_pAbi != NULL)
     {
         result->abi = malloc(strlen(g_pAbi) + 1);
@@ -389,5 +422,42 @@ void tvm_remove_context() {
 
 
 /***********************/
+const int MAX_PARAMS_NUM = 8;
 
+const char*supported_type[] = {"", "int","str","bool", "list","dict"};
+
+int is_supported_type(const char* t) {
+    for(int i=1; i < sizeof(supported_type)/ sizeof(supported_type[0]); i++)
+        if (strcmp(t, supported_type[i]) == 0) {
+            return i;
+        }
+    return 0;
+}
+
+void set_type_msg(unsigned int *msg, int num, int type_index) {
+    if (num >= MAX_PARAMS_NUM) {
+        return;
+    }
+    *msg = *msg |(type_index << num * 4);
+}
+
+const char* get_type_msg(unsigned int msg, int num) {
+    if (num >= MAX_PARAMS_NUM) {
+        return supported_type[0];
+    }
+    int type_index = 0x0f & (msg >> num * 4);
+    if (type_index >= sizeof(supported_type)/ sizeof(supported_type[0])) {
+        type_index = 0;
+    }
+    return supported_type[type_index];
+}
+
+int get_type_num(unsigned int msg) {
+    for(int i=0; i < MAX_PARAMS_NUM; i++) {
+        if ((0x0f & (msg >> i * 4)) == 0) {
+            return i;
+        }
+    }
+    return MAX_PARAMS_NUM;
+}
 

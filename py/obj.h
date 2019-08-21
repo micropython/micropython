@@ -619,6 +619,7 @@ extern const mp_obj_type_t mp_type_ZeroDivisionError;
 #if ZVM_EXTMOD
 extern const mp_obj_type_t mp_type_GasNotEnough;
 extern const mp_obj_type_t mp_type_CallException;
+extern const mp_obj_type_t mp_type_ABICheckException;
 #endif
 
 // Constant objects, globally accessible

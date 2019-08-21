@@ -239,6 +239,15 @@ const mp_obj_type_t mp_type_GasNotEnough = {
         .parent = &mp_type_Exception,
 };
 
+const mp_obj_type_t mp_type_ABICheckException = {
+        { &mp_type_type },
+        .name = MP_QSTR_ABICheckException,
+        .print = mp_obj_exception_print,
+        .make_new = mp_obj_exception_make_new,
+        .attr = mp_obj_exception_attr,
+        .parent = &mp_type_Exception,
+};
+
 const mp_obj_type_t mp_type_CallException = {
         { &mp_type_type },
         .name = MP_QSTR_CallException,
