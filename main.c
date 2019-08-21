@@ -253,7 +253,9 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     bool serial_connected_before_animation = false;
+    #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
+    #endif
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
