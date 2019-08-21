@@ -40,7 +40,7 @@ RUN wget -qO- $ESP_TOOLCHAIN_TAR | tar -xzf -
 ENV PATH $HOME/esp/xtensa-esp32-elf/bin:$PATH
 
 # setup esp-idf (needed for esp32 port)
-RUN git clone $ESP_IDF_GIT $HOME/esp
+RUN git clone $ESP_IDF_GIT $HOME/esp-idf
 WORKDIR $HOME/esp-idf
 
 COPY ports/esp32/ESPIDF_SUPHASH $HOME/ESPIDF_SUPHASH
