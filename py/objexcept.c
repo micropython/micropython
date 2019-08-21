@@ -631,7 +631,11 @@ const char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name)
 			const char* contract_name = "contractname:";
 			const char* line_name = "line:";
 			const char* symbol = ",";
-			size_t len = strlen(contract_name) + strlen(contract) + strlen(symbol) + strlen(line_name) + strlen(s) + strlen(symbol) + strlen(data);
+            size_t len = strlen(contract_name) + strlen(contract) + strlen(symbol) + strlen(line_name) + strlen(s) + strlen(symbol);
+			if(data != NULL) {
+                len += strlen(data);
+			}
+
 			char *exception_data = (char*)malloc(len + 1);
 			strcpy(exception_data, contract_name);
 			strcat(exception_data, contract);
@@ -639,9 +643,13 @@ const char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name)
 			strcat(exception_data, line_name);
 			strcat(exception_data, s);
 			strcat(exception_data, symbol);
-			strcat(exception_data, data);
-			strcat(exception_data, "\0");
-			free(data);
+
+
+			if (data != NULL) {
+                strcat(exception_data, data);
+                free(data);
+			}
+            strcat(exception_data, "\0");
 			return exception_data;
 		}
 		else {

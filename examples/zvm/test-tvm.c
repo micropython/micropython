@@ -338,6 +338,8 @@ void test_register() {
     tvm_set_gas(10000000);
 
     const char *str = "register = Register()\n"
+                      "a = Event('s')\n"
+                      "a.emit(10, k='123', v=1)\n"
                       "print(type(register.public()))\n"
                       "class Token():\n"
                       "\n"
@@ -620,7 +622,7 @@ int main() {
 //    test_lib_line();
 
 
-//    test_register();
+    test_register();
 
 //    test_storage();
 //    test_storage2();
@@ -629,7 +631,7 @@ int main() {
 
 //    test_tvm_abli_call();
 
-    test_msg();
+    //test_msg();
 
 //    test_1();
 

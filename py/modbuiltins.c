@@ -40,6 +40,8 @@
 #if ZVM_EXTMOD
 #include <string.h>
 #include "tvm.h"
+#include "gas.h"
+#include "bc0.h"
 #endif
 
 #if ZVM_EXTMOD
@@ -1207,7 +1209,71 @@ STATIC const mp_obj_type_t mp_builtin_contract_type = {
         .attr = mp_obj_contract_attr,
 };
 
+// event
+typedef struct _mp_obj_event_t {
+    mp_obj_base_t base;
+    const char* topic;
+} mp_obj_event_t;
 
+STATIC mp_obj_t mp_builtin_event_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    if(n_args != 1 || n_kw != 0 || !mp_obj_is_type(args[0], &mp_type_str)) {
+        mp_raise_ValueError("Event init error");
+    }
+    mp_obj_event_t *o = m_new_obj(mp_obj_event_t);
+    o->base.type = type;
+    o->topic = mp_obj_str_get_str(args[0]);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t builtin_event_emit(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    byte code = MP_BC_TASEVENT;
+    if (!CheckGas(&code)) {
+        return mp_const_none;
+    }
+
+    size_t max = kwargs->alloc;
+    mp_obj_dict_t* dict_out = mp_obj_new_dict(max+1);
+    for (size_t i = 0; i < max; i++) {
+        if (mp_map_slot_is_filled(kwargs, i)) {
+            mp_obj_dict_store(dict_out, kwargs->table[i].key, kwargs->table[i].value);
+             //mp_obj_print(kwargs->table[i].value, 0);
+        }
+    }
+    mp_obj_t *tmp = (mp_obj_t *)args;
+    tmp ++;
+    mp_obj_list_t *args_list = mp_obj_new_list(n_args-1, tmp);
+    const char* key= "args";
+    mp_obj_dict_store(dict_out, mp_obj_new_str(key, strlen(key)), args_list);
+
+    vstr_t vstr;
+    mp_print_t print;
+    vstr_init_print(&vstr, 8, &print);
+    mp_obj_print_helper(&print, dict_out, PRINT_JSON);
+    const char *params_json = vstr_str(&vstr);
+    mp_obj_event_t* self = MP_OBJ_TO_PTR(args[0]);
+    size_t name_len = strlen(self->topic);
+    size_t data_len = strlen(params_json);
+    if (!FireGas_DB(name_len + data_len)) {
+        return mp_const_none;
+    }
+    event_call_fn(self->topic, params_json);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(builtin_event_emit_obj, 0, builtin_event_emit);
+
+STATIC const mp_rom_map_elem_t builtin_event_locals_dict_table[] = {
+        { MP_ROM_QSTR(MP_QSTR_emit), MP_ROM_PTR(&builtin_event_emit_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(builtin_event_locals_dict, builtin_event_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_builtin_event_type = {
+        { &mp_type_type },
+        .name = MP_QSTR_Event,
+        .make_new = mp_builtin_event_make_new,
+        .locals_dict = (void*)&builtin_event_locals_dict,
+};
 #endif
 
 // These are defined in terms of MicroPython API functions right away
@@ -1342,6 +1408,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_KRA), MP_ROM_INT(1000) },
     { MP_ROM_QSTR(MP_QSTR_MRA), MP_ROM_INT(1000000) },
     { MP_ROM_QSTR(MP_QSTR_ZVC), MP_ROM_INT(1000000000) },
+    { MP_ROM_QSTR(MP_QSTR_Event), MP_ROM_PTR(&mp_builtin_event_type) },
     #endif
 
     // built-in exceptions

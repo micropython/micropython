@@ -30,26 +30,6 @@
 
 
 
-//extern int g_iGas;
-STATIC mp_obj_t mod_account_event_call(mp_obj_t EventName, mp_obj_t Data) {
-	byte code = MP_BC_TASEVENT;
-	if (!CheckGas(&code)) {
-		return mp_const_none;
-	}
-
-	const char *name = mp_obj_str_get_str(EventName);
-	const char *data = mp_obj_str_get_str(Data);
-    size_t name_len = strlen(name);
-    size_t data_len = strlen(data);
-    if (!FireGas_DB(name_len + data_len)) {
-        return mp_const_none;
-    }
-	event_call_fn(name, data);
-	return MP_OBJ_FROM_PTR(&mp_const_none_obj);
-};
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_event_call_obj, mod_account_event_call);
-
 STATIC mp_obj_t mod_account_get_balance(mp_obj_t address) {
     byte code = MP_BC_GET_BALANCE;
     if(!CheckGas(&code)) {
@@ -130,11 +110,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_account_transfer_obj, mod_account_transfer)
 
 STATIC const mp_rom_map_elem_t mp_module_account_globals_table[] = {
         { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_account) },
-		{ MP_ROM_QSTR(MP_QSTR_event_call), MP_ROM_PTR(&mod_account_event_call_obj) },
         { MP_ROM_QSTR(MP_QSTR_get_balance), MP_ROM_PTR(&mod_account_get_balance_obj) },
-//        { MP_ROM_QSTR(MP_QSTR_get_data), MP_ROM_PTR(&mod_account_get_data_obj) },
-//        { MP_ROM_QSTR(MP_QSTR_set_data), MP_ROM_PTR(&mod_account_set_Data_obj) },
-//		{ MP_ROM_QSTR(MP_QSTR_remove_data), MP_ROM_PTR(&mod_account_remove_data_obj) },
         { MP_ROM_QSTR(MP_QSTR_transfer), MP_ROM_PTR(&mod_account_transfer_obj)},
 
 };
