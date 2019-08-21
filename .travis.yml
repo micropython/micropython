@@ -6,12 +6,11 @@ cache:
   directories:
     - "${HOME}/persist"
 env:
-  global:
-    - MAKEOPTS="-j4"
-    - IMAGE_NAME=pycampers/micropython
-    - IMAGE_TAG=$(travis/get-tag.sh)
-    - IMAGE=${IMAGE_NAME}:${TAG}
-    - IMG_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
+  - MAKEOPTS="-j4"
+  - IMAGE_NAME=pycampers/micropython
+  - IMAGE_TAG=$(travis/get-tag.sh)
+  - IMAGE=${IMAGE_NAME}:${TAG}
+  - IMG_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
 git:
   submodules: false
 
@@ -24,7 +23,7 @@ jobs:
     - stage: build
       script:
         - mkdir -p ${HOME}/persist
-        - docker load -i ${IMG_TAR} || exit 0
+        - docker load -i ${IMG_TAR} || true
 
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
         - docker pull ${IMAGE}
@@ -51,6 +50,6 @@ jobs:
         - PORT=samd
         - PORT=teensy
       script:
-        - docker load -i ${IMG_TAR}
+        - docker load -i ${IMG_TAR} || true
 
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMG_TAG} travis/${PORT}.sh
