@@ -163,6 +163,28 @@ void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKi
 }
 
 //storage
+typedef struct _mp_obj_storage_del_fun_t {
+    mp_obj_base_t base;
+    const mp_obj_type_t *type;
+} mp_obj_storage_del_fun_t;
+
+
+STATIC mp_obj_t storage_del_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_t key = args[1];
+    if (mp_obj_is_qstr(key)) {
+        const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
+        storage_remove_data_fn(key_c, strlen(key_c));
+    } else {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
+    }
+    return mp_const_none;
+}
+
+STATIC const mp_obj_type_t mp_type_fun_storage_del = {
+        { &mp_type_type },
+        .name = MP_QSTR_function,
+        .call = storage_del_call,
+};
 
 typedef struct _mp_obj_storage_set_fun_t {
     mp_obj_base_t base;
@@ -181,7 +203,7 @@ STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
         storage_set_data_fn(key_c, strlen(key_c), (char*)storage_value, storage_value_len);
         free(storage_value);
     } else {
-        assert(false);
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
     }
     return mp_const_none;
 }
@@ -296,6 +318,10 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         mp_obj_storage_get_fun_t *storage_get = m_new_obj(mp_obj_storage_get_fun_t);
         storage_get->base.type = &mp_type_fun_storage_get;
         mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
+
+        mp_obj_storage_del_fun_t *storage_del = m_new_obj(mp_obj_storage_del_fun_t);
+        storage_del->base.type = &mp_type_fun_storage_del;
+        mp_store_attr(class, qstr_from_str("__delattr__"), storage_del);
 
         if (is_deploy) {
             data = mp_call_function_0(class);
