@@ -16,6 +16,8 @@
 #ifndef TVM_TVM_H
 #define TVM_TVM_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,6 +37,8 @@ typedef enum {
     PARSE_KIND_FILE,
     PARSE_KIND_EVAL,
 }tvm_parse_kind_t;
+
+extern const int MAX_PARAMS_NUM;
 
 typedef struct _tvm_execute_result_t {
     int result_type; //tvm_return_type_t
@@ -67,6 +71,11 @@ void tvm_remove_context();
 void tvm_set_gas(int limit);
 int tvm_get_gas();
 void tvm_gas_report();
+
+int is_supported_type(const char* t);
+const char* get_type_msg(unsigned int msg, int num);
+void set_type_msg(unsigned int *msg, int num, int type_index);
+int get_type_num(unsigned int msg);
 
 // account
 typedef char* (*get_balance_fn_t) (const char*);

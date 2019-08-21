@@ -160,6 +160,7 @@ NORETURN void mp_raise_recursion_depth(void);
 #if ZVM_EXTMOD
 NORETURN void mp_raise_GasNotEnoughError(const char *msg);
 NORETURN void mp_raise_CallError(const char *msg);
+NORETURN void mp_raise_ABICheckException(const char *msg);
 #endif
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
