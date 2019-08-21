@@ -373,10 +373,6 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
-#include "py/objarray.h"
-mp_obj_array_t *array_new(char typecode, size_t n);
-mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value);
-
 //|   .. method:: fill_row(y, buffer)
 //|
 //|     Extract the pixels from a single row
