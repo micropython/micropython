@@ -181,7 +181,6 @@ typedef struct _mp_obj_storage_set_fun_t {
 
 
 STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-//    printf("storage_set n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_t key = args[1];
     mp_obj_t value = args[2];
     if (mp_obj_is_qstr(key)) {
@@ -210,7 +209,6 @@ typedef struct _mp_obj_storage_get_fun_t {
 
 
 STATIC mp_obj_t storage_get_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-//    printf("storage_get n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_t r = NULL;
     mp_obj_t key = args[1];
     size_t len = 0;
@@ -233,7 +231,6 @@ typedef struct _mp_obj_init_hook_fun_t {
 
 
 STATIC mp_obj_t init_hook_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-//    printf("init_hook n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     return mp_const_none;
 }
 
@@ -263,7 +260,7 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         size_t n_args;
         mp_obj_t *items;
         if (!is_deploy) {
-            // find function msg
+            // find function info
             for(int i=0; i<public_funcs_num; i++) {
                 mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
                 if (func->func != NULL && strcmp(func->func, func_name) == 0) {
