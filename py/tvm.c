@@ -259,42 +259,44 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         size_t public_funcs_num;
         mp_obj_t *public_funcs;
         mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
-
-        // find function msg
-        for(int i=0; i<public_funcs_num; i++) {
-            mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
-            if (func->func != NULL && strcmp(func->func, func_name) == 0) {
-                params_data = func->params_data;
-                break;
-            } else if (i == public_funcs_num-1) {
-                mp_raise_ABICheckException("not a public function");
-            }
-        }
-
+        bool is_deploy = (strcmp(func_name, "__init__") == 0);
         size_t n_args;
         mp_obj_t *items;
-        if (json_args != NULL) {
-            size_t len = strlen(json_args);
-            vstr_t vstr = {len, len, (char*)json_args, true};
-            mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-            mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
-            if (!mp_obj_is_type(args, &mp_type_list)) {
-                mp_raise_ABICheckException("not a params list");
+        if (!is_deploy) {
+            // find function msg
+            for(int i=0; i<public_funcs_num; i++) {
+                mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
+                if (func->func != NULL && strcmp(func->func, func_name) == 0) {
+                    params_data = func->params_data;
+                    break;
+                } else if (i == public_funcs_num-1) {
+                    mp_raise_ABICheckException("not a public function");
+                }
             }
-            mp_obj_list_get(args, &n_args, &items);
-        } else {
-            n_args = 0;
-        }
 
-        // check params num
-        if (get_type_num(params_data) != n_args) {
-            mp_raise_ABICheckException("params num error");
-        }
-        // check params type
-        for (int i=0; i<(int)n_args; i++) {
-            const char* wanted_type = get_type_msg(params_data, i);
-            if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
-                mp_raise_ABICheckException("params type error");
+            if (json_args != NULL) {
+                size_t len = strlen(json_args);
+                vstr_t vstr = {len, len, (char*)json_args, true};
+                mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
+                mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+                if (!mp_obj_is_type(args, &mp_type_list)) {
+                    mp_raise_ABICheckException("not a params list");
+                }
+                mp_obj_list_get(args, &n_args, &items);
+            } else {
+                n_args = 0;
+            }
+
+            // check params num
+            if (get_type_num(params_data) != n_args) {
+                mp_raise_ABICheckException("params num error");
+            }
+            // check params type
+            for (int i=0; i<(int)n_args; i++) {
+                const char* wanted_type = get_type_msg(params_data, i);
+                if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
+                    mp_raise_ABICheckException("params type error");
+                }
             }
         }
 
@@ -308,7 +310,7 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         storage_get->base.type = &mp_type_fun_storage_get;
         mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
 
-        if (strcmp(func_name, "__init__") == 0) {
+        if (is_deploy) {
             data = mp_call_function_0(class);
         } else {
             mp_obj_init_hook_fun_t *init_hook = m_new_obj(mp_obj_init_hook_fun_t);

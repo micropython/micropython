@@ -1075,7 +1075,7 @@ STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n
 STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
     printf("builtin_register_public n_args:%d\n", (int)n_args);
     uint32_t params_msg = 0;
-    if (n_args > MAX_PARAMS_NUM) {
+    if (n_args-1 > MAX_PARAMS_NUM) {
         mp_raise_ValueError("params num > 8");
     }
     for (size_t i = 1; i < n_args; i++) {
