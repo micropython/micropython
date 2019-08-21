@@ -47,6 +47,16 @@ except Exception as e:
     print('caught')
     print_exc(e)
 
+# Test that an exception propagated through a finally doesn't have a traceback added there
+try:
+    try:
+        f()
+    finally:
+        print('finally')
+except Exception as e:
+    print('caught')
+    print_exc(e)
+
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.
 def f():
