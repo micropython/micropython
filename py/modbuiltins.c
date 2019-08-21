@@ -1008,7 +1008,6 @@ typedef struct _mp_obj_wrap_fun_t {
 } mp_obj_wrap_fun_t;
 
 STATIC mp_obj_t wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("wrap n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     mp_obj_wrap_fun_t *self =  MP_OBJ_TO_PTR(self_in);
     return mp_call_function_n_kw(self->fun, n_args, n_kw, args);
 }
