@@ -18,7 +18,6 @@ blocks:
           - export IMAGE_TAG=$(ci-scripts/get-tag.sh)
           - export IMAGE=$IMAGE_NAME:$IMAGE_TAG
 
-          - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
           - docker pull $IMAGE
       secrets:
         - name: docker-hub
@@ -26,6 +25,8 @@ blocks:
         - name: Build docker image
           commands:
             - docker build --cache-from $IMAGE -t $IMAGE .
+
+            - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             - docker push $IMAGE
 
   - name: Build ports
