@@ -364,7 +364,7 @@ void test_register() {
     tvm_deinit_result(&result);
 
     tvm_init_result(&result);
-    tvm_contract_call("Token", "myprint2", "[2]", &result);
+    tvm_fun_call("Token", "myprint2", "[2]", &result);
     tvm_print_result(&result);
     tvm_deinit_result(&result);
 

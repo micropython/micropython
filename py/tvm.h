@@ -53,7 +53,6 @@ void tvm_deinit_result(tvm_execute_result_t *result);
 void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKind, tvm_execute_result_t *result);
 
 void tvm_fun_call(const char *class_name, const char *func_name, const char *args, tvm_execute_result_t *result);
-void tvm_contract_call(const char *class_name, const char *func_name, const char *args, tvm_execute_result_t *result);
 
 void tvm_set_register();
 void tvm_set_msg(const char* sender, unsigned long long value);
