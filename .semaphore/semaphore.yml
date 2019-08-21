@@ -29,7 +29,7 @@ blocks:
   - name: Build ports
     task:
       prologue:
-        <<: *prologue-commands
+        *prologue-commands
       env_vars:
         - name: MAKEOPTS
           value: -j4
