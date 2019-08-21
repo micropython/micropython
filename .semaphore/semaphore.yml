@@ -25,32 +25,32 @@ blocks:
             - docker build --cache-from $IMAGE -t $IMAGE .
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             - docker push $IMAGE
-
-  - name: Build ports
-    task:
-      prologue:
-        *prologue-commands
-      env_vars:
-        - name: MAKEOPTS
-          value: -j4
-      jobs:
-        - name: Build ports
-          matrix:
-            - env_var: PORT
-              values:
-                - stm32
-                - qemu-arm
-                - unix-coverage
-                - unix-standard
-                - unix-nanobox
-                - unix-stackless
-                - windows
-                - esp32
-                - esp8266
-                - nrf
-                - bare-arm
-                - cc3200
-                - samd
-                - teensy
-          commands:
-            - docker run -v $PWD:$PWD -w $PWD $IMAGE ci-scripts/${PORT}.sh
+            - ./ci-scripts/build-all.sh
+#  - name: Build ports
+#    task:
+#      prologue:
+#        *prologue-commands
+#      env_vars:
+#        - name: MAKEOPTS
+#          value: -j4
+#      jobs:
+#        - name: Build ports
+#          matrix:
+#            - env_var: PORT
+#              values:
+#                - stm32
+#                - qemu-arm
+#                - unix-coverage
+#                - unix-standard
+#                - unix-nanobox
+#                - unix-stackless
+#                - windows
+#                - esp32
+#                - esp8266
+#                - nrf
+#                - bare-arm
+#                - cc3200
+#                - samd
+#                - teensy
+#          commands:
+#            - docker run -v $PWD:$PWD -w $PWD $IMAGE ci-scripts/${PORT}.sh
