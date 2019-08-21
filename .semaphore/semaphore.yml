@@ -9,8 +9,8 @@ agent:
 blocks:
   - name: Build docker image
     task:
-      &prologue
       prologue:
+        &prologue-commands
         commands:
           - checkout
           - export IMAGE_NAME=pycampers/micropython
@@ -28,7 +28,8 @@ blocks:
 
   - name: Build ports
     task:
-      <<: *prologue
+      prologue:
+        <<: *prologue-commands
       env_vars:
         - name: MAKEOPTS
           value: -j4
