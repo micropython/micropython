@@ -59,7 +59,7 @@ USER root
 RUN apt-get install -y \
         python3 \
         qemu-system \
-        gcc-multilib libffi-dev:i386 \
+        gcc-multilib libffi-dev \
         clang \
         gcc-mingw-w64 \
         python3-pip

@@ -13,9 +13,11 @@ blocks:
         &prologue-commands
         commands:
           - checkout
+
           - export IMAGE_NAME=pycampers/micropython
           - export IMAGE_TAG=$(ci-scripts/get-tag.sh)
           - export IMAGE=$IMAGE_NAME:$IMAGE_TAG
+
           - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
           - docker pull $IMAGE
       secrets:
