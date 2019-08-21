@@ -57,6 +57,18 @@ except Exception as e:
     print('caught')
     print_exc(e)
 
+# Test that re-raising an exception doesn't add traceback info
+try:
+    try:
+        f()
+    except Exception as e:
+        print('reraise')
+        print_exc(e)
+        raise
+except Exception as e:
+    print('caught')
+    print_exc(e)
+
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.
 def f():
