@@ -13,9 +13,9 @@ blocks:
         &prologue-commands
         commands:
           - checkout
-          - export IMAGE_NAME=pycampers/micropython
-          - export IMAGE_TAG=$(travis/get-tag.sh)
-          - export IMAGE $IMAGE_NAME:$IMAGE_TAG
+          - export IMAGE_NAME "pycampers/micropython"
+          - export IMAGE_TAG "$(travis/get-tag.sh)"
+          - export IMAGE "$IMAGE_NAME:$IMAGE_TAG"
       secrets:
         - name: docker-hub
       jobs:
