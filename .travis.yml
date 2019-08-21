@@ -3,10 +3,12 @@ language: minimal
 
 services:
   - docker
+git:
+  submodules: false
 env:
   global:
     - MAKEOPTS="-j4"
-    - CACHE_DIR=${HOME}/.cache
+    - CACHE_DIR=${HOME}/persist
     - IMAGE_NAME=pycampers/micropython
     - IMAGE_TAG=$(travis/get-tag.sh)
     - IMAGE=${IMAGE_NAME}:${TAG}
@@ -14,8 +16,6 @@ env:
 cache:
   directories:
     - $CACHE_DIR
-git:
-  submodules: false
 
 stages:
   - name: build
