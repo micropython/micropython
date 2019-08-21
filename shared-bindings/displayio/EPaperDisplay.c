@@ -51,7 +51,7 @@
 //| Most people should not use this class directly. Use a specific display driver instead that will
 //| contain the startup and shutdown sequences at minimum.
 //|
-//| .. class:: EPaperDisplay(display_bus, start_sequence, stop_sequence, *, width, height, ram_width, ram_height, colstart=0, rowstart=0, rotation=0, set_column_window_command=None, set_row_window_command=None, single_byte_bounds=False, write_black_ram_command, black_bits_inverted=False, write_color_ram_command=None, color_bits_inverted=False, highlight_color=0x000000, refresh_display_command, busy_pin=None, busy_state=True, seconds_per_frame=180, always_toggle_chip_select=False)
+//| .. class:: EPaperDisplay(display_bus, start_sequence, stop_sequence, *, width, height, ram_width, ram_height, colstart=0, rowstart=0, rotation=0, set_column_window_command=None, set_row_window_command=None, single_byte_bounds=False, write_black_ram_command, black_bits_inverted=False, write_color_ram_command=None, color_bits_inverted=False, highlight_color=0x000000, refresh_display_command, refresh_time=40, busy_pin=None, busy_state=True, seconds_per_frame=180, always_toggle_chip_select=False)
 //|
 //|   Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
@@ -83,13 +83,14 @@
 //|   :param bool color_bits_inverted: True if 0 bits are used to show the color. Otherwise, 1 means to show color.
 //|   :param int highlight_color: RGB888 of source color to highlight with third ePaper color.
 //|   :param int refresh_display_command: Command used to start a display refresh
+//|   :param float refresh_time: Time it takes to refresh the display before the stop_sequence should be sent. Ignored when busy_pin is provided.
 //|   :param microcontroller.Pin busy_pin: Pin used to signify the display is busy
 //|   :param bool busy_state: State of the busy pin when the display is busy
-//|   :param int seconds_per_frame: Minimum number of seconds between screen refreshes
+//|   :param float seconds_per_frame: Minimum number of seconds between screen refreshes
 //|   :param bool always_toggle_chip_select: When True, chip select is toggled every byte
 //|
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height, ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_set_column_window_command, ARG_set_row_window_command, ARG_set_current_column_command, ARG_set_current_row_command, ARG_write_black_ram_command, ARG_black_bits_inverted, ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color, ARG_refresh_display_command,  ARG_busy_pin, ARG_busy_state, ARG_seconds_per_frame, ARG_always_toggle_chip_select };
+    enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height, ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_set_column_window_command, ARG_set_row_window_command, ARG_set_current_column_command, ARG_set_current_row_command, ARG_write_black_ram_command, ARG_black_bits_inverted, ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color, ARG_refresh_display_command,  ARG_refresh_time, ARG_busy_pin, ARG_busy_state, ARG_seconds_per_frame, ARG_always_toggle_chip_select };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -111,6 +112,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_color_bits_inverted, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_highlight_color, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x000000} },
         { MP_QSTR_refresh_display_command, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_refresh_time, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(40)} },
         { MP_QSTR_busy_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_busy_state, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_seconds_per_frame, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(180)} },
@@ -152,6 +154,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         mp_raise_RuntimeError(translate("Too many displays"));
     }
 
+    mp_float_t refresh_time = mp_obj_get_float(args[ARG_refresh_time].u_obj);
     mp_float_t seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);
 
     mp_int_t write_color_ram_command = NO_COMMAND;
@@ -168,7 +171,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_ram_width].u_int, args[ARG_ram_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
         args[ARG_set_column_window_command].u_int, args[ARG_set_row_window_command].u_int,
         args[ARG_set_current_column_command].u_int, args[ARG_set_current_row_command].u_int,
-        args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command, args[ARG_color_bits_inverted].u_bool, highlight_color, args[ARG_refresh_display_command].u_int,
+        args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command, args[ARG_color_bits_inverted].u_bool, highlight_color, args[ARG_refresh_display_command].u_int, refresh_time,
         busy_pin, args[ARG_busy_state].u_bool, seconds_per_frame, args[ARG_always_toggle_chip_select].u_bool
         );
 

@@ -43,6 +43,7 @@ typedef struct {
     uint32_t start_sequence_len;
     uint8_t* stop_sequence;
     uint32_t stop_sequence_len;
+    uint16_t refresh_time;
     uint16_t set_column_window_command;
     uint16_t set_row_window_command;
     uint16_t set_current_column_command;

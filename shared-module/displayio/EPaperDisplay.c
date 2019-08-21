@@ -48,7 +48,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t set_column_window_command, uint16_t set_row_window_command,
         uint16_t set_current_column_command, uint16_t set_current_row_command,
-        uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command,
+        uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command, mp_float_t refresh_time,
         const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool always_toggle_chip_select) {
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
@@ -67,6 +67,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     self->write_color_ram_command = write_color_ram_command;
     self->color_bits_inverted = color_bits_inverted;
     self->refresh_display_command = refresh_display_command;
+    self->refresh_time = refresh_time * 1000;
     self->busy_state = busy_state;
     self->refreshing = false;
     self->milliseconds_per_frame = seconds_per_frame * 1000;
@@ -336,8 +337,15 @@ bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* s
 }
 
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
-    if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
-        if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
+    if (self->refreshing) {
+        bool refresh_done = false;
+        if (self->busy.base.type == &digitalio_digitalinout_type) {
+            bool busy = common_hal_digitalio_digitalinout_get_value(&self->busy);
+            refresh_done = busy != self->busy_state;
+        } else {
+            refresh_done = ticks_ms - self->core.last_refresh > self->refresh_time;
+        }
+        if (refresh_done) {
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
