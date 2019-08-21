@@ -54,5 +54,6 @@ jobs:
           - env: PORT=samd
           - env: PORT=teensy
       script:
+        - rm -r $CACHE
 #        - docker load -i ${IMAGE_TAR} || true
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} travis/${PORT}.sh
