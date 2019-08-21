@@ -10,7 +10,7 @@ env:
     - MAKEOPTS="-j4"
     - CACHE_DIR=${HOME}/persist
     - IMAGE_NAME=pycampers/micropython
-    - IMAGE_TAG=$(travis/get-tag.sh)
+    - IMAGE_TAG=$(ci-scripts/get-tag.sh)
     - IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
 cache:
   directories:
@@ -34,7 +34,7 @@ jobs:
       env:
         - PORT=stm32
       script:
-        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} travis/${PORT}.sh
+        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} ci-scripts/${PORT}.sh
     - <<: *test
       env:
         - PORT=qemu-arm
