@@ -15,14 +15,14 @@ blocks:
           - checkout
           - export IMAGE_NAME=pycampers/micropython
           - export IMAGE_TAG=$(travis/get-tag.sh)
-          - export IMAGE=$IMAGE_NAME:$IMAGE_TAG"
+          - export IMAGE=$IMAGE_NAME:$IMAGE_TAG
+          - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+          - docker pull $IMAGE
       secrets:
         - name: docker-hub
       jobs:
         - name: Build docker image
           commands:
-            - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            - docker pull $IMAGE
             - docker build --cache-from $IMAGE -t $IMAGE .
             - docker push $IMAGE
 
