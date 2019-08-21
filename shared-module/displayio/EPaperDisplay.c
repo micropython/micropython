@@ -170,6 +170,9 @@ void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t* self) 
 }
 
 uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self) {
+    if (self->core.last_refresh == 0) {
+        return 0;
+    }
     // Refresh at seconds per frame rate.
     uint32_t elapsed_time = ticks_ms - self->core.last_refresh;
     if (elapsed_time > self->milliseconds_per_frame) {
@@ -343,6 +346,13 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
 }
 
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
+    if (self->refreshing) {
+        wait_for_busy(self);
+        self->refreshing = false;
+        // Run stop sequence but don't wait for busy because busy is set when sleeping.
+        send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
+    }
+
     release_display_core(&self->core);
     if (self->busy.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->busy);
@@ -351,4 +361,21 @@ void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self) {
     displayio_display_core_collect_ptrs(&self->core);
+}
+
+bool maybe_refresh_epaperdisplay(void) {
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].epaper_display.base.type != &displayio_epaperdisplay_type ||
+            displays[i].epaper_display.core.current_group != &circuitpython_splash) {
+            // Skip regular displays and those not showing the splash.
+            continue;
+        }
+        displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
+        if (common_hal_displayio_epaperdisplay_get_time_to_refresh(display) != 0) {
+            return false;
+        }
+        return common_hal_displayio_epaperdisplay_refresh(display);
+    }
+    // Return true if no ePaper displays are available to pretend it was updated.
+    return true;
 }

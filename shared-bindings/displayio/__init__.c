@@ -77,7 +77,7 @@
 //|
 //|   Releases any actively used displays so their busses and pins can be used again. This will also
 //|   release the builtin display on boards that have one. You will need to reinitialize it yourself
-//|   afterwards.
+//|   afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
 //|
 //|   Use this once in your code.py if you initialize a display. Place it right before the
 //|   initialization so the display is active as long as possible.

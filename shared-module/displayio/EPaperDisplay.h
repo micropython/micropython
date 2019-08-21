@@ -60,6 +60,7 @@ typedef struct {
 
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self);
+bool maybe_refresh_epaperdisplay(void);
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self);
 

@@ -253,6 +253,7 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     bool serial_connected_before_animation = false;
+    bool refreshed_epaper_display = false;
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
@@ -289,6 +290,13 @@ bool run_code_py(safe_mode_t safe_mode) {
             serial_connected_at_start = false;
         }
         serial_connected_before_animation = serial_connected();
+
+        // Refresh the ePaper display if we have one. That way it'll show an error message.
+        #if CIRCUITPY_DISPLAYIO
+        if (!refreshed_epaper_display) {
+            refreshed_epaper_display = maybe_refresh_epaperdisplay();
+        }
+        #endif
 
         tick_rgb_status_animation(&animation);
     }

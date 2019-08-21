@@ -54,6 +54,19 @@ void displayio_background(void) {
 }
 
 void common_hal_displayio_release_displays(void) {
+    // Release displays before busses so that they can send any final commands to turn the display
+    // off properly.
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        mp_const_obj_t display_type = displays[i].display.base.type;
+        if (display_type == NULL || display_type == &mp_type_NoneType) {
+            continue;
+        } else if (display_type == &displayio_display_type) {
+            release_display(&displays[i].display);
+        } else if (display_type == &displayio_epaperdisplay_type) {
+            release_epaperdisplay(&displays[i].epaper_display);
+        }
+        displays[i].display.base.type = &mp_type_NoneType;
+    }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = displays[i].fourwire_bus.base.type;
         if (bus_type == NULL || bus_type == &mp_type_NoneType) {
@@ -66,17 +79,6 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
-    }
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        mp_const_obj_t display_type = displays[i].display.base.type;
-        if (display_type == NULL || display_type == &mp_type_NoneType) {
-            continue;
-        } else if (display_type == &displayio_display_type) {
-            release_display(&displays[i].display);
-        } else if (display_type == &displayio_epaperdisplay_type) {
-            release_epaperdisplay(&displays[i].epaper_display);
-        }
-        displays[i].display.base.type = &mp_type_NoneType;
     }
 
     supervisor_stop_terminal();

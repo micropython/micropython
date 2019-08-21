@@ -52,6 +52,7 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->current_group = NULL;
     self->colstart = colstart;
     self->rowstart = rowstart;
+    self->last_refresh = 0;
 
     if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
         self->bus_reset = common_hal_displayio_parallelbus_reset;
@@ -140,7 +141,7 @@ bool displayio_display_core_show(displayio_display_core_t* self, displayio_group
         if (!circuitpython_splash.in_group) {
             root_group = &circuitpython_splash;
         } else if (self->current_group == &circuitpython_splash) {
-            return false;
+            return true;
         }
     }
     if (root_group == self->current_group) {
