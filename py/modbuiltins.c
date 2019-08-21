@@ -994,7 +994,6 @@ typedef struct _mp_obj_wrap_fun_t {
     const mp_obj_type_t *type;
 
     mp_obj_t fun;
-    uint32_t params_data;
 } mp_obj_wrap_fun_t;
 
 STATIC mp_obj_t wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -1014,12 +1013,11 @@ STATIC const mp_obj_type_t mp_type_fun_wrap = {
 STATIC mp_obj_t decorator_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     printf("decorator n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     if ((int)n_args != 1 || (int)n_kw>0 || mp_obj_is_type(args[0], &mp_type_fun_wrap)) {
-        mp_raise_ValueError("decorator error");
+        mp_raise_ABICheckException("decorator error");
     }
     mp_obj_wrap_fun_t *o = m_new_obj(mp_obj_wrap_fun_t);
     o->base.type = &mp_type_fun_wrap;
     mp_obj_decorator_fun_t *self = MP_OBJ_TO_PTR(self_in);
-    o->params_data = self->params_data;
     o->fun = args[0];
     self->func = qstr_str(mp_obj_fun_get_name(args[0]));
     return o;

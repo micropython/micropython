@@ -242,120 +242,6 @@ STATIC const mp_obj_type_t mp_type_fun_init_hook = {
         .call = init_hook_call,
 };
 
-void tvm_contract_call(const char *class_name, const char *func_name, const char *json_args, tvm_execute_result_t *result) {
-
-    if (g_pAbi)
-    {
-        free(g_pAbi);
-        g_pAbi = NULL;
-    }
-
-    nlr_buf_t nlr;
-    mp_obj_t data = NULL;
-    if (nlr_push(&nlr) == 0) {
-        unsigned int params_data = 0;
-        int error_code = 0;
-        mp_obj_register_t *reg = mp_load_name(qstr_from_str("register"));
-        size_t public_funcs_num;
-        mp_obj_t *public_funcs;
-        mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
-
-        size_t n_args;
-        mp_obj_t *items;
-        if (json_args != NULL) {
-            size_t len = strlen(json_args);
-            vstr_t vstr = {len, len, (char*)json_args, true};
-            mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-            mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
-            if (!mp_obj_is_type(args, &mp_type_list)) {
-                assert(false);
-            }
-            mp_obj_list_get(args, &n_args, &items);
-        } else {
-            n_args = 0;
-        }
-
-        for(int i=0; i<public_funcs_num; i++) {
-            mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
-            if (func->func != NULL && strcmp(func->func, func_name) == 0) {
-                params_data = func->params_data;
-                break;
-            } else if (i == public_funcs_num-1) {
-                error_code = 2002;
-                mp_obj_fill_exception("not a public func", error_code, result);
-                goto end1;
-            }
-        }
-
-        if (get_type_num(params_data) != n_args) {
-            error_code = 2002;
-            mp_obj_fill_exception("params num error", error_code, result);
-            return;
-        }
-        for (int i=0; i<(int)n_args; i++) {
-            const char* wanted_type = get_type_msg(params_data, i);
-            if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
-                error_code = 2002;
-                mp_obj_fill_exception("params type error", error_code, result);
-                goto end1;
-            }
-        }
-
-        mp_obj_t class = mp_load_name(qstr_from_str(class_name));
-
-        mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
-        storage_set->base.type = &mp_type_fun_storage_set;
-        mp_store_attr(class, qstr_from_str("__setattr__"), storage_set);
-
-        mp_obj_storage_get_fun_t *storage_get = m_new_obj(mp_obj_storage_get_fun_t);
-        storage_get->base.type = &mp_type_fun_storage_get;
-        mp_store_attr(class, qstr_from_str("__getattr__"), storage_get);
-
-        if (strcmp(func_name, "__init__") == 0) {
-            data = mp_call_function_0(class);
-        } else {
-            mp_obj_init_hook_fun_t *init_hook = m_new_obj(mp_obj_init_hook_fun_t);
-            init_hook->base.type = &mp_type_fun_init_hook;
-            mp_store_attr(class, qstr_from_str("__init__"), init_hook);
-
-            mp_obj_t class_object = mp_call_function_0(class);
-            if (json_args == NULL) {
-                data = mp_call_function_0(mp_load_attr(class_object, qstr_from_str(func_name)));
-            } else {
-                data = mp_call_function_n_kw(mp_load_attr(class_object, qstr_from_str(func_name)), n_args, 0, items);
-            }
-        }
-        nlr_pop();
-        mp_fun_return(data, result);
-    } else {
-        mp_obj_exception_t *o = MP_OBJ_TO_PTR(MP_OBJ_FROM_PTR(nlr.ret_val));
-        const char * exception_name = qstr_str(o->base.type->name);
-        int error_code = 1001;
-        if (strcmp(exception_name, "GasNotEnoughException") == 0) {
-            error_code = 1002;
-        }else if (strcmp(exception_name, "ABICheckException") == 0) {
-            error_code = 2002;
-        }
-
-        char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
-        assert(exception_data_str);
-        mp_obj_fill_exception(exception_data_str, error_code, result);
-    }
-end1:
-    if (g_pAbi != NULL)
-    {
-        result->abi = malloc(strlen(g_pAbi) + 1);
-        memset(result->abi, 0, strlen(g_pAbi) + 1);
-        memcpy(result->abi, g_pAbi, strlen(g_pAbi));
-
-        if (g_pAbi)
-        {
-            free(g_pAbi);
-            g_pAbi = NULL;
-        }
-    }
-}
-
 void tvm_fun_call(const char *class_name, const char *func_name, const char *json_args, tvm_execute_result_t *result) {
 
     if (g_pAbi)
@@ -367,6 +253,50 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
     nlr_buf_t nlr;
     mp_obj_t data = NULL;
     if (nlr_push(&nlr) == 0) {
+        unsigned int params_data = 0;
+        mp_obj_register_t *reg = mp_load_name(qstr_from_str("register"));
+        size_t public_funcs_num;
+        mp_obj_t *public_funcs;
+        mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
+
+        // find function msg
+        for(int i=0; i<public_funcs_num; i++) {
+            mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
+            if (func->func != NULL && strcmp(func->func, func_name) == 0) {
+                params_data = func->params_data;
+                break;
+            } else if (i == public_funcs_num-1) {
+                mp_raise_ABICheckException("not a public function");
+            }
+        }
+
+        size_t n_args;
+        mp_obj_t *items;
+        if (json_args != NULL) {
+            size_t len = strlen(json_args);
+            vstr_t vstr = {len, len, (char*)json_args, true};
+            mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
+            mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+            if (!mp_obj_is_type(args, &mp_type_list)) {
+                mp_raise_ABICheckException("not a params list");
+            }
+            mp_obj_list_get(args, &n_args, &items);
+        } else {
+            n_args = 0;
+        }
+
+        // check params num
+        if (get_type_num(params_data) != n_args) {
+            mp_raise_ABICheckException("params num error");
+        }
+        // check params type
+        for (int i=0; i<(int)n_args; i++) {
+            const char* wanted_type = get_type_msg(params_data, i);
+            if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
+                mp_raise_ABICheckException("params type error");
+            }
+        }
+
         mp_obj_t class = mp_load_name(qstr_from_str(class_name));
 
         mp_obj_storage_set_fun_t *storage_set = m_new_obj(mp_obj_storage_set_fun_t);
@@ -385,19 +315,9 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
             mp_store_attr(class, qstr_from_str("__init__"), init_hook);
 
             mp_obj_t class_object = mp_call_function_0(class);
-            if (json_args == NULL) {
+            if (n_args == 0) {
                 data = mp_call_function_0(mp_load_attr(class_object, qstr_from_str(func_name)));
             } else {
-                size_t len = strlen(json_args);
-                vstr_t vstr = {len, len, (char*)json_args, true};
-                mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-                mp_obj_t args = mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
-                if (!mp_obj_is_type(args, &mp_type_list)) {
-                    assert(false);
-                }
-                size_t n_args;
-                mp_obj_t *items;
-                mp_obj_list_get(args, &n_args, &items);
                 data = mp_call_function_n_kw(mp_load_attr(class_object, qstr_from_str(func_name)), n_args, 0, items);
             }
         }
@@ -417,7 +337,6 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         assert(exception_data_str);
         mp_obj_fill_exception(exception_data_str, error_code, result);
     }
-
     if (g_pAbi != NULL)
     {
         result->abi = malloc(strlen(g_pAbi) + 1);

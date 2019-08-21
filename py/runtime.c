@@ -1494,6 +1494,10 @@ NORETURN void mp_raise_GasNotEnoughError(const char *msg) {
 	mp_raise_msg(&mp_type_GasNotEnough, msg);
 }
 
+NORETURN void mp_raise_ABICheckException(const char *msg) {
+    mp_raise_msg(&mp_type_ABICheckException, msg);
+}
+
 NORETURN void mp_raise_CallError(const char *msg) {
 	int count = 0;
 	int loop_limit = 0;

@@ -330,7 +330,7 @@ void test_register() {
     tvm_set_gas(10000000);
 
     const char *str = "register = Register()\n"
-                      "#print(type(register.public()))\n"
+                      "print(type(register.public()))\n"
                       "class Token():\n"
                       "\n"
                       "    def __init__(self):\n"
