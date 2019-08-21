@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-25 22:48-0700\n"
+"POT-Creation-Date: 2019-08-21 14:18-0400\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -336,6 +336,14 @@ msgstr "Luminosité non-ajustable"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
 
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is not a bytearray."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is too small"
+msgstr ""
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
@@ -510,6 +518,10 @@ msgstr "Données trop volumineuses pour un paquet de diffusion"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "La capacité de destination est plus petite que 'destination_length'."
+
+#: shared-bindings/displayio/Display.c
+msgid "Display must have a 16 bit colorspace."
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Display rotation must be in 90 degree increments"
