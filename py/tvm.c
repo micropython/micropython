@@ -257,7 +257,7 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         mp_obj_t *public_funcs;
         mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
 
-        // find function msg
+        // find function info
         for(int i=0; i<public_funcs_num; i++) {
             mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
             if (func->func != NULL && strcmp(func->func, func_name) == 0) {

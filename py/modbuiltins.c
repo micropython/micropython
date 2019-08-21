@@ -1022,7 +1022,6 @@ STATIC const mp_obj_type_t mp_type_fun_wrap = {
 
 
 STATIC mp_obj_t decorator_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    printf("decorator n_args:%d n_kw:%d\n", (int)n_args, (int)n_kw);
     if ((int)n_args != 1 || (int)n_kw>0 || mp_obj_is_type(args[0], &mp_type_fun_wrap)) {
         mp_raise_ABICheckException("decorator error");
     }
@@ -1050,9 +1049,8 @@ STATIC mp_obj_t mp_builtin_register_make_new(const mp_obj_type_t *type, size_t n
 }
 
 STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
-    printf("builtin_register_public n_args:%d\n", (int)n_args);
     uint32_t params_msg = 0;
-    if (n_args > MAX_PARAMS_NUM) {
+    if (n_args - 1 > MAX_PARAMS_NUM) {
         mp_raise_ValueError("params num > 8");
     }
     for (size_t i = 1; i < n_args; i++) {
@@ -1065,7 +1063,6 @@ STATIC mp_obj_t builtin_register_public(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError("unsupported type");
         }
         set_type_msg(&params_msg, i-1, type_index);
-        printf("args: %s\n", qstr_str(self->name));
     }
     mp_obj_decorator_fun_t *o = m_new_obj(mp_obj_decorator_fun_t);
     o->base.type = &mp_type_fun_decorator;
