@@ -55,7 +55,9 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
+    self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
+        self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
@@ -76,12 +78,16 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
     reset_pin_number(self->reset.pin->number);
 }
 
-void common_hal_displayio_fourwire_reset(mp_obj_t obj) {
+bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (self->reset.base.type == &mp_type_NoneType) {
+        return false;
+    }
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
     common_hal_time_delay_ms(1);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
     common_hal_time_delay_ms(1);
+    return true;
 }
 
 bool common_hal_displayio_fourwire_bus_free(mp_obj_t obj) {

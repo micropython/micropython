@@ -37,7 +37,7 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
 
 void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self);
 
-void common_hal_displayio_i2cdisplay_reset(mp_obj_t self);
+bool common_hal_displayio_i2cdisplay_reset(mp_obj_t self);
 bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t self);
 
 bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t self);

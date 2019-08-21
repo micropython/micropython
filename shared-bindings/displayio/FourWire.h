@@ -40,7 +40,7 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
 
 void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self);
 
-void common_hal_displayio_fourwire_reset(mp_obj_t self);
+bool common_hal_displayio_fourwire_reset(mp_obj_t self);
 bool common_hal_displayio_fourwire_bus_free(mp_obj_t self);
 
 bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t self);

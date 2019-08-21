@@ -103,6 +103,21 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     return self;
 }
 
+//|   .. method:: reset()
+//|
+//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|     is available.
+//|
+STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = self_in;
+
+    if (!common_hal_displayio_fourwire_reset(self)) {
+        mp_raise_RuntimeError(translate("no reset pin available"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
+
 //|   .. method:: send(command, data, *, toggle_every_byte=False)
 //|
 //|     Sends the given command value followed by the full set of data. Display state, such as
@@ -140,6 +155,7 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 3, displayio_fourwire_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_fourwire_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_fourwire_send_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);

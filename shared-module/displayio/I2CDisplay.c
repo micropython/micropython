@@ -55,7 +55,9 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
 
     self->address = device_address;
 
+    self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
+        self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
@@ -71,15 +73,17 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
     reset_pin_number(self->reset.pin->number);
 }
 
-
-void common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
+bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (self->reset.base.type == &mp_type_NoneType) {
+        return false;
+    }
 
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
     common_hal_mcu_delay_us(1);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    return true;
 }
-
 
 bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t obj) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);

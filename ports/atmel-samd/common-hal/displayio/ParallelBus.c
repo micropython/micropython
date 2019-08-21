@@ -79,6 +79,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     self->write_group = &PORT->Group[write->number / 32];
     self->write_mask = 1 << (write->number % 32);
 
+    self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
         self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
@@ -108,12 +109,16 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) 
     reset_pin_number(self->reset.pin->number);
 }
 
-void common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
+bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (self->reset.base.type == &mp_type_NoneType) {
+        return false;
+    }
 
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
     common_hal_mcu_delay_us(4);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    return true;
 }
 
 bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
