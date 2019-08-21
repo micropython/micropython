@@ -134,11 +134,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_ob
 //|     The volume level of a voice, as a floating point number between 0 and 1.
 //|
 STATIC mp_obj_t audioio_mixervoice_obj_get_level(mp_obj_t self_in) {
-
-	#if !MICROPY_PY_BUILTINS_FLOAT
-	#error "floating point not supported"
-	#endif
-
     return mp_obj_new_float(common_hal_audioio_mixervoice_get_level(self_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixervoice_get_level_obj, audioio_mixervoice_obj_get_level);
@@ -152,11 +147,7 @@ STATIC mp_obj_t audioio_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-	#if MICROPY_PY_BUILTINS_FLOAT
 	float level = mp_obj_get_float(args[ARG_level].u_obj);
-	#else
-	#error "floating point not supported"
-	#endif
 
     if (level > 1 || level < 0) {
         mp_raise_ValueError(translate("level must be between 0 and 1"));
