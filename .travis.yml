@@ -18,12 +18,12 @@ cache:
     - $CACHE_DIR
 
 stages:
-#  - name: build
-  - name: test
+#  - name: Build
+  - name: Test
 
 jobs:
   include:
-#    - stage: build
+#    - stage: Build
 #      script:
 #        - mkdir -p ${CACHE_DIR}
 #
@@ -35,24 +35,48 @@ jobs:
 #
 #        - docker push ${IMAGE}
 #        - docker save -o ${IMAGE_TAR} ${IMAGE}
-
-    - stage: test
-      matrix:
-        include:
-          - env: PORT=stm32
-          - env: PORT=qemu-arm
-          - env: PORT=unix-coverage
-          - env: PORT=unix-standard
-          - env: PORT=unix-nanobox
-          - env: PORT=unix-stackless
-          - env: PORT=windows
-          - env: PORT=esp32
-          - env: PORT=esp8266
-          - env: PORT=nrf
-          - env: PORT=bare-arm
-          - env: PORT=cc3200
-          - env: PORT=samd
-          - env: PORT=teensy
+    - &test
+      stage: Test
+      env:
+        - PORT=stm32
       script:
-#        - docker load -i ${IMAGE_TAR} || true
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} travis/${PORT}.sh
+    - <<: *test
+      env:
+        - PORT=qemu-arm
+    - <<: *test
+      env:
+        - PORT=unix-coverage
+    - <<: *test
+      env:
+        - PORT=unix-standard
+    - <<: *test
+      env:
+        - PORT=unix-nanobox
+    - <<: *test
+      env:
+        - PORT=unix-stackless
+    - <<: *test
+      env:
+        - PORT=windows
+    - <<: *test
+      env:
+        - PORT=esp32
+    - <<: *test
+      env:
+        - PORT=esp8266
+    - <<: *test
+      env:
+        - PORT=nrf
+    - <<: *test
+      env:
+        - PORT=bare-arm
+    - <<: *test
+      env:
+        - PORT=cc3200
+    - <<: *test
+      env:
+        - PORT=samd
+    - <<: *test
+      env:
+        - PORT=teensy
