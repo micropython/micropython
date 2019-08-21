@@ -1,17 +1,19 @@
 dist: xenial
 language: minimal
+
 services:
   - docker
-cache:
-  directories:
-    - "${HOME}/persist"
 env:
   global:
     - MAKEOPTS="-j4"
+    - CACHE_DIR=${HOME}/.cache
     - IMAGE_NAME=pycampers/micropython
     - IMAGE_TAG=$(travis/get-tag.sh)
     - IMAGE=${IMAGE_NAME}:${TAG}
-    - IMG_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
+    - IMAGE_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
+cache:
+  directories:
+    - $CACHE_DIR
 git:
   submodules: false
 
@@ -23,8 +25,8 @@ jobs:
   include:
     - stage: build
       script:
-        - mkdir -p ${HOME}/persist
-        - docker load -i ${IMG_TAR} || true
+        - mkdir -p $CACHE_DIR
+        - docker load -i ${IMAGE_TAR} || true
 
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
         - docker pull ${IMAGE}
@@ -32,7 +34,7 @@ jobs:
         - docker build --cache-from ${IMAGE} -t ${IMAGE} .
 
         - docker push ${IMAGE}
-        - docker save -o ${IMG_TAR} ${IMAGE}
+        - docker save -o ${IMAGE_TAR} ${IMAGE}
 
     - stage: test
       env:
@@ -52,6 +54,6 @@ jobs:
           - PORT=samd
           - PORT=teensy
       script:
-        - docker load -i ${IMG_TAR} || true
+        - docker load -i ${IMAGE_TAR} || true
 
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMG_TAG} travis/${PORT}.sh
