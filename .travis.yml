@@ -12,7 +12,6 @@ env:
     - IMAGE_NAME=pycampers/micropython
     - IMAGE_TAG=$(travis/get-tag.sh)
     - IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
-    - IMAGE_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
 cache:
   directories:
     - $CACHE_DIR
@@ -23,18 +22,13 @@ stages:
 
 jobs:
   include:
-#    - stage: Build
-#      script:
-#        - mkdir -p ${CACHE_DIR}
-#
-#        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-#        - docker load -i ${IMAGE_TAR} || true
-#        - docker pull ${IMAGE}
-#
-#        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
-#
-#        - docker push ${IMAGE}
-#        - docker save -o ${IMAGE_TAR} ${IMAGE}
+    - stage: Build
+      script:
+        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+        - docker pull ${IMAGE}
+        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
+        - docker push ${IMAGE}
+
     - &test
       stage: Test
       env:
