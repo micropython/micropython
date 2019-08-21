@@ -1499,17 +1499,6 @@ NORETURN void mp_raise_ABICheckException(const char *msg) {
 }
 
 NORETURN void mp_raise_CallError(const char *msg) {
-	int count = 0;
-	int loop_limit = 0;
-	const char*data = msg;
-	while (loop_limit++ < 50) {
-		if (*data++ == '|') {
-			count++;
-		}
-		if (count >= 2){
-			break;
-		}
-	}
-	mp_raise_msg(&mp_type_CallException, data);
+	mp_raise_msg(&mp_type_CallException, msg);
 }
 #endif

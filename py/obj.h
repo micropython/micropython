@@ -698,7 +698,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
 #if ZVM_EXTMOD
-void mp_obj_fill_exception(char* exception_str, const int error_code, tvm_execute_result_t *result);
+void mp_obj_fill_exception(const char* exception_str, const int error_code, tvm_execute_result_t *result);
 #endif
 
 bool mp_obj_is_true(mp_obj_t arg);

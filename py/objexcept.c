@@ -589,7 +589,7 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values
 
 #if ZVM_EXTMOD
 extern int lib_line;
-char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name) {
+const char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name) {
 	mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
 	mp_obj_t exception_stack = o->args->items[0];
 	if (exception_stack == MP_OBJ_NULL) {
@@ -603,7 +603,7 @@ char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name) {
 	if (type->get_string != NULL) {
 		data = type->get_string(exception_stack);
 	}
-	if (strcmp(exception_name, "NoLineLibException") == 0 || strcmp(exception_name, "CallException") == 0 || strcmp(exception_name, "ABICheckException") == 0 || strcmp(exception_name, "GasNotEnoughException") == 0) {
+	if (strcmp(exception_name, "NoLineLibException") == 0 || strcmp(exception_name, "CallException") == 0 || strcmp(exception_name, "GasNotEnoughException") == 0) {
 		return data;
 	}
 	else {

@@ -22,14 +22,10 @@
 #include "py/objint.h"
 #include "py/lexer.h"
 #include "py/compile.h"
-#ifndef _MYWINDOWS_
 #include "py/tvm.h"
-#endif
 #include "py/bc0.h"
-#include "tas_account.h"
 #include <stdlib.h>
 #include <string.h>
-#include "tas_account.h"
 #include "py/gas.h"
 
 
@@ -38,9 +34,6 @@ STATIC mp_obj_t mod_block_blockhash(mp_obj_t height) {
     if(!CheckGas(&code)) {
         return mp_const_none;
     }
-    if(!inputValCheck(height)) {
-        return mp_const_none;
-    };
     const char* str = (char*)block_hash_fn(mp_obj_get_int(height));
     int len = strlen(str);
     return mp_obj_new_str(str, len);

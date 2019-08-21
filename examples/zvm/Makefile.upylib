@@ -22,7 +22,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -mno-ms-bitfields
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -61,9 +61,13 @@ endif
 # The unix port of MicroPython on OSX must be compiled with clang,
 # while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
+SUB_UNAME := $(findstring MINGW32, $(UNAME_S))
 ifeq ($(UNAME_S),Darwin)
 CC = clang
 # Use clang syntax for map file
+LDFLAGS_ARCH = -Wl,-map,$@.map
+else ifeq ($(SUB_UNAME), MINGW32)
+INC +=  -I/usr/include
 LDFLAGS_ARCH = -Wl,-map,$@.map
 else
 # Use gcc syntax for map file

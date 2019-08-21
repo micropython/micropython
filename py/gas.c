@@ -29,47 +29,23 @@ typedef enum gasPrice
     Mid=8,		// 8, Mid
     High=10,	// 10, Slow
     Ext=20,		// 20, Ext
-    ExtCode=700,// 700, Extcode
-    Balance=400,	// 400, Balance
-    createAccount=25000,
-    subBalance=400,
-    addBalance=400,
-    getBalance=40,
-    getCodeHash=40,
-    getCode=40,
-    setCode=5001,
-    getCodeSize=40,
-    getNonce=400,
-    setNonce=400,
-    addRefund=400,
-    getRefund=40,
-    getState=40,
-    setState=5002,
-	removeState = 500,
-    suicide=5003,
-    hasSuicided=40,
-    exists=40,
-    empty=40,
-    revertToSnapshot=40,
-    snapshot=40,
-    transfer=9000,
-    isContractCreater=40,
-    contractAddr=40,
-	tasevent=8,
 
+    getBalance=200,
 
-    blockhash=40,
-    coinbase=40,
-    difficulty=2048,
-    number=40,
-    timestamp=40,
-    gaslimit=5004,
+    getState=200,
+    setState=200,
+	removeState=200,
 
+    transfer=400,
 
-    origin = 40,
+	tasevent=20,
 
-	getIter = 80,
-	getIterNext = 40,
+    blockhash=20,
+    number=20,
+    timestamp=20,
+    gaslimit=20,
+
+    origin = 20,
 
 //	Special,	// multiparam or otherwise special
 //	Invalid		// Invalid.
@@ -155,35 +131,17 @@ STCODEGAS g_CodeGas[] = {
         { MP_BC_IMPORT_FROM ,Ext },
         { MP_BC_IMPORT_STAR ,Base },
 
-        {MP_BC_CREATE_ACCOUNT, createAccount},
-        {MP_BC_SUB_BALANCE, subBalance},
         {MP_BC_GET_BALANCE, getBalance},
-        {MP_BC_GET_CODE_HASH, getCodeHash},
-        {MP_BC_GET_CODE, getCode},
-        {MP_BC_SET_CODE,setCode},
-        {MP_BC_GET_CODE_SIZE, getCodeSize},
-        {MP_BC_GET_NONCE, getNonce},
-        {MP_BC_SET_NONCE, setNonce},
-        {MP_BC_ADD_REFUND, addRefund},
-        {MP_BC_GET_REFUND, getRefund},
         {MP_BC_GET_STATE, getState},
         {MP_BC_SET_STATE, setState},
 		{MP_BC_REMOVE_STATE, removeState},
-        {MP_BC_SUICIDE, suicide},
-        {MP_BC_HAS_SUICIDED, hasSuicided},
-        {MP_BC_EXISTS, exists},
-        {MP_BC_EMPTY, empty},
-        {MP_BC_REVERT_TO_SNAPSHOT, revertToSnapshot},
-        {MP_BC_SNAPSHOT, snapshot},
+
         {MP_BC_TRANSFER, transfer},
-        {MP_BC_IS_CONTRACT_CREATER, isContractCreater},
-        {MP_BC_CONTRACT_ADDR, contractAddr},
+
 		{ MP_BC_TASEVENT, tasevent},
 
 //BLOCK
         {MP_BC_BLOCKHASH, blockhash},
-        {MP_BC_COINBASE , coinbase},
-        {MP_BC_DIFFICULT, difficulty},
         {MP_BC_NUMBER, number},
         {MP_BC_TIMESTAMP,timestamp},
         {MP_BC_GASLIMIT, gaslimit},
@@ -193,18 +151,23 @@ STCODEGAS g_CodeGas[] = {
 
 };
 
-int g_iGas = 100000;
+long long g_iGas = 100000;
 
-int db_gas = 0;
-int mem_gas = 0;
-int cpu_gas = 0;
+#define GAS_PRECISION 10000
+
+long long db_gas = 0;
+long long mem_gas = 0;
+long long cpu_gas = 0;
 
 void setGas(int value) {
-    g_iGas = value;
+    g_iGas = (long long)value * GAS_PRECISION;
+    db_gas = 0;
+    mem_gas = 0;
+    cpu_gas = 0;
 }
 
 int getGas() {
-    return g_iGas;
+    return g_iGas / GAS_PRECISION;
 }
 
 GASPRICE GetGas(byte* op)
@@ -244,51 +207,57 @@ bool FireGas(int gas)
 {
     if (g_iGas - gas >= 0) {
         g_iGas -= gas;
-//        printf("gas: %d\n", g_iGas);
         return true;
     }
     else {
+        g_iGas = 0;
         return false;
     }
-//    else {
-////        __asm__("int $0x03");
-//		mp_raise_GasNotEnoughError("dose not have enough gas to run!");
-//        return false;
-//    }
 }
 
 bool CheckGas(byte* op)
 {
-    //printf("CheckGas %d,current gas=%d ",*op, g_iGas);
     GASPRICE gas = GetGas(op);
-    //printf("use price=%d\n",gas);
-    cpu_gas += gas;
-    if (FireGas(gas)) {
+    int gas_used = gas * GAS_PRECISION;
+    cpu_gas += gas_used;
+    if (FireGas(gas_used)) {
         return true;
     }
     else {
-        mp_raise_GasNotEnoughError("dose not have enough gas to run!");
+        mp_raise_GasNotEnoughError("does not have enough gas to run!");
         return false;
     }
 }
 
 bool FireGas_Mem(size_t len)
 {
-    len = len * 0.03814697265625;
-    mem_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 381;
+    if (len < MAX) {
+        len = len * 381;//(int)(0.03814697265625 * GAS_PRECISION);
+        mem_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 bool FireGas_DB(size_t len)
 {
-    len = len * 0.3814697265625;
-    db_gas += len;
-    return FireGas(len);
+    const int MAX = INT_MAX / 3814;
+    if (len < MAX) {
+        len = len * 3814;//(int)(0.3814697265625 * GAS_PRECISION);
+        db_gas += len;
+        return FireGas(len);
+    } else {
+        g_iGas = 0;
+        return false;
+    }
 }
 
 void Gas_Report()
 {
-    printf("gas: cpu:%d mem:%d db:%d\n", cpu_gas, mem_gas, db_gas);
+    printf("gas: cpu:%" PRIdLL " mem:%" PRIdLL " db:%" PRIdLL "\n", cpu_gas/GAS_PRECISION, mem_gas/GAS_PRECISION, db_gas/GAS_PRECISION);
 }
 
 

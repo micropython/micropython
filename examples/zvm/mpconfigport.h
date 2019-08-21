@@ -34,6 +34,9 @@
 //TasBaseStorage need hook setattr
 #define MICROPY_PY_DELATTR_SETATTR (1)
 
+//internal printf unsupported long long
+#define MICROPY_USE_INTERNAL_PRINTF (0)
+
 #define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
@@ -135,6 +138,14 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 
+#ifdef _WIN64
+#define PRIdLL "I64d"
+#define PRIuLL "I64u"
+#else
+#define PRIdLL "lld"
+#define PRIuLL "llu"
+#endif
+
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
@@ -142,14 +153,4 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-// We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
 #include <stdlib.h>
-#else
-#ifdef _VM_WINDOWS_
-#include <malloc.h>
-#else
-//#include <alloca.h>
-#include <stdlib.h>
-#endif
-#endif

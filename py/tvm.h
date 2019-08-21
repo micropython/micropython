@@ -80,12 +80,6 @@ int get_type_num(unsigned int msg);
 // account
 typedef char* (*get_balance_fn_t) (const char*);
 get_balance_fn_t get_balance;
-typedef _Bool (*miner_stake_fn_t)(const char*, int len, const char*);
-miner_stake_fn_t miner_stake_fn;
-typedef _Bool (*miner_cancel_stake_fn_t)(const char*, int len, const char*);
-miner_cancel_stake_fn_t miner_cancel_stake;
-typedef _Bool (*miner_refund_stake_fn_t)(const char*, int len);
-miner_refund_stake_fn_t miner_refund_stake;
 
 
 // storage
@@ -109,7 +103,7 @@ typedef void (*contract_call_fn_t) (const char*, const char*, const char*, tvm_e
 contract_call_fn_t contract_call_fn;
 typedef char* (*event_call_fn_t) (const char*, const char*);
 event_call_fn_t event_call_fn;
-typedef void (*transfer_fn_t) (const char*, const char*);
+typedef _Bool (*transfer_fn_t) (const char*, const char*);
 transfer_fn_t transfer_fn;
 typedef unsigned long long (*gas_limit_fn_t) ();
 gas_limit_fn_t gas_limit_fn;

@@ -552,10 +552,13 @@ void mp_fun_return(mp_obj_t func_return, tvm_execute_result_t *result) {
     result->content = NULL;
 }
 
-void mp_obj_fill_exception(char* exception_str, const int error_code, tvm_execute_result_t *result) {
+void mp_obj_fill_exception(const char* exception_str, const int error_code, tvm_execute_result_t *result) {
     result->result_type = RETURN_TYPE_EXCEPTION;
     result->error_code = error_code;
-    result->content = exception_str;
+    int len = strlen(exception_str) + 1;
+    result->content = malloc(len);
+    memset(result->content, 0, len);
+    memcpy(result->content, exception_str, len);
 }
 
 void set_code_line(int line) {

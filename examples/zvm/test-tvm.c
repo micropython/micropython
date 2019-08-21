@@ -128,29 +128,29 @@ void test_gc() {
     }
 }
 
-void contract_call_callback (const char *contractAddr, const char *contractName, const char *contractArgs, tvm_execute_result_t *result) {
+void contract_call_callback (const char *contractAddr, const char *funName, const char *JSON, tvm_execute_result_t *result) {
     assert(result);
-    if (strcmp(contractArgs, "1") == 0) {
+    if (strcmp(JSON, "[\"1\"]") == 0) {
         result->result_type = RETURN_TYPE_STRING;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "Hello", 5);
-    } else if (strcmp(contractArgs, "2") == 0) {
+    } else if (strcmp(JSON, "[\"2\"]") == 0) {
         result->result_type = RETURN_TYPE_INT;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "55555", 5);
     }
-    else if (strcmp(contractArgs, "3") == 0) {
+    else if (strcmp(JSON, "[\"3\"]") == 0) {
         result->result_type = RETURN_TYPE_NONE;
     }
-    else if (strcmp(contractArgs, "4") == 0) {
+    else if (strcmp(JSON, "[\"4\"]") == 0) {
         result->result_type = RETURN_TYPE_BOOL;
         result->content = malloc(100);
         memset(result->content, 0, 100);
         memcpy(result->content, "0", 1);
     }
-    else if (strcmp(contractArgs, "5") == 0) {
+    else if (strcmp(JSON, "[\"5\"]") == 0) {
         result->result_type = RETURN_TYPE_EXCEPTION;
         result->content = malloc(100);
         memset(result->content, 0, 100);
@@ -164,17 +164,24 @@ void test_contract_call() {
 
     contract_call_fn = &contract_call_callback;
 
-    const char *str = "import account\n"
-                      "\n"
-                      "t = account.contract_call('A', 'B', '1')\n"
+    const char *str = "\n"
+                      "t = Contract('A').B('1')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '2')\n"
+                      "t = Contract('A').B('2')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '3')\n"
+                      "t = Contract('A').B('3')\n"
                       "print(t)\n"
-                      "t = account.contract_call('A', 'B', '4')\n"
+                      "t = Contract('A').B('4')\n"
                       "print(t)\n"
-//                      "t = account.contract_call('A', 'B', '5')\n"
+//                      "t = Contract('A').B('5')\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B(Contract)\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B([1,2,3,4])\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B({'a':1})\n"
+//                      "print(t)\n"
+//                      "t = Contract('A').B(a=1)\n"
 //                      "print(t)\n"
                       "print('Test Finished')\n"
                       "\n";
@@ -242,6 +249,7 @@ void test_gas() {
                       "print(1123000)\n"
                       "print(1123000)\n"
                       "\n";
+
 
     tvm_execute_result_t result;
     tvm_init_result(&result);
@@ -377,6 +385,36 @@ void test_register() {
     tvm_print_result(&result);
     tvm_deinit_result(&result);
 
+}
+
+void test_1() {
+    tvm_start();
+    tvm_set_gas(500000);
+
+    const char *str = "\n"
+                      "class Max():\n"
+                      "    def __init__(self):\n"
+                      "        pass\n"
+                      "\n"
+                      "    def exec(self, max):\n"
+                      "        counter = \"\"\n"
+                      "        while 0 <= max:\n"
+                      "            counter += str(max)\n"
+                      "            max -= 1\n"
+                      "\n"
+                      "m = Max()\n"
+                      "m.exec(1000000)\n"
+                      "\n";
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_1", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+
+    tvm_gas_report();
+
+    tvm_delete();
 }
 
 
@@ -549,6 +587,19 @@ void test_msg() {
                       "print(msg.value)\n";
 
     tvm_set_msg("zvxxx", 100);
+
+    tvm_execute_result_t result;
+    tvm_init_result(&result);
+    tvm_execute(str, "test_msg", PARSE_KIND_FILE, &result);
+    tvm_print_result(&result);
+    tvm_deinit_result(&result);
+}
+
+void test_2() {
+    for (int i = 0; i < 100; ++i) {
+        test_1();
+        tvm_delete();
+    }
 }
 
 int main() {
@@ -568,16 +619,22 @@ int main() {
 
 //    test_lib_line();
 
-    test_register();
+
+//    test_register();
 
 //    test_storage();
-//      test_storage2();
+//    test_storage2();
 
 //    test_zdict();
 
 //    test_tvm_abli_call();
 
-//    test_msg();
+    test_msg();
+
+//    test_1();
+
+//    test_2();
+
 
     printf("finished\n");
 }

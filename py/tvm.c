@@ -52,11 +52,7 @@ void nlr_jump_fail(void *val) {
 }
 
 //static char heap[16384];
-#ifdef _MYWINDOWS_
-extern long heap_size;
-#else
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
-#endif
 void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm_execute_result_t *result) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -76,20 +72,23 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
 		int error_code = 1001;
 		if (strcmp(exception_name, "GasNotEnoughException") == 0) {
 			error_code = 1002;
-		}else if (strcmp(exception_name, "ABICheckException") == 0) {
-			error_code = 2002;
 		}
 		
-		char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
-		assert(exception_data_str);
+		const char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
+		if (exception_data_str == NULL) {
+            assert(false);
+		    exception_data_str = "";
+		}
 		mp_obj_fill_exception(exception_data_str, error_code, result);
     }
 }
 
-static char heap[1024 * 1024 * 2];
+// 0.03814697265625	per memory byte
+// 500000gas / 0.04 = 11.9mb
+static char heap[1024 * 1024 * 16];
 void tvm_start(void) {
 	// Initialized stack limit
-	mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+//	mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 	// Initialize heap
 	gc_init(heap, heap + sizeof(heap));
 	// Initialize interpreter
@@ -102,21 +101,12 @@ void tvm_gc() {
 }
 
 void tvm_delete(void) {
-//	mp_deinit();
+	mp_deinit();
 }
 
 void tvm_set_lib_path(const char *path) {
-    size_t path_num = 2;
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
-    mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-
-    int path_l = strlen(path);
-    vstr_t vstr;
-    vstr_init(&vstr, path_l);
-    vstr_add_strn(&vstr, path, path_l);
-    path_items[1] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(QSTR_FROM_STR_STATIC(path)));
 }
 
 void tvm_print_result(tvm_execute_result_t *result) {
@@ -333,7 +323,7 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
             error_code = 2002;
         }
 
-        char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
+        const char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
         assert(exception_data_str);
         mp_obj_fill_exception(exception_data_str, error_code, result);
     }
