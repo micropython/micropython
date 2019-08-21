@@ -51,6 +51,7 @@ RUN git submodule update --init --recursive
 ENV IDF_PATH $HOME/esp-idf
 
 RUN pip install -r $IDF_PATH/requirements.txt
+RUN pip install cpp-coveralls
 
 WORKDIR $HOME
 USER root
