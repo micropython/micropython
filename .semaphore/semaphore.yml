@@ -13,11 +13,9 @@ blocks:
         &prologue-commands
         commands:
           - checkout
-
           - export IMAGE_NAME=pycampers/micropython
           - export IMAGE_TAG=$(ci-scripts/get-tag.sh)
           - export IMAGE=$IMAGE_NAME:$IMAGE_TAG
-
           - docker pull $IMAGE
       secrets:
         - name: docker-hub
@@ -25,7 +23,6 @@ blocks:
         - name: Build docker image
           commands:
             - docker build --cache-from $IMAGE -t $IMAGE .
-
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             - docker push $IMAGE
 
