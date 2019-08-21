@@ -48,7 +48,7 @@ RUN git checkout $(cat $HOME/ESPIDF_SUPHASH)
 RUN rm $HOME/ESPIDF_SUPHASH
 
 RUN git submodule update --init --recursive
-ENV IDF_PATH $HOME/esp
+ENV IDF_PATH $HOME/esp-idf
 
 RUN pip install -r $IDF_PATH/requirements.txt
 
