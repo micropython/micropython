@@ -18,25 +18,23 @@ cache:
     - $CACHE_DIR
 
 stages:
-  - name: build
+#  - name: build
   - name: test
 
 jobs:
   include:
     - stage: build
       script:
-        - env
-
-        - mkdir -p $CACHE_DIR
+#        - mkdir -p ${CACHE_DIR}
 
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-        - docker load -i ${IMAGE_TAR} || true
+#        - docker load -i ${IMAGE_TAR} || true
         - docker pull ${IMAGE}
 
         - docker build --cache-from ${IMAGE} -t ${IMAGE} .
 
         - docker push ${IMAGE}
-        - docker save -o ${IMAGE_TAR} ${IMAGE}
+#        - docker save -o ${IMAGE_TAR} ${IMAGE}
 
     - stage: test
       env:
@@ -57,4 +55,4 @@ jobs:
           - PORT=teensy
       script:
 #        - docker load -i ${IMAGE_TAR} || true
-        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMG_TAG} travis/${PORT}.sh
+        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} travis/${PORT}.sh
