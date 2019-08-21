@@ -175,7 +175,7 @@ STATIC mp_obj_t storage_del_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
         const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
         storage_remove_data_fn(key_c, strlen(key_c));
     } else {
-        assert(false);
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
     }
     return mp_const_none;
 }
@@ -203,7 +203,7 @@ STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
         storage_set_data_fn(key_c, strlen(key_c), (char*)storage_value, storage_value_len);
         free(storage_value);
     } else {
-        assert(false);
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
     }
     return mp_const_none;
 }

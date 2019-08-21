@@ -837,7 +837,7 @@ mp_obj_t mp_obj_new_storage_value(mp_obj_t self_in, const char* storage_key, siz
     } else if (data[0] == BYTE_FORMAT_C) {
         r = mp_obj_new_bytes((byte*)(data+1), data_len-1);
     } else {
-        assert(false);
+        assert(false); //assert ok
     }
     free(data);
     return r;
