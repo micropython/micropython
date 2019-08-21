@@ -23,36 +23,36 @@ stages:
 
 jobs:
   include:
-    - stage: build
-      script:
+#    - stage: build
+#      script:
 #        - mkdir -p ${CACHE_DIR}
-
-        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+#
+#        - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
 #        - docker load -i ${IMAGE_TAR} || true
-        - docker pull ${IMAGE}
-
-        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
-
-        - docker push ${IMAGE}
+#        - docker pull ${IMAGE}
+#
+#        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
+#
+#        - docker push ${IMAGE}
 #        - docker save -o ${IMAGE_TAR} ${IMAGE}
 
     - stage: test
-      env:
-        matrix:
-          - PORT=stm32
-          - PORT=qemu-arm
-          - PORT=unix-coverage
-          - PORT=unix-standard
-          - PORT=unix-nanobox
-          - PORT=unix-stackless
-          - PORT=windows
-          - PORT=esp32
-          - PORT=esp8266
-          - PORT=nrf
-          - PORT=bare-arm
-          - PORT=cc3200
-          - PORT=samd
-          - PORT=teensy
+      matrix:
+        include:
+          - env: PORT=stm32
+          - env: PORT=qemu-arm
+          - env: PORT=unix-coverage
+          - env: PORT=unix-standard
+          - env: PORT=unix-nanobox
+          - env: PORT=unix-stackless
+          - env: PORT=windows
+          - env: PORT=esp32
+          - env: PORT=esp8266
+          - env: PORT=nrf
+          - env: PORT=bare-arm
+          - env: PORT=cc3200
+          - env: PORT=samd
+          - env: PORT=teensy
       script:
 #        - docker load -i ${IMAGE_TAR} || true
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} travis/${PORT}.sh
