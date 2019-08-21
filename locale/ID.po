@@ -255,6 +255,7 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -337,6 +338,11 @@ msgstr ""
 msgid "Buffer is too small"
 msgstr ""
 
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr ""
@@ -366,7 +372,7 @@ msgid "Can not use dotstar with %s"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
+msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
@@ -433,6 +439,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
+msgstr ""
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic is already attached to a Service"
 msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
@@ -509,6 +519,10 @@ msgstr ""
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Descriptor is already attached to a Characteristic"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -608,7 +622,7 @@ msgstr ""
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Gagal untuk menemukan layanan, status: 0x%08lX"
@@ -628,17 +642,22 @@ msgstr "Gagal untuk mendapatkan status softdevice, error: 0x%08lX"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+msgid "Failed to pair"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, fuzzy, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "Gagal untuk menulis nilai gatts, status: 0x%08lX"
@@ -668,6 +687,11 @@ msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to start pairing, error 0x%04x"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
@@ -683,12 +707,12 @@ msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Gagal untuk menulis nilai atribut, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "Gagal untuk menulis nilai gatts, status: 0x%08lX"
@@ -834,8 +858,16 @@ msgstr "Pin-pin tidak valid"
 msgid "Invalid polarity"
 msgstr ""
 
+#: shared-bindings/bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
+msgstr ""
+
+#: shared-module/bleio/Attribute.c
+msgid "Invalid security_mode"
 msgstr ""
 
 #: shared-bindings/audiocore/Mixer.c
@@ -956,13 +988,15 @@ msgstr ""
 msgid "No such file/directory"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Peripheral.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Tidak dapat menyambungkan ke AP"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr ""
 
@@ -1092,6 +1126,7 @@ msgid "Sample rate must be positive"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
@@ -1111,7 +1146,7 @@ msgid "Slices not supported"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Adapter.c
-#, c-format
+#, fuzzy, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
@@ -1180,7 +1215,11 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
@@ -1289,6 +1328,19 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Value length  required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
@@ -1386,10 +1438,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "attributes not supported yet"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
 msgstr ""
 
 #: py/builtinevex.c
@@ -1708,6 +1756,10 @@ msgstr ""
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' standar harus terakhir"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "descriptors includes an object that is not a Descriptors"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2048,6 +2100,12 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr ""
@@ -2147,8 +2205,8 @@ msgstr ""
 msgid "non-Service found in services"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/bleio/__init__.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c
@@ -2233,6 +2291,14 @@ msgstr "panjang data string memiliki keganjilan (odd-length)"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "modul tidak ditemukan"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2455,10 +2521,6 @@ msgstr "sintaksis error pada pendeskripsi uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
 msgstr ""
 
 #: shared-bindings/time/__init__.c

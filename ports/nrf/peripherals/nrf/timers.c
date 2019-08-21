@@ -36,7 +36,7 @@
 
 STATIC nrfx_timer_t nrfx_timers[] = {
 #if NRFX_CHECK(NRFX_TIMER0_ENABLED)
-    // Note that TIMER0 is reserved for use by the SoftDevice, so it should not usually be enabled.
+    #error NRFX_TIMER0_ENABLED should not be on: TIMER0 is used by the SoftDevice
     NRFX_TIMER_INSTANCE(0),
 #endif
 #if NRFX_CHECK(NRFX_TIMER1_ENABLED)

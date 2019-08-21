@@ -111,9 +111,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_ob
 
     // Wait for display bus to be available.
     while (!common_hal_displayio_i2cdisplay_begin_transaction(self)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
     uint8_t full_command[bufinfo.len + 1];
     full_command[0] = command;

@@ -257,6 +257,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
@@ -333,6 +334,11 @@ msgstr "El brillo no se puede ajustar"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is not a bytearray."
 msgstr ""
@@ -369,7 +375,7 @@ msgid "Can not use dotstar with %s"
 msgstr "No se puede usar dotstar con %s"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
+msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
@@ -432,6 +438,10 @@ msgstr "Características UUID no concide con el Service UUID"
 #: ports/nrf/common-hal/bleio/Service.c
 msgid "Characteristic already in use by another Service."
 msgstr "Características ya esta en uso por otro Serivice"
+
+#: shared-bindings/bleio/Service.c
+msgid "Characteristic is already attached to a Service"
+msgstr ""
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -506,6 +516,10 @@ msgstr "Trozo de datos debe seguir fmt chunk"
 #: ports/nrf/common-hal/bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
 msgstr "Data es muy grande para el paquete de advertisement."
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Descriptor is already attached to a Characteristic"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -604,7 +618,7 @@ msgstr ""
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "No se puede iniciar el escaneo. err: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "No se puede descubrir servicios"
@@ -622,17 +636,22 @@ msgstr "No se puede obtener el estado del softdevice"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr "Error al notificar o indicar el valor del atributo, err 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+msgid "Failed to pair"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Characteristic.c
 #, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "No se puede leer el valor del atributo. err 0x%02x"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, fuzzy, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Error al leer valor del atributo, err 0x%04"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
@@ -662,6 +681,11 @@ msgstr "No se puede inicar el anuncio. err: 0x%04x"
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Peripheral.c
+#, c-format
+msgid "Failed to start pairing, error 0x%04x"
+msgstr ""
+
 #: ports/nrf/common-hal/bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
@@ -677,12 +701,12 @@ msgstr "No se puede detener el anuncio. err: 0x%04x"
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c
 #, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
@@ -830,9 +854,17 @@ msgstr "pines inválidos"
 msgid "Invalid polarity"
 msgstr "Polaridad inválida"
 
+#: shared-bindings/bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Modo de ejecución inválido."
+
+#: shared-module/bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
 
 #: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
@@ -956,12 +988,14 @@ msgstr "No queda espacio en el dispositivo"
 msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Peripheral.c
 msgid "Not connected"
 msgstr "No conectado"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "No reproduciendo"
 
@@ -1100,6 +1134,7 @@ msgid "Sample rate must be positive"
 msgstr "Sample rate debe ser positivo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
@@ -1197,8 +1232,12 @@ msgid "Tile height must exactly divide bitmap height"
 msgstr "La altura del Tile debe dividir exacto la altura del bitmap"
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
-msgstr "Los índices de Tile deben ser 0 - 255"
+msgid "Tile index out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1306,6 +1345,19 @@ msgstr "Operación no soportada"
 msgid "Unsupported pull value."
 msgstr "valor pull no soportado."
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+msgid "Value length  required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
@@ -1403,10 +1455,6 @@ msgstr "array/bytes requeridos en el lado derecho"
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "atributos aún no soportados"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr "mal GATT role"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1728,6 +1776,10 @@ msgstr "números decimales no soportados"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' por defecto deberia estar de último"
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "descriptors includes an object that is not a Descriptors"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2073,6 +2125,12 @@ msgstr "map buffer muy pequeño"
 msgid "math domain error"
 msgstr "error de dominio matemático"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profundidad máxima de recursión excedida"
@@ -2171,8 +2229,8 @@ msgstr "no hay tal atributo"
 msgid "non-Service found in services"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/bleio/__init__.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c
@@ -2260,6 +2318,14 @@ msgstr "string de longitud impar"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "address fuera de límites"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2487,10 +2553,6 @@ msgstr "error de sintaxis en el descriptor uctypes"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "limite debe ser en el rango 0-65536"
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr "el indice del tile fuera de limite"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -2848,6 +2910,9 @@ msgstr "paso cero"
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
 
+#~ msgid "Tile indices must be 0 - 255"
+#~ msgstr "Los índices de Tile deben ser 0 - 255"
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) no existe"
 
@@ -2866,6 +2931,9 @@ msgstr "paso cero"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Usa esptool para borrar la flash y vuelve a cargar Python en su lugar"
+
+#~ msgid "bad GATT role"
+#~ msgstr "mal GATT role"
 
 #~ msgid "buffer too long"
 #~ msgstr "buffer demasiado largo"
@@ -2948,6 +3016,9 @@ msgstr "paso cero"
 
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "services incluye un objeto que no es servicio"
+
+#~ msgid "tile index out of bounds"
+#~ msgstr "el indice del tile fuera de limite"
 
 #~ msgid "too many arguments"
 #~ msgstr "muchos argumentos"
