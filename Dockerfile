@@ -50,17 +50,14 @@ RUN rm $HOME/ESPIDF_SUPHASH
 RUN git submodule update --init --recursive
 ENV IDF_PATH $HOME/esp-idf
 
-RUN pip install -r $IDF_PATH/requirements.txt
-RUN pip install cpp-coveralls
 
 WORKDIR $HOME
 USER root
 
 # required to build ports
 RUN apt-get install -y \
-        python3 \
-        qemu-system \
-        gcc-multilib libffi-dev \
-        clang \
-        gcc-mingw-w64 \
-        python3-pip
+        python-pip python3 python3-pip qemu-system gcc-multilib libffi-dev clang gcc-mingw-w64
+
+RUN pip install -r $IDF_PATH/requirements.txt
+RUN pip install cpp-coveralls
+RUN pip3 install pyparsing
