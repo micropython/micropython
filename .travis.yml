@@ -11,7 +11,7 @@ env:
     - CACHE_DIR=${HOME}/persist
     - IMAGE_NAME=pycampers/micropython
     - IMAGE_TAG=$(travis/get-tag.sh)
-    - IMAGE=${IMAGE_NAME}:${TAG}
+    - IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
     - IMAGE_TAR=${HOME}/persist/docker-image-${TRAVIS_COMMIT}.tar
 cache:
   directories:
@@ -28,9 +28,9 @@ jobs:
         - env
 
         - mkdir -p $CACHE_DIR
-        - docker load -i ${IMAGE_TAR} || true
 
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+        - docker load -i ${IMAGE_TAR} || true
         - docker pull ${IMAGE}
 
         - docker build --cache-from ${IMAGE} -t ${IMAGE} .
@@ -56,6 +56,5 @@ jobs:
           - PORT=samd
           - PORT=teensy
       script:
-        - docker load -i ${IMAGE_TAR} || true
-
+#        - docker load -i ${IMAGE_TAR} || true
         - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMG_TAG} travis/${PORT}.sh
