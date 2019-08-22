@@ -657,4 +657,8 @@ void run_background_tasks(void);
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
+#ifndef CIRCUITPY_FS_NAME
+#define CIRCUITPY_FS_NAME "CIRCUITPY"
+#endif
+
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

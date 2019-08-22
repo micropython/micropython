@@ -35,7 +35,7 @@ env:
   - TRAVIS_BOARDS="itsybitsy_m0_express metro_m0_express pirkey_m0 pyruler trinket_m0 trinket_m0_haxpress arduino_mkr1300 arduino_mkrzero arduino_zero bast_pro_mini_m0 catwan_usbstick datum_distance datum_imu datum_weather" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="escornabot_makech meowmeow pewpew10 robohatmm1_m0 snekboard sparkfun_lumidrive sparkfun_redboard_turbo sparkfun_samd21_dev sparkfun_samd21_mini uchip ugame10" TRAVIS_SDK=arm
   # Adafruit SAMD51 (M4) + Other SAMD51
-  - TRAVIS_BOARDS="feather_m4_express grandcentral_m4_express itsybitsy_m4_express metro_m4_airlift_lite metro_m4_express pybadge pybadge_airlift pygamer pygamer_advance" TRAVIS_SDK=arm
+  - TRAVIS_BOARDS="feather_m4_express grandcentral_m4_express itsybitsy_m4_express metro_m4_airlift_lite metro_m4_express pybadge pybadge_airlift pygamer pygamer_advance monster_m4sk" TRAVIS_SDK=arm
   - TRAVIS_BOARDS="pyportal pyportal_titano trellis_m4_express capablerobot_usbhub cp32-m4 datalore_ip_m4 datum_light kicksat-sprite mini_sam_m4 robohatmm1_m4 sam32" TRAVIS_SDK=arm
 
 
