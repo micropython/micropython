@@ -1,4 +1,7 @@
-image: gcr.io/kaniko-project/executor:debug
+image: docker:stable
+
+services:
+  - docker:dind
 
 variables:
   DOCKER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
