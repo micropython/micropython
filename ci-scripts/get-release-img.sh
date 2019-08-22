@@ -1,1 +1,0 @@
-echo "pycampers/micropython:$(ci-scripts/get-release-tag.sh)"
