@@ -1,8 +1,6 @@
 image: docker:stable-git
 
 variables:
-  DOCKER_HOST: /var/run/docker.sock
-  DOCKER_DRIVER: overlay2
   DOCKER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   MAKEOPTS: "-j4"
   CACHE_DIR: $HOME/persist
