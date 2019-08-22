@@ -1262,7 +1262,8 @@ yield:
                     } else
 #endif
                 {
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
+
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "opcode");
                     nlr_pop();
                     code_state->state[0] = obj;
                     return MP_VM_RETURN_EXCEPTION;
