@@ -14,6 +14,7 @@ build:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull $DOCKER_TEST_IMAGE || true
     - docker build --cache-from=$DOCKER_TEST_IMAGE -t $DOCKER_TEST_IMAGE .
+    - docker push $DOCKER_TEST_IMAGE
 
 stm32:
   &build-port
