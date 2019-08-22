@@ -809,6 +809,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_abiexport_obj, 0, mp_builtin_abiexport);
 //zdict
 mp_obj_t mp_obj_new_storage_value(mp_obj_t self_in, const char* storage_key, size_t storage_key_len) {
     mp_obj_t r = NULL;
+    byte code = MP_BC_GET_STATE;
+    if(!CheckGas(&code)) {
+        return r;
+    }
     char *data = NULL;
     int data_len = 0;
     storage_get_data_fn(storage_key, storage_key_len, &data, &data_len);
@@ -941,19 +945,29 @@ STATIC mp_obj_t _zdict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) 
     mp_obj_t r = NULL;
     if (value == MP_OBJ_NULL) {
         // delete
-        storage_remove_data_fn(storage_key, storage_key_len);
+        byte code = MP_BC_REMOVE_STATE;
+        if (CheckGas(&code)) {
+            storage_remove_data_fn(storage_key, storage_key_len);
+        }
         r = mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         r = mp_obj_new_storage_value(self_in, storage_key, storage_key_len);
     } else {
         // store
-        byte *storage_value = NULL;
-        size_t storage_value_len = 0;
-        mp_obj_storage_value(value, &storage_value, &storage_value_len);
-        storage_set_data_fn(storage_key, storage_key_len, (char*)storage_value, storage_value_len);
-        free(storage_value);
-        r = mp_const_none;
+        byte code = MP_BC_SET_STATE;
+        if(!CheckGas(&code)) {
+            r = mp_const_none;
+        } else {
+            byte *storage_value = NULL;
+            size_t storage_value_len = 0;
+            mp_obj_storage_value(value, &storage_value, &storage_value_len);
+            FireGas_DB(storage_key_len + storage_value_len);
+            storage_set_data_fn(storage_key, storage_key_len, (char*)storage_value, storage_value_len);
+            free(storage_value);
+            r = mp_const_none;
+        }
+
     }
     free(storage_key);
     return r;
@@ -1216,7 +1230,7 @@ typedef struct _mp_obj_event_t {
 } mp_obj_event_t;
 
 STATIC mp_obj_t mp_builtin_event_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    if(n_args != 1 || n_kw != 0 || !mp_obj_is_type(args[0], &mp_type_str)) {
+    if (n_args != 1 || n_kw != 0 || !mp_obj_is_str(args[0])) {
         mp_raise_ValueError("Event init error");
     }
     mp_obj_event_t *o = m_new_obj(mp_obj_event_t);

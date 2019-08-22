@@ -33,6 +33,7 @@
 #include "py/objstringio.h"
 #include "py/modbuiltins.h"
 #include "py/objint.h"
+#include "py/bc0.h"
 
 uint mp_import_stat(const char *path) {
     struct stat st;
@@ -172,8 +173,13 @@ typedef struct _mp_obj_storage_del_fun_t {
 STATIC mp_obj_t storage_del_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t key = args[1];
     if (mp_obj_is_qstr(key)) {
-        const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
-        storage_remove_data_fn(key_c, strlen(key_c));
+        	byte code = MP_BC_REMOVE_STATE;
+            if (!CheckGas(&code)) {
+                return mp_const_none;
+            }
+            size_t key_len = 0;
+            const char* key_c = mp_obj_str_get_data(key, &key_len);
+            storage_remove_data_fn(key_c, key_len);
     } else {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
     }
@@ -196,12 +202,19 @@ STATIC mp_obj_t storage_set_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     mp_obj_t key = args[1];
     mp_obj_t value = args[2];
     if (mp_obj_is_qstr(key)) {
-        const char *key_c = qstr_str(mp_obj_str_get_qstr(key));
-        byte *storage_value = NULL;
-        size_t storage_value_len = 0;
-        mp_obj_storage_value(value, &storage_value, &storage_value_len);
-        storage_set_data_fn(key_c, strlen(key_c), (char*)storage_value, storage_value_len);
-        free(storage_value);
+        byte code = MP_BC_SET_STATE;
+        if(!CheckGas(&code)) {
+            return mp_const_none;
+        } else {
+            size_t key_len = 0;
+            const char *key_c = mp_obj_str_get_data(key, &key_len);
+            byte *storage_value = NULL;
+            size_t storage_value_len = 0;
+            mp_obj_storage_value(value, &storage_value, &storage_value_len);
+            FireGas_DB(key_len + storage_value_len);
+            storage_set_data_fn(key_c, key_len, (char*)storage_value, storage_value_len);
+            free(storage_value);
+        }
     } else {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_TypeError, key));
     }
