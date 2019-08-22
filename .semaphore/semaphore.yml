@@ -14,7 +14,7 @@ blocks:
         commands:
           - checkout
           - export RELEASE_IMAGE=$(ci-scripts/get-release-img.sh)
-          - docker pull $IMAGE
+          - docker pull $RELEASE_IMAGE
       secrets:
         - name: docker-hub
       jobs:
@@ -51,4 +51,4 @@ blocks:
 #                - samd
 #                - teensy
 #          commands:
-#            - docker run -v $PWD:$PWD -w $PWD $IMAGE ci-scripts/${PORT}.sh
+#            - docker run -v $PWD:$PWD -w $PWD $RELEASE_IMAGE ci-scripts/${PORT}.sh
