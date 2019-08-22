@@ -25,7 +25,6 @@ CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -mno-ms-bitfields
 
 # Debugging/Optimization
-DEBUG = 1
 ifdef DEBUG
 CFLAGS += -g
 COPT = -O0

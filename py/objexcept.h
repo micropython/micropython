@@ -40,7 +40,7 @@ typedef struct _mp_obj_exception_t {
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 #if ZVM_EXTMOD
-const char* mp_obj_get_exception_str(mp_obj_t o_in, const char * exception_name);
+void mp_obj_get_exception_str(const mp_print_t *print, mp_obj_t exc);
 #endif
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \

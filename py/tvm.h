@@ -57,8 +57,6 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *arg
 void tvm_set_register();
 void tvm_set_msg(const char* sender, unsigned long long value);
 
-void tvm_set_lib_line(int line);
-
 void tvm_set_lib_path(const char* path);
 
 void tvm_start();

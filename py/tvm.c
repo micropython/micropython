@@ -52,6 +52,25 @@ void nlr_jump_fail(void *val) {
     exit(1);
 }
 
+void caught_exception(mp_obj_exception_t* exception, tvm_execute_result_t *result) {
+    mp_obj_exception_t* o = exception;
+    const char * exception_name = qstr_str(o->base.type->name);
+    int error_code = 1001;
+    if (strcmp(exception_name, "GasNotEnoughException") == 0) {
+        error_code = 1002;
+    }else if (strcmp(exception_name, "ABICheckException") == 0) {
+        error_code = 2002;
+    }
+
+    vstr_t vstr;
+    mp_print_t print;
+    vstr_init_print(&vstr, 8, &print);
+//    mp_obj_print_exception(&print, o);
+    mp_obj_get_exception_str(&print, o);
+    mp_obj_fill_exception(vstr.buf, error_code, result);
+    vstr_clear(&vstr);
+}
+
 //static char heap[16384];
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm_execute_result_t *result) {
@@ -68,19 +87,7 @@ void execute_from_str(const char *str, const char *file_name, uint emit_opt, tvm
         nlr_pop();
         mp_fun_return(data, result);
     } else {
-		mp_obj_exception_t *o = MP_OBJ_TO_PTR(MP_OBJ_FROM_PTR(nlr.ret_val));
-		const char * exception_name = qstr_str(o->base.type->name);
-		int error_code = 1001;
-		if (strcmp(exception_name, "GasNotEnoughException") == 0) {
-			error_code = 1002;
-		}
-		
-		const char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
-		if (exception_data_str == NULL) {
-            assert(false);
-		    exception_data_str = "";
-		}
-		mp_obj_fill_exception(exception_data_str, error_code, result);
+        caught_exception(MP_OBJ_FROM_PTR(nlr.ret_val), result);
     }
 }
 
@@ -140,27 +147,8 @@ void tvm_deinit_result(tvm_execute_result_t *result) {
     }
 }
 
-extern char* g_pAbi;
 void tvm_execute(const char *script, const char *alias, tvm_parse_kind_t parseKind, tvm_execute_result_t *result) {
-	if (g_pAbi)
-	{
-		free(g_pAbi);
-		g_pAbi = NULL;
-	}
 	execute_from_str(script, alias, parseKind, result);
-
-	if (g_pAbi != NULL)
-	{
-		result->abi = malloc(strlen(g_pAbi) + 1);
-		memset(result->abi, 0, strlen(g_pAbi) + 1);
-		memcpy(result->abi, g_pAbi, strlen(g_pAbi));
-
-		if (g_pAbi)
-		{
-			free(g_pAbi);
-			g_pAbi = NULL;
-		}
-	}
 }
 
 //storage
@@ -266,13 +254,6 @@ STATIC const mp_obj_type_t mp_type_fun_init_hook = {
 };
 
 void tvm_fun_call(const char *class_name, const char *func_name, const char *json_args, tvm_execute_result_t *result) {
-
-    if (g_pAbi)
-    {
-        free(g_pAbi);
-        g_pAbi = NULL;
-    }
-
     nlr_buf_t nlr;
     mp_obj_t data = NULL;
     if (nlr_push(&nlr) == 0) {
@@ -359,30 +340,7 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
         nlr_pop();
         mp_fun_return(data, result);
     } else {
-        mp_obj_exception_t *o = MP_OBJ_TO_PTR(MP_OBJ_FROM_PTR(nlr.ret_val));
-        const char * exception_name = qstr_str(o->base.type->name);
-        int error_code = 1001;
-        if (strcmp(exception_name, "GasNotEnoughException") == 0) {
-            error_code = 1002;
-        }else if (strcmp(exception_name, "ABICheckException") == 0) {
-            error_code = 2002;
-        }
-
-        const char * exception_data_str = mp_obj_get_exception_str(MP_OBJ_FROM_PTR(nlr.ret_val), exception_name);
-        assert(exception_data_str);
-        mp_obj_fill_exception(exception_data_str, error_code, result);
-    }
-    if (g_pAbi != NULL)
-    {
-        result->abi = malloc(strlen(g_pAbi) + 1);
-        memset(result->abi, 0, strlen(g_pAbi) + 1);
-        memcpy(result->abi, g_pAbi, strlen(g_pAbi));
-
-        if (g_pAbi)
-        {
-            free(g_pAbi);
-            g_pAbi = NULL;
-        }
+        caught_exception(MP_OBJ_FROM_PTR(nlr.ret_val), result);
     }
 }
 
@@ -407,10 +365,6 @@ void tvm_set_msg(const char* sender, unsigned long long value) {
 
 void tvm_set_gas(int limit) {
 	setGas(limit);
-}
-
-void tvm_set_lib_line(int line) {
-	set_code_line(line);
 }
 
 int tvm_get_gas() {

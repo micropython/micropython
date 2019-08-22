@@ -42,7 +42,6 @@
 
 #include "py/tvm.h"
 
-int lib_line = 0;
 #endif
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
@@ -559,10 +558,6 @@ void mp_obj_fill_exception(const char* exception_str, const int error_code, tvm_
     result->content = malloc(len);
     memset(result->content, 0, len);
     memcpy(result->content, exception_str, len);
-}
-
-void set_code_line(int line) {
-	lib_line = line;
 }
 
 mp_obj_t result_to_obj(const tvm_execute_result_t *result) {
