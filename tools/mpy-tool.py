@@ -112,7 +112,6 @@ MP_OPCODE_OFFSET = 3
 MP_BC_UNWIND_JUMP = 0x46
 MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
-MP_BC_RAISE_VARARGS = 0x5c
 # extra byte if caching enabled:
 MP_BC_LOAD_NAME = 0x1b
 MP_BC_LOAD_GLOBAL = 0x1c
@@ -147,12 +146,12 @@ def make_opcode_format():
     OC4(U, O, B, O), # 0x3c-0x3f
     OC4(O, B, B, O), # 0x40-0x43
     OC4(O, U, O, B), # 0x44-0x47
-    OC4(U, U, U, U), # 0x48-0x4b
+    OC4(B, B, B, U), # 0x48-0x4b
     OC4(U, U, U, U), # 0x4c-0x4f
     OC4(V, V, U, V), # 0x50-0x53
     OC4(B, U, V, V), # 0x54-0x57
     OC4(V, V, V, B), # 0x58-0x5b
-    OC4(B, B, B, U), # 0x5c-0x5f
+    OC4(U, B, B, U), # 0x5c-0x5f
     OC4(V, V, V, V), # 0x60-0x63
     OC4(V, V, V, V), # 0x64-0x67
     OC4(Q, Q, B, U), # 0x68-0x6b
@@ -217,7 +216,6 @@ def mp_opcode_format(bytecode, ip, count_var_uint, opcode_format=make_opcode_for
     else:
         extra_byte = (
             opcode == MP_BC_UNWIND_JUMP
-            or opcode == MP_BC_RAISE_VARARGS
             or opcode == MP_BC_MAKE_CLOSURE
             or opcode == MP_BC_MAKE_CLOSURE_DEFARGS
         )

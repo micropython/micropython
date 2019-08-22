@@ -292,11 +292,10 @@ continue2:;
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 // The following table encodes the number of bytes that a specific opcode
-// takes up.  There are 4 special opcodes that always have an extra byte:
+// takes up.  There are 3 special opcodes that always have an extra byte:
 //     MP_BC_UNWIND_JUMP
 //     MP_BC_MAKE_CLOSURE
 //     MP_BC_MAKE_CLOSURE_DEFARGS
-//     MP_BC_RAISE_VARARGS
 // There are 4 special opcodes that have an extra byte only when
 // MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled (and they take a qstr):
 //     MP_BC_LOAD_NAME
@@ -328,12 +327,12 @@ STATIC const byte opcode_format_table[64] = {
     OC4(U, O, B, O), // 0x3c-0x3f
     OC4(O, B, B, O), // 0x40-0x43
     OC4(O, U, O, B), // 0x44-0x47
-    OC4(U, U, U, U), // 0x48-0x4b
+    OC4(B, B, B, U), // 0x48-0x4b
     OC4(U, U, U, U), // 0x4c-0x4f
     OC4(V, V, U, V), // 0x50-0x53
     OC4(B, U, V, V), // 0x54-0x57
     OC4(V, V, V, B), // 0x58-0x5b
-    OC4(B, B, B, U), // 0x5c-0x5f
+    OC4(U, B, B, U), // 0x5c-0x5f
     OC4(V, V, V, V), // 0x60-0x63
     OC4(V, V, V, V), // 0x64-0x67
     OC4(Q, Q, B, U), // 0x68-0x6b
@@ -404,7 +403,6 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
     } else {
         int extra_byte = (
             *ip == MP_BC_UNWIND_JUMP
-            || *ip == MP_BC_RAISE_VARARGS
             || *ip == MP_BC_MAKE_CLOSURE
             || *ip == MP_BC_MAKE_CLOSURE_DEFARGS
         );

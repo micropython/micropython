@@ -305,9 +305,9 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ BUILD_TUPLE 1
 \\d\+ IMPORT_NAME 'a'
 \\d\+ IMPORT_STAR
-\\d\+ RAISE_VARARGS 0
+\\d\+ RAISE_LAST
 \\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ RAISE_VARARGS 1
+\\d\+ RAISE_OBJ
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
 \\d\+ LOAD_CONST_SMALL_INT 1
