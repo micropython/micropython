@@ -1,5 +1,4 @@
-image: docker:stable-git
-
+#image: gcr.io/kaniko-project/executor:debug
 variables:
   DOCKER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   MAKEOPTS: "-j4"
