@@ -73,6 +73,10 @@
 #elif defined(__xtensa__)
     #define MICROPY_NLR_XTENSA (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_XTENSA)
+#elif defined(__powerpc__)
+    #define MICROPY_NLR_POWERPC (1)
+    // this could be less but using 128 for safety
+    #define MICROPY_NLR_NUM_REGS (128)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
