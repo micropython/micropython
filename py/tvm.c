@@ -449,7 +449,7 @@ int get_type_num(unsigned int msg) {
     return MAX_PARAMS_NUM;
 }
 
-const char* abi_export() {
+const char* tvm_export_abi() {
     unsigned int params_data = 0;
     mp_obj_register_t *reg = mp_load_name(qstr_from_str("register"));
     size_t public_funcs_num;
