@@ -26,6 +26,7 @@
  */
 
 #include "nrfx.h"
+#include "mpconfigboard.h"
 
 void nrf_peripherals_clocks_init(void) {
 

@@ -36,6 +36,9 @@
 
 #define MICROPY_HW_LED_STATUS       (&pin_P1_14)
 
+// Unusually, board does not have a 32 kHz xtal. Nearly all boards do.
+#define BOARD_HAS_32KHZ_XTAL (0)
+
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 21)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 23)
