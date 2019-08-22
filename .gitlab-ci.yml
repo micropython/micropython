@@ -10,14 +10,13 @@ variables:
   CACHE_DIR: $HOME/persist
 
 before_script:
-  - RELEASE_IMAGE=$(get-release-img.sh)
+  - RELEASE_IMAGE=$(ci-scripts/get-release-img.sh)
 
 build:
   stage: build
   script:
     - env
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - doicer
     - docker pull $DOCKER_TEST_IMAGE
     - docker build --cache-from=$DOCKER_TEST_IMAGE -t $DOCKER_TEST_IMAGE .
 
