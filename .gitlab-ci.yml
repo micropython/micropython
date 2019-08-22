@@ -8,17 +8,11 @@ variables:
   MAKEOPTS: "-j4"
   CACHE_DIR: $HOME/persist
 
-before_script:
-  - docker info
-  - RELEASE_IMAGE=$(ci-scripts/get-release-img.sh)
-  - echo $RELEASE_IMAGE
-
 build:
   stage: build
   script:
-    - env
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull $DOCKER_TEST_IMAGE
+    - docker pull $DOCKER_TEST_IMAGE || true
     - docker build --cache-from=$DOCKER_TEST_IMAGE -t $DOCKER_TEST_IMAGE .
 
 stm32:
