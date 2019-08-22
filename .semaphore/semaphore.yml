@@ -20,9 +20,9 @@ blocks:
       jobs:
         - name: Build docker image
           commands:
-            - docker build --cache-from $IMAGE -t $IMAGE .
+            - docker build --cache-from $RELEASE_IMAGE -t $RELEASE_IMAGE .
             - echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            - docker push $IMAGE
+            - docker push $RELEASE_IMAGE
             - ./ci-scripts/build-all.sh
 #  - name: Build ports
 #    task:
