@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-20 13:01-0400\n"
+"POT-Creation-Date: 2019-08-22 15:20-0400\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -329,6 +329,14 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Buffer de tamanho incorreto. Deve ser %d bytes."
 
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is not a bytearray."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is too small"
+msgstr ""
+
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -514,6 +522,10 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
@@ -1318,9 +1330,6 @@ msgid "Unsupported pull value."
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Value length  required fixed length"
-msgstr ""
-
 #: ports/nrf/common-hal/bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""

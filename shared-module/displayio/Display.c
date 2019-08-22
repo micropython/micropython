@@ -119,7 +119,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
 
     self->width = width;
     self->height = height;
-    rotation = rotation % 360;
+    self->rotation = rotation % 360;
     self->transform.x = 0;
     self->transform.y = 0;
     self->transform.scale = 1;
@@ -255,6 +255,10 @@ uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self){
 
 uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self){
     return self->height;
+}
+
+uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self){
+    return self->rotation;
 }
 
 void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness) {

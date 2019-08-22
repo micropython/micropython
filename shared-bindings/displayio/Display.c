@@ -337,6 +337,23 @@ const mp_obj_property_t displayio_display_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: rotation
+//|
+//|     The rotation of the display as an int in degrees.
+//|
+STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
+    displayio_display_obj_t *self = native_display(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_rotation(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_rotation_obj, displayio_display_obj_get_rotation);
+
+const mp_obj_property_t displayio_display_rotation_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_rotation_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|   .. attribute:: bus
 //|
 //|	The bus being used by the display
@@ -356,16 +373,81 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
+//|   .. method:: fill_row(y, buffer)
+//|
+//|     Extract the pixels from a single row
+//|
+//|     :param int y: The top edge of the area
+//|     :param bytearray buffer: The buffer in which to place the pixel data
+STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_y, ARG_buffer };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_y, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = -1} },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    displayio_display_obj_t *self = native_display(pos_args[0]);
+    mp_int_t y = args[ARG_y].u_int;
+    mp_obj_t *result = args[ARG_buffer].u_obj;
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
+
+    if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
+      mp_raise_ValueError(translate("Buffer is not a bytearray."));
+    }
+    if (self->colorspace.depth != 16) {
+      mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+    }
+
+    displayio_area_t area = {
+      .x1 = 0,
+      .y1 = y,
+      .x2 = self->width,
+      .y2 = y + 1
+    };
+    uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->colorspace.depth;
+    uint16_t buffer_size = self->width / pixels_per_word;
+    uint16_t pixels_per_buffer = displayio_area_size(&area);
+    if (pixels_per_buffer % pixels_per_word) {
+      buffer_size += 1;
+    }
+
+    uint32_t *result_buffer = bufinfo.buf;
+    size_t result_buffer_size = bufinfo.len;
+
+    if (result_buffer_size >= (buffer_size * 4)) {
+      volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+      uint32_t mask[mask_length];
+
+      for (uint16_t k = 0; k < mask_length; k++) {
+        mask[k] = 0x00000000;
+      }
+
+      displayio_display_fill_area(self, &area, mask, result_buffer);
+      return result;
+    } else {
+      mp_raise_ValueError(translate("Buffer is too small"));
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_row_obj, 1, displayio_display_obj_fill_row);
+
+
+
+
 STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_soon), MP_ROM_PTR(&displayio_display_refresh_soon_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_for_frame), MP_ROM_PTR(&displayio_display_wait_for_frame_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&displayio_display_fill_row_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&displayio_display_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_display_bus_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_display_locals_dict, displayio_display_locals_dict_table);

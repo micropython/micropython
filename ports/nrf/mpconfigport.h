@@ -53,6 +53,11 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+#ifndef BOARD_HAS_32KHZ_XTAL
+// Assume crystal is present, which is the most common case.
+#define BOARD_HAS_32KHZ_XTAL (1)
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \

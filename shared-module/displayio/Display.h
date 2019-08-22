@@ -55,6 +55,7 @@ typedef struct {
     mp_float_t current_brightness;
     uint16_t width;
     uint16_t height;
+    uint16_t rotation;
     _displayio_colorspace_t colorspace;
     int16_t colstart;
     int16_t rowstart;
