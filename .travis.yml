@@ -232,3 +232,12 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
+
+    # powerpc port
+    - stage: test
+      env: NAME="powerpc port build"
+      install:
+        - sudo apt-get install gcc-powerpc64le-linux-gnu
+        - sudo apt-get install libc6-dev-ppc64el-cross
+      script:
+        - make ${MAKEOPTS} -C ports/powerpc CROSS_COMPILE=powerpc64le-linux-gnu-
