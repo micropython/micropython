@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-21 14:18-0400\n"
+"POT-Creation-Date: 2019-08-22 15:20-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -978,6 +978,10 @@ msgstr ""
 msgid "No hardware support on pin"
 msgstr "Keine Hardwareunterstützung an diesem Pin"
 
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "No space left on device"
 msgstr "Kein Speicherplatz auf Gerät"
@@ -1336,9 +1340,6 @@ msgid "Unsupported pull value."
 msgstr "Nicht unterstützter Pull-Wert"
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Value length  required fixed length"
-msgstr ""
-
 #: ports/nrf/common-hal/bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""

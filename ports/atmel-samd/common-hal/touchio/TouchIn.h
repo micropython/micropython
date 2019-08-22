@@ -27,6 +27,9 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H
 
+// Native touchio only exists for SAMD21
+#ifdef SAMD21
+
 #include "common-hal/microcontroller/Pin.h"
 
 #include "samd21_ptc_component.h"
@@ -41,5 +44,7 @@ typedef struct {
 } touchio_touchin_obj_t;
 
 void touchin_reset(void);
+
+#endif // SAMD21
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H

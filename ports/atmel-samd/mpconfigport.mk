@@ -18,11 +18,13 @@ endif
 ifeq ($(CHIP_FAMILY),samd21)
 # frequencyio not yet verified as working on SAMD21.
 CIRCUITPY_FREQUENCYIO = 0
+CIRCUITPY_TOUCHIO_USE_NATIVE = 1
 endif
 
 # Put samd51-only choices here.
 ifeq ($(CHIP_FAMILY),samd51)
 CIRCUITPY_SAMD = 1
+CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 endif
 
 INTERNAL_LIBM = 1

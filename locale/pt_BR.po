@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-21 14:18-0400\n"
+"POT-Creation-Date: 2019-08-22 15:20-0400\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -980,6 +980,10 @@ msgstr "Sem suporte de hardware no pino de clock"
 msgid "No hardware support on pin"
 msgstr "Nenhum suporte de hardware no pino"
 
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "No space left on device"
 msgstr ""
@@ -1326,9 +1330,6 @@ msgid "Unsupported pull value."
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Value length  required fixed length"
-msgstr ""
-
 #: ports/nrf/common-hal/bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""

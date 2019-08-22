@@ -25,19 +25,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H
+#define MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
+    digitalio_digitalinout_obj_t *digitalinout;
     uint16_t threshold;
 } touchio_touchin_obj_t;
 
 void touchin_reset(void);
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_TOUCHIO_TOUCHIN_H

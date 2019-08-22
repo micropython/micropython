@@ -217,9 +217,8 @@ ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
 
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_COMMON_HAL = \
-$(filter $(SRC_PATTERNS), \
+# All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
+SRC_COMMON_HAL_ALL = \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -272,10 +271,9 @@ $(filter $(SRC_PATTERNS), \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	time/__init__.c \
-	touchio/TouchIn.c \
-	touchio/__init__.c \
-)
+	time/__init__.c
+
+SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -298,9 +296,7 @@ SRC_BINDINGS_ENUMS += \
 	help.c \
 	util.c
 
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_SHARED_MODULE = \
-$(filter $(SRC_PATTERNS), \
+SRC_SHARED_MODULE_ALL = \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
 	_stage/Layer.c \
@@ -349,8 +345,23 @@ $(filter $(SRC_PATTERNS), \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
-	_pew/PewPew.c \
-)
+	_pew/PewPew.c
+
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
+SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
+
+# Use the native touchio if requested. This flag is set conditionally in, say, mpconfigport.h.
+# The presence of common-hal/touchio/* # does not imply it's available for all chips in a port,
+# so there is an explicit flag. For example, SAMD21 touchio is native, but SAMD51 is not.
+ifeq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),1)
+SRC_COMMON_HAL_ALL += \
+	touchio/TouchIn.c \
+	touchio/__init__.c
+else
+SRC_SHARED_MODULE_ALL += \
+	touchio/TouchIn.c \
+	touchio/__init__.c
+endif
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = \
