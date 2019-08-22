@@ -1,15 +1,17 @@
 env:
-  RELEASE_IMAGE: $(ci-scripts/get-release-img:sh)
+  DOCKER_IMAGE_NAME: pycampers/micropython
+  DOCKER_TEMP_IMAGE: $DOCKER_IMAGE_NAME:$CIRRUS_TASK_ID
 
 docker_builder:
   build_script: |
+    DOCKER_RELEASE_IMAGE=$DOCKER_IMAGE_NAME:$(ci-scripts/get-release-tag.sh)
     env
-    docker pull $RELEASE_IMAGE
-    docker build --cache-from=$RELEASE_IMAGE   -t $RELEASE_IMAGE .
+    docker pull $DOCKER_RELEASE_IMAGE
+    docker build --cache-from=$RELEASE_IMAGE -t $DOCKER_TEMP_IMAGE .
 
 build_ports_task:
   container:
-    image: $RELEASE_IMAGE
+    image: $DOCKER_TEMP_IMAGE
   env:
     matrix:
       - MPY_PORT: stm32
