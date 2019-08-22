@@ -12,6 +12,7 @@ docker_builder:
 build_ports_task:
   container:
     image: $DOCKER_TEMP_IMAGE
+  depends_on: docker_builder
   env:
     matrix:
       - MPY_PORT: stm32
