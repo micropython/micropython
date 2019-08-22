@@ -1,17 +1,13 @@
 env:
   IMAGE_NAME: pycampers/micropython
   TEMP_IMAGE: $IMAGE_NAME:$CIRRUS_TASK_ID
-  X: ${CIRRUS_BRANCH:$TEST}
-  Y: ${TEST:$CIRRUS_BRANCH}
-  Z: ${TEST-$CIRRUS_BRANCH}
-  W: ${TEST-$CIRRUS_BRANCH}
   RELEASE_IMAGE: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
 
 docker_builder:
   name: Build docker image
   build_script: |
     env
-    docker pull $RELEASE_IMAGE
+    docker pull $RELEASE_IMAGE || true
     docker build --cache-from=$RELEASE_IMAGE -t $TEMP_IMAGE .
 
     echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
