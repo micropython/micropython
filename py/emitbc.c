@@ -524,15 +524,13 @@ void mp_emit_bc_import(emit_t *emit, qstr qst, int kind) {
 }
 
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
+    MP_STATIC_ASSERT(MP_BC_LOAD_CONST_FALSE + (MP_TOKEN_KW_NONE - MP_TOKEN_KW_FALSE) == MP_BC_LOAD_CONST_NONE);
+    MP_STATIC_ASSERT(MP_BC_LOAD_CONST_FALSE + (MP_TOKEN_KW_TRUE - MP_TOKEN_KW_FALSE) == MP_BC_LOAD_CONST_TRUE);
     emit_bc_pre(emit, 1);
-    switch (tok) {
-        case MP_TOKEN_KW_FALSE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_FALSE); break;
-        case MP_TOKEN_KW_NONE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_NONE); break;
-        case MP_TOKEN_KW_TRUE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_TRUE); break;
-        default:
-            assert(tok == MP_TOKEN_ELLIPSIS);
-            emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
-            break;
+    if (tok == MP_TOKEN_ELLIPSIS) {
+        emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
+    } else {
+        emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_FALSE + (tok - MP_TOKEN_KW_FALSE));
     }
 }
 
