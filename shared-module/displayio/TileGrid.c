@@ -207,7 +207,7 @@ uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint1
 
 void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index) {
     if (tile_index >= self->tiles_in_bitmap) {
-        mp_raise_ValueError(translate("Tile value out of bounds"));
+        mp_raise_ValueError(translate("Tile index out of bounds"));
     }
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {

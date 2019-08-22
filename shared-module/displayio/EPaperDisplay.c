@@ -102,10 +102,12 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self
 }
 
 const displayio_area_t* displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
-    const displayio_area_t* first_area;
     if (self->core.full_refresh) {
-        first_area = &self->core.area;
-    } else {
+        self->core.area.next = NULL;
+        return &self->core.area;
+    }
+    const displayio_area_t* first_area = NULL;
+    if (self->core.current_group != NULL) {
         first_area = displayio_group_get_refresh_areas(self->core.current_group, NULL);
     }
     if (first_area != NULL && self->set_row_window_command == NO_COMMAND) {

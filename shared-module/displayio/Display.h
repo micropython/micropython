@@ -51,6 +51,7 @@ typedef struct {
     uint8_t set_row_command;
     uint8_t write_ram_command;
     bool auto_refresh;
+    bool first_manual_refresh;
     bool data_as_commands;
     bool auto_brightness;
     bool updating_backlight;
@@ -58,6 +59,7 @@ typedef struct {
 
 void displayio_display_background(displayio_display_obj_t* self);
 void release_display(displayio_display_obj_t* self);
+void reset_display(displayio_display_obj_t* self);
 
 void displayio_display_collect_ptrs(displayio_display_obj_t* self);
 

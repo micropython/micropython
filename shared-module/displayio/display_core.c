@@ -82,8 +82,8 @@ void displayio_display_core_construct(displayio_display_core_t* self,
 
     self->width = width;
     self->height = height;
-    self->ram_width = width;
-    self->ram_height = height;
+    self->ram_width = ram_width;
+    self->ram_height = ram_height;
     rotation = rotation % 360;
     self->transform.x = 0;
     self->transform.y = 0;
@@ -206,7 +206,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
     data[0] = column_command;
     uint8_t data_length = 1;
     if (!data_as_commands) {
-        self->send(self->bus, true, true, data, 1);
+        self->send(self->bus, true, false, data, 1);
         data_length = 0;
     }
     if (self->ram_width < 0x100) {
@@ -227,11 +227,14 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         self->send(self->bus, false, always_toggle_chip_select, data, data_length / 2);
     }
 
+    displayio_display_core_end_transaction(self);
+    displayio_display_core_begin_transaction(self);
+
     // Set row.
     data[0] = row_command;
     data_length = 1;
     if (!data_as_commands) {
-        self->send(self->bus, true, true, data, 1);
+        self->send(self->bus, true, false, data, 1);
         data_length = 0;
     }
     if (self->ram_height < 0x100) {

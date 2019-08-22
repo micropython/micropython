@@ -143,9 +143,7 @@ void reset_displays(void) {
         // Reset the displayed group. Only the first will get the terminal but
         // that's ok.
         if (displays[i].display.base.type == &displayio_display_type) {
-            displayio_display_obj_t* display = &displays[i].display;
-            display->auto_brightness = true;
-            common_hal_displayio_display_show(display, NULL);
+            reset_display(&displays[i].display);
         } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
             displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
             common_hal_displayio_epaperdisplay_show(display, NULL);

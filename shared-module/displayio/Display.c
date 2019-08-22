@@ -64,21 +64,23 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->write_ram_command = write_ram_command;
     self->brightness_command = brightness_command;
     self->auto_brightness = auto_brightness;
+    self->auto_refresh = auto_refresh;
+    self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_frame_time = 1000 / native_frames_per_second;
 
     uint32_t i = 0;
-    while (!displayio_display_core_begin_transaction(&self->core)) {
-        RUN_BACKGROUND_TASKS;
-    }
     while (i < init_sequence_len) {
         uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
+        while (!displayio_display_core_begin_transaction(&self->core)) {
+            RUN_BACKGROUND_TASKS;
+        }
         if (self->data_as_commands) {
             uint8_t full_command[data_size + 1];
             full_command[0] = cmd[0];
@@ -88,6 +90,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             self->core.send(self->core.bus, true, true, cmd, 1);
             self->core.send(self->core.bus, false, false, data, data_size);
         }
+        self->core.end_transaction(self->core.bus);
         uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
@@ -99,7 +102,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         common_hal_time_delay_ms(delay_length_ms);
         i += 2 + data_size;
     }
-    self->core.end_transaction(self->core.bus);
 
     supervisor_start_terminal(width, height);
 
@@ -192,9 +194,10 @@ STATIC const displayio_area_t* _get_refresh_areas(displayio_display_obj_t *self)
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
-    } else {
+    } else if (self->core.current_group != NULL) {
         return displayio_group_get_refresh_areas(self->core.current_group, NULL);
     }
+    return NULL;
 }
 
 STATIC void _send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
@@ -242,7 +245,7 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
     // Allocated and shared as a uint32_t array so the compiler knows the
     // alignment everywhere.
     uint32_t buffer[buffer_size];
-    volatile uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+    uint32_t mask_length = (pixels_per_buffer / 32) + 1;
     uint32_t mask[mask_length];
     uint16_t remaining_rows = displayio_area_height(&clipped);
 
@@ -311,7 +314,7 @@ uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self
 }
 
 void common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_frame_time, uint32_t maximum_frame_time) {
-    if (!self->auto_refresh) {
+    if (!self->auto_refresh && !self->first_manual_refresh) {
         uint64_t current_time = ticks_ms;
         uint32_t current_frame_time = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
@@ -332,6 +335,7 @@ void common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_
             #endif
         }
     }
+    self->first_manual_refresh = false;
     _refresh_display(self);
 }
 
@@ -341,6 +345,7 @@ bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t* self
 
 void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t* self,
                                                    bool auto_refresh) {
+    self->first_manual_refresh = !auto_refresh;
     self->auto_refresh = auto_refresh;
 }
 
@@ -374,6 +379,12 @@ void release_display(displayio_display_obj_t* self) {
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
     }
+}
+
+void reset_display(displayio_display_obj_t* self) {
+    self->auto_refresh = true;
+    self->auto_brightness = true;
+    common_hal_displayio_display_show(self, NULL);
 }
 
 void displayio_display_collect_ptrs(displayio_display_obj_t* self) {
