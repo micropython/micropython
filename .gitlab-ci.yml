@@ -8,10 +8,8 @@ variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
   MAKEOPTS: "-j4"
-  CACHE_DIR: ${HOME}/persist
-  IMAGE_NAME: pycampers/micropython
-  IMAGE_TAG: $(ci-scripts/get-tag.sh)
-  IMAGE: ${IMAGE_NAME}:${IMAGE_TAG}
+  CACHE_DIR: $HOME/persist
+  RELEASE_IMAGE: pycampers/micropython:$(ci-scripts/get-tag.sh)
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -19,5 +17,6 @@ before_script:
 build:
   stage: build
   script:
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
+    - env
+#    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+#    - docker push $CONTAINER_TEST_IMAGE
