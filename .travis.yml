@@ -28,49 +28,50 @@ jobs:
         - docker build --cache-from ${IMAGE} -t ${IMAGE} .
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
         - docker push ${IMAGE}
-
-    - &test
-      stage: Test
-      env:
-        - PORT=stm32
-      script:
-        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} ci-scripts/${PORT}.sh
-    - <<: *test
-      env:
-        - PORT=qemu-arm
-    - <<: *test
-      env:
-        - PORT=unix-coverage
-    - <<: *test
-      env:
-        - PORT=unix-standard
-    - <<: *test
-      env:
-        - PORT=unix-nanobox
-    - <<: *test
-      env:
-        - PORT=unix-stackless
-    - <<: *test
-      env:
-        - PORT=windows
-    - <<: *test
-      env:
-        - PORT=esp32
-    - <<: *test
-      env:
-        - PORT=esp8266
-    - <<: *test
-      env:
-        - PORT=nrf
-    - <<: *test
-      env:
-        - PORT=bare-arm
-    - <<: *test
-      env:
-        - PORT=cc3200
-    - <<: *test
-      env:
-        - PORT=samd
-    - <<: *test
-      env:
-        - PORT=teensy
+        - ./ci-scripts/build-all.sh
+#
+#    - &test
+#      stage: Test
+#      env:
+#        - PORT=stm32
+#      script:
+#        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} ci-scripts/${PORT}.sh
+#    - <<: *test
+#      env:
+#        - PORT=qemu-arm
+#    - <<: *test
+#      env:
+#        - PORT=unix-coverage
+#    - <<: *test
+#      env:
+#        - PORT=unix-standard
+#    - <<: *test
+#      env:
+#        - PORT=unix-nanobox
+#    - <<: *test
+#      env:
+#        - PORT=unix-stackless
+#    - <<: *test
+#      env:
+#        - PORT=windows
+#    - <<: *test
+#      env:
+#        - PORT=esp32
+#    - <<: *test
+#      env:
+#        - PORT=esp8266
+#    - <<: *test
+#      env:
+#        - PORT=nrf
+#    - <<: *test
+#      env:
+#        - PORT=bare-arm
+#    - <<: *test
+#      env:
+#        - PORT=cc3200
+#    - <<: *test
+#      env:
+#        - PORT=samd
+#    - <<: *test
+#      env:
+#        - PORT=teensy
