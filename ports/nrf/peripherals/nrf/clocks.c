@@ -26,21 +26,15 @@
  */
 
 #include "nrfx.h"
-#include "mpconfigboard.h" // for BOARD_HAS_CRYSTAL
-
-static inline bool board_has_crystal(void) {
-#ifdef BOARD_HAS_CRYSTAL
-    return BOARD_HAS_CRYSTAL == 1;
-#else
-    return false;
-#endif
-}
+#include "mpconfigport.h"
 
 void nrf_peripherals_clocks_init(void) {
-    // Set low-frequency clock source to be either an external 32.768kHz crystal if one exists on the board
-    // or an internal 32.768 kHz RC oscillator otherwise
-    uint32_t clock_src = board_has_crystal() ? CLOCK_LFCLKSRC_SRC_Xtal : CLOCK_LFCLKSRC_SRC_RC;
-    NRF_CLOCK->LFCLKSRC = (uint32_t)((clock_src << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
+
+#if BOARD_HAS_32KHZ_XTAL
+    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
+#else
+    NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_RC << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
+#endif
     NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
 
     // Wait for clocks to start.

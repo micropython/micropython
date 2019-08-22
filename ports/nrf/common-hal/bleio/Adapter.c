@@ -39,37 +39,26 @@
 #include "supervisor/usb.h"
 #include "shared-bindings/bleio/Adapter.h"
 #include "shared-bindings/bleio/Address.h"
-#include "mpconfigboard.h" // for BOARD_HAS_CRYSTAL
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     mp_raise_msg_varg(&mp_type_AssertionError,
                       translate("Soft device assert, id: 0x%08lX, pc: 0x%08lX"), id, pc);
 }
 
-static inline bool board_has_crystal(void) {
-#ifdef BOARD_HAS_CRYSTAL
-    return BOARD_HAS_CRYSTAL == 1;
-#else
-    return false;
-#endif
-}
-
 STATIC uint32_t ble_stack_enable(void) {
-    nrf_clock_lf_cfg_t clock_config;
-
-    // Set low-frequency clock source to be either an external 32.768kHz crystal if one exists on the board
-    // or an internal 32.768 kHz RC oscillator otherwise
-    if (board_has_crystal()) {
-        clock_config = (nrf_clock_lf_cfg_t){
-            .source = NRF_CLOCK_LF_SRC_XTAL,
-            .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM};
-    } else {
-        clock_config = (nrf_clock_lf_cfg_t){
-            .source = NRF_CLOCK_LF_SRC_RC,
-            .rc_ctiv = 16,
-            .rc_temp_ctiv = 2,
-            .accuracy = NRF_CLOCK_LF_ACCURACY_250_PPM};
-    }
+    nrf_clock_lf_cfg_t clock_config = {
+#if BOARD_HAS_32KHZ_XTAL
+        .source       = NRF_CLOCK_LF_SRC_XTAL,
+        .rc_ctiv      = 0,
+        .rc_temp_ctiv = 0,
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_20_PPM,
+#else
+        .source       = NRF_CLOCK_LF_SRC_RC,
+        .rc_ctiv      = 16,
+        .rc_temp_ctiv = 2,
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_250_PPM,
+#endif
+    };
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);
     if (err_code != NRF_SUCCESS)

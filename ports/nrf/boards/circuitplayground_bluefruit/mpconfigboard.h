@@ -34,9 +34,10 @@
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (4096)
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_13)
-
 #define MICROPY_HW_LED_STATUS       (&pin_P1_14)
+
+// Unusually, board does not have a 32 kHz xtal. Nearly all boards do.
+#define BOARD_HAS_32KHZ_XTAL (0)
 
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 21)
@@ -59,8 +60,6 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
-#define BOARD_HAS_CRYSTAL 1
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_04)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
