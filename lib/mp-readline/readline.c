@@ -31,8 +31,11 @@
 #include "py/mpstate.h"
 #include "py/repl.h"
 #include "py/mphal.h"
-#include "py/unicode.h"
 #include "lib/mp-readline/readline.h"
+
+#if MICROPY_REPL_EMACS_KEYS
+#include "py/unicode.h"
+#endif
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -40,9 +43,6 @@
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
-
-#define FORWARD true
-#define BACKWARD false
 
 #define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 
@@ -102,6 +102,10 @@ typedef struct _readline_t {
 
 STATIC readline_t rl;
 
+#if MICROPY_REPL_EMACS_KEYS
+#define FORWARD true
+#define BACKWARD false
+
 size_t get_word_cursor_pos(bool direction) {
     char cursor_pos_step = direction == FORWARD ? 1 : -1;
     char buf_idx_offset = direction == FORWARD ? 0 : -1;
@@ -128,6 +132,7 @@ size_t get_word_cursor_pos(bool direction) {
     }
     return cursor_pos;
 }
+#endif
 
 int readline_process_char(int c) {
     size_t last_line_len = rl.line->len;
@@ -249,6 +254,7 @@ int readline_process_char(int c) {
             case '[':
                 rl.escape_seq = ESEQ_ESC_BRACKET;
                 break;
+            #if MICROPY_REPL_EMACS_KEYS
             case 'b':
                 // backword-word (Alt-b)
                 redraw_step_back = rl.cursor_pos - get_word_cursor_pos(BACKWARD);
@@ -282,6 +288,7 @@ int readline_process_char(int c) {
                 rl.escape_seq = ESEQ_NONE;
                 break;
             }
+            #endif
             case 'O':
                 rl.escape_seq = ESEQ_ESC_O;
                 break;
