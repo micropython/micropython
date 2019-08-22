@@ -5,9 +5,9 @@ docker_builder:
   build_script: |
     env
     docker pull $RELEASE_IMAGE
-    docker build --cache-from=$RELEASE_IMAGE -t $RELEASE_IMAGE .
+    docker build --cache-from=$RELEASE_IMAGE   -t $RELEASE_IMAGE .
 
-build_ports:
+build_ports_task:
   container:
     image: $RELEASE_IMAGE
   env:
