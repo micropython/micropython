@@ -38,11 +38,6 @@
 #define MICROPY_PY_UBINASCII                     (1)
 #define MICROPY_PY_UJSON                         (1)
 
-#ifndef BOARD_HAS_32KHZ_XTAL
-// Assume crystal is present, which is the most common case.
-#define BOARD_HAS_32KHZ_XTAL (0)
-#endif
-
 // TODO this is old BLE stuff
 #if BLUETOOTH_SD
     #define MICROPY_PY_BLEIO                     (1)
@@ -57,6 +52,11 @@
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
 #include "py/circuitpy_mpconfig.h"
+
+#ifndef BOARD_HAS_32KHZ_XTAL
+// Assume crystal is present, which is the most common case.
+#define BOARD_HAS_32KHZ_XTAL (1)
+#endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \

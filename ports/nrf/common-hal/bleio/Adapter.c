@@ -51,12 +51,12 @@ STATIC uint32_t ble_stack_enable(void) {
         .source       = NRF_CLOCK_LF_SRC_XTAL,
         .rc_ctiv      = 0,
         .rc_temp_ctiv = 0,
-        .accuracy     = NRF_CLOCK_LF_ACCURACY_20_PPM
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_20_PPM,
 #else
         .source       = NRF_CLOCK_LF_SRC_RC,
         .rc_ctiv      = 16,
         .rc_temp_ctiv = 2,
-        .accuracy     = NRF_CLOCK_LF_ACCURACY_250_PPM
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_250_PPM,
 #endif
     };
 

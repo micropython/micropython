@@ -61,8 +61,6 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#define BOARD_HAS_CRYSTAL 1
-
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_04)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
 
