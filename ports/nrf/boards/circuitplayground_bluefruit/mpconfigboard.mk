@@ -10,6 +10,9 @@ MCU_CHIP = nrf52840
 SD ?= s140
 SOFTDEV_VERSION ?= 6.1.0
 
+# Unusually, board does not have a 32 kHz xtal.
+BOARD_HAS_32KHZ_XTAL = 0
+
 BOOT_SETTING_ADDR = 0xFF000
 
 ifeq ($(SD),)

@@ -28,6 +28,11 @@ CIRCUITPY_RTC = 1
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
 
+ifndef BOARD_HAS_32KHZ_XTAL
+# Assume crystal is present, which is the most common case.
+BOARD_HAS_32KHZ_XTAL = 1
+endif
+
 # CircuitPython doesn't yet support NFC so force the NFC antenna pins to be GPIO.
 # See https://github.com/adafruit/circuitpython/issues/1300
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.

@@ -183,7 +183,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
                                          (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
             if (self->fixed_length && bufinfo->len != self->max_length) {
-                mp_raise_ValueError(translate("Value length  required fixed length"));
+                mp_raise_ValueError(translate("Value length != required fixed length"));
             }
             if (bufinfo->len > self->max_length) {
                 mp_raise_ValueError(translate("Value length > max_length"));
