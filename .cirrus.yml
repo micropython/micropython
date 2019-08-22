@@ -6,6 +6,7 @@ env:
 docker_builder:
   name: Build docker image
   build_script: |
+    env
     docker pull $RELEASE_IMAGE
     docker build --cache-from=$RELEASE_IMAGE -t $TEMP_IMAGE .
 
