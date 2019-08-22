@@ -9,9 +9,7 @@ env:
   global:
     - MAKEOPTS="-j4"
     - CACHE_DIR=${HOME}/persist
-    - IMAGE_NAME=pycampers/micropython
-    - IMAGE_TAG=$(ci-scripts/get-tag.sh)
-    - IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
+    - RELEASE_IMAGE=$(ci-scripts/get-release-img.sh)
 cache:
   directories:
     - $CACHE_DIR
@@ -24,10 +22,10 @@ jobs:
   include:
     - stage: Build
       script:
-        - docker pull ${IMAGE}
-        - docker build --cache-from ${IMAGE} -t ${IMAGE} .
+        - docker pull ${RELEASE_IMAGE}
+        - docker build --cache-from ${RELEASE_IMAGE} -t ${RELEASE_IMAGE} .
         - echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-        - docker push ${IMAGE}
+        - docker push ${RELEASE_IMAGE}
         - ./ci-scripts/build-all.sh
 #
 #    - &test
@@ -35,7 +33,7 @@ jobs:
 #      env:
 #        - PORT=stm32
 #      script:
-#        - docker run -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} ci-scripts/${PORT}.sh
+#        - docker run -v ${PWD}:${PWD} -w ${PWD} ${RELEASE_IMAGE} ci-scripts/${PORT}.sh
 #    - <<: *test
 #      env:
 #        - PORT=qemu-arm
