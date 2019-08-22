@@ -1,0 +1,29 @@
+env:
+  RELEASE_IMAGE: $(ci-scripts/get-release-img:sh)
+
+docker_builder:
+  build_script: |
+    env
+    docker pull $RELEASE_IMAGE
+    docker build --cache-from=$RELEASE_IMAGE -t $RELEASE_IMAGE .
+
+build_ports:
+  container:
+    image: $RELEASE_IMAGE
+  env:
+    matrix:
+      - MPY_PORT: stm32
+      - MPY_PORT: qemu-arm
+      - MPY_PORT: unix-coverage
+      - MPY_PORT: unix-standard
+      - MPY_PORT: unix-nanobox
+      - MPY_PORT: unix-stackless
+      - MPY_PORT: windows
+      - MPY_PORT: esp32
+      - MPY_PORT: esp8266
+      - MPY_PORT: nrf
+      - MPY_PORT: bare-arm
+      - MPY_PORT: cc3200
+      - MPY_PORT: samd
+      - MPY_PORT: teensy
+  build_script: docker run -v $PWD:$PWD -w $PWD $RELEASE_IMAGE ci-scripts/$MPY_PORT.sh
