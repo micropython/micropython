@@ -54,6 +54,8 @@ void board_early_init(void) {
     spi_bdev_ioctl(&spi_bdev2, BDEV_IOCTL_INIT, (uint32_t)&spiflash2_config);
 }
 
+#if !BUILDING_MBOOT
+
 void board_sleep(int value) {
     mp_spiflash_deepsleep(&spi_bdev.spiflash, value);
     mp_spiflash_deepsleep(&spi_bdev2.spiflash, value);
@@ -70,3 +72,5 @@ void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     // Generate a random locally administered MAC address (LAA)
     mp_hal_generate_laa_mac(idx, buf);
 }
+
+#endif
