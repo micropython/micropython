@@ -46,7 +46,7 @@
 #define MP_BC_BASE_VINT_O                   (0x30) // UUMMCCCC--------
 #define MP_BC_BASE_JUMP_E                   (0x40) // J-JJJJJEEEEF----
 #define MP_BC_BASE_BYTE_O                   (0x50) // LLLLSSDTTTTTEEFF
-#define MP_BC_BASE_BYTE_E                   (0x60) // E-BRYYI---------
+#define MP_BC_BASE_BYTE_E                   (0x60) // --BREEEYYI------
 #define MP_BC_LOAD_CONST_SMALL_INT_MULTI    (0x70) // LLLLLLLLLLLLLLLL
                                          // (0x80) // LLLLLLLLLLLLLLLL
                                          // (0x90) // LLLLLLLLLLLLLLLL
@@ -128,9 +128,11 @@
 #define MP_BC_UNPACK_EX                     (MP_BC_BASE_VINT_O + 0x01) // uint
 
 #define MP_BC_RETURN_VALUE                  (MP_BC_BASE_BYTE_E + 0x03)
-#define MP_BC_RAISE_VARARGS                 (MP_BC_BASE_BYTE_E + 0x00) // extra byte
-#define MP_BC_YIELD_VALUE                   (MP_BC_BASE_BYTE_E + 0x04)
-#define MP_BC_YIELD_FROM                    (MP_BC_BASE_BYTE_E + 0x05)
+#define MP_BC_RAISE_LAST                    (MP_BC_BASE_BYTE_E + 0x04)
+#define MP_BC_RAISE_OBJ                     (MP_BC_BASE_BYTE_E + 0x05)
+#define MP_BC_RAISE_FROM                    (MP_BC_BASE_BYTE_E + 0x06)
+#define MP_BC_YIELD_VALUE                   (MP_BC_BASE_BYTE_E + 0x07)
+#define MP_BC_YIELD_FROM                    (MP_BC_BASE_BYTE_E + 0x08)
 
 #define MP_BC_MAKE_FUNCTION                 (MP_BC_BASE_VINT_O + 0x02) // uint
 #define MP_BC_MAKE_FUNCTION_DEFARGS         (MP_BC_BASE_VINT_O + 0x03) // uint
@@ -143,6 +145,6 @@
 
 #define MP_BC_IMPORT_NAME                   (MP_BC_BASE_QSTR_O + 0x0b) // qstr
 #define MP_BC_IMPORT_FROM                   (MP_BC_BASE_QSTR_O + 0x0c) // qstr
-#define MP_BC_IMPORT_STAR                   (MP_BC_BASE_BYTE_E + 0x06)
+#define MP_BC_IMPORT_STAR                   (MP_BC_BASE_BYTE_E + 0x09)
 
 #endif // MICROPY_INCLUDED_PY_BC0_H
