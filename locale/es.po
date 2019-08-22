@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 15:20-0400\n"
+"POT-Creation-Date: 2019-08-22 14:29-0700\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -305,6 +305,10 @@ msgstr ""
 "Auto-reload habilitado. Simplemente guarda los archivos via USB para "
 "ejecutarlos o entra al REPL para desabilitarlos.\n"
 
+#: shared-module/displayio/Display.c
+msgid "Below minimum frame rate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock y word select deben compartir una unidad de reloj"
@@ -530,6 +534,7 @@ msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Rotación de display debe ser en incrementos de 90 grados"
 
@@ -743,6 +748,7 @@ msgid "Function requires lock"
 msgstr "La función requiere lock"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -1029,11 +1035,9 @@ msgstr ""
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
-"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
-"given"
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
 msgstr ""
-"Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% d "
-"bppdado"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, fuzzy
@@ -1112,6 +1116,10 @@ msgstr "Sistema de archivos de solo-Lectura"
 #, fuzzy
 msgid "Read-only object"
 msgstr "Solo-lectura"
+
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1235,11 +1243,11 @@ msgstr "El signo del sample no iguala al del mixer"
 msgid "Tile height must exactly divide bitmap height"
 msgstr "La altura del Tile debe dividir exacto la altura del bitmap"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
 msgstr ""
 
@@ -1261,6 +1269,7 @@ msgid "Too many display busses"
 msgstr "Demasiados buses de pantalla"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Too many displays"
 msgstr "Muchos displays"
 
@@ -1332,7 +1341,7 @@ msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)"
 msgid "Unsupported baudrate"
 msgstr "Baudrate no soportado"
 
-#: shared-module/displayio/Display.c
+#: shared-module/displayio/display_core.c
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "tipo de bitmap no soportado"
@@ -2222,6 +2231,11 @@ msgstr "no se ha encontrado ningún enlace para nonlocal"
 msgid "no module named '%q'"
 msgstr "ningún módulo se llama '%q'"
 
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
+msgstr ""
+
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "no hay tal atributo"
@@ -2886,6 +2900,13 @@ msgstr "paso cero"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Solo se admiten bit maps de color de 8 bits o menos"
+
+#~ msgid ""
+#~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
+#~ "bpp given"
+#~ msgstr ""
+#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:"
+#~ "% d bppdado"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo color verdadero (24 bpp o superior) BMP admitido %x"
