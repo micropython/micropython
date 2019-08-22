@@ -57,32 +57,6 @@ STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the Voice and releases any hardware resources for reuse.
-//|
-STATIC mp_obj_t audioio_mixervoice_deinit(mp_obj_t self_in) {
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixervoice_deinit_obj, audioio_mixervoice_deinit);
-
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
-//|
-//  Provided by context manager helper.
-
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
-//|
-STATIC mp_obj_t audioio_mixervoice_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixervoice___exit___obj, 4, 4, audioio_mixervoice_obj___exit__);
-
-
 //|   .. method:: play(sample, *, loop=False)
 //|
 //|     Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
@@ -176,7 +150,6 @@ const mp_obj_property_t audioio_mixervoice_level_obj = {
 STATIC mp_obj_t audioio_mixervoice_obj_get_playing(mp_obj_t self_in) {
 #if 0
     audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
     return mp_obj_new_bool(common_hal_audioio_mixer_get_playing(self));
 #endif
     return mp_const_none;
@@ -192,9 +165,6 @@ const mp_obj_property_t audioio_mixervoice_playing_obj = {
 
 STATIC const mp_rom_map_elem_t audioio_mixervoice_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_mixervoice_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audioio_mixervoice___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audioio_mixervoice_play_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&audioio_mixervoice_stop_obj) },
 
