@@ -142,7 +142,6 @@ bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         uint8_t luma = displayio_colorconverter_compute_luma(input_color);
         *output_color = luma >> (8 - colorspace->depth);
         return true;
-    } else if (!colorspace->grayscale && colorspace->depth == 1) {
     }
     return false;
 }

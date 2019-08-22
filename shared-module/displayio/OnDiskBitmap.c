@@ -149,10 +149,8 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
             if (self->bits_per_pixel == 1) {
                 if (index == 1) {
                     return 0xFFFFFF;
-                } else if (index == 0) {
-                    return 0x000000;
                 } else {
-                    asm("bkpt");
+                    return 0x000000;
                 }
             }
             return self->palette_data[index];

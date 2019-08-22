@@ -42,7 +42,7 @@
 //| .. currentmodule:: displayio
 //|
 //| :class:`EPaperDisplay` -- Manage updating an epaper display over a display bus
-//| ==========================================================================
+//| ==============================================================================
 //|
 //| This initializes an epaper display and connects it into CircuitPython. Unlike other
 //| objects in CircuitPython, EPaperDisplay objects live until `displayio.release_displays()`
