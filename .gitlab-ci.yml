@@ -1,6 +1,4 @@
 image: docker:stable-git
-services:
-  - docker:dind
 
 variables:
   DOCKER_HOST: /var/run/docker.sock

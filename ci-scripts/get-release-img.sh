@@ -1,1 +1,1 @@
-echo "pycampers/micropython:$(ci-scripts/get-tag.sh)"
+echo "pycampers/micropython:$(ci-scripts/get-release-tag.sh)"
