@@ -37,10 +37,6 @@ my_print(json.loads('"abc\\uabcd"'))
 # whitespace handling
 my_print(json.loads('{\n\t"a":[]\r\n, "b":[1], "c":{"3":4}     \n\r\t\r\r\r\n}'))
 
-# loading from bytes and bytearray
-my_print(json.loads(b'[1,2]'))
-my_print(json.loads(bytearray(b'[null]')))
-
 # loading nothing should raise exception
 try:
     json.loads('')
