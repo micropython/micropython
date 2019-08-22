@@ -27,11 +27,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "py/mpstate.h"
 #include "py/repl.h"
 #include "py/mphal.h"
+#include "py/unicode.h"
 #include "lib/mp-readline/readline.h"
 
 #if 0 // print debugging info
@@ -40,6 +40,9 @@
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
+
+#define FORWARD true
+#define BACKWARD false
 
 #define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 
@@ -99,36 +102,31 @@ typedef struct _readline_t {
 
 STATIC readline_t rl;
 
-size_t get_previous_word_cursor_pos() {
-  size_t cursor_pos = rl.cursor_pos;
-  bool in_leading_nonalphanum = true;
-  while (cursor_pos > 0) {
-    if (!isalnum((unsigned char) rl.line->buf[cursor_pos - 1])) {
-      if (!in_leading_nonalphanum) {
-        break;
-      }
-    } else if (in_leading_nonalphanum) {
-      in_leading_nonalphanum = false;
+size_t get_word_cursor_pos(bool direction) {
+    char cursor_pos_step = direction == FORWARD ? 1 : -1;
+    char buf_idx_offset = direction == FORWARD ? 0 : -1;
+    size_t cursor_pos = rl.cursor_pos;
+    bool in_leading_nonalphanum = true;
+    char c;
+    while (1) {
+        c = rl.line->buf[cursor_pos + buf_idx_offset];
+        if (!(unichar_isalpha(c) || unichar_isdigit(c))) {
+            if (!in_leading_nonalphanum) {
+                break;
+            }
+        } else if (in_leading_nonalphanum) {
+            in_leading_nonalphanum = false;
+        }
+        if (direction == FORWARD) {
+            if (cursor_pos >= rl.line->len) {
+                break;
+            }
+        } else if (cursor_pos <= 0) {
+            break;
+        }
+        cursor_pos += cursor_pos_step;
     }
-    cursor_pos -= 1;
-  }
-  return cursor_pos;
-}
-
-size_t get_next_word_cursor_pos() {
-  size_t cursor_pos = rl.cursor_pos;
-  bool in_leading_nonalphanum = true;
-  while (cursor_pos < rl.line->len) {
-    if (!isalnum((unsigned char) rl.line->buf[cursor_pos])) {
-      if (!in_leading_nonalphanum) {
-        break;
-      }
-    } else if (in_leading_nonalphanum) {
-      in_leading_nonalphanum = false;
-    }
-    cursor_pos += 1;
-  }
-  return cursor_pos;
+    return cursor_pos;
 }
 
 int readline_process_char(int c) {
@@ -247,40 +245,43 @@ int readline_process_char(int c) {
             redraw_step_forward = 1;
         }
     } else if (rl.escape_seq == ESEQ_ESC) {
-        size_t num_chars;
         switch (c) {
             case '[':
                 rl.escape_seq = ESEQ_ESC_BRACKET;
                 break;
             case 'b':
-              // backword-word (Alt-b)
-              redraw_step_back = rl.cursor_pos - get_previous_word_cursor_pos();
-              rl.escape_seq = ESEQ_NONE;
-              break;
+                // backword-word (Alt-b)
+                redraw_step_back = rl.cursor_pos - get_word_cursor_pos(BACKWARD);
+                rl.escape_seq = ESEQ_NONE;
+                break;
             case 'f':
-              // forward-word (Alt-f)
-              redraw_step_forward = get_next_word_cursor_pos() - rl.cursor_pos;
-              rl.escape_seq = ESEQ_NONE;
-              break;
-            case 'd':
-              // kill-word (Alt-d)
-              num_chars = get_next_word_cursor_pos() - rl.cursor_pos;
-              if (num_chars) {
-                vstr_cut_out_bytes(rl.line, rl.cursor_pos, num_chars);
-                redraw_from_cursor = true;
-              }
-              rl.escape_seq = ESEQ_NONE;
-              break;
-            case 127:
-              // backward-kill-word (Alt-Backspace)
-              num_chars = rl.cursor_pos - get_previous_word_cursor_pos();
-              if (num_chars) {
-                vstr_cut_out_bytes(rl.line, rl.cursor_pos - num_chars, num_chars);
-                redraw_step_back = num_chars;
-                redraw_from_cursor = true;
-              }
-              rl.escape_seq = ESEQ_NONE;
-              break;
+                // forward-word (Alt-f)
+                redraw_step_forward = get_word_cursor_pos(FORWARD) - rl.cursor_pos;
+                rl.escape_seq = ESEQ_NONE;
+                break;
+            case 'd': {
+                // kill-word (Alt-d)
+                size_t num_chars;
+                num_chars = get_word_cursor_pos(FORWARD) - rl.cursor_pos;
+                if (num_chars) {
+                    vstr_cut_out_bytes(rl.line, rl.cursor_pos, num_chars);
+                    redraw_from_cursor = true;
+                }
+                rl.escape_seq = ESEQ_NONE;
+                break;
+            }
+            case 127: {
+                // backward-kill-word (Alt-Backspace)
+                size_t num_chars;
+                num_chars = rl.cursor_pos - get_word_cursor_pos(BACKWARD);
+                if (num_chars) {
+                    vstr_cut_out_bytes(rl.line, rl.cursor_pos - num_chars, num_chars);
+                    redraw_step_back = num_chars;
+                    redraw_from_cursor = true;
+                }
+                rl.escape_seq = ESEQ_NONE;
+                break;
+            }
             case 'O':
                 rl.escape_seq = ESEQ_ESC_O;
                 break;
