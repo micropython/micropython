@@ -292,7 +292,9 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
                     params_data = func->params_data;
                     break;
                 } else if (i == public_funcs_num-1) {
-                    mp_raise_ABICheckException("not a public function");
+                    char error[80];
+                    sprintf(error, "%s is not a public function", func_name);
+                    mp_raise_ABICheckException(error);
                 }
             }
 
@@ -311,13 +313,17 @@ void tvm_fun_call(const char *class_name, const char *func_name, const char *jso
 
             // check params num
             if (get_type_num(params_data) != n_args) {
-                mp_raise_ABICheckException("params num error");
+                char error[80];
+                sprintf(error, "function: %s's params num error", func_name);
+                mp_raise_ABICheckException(error);
             }
             // check params type
             for (int i=0; i<(int)n_args; i++) {
                 const char* wanted_type = get_type_msg(params_data, i);
                 if (strcmp(wanted_type, mp_obj_get_type_str(items[i])) != 0) {
-                    mp_raise_ABICheckException("params type error");
+                    char error[80];
+                    sprintf(error, "function: %s's params type error", func_name);
+                    mp_raise_ABICheckException(error);
                 }
             }
         }
@@ -487,5 +493,36 @@ int get_type_num(unsigned int msg) {
         }
     }
     return MAX_PARAMS_NUM;
+}
+
+const char* abi_export() {
+    unsigned int params_data = 0;
+    mp_obj_register_t *reg = mp_load_name(qstr_from_str("register"));
+    size_t public_funcs_num;
+    mp_obj_t *public_funcs;
+    mp_obj_list_get(reg->public_funcs, &public_funcs_num, &public_funcs);
+    mp_obj_list_t *abi = mp_obj_new_list(0, NULL);
+    for(int i=0; i<public_funcs_num; i++) {
+        mp_obj_decorator_fun_t* func = MP_OBJ_TO_PTR(public_funcs[i]);
+        if (func->func != NULL) {
+            params_data = func->params_data;
+            mp_obj_dict_t* items = mp_obj_new_dict(2);
+            mp_obj_dict_store(items, mp_obj_new_str("func_name", 9), mp_obj_new_str(func->func, strlen(func->func)));
+            mp_obj_list_t *params = mp_obj_new_list(0, NULL);
+            int params_num = get_type_num(params_data);
+            for(int j=0;j<params_num;j++) {
+                const char* t = get_type_msg(params_data, j);
+                mp_obj_list_append(params, mp_obj_new_str(t, strlen(t)));
+            }
+            mp_obj_dict_store(items, mp_obj_new_str("args", 4),params);
+            mp_obj_list_append(abi, items);
+        }
+    }
+    vstr_t vstr;
+    mp_print_t print;
+    vstr_init_print(&vstr, 8, &print);
+    mp_obj_print_helper(&print, abi, PRINT_JSON);
+    const char *params_json = vstr_str(&vstr);
+    return params_json;
 }
 

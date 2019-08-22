@@ -338,8 +338,6 @@ void test_register() {
     tvm_set_gas(10000000);
 
     const char *str = "register = Register()\n"
-                      "a = Event('s')\n"
-                      "a.emit(10, k='123', v=1)\n"
                       "print(type(register.public()))\n"
                       "class Token():\n"
                       "\n"
@@ -355,8 +353,8 @@ void test_register() {
                       "    def myprint2(self, a):\n"
                       "        print(self)\n"
                       "        print('i am Token', a)\n"
-                      "    @register.public(str, str, str, str, str, str, str)\n"
-                      "    def myprint4(self, a, b, c, d, e, f, g):\n"
+                      "    @register.public(str, str, str, str, str, str, str, str)\n"
+                      "    def myprint4(self, a, b, c, d, e, f, g, h):\n"
                       "        print(self)\n"
                       "        print('i am Token', a)\n"
                       "\n"
@@ -383,7 +381,7 @@ void test_register() {
     tvm_deinit_result(&result);
 
     tvm_init_result(&result);
-    tvm_fun_call("Token", "myprint4", "[\"1\", \"1\",\"1\",\"1\",\"1\",\"1\",\"1\"]", &result);
+    tvm_fun_call("Token", "myprint4", "[\"1\", \"1\",\"1\",\"1\",\"1\",\"1\",\"1\",\"1\"]", &result);
     tvm_print_result(&result);
     tvm_deinit_result(&result);
 
@@ -630,7 +628,7 @@ int main() {
     test_register();
 
 //    test_storage();
-    test_storage2();
+//    test_storage2();
 
 //    test_zdict();
 
