@@ -1,0 +1,1 @@
+echo "pycampers/micropython:$(ci-scripts/get-tag.sh)"

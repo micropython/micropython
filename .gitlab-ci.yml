@@ -3,20 +3,40 @@ services:
   - docker:dind
 
 variables:
-  DOCKER_HOST: tcp://docker:2375
+  DOCKER_HOST: /var/run/docker.sock
   DOCKER_DRIVER: overlay2
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  DOCKER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   MAKEOPTS: "-j4"
   CACHE_DIR: $HOME/persist
-  RELEASE_IMAGE: pycampers/micropython:$(ci-scripts/get-tag.sh)
 
 before_script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - RELEASE_IMAGE=$(get-release-img.sh)
 
 build:
   stage: build
   script:
     - env
-#    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-#    - docker push $CONTAINER_TEST_IMAGE
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - doicer
+    - docker pull $DOCKER_TEST_IMAGE
+    - docker build --cache-from=$DOCKER_TEST_IMAGE -t $DOCKER_TEST_IMAGE .
+
+stm32:
+  &build-port
+  stage: test
+  image: $DOCKER_TEST_IMAGE
+  script:
+    - ci-scripts/$CI_JOB_NAME.sh
+qemu-arm: *build-port
+unix-coverage: *build-port
+unix-standard: *build-port
+unix-nanobox: *build-port
+unix-stackless: *build-port
+windows: *build-port
+esp32: *build-port
+esp8266: *build-port
+nrf: *build-port
+bare-arm: *build-port
+cc3200: *build-port
+samd: *build-port
+teensy: *build-port
