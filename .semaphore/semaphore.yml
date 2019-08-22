@@ -13,9 +13,7 @@ blocks:
         &prologue-commands
         commands:
           - checkout
-          - export IMAGE_NAME=pycampers/micropython
-          - export IMAGE_TAG=$(ci-scripts/get-tag.sh)
-          - export IMAGE=$IMAGE_NAME:$IMAGE_TAG
+          - export RELEASE_IMAGE=$(ci-scripts/get-release-img.sh)
           - docker pull $IMAGE
       secrets:
         - name: docker-hub
