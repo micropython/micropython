@@ -3,6 +3,7 @@ env:
   DOCKER_TEMP_IMAGE: $DOCKER_IMAGE_NAME:$CIRRUS_TASK_ID
 
 docker_builder:
+  name: docker builder
   build_script: |
     DOCKER_RELEASE_IMAGE=$DOCKER_IMAGE_NAME:$(ci-scripts/get-release-tag.sh)
     env
@@ -12,7 +13,7 @@ docker_builder:
 build_ports_task:
   container:
     image: $DOCKER_TEMP_IMAGE
-  depends_on: docker_builder
+  depends_on: docker builder
   env:
     matrix:
       - MPY_PORT: stm32
