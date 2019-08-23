@@ -10,7 +10,7 @@
 	url = https://git.savannah.gnu.org/r/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
-	url = https://github.com/pfalcon/berkeley-db-1.xx
+	url = https://github.com/pfalcon/berkeley-db-1.xx.git
 [submodule "lib/stm32lib"]
 	path = lib/stm32lib
 	url = https://github.com/micropython/stm32lib
