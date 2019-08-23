@@ -410,6 +410,22 @@ class RawCode(object):
         print('    .fun_data_len = %u,' % len(self.bytecode))
         print('    .n_obj = %u,' % len(self.objs))
         print('    .n_raw_code = %u,' % len(self.raw_codes))
+        print('    #if MICROPY_PY_SYS_SETTRACE')
+        print('    .prelude = {')
+        print('        .n_state = %u,' % self.prelude[0])
+        print('        .n_exc_stack = %u,' % self.prelude[1])
+        print('        .scope_flags = %u,' % self.prelude[2])
+        print('        .n_pos_args = %u,' % self.prelude[3])
+        print('        .n_kwonly_args = %u,' % self.prelude[4])
+        print('        .n_def_pos_args = %u,' % self.prelude[5])
+        print('        .qstr_block_name = %s,' % self.simple_name.qstr_id)
+        print('        .qstr_source_file = %s,' % self.source_file.qstr_id)
+        print('        .line_info = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
+        print('        .locals = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
+        print('        .opcodes = fun_data_%s + %u,' % (self.escaped_name, self.ip))
+        print('    },')
+        print('    .line_of_definition = %u,' % 0) # TODO
+        print('    #endif')
         print('    #if MICROPY_EMIT_MACHINE_CODE')
         print('    .prelude_offset = %u,' % self.prelude_offset)
         print('    .n_qstr = %u,' % len(qstr_links))
