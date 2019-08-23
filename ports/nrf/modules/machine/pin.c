@@ -37,8 +37,8 @@
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 
-extern const pin_obj_t machine_pin_obj[];
-extern const uint8_t machine_pin_num_of_pins;
+extern const pin_obj_t machine_board_pin_obj[];
+extern const uint8_t machine_pin_num_of_board_pins;
 
 /// \moduleref machine
 /// \class Pin - control I/O pins
@@ -128,9 +128,9 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     // If pin is SMALL_INT
     if (mp_obj_is_small_int(user_obj)) {
         uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
-        for (uint8_t i = 0; i < machine_pin_num_of_pins; i++) {
-            if (machine_pin_obj[i].pin == value) {
-                return &machine_pin_obj[i];
+        for (uint8_t i = 0; i < machine_pin_num_of_board_pins; i++) {
+            if (machine_board_pin_obj[i].pin == value) {
+                return &machine_board_pin_obj[i];
             }
         }
     }
