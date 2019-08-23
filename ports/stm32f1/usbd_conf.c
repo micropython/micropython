@@ -49,10 +49,10 @@ PCD_HandleTypeDef pcd_fs_handle;
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB) {
+
+        // default speed is high
         mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF10_USB);
-        mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_HIGH);
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF10_USB);
-        mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_HIGH);
 
         // Enable USB FS Clocks
         __HAL_RCC_USB_CLK_ENABLE();

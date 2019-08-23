@@ -39,9 +39,9 @@
 #include "pendsv.h"
 #include "uart.h"
 
-#define UART_RXNE_IS_SET(uart) BIT_BAND(uart->SR, USART_SR_RXNE_Pos)
-#define UART_RXNE_IT_EN(uart)  BIT_BAND_SET(uart->CR1, USART_CR1_RXNEIE_Pos)
-#define UART_RXNE_IT_DIS(uart) BIT_BAND_CLEAR(uart->CR1, USART_CR1_RXNEIE_Pos)
+#define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
+#define UART_RXNE_IT_EN(uart)  do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
+#define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
 
 #define USART_CR1_IE_BASE (USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE | USART_CR1_RXNEIE | USART_CR1_IDLEIE)
 #define USART_CR2_IE_BASE (USART_CR2_LBDIE)
@@ -50,6 +50,7 @@
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE)
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
+
 
 extern void NORETURN __fatal_error(const char *msg);
 
@@ -196,7 +197,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 	}
 
 	uint32_t mode = 0;
-	uint32_t pull = MP_HAL_PIN_PULL_UP;
+	uint32_t pull = MP_HAL_PIN_PULL_NONE;
 
 	for (uint i = 0; i < 4; i++) {
 		if (pins[i] != NULL) {
@@ -270,34 +271,55 @@ void uart_deinit(pyb_uart_obj_t *self) {
 	self->is_enabled = false;
 
 	// Disable UART
-    BIT_BAND_CLEAR(self->uartx->CR1, USART_CR1_UE_Pos);
+    self->uartx->CR1 &= ~USART_CR1_UE;
+
+    if (0) {}
+
 	// Reset and turn off the UART peripheral
-	if (self->uart_id == 1) {
+    #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
+	else if (self->uart_id == 1) {
 		HAL_NVIC_DisableIRQ(USART1_IRQn);
 		__HAL_RCC_USART1_FORCE_RESET();
 		__HAL_RCC_USART1_RELEASE_RESET();
 		__HAL_RCC_USART1_CLK_DISABLE();
-	} else if (self->uart_id == 2) {
+	}
+    #endif
+
+    #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
+    else if (self->uart_id == 2) {
 		HAL_NVIC_DisableIRQ(USART2_IRQn);
 		__HAL_RCC_USART2_FORCE_RESET();
 		__HAL_RCC_USART2_RELEASE_RESET();
 		__HAL_RCC_USART2_CLK_DISABLE();
-	} else if (self->uart_id == 3) {
+	}
+    #endif
+
+    #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
+    else if (self->uart_id == 3) {
 		HAL_NVIC_DisableIRQ(USART3_IRQn);
 		__HAL_RCC_USART3_FORCE_RESET();
 		__HAL_RCC_USART3_RELEASE_RESET();
 		__HAL_RCC_USART3_CLK_DISABLE();
-	} else if (self->uart_id == 4) {
+	}
+    #endif
+
+    #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
+    else if (self->uart_id == 4) {
 		HAL_NVIC_DisableIRQ(UART4_IRQn);
 		__HAL_RCC_UART4_FORCE_RESET();
 		__HAL_RCC_UART4_RELEASE_RESET();
 		__HAL_RCC_UART4_CLK_DISABLE();
-	} else if (self->uart_id == 5) {
+	}
+    #endif
+
+    #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
+    else if (self->uart_id == 5) {
 		HAL_NVIC_DisableIRQ(UART5_IRQn);
 		__HAL_RCC_UART5_FORCE_RESET();
 		__HAL_RCC_UART5_RELEASE_RESET();
 		__HAL_RCC_UART5_CLK_DISABLE();
 	}
+    #endif
 }
 
 void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
@@ -487,7 +509,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
 					}
 					self->read_buf_head = next_head;
 				}
-			} else{ 
+			} else {
                 // No room: leave char in buf, disable interrupt
 				UART_RXNE_IT_DIS(self->uartx);
 			}

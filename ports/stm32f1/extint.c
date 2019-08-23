@@ -420,7 +420,6 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     if (vals[2].u_obj != mp_const_none) {
         pull = mp_obj_get_int(vals[2].u_obj);
     }
-    printf("passed pull is %d\n", pull);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type;

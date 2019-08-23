@@ -767,7 +767,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         memset(tim, 0, sizeof(*tim));
         tim->base.type = &pyb_timer_type;
         tim->tim_id = tim_id;
-        tim->is_32bit = tim_id == 2 || tim_id == 5;
+        tim->is_32bit = 0; // no 32bit timer
         tim->callback = mp_const_none;
         uint32_t ti = tim_instance_table[tim_id - 1];
         tim->tim.Instance = (TIM_TypeDef*)(ti & 0xffffff00);

@@ -135,9 +135,9 @@ STATIC void led_pwm_init(int led) {
 
     // TIM configuration
     switch (pwm_cfg->tim_id) {
-        case 1: __TIM1_CLK_ENABLE(); break;
-        case 2: __TIM2_CLK_ENABLE(); break;
-        case 3: __TIM3_CLK_ENABLE(); break;
+        case 1: __HAL_RCC_TIM1_CLK_ENABLE(); break;
+        case 2: __HAL_RCC_TIM2_CLK_ENABLE(); break;
+        case 3: __HAL_RCC_TIM3_CLK_ENABLE(); break;
         default: assert(0);
     }
     TIM_HandleTypeDef tim = {0};
@@ -168,12 +168,7 @@ STATIC void led_pwm_init(int led) {
 STATIC void led_pwm_deinit(int led) {
     // make the LED's pin a standard GPIO output pin
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
-    GPIO_TypeDef *g = led_pin->gpio;
-    uint32_t pin = led_pin->pin;
-    static const int mode = 1; // output
-    static const int alt = 0; // no alt func
-    g->MODER = (g->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
-    g->AFR[pin >> 3] = (g->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
+    mp_hal_pin_config(led_pin, MP_HAL_PIN_MODE_ANALOG, 0, 0);
     led_pwm_state &= ~(1 << led);
 }
 
@@ -187,12 +182,9 @@ void led_state(pyb_led_t led, int state) {
     }
 
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
-    //printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
-        // turn LED off
         MICROPY_HW_LED_OFF(led_pin);
     } else {
-        // turn LED on
         MICROPY_HW_LED_ON(led_pin);
     }
 

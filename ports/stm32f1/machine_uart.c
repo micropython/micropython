@@ -145,28 +145,16 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     if (!self->is_enabled) {
         mp_printf(print, "UART(%u)", self->uart_id);
     } else {
-        mp_int_t bits;
+        mp_int_t bits = 8;
         uint32_t cr1 = self->uartx->CR1;
-        #if defined(UART_CR1_M1)
-        if (cr1 & UART_CR1_M1) {
-            bits = 7;
-        } else if (cr1 & UART_CR1_M0) {
-            bits = 9;
-        } else {
-            bits = 8;
-        }
-        #else
         if (cr1 & USART_CR1_M) {
             bits = 9;
-        } else {
-            bits = 8;
         }
-        #endif
+
         if (cr1 & USART_CR1_PCE) {
             bits -= 1;
         }
-        mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-            self->uart_id, uart_get_baudrate(self), bits);
+        mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=", self->uart_id, uart_get_baudrate(self), bits);
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
         } else if (!(cr1 & USART_CR1_PS)) {
@@ -175,8 +163,8 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             mp_print_str(print, "1");
         }
         uint32_t cr2 = self->uartx->CR2;
-        mp_printf(print, ", stop=%u, flow=",
-            ((cr2 >> USART_CR2_STOP_Pos) & 3) == 0 ? 1 : 2);
+        mp_printf(print, ", stop=%u, flow=", ((cr2 >> USART_CR2_STOP_Pos) & 3) == 0 ? 1 : 2);
+
         uint32_t cr3 = self->uartx->CR3;
         if (!(cr3 & (USART_CR3_CTSE | USART_CR3_RTSE))) {
             mp_print_str(print, "0");
@@ -220,7 +208,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
@@ -257,10 +245,6 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         bits = UART_WORDLENGTH_8B;
     } else if (bits == 9) {
         bits = UART_WORDLENGTH_9B;
-    #ifdef UART_WORDLENGTH_7B
-    } else if (bits == 7) {
-        bits = UART_WORDLENGTH_7B;
-    #endif
     } else {
         mp_raise_ValueError("unsupported combination of bits and parity");
     }
@@ -327,7 +311,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct a UART object on the given bus.  `bus` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
+/// Construct a UART object on the given bus.  `bus` can be 1-5
 /// With no additional parameters, the UART object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
@@ -335,48 +319,18 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 ///
 /// The physical pins of the UART busses are:
 ///
-///   - `UART(4)` is on `XA`: `(TX, RX) = (X1, X2) = (PA0, PA1)`
-///   - `UART(1)` is on `XB`: `(TX, RX) = (X9, X10) = (PB6, PB7)`
-///   - `UART(6)` is on `YA`: `(TX, RX) = (Y1, Y2) = (PC6, PC7)`
-///   - `UART(3)` is on `YB`: `(TX, RX) = (Y9, Y10) = (PB10, PB11)`
-///   - `UART(2)` is on: `(TX, RX) = (X3, X4) = (PA2, PA3)`
+/// - `UART(1)` : `(TX, RX)           = (PA9,PA10)`
+/// - `UART(2)` : `(TX, RX, CTS, RTS) = (PA2, PA3, PA0, PA1)`
+/// - `UART(3)` : `(TX, RX, CTS, RTS) = (PB10, PB11, PB13, PB14)`
+/// - `UART(4)` : `(TX, RX)           = (PC10, PC11)`
+/// - `UART(5)` : `(TX, RX)           = (PC12, PD2)`
 STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // work out port
-    int uart_id = 0;
-    if (mp_obj_is_str(args[0])) {
-        const char *port = mp_obj_str_get_str(args[0]);
-        if (0) {
-        #ifdef MICROPY_HW_UART1_NAME
-        } else if (strcmp(port, MICROPY_HW_UART1_NAME) == 0) {
-            uart_id = PYB_UART_1;
-        #endif
-        #ifdef MICROPY_HW_UART2_NAME
-        } else if (strcmp(port, MICROPY_HW_UART2_NAME) == 0) {
-            uart_id = PYB_UART_2;
-        #endif
-        #ifdef MICROPY_HW_UART3_NAME
-        } else if (strcmp(port, MICROPY_HW_UART3_NAME) == 0) {
-            uart_id = PYB_UART_3;
-        #endif
-        #ifdef MICROPY_HW_UART4_NAME
-        } else if (strcmp(port, MICROPY_HW_UART4_NAME) == 0) {
-            uart_id = PYB_UART_4;
-        #endif
-        #ifdef MICROPY_HW_UART5_NAME
-        } else if (strcmp(port, MICROPY_HW_UART5_NAME) == 0) {
-            uart_id = PYB_UART_5;
-        #endif
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
-        }
-    } else {
-        uart_id = mp_obj_get_int(args[0]);
-        if (!uart_exists(uart_id)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id));
-        }
+    int uart_id = mp_obj_get_int(args[0]);
+    if (!uart_exists(uart_id)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id));
     }
 
     pyb_uart_obj_t *self;
@@ -514,13 +468,9 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj) },
 
-    /// \method read([nbytes])
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    /// \method readline()
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
-    /// \method readinto(buf[, nbytes])
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    /// \method write(buf)
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
 

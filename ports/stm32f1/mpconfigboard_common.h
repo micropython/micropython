@@ -101,11 +101,6 @@
 	#define MICROPY_HW_HAS_MMA7660 (0)
 #endif
 
-// Whether to enable the LCD32MK driver, exposed as pyb.LCD
-#ifndef MICROPY_HW_HAS_LCD
-	#define MICROPY_HW_HAS_LCD (0)
-#endif
-
 // The volume label used when creating the flash filesystem
 #ifndef MICROPY_HW_FLASH_FS_LABEL
 	#define MICROPY_HW_FLASH_FS_LABEL "pybflash"
