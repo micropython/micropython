@@ -34,6 +34,9 @@
 #include "py/objfun.h"
 #include "py/stackctrl.h"
 
+// Instance of GeneratorExit exception - needed by generator.close()
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
+
 /******************************************************************************/
 /* generator wrapper                                                          */
 

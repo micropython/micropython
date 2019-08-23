@@ -1,6 +1,9 @@
 // Options to control how MicroPython is built for this port,
 // overriding defaults in py/mpconfig.h.
 
+// Board-specific definitions
+#include "mpconfigboard.h"
+
 #include <stdint.h>
 #include <alloca.h>
 #include "rom/ets_sys.h"
@@ -95,6 +98,7 @@
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT  (1)
 #define MICROPY_PY_MATH                     (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS   (1)
+#define MICROPY_PY_MATH_ISCLOSE             (1)
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
@@ -268,7 +272,12 @@ typedef long mp_off_t;
 #include <sys/types.h>
 
 // board specifics
-
-#define MICROPY_HW_BOARD_NAME "ESP32 module"
-#define MICROPY_HW_MCU_NAME "ESP32"
 #define MICROPY_PY_SYS_PLATFORM "esp32"
+
+#ifndef MICROPY_HW_ENABLE_MDNS_QUERIES
+#define MICROPY_HW_ENABLE_MDNS_QUERIES      (1)
+#endif
+
+#ifndef MICROPY_HW_ENABLE_MDNS_RESPONDER
+#define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
+#endif

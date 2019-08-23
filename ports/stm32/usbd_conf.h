@@ -49,6 +49,16 @@
 #endif
 #define USBD_DEBUG_LEVEL                      0
 
+// For MCUs with a device-only USB peripheral
+#define USBD_PMA_RESERVE                      (64)
+#define USBD_PMA_NUM_FIFO                     (8)
+
+// For MCUs with multiple OTG USB peripherals
+#define USBD_FS_NUM_TX_FIFO                   (6)
+#define USBD_FS_NUM_FIFO                      (1 + USBD_FS_NUM_TX_FIFO)
+#define USBD_HS_NUM_TX_FIFO                   (9)
+#define USBD_HS_NUM_FIFO                      (1 + USBD_HS_NUM_TX_FIFO)
+
 #endif // MICROPY_INCLUDED_STM32_USBD_CONF_H
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

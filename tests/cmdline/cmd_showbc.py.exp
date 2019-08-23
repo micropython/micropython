@@ -449,6 +449,7 @@ arg names: * * *
 (N_STATE 9)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
+  bc=0 line=59
 00 LOAD_NULL
 01 LOAD_FAST 2
 02 LOAD_NULL
@@ -471,6 +472,7 @@ arg names: * * *
 (N_STATE 10)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
+  bc=0 line=60
 00 BUILD_LIST 0
 02 LOAD_FAST 2
 03 GET_ITER_STACK

@@ -75,6 +75,50 @@ typedef struct _usb_device_t {
 usb_device_t usb_device = {0};
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 
+#if !MICROPY_HW_USB_IS_MULTI_OTG
+
+// Units of FIFO size arrays below are 4x 16-bit words = 8 bytes
+// There are 512x 16-bit words it total to use here (when using PCD_SNG_BUF)
+
+// EP0(out), EP0(in), MSC/HID(out), MSC/HID(in), unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
+STATIC const uint8_t usbd_fifo_size_cdc1[] = {16, 16, 16, 16, 0, 16, 16, 16};
+
+#else
+
+// Units of FIFO size arrays below are 4x 32-bit words = 16 bytes
+// FS: there are 320x 32-bit words in total to use here
+// HS: there are 1024x 32-bit words in total to use here
+
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA
+STATIC const uint8_t usbd_fifo_size_cdc1[] = {
+    32, 8, 16, 8, 16, 0, 0, // FS: RX, EP0(in), 5x IN endpoints
+    #if MICROPY_HW_USB_HS
+    116, 8, 64, 4, 64, 0, 0, 0, 0, 0, // HS: RX, EP0(in), 8x IN endpoints
+    #endif
+};
+
+#if MICROPY_HW_USB_CDC_NUM >= 2
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD, CDC2_DATA
+STATIC const uint8_t usbd_fifo_size_cdc2[] = {
+    32, 8, 16, 4, 8, 4, 8,
+    #if MICROPY_HW_USB_HS
+    116, 8, 64, 2, 32, 2, 32, 0, 0, 0,
+    #endif
+};
+#endif
+
+#if MICROPY_HW_USB_CDC_NUM >= 3
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD, CDC2_DATA, CDC3_CMD, CDC3_DATA
+STATIC const uint8_t usbd_fifo_size_cdc3[] = {
+    0, 0, 0, 0, 0, 0, 0, // FS: can't support 3x VCP mode
+    #if MICROPY_HW_USB_HS
+    82, 8, 64, 2, 32, 2, 32, 2, 32, 0,
+    #endif
+};
+#endif
+
+#endif
+
 #if MICROPY_HW_USB_HID
 // predefined hid mouse data
 STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
@@ -197,8 +241,20 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
         USBD_MSC_RegisterStorage(&usb_dev->usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&usbd_msc_fops);
         #endif
 
+        const uint8_t *fifo_size = usbd_fifo_size_cdc1;
+        #if MICROPY_HW_USB_CDC_NUM >= 3
+        if (mode & USBD_MODE_IFACE_CDC(2)) {
+            fifo_size = usbd_fifo_size_cdc3;
+        } else
+        #endif
+        #if MICROPY_HW_USB_CDC_NUM >= 2
+        if (mode & USBD_MODE_IFACE_CDC(1)) {
+            fifo_size = usbd_fifo_size_cdc2;
+        }
+        #endif
+
         // start the USB device
-        USBD_LL_Init(usbd, (mode & USBD_MODE_HIGH_SPEED) != 0);
+        USBD_LL_Init(usbd, (mode & USBD_MODE_HIGH_SPEED) != 0, fifo_size);
         USBD_LL_Start(usbd);
         usb_dev->enabled = true;
     }
