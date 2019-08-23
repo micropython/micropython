@@ -115,7 +115,11 @@ STATIC int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
+#if MICROPY_EMIT_NATIVE
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
+#else
+"  emit=bytecode -- set the default code emitter\n"
+#endif
 );
     impl_opts_cnt++;
     printf(
@@ -140,10 +144,12 @@ STATIC void pre_process_options(int argc, char **argv) {
                 }
                 if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
