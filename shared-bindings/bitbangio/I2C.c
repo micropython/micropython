@@ -180,7 +180,7 @@ STATIC void readfrom(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffe
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
 
-    uint32_t length = bufinfo.len;
+    size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, end, &length);
     if (length == 0) {
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
@@ -238,7 +238,7 @@ STATIC void writeto(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
 
-    uint32_t length = bufinfo.len;
+    size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, end, &length);
 
     // do the transfer
@@ -275,7 +275,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_wr
 //|   .. method:: writeto_then_readfrom(address, out_buffer, in_buffer, *, out_start=0, out_end=None, in_start=0, in_end=None)
 //|
 //|      Write the bytes from ``out_buffer`` to the slave specified by ``address``, generate no stop
-//|      bit, generate a repeated start and read into ``in_buffer``.
+//|      bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
+//|      ``in_buffer`` can be the same buffer because they are used sequentially.
 //|
 //|      If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
 //|      as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
