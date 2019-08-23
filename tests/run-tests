@@ -377,6 +377,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
+        skip_tests.add('micropython/opt_level_lineno.py') # native doesn't have proper traceback info
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
 
     for test_file in tests:
