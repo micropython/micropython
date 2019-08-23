@@ -26,6 +26,8 @@
 
 #include "shared-bindings/displayio/ColorConverter.h"
 
+#include "py/misc.h"
+
 void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self) {
 }
 
@@ -45,39 +47,12 @@ uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
     return (r8 * 19) / 255 + (g8 * 182) / 255 + (b8 + 54) / 255;
 }
 
-void compute_bounds(uint8_t r8, uint8_t g8, uint8_t b8, uint8_t* min, uint8_t* max) {
-    if (r8 > g8) {
-        if (b8 > r8) {
-            *max = b8;
-        } else {
-            *max = r8;
-        }
-        if (b8 < g8) {
-            *min = b8;
-        } else {
-            *min = g8;
-        }
-    } else {
-        if (b8 > g8) {
-            *max = b8;
-        } else {
-            *max = g8;
-        }
-        if (b8 < r8) {
-            *min = b8;
-        } else {
-            *min = r8;
-        }
-    }
-}
-
 uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888) {
     uint32_t r8 = (color_rgb888 >> 16);
     uint32_t g8 = (color_rgb888 >> 8) & 0xff;
     uint32_t b8 = color_rgb888 & 0xff;
-    uint8_t max;
-    uint8_t min;
-    compute_bounds(r8, g8, b8, &min, &max);
+    uint8_t max = MAX(r8, MAX(g8, b8));
+    uint8_t min = MIN(r8, MIN(g8, b8));
     return max - min;
 }
 
@@ -85,9 +60,8 @@ uint8_t displayio_colorconverter_compute_hue(uint32_t color_rgb888) {
     uint32_t r8 = (color_rgb888 >> 16);
     uint32_t g8 = (color_rgb888 >> 8) & 0xff;
     uint32_t b8 = color_rgb888 & 0xff;
-    uint8_t max;
-    uint8_t min;
-    compute_bounds(r8, g8, b8, &min, &max);
+    uint8_t max = MAX(r8, MAX(g8, b8));
+    uint8_t min = MIN(r8, MIN(g8, b8));
     uint8_t c = max - min;
     if (c == 0) {
         return 0;

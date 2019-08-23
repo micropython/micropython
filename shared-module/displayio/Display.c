@@ -69,7 +69,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->data_as_commands = data_as_commands;
 
     self->native_frames_per_second = native_frames_per_second;
-    self->native_frame_time = 1000 / native_frames_per_second;
+    self->native_ms_per_frame = 1000 / native_frames_per_second;
 
     uint32_t i = 0;
     while (i < init_sequence_len) {
@@ -85,10 +85,10 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             uint8_t full_command[data_size + 1];
             full_command[0] = cmd[0];
             memcpy(full_command + 1, data, data_size);
-            self->core.send(self->core.bus, true, true, full_command, data_size + 1);
+            self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, full_command, data_size + 1);
         } else {
-            self->core.send(self->core.bus, true, true, cmd, 1);
-            self->core.send(self->core.bus, false, false, data, data_size);
+            self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, cmd, 1);
+            self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, data, data_size);
         }
         self->core.end_transaction(self->core.bus);
         uint16_t delay_length_ms = 10;
@@ -168,12 +168,12 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
         if (ok) {
             if (self->data_as_commands) {
                 uint8_t set_brightness[2] = {self->brightness_command, (uint8_t) (0xff * brightness)};
-                self->core.send(self->core.bus, true, true, set_brightness, 2);
+                self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, set_brightness, 2);
             } else {
                 uint8_t command = self->brightness_command;
                 uint8_t hex_brightness = 0xff * brightness;
-                self->core.send(self->core.bus, true, true, &command, 1);
-                self->core.send(self->core.bus, false, false, &hex_brightness, 1);
+                self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &command, 1);
+                self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, &hex_brightness, 1);
             }
             displayio_display_core_end_transaction(&self->core);
         }
@@ -202,9 +202,9 @@ STATIC const displayio_area_t* _get_refresh_areas(displayio_display_obj_t *self)
 
 STATIC void _send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
     if (!self->data_as_commands) {
-        self->core.send(self->core.bus, true, true, &self->write_ram_command, 1);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
-    self->core.send(self->core.bus, false, false, pixels, length);
+    self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
 }
 
 STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t* area) {
@@ -270,12 +270,8 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
             subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / self->core.colorspace.depth);
         }
 
-        for (uint16_t k = 0; k < mask_length; k++) {
-            mask[k] = 0x00000000;
-        }
-        for (uint16_t k = 0; k < buffer_size; k++) {
-            buffer[k] = 0x00000000;
-        }
+        memset(mask, 0, mask_length * sizeof(uint32_t));
+        memset(buffer, 0, buffer_size * sizeof(uint32_t));
 
         displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
@@ -313,30 +309,29 @@ uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self
     return self->core.rotation;
 }
 
-void common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_frame_time, uint32_t maximum_frame_time) {
+bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
     if (!self->auto_refresh && !self->first_manual_refresh) {
         uint64_t current_time = ticks_ms;
-        uint32_t current_frame_time = current_time - self->core.last_refresh;
+        uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
-        if (current_frame_time > maximum_frame_time) {
+        if (current_ms_since_real_refresh > maximum_ms_per_real_frame) {
             mp_raise_RuntimeError(translate("Below minimum frame rate"));
         }
-        uint32_t current_call_time = current_time - self->last_refresh_call;
+        uint32_t current_ms_since_last_call = current_time - self->last_refresh_call;
         self->last_refresh_call = current_time;
         // Skip the actual refresh to help catch up.
-        if (current_call_time > target_frame_time) {
-            return;
+        if (current_ms_since_last_call > target_ms_per_frame) {
+            return false;
         }
-        uint32_t remaining_time = target_frame_time - (current_frame_time % target_frame_time);
+        uint32_t remaining_time = target_ms_per_frame - (current_ms_since_real_refresh % target_ms_per_frame);
         // We're ahead of the game so wait until we align with the frame rate.
         while (ticks_ms - self->last_refresh_call < remaining_time) {
-            #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP ;
-            #endif
+            RUN_BACKGROUND_TASKS;
         }
     }
     self->first_manual_refresh = false;
     _refresh_display(self);
+    return true;
 }
 
 bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t* self) {
@@ -366,7 +361,7 @@ STATIC void _update_backlight(displayio_display_obj_t* self) {
 void displayio_display_background(displayio_display_obj_t* self) {
     _update_backlight(self);
 
-    if (self->auto_refresh && (ticks_ms - self->core.last_refresh) > self->native_frame_time) {
+    if (self->auto_refresh && (ticks_ms - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
     }
 }

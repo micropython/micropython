@@ -28,8 +28,9 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELBUS_H
 
 #include "common-hal/displayio/ParallelBus.h"
-#include "common-hal/microcontroller/Pin.h"
 
+#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/displayio/__init__.h"
 #include "shared-module/displayio/Group.h"
 
 extern const mp_obj_type_t displayio_parallelbus_type;
@@ -45,7 +46,7 @@ bool common_hal_displayio_parallelbus_bus_free(mp_obj_t self);
 
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t self);
 
-void common_hal_displayio_parallelbus_send(mp_obj_t self, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length);
+void common_hal_displayio_parallelbus_send(mp_obj_t self, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length);
 
 void common_hal_displayio_parallelbus_end_transaction(mp_obj_t self);
 

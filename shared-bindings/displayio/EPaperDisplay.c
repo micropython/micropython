@@ -55,7 +55,7 @@
 //|
 //|   Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
-//|   The ``start_sequence`` and ``stop_sequence`` bitpacked to minimize the ram impact. Every
+//|   The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
 //|   command begins with a command byte followed by a byte to determine the parameter count and if
 //|   a delay is need after. When the top bit of the second byte is 1, the next byte will be the
 //|   delay time in milliseconds. The remaining 7 bits are the parameter count excluding any delay

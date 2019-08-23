@@ -56,7 +56,7 @@ typedef struct {
     bool black_bits_inverted;
     bool color_bits_inverted;
     bool refreshing;
-    bool always_toggle_chip_select;
+    display_chip_select_behavior_t always_toggle_chip_select;
 } displayio_epaperdisplay_obj_t;
 
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);

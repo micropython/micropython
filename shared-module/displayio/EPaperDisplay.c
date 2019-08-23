@@ -71,7 +71,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     self->busy_state = busy_state;
     self->refreshing = false;
     self->milliseconds_per_frame = seconds_per_frame * 1000;
-    self->always_toggle_chip_select = always_toggle_chip_select;
+    self->always_toggle_chip_select = always_toggle_chip_select ? CHIP_SELECT_TOGGLE_EVERY_BYTE : CHIP_SELECT_UNTOUCHED;
 
     self->start_sequence = start_sequence;
     self->start_sequence_len = start_sequence_len;
@@ -130,9 +130,7 @@ STATIC void wait_for_busy(displayio_epaperdisplay_obj_t* self) {
         return;
     }
     while (common_hal_digitalio_digitalinout_get_value(&self->busy) == self->busy_state) {
-    #ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP
-    #endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 
@@ -145,8 +143,8 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t* self, bool shou
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
         displayio_display_core_begin_transaction(&self->core);
-        self->core.send(self->core.bus, true, self->always_toggle_chip_select, cmd, 1);
-        self->core.send(self->core.bus, false, self->always_toggle_chip_select, data, data_size);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, cmd, 1);
+        self->core.send(self->core.bus, DISPLAY_DATA, self->always_toggle_chip_select, data, data_size);
         displayio_display_core_end_transaction(&self->core);
         uint16_t delay_length_ms = 0;
         if (delay) {
@@ -187,7 +185,7 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
 void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self) {
     // Actually refresh the display now that all pixel RAM has been updated.
     displayio_display_core_begin_transaction(&self->core);
-    self->core.send(self->core.bus, true, self->always_toggle_chip_select, &self->refresh_display_command, 1);
+    self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, &self->refresh_display_command, 1);
     displayio_display_core_end_transaction(&self->core);
     self->refreshing = true;
 
@@ -248,7 +246,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
             write_command = self->write_color_ram_command;
         }
         displayio_display_core_begin_transaction(&self->core);
-        self->core.send(self->core.bus, true, self->always_toggle_chip_select, &write_command, 1);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, &write_command, 1);
         displayio_display_core_end_transaction(&self->core);
 
         for (uint16_t j = 0; j < subrectangles; j++) {
@@ -266,12 +264,8 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
 
             uint16_t subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / self->core.colorspace.depth);
 
-            for (uint16_t k = 0; k < mask_length; k++) {
-                mask[k] = 0x00000000;
-            }
-            for (uint16_t k = 0; k < buffer_size; k++) {
-                buffer[k] = 0x00000000;
-            }
+            memset(mask, 0, mask_length * sizeof(uint32_t));
+            memset(buffer, 0, buffer_size * sizeof(uint32_t));
 
             self->core.colorspace.grayscale = true;
             if (pass == 1) {
@@ -291,7 +285,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
                 // Can't acquire display bus; skip the rest of the data. Try next display.
                 return false;
             }
-            self->core.send(self->core.bus, false, self->always_toggle_chip_select, (uint8_t*) buffer, subrectangle_size_bytes);
+            self->core.send(self->core.bus, DISPLAY_DATA, self->always_toggle_chip_select, (uint8_t*) buffer, subrectangle_size_bytes);
             displayio_display_core_end_transaction(&self->core);
 
             // TODO(tannewt): Make refresh displays faster so we don't starve other

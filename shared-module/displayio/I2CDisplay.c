@@ -35,6 +35,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared-module/displayio/display_core.h"
 
 #include "tick.h"
 
@@ -80,7 +81,7 @@ bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
     }
 
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-    common_hal_mcu_delay_us(1);
+    common_hal_mcu_delay_us(4);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
     return true;
 }
@@ -97,9 +98,9 @@ bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
     return common_hal_displayio_i2cdisplay_bus_free(obj);
 }
 
-void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
-    if (command) {
+    if (data_type == DISPLAY_COMMAND) {
         uint8_t command_bytes[2 * data_length];
         for (uint32_t i = 0; i < data_length; i++) {
             command_bytes[2 * i] = 0x80;

@@ -142,9 +142,10 @@ bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
     return true;
 }
 
-void common_hal_displayio_parallelbus_send(mp_obj_t obj, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length) {
+// This ignores chip_select behaviour because data is clocked in by the write line toggling.
+void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->command, !command);
+    common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
     uint32_t* clear_write = (uint32_t*) &self->write_group->OUTCLR;
     uint32_t* set_write = (uint32_t*) &self->write_group->OUTSET;
     uint32_t mask = self->write_mask;

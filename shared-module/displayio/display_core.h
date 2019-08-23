@@ -27,17 +27,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_CORE_H
 #define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_CORE_H
 
+#include "shared-bindings/displayio/__init__.h"
 #include "shared-bindings/displayio/Group.h"
 
 #include "shared-module/displayio/area.h"
 
 #define NO_COMMAND 0x100
-
-typedef bool (*display_bus_bus_reset)(mp_obj_t bus);
-typedef bool (*display_bus_bus_free)(mp_obj_t bus);
-typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
-typedef void (*display_bus_send)(mp_obj_t bus, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length);
-typedef void (*display_bus_end_transaction)(mp_obj_t bus);
 
 typedef struct {
     mp_obj_t bus;

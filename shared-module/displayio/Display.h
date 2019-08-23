@@ -46,7 +46,7 @@ typedef struct {
     mp_float_t current_brightness;
     uint16_t brightness_command;
     uint16_t native_frames_per_second;
-    uint16_t native_frame_time;
+    uint16_t native_ms_per_frame;
     uint8_t set_column_command;
     uint8_t set_row_command;
     uint8_t write_ram_command;

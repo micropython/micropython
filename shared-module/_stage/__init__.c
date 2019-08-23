@@ -57,7 +57,7 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
                     index += 1;
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
-                        display->core.send(display->core.bus, false, false, ((uint8_t*)buffer),
+                        display->core.send(display->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, ((uint8_t*)buffer),
                                       buffer_size * 2);
                         index = 0;
                     }
@@ -67,6 +67,6 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
     }
     // Send the remaining data.
     if (index) {
-        display->core.send(display->core.bus, false, false, ((uint8_t*)buffer), index * 2);
+        display->core.send(display->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, ((uint8_t*)buffer), index * 2);
     }
 }

@@ -107,7 +107,7 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     area.y2 = y1;
     displayio_display_core_set_region_to_update(&display->core, display->set_column_command, display->set_row_command, NO_COMMAND, NO_COMMAND, display->data_as_commands, false, &area);
 
-    display->core.send(display->core.bus, true, true, &display->write_ram_command, 1);
+    display->core.send(display->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &display->write_ram_command, 1);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
                  display, scale);
     displayio_display_core_end_transaction(&display->core);

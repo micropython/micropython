@@ -33,6 +33,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared-module/displayio/display_core.h"
 
 #include "tick.h"
 
@@ -110,10 +111,10 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     return true;
 }
 
-void common_hal_displayio_fourwire_send(mp_obj_t obj, bool command, bool toggle_every_byte, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->command, !command);
-    if (toggle_every_byte) {
+    common_hal_digitalio_digitalinout_set_value(&self->command, data_type == DISPLAY_DATA);
+    if (chip_select == CHIP_SELECT_TOGGLE_EVERY_BYTE) {
         // Toggle chip select after each command byte in case the display driver
         // IC latches commands based on it.
         for (size_t i = 0; i < data_length; i++) {
