@@ -72,7 +72,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
+        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, false);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);
@@ -195,6 +195,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 #endif
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;

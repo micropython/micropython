@@ -88,6 +88,9 @@ void mp_init(void) {
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
+    #if MICROPY_EMIT_NATIVE
+    MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
+    #endif
     #endif
 
     // init global module dict
@@ -1434,7 +1437,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
 
         mp_obj_t ret;
         if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {

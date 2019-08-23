@@ -138,7 +138,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         }
         #endif
 
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
         if (!compile_only) {
             // execute it
@@ -455,6 +455,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_init();
+
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
 
     #if MICROPY_VFS_POSIX
     {
