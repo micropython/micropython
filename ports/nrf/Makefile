@@ -101,7 +101,7 @@ LDFLAGS += -Wl,--gc-sections
 endif
 
 
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES)) 
+CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(INC) -Wall -Werror -g -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
@@ -254,7 +254,7 @@ OBJ += $(BUILD)/pins_gen.o
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.PHONY: all flash sd binary hex
+.PHONY: all flash deploy sd binary hex
 
 all: binary hex
 
@@ -276,7 +276,7 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
@@ -288,7 +288,7 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 else ifeq ($(FLASHER), pyocd)
 
-flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) $<
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
@@ -298,13 +298,46 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 else ifeq ($(FLASHER), idap)
 
-flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	IDAPnRFPRog $<
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	IDAPnRFPRog $(SOFTDEV_HEX) $<
 
+else ifeq ($(FLASHER), bmp)
+
+BMP_PORT ?= /dev/ttyACM0
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).elf
+	$(Q)$(GDB) \
+	    -ex 'target extended-remote $(BMP_PORT)' \
+	    -ex 'monitor tpwr enable' \
+	    -ex 'monitor swdp_scan' \
+	    -ex 'attach 1' \
+	    -ex 'set mem inaccessible-by-default off' \
+	    -ex 'load' \
+	    -ex 'kill' \
+	    -ex 'quit' \
+	    $<
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).elf
+	$(Q)$(GDB) \
+	    -ex 'target extended-remote $(BMP_PORT)' \
+	    -ex 'monitor tpwr enable' \
+	    -ex 'monitor swdp_scan' \
+	    -ex 'attach 1' \
+	    -ex 'set mem inaccessible-by-default off' \
+	    -ex 'monitor erase_mass' \
+	    -ex 'load' \
+	    -ex 'file $(SOFTDEV_HEX)' \
+	    -ex 'load' \
+	    -ex 'kill' \
+	    -ex 'quit' \
+	    $<
+
 endif
+
+flash: deploy
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
