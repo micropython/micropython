@@ -30,7 +30,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * PCA10031 (dongle)
   * [WT51822-S4AT](http://www.wireless-tag.com/wireless_module/BLE/WT51822-S4AT.html)
 * nRF52832
-  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html) 
+  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html)
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
@@ -38,6 +38,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [BLUEIO-TAG-EVIM BLYST Nano Sensor board](https://www.crowdsupply.com/i-syst/blyst-nano)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
+  * [Particle Xenon](https://docs.particle.io/xenon/)
 
 ## Compile and Flash
 
@@ -71,7 +72,7 @@ the compilation:
 GNU ARM Embedded Toolchain 7.2.1/4Q17. It's recommended to use a toolchain after
 this release, for example 7.3.1/2Q18 or 8.2.1/4Q18. The alternative would be to
 build the target using the LTO=0 as described above.
- 
+
 ## Compile and Flash with Bluetooth Stack
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
@@ -126,6 +127,7 @@ ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP]
 idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
+particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
 
 ## IDAP-M/IDAP-Link Targets
 
@@ -152,6 +154,14 @@ Install the necessary tools to flash and debug using OpenOCD:
 
     sudo apt-get install openocd
     sudo pip install pyOCD
+
+## Black Magic Probe Targets
+
+This requires no further dependencies other than `arm-none-eabi-gdb`.
+
+`make deploy` will use gdb to load and run new firmware. See
+[this guide](https://github.com/blacksphere/blackmagic/wiki/Useful-GDB-commands)
+for more tips about using the BMP with GDB.
 
 ## Bluetooth LE REPL
 
