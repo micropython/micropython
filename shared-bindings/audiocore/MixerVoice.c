@@ -141,19 +141,16 @@ const mp_obj_property_t audioio_mixervoice_level_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//TODO: @sommersoft - enable voice.playing tracking? will need an additional field
-//      in the struct, with supporting logic. disabled documentation for now.
+//|  .. attribute:: playing
+//|
+//|     True when any voice is being output. (read-only)
+//|
 
-//   .. attribute:: playing
-//
-//     True when any voice is being output. (read-only)
-//
 STATIC mp_obj_t audioio_mixervoice_obj_get_playing(mp_obj_t self_in) {
-#if 0
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(common_hal_audioio_mixer_get_playing(self));
-#endif
-    return mp_const_none;
+    audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return mp_obj_new_bool(common_hal_audioio_mixervoice_get_playing(self));
+
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixervoice_get_playing_obj, audioio_mixervoice_obj_get_playing);
 
