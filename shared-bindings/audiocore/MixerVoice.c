@@ -74,7 +74,6 @@ STATIC mp_obj_t audioio_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_a
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    //raise_error_if_deinited(common_hal_audioio_mixervoice_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -94,7 +93,6 @@ STATIC mp_obj_t audioio_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_a
         { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
     };
     audioio_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    //raise_error_if_deinited(common_hal_audioio_mixer_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
