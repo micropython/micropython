@@ -11,7 +11,7 @@ docker_builder:
   env_script:
     env
   pull_script:
-    docker images
+    docker image ls
     docker pull $(ci-scripts/get-temp-image.sh)
   build_script:
     docker build -t $(ci-scripts/get-temp-image.sh) .
