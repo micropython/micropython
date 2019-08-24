@@ -22,7 +22,7 @@ docker_builder:
 #    docker push $RELEASE_IMAGE
 
 #another_docker_builder:
-build_ports:
+build_ports_task:
   name: Build ports
   container:
     dockerfile: Dockerfile
