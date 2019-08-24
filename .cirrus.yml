@@ -21,9 +21,11 @@ docker_builder:
 #    docker tag $TEMP_IMAGE $RELEASE_IMAGE
 #    docker push $RELEASE_IMAGE
 
-another_docker_builder:
+#another_docker_builder:
+build_ports:
   name: Build ports
-#  container:
+  container:
+    dockerfile: Dockerfile
 #    image: $TEMP_IMAGE
   depends_on: Build docker image
   env:
@@ -43,6 +45,7 @@ another_docker_builder:
 #      - MPY_PORT: samd
 #      - MPY_PORT: teensy
   build_script:
-    docker run -v $PWD:$PWD -w $PWD $TEMP_IMAGE ci-scripts/$MPY_PORT.sh
+    ci-scripts/$MPY_PORT.sh
+#    docker run -v $PWD:$PWD -w $PWD $TEMP_IMAGE ci-scripts/$MPY_PORT.sh
   on_failure:
     debug_script: ci-scripts/on-failure.sh
