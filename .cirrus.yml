@@ -1,7 +1,5 @@
 env:
-  IMAGE_NAME: pycampers/micropython
-  TEMP_IMAGE: $IMAGE_NAME:$CIRRUS_TASK_ID
-  RELEASE_IMAGE: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
+  RELEASE_IMAGE: pycampers/micropython:${CIRRUS_TAG:$CIRRUS_BRANCH}
 
 docker_builder:
   name: Build docker image
@@ -13,19 +11,19 @@ docker_builder:
   env_script:
     env
   pull_script:
-    docker pull $RELEASE_IMAGE || docker pull $IMAGE_NAME:master || docker pull $IMAGE_NAME:latest || true
+    docker pull  || true
   build_script:
-    docker build --cache-from=$RELEASE_IMAGE,$IMAGE_NAME:master,$IMAGE_NAME:latest -t $TEMP_IMAGE .
+    docker build -t $(ci-scripts/get-temp-image.sh) .
 #  push_script: |
 #    docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
 #    docker tag $TEMP_IMAGE $RELEASE_IMAGE
 #    docker push $RELEASE_IMAGE
 
-#another_docker_builder:
-build_ports_task:
+another_docker_builder:
+#build_ports_task:
   name: Build ports
-  container:
-    dockerfile: Dockerfile
+#  container:
+#    dockerfile: Dockerfile
 #    image: $TEMP_IMAGE
   depends_on: Build docker image
   env:
@@ -45,7 +43,7 @@ build_ports_task:
 #      - MPY_PORT: samd
 #      - MPY_PORT: teensy
   build_script:
-    ci-scripts/$MPY_PORT.sh
-#    docker run -v $PWD:$PWD -w $PWD $TEMP_IMAGE ci-scripts/$MPY_PORT.sh
+#    ci-scripts/$MPY_PORT.sh
+    docker run -v $PWD:$PWD -w $PWD $(ci-scripts/get-temp-image.sh) ci-scripts/$MPY_PORT.sh
   on_failure:
     debug_script: ci-scripts/on-failure.sh
