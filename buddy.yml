@@ -1,0 +1,51 @@
+- pipeline: Build Dockerfile
+  trigger_mode: ON_EVERY_PUSH
+  ref_name: refs/heads/*
+  ref_type: WILDCARD
+  trigger_condition: ALWAYS
+
+  variables: &env-vars
+    - key: IMAGE_NAME
+      value: pycampers/micropython
+    - key: TEMP_IMAGE_TAG
+      value: $CIRRUS_TASK_ID
+    - key: TEMP_IMAGE
+      value: $IMAGE_NAME:$TEMP_IMAGE_TAG
+    - key: RELEASE_IMAGE_TAG
+      value: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
+    - key: RELEASE_IMAGE
+      value: $IMAGE_NAME:$RELEASE_IMAGE_TAG
+
+  actions:
+    - action: Print env
+      type: BUILD
+      docker_image_name: library/ubuntu
+      docker_image_tag: 18.04
+      execute_commands: env
+
+    - action: Build docker image
+      type: DOCKERFILE
+      dockerfile_path: Dockerfile
+      repository: $IMAGE_NAME
+      docker_image_tag: $TEMP_IMAGE
+      login: $DOCKER_USERNAME
+      password: $DOCKER_PASSWORD
+      do_not_prune_images: true
+
+    - action: Run Build port pipeline
+      type: RUN_NEXT_PIPELINE
+      next_project_name: micropython
+      next_pipeline_name: Build port
+
+- pipeline: Build port
+  trigger_mode: MANUAL
+  ref_type: NONE
+  trigger_condition: ALWAYS
+  variables:  *env-vars
+  actions:
+    - action: stm32
+      type: BUILD
+      docker_image_name: $IMAGE_NAME
+      docker_image_tag: $TEMP_IMAGE_TAG
+      execute_commands: ci-scripts/stm32.sh
+
