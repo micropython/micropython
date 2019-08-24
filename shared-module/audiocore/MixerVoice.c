@@ -42,7 +42,7 @@ void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, au
 }
 
 float common_hal_audioio_mixervoice_get_level(audioio_mixervoice_obj_t* self) {
-	return self->level;
+	return ((float) self->level / ((1 << 15) - 1));
 }
 
 void common_hal_audioio_mixervoice_set_level(audioio_mixervoice_obj_t* self, float level) {
