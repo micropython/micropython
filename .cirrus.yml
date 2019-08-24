@@ -14,7 +14,8 @@ docker_builder:
     docker pull  || true
   build_script:
     docker build -t $(ci-scripts/get-temp-image.sh) .
-#  push_script: |
+  push_script:
+    docker push $(ci-scripts/get-temp-image.sh)
 #    docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
 #    docker tag $TEMP_IMAGE $RELEASE_IMAGE
 #    docker push $RELEASE_IMAGE
