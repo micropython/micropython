@@ -104,7 +104,7 @@ STATIC mp_obj_t audioio_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_mixervoice_stop_obj, 1, audioio_mixervoice_obj_stop);
 
-//|   .. method:: level()
+//|   .. attribute:: level()
 //|
 //|     The volume level of a voice, as a floating point number between 0 and 1.
 //|
