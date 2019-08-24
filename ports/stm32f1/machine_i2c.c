@@ -39,8 +39,6 @@ STATIC const mp_obj_type_t machine_hard_i2c_type;
 
 #define I2C_POLL_DEFAULT_TIMEOUT_US (50000) // 50ms
 
-#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
-
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
     i2c_t *i2c;
@@ -52,6 +50,7 @@ STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
     #if defined(MICROPY_HW_I2C1_SCL)
     [0] = {{&machine_hard_i2c_type}, I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #endif
+
     #if defined(MICROPY_HW_I2C2_SCL)
     [1] = {{&machine_hard_i2c_type}, I2C2, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
     #endif
@@ -59,9 +58,6 @@ STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    #if defined(STM32F4)
-
     uint32_t freq = self->i2c->CR2 & 0x3f;
     uint32_t ccr = self->i2c->CCR;
     if (ccr & 0x8000) {
@@ -76,20 +72,6 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
         self - &machine_hard_i2c_obj[0] + 1,
         mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
         freq);
-
-    #else
-
-    uint32_t timingr = self->i2c->TIMINGR;
-    uint32_t presc = timingr >> 28;
-    uint32_t sclh = timingr >> 8 & 0xff;
-    uint32_t scll = timingr & 0xff;
-    uint32_t freq = HAL_RCC_GetPCLK1Freq() / (presc + 1) / (sclh + scll + 2);
-    mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timingr=0x%08x)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
-        freq, timingr);
-
-    #endif
 }
 
 void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us) {
@@ -127,59 +109,9 @@ int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, m
     return num_acks;
 }
 
-#else
-
-// No hardware I2C driver for this MCU so use the software implementation
-
-typedef mp_machine_soft_i2c_obj_t machine_hard_i2c_obj_t;
-
-STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
-    #if defined(MICROPY_HW_I2C1_SCL)
-    [0] = {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
-    #endif
-    #if defined(MICROPY_HW_I2C2_SCL)
-    [1] = {{&machine_hard_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
-    #endif
-};
-
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timeout=%u)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        self->scl->name, self->sda->name, 500000 / self->us_delay, self->us_timeout);
-}
-
-STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
-    // set parameters
-    if (freq >= 1000000) {
-        // allow fastest possible bit-bang rate
-        self->us_delay = 0;
-    } else {
-        self->us_delay = 500000 / freq;
-        if (self->us_delay == 0) {
-            self->us_delay = 1;
-        }
-    }
-
-    self->us_timeout = timeout;
-
-    // init pins
-    mp_hal_pin_open_drain(self->scl);
-    mp_hal_pin_open_drain(self->sda);
-}
-
-#define machine_hard_i2c_transfer mp_machine_soft_i2c_transfer
-
-#endif
 
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
-
-#if defined(STM32F0) || defined(STM32F7)
-#define MACHINE_I2C_TIMINGR (1)
-#else
-#define MACHINE_I2C_TIMINGR (0)
-#endif
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
@@ -190,37 +122,15 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2C_POLL_DEFAULT_TIMEOUT_US} },
-        #if MACHINE_I2C_TIMINGR
-        { MP_QSTR_timingr, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        #endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // work out i2c bus
-    int i2c_id = 0;
-    if (mp_obj_is_str(args[ARG_id].u_obj)) {
-        const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
-        if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
-            i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
-            i2c_id = 2;
-        #endif
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%s) doesn't exist", port));
-        }
-    } else {
-        i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
-        if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
-            || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%d) doesn't exist", i2c_id));
-        }
+    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
+    if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
+        || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id));
     }
 
     // get static peripheral object
@@ -233,13 +143,6 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // initialise the I2C peripheral
     machine_hard_i2c_init(self, args[ARG_freq].u_int, args[ARG_timeout].u_int);
-
-    #if MACHINE_I2C_TIMINGR
-    // If given, explicitly set the TIMINGR value
-    if (args[ARG_timingr].u_obj != mp_const_none) {
-        self->i2c->TIMINGR = mp_obj_get_int_truncated(args[ARG_timingr].u_obj);
-    }
-    #endif
 
     return MP_OBJ_FROM_PTR(self);
 }

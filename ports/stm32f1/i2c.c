@@ -81,10 +81,6 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
         i2c->TRISE = PCLK1 / 1000000 * 3 / 10 + 1; // 300ns rise time in FM
     }
 
-    #if defined(I2C_FLTR_ANOFF)
-    i2c->FLTR = 0; // analog filter on, digital filter off
-    #endif
-
     return 0;
 }
 
