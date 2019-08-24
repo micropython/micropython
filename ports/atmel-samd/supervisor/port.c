@@ -54,7 +54,11 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
+#endif
+
 #include "samd/cache.h"
 #include "samd/clocks.h"
 #include "samd/events.h"
@@ -211,7 +215,7 @@ void reset_port(void) {
     //pdmin_reset();
 #endif
 
-#if CIRCUITPY_TOUCHIO
+#if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
 #endif
     eic_reset();

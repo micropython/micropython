@@ -47,8 +47,17 @@ STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
 
 STATIC uint32_t ble_stack_enable(void) {
     nrf_clock_lf_cfg_t clock_config = {
-        .source = NRF_CLOCK_LF_SRC_XTAL,
-        .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
+#if BOARD_HAS_32KHZ_XTAL
+        .source       = NRF_CLOCK_LF_SRC_XTAL,
+        .rc_ctiv      = 0,
+        .rc_temp_ctiv = 0,
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_20_PPM,
+#else
+        .source       = NRF_CLOCK_LF_SRC_RC,
+        .rc_ctiv      = 16,
+        .rc_temp_ctiv = 2,
+        .accuracy     = NRF_CLOCK_LF_ACCURACY_250_PPM,
+#endif
     };
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);

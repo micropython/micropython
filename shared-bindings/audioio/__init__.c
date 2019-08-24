@@ -33,6 +33,12 @@
 #include "shared-bindings/audioio/__init__.h"
 #include "shared-bindings/audioio/AudioOut.h"
 
+#ifdef CIRCUITPY_AUDIOIO_COMPAT
+#include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiocore/RawSample.h"
+#include "shared-bindings/audiocore/WaveFile.h"
+#endif
+
 //| :mod:`audioio` --- Support for audio input and output
 //| ======================================================
 //|
@@ -57,10 +63,19 @@
 //| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
 //| to :mod:`audiocore`.
 //|
+//| For compatibility with CircuitPython 4.x, some builds allow the items in
+//| `audiocore` to be imported from `audioio`.  This will be removed for all
+//| boards in a future build of CicuitPython.
+//|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audioio) },
     { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audioio_audioout_type) },
+#ifdef CIRCUITPY_AUDIOIO_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audioio_mixer_type) },
+    { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
+    { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(audioio_module_globals, audioio_module_globals_table);
