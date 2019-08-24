@@ -21,7 +21,8 @@
       type: BUILD
       docker_image_name: library/ubuntu
       docker_image_tag: 18.04
-      execute_commands: env
+      execute_commands:
+        - env
 
     - action: Build docker image
       type: DOCKERFILE
@@ -47,5 +48,6 @@
       type: BUILD
       docker_image_name: $IMAGE_NAME
       docker_image_tag: $TEMP_IMAGE_TAG
-      execute_commands: ci-scripts/stm32.sh
+      execute_commands:
+        - ci-scripts/stm32.sh
 
