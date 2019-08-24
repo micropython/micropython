@@ -21,7 +21,7 @@ docker_builder:
 build_ports_task:
   name: Build ports
   container:
-    dockerfile: Dockerfile
+    image: $TEMP_IMAGE
   depends_on: Build docker image
   env:
     matrix:
