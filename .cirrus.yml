@@ -16,10 +16,10 @@ docker_builder:
     docker pull $RELEASE_IMAGE || docker pull $IMAGE_NAME:master || docker pull $IMAGE_NAME:latest || true
   build_script:
     docker build --cache-from=$RELEASE_IMAGE,$IMAGE_NAME:master,$IMAGE_NAME:latest -t $TEMP_IMAGE .
-  push_script: |
-    docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
-    docker tag $TEMP_IMAGE $RELEASE_IMAGE
-    docker push $RELEASE_IMAGE
+#  push_script: |
+#    docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+#    docker tag $TEMP_IMAGE $RELEASE_IMAGE
+#    docker push $RELEASE_IMAGE
 
 another_docker_builder:
   name: Build ports
@@ -43,6 +43,6 @@ another_docker_builder:
 #      - MPY_PORT: samd
 #      - MPY_PORT: teensy
   build_script:
-    docker run -v $PWD:$PWD -w $PWD $RELEASE_IMAGE ci-scripts/$MPY_PORT.sh
+    docker run -v $PWD:$PWD -w $PWD $TEMP_IMAGE ci-scripts/$MPY_PORT.sh
   on_failure:
     debug_script: ci-scripts/on-failure.sh
