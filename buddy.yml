@@ -4,7 +4,7 @@
   ref_type: WILDCARD
   trigger_condition: ALWAYS
 
-  variables: &env-vars
+  variables:
     - key: IMAGE_NAME
       value: pycampers/micropython
     - key: TEMP_IMAGE_TAG
@@ -42,7 +42,19 @@
   trigger_mode: MANUAL
   ref_type: NONE
   trigger_condition: ALWAYS
-  variables:  *env-vars
+
+  variables:
+    - key: IMAGE_NAME
+      value: pycampers/micropython
+    - key: TEMP_IMAGE_TAG
+      value: $CIRRUS_TASK_ID
+    - key: TEMP_IMAGE
+      value: $IMAGE_NAME:$TEMP_IMAGE_TAG
+    - key: RELEASE_IMAGE_TAG
+      value: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
+    - key: RELEASE_IMAGE
+      value: $IMAGE_NAME:$RELEASE_IMAGE_TAG
+
   actions:
     - action: stm32
       type: BUILD
