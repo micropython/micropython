@@ -4,24 +4,15 @@
   ref_type: WILDCARD
   trigger_condition: ALWAYS
 
-  variables:
-    - key: IMAGE_NAME
-      value: pycampers/micropython
-    - key: TEMP_IMAGE_TAG
-      value: $CIRRUS_TASK_ID
-    - key: TEMP_IMAGE
-      value: $IMAGE_NAME:$TEMP_IMAGE_TAG
-    - key: RELEASE_IMAGE_TAG
-      value: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
-    - key: RELEASE_IMAGE
-      value: $IMAGE_NAME:$RELEASE_IMAGE_TAG
-
   actions:
-    - action: Print env
-      type: BUILD
-      docker_image_name: library/ubuntu
-      docker_image_tag: 18.04
+    - action: Setup env
       execute_commands:
+        - export
+            IMAGE_NAME=pycampers/micropython
+            TEMP_IMAGE_TAG=$CIRRUS_TASK_ID
+            TEMP_IMAGE=$IMAGE_NAME:$TEMP_IMAGE_TAG
+            RELEASE_IMAGE_TAG=$IMAGE_NAME:${BUDDY_EXECUTION_TAG:$BUDDY_EXECUTION_BRANCH}
+            RELEASE_IMAGE=$IMAGE_NAME:$RELEASE_IMAGE_TAG
         - env
 
     - action: Build docker image
@@ -43,19 +34,17 @@
   ref_type: NONE
   trigger_condition: ALWAYS
 
-  variables:
-    - key: IMAGE_NAME
-      value: pycampers/micropython
-    - key: TEMP_IMAGE_TAG
-      value: $CIRRUS_TASK_ID
-    - key: TEMP_IMAGE
-      value: $IMAGE_NAME:$TEMP_IMAGE_TAG
-    - key: RELEASE_IMAGE_TAG
-      value: $IMAGE_NAME:${CIRRUS_TAG:$CIRRUS_BRANCH}
-    - key: RELEASE_IMAGE
-      value: $IMAGE_NAME:$RELEASE_IMAGE_TAG
-
   actions:
+    - action: Setup env
+      execute_commands:
+        - export
+            IMAGE_NAME=pycampers/micropython
+            TEMP_IMAGE_TAG=$CIRRUS_TASK_ID
+            TEMP_IMAGE=$IMAGE_NAME:$TEMP_IMAGE_TAG
+            RELEASE_IMAGE_TAG=$IMAGE_NAME:${BUDDY_EXECUTION_TAG:$BUDDY_EXECUTION_BRANCH}
+            RELEASE_IMAGE=$IMAGE_NAME:$RELEASE_IMAGE_TAG
+        - env
+
     - action: stm32
       type: BUILD
       docker_image_name: $IMAGE_NAME
