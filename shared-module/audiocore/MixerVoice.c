@@ -32,6 +32,11 @@
 #include "shared-module/audiocore/RawSample.h"
 #include "shared-module/audiocore/MixerVoice.h"
 
+void common_hal_audioio_mixervoice_construct(audioio_mixervoice_obj_t *self) {
+    self->sample = NULL;
+    self->level = ((1 << 15) - 1);
+}
+
 void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, audioio_mixer_obj_t *parent) {
 	self->parent = parent;
 }

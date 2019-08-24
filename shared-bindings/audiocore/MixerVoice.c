@@ -50,10 +50,11 @@
 //|
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audioio_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-	audioio_mixervoice_obj_t *self = m_new_obj(audioio_mixervoice_obj_t);
+    audioio_mixervoice_obj_t *self = m_new_obj(audioio_mixervoice_obj_t);
     self->base.type = &audioio_mixervoice_type;
-    self->sample = NULL;
-    self->level = ((1 << 15)-1);
+
+    common_hal_audioio_mixervoice_construct(self);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
