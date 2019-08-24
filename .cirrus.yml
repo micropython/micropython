@@ -8,8 +8,11 @@ docker_builder:
   env:
     DOCKER_USERNAME: ENCRYPTED[71db2e80e578eb091743059bc4c5daa2fc4f013b948c4edb0aab24777b97449005cb76c4a8d514f68738e97a8d41a966]
     DOCKER_PASSWORD: ENCRYPTED[59c099fa42c2b72ba18145ab049b0fe7e269f6ecc30e042daf9499844cc0fd03b380e847995b48b6f4dc28031d936eb3]
-  pull_script: docker pull $RELEASE_IMAGE || docker pull $IMAGE_NAME:master || docker pull $IMAGE_NAME:latest || true
-  build_script: docker build --cache-from=$RELEASE_IMAGE,$IMAGE_NAME:master,$IMAGE_NAME:latest -t $TEMP_IMAGE .
+
+  pull_script:
+    docker pull $RELEASE_IMAGE || docker pull $IMAGE_NAME:master || docker pull $IMAGE_NAME:latest || true
+  build_script:
+    docker build --cache-from=$RELEASE_IMAGE,$IMAGE_NAME:master,$IMAGE_NAME:latest -t $TEMP_IMAGE .
   push_script: |
     docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
     docker tag $TEMP_IMAGE $RELEASE_IMAGE
@@ -18,24 +21,25 @@ docker_builder:
 build_ports_task:
   name: Build ports
   container:
-    image: xyz
+    dockerfile: Dockerfile
   depends_on: Build docker image
   env:
     matrix:
       - MPY_PORT: stm32
-      - MPY_PORT: qemu-arm
-      - MPY_PORT: unix-coverage
-      - MPY_PORT: unix-standard
-      - MPY_PORT: unix-nanobox
-      - MPY_PORT: unix-stackless
-      - MPY_PORT: windows
-      - MPY_PORT: esp32
-      - MPY_PORT: esp8266
-      - MPY_PORT: nrf
-      - MPY_PORT: bare-arm
-      - MPY_PORT: cc3200
-      - MPY_PORT: samd
-      - MPY_PORT: teensy
-  build_script: docker run -v $PWD:$PWD -w $PWD $RELEASE_IMAGE ci-scripts/$MPY_PORT.sh
+#      - MPY_PORT: qemu-arm
+#      - MPY_PORT: unix-coverage
+#      - MPY_PORT: unix-standard
+#      - MPY_PORT: unix-nanobox
+#      - MPY_PORT: unix-stackless
+#      - MPY_PORT: windows
+#      - MPY_PORT: esp32
+#      - MPY_PORT: esp8266
+#      - MPY_PORT: nrf
+#      - MPY_PORT: bare-arm
+#      - MPY_PORT: cc3200
+#      - MPY_PORT: samd
+#      - MPY_PORT: teensy
+  build_script:
+    docker run -v $PWD:$PWD -w $PWD $RELEASE_IMAGE ci-scripts/$MPY_PORT.sh
   on_failure:
     debug_script: ci-scripts/on-failure.sh
