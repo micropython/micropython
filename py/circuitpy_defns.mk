@@ -114,6 +114,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOCORE),1)
 SRC_PATTERNS += audiocore/%
 endif
+ifeq ($(CIRCUITPY_AUDIOMIXER),1)
+SRC_PATTERNS += audiomixer/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -305,10 +308,11 @@ SRC_SHARED_MODULE_ALL = \
 	audiopwmio/__init__.c \
 	audioio/__init__.c \
 	audiocore/__init__.c \
-	audiocore/Mixer.c \
-	audiocore/MixerVoice.c \
 	audiocore/RawSample.c \
 	audiocore/WaveFile.c \
+	audiomixer/__init__.c \
+	audiomixer/Mixer.c \
+	audiomixer/MixerVoice.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \

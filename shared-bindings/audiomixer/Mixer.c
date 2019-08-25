@@ -23,9 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "shared-bindings/audiocore/Mixer.h"
-#include "shared-bindings/audiocore/MixerVoice.h"
-#include "shared-module/audiocore/MixerVoice.h"
+#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-bindings/audiomixer/MixerVoice.h"
+#include "shared-module/audiomixer/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -38,7 +38,7 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audiocore
+//| .. currentmodule:: audiomixer
 //|
 //| :class:`Mixer` -- Mixes one or more audio samples together
 //| ===========================================================
@@ -62,6 +62,7 @@
 //|     import board
 //|     import audioio
 //|     import audiocore
+//|     import audiomixer
 //|     import digitalio
 //|
 //|     # Required for CircuitPlayground Express
@@ -70,8 +71,8 @@
 //|
 //|     music = audiocore.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
 //|     drum = audiocore.WaveFile(open("drum.wav", "rb"))
-//|     mixer = audiocore.Mixer(voice_count=2, sample_rate=16000, channel_count=1,
-//|                             bits_per_sample=16, samples_signed=True)
+//|     mixer = audiomixer.Mixer(voice_count=2, sample_rate=16000, channel_count=1,
+//|                              bits_per_sample=16, samples_signed=True)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
@@ -85,7 +86,7 @@
 //|       time.sleep(1)
 //|     print("stopped")
 //|
-STATIC mp_obj_t audioio_mixer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_voice_count, ARG_buffer_size, ARG_channel_count, ARG_bits_per_sample, ARG_samples_signed, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_voice_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 2} },
@@ -115,13 +116,13 @@ STATIC mp_obj_t audioio_mixer_make_new(const mp_obj_type_t *type, size_t n_args,
     if (bits_per_sample != 8 && bits_per_sample != 16) {
         mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
     }
-    audioio_mixer_obj_t *self = m_new_obj_var(audioio_mixer_obj_t, mp_obj_t, voice_count);
-    self->base.type = &audioio_mixer_type;
-    common_hal_audioio_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
+    audiomixer_mixer_obj_t *self = m_new_obj_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count);
+    self->base.type = &audiomixer_mixer_type;
+    common_hal_audiomixer_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
 
     for(int v=0; v<voice_count; v++){
-    	self->voice[v] = audioio_mixervoice_type.make_new(&audioio_mixervoice_type, 0, 0, NULL);
-    	common_hal_audioio_mixervoice_set_parent(self->voice[v], self);
+    	self->voice[v] = audiomixer_mixervoice_type.make_new(&audiomixer_mixervoice_type, 0, 0, NULL);
+    	common_hal_audiomixer_mixervoice_set_parent(self->voice[v], self);
     }
     self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
 
@@ -132,15 +133,15 @@ STATIC mp_obj_t audioio_mixer_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 //|      Deinitialises the Mixer and releases any hardware resources for reuse.
 //|
-STATIC mp_obj_t audioio_mixer_deinit(mp_obj_t self_in) {
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_audioio_mixer_deinit(self);
+STATIC mp_obj_t audiomixer_mixer_deinit(mp_obj_t self_in) {
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_audiomixer_mixer_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_deinit_obj, audioio_mixer_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_deinit_obj, audiomixer_mixer_deinit);
 
-STATIC void check_for_deinit(audioio_mixer_obj_t *self) {
-    if (common_hal_audioio_mixer_deinited(self)) {
+STATIC void check_for_deinit(audiomixer_mixer_obj_t *self) {
+    if (common_hal_audiomixer_mixer_deinited(self)) {
         raise_deinited_error();
     }
 }
@@ -156,27 +157,27 @@ STATIC void check_for_deinit(audioio_mixer_obj_t *self) {
 //|      Automatically deinitializes the hardware when exiting a context. See
 //|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
-STATIC mp_obj_t audioio_mixer_obj___exit__(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t audiomixer_mixer_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_audioio_mixer_deinit(args[0]);
+    common_hal_audiomixer_mixer_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_mixer___exit___obj, 4, 4, audioio_mixer_obj___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomixer_mixer___exit___obj, 4, 4, audiomixer_mixer_obj___exit__);
 
 //|   .. attribute:: playing
 //|
 //|     True when any voice is being output. (read-only)
 //|
-STATIC mp_obj_t audioio_mixer_obj_get_playing(mp_obj_t self_in) {
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t audiomixer_mixer_obj_get_playing(mp_obj_t self_in) {
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return mp_obj_new_bool(common_hal_audioio_mixer_get_playing(self));
+    return mp_obj_new_bool(common_hal_audiomixer_mixer_get_playing(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_playing_obj, audioio_mixer_obj_get_playing);
+MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_playing_obj, audiomixer_mixer_obj_get_playing);
 
-const mp_obj_property_t audioio_mixer_playing_obj = {
+const mp_obj_property_t audiomixer_mixer_playing_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_mixer_get_playing_obj,
+    .proxy = {(mp_obj_t)&audiomixer_mixer_get_playing_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -185,59 +186,59 @@ const mp_obj_property_t audioio_mixer_playing_obj = {
 //|
 //|     32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
 //|
-STATIC mp_obj_t audioio_mixer_obj_get_sample_rate(mp_obj_t self_in) {
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t audiomixer_mixer_obj_get_sample_rate(mp_obj_t self_in) {
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_mixer_get_sample_rate(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_audiomixer_mixer_get_sample_rate(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_sample_rate_obj, audioio_mixer_obj_get_sample_rate);
+MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_sample_rate_obj, audiomixer_mixer_obj_get_sample_rate);
 
-const mp_obj_property_t audioio_mixer_sample_rate_obj = {
+const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_mixer_get_sample_rate_obj,
+    .proxy = {(mp_obj_t)&audiomixer_mixer_get_sample_rate_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
 //|   .. attribute:: voice
 //|
-//|     A tuple of the mixer's `audioio.MixerVoice` object(s).
+//|     A tuple of the mixer's `audiomixer.MixerVoice` object(s).
 //|
 //|     .. code-block:: python
 //|
 //|        >>> mixer.voice
 //|        (<MixerVoice>,)
-STATIC mp_obj_t audioio_mixer_obj_get_voice(mp_obj_t self_in) {
-    audioio_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t audiomixer_mixer_obj_get_voice(mp_obj_t self_in) {
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     return self->voice_tuple;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(audioio_mixer_get_voice_obj, audioio_mixer_obj_get_voice);
+MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_voice_obj, audiomixer_mixer_obj_get_voice);
 
-const mp_obj_property_t audioio_mixer_voice_obj = {
+const mp_obj_property_t audiomixer_mixer_voice_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_mixer_get_voice_obj,
+    .proxy = {(mp_obj_t)&audiomixer_mixer_get_voice_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
 
-STATIC const mp_rom_map_elem_t audioio_mixer_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t audiomixer_mixer_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_mixer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiomixer_mixer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audioio_mixer___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiomixer_mixer___exit___obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_mixer_playing_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audioio_mixer_sample_rate_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_voice), MP_ROM_PTR(&audioio_mixer_voice_obj) }
+    { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiomixer_mixer_playing_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiomixer_mixer_sample_rate_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_voice), MP_ROM_PTR(&audiomixer_mixer_voice_obj) }
 };
-STATIC MP_DEFINE_CONST_DICT(audioio_mixer_locals_dict, audioio_mixer_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(audiomixer_mixer_locals_dict, audiomixer_mixer_locals_dict_table);
 
-const mp_obj_type_t audioio_mixer_type = {
+const mp_obj_type_t audiomixer_mixer_type = {
     { &mp_type_type },
     .name = MP_QSTR_Mixer,
-    .make_new = audioio_mixer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&audioio_mixer_locals_dict,
+    .make_new = audiomixer_mixer_make_new,
+    .locals_dict = (mp_obj_dict_t*)&audiomixer_mixer_locals_dict,
 };

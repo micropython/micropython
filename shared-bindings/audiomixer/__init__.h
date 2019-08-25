@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 DeanM for Adafruit Industries
+ * Copyright (c) 2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SHARED_MODULE_AUDIOIO_MIXERVOICE_H_
-#define SHARED_MODULE_AUDIOIO_MIXERVOICE_H_
+
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H
 
 #include "py/obj.h"
 
-#include "shared-module/audiocore/__init__.h"
-#include "shared-module/audiocore/Mixer.h"
+// Nothing now.
 
-typedef struct {
-	mp_obj_base_t base;
-	audioio_mixer_obj_t *parent;
-    mp_obj_t sample;
-    bool loop;
-    bool more_data;
-    uint32_t* remaining_buffer;
-    uint32_t buffer_length;
-    int16_t level;
-} audioio_mixervoice_obj_t;
-
-
-#endif /* SHARED_MODULE_AUDIOIO_MIXERVOICE_H_ */
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H

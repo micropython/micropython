@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,39 +30,34 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audiocore/__init__.h"
-#include "shared-bindings/audiocore/RawSample.h"
-#include "shared-bindings/audiocore/WaveFile.h"
-//#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-bindings/audiomixer/Mixer.h"
 
-//| :mod:`audiocore` --- Support for audio samples and mixer
+//| :mod:`audiomixer` --- Support for audio mixer
 //| ========================================================
 //|
-//| .. module:: audiocore
-//|   :synopsis: Support for audio samples and mixer
+//| .. module:: audiomixer
+//|   :synopsis: Support for audio mixer
 //|   :platform: SAMD21
 //|
-//| The `audiocore` module contains core classes for audio IO
+//| The `audiomixer` module contains core classes for mixing audio sources
 //|
 //| Libraries
 //|
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     RawSample
-//|     WaveFile
+//|     Mixer
+//|     MixerVoice
 //|
 
-STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
-    //{ MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audioio_mixer_type) },
-    { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
-    { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
+STATIC const mp_rom_map_elem_t audiomixer_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomixer) },
+    { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audiomixer_mixer_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(audiocore_module_globals, audiocore_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(audiomixer_module_globals, audiomixer_module_globals_table);
 
-const mp_obj_module_t audiocore_module = {
+const mp_obj_module_t audiomixer_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&audiocore_module_globals,
+    .globals = (mp_obj_dict_t*)&audiomixer_module_globals,
 };

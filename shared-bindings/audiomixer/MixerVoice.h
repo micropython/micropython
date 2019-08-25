@@ -23,25 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SHARED_BINDINGS_AUDIOIO_MIXERVOICE_H_
-#define SHARED_BINDINGS_AUDIOIO_MIXERVOICE_H_
+#ifndef SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
+#define SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/audiocore/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
-#include "shared-module/audiocore/MixerVoice.h"
-#include "shared-module/audiocore/Mixer.h"
 
-extern const mp_obj_type_t audioio_mixer_type;
-extern const mp_obj_type_t audioio_mixervoice_type;
+#include "shared-module/audiomixer/MixerVoice.h"
+#include "shared-module/audiomixer/Mixer.h"
 
-void common_hal_audioio_mixervoice_construct(audioio_mixervoice_obj_t *self);
-void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, audioio_mixer_obj_t *parent);
-void common_hal_audioio_mixervoice_play(audioio_mixervoice_obj_t* self, mp_obj_t sample, bool loop);
-void common_hal_audioio_mixervoice_stop(audioio_mixervoice_obj_t* self);
-float common_hal_audioio_mixervoice_get_level(audioio_mixervoice_obj_t* self);
-void common_hal_audioio_mixervoice_set_level(audioio_mixervoice_obj_t* self, float gain);
+extern const mp_obj_type_t audiomixer_mixer_type;
+extern const mp_obj_type_t audiomixer_mixervoice_type;
 
-bool common_hal_audioio_mixervoice_get_playing(audioio_mixervoice_obj_t* self);
+void common_hal_audiomixer_mixervoice_construct(audiomixer_mixervoice_obj_t *self);
+void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t* self, audiomixer_mixer_obj_t *parent);
+void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t* self, mp_obj_t sample, bool loop);
+void common_hal_audiomixer_mixervoice_stop(audiomixer_mixervoice_obj_t* self);
+float common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t* self);
+void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t* self, float gain);
 
-#endif /* SHARED_BINDINGS_AUDIOIO_MIXERVOICE_H_ */
+bool common_hal_audiomixer_mixervoice_get_playing(audiomixer_mixervoice_obj_t* self);
+
+#endif /* SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_ */

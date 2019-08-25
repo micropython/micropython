@@ -26,8 +26,8 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audiocore/Mixer.h"
-#include "shared-bindings/audiocore/MixerVoice.h"
+#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-bindings/audiomixer/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -35,24 +35,24 @@
 #include "shared-module/audiocore/__init__.h"
 #include "shared-module/audiocore/RawSample.h"
 
-void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
-                                        uint8_t voice_count,
-                                        uint32_t buffer_size,
-                                        uint8_t bits_per_sample,
-                                        bool samples_signed,
-                                        uint8_t channel_count,
-                                        uint32_t sample_rate) {
+void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t* self,
+                                           uint8_t voice_count,
+                                           uint32_t buffer_size,
+                                           uint8_t bits_per_sample,
+                                           bool samples_signed,
+                                           uint8_t channel_count,
+                                           uint32_t sample_rate) {
     self->len = buffer_size / 2 / sizeof(uint32_t) * sizeof(uint32_t);
 
     self->first_buffer = m_malloc(self->len, false);
     if (self->first_buffer == NULL) {
-        common_hal_audioio_mixer_deinit(self);
+        common_hal_audiomixer_mixer_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate first buffer"));
     }
 
     self->second_buffer = m_malloc(self->len, false);
     if (self->second_buffer == NULL) {
-        common_hal_audioio_mixer_deinit(self);
+        common_hal_audiomixer_mixer_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate second buffer"));
     }
 
@@ -63,31 +63,31 @@ void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
     self->voice_count = voice_count;
 }
 
-void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self) {
+void common_hal_audiomixer_mixer_deinit(audiomixer_mixer_obj_t* self) {
     self->first_buffer = NULL;
     self->second_buffer = NULL;
 }
 
-bool common_hal_audioio_mixer_deinited(audioio_mixer_obj_t* self) {
+bool common_hal_audiomixer_mixer_deinited(audiomixer_mixer_obj_t* self) {
     return self->first_buffer == NULL;
 }
 
-uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self) {
+uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t* self) {
     return self->sample_rate;
 }
 
-bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self) {
+bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
     for (int32_t v = 0; v < self->voice_count; v++) {
-        if (common_hal_audioio_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
+        if (common_hal_audiomixer_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
             return true;
         }
     }
     return false;
 }
 
-void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
-                                bool single_channel,
-                                uint8_t channel) {
+void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
+                                   bool single_channel,
+                                   uint8_t channel) {
 #if 0
     for (int32_t i = 0; i < self->voice_count; i++) {
         self->voice[i].sample = NULL;
@@ -289,11 +289,11 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     #endif
 }
 
-audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
-                                                     bool single_channel,
-                                                     uint8_t channel,
-                                                     uint8_t** buffer,
-                                                     uint32_t* buffer_length) {
+audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
+                                                        bool single_channel,
+                                                        uint8_t channel,
+                                                        uint8_t** buffer,
+                                                        uint32_t* buffer_length) {
     if (!single_channel) {
         channel = 0;
     }
@@ -317,7 +317,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         self->use_first_buffer = !self->use_first_buffer;
         bool voices_active = false;
         for (int32_t v = 0; v < self->voice_count; v++) {
-            audioio_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
+            audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
 
             uint32_t j = 0;
             bool voice_done = voice->sample == NULL;
@@ -416,7 +416,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
     return GET_BUFFER_MORE_DATA;
 }
 
-void audioio_mixer_get_buffer_structure(audioio_mixer_obj_t* self, bool single_channel,
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t* self, bool single_channel,
                                         bool* single_buffer, bool* samples_signed,
                                         uint32_t* max_buffer_length, uint8_t* spacing) {
     *single_buffer = false;

@@ -23,33 +23,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-module/audiomixer/MixerVoice.h"
 
 #include <stdint.h>
 
 #include "py/runtime.h"
-#include "shared-module/audioio/__init__.h"
+#include "shared-module/audiomixer/__init__.h"
 #include "shared-module/audiocore/RawSample.h"
-#include "shared-module/audiocore/MixerVoice.h"
 
-void common_hal_audioio_mixervoice_construct(audioio_mixervoice_obj_t *self) {
+void common_hal_audiomixer_mixervoice_construct(audiomixer_mixervoice_obj_t *self) {
     self->sample = NULL;
     self->level = ((1 << 15) - 1);
 }
 
-void common_hal_audioio_mixervoice_set_parent(audioio_mixervoice_obj_t* self, audioio_mixer_obj_t *parent) {
+void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t* self, audiomixer_mixer_obj_t *parent) {
 	self->parent = parent;
 }
 
-float common_hal_audioio_mixervoice_get_level(audioio_mixervoice_obj_t* self) {
+float common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t* self) {
 	return ((float) self->level / ((1 << 15) - 1));
 }
 
-void common_hal_audioio_mixervoice_set_level(audioio_mixervoice_obj_t* self, float level) {
+void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t* self, float level) {
 	self->level = level * ((1 << 15)-1);
 }
 
-void common_hal_audioio_mixervoice_play(audioio_mixervoice_obj_t* self, mp_obj_t sample, bool loop) {
+void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t* self, mp_obj_t sample, bool loop) {
     if (audiosample_sample_rate(sample) != self->parent->sample_rate) {
         mp_raise_ValueError(translate("The sample's sample rate does not match the mixer's"));
     }
@@ -78,10 +78,10 @@ void common_hal_audioio_mixervoice_play(audioio_mixervoice_obj_t* self, mp_obj_t
     self->more_data = result == GET_BUFFER_MORE_DATA;
 }
 
-bool common_hal_audioio_mixervoice_get_playing(audioio_mixervoice_obj_t* self) {
+bool common_hal_audiomixer_mixervoice_get_playing(audiomixer_mixervoice_obj_t* self) {
 	return self->sample != NULL;
 }
 
-void common_hal_audioio_mixervoice_stop(audioio_mixervoice_obj_t* self) {
+void common_hal_audiomixer_mixervoice_stop(audiomixer_mixervoice_obj_t* self) {
     self->sample = NULL;
 }
