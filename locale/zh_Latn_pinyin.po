@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 15:20-0400\n"
+"POT-Creation-Date: 2019-08-24 23:36-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -484,11 +484,11 @@ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "Wúfǎ chūshǐhuà UART"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
 
@@ -799,7 +799,7 @@ msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Wúxiào de tōngdào jìshù"
 
@@ -861,7 +861,7 @@ msgstr "Wúxiào de yùnxíng móshì."
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr "Wúxiào de yǔyīn jìshù"
 
@@ -1120,7 +1120,7 @@ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dài
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA huò SCL xūyào lādòng"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 
@@ -1202,19 +1202,19 @@ msgstr ""
 "Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ tuìchū "
 "ānquán móshì\n"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Yàngběn de bits_per_sample yǔ hǔn yīn qì bù pǐpèi"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Yàngběn de píndào jìshù yǔ hǔn yīn qì bù xiāngfú"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Yàngběn de yàngběn sùdù yǔ hǔn yīn qì de xiāngchà bù pǐpèi"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 
@@ -1466,7 +1466,7 @@ msgstr "bǐtè bìxū shì 7,8 huò 9"
 msgid "bits must be 8"
 msgstr "bǐtè bìxū shì 8"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
 
@@ -2073,7 +2073,7 @@ msgstr "biāoqiān chóngxīn dìngyì"
 msgid "length argument not allowed for this type"
 msgstr "bù yǔnxǔ gāi lèixíng de chángdù cānshù"
 
-#: shared-bindings/audiocore/MixerVoice.c
+#: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
 msgstr ""
 

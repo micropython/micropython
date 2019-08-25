@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 15:20-0400\n"
+"POT-Creation-Date: 2019-08-24 23:36-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -488,11 +488,11 @@ msgstr "No se puede descodificar ble_uuid, err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "No se pudo asignar el primer buffer"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "No se pudo asignar el segundo buffer"
 
@@ -804,7 +804,7 @@ msgstr "Tamaño de buffer inválido"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Inválido periodo de captura. Rango válido: 1 - 500"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Cuenta de canales inválida"
 
@@ -866,7 +866,7 @@ msgstr "Modo de ejecución inválido."
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr "Cuenta de voces inválida"
 
@@ -1133,7 +1133,7 @@ msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necesitan una pull up"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Sample rate debe ser positivo"
 
@@ -1215,19 +1215,19 @@ msgstr ""
 "El botón reset fue presionado mientras arrancaba CircuitPython. Presiona "
 "otra vez para salir del modo seguro.\n"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Los bits_per_sample del sample no igualan a los del mixer"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "La cuenta de canales del sample no iguala a las del mixer"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "El sample rate del sample no iguala al del mixer"
 
-#: shared-module/audiocore/MixerVoice.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "El signo del sample no iguala al del mixer"
 
@@ -1481,7 +1481,7 @@ msgstr "bits deben ser 7, 8 ó 9"
 msgid "bits must be 8"
 msgstr "bits debe ser 8"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample debe ser 8 ó 16"
 
@@ -2094,7 +2094,7 @@ msgstr "etiqueta redefinida"
 msgid "length argument not allowed for this type"
 msgstr "argumento length no permitido para este tipo"
 
-#: shared-bindings/audiocore/MixerVoice.c
+#: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
 msgstr ""
 
