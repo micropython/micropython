@@ -56,44 +56,44 @@ extern void NORETURN __fatal_error(const char *msg);
 
 // unregister all interrupt sources
 void uart_deinit_all(void) {
-	for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-		pyb_uart_obj_t *uart_obj = MP_STATE_PORT(pyb_uart_obj_all)[i];
+	for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all)); i++) {
+		machine_uart_obj_t *uart_obj = MP_STATE_PORT(machine_uart_obj_all)[i];
 		if (uart_obj != NULL && !uart_obj->is_static) {
 			uart_deinit(uart_obj);
-			MP_STATE_PORT(pyb_uart_obj_all)
+			MP_STATE_PORT(machine_uart_obj_all)
 			[i] = NULL;
 		}
 	}
 }
 
 bool uart_exists(int uart_id) {
-	if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
-		// safeguard against pyb_uart_obj_all array being configured too small
+	if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all))) {
+		// safeguard against machine_uart_obj_all array being configured too small
 		return false;
 	}
 	switch (uart_id) {
 #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
-	case PYB_UART_1:
+	case MACHINE_UART_1:
 		return true;
 #endif
 
 #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
-	case PYB_UART_2:
+	case MACHINE_UART_2:
 		return true;
 #endif
 
 #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
-	case PYB_UART_3:
+	case MACHINE_UART_3:
 		return true;
 #endif
 
 #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
-	case PYB_UART_4:
+	case MACHINE_UART_4:
 		return true;
 #endif
 
 #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
-	case PYB_UART_5:
+	case MACHINE_UART_5:
 		return true;
 #endif
 
@@ -103,7 +103,7 @@ bool uart_exists(int uart_id) {
 }
 
 // assumes Init parameters have been set up correctly
-bool uart_init(pyb_uart_obj_t *uart_obj,
+bool uart_init(machine_uart_obj_t *uart_obj,
 			   uint32_t baudrate,
 			   uint32_t bits,
 			   uint32_t parity,
@@ -118,7 +118,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 
 	switch (uart_obj->uart_id) {
 #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
-	case PYB_UART_1:
+	case MACHINE_UART_1:
 		uart_unit = 1;
 		UARTx = USART1;
 		irqn = USART1_IRQn;
@@ -129,7 +129,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 #endif
 
 #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
-	case PYB_UART_2:
+	case MACHINE_UART_2:
 		uart_unit = 2;
 		UARTx = USART2;
 		irqn = USART2_IRQn;
@@ -150,7 +150,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 #endif
 
 #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
-	case PYB_UART_3:
+	case MACHINE_UART_3:
 		uart_unit = 3;
 		UARTx = USART3;
 		irqn = USART3_IRQn;
@@ -171,7 +171,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 #endif
 
 #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
-	case PYB_UART_4:
+	case MACHINE_UART_4:
 		uart_unit = 4;
 		UARTx = UART4;
 		irqn = UART4_IRQn;
@@ -182,7 +182,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 #endif
 
 #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
-	case PYB_UART_5:
+	case MACHINE_UART_5:
 		uart_unit = 5;
 		UARTx = UART5;
 		irqn = UART5_IRQn;
@@ -255,7 +255,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
 	return true;
 }
 
-void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
+void uart_set_rxbuf(machine_uart_obj_t *self, size_t len, void *buf) {
 	self->read_buf_head = 0;
 	self->read_buf_tail = 0;
 	self->read_buf_len = len;
@@ -267,7 +267,7 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
 	}
 }
 
-void uart_deinit(pyb_uart_obj_t *self) {
+void uart_deinit(machine_uart_obj_t *self) {
 	self->is_enabled = false;
 
 	// Disable UART
@@ -322,11 +322,11 @@ void uart_deinit(pyb_uart_obj_t *self) {
     #endif
 }
 
-void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached) {
 	self->attached_to_repl = attached;
 }
 
-uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
+uint32_t uart_get_baudrate(machine_uart_obj_t *self) {
 	uint32_t uart_clk = 0;
 	if (self->uart_id == 1) {
 		uart_clk = HAL_RCC_GetPCLK2Freq();
@@ -340,7 +340,7 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
 	return baudrate;
 }
 
-mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
+mp_uint_t uart_rx_any(machine_uart_obj_t *self) {
 	int buffer_bytes = self->read_buf_head - self->read_buf_tail;
 	if (buffer_bytes < 0) {
 		return buffer_bytes + self->read_buf_len;
@@ -354,7 +354,7 @@ mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
 // Waits at most timeout milliseconds for at least 1 char to become ready for
 // reading (from buf or for direct reading).
 // Returns true if something available, false if not.
-bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout) {
 	uint32_t start = HAL_GetTick();
 	for (;;) {
 		if (self->read_buf_tail != self->read_buf_head || UART_RXNE_IS_SET(self->uartx)) {
@@ -368,7 +368,7 @@ bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 }
 
 // assumes there is a character available
-int uart_rx_char(pyb_uart_obj_t *self) {
+int uart_rx_char(machine_uart_obj_t *self) {
 	if (self->read_buf_tail != self->read_buf_head) {
 		// buffering via IRQ
 		int data;
@@ -393,7 +393,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
 
 // Waits at most timeout milliseconds for TX register to become empty.
 // Returns true if can write, false if can't.
-bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
 	uint32_t start = HAL_GetTick();
 	for (;;) {
 		if (uart_tx_avail(self)) {
@@ -408,7 +408,7 @@ bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 
 // Waits at most timeout milliseconds for UART flag to be set.
 // Returns true if flag is/was set, false on timeout.
-STATIC bool uart_wait_flag_set(pyb_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
+STATIC bool uart_wait_flag_set(machine_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
 	// Note: we don't use WFI to idle in this loop because UART tx doesn't generate
 	// an interrupt and the flag can be set quickly if the baudrate is large.
 	uint32_t start = HAL_GetTick();
@@ -426,7 +426,7 @@ STATIC bool uart_wait_flag_set(pyb_uart_obj_t *self, uint32_t flag, uint32_t tim
 // num_chars - number of characters to send (9-bit chars count for 2 bytes from src)
 // *errcode  - returns 0 for success, MP_Exxx on error
 // returns the number of characters sent (valid even if there was an error)
-size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode) {
+size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode) {
 	if (num_chars == 0) {
 		*errcode = 0;
 		return 0;
@@ -476,7 +476,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
 	return num_tx;
 }
 
-void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn(machine_uart_obj_t *uart_obj, const char *str, uint len) {
 	int errcode;
 	uart_tx_data(uart_obj, str, len, &errcode);
 }
@@ -484,7 +484,7 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
 // this IRQ handler is set up to handle RXNE interrupts only
 void uart_irq_handler(mp_uint_t uart_id) {
 	// get the uart object
-	pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
+	machine_uart_obj_t *self = MP_STATE_PORT(machine_uart_obj_all)[uart_id - 1];
 
 	if (self == NULL) {
 		// UART object has not been set, so we can't do anything, not

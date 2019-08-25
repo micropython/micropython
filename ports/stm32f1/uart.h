@@ -29,21 +29,21 @@
 struct _mp_irq_obj_t;
 
 typedef enum {
-    PYB_UART_NONE = 0,
-    PYB_UART_1 = 1,
-    PYB_UART_2 = 2,
-    PYB_UART_3 = 3,
-    PYB_UART_4 = 4,
-    PYB_UART_5 = 5,
-} pyb_uart_t;
+    MACHINE_UART_NONE = 0,
+    MACHINE_UART_1 = 1,
+    MACHINE_UART_2 = 2,
+    MACHINE_UART_3 = 3,
+    MACHINE_UART_4 = 4,
+    MACHINE_UART_5 = 5,
+} machine_uart_t;
 
 #define CHAR_WIDTH_8BIT (0)
 #define CHAR_WIDTH_9BIT (1)
 
-typedef struct _pyb_uart_obj_t {
+typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     USART_TypeDef *uartx;
-    pyb_uart_t uart_id : 8;
+    machine_uart_t uart_id : 8;
     bool is_static : 1;
     bool is_enabled : 1;
     bool attached_to_repl;              // whether the UART is attached to REPL
@@ -58,30 +58,30 @@ typedef struct _pyb_uart_obj_t {
     uint16_t mp_irq_trigger;            // user IRQ trigger mask
     uint16_t mp_irq_flags;              // user IRQ active IRQ flags
     struct _mp_irq_obj_t *mp_irq_obj;   // user IRQ object
-} pyb_uart_obj_t;
+} machine_uart_obj_t;
 
-extern const mp_obj_type_t pyb_uart_type;
+extern const mp_obj_type_t machine_uart_type;
 
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
 
 // 串口初始化
-bool uart_init(pyb_uart_obj_t *uart_obj,
+bool uart_init(machine_uart_obj_t *uart_obj,
     uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow);
-void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
-void uart_deinit(pyb_uart_obj_t *uart_obj);
+void uart_set_rxbuf(machine_uart_obj_t *self, size_t len, void *buf);
+void uart_deinit(machine_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);
 
-void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached);
-uint32_t uart_get_baudrate(pyb_uart_obj_t *self);
-mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj);
-bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout);
-int uart_rx_char(pyb_uart_obj_t *uart_obj);
-bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout);
-size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode);
-void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached);
+uint32_t uart_get_baudrate(machine_uart_obj_t *self);
+mp_uint_t uart_rx_any(machine_uart_obj_t *uart_obj);
+bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout);
+int uart_rx_char(machine_uart_obj_t *uart_obj);
+bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout);
+size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode);
+void uart_tx_strn(machine_uart_obj_t *uart_obj, const char *str, uint len);
 
-static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
+static inline bool uart_tx_avail(machine_uart_obj_t *self) {
     return self->uartx->SR & USART_SR_TXE;
 }
 

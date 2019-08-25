@@ -48,7 +48,7 @@
 // #define MICROPY_HW_UART5_TX     (pin_C12) // PC12
 // #define MICROPY_HW_UART5_RX     (pin_D2)  // PD2
 
-#define MICROPY_HW_UART_REPL        PYB_UART_1
+#define MICROPY_HW_UART_REPL        MACHINE_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses

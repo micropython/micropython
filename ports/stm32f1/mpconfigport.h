@@ -277,10 +277,10 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
+    struct _machine_uart_obj_t *pyb_stdio_uart; \
     \
     /* pointers to all UART objects (if they have been created) */ \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART]; \
+    struct _machine_uart_obj_t *machine_uart_obj_all[MICROPY_HW_MAX_UART]; \
     \
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]; \

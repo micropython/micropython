@@ -94,7 +94,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
 
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     mp_obj_type_t *type = mp_obj_get_type(stream);
-    return type == &pyb_uart_type
+    return type == &machine_uart_type
         #if MICROPY_HW_ENABLE_USB
         || type == &pyb_usb_vcp_type
         #endif
@@ -103,7 +103,7 @@ bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
 
 STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
     mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
-    if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
+    if (mp_obj_get_type(prev_obj) == &machine_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
     #if MICROPY_HW_ENABLE_USB
@@ -112,7 +112,7 @@ STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
     }
     #endif
 
-    if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+    if (mp_obj_get_type(args[0]) == &machine_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
     #if MICROPY_HW_ENABLE_USB
