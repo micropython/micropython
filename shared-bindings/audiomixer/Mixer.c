@@ -48,7 +48,7 @@
 //| .. class:: Mixer(voice_count=2, buffer_size=1024, channel_count=2, bits_per_sample=16, samples_signed=True, sample_rate=8000)
 //|
 //|   Create a Mixer object that can mix multiple channels with the same sample rate.
-//|   Samples are accessed and controlled with the mixer's `audiocore.MixerVoice` objects.
+//|   Samples are accessed and controlled with the mixer's `audiomixer.MixerVoice` objects.
 //|
 //|   :param int voice_count: The maximum number of voices to mix
 //|   :param int buffer_size: The total size in bytes of the buffers to mix into
