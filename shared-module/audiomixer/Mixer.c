@@ -77,7 +77,7 @@ uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t* sel
 }
 
 bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
-    for (int32_t v = 0; v < self->voice_count; v++) {
+    for (uint8_t v = 0; v < self->voice_count; v++) {
         if (common_hal_audiomixer_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
             return true;
         }
@@ -88,11 +88,9 @@ bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
 void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
                                    bool single_channel,
                                    uint8_t channel) {
-#if 0
-    for (int32_t i = 0; i < self->voice_count; i++) {
-        self->voice[i].sample = NULL;
+    for (uint8_t i = 0; i < self->voice_count; i++) {
+        common_hal_audiomixer_mixervoice_stop(self->voice[i]);
     }
-#endif
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
