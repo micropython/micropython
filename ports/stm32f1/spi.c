@@ -55,11 +55,13 @@ const spi_t spi_obj[3] = {
     #else
     {NULL, NULL, NULL},
     #endif
+
     #if defined(MICROPY_HW_SPI2_SCK)
     {&SPIHandle2, &dma_SPI_2_TX, &dma_SPI_2_RX},
     #else
     {NULL, NULL, NULL},
     #endif
+
     #if defined(MICROPY_HW_SPI3_SCK)
     {&SPIHandle3, &dma_SPI_3_TX, &dma_SPI_3_RX},
     #else
@@ -73,44 +75,26 @@ void spi_init0(void) {
     #if defined(MICROPY_HW_SPI1_SCK)
     SPIHandle1.Instance = SPI1;
     #endif
+
     #if defined(MICROPY_HW_SPI2_SCK)
     SPIHandle2.Instance = SPI2;
     #endif
+
     #if defined(MICROPY_HW_SPI3_SCK)
     SPIHandle3.Instance = SPI3;
     #endif
 }
 
 int spi_find_index(mp_obj_t id) {
-    if (mp_obj_is_str(id)) {
-        // given a string id
-        const char *port = mp_obj_str_get_str(id);
-        if (0) {
-        #ifdef MICROPY_HW_SPI1_NAME
-        } else if (strcmp(port, MICROPY_HW_SPI1_NAME) == 0) {
-            return 1;
-        #endif
-        #ifdef MICROPY_HW_SPI2_NAME
-        } else if (strcmp(port, MICROPY_HW_SPI2_NAME) == 0) {
-            return 2;
-        #endif
-        #ifdef MICROPY_HW_SPI3_NAME
-        } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
-            return 3;
-        #endif
-        }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%s) doesn't exist", port));
-    } else {
-        // given an integer id
-        int spi_id = mp_obj_get_int(id);
-        if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(spi_obj)
-            && spi_obj[spi_id - 1].spi != NULL) {
-            return spi_id;
-        }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%d) doesn't exist", spi_id));
+
+    // given an integer id
+    int spi_id = mp_obj_get_int(id);
+    if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(spi_obj)
+        && spi_obj[spi_id - 1].spi != NULL) {
+        return spi_id;
     }
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+        "SPI(%d) doesn't exist", spi_id));
 }
 
 // sets the parameters in the SPI_InitTypeDef struct
@@ -163,9 +147,10 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     SPI_HandleTypeDef *spi = self->spi;
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
-    if (0) {
+    if (0) {}
+
     #if defined(MICROPY_HW_SPI1_SCK)
-    } else if (spi->Instance == SPI1) {
+    else if (spi->Instance == SPI1) {
         #if defined(MICROPY_HW_SPI1_NSS)
         pins[0] = MICROPY_HW_SPI1_NSS;
         #endif
@@ -174,11 +159,12 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[2] = MICROPY_HW_SPI1_MISO;
         #endif
         pins[3] = MICROPY_HW_SPI1_MOSI;
-        // enable the SPI clock
         __HAL_RCC_SPI1_CLK_ENABLE();
+    }
     #endif
+
     #if defined(MICROPY_HW_SPI2_SCK)
-    } else if (spi->Instance == SPI2) {
+    else if (spi->Instance == SPI2) {
         #if defined(MICROPY_HW_SPI2_NSS)
         pins[0] = MICROPY_HW_SPI2_NSS;
         #endif
@@ -187,11 +173,12 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[2] = MICROPY_HW_SPI2_MISO;
         #endif
         pins[3] = MICROPY_HW_SPI2_MOSI;
-        // enable the SPI clock
         __HAL_RCC_SPI2_CLK_ENABLE();
+    }
     #endif
+
     #if defined(MICROPY_HW_SPI3_SCK)
-    } else if (spi->Instance == SPI3) {
+    else if (spi->Instance == SPI3) {
         #if defined(MICROPY_HW_SPI3_NSS)
         pins[0] = MICROPY_HW_SPI3_NSS;
         #endif
@@ -200,10 +187,11 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[2] = MICROPY_HW_SPI3_MISO;
         #endif
         pins[3] = MICROPY_HW_SPI3_MOSI;
-        // enable the SPI clock
         __HAL_RCC_SPI3_CLK_ENABLE();
+    }
     #endif
-    } else {
+
+    else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
         return;
     }
@@ -237,29 +225,34 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
 void spi_deinit(const spi_t *spi_obj) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
-    if (0) {
+
+    if (0) {}
+
     #if defined(MICROPY_HW_SPI1_SCK)
-    } else if (spi->Instance == SPI1) {
+    else if (spi->Instance == SPI1) {
         __HAL_RCC_SPI1_FORCE_RESET();
         __HAL_RCC_SPI1_RELEASE_RESET();
         __HAL_RCC_SPI1_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
     #endif
+
     #if defined(MICROPY_HW_SPI2_SCK)
-    } else if (spi->Instance == SPI2) {
+    else if (spi->Instance == SPI2) {
         __HAL_RCC_SPI2_FORCE_RESET();
         __HAL_RCC_SPI2_RELEASE_RESET();
         __HAL_RCC_SPI2_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI2_IRQn);
+    }
     #endif
+
     #if defined(MICROPY_HW_SPI3_SCK)
-    } else if (spi->Instance == SPI3) {
+    else if (spi->Instance == SPI3) {
         __HAL_RCC_SPI3_FORCE_RESET();
         __HAL_RCC_SPI3_RELEASE_RESET();
         __HAL_RCC_SPI3_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI3_IRQn);
-    #endif
     }
+    #endif
 }
 
 STATIC HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_start, uint32_t timeout) {
@@ -361,7 +354,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
 
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
-            
+
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             uint32_t t_start = HAL_GetTick();
@@ -394,9 +387,11 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
 
     uint spi_num = 1; // default to SPI1
     if (0) { }
+
     #if defined(MICROPY_HW_SPI2_SCK)
     else if (spi->Instance == SPI2) { spi_num = 2; }
     #endif
+
     #if defined(MICROPY_HW_SPI3_SCK)
     else if (spi->Instance == SPI3) { spi_num = 3; }
     #endif
@@ -425,9 +420,9 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
         } else {
             mp_printf(print, ", SPI.SLAVE");
         }
-        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", 
-            spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, 
-            spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, 
+        mp_printf(print, ", polarity=%u, phase=%u, bits=%u",
+            spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1,
+            spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1,
             spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16
         );
 

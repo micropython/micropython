@@ -63,9 +63,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const machine_hard_spi_obj_t *self = &machine_hard_spi_obj[spi_id - 1];
 
     // here we would check the sck/mosi/miso pins and configure them, but it's not implemented
-    if (args[ARG_sck].u_obj != MP_OBJ_NULL
-        || args[ARG_mosi].u_obj != MP_OBJ_NULL
-        || args[ARG_miso].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_sck].u_obj != MP_OBJ_NULL || args[ARG_mosi].u_obj != MP_OBJ_NULL || args[ARG_miso].u_obj != MP_OBJ_NULL) {
         mp_raise_ValueError("explicit choice of sck/mosi/miso is not implemented");
     }
 

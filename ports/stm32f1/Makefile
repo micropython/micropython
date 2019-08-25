@@ -225,7 +225,6 @@ SRC_C = \
 	dma.c \
 	i2c.c \
 	spi.c \
-	pyb_spi.c \
 	uart.c \
 	can.c \
 	usb.c \
