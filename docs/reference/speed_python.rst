@@ -165,7 +165,7 @@ by caching the object in a local variable:
 
     class foo(object):
         def __init__(self):
-            ba = bytearray(100)
+            self.ba = bytearray(100)
         def bar(self, obj_display):
             ba_ref = self.ba
             fb = obj_display.framebuffer
