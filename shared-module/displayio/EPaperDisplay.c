@@ -49,7 +49,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         uint16_t set_column_window_command, uint16_t set_row_window_command,
         uint16_t set_current_column_command, uint16_t set_current_row_command,
         uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command, mp_float_t refresh_time,
-        const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool always_toggle_chip_select) {
+        const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select) {
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
@@ -71,7 +71,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     self->busy_state = busy_state;
     self->refreshing = false;
     self->milliseconds_per_frame = seconds_per_frame * 1000;
-    self->always_toggle_chip_select = always_toggle_chip_select ? CHIP_SELECT_TOGGLE_EVERY_BYTE : CHIP_SELECT_UNTOUCHED;
+    self->chip_select = chip_select ? CHIP_SELECT_TOGGLE_EVERY_BYTE : CHIP_SELECT_UNTOUCHED;
 
     self->start_sequence = start_sequence;
     self->start_sequence_len = start_sequence_len;
@@ -143,8 +143,8 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t* self, bool shou
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
         displayio_display_core_begin_transaction(&self->core);
-        self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, cmd, 1);
-        self->core.send(self->core.bus, DISPLAY_DATA, self->always_toggle_chip_select, data, data_size);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, cmd, 1);
+        self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, data, data_size);
         displayio_display_core_end_transaction(&self->core);
         uint16_t delay_length_ms = 0;
         if (delay) {
@@ -185,7 +185,7 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
 void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self) {
     // Actually refresh the display now that all pixel RAM has been updated.
     displayio_display_core_begin_transaction(&self->core);
-    self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, &self->refresh_display_command, 1);
+    self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &self->refresh_display_command, 1);
     displayio_display_core_end_transaction(&self->core);
     self->refreshing = true;
 
@@ -238,7 +238,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
         uint16_t remaining_rows = displayio_area_height(&clipped);
 
         if (self->set_row_window_command != NO_COMMAND) {
-            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command, self->set_row_window_command, self->set_current_column_command, self->set_current_row_command, false, self->always_toggle_chip_select, &clipped);
+            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command, self->set_row_window_command, self->set_current_column_command, self->set_current_row_command, false, self->chip_select, &clipped);
         }
 
         uint8_t write_command = self->write_black_ram_command;
@@ -246,7 +246,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
             write_command = self->write_color_ram_command;
         }
         displayio_display_core_begin_transaction(&self->core);
-        self->core.send(self->core.bus, DISPLAY_COMMAND, self->always_toggle_chip_select, &write_command, 1);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &write_command, 1);
         displayio_display_core_end_transaction(&self->core);
 
         for (uint16_t j = 0; j < subrectangles; j++) {
@@ -264,8 +264,8 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
 
             uint16_t subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / self->core.colorspace.depth);
 
-            memset(mask, 0, mask_length * sizeof(uint32_t));
-            memset(buffer, 0, buffer_size * sizeof(uint32_t));
+            memset(mask, 0, mask_length * sizeof(mask[0]));
+            memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
             self->core.colorspace.grayscale = true;
             if (pass == 1) {
@@ -285,7 +285,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
                 // Can't acquire display bus; skip the rest of the data. Try next display.
                 return false;
             }
-            self->core.send(self->core.bus, DISPLAY_DATA, self->always_toggle_chip_select, (uint8_t*) buffer, subrectangle_size_bytes);
+            self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, (uint8_t*) buffer, subrectangle_size_bytes);
             displayio_display_core_end_transaction(&self->core);
 
             // TODO(tannewt): Make refresh displays faster so we don't starve other

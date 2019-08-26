@@ -270,8 +270,8 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
             subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / self->core.colorspace.depth);
         }
 
-        memset(mask, 0, mask_length * sizeof(uint32_t));
-        memset(buffer, 0, buffer_size * sizeof(uint32_t));
+        memset(mask, 0, mask_length * sizeof(mask[0]));
+        memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
         displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
