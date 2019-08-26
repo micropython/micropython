@@ -112,8 +112,11 @@ STATIC uint32_t ble_stack_enable(void) {
         .conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT,
     };
    err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
+   if (err_code != NRF_SUCCESS)
+       return err_code;
 
-    return err_code;
+   err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
+   return err_code;
 }
 
 void common_hal_bleio_adapter_set_enabled(bool enabled) {

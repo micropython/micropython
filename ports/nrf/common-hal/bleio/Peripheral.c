@@ -181,18 +181,6 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 break;
         }
 
-        // case BLE_GATTS_EVT_WRITE: {
-        //     ble_gatts_evt_write_t* write = &ble_evt->evt.gatts_evt.params.write;
-        //     mp_printf(&mp_plat_print, "GATTS write uuid %x\n", write->uuid.uuid);
-        //     break;
-        // }
-
-        // case BLE_GATTS_EVT_HVN_TX_COMPLETE: {
-        //     ble_gatts_evt_hvn_tx_complete_t* complete = &ble_evt->evt.gatts_evt.params.hvn_tx_complete;
-        //     mp_printf(&mp_plat_print, "HVN TX COMPLETE finished write num %d\n", complete->count);
-        //     break;
-        // }
-
         case BLE_GAP_EVT_CONN_SEC_UPDATE: {
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
