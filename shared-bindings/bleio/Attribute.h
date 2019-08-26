@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 
+#include "common-hal/bleio/Attribute.h"
 #include "shared-module/bleio/Attribute.h"
 
 extern const mp_obj_type_t bleio_attribute_type;

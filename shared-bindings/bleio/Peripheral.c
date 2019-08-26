@@ -44,11 +44,12 @@
 
 #include "common-hal/bleio/Peripheral.h"
 
-#define ADV_INTERVAL_DEFAULT (1.0f)
 #define ADV_INTERVAL_MIN (0.0020f)
 #define ADV_INTERVAL_MIN_STRING "0.0020"
 #define ADV_INTERVAL_MAX (10.24f)
 #define ADV_INTERVAL_MAX_STRING "10.24"
+// 20ms is recommended by Apple
+#define ADV_INTERVAL_DEFAULT (0.1f)
 
 //| .. currentmodule:: bleio
 //|
@@ -183,7 +184,7 @@ const mp_obj_property_t bleio_peripheral_name_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: start_advertising(data, *, scan_response=None, connectable=True, interval=1)
+//|   .. method:: start_advertising(data, *, scan_response=None, connectable=True, interval=0.1)
 //|
 //|     Starts advertising the peripheral. The peripheral's name and
 //|     services are included in the advertisement packets.
@@ -217,7 +218,7 @@ STATIC mp_obj_t bleio_peripheral_start_advertising(mp_uint_t n_args, const mp_ob
     }
 
     if (args[ARG_interval].u_obj == MP_OBJ_NULL) {
-        args[ARG_interval].u_obj = mp_obj_new_float(1.0F);
+        args[ARG_interval].u_obj = mp_obj_new_float(ADV_INTERVAL_DEFAULT);
     }
 
     const mp_float_t interval = mp_obj_float_get(args[ARG_interval].u_obj);

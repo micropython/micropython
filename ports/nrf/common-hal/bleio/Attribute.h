@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ATTRIBUTE_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ATTRIBUTE_H
 
-// Nothing yet.
+#include "shared-module/bleio/Attribute.h"
+
+extern void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ATTRIBUTE_H

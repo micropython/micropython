@@ -89,13 +89,6 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
             .vloc = BLE_GATTS_VLOC_STACK,
         };
 
-        if (char_md.char_props.notify || char_md.char_props.indicate) {
-            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
-            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
-
-            char_md.p_cccd_md = &cccd_md;
-        }
-
         ble_uuid_t char_uuid;
         bleio_uuid_convert_to_nrf_ble_uuid(characteristic->uuid, &char_uuid);
 
@@ -104,8 +97,16 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
             .vlen = !characteristic->fixed_length,
         };
 
-        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_attr_md.read_perm);
-        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&char_attr_md.write_perm);
+        if (char_md.char_props.notify || char_md.char_props.indicate) {
+            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+            // Make CCCD write permission match characteristic read permission.
+            bleio_attribute_gatts_set_security_mode(&cccd_md.write_perm, characteristic->read_perm);
+
+            char_md.p_cccd_md = &cccd_md;
+        }
+
+        bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);
+        bleio_attribute_gatts_set_security_mode(&char_attr_md.write_perm, characteristic->write_perm);
 
         mp_buffer_info_t char_value_bufinfo;
         mp_get_buffer_raise(characteristic->value, &char_value_bufinfo, MP_BUFFER_READ);
@@ -146,8 +147,8 @@ void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self)
                 .vlen = !descriptor->fixed_length,
             };
 
-            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&desc_attr_md.read_perm);
-            BLE_GAP_CONN_SEC_MODE_SET_OPEN(&desc_attr_md.write_perm);
+            bleio_attribute_gatts_set_security_mode(&desc_attr_md.read_perm, descriptor->read_perm);
+            bleio_attribute_gatts_set_security_mode(&desc_attr_md.write_perm, descriptor->write_perm);
 
             mp_buffer_info_t desc_value_bufinfo;
             mp_get_buffer_raise(descriptor->value, &desc_value_bufinfo, MP_BUFFER_READ);

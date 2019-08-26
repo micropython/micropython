@@ -35,6 +35,7 @@
 #include "py/obj.h"
 #include "py/objlist.h"
 
+#include "common-hal/bleio/__init__.h"
 #include "shared-module/bleio/Address.h"
 
 typedef enum {
@@ -54,6 +55,9 @@ typedef struct {
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
+    // EDIV: Encrypted Diversifier: Identifies LTK during legacy pairing.
+    bonding_keys_t bonding_keys;
+    uint16_t ediv;
     uint8_t* advertising_data;
     uint8_t* scan_response_data;
     uint8_t adv_handle;

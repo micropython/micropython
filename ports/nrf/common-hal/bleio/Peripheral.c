@@ -38,22 +38,18 @@
 #include "py/runtime.h"
 #include "shared-bindings/bleio/__init__.h"
 #include "shared-bindings/bleio/Adapter.h"
+#include "shared-bindings/bleio/Attribute.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
-
-#define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
-#define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(300, UNIT_0_625_MS)
-#define BLE_SLAVE_LATENCY            0
-#define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
 
 #define BLE_ADV_LENGTH_FIELD_SIZE   1
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
 static const ble_gap_sec_params_t pairing_sec_params = {
-    .bond = 0,  // TODO: add bonding
+    .bond = 1,
     .mitm = 0,
     .lesc = 0,
     .keypress = 0,
@@ -75,15 +71,23 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
 
     // For debugging.
-    // mp_printf(&mp_plat_print, "Peripheral event: 0x%04x\n", ble_evt->header.evt_id);
+     mp_printf(&mp_plat_print, "Peripheral event: 0x%04x\n", ble_evt->header.evt_id);
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED: {
             // Central has connected.
-            ble_gap_conn_params_t conn_params;
+            ble_gap_evt_connected_t* connected = &ble_evt->evt.gap_evt.params.connected;
+
             self->conn_handle = ble_evt->evt.gap_evt.conn_handle;
+
+            // See if connection interval set by Central is out of range.
+            // If so, negotiate our preferred range.
+            ble_gap_conn_params_t conn_params;
             sd_ble_gap_ppcp_get(&conn_params);
-            sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
+            if (conn_params.min_conn_interval < connected->conn_params.min_conn_interval ||
+                conn_params.min_conn_interval > connected->conn_params.max_conn_interval) {
+                sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
+            }
             break;
         }
 
@@ -102,21 +106,16 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         }
 
         case BLE_GAP_EVT_ADV_SET_TERMINATED:
-            // Someday may handle timeouts or limit reached.
+            // TODO: Someday may handle timeouts or limit reached.
             break;
-
-        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST: {
-            ble_gap_evt_conn_param_update_request_t *request =
-                &ble_evt->evt.gap_evt.params.conn_param_update_request;
-            sd_ble_gap_conn_param_update(self->conn_handle, &request->conn_params);
-            break;
-        }
 
         case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+            // SoftDevice will respond to a length update request.
             sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
             break;
 
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
+            // We only handle MTU of size BLE_GATT_ATT_MTU_DEFAULT.
             sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATT_ATT_MTU_DEFAULT);
             break;
         }
@@ -125,9 +124,27 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
             break;
 
-        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-            sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &pairing_sec_params, NULL);
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST: {
+            ble_gap_sec_keyset_t keyset = {
+                .keys_own = {
+                    .p_enc_key  = &self->bonding_keys.own_enc,
+                    .p_id_key   = NULL,
+                    .p_sign_key = NULL,
+                    .p_pk       = NULL
+                },
+
+                .keys_peer = {
+                    .p_enc_key  = &self->bonding_keys.peer_enc,
+                    .p_id_key   = &self->bonding_keys.peer_id,
+                    .p_sign_key = NULL,
+                    .p_pk       = NULL
+                }
+            };
+
+            sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS,
+                                        &pairing_sec_params, &keyset);
             break;
+        }
 
         case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
             // TODO for LESC pairing:
@@ -138,14 +155,43 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // Pairing process completed
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
-                // mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
+                // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
+                mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_PAIRED;
             } else {
-                // mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
+                mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_NOT_PAIRED;
             }
             break;
         }
+
+        case BLE_GAP_EVT_SEC_INFO_REQUEST: {
+            // Peer asks for the stored keys.
+            // - load key and return if bonded previously.
+            // - Else return NULL --> Initiate key exchange
+            ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
+            (void) sec_info_request;
+            //if ( bond_load_keys(_role, sec_req->master_id.ediv, &bkeys) ) {
+            //sd_ble_gap_sec_info_reply(_conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
+            //
+            //_ediv = bkeys.own_enc.master_id.ediv;
+            // } else {
+                sd_ble_gap_sec_info_reply(self->conn_handle, NULL, NULL, NULL);
+            // }
+                break;
+        }
+
+        // case BLE_GATTS_EVT_WRITE: {
+        //     ble_gatts_evt_write_t* write = &ble_evt->evt.gatts_evt.params.write;
+        //     mp_printf(&mp_plat_print, "GATTS write uuid %x\n", write->uuid.uuid);
+        //     break;
+        // }
+
+        // case BLE_GATTS_EVT_HVN_TX_COMPLETE: {
+        //     ble_gatts_evt_hvn_tx_complete_t* complete = &ble_evt->evt.gatts_evt.params.hvn_tx_complete;
+        //     mp_printf(&mp_plat_print, "HVN TX COMPLETE finished write num %d\n", complete->count);
+        //     break;
+        // }
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: {
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
@@ -156,11 +202,13 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
             } else {
-                // TODO: see Bluefruit lib
-                // if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
-                //    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-                // }
-                self->pair_status = PAIR_PAIRED;
+                //if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
+                if (true) {  // TODO: no bonding yet
+                    // Initialize system attributes fresh.
+                    sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
+                }
+                // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
+                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
             }
             break;
         }
@@ -168,7 +216,7 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         default:
             // For debugging.
-            // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
+            mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
             break;
     }
 }
@@ -184,6 +232,8 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
     self->pair_status = PAIR_NOT_PAIRED;
+
+    memset(&self->bonding_keys, 0, sizeof(self->bonding_keys));
 
     // Add all the services.
 
@@ -237,9 +287,9 @@ void common_hal_bleio_peripheral_start_advertising(bleio_peripheral_obj_t *self,
 
     GET_STR_DATA_LEN(self->name, name_data, name_len);
     if (name_len > 0) {
+        // Set device name, and make it available to anyone.
         ble_gap_conn_sec_mode_t sec_mode;
         BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
-
         err_code = sd_ble_gap_device_name_set(&sec_mode, name_data, name_len);
         if (err_code != NRF_SUCCESS) {
             mp_raise_OSError_msg_varg(translate("Failed to set device name, err 0x%04x"), err_code);
@@ -322,10 +372,12 @@ void common_hal_bleio_peripheral_pair(bleio_peripheral_obj_t *self) {
     }
 
     while (self->pair_status == PAIR_WAITING) {
-        MICROPY_VM_HOOK_LOOP;
+        RUN_BACKGROUND_TASKS;
     }
 
     if (self->pair_status == PAIR_NOT_PAIRED) {
         mp_raise_OSError_msg(translate("Failed to pair"));
     }
+
+
 }

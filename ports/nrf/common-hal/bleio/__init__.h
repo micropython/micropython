@@ -29,6 +29,12 @@
 
 void bleio_reset(void);
 
+typedef struct {
+  ble_gap_enc_key_t own_enc;
+  ble_gap_enc_key_t peer_enc;
+  ble_gap_id_key_t peer_id;
+} bonding_keys_t;
+
 // We assume variable length data.
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
