@@ -57,6 +57,9 @@ int main(void) {
 
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
+        #if MICROPY_MODULE_FROZEN
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+        #endif
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
         // Initialise sub-systems.

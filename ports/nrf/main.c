@@ -252,6 +252,11 @@ soft_reset:
     }
     #endif
 
+    #if MICROPY_MODULE_FROZEN
+    // add frozen virtual directory to path
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    #endif
+
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
