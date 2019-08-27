@@ -57,14 +57,17 @@ typedef struct {
     displayio_area_t current_area; // Stored as an absolute area so it applies across frames.
     bool partial_change;
     bool full_change;
-    bool first_draw;
     bool moved;
     bool inline_tiles;
     bool in_group;
     bool flip_x;
     bool flip_y;
     bool transpose_xy;
+    bool hidden;
+    bool hidden_by_parent;
 } displayio_tilegrid_t;
+
+void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden);
 
 // Updating the screen is a three stage process.
 

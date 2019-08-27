@@ -50,6 +50,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
         bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second) {
+    // Turn off auto-refresh as we init.
+    self->auto_refresh = false;
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
     if (single_byte_bounds) {
@@ -64,7 +66,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->write_ram_command = write_ram_command;
     self->brightness_command = brightness_command;
     self->auto_brightness = auto_brightness;
-    self->auto_refresh = auto_refresh;
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
 
@@ -128,6 +129,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_displayio_display_show(self, &circuitpython_splash);
+    self->auto_refresh = auto_refresh;
 }
 
 bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {

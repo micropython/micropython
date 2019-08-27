@@ -90,6 +90,32 @@ displayio_group_t* native_group(mp_obj_t group_obj) {
     return MP_OBJ_TO_PTR(native_group);
 }
 
+//|   .. attribute:: hidden
+//|
+//|     True when the Group and all of it's layers are not visible. When False, the Group's layers
+//|     are visible if they haven't been hidden.
+//|
+STATIC mp_obj_t displayio_group_obj_get_hidden(mp_obj_t self_in) {
+    displayio_group_t *self = native_group(self_in);
+    return mp_obj_new_bool(common_hal_displayio_group_get_hidden(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_group_get_hidden_obj, displayio_group_obj_get_hidden);
+
+STATIC mp_obj_t displayio_group_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden_obj) {
+    displayio_group_t *self = native_group(self_in);
+
+    common_hal_displayio_group_set_hidden(self, mp_obj_is_true(hidden_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_hidden_obj, displayio_group_obj_set_hidden);
+
+const mp_obj_property_t displayio_group_hidden_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_group_get_hidden_obj,
+              (mp_obj_t)&displayio_group_set_hidden_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|   .. attribute:: scale
 //|
 //|     Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
@@ -305,6 +331,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
 }
 
 STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&displayio_group_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_scale), MP_ROM_PTR(&displayio_group_scale_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&displayio_group_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_group_y_obj) },
