@@ -85,6 +85,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	runtime_utils.o \
 	scheduler.o \
 	nativeglue.o \
+	ringbuf.o \
 	stackctrl.o \
 	argcheck.o \
 	warning.o \
