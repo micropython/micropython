@@ -117,6 +117,10 @@ endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
+# Some builds need bitbang SPI for the dotstar but don't make bitbangio available so include it separately.
+ifeq ($(CIRCUITPY_BITBANG_APA102),1)
+SRC_PATTERNS += bitbangio/SPI%
+endif
 ifeq ($(CIRCUITPY_BLEIO),1)
 SRC_PATTERNS += bleio/%
 endif
