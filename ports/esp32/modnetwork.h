@@ -31,6 +31,7 @@ enum { PHY_LAN8720, PHY_TLK110 };
 MP_DECLARE_CONST_FUN_OBJ_KW(get_lan_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(ppp_make_new_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);
 
 void usocket_events_deinit(void);
 
