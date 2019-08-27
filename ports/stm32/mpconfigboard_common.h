@@ -102,6 +102,11 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
+// SD/MMC interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
+#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+#endif
+
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
@@ -280,6 +285,13 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Whether the USB peripheral is device-only, or multiple OTG
+#if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+#define MICROPY_HW_USB_IS_MULTI_OTG (0)
+#else
+#define MICROPY_HW_USB_IS_MULTI_OTG (1)
 #endif
 
 // Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported

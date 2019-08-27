@@ -29,11 +29,13 @@
 #include <string.h>
 
 #include "ets_sys.h"
+#include "user_interface.h"
 #include "uart.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
@@ -63,14 +65,14 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        //{ MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -126,6 +128,22 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
                 self->parity = 2;
             }
         }
+    }
+
+    // set tx/rx pins
+    mp_hal_pin_obj_t tx = 1, rx = 3;
+    if (args[ARG_tx].u_obj != MP_OBJ_NULL) {
+        tx = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
+    }
+    if (args[ARG_rx].u_obj != MP_OBJ_NULL) {
+        rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
+    }
+    if (tx == 1 && rx == 3) {
+        system_uart_de_swap();
+    } else if (tx == 15 && rx == 13) {
+        system_uart_swap();
+    } else {
+        mp_raise_ValueError("invalid tx/rx");
     }
 
     // set stop bits

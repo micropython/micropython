@@ -340,8 +340,7 @@ STATIC int i2c_wait_isr_set(i2c_t *i2c, uint32_t mask) {
 int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop) {
     // Enable the peripheral and send the START condition with slave address
     i2c->CR1 |= I2C_CR1_PE;
-    i2c->CR2 = stop << I2C_CR2_AUTOEND_Pos
-        | (len > 1) << I2C_CR2_RELOAD_Pos
+    i2c->CR2 = (len > 1) << I2C_CR2_RELOAD_Pos
         | (len > 0) << I2C_CR2_NBYTES_Pos
         | rd_wrn << I2C_CR2_RD_WRN_Pos
         | (addr & 0x7f) << 1;
@@ -359,6 +358,11 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
         i2c_wait_isr_set(i2c, I2C_ISR_STOPF); // Don't leak errors from this call
         i2c->CR1 &= ~I2C_CR1_PE;
         return -MP_ENODEV;
+    }
+
+    // Configure automatic STOP if needed
+    if (stop) {
+        i2c->CR2 |= I2C_CR2_AUTOEND;
     }
 
     // Repurpose OAR1 to indicate that we loaded CR2

@@ -471,6 +471,14 @@ class RawCodeNative(RawCode):
         else:
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",%progbits @ ")))'
 
+        # Allow single-byte alignment by default for x86/x64/xtensa, but on ARM we need halfword- or word- alignment.
+        if config.native_arch == MP_NATIVE_ARCH_ARMV6:
+            # ARMV6 -- four byte align.
+            self.fun_data_attributes += ' __attribute__ ((aligned (4)))'
+        elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
+            # ARMVxxM -- two byte align.
+            self.fun_data_attributes += ' __attribute__ ((aligned (2)))'
+
     def _asm_thumb_rewrite_mov(self, pc, val):
         print('    (%u & 0xf0) | (%s >> 12),' % (self.bytecode[pc], val), end='')
         print(' (%u & 0xfb) | (%s >> 9 & 0x04),' % (self.bytecode[pc + 1], val), end='')

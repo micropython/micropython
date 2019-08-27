@@ -293,10 +293,12 @@ microseconds. The rules for casting are as follows:
 * The argument to a bool cast must be integral type (boolean or integer); when used as a return
   type the viper function will return True or False objects.
 * If the argument is a Python object and the cast is ``ptr``, ``ptr``, ``ptr16`` or ``ptr32``,
-  then the Python object must either have the buffer protocol with read-write capabilities
-  (in which case a pointer to the start of the buffer is returned) or it must be of integral
-  type (in which case the value of that integral object is returned).
- 
+  then the Python object must either have the buffer protocol (in which case a pointer to the
+  start of the buffer is returned) or it must be of integral type (in which case the value of
+  that integral object is returned).
+
+Writing to a pointer which points to a read-only object will lead to undefined behaviour.
+
 The following example illustrates the use of a ``ptr16`` cast to toggle pin X1 ``n`` times:
 
 .. code:: python

@@ -149,6 +149,11 @@ typedef struct _mp_state_vm_t {
     mp_obj_base_t *cur_exception;
     #endif
 
+    #if MICROPY_PY_SYS_ATEXIT
+    // exposed through sys.atexit function
+    mp_obj_t sys_exitfunc;
+    #endif
+
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 

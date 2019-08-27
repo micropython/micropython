@@ -10,7 +10,7 @@ $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
 include ../../py/mkenv.mk
-include $(BOARD_DIR)/board.mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h

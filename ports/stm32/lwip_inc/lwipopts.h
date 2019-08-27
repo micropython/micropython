@@ -17,6 +17,7 @@
 
 #define LWIP_ARP                        1
 #define LWIP_ETHERNET                   1
+#define LWIP_RAW                        1
 #define LWIP_NETCONN                    0
 #define LWIP_SOCKET                     0
 #define LWIP_STATS                      0

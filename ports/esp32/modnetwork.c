@@ -48,6 +48,7 @@
 #include "esp_event_loop.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
+#include "mdns.h"
 
 #include "modnetwork.h"
 
@@ -128,6 +129,11 @@ static bool wifi_sta_connected = false;
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
 
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+// Whether mDNS has been initialised or not
+static bool mdns_initialised = false;
+#endif
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -142,6 +148,20 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         ESP_LOGI("network", "GOT_IP");
         wifi_sta_connected = true;
         wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+        #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+        if (!mdns_initialised) {
+            mdns_init();
+            #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+            const char *hostname = NULL;
+            if (tcpip_adapter_get_hostname(WIFI_IF_STA, &hostname) != ESP_OK || hostname == NULL) {
+                hostname = "esp32";
+            }
+            mdns_hostname_set(hostname);
+            mdns_instance_name_set(hostname);
+            #endif
+            mdns_initialised = true;
+        }
+        #endif
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
