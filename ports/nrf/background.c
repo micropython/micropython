@@ -56,7 +56,7 @@ void run_background_tasks(void) {
 #endif
 
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
     running_background_tasks = false;
 

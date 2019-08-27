@@ -320,6 +320,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
+	displayio/EPaperDisplay.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
 	displayio/I2CDisplay.c \
@@ -362,6 +363,12 @@ SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
 endif
+
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
+SRC_SHARED_MODULE_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	displayio/display_core.c \
+)
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = \
