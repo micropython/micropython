@@ -102,12 +102,14 @@ _displayio_color_t terminal_colors[2] = {
     {
         .rgb888 = 0x000000,
         .rgb565 = 0x0000,
-        .luma = 0x00
+        .luma = 0x00,
+        .chroma = 0
     },
     {
         .rgb888 = 0xffffff,
         .rgb565 = 0xffff,
-        .luma = 0xff
+        .luma = 0xff,
+        .chroma = 0
     },
 };
 

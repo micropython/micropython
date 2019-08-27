@@ -8,8 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-21 14:18-0400\n"
-"POT-Creation-Date: 2019-08-19 10:22-0400\n"
+"POT-Creation-Date: 2019-08-22 14:29-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -298,6 +297,10 @@ msgid ""
 "disable.\n"
 msgstr ""
 
+#: shared-module/displayio/Display.c
+msgid "Below minimum frame rate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr ""
@@ -523,6 +526,7 @@ msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
@@ -735,6 +739,7 @@ msgid "Function requires lock"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -966,6 +971,10 @@ msgstr ""
 msgid "No hardware support on pin"
 msgstr ""
 
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "No space left on device"
 msgstr ""
@@ -1007,8 +1016,8 @@ msgstr ""
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
-"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
-"given"
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -1080,6 +1089,10 @@ msgstr ""
 
 #: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
+msgstr ""
+
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1192,11 +1205,11 @@ msgstr ""
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
 msgstr ""
 
@@ -1218,6 +1231,7 @@ msgid "Too many display busses"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Too many displays"
 msgstr ""
 
@@ -1289,7 +1303,7 @@ msgstr ""
 msgid "Unsupported baudrate"
 msgstr ""
 
-#: shared-module/displayio/Display.c
+#: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
 msgstr ""
 
@@ -1306,9 +1320,6 @@ msgid "Unsupported pull value."
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Value length  required fixed length"
-msgstr ""
-
 #: ports/nrf/common-hal/bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
@@ -2161,6 +2172,11 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
+msgstr ""
+
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
 msgstr ""
 
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c

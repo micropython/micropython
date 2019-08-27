@@ -207,7 +207,7 @@ uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint1
 
 void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index) {
     if (tile_index >= self->tiles_in_bitmap) {
-        mp_raise_ValueError(translate("Tile value out of bounds"));
+        mp_raise_ValueError(translate("Tile index out of bounds"));
     }
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {
@@ -443,6 +443,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                     }
                     uint8_t shift = (offset % pixels_per_byte) * colorspace->depth;
                     if (colorspace->reverse_pixels_in_byte) {
+                        // Reverse the shift by subtracting it from the leftmost shift.
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
                     ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << shift;

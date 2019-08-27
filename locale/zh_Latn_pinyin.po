@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-21 14:18-0400\n"
+"POT-Creation-Date: 2019-08-22 14:29-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -301,6 +301,10 @@ msgstr ""
 "Zìdòng chóngxīn jiāzài. Zhǐ xū tōngguò USB bǎocún wénjiàn lái yùnxíng tāmen "
 "huò shūrù REPL jìnyòng.\n"
 
+#: shared-module/displayio/Display.c
+msgid "Below minimum frame rate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dānwèi"
@@ -526,6 +530,7 @@ msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
 
@@ -738,6 +743,7 @@ msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -975,6 +981,10 @@ msgstr ""
 msgid "No hardware support on pin"
 msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "No space left on device"
 msgstr "Shèbèi shàng méiyǒu kònggé"
@@ -1019,10 +1029,9 @@ msgstr ""
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
-"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
-"given"
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
 msgstr ""
-"Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Only slices with step=1 (aka None) are supported"
@@ -1095,6 +1104,10 @@ msgstr "Zhǐ dú wénjiàn xìtǒng"
 #: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
+
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1218,11 +1231,11 @@ msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 msgid "Tile height must exactly divide bitmap height"
 msgstr "Píng pū gāodù bìxū huàfēn wèi tú gāodù"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
 msgstr ""
 
@@ -1244,6 +1257,7 @@ msgid "Too many display busses"
 msgstr "Xiǎnshì zǒngxiàn tài duōle"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Too many displays"
 msgstr "Xiǎnshì tài duō"
 
@@ -1315,7 +1329,7 @@ msgstr "RHS (yùqí %d, huòdé %d) shàng wèi pǐpèi de xiàngmù."
 msgid "Unsupported baudrate"
 msgstr "Bù zhīchí de baudrate"
 
-#: shared-module/displayio/Display.c
+#: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
 msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 
@@ -1332,9 +1346,6 @@ msgid "Unsupported pull value."
 msgstr "Bù zhīchí de lādòng zhí."
 
 #: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Value length  required fixed length"
-msgstr ""
-
 #: ports/nrf/common-hal/bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
@@ -2201,6 +2212,11 @@ msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 msgid "no module named '%q'"
 msgstr "méiyǒu mókuài '%q'"
 
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
+msgstr ""
+
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
@@ -2796,6 +2812,12 @@ msgstr "líng bù"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
+
+#~ msgid ""
+#~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
+#~ "bpp given"
+#~ msgstr ""
+#~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"

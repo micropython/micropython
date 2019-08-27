@@ -35,3 +35,7 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// SWD is only available on the test pads so skip the pin objects.
+#define IGNORE_PIN_PA30     1
+#define IGNORE_PIN_PA31     1

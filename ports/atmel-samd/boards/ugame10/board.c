@@ -106,7 +106,9 @@ void board_init(void) {
         1.0f, // brightness
         false, // auto_brightness
         false, // single_byte_bounds
-        false); // data as commands
+        false, // data as commands
+        true, // auto_refresh
+        60); // native_frames_per_second
 }
 
 bool board_requests_safe_mode(void) {
