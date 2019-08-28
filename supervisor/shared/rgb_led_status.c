@@ -40,7 +40,7 @@ static digitalio_digitalinout_obj_t status_neopixel;
 #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
 uint8_t rgb_status_brightness = 255;
 static uint8_t status_apa102_color[12] = {0, 0, 0, 0, 0xff, 0, 0, 0};
-#ifdef CIRCUITPY_BITBANG_APA102
+#if CIRCUITPY_BITBANG_APA102
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-module/bitbangio/types.h"
 static bitbangio_spi_obj_t status_apa102;
@@ -81,7 +81,7 @@ void rgb_led_status_init() {
         common_hal_digitalio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        #ifdef CIRCUITPY_BITBANG_APA102
+        #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_construct(&status_apa102,
                                               MICROPY_HW_APA102_SCK,
                                               MICROPY_HW_APA102_MOSI,
@@ -102,7 +102,7 @@ void rgb_led_status_init() {
         // mark them as used.
         apa102_mosi_in_use = false;
         apa102_sck_in_use = false;
-        #ifdef CIRCUITPY_BITBANG_APA102
+        #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_try_lock(&status_apa102);
         shared_module_bitbangio_spi_configure(&status_apa102, 100000, 0, 1, 8);
         #else
@@ -185,7 +185,7 @@ void new_status_color(uint32_t rgb) {
         status_apa102_color[6] = (rgb_adjusted >> 8) & 0xff;
         status_apa102_color[7] = (rgb_adjusted >> 16) & 0xff;
 
-        #ifdef CIRCUITPY_BITBANG_APA102
+        #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, 8);
         #else
         common_hal_busio_spi_write(&status_apa102, status_apa102_color, 8);
@@ -230,7 +230,7 @@ void temp_status_color(uint32_t rgb) {
             return;
         }
         uint8_t colors[12] = {0, 0, 0, 0, 0xff, rgb_adjusted & 0xff, (rgb_adjusted >> 8) & 0xff, (rgb_adjusted >> 16) & 0xff, 0x0, 0x0, 0x0, 0x0};
-        #ifdef CIRCUITPY_BITBANG_APA102
+        #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_write(&status_apa102, colors, 12);
         #else
         common_hal_busio_spi_write(&status_apa102, colors, 12);
@@ -264,7 +264,7 @@ void clear_temp_status() {
         common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        #ifdef CIRCUITPY_BITBANG_APA102
+        #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, 8);
         #else
         common_hal_busio_spi_write(&status_apa102, status_apa102_color, 8);
