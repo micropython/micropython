@@ -53,9 +53,9 @@ enum {
 };
 
 #define PIN_DEFS_PORT_AF_UNION \
-		NRF_UART_Type  *UART;
-//		NRF_SPI_Type  *SPIM;
-//		NRF_SPIS_Type *SPIS;
+    NRF_UART_Type  *UART;
+//  NRF_SPI_Type  *SPIM;
+//  NRF_SPIS_Type *SPIS;
 
 
 typedef NRF_GPIO_Type pin_gpio_t;

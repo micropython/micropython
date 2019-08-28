@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2016 Damien P. George
+ * Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -281,9 +281,9 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 
 STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
-    size_t len;
-    const char *buf = mp_obj_str_get_data(obj, &len);
-    vstr_t vstr = {len, len, (char*)buf, true};
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
+    vstr_t vstr = {bufinfo.len, bufinfo.len, (char*)bufinfo.buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
     return mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
 }

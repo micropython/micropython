@@ -36,6 +36,51 @@ Functions
 
     Read the raw value of the internal Hall sensor, returning an integer.
 
+Flash partitions
+----------------
+
+This class gives access to the partitions in the device's flash memory.
+
+.. class:: Partition(id)
+
+    Create an object representing a partition.  *id* can be a string which is the label
+    of the partition to retrieve, or one of the constants: ``BOOT`` or ``RUNNING``.
+
+.. classmethod:: Partition.find(type=TYPE_APP, subtype=0xff, label=None)
+
+    Find a partition specified by *type*, *subtype* and *label*.  Returns a
+    (possibly empty) list of Partition objects.
+
+.. method:: Partition.info()
+
+    Returns a 6-tuple ``(type, subtype, addr, size, label, encrypted)``.
+
+.. method:: Partition.readblocks(block_num, buf)
+.. method:: Partition.writeblocks(block_num, buf)
+.. method:: Partition.ioctl(cmd, arg)
+
+    These methods implement the block protocol defined by :class:`uos.AbstractBlockDev`.
+
+.. method:: Partition.set_boot()
+
+    Sets the partition as the boot partition.
+
+.. method:: Partition.get_next_update()
+
+    Gets the next update partition after this one, and returns a new Partition object.
+
+Constants
+~~~~~~~~~
+
+.. data:: Partition.BOOT
+          Partition.RUNNING
+
+    Used in the `Partition` constructor to fetch various partitions.
+
+.. data:: Partition.TYPE_APP
+          Partition.TYPE_DATA
+
+    Used in `Partition.find` to specify the partition type.
 
 The Ultra-Low-Power co-processor
 --------------------------------

@@ -1088,6 +1088,13 @@ typedef struct _pyb_usbdd_obj_t {
 #define MBOOT_USB_PID 0xDF11
 #endif
 
+static const uint8_t usbd_fifo_size[] = {
+    32, 8, 16, 8, 16, 0, 0, // FS: RX, EP0(in), 5x IN endpoints
+    #if MICROPY_HW_USB_HS
+    116, 8, 64, 4, 64, 0, 0, 0, 0, 0, // HS: RX, EP0(in), 8x IN endpoints
+    #endif
+};
+
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
     USB_DESC_TYPE_STRING,
@@ -1315,7 +1322,7 @@ static void pyb_usbdd_start(pyb_usbdd_obj_t *self) {
         while (!(PWR->CR3 & PWR_CR3_USB33RDY)) {
         }
         #endif
-        USBD_LL_Init(&self->hUSBDDevice, 0);
+        USBD_LL_Init(&self->hUSBDDevice, 0, usbd_fifo_size);
         USBD_LL_Start(&self->hUSBDDevice);
         self->started = true;
     }

@@ -3112,6 +3112,9 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             scope->num_pos_args = 1;
         }
 
+        // Set the source line number for the start of the comprehension
+        EMIT_ARG(set_source_line, pns->source_line);
+
         if (scope->kind == SCOPE_LIST_COMP) {
             EMIT_ARG(build, 0, MP_EMIT_BUILD_LIST);
         } else if (scope->kind == SCOPE_DICT_COMP) {
@@ -3434,7 +3437,7 @@ STATIC void scope_compute_things(scope_t *scope) {
 #if !MICROPY_PERSISTENT_CODE_SAVE
 STATIC
 #endif
-mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
+mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
     // put compiler state on the stack, it's relatively small
     compiler_t comp_state = {0};
     compiler_t *comp = &comp_state;
@@ -3445,6 +3448,11 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     comp->continue_label = INVALID_LABEL;
 
     // create the module scope
+    #if MICROPY_EMIT_NATIVE
+    const uint emit_opt = MP_STATE_VM(default_emit_opt);
+    #else
+    const uint emit_opt = MP_EMIT_OPT_NONE;
+    #endif
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, parse_tree->root, emit_opt);
 
     // create standard emitter; it's used at least for MP_PASS_SCOPE
@@ -3599,8 +3607,8 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     }
 }
 
-mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
-    mp_raw_code_t *rc = mp_compile_to_raw_code(parse_tree, source_file, emit_opt, is_repl);
+mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
+    mp_raw_code_t *rc = mp_compile_to_raw_code(parse_tree, source_file, is_repl);
     // return function that executes the outer module
     return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
 }

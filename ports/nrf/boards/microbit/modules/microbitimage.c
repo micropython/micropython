@@ -62,7 +62,7 @@ STATIC void microbit_image_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 uint8_t monochromeGetPixelValue(monochrome_5by5_t * p_mono, mp_int_t x, mp_int_t y) {
     unsigned int index = y*5+x;
-    if (index == 24) 
+    if (index == 24)
         return p_mono->pixel44;
     return (p_mono->bits24[index>>3] >> (index&7))&1;
 }
@@ -380,7 +380,7 @@ mp_obj_t microbit_image_set_pixel(mp_uint_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError("index cannot be negative");
     }
     mp_int_t bright = mp_obj_get_int(args[3]);
-    if (bright < 0 || bright > MAX_BRIGHTNESS) 
+    if (bright < 0 || bright > MAX_BRIGHTNESS)
         mp_raise_ValueError("brightness out of bounds.");
     if (x < imageWidth(self) && y < imageHeight(self)) {
         greyscaleSetPixelValue(&(self->greyscale), x, y, bright);
@@ -610,7 +610,7 @@ microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t f
 #else
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t fval) {
 #endif
-    if (fval < 0) 
+    if (fval < 0)
         mp_raise_ValueError("Brightness multiplier must not be negative.");
     greyscale_t *result = greyscale_new(imageWidth(lhs), imageHeight(lhs));
     for (int x = 0; x < imageWidth(lhs); ++x) {
@@ -639,7 +639,7 @@ microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_ima
             int val;
             int lval = imageGetPixelValue(lhs, x,y);
             int rval = imageGetPixelValue(rhs, x,y);
-            if (add) 
+            if (add)
                 val = min(lval + rval, MAX_BRIGHTNESS);
             else
                 val = max(0, lval - rval);
@@ -647,7 +647,7 @@ microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_ima
         }
     }
     return (microbit_image_obj_t *)result;
-}                      
+}
 
 STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (mp_obj_get_type(lhs_in) != &microbit_image_type) {
@@ -697,9 +697,9 @@ const mp_obj_type_t microbit_image_type = {
     .buffer_p = {NULL},
     .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
 };
- 
+
 typedef struct _scrolling_string_t {
-    mp_obj_base_t base; 
+    mp_obj_base_t base;
     char const *str;
     mp_uint_t len;
     mp_obj_t ref;
@@ -708,7 +708,7 @@ typedef struct _scrolling_string_t {
 } scrolling_string_t;
 
 typedef struct _scrolling_string_iterator_t {
-    mp_obj_base_t base; 
+    mp_obj_base_t base;
     mp_obj_t ref;
     greyscale_t *img;
     char const *next_char;
@@ -962,7 +962,7 @@ const mp_obj_type_t microbit_facade_iterator_type = {
 };
 
 mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {
-	(void)iter_buf;
+    (void)iter_buf;
     facade_iterator_t *result = m_new_obj(facade_iterator_t);
     string_image_facade_t *iterable = (string_image_facade_t *)iterable_in;
     result->base.type = &microbit_facade_iterator_type;

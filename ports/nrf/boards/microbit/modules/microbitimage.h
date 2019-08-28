@@ -2,15 +2,15 @@
 #define __MICROPY_INCLUDED_MICROBIT_IMAGE_H__
 
 #include "py/runtime.h"
-   
+
 #define MAX_BRIGHTNESS 9
 
-/** Monochrome images are immutable, which means that 
+/** Monochrome images are immutable, which means that
  * we only need one bit per pixel which saves quite a lot
  * of memory */
 
 /* we reserve a couple of bits, so we won't need to modify the
- * layout if we need to add more functionality or subtypes. */ 
+ * layout if we need to add more functionality or subtypes. */
 #define TYPE_AND_FLAGS \
     mp_obj_base_t base; \
     uint8_t five:1; \

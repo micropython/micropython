@@ -170,7 +170,9 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #if MICROPY_PY_PYB_LEGACY
     // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
     { MP_ROM_QSTR(MP_QSTR_have_cdc), MP_ROM_PTR(&pyb_have_cdc_obj) },
+    #if MICROPY_HW_USB_HID
     { MP_ROM_QSTR(MP_QSTR_hid), MP_ROM_PTR(&pyb_hid_send_report_obj) },
+    #endif
     #endif
     #endif
 

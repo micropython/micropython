@@ -63,6 +63,7 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
 CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
+CFLAGS += -DBUILDING_MBOOT=1
 
 LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)

@@ -1262,7 +1262,8 @@ yield:
                     } else
 #endif
                 {
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "byte code not implemented");
+
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "opcode");
                     nlr_pop();
                     code_state->state[0] = obj;
                     return MP_VM_RETURN_EXCEPTION;
@@ -1358,10 +1359,13 @@ exception_handler:
 #if MICROPY_STACKLESS
 unwind_loop:
 #endif
-            // set file and line number that the exception occurred at
-            // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
-            // But consider how to handle nested exceptions.
-            if (nlr.ret_val != &mp_const_GeneratorExit_obj) {
+            // Set traceback info (file and line number) where the exception occurred, but not for:
+            // - constant GeneratorExit object, because it's const
+            // - exceptions re-raised by END_FINALLY
+            // - exceptions re-raised explicitly by "raise"
+            if (nlr.ret_val != &mp_const_GeneratorExit_obj
+                && *code_state->ip != MP_BC_END_FINALLY
+                && !(*code_state->ip == MP_BC_RAISE_VARARGS && code_state->ip[1] == 0)) {
                 const byte *ip = code_state->fun_bc->bytecode;
                 ip = mp_decode_uint_skip(ip); // skip n_state
                 ip = mp_decode_uint_skip(ip); // skip n_exc_stack

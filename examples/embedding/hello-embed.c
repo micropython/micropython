@@ -41,7 +41,7 @@ mp_obj_t execute_from_str(const char *str) {
         qstr src_name = 1/*MP_QSTR_*/;
         mp_lexer_t *lex = mp_lexer_new_from_str_len(src_name, str, strlen(str), false);
         mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_obj_t module_fun = mp_compile(&pt, src_name, MP_EMIT_OPT_NONE, false);
+        mp_obj_t module_fun = mp_compile(&pt, src_name, false);
         mp_call_function_0(module_fun);
         nlr_pop();
         return 0;
