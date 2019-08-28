@@ -3078,6 +3078,9 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)scope->pn;
         assert(MP_PARSE_NODE_STRUCT_NUM_NODES(pns) == 3);
 
+        // Set the source line number for the start of the lambda
+        EMIT_ARG(set_source_line, pns->source_line);
+
         // work out number of parameters, keywords and default parameters, and add them to the id_info array
         // must be done before compiling the body so that arguments are numbered first (for LOAD_FAST etc)
         if (comp->pass == MP_PASS_SCOPE) {
