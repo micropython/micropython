@@ -79,15 +79,13 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     self->write_group = &PORT->Group[write->number / 32];
     self->write_mask = 1 << (write->number % 32);
 
+    self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
         self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
-
-        common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-        common_hal_mcu_delay_us(4);
-        common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+        common_hal_displayio_parallelbus_reset(self);
     }
 
     never_reset_pin_number(command->number);
@@ -111,15 +109,31 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) 
     reset_pin_number(self->reset.pin->number);
 }
 
+bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
+    displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
+    if (self->reset.base.type == &mp_type_NoneType) {
+        return false;
+    }
+
+    common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+    common_hal_mcu_delay_us(4);
+    common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    return true;
+}
+
+bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
+    return true;
+}
+
 bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
 
-void common_hal_displayio_parallelbus_send(mp_obj_t obj, bool command, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->command, !command);
+    common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
     uint32_t* clear_write = (uint32_t*) &self->write_group->OUTCLR.reg;
     uint32_t* set_write = (uint32_t*) &self->write_group->OUTSET.reg;
     uint32_t mask = self->write_mask;

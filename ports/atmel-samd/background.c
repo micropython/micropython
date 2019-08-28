@@ -60,7 +60,7 @@ void run_background_tasks(void) {
     audio_dma_background();
     #endif
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
 
     #if CIRCUITPY_NETWORK

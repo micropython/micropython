@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H
+#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
@@ -37,30 +37,32 @@
 typedef struct {
     mp_obj_base_t base;
     displayio_display_core_t core;
-    union {
-        digitalio_digitalinout_obj_t backlight_inout;
-        pulseio_pwmout_obj_t backlight_pwm;
-    };
-    uint64_t last_backlight_refresh;
-    uint64_t last_refresh_call;
-    mp_float_t current_brightness;
-    uint16_t brightness_command;
-    uint16_t native_frames_per_second;
-    uint16_t native_ms_per_frame;
-    uint8_t set_column_command;
-    uint8_t set_row_command;
-    uint8_t write_ram_command;
-    bool auto_refresh;
-    bool first_manual_refresh;
-    bool data_as_commands;
-    bool auto_brightness;
-    bool updating_backlight;
-} displayio_display_obj_t;
+    digitalio_digitalinout_obj_t busy;
+    uint32_t milliseconds_per_frame;
+    uint8_t* start_sequence;
+    uint32_t start_sequence_len;
+    uint8_t* stop_sequence;
+    uint32_t stop_sequence_len;
+    uint16_t refresh_time;
+    uint16_t set_column_window_command;
+    uint16_t set_row_window_command;
+    uint16_t set_current_column_command;
+    uint16_t set_current_row_command;
+    uint16_t write_black_ram_command;
+    uint16_t write_color_ram_command;
+    uint8_t refresh_display_command;
+    uint8_t hue;
+    bool busy_state;
+    bool black_bits_inverted;
+    bool color_bits_inverted;
+    bool refreshing;
+    display_chip_select_behavior_t chip_select;
+} displayio_epaperdisplay_obj_t;
 
-void displayio_display_background(displayio_display_obj_t* self);
-void release_display(displayio_display_obj_t* self);
-void reset_display(displayio_display_obj_t* self);
+void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self);
+void release_epaperdisplay(displayio_epaperdisplay_obj_t* self);
+bool maybe_refresh_epaperdisplay(void);
 
-void displayio_display_collect_ptrs(displayio_display_obj_t* self);
+void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_EPAPERDISPLAY_H

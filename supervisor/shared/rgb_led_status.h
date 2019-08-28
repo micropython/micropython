@@ -44,7 +44,7 @@
 // To work with a NeoPixel, one must have MICROPY_HW_NEOPIXEL defined and
 // neopixel_write implemented.
 
-#if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK) && !defined(CIRCUITPY_BITBANG_APA102)
+#if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK) && !CIRCUITPY_BITBANG_APA102
 #include "common-hal/busio/SPI.h"
 extern busio_spi_obj_t status_apa102;
 #endif
