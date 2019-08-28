@@ -76,7 +76,7 @@ STATIC void central_on_ble_evt(ble_evt_t *ble_evt, void *central_in) {
 void common_hal_bleio_central_construct(bleio_central_obj_t *self) {
     common_hal_bleio_adapter_set_enabled(true);
 
-    self->remote_services_list = mp_obj_new_list(0, NULL);
+    self->remote_service_list = mp_obj_new_list(0, NULL);
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
 }
 
@@ -134,12 +134,12 @@ bool common_hal_bleio_central_get_connected(bleio_central_obj_t *self) {
 mp_obj_tuple_t *common_hal_bleio_central_discover_remote_services(bleio_central_obj_t *self, mp_obj_t service_uuids_whitelist) {
     common_hal_bleio_device_discover_remote_services(MP_OBJ_FROM_PTR(self), service_uuids_whitelist);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-    mp_obj_tuple_t *services_tuple = mp_obj_new_tuple(self->remote_services_list->len,
-                                                      self->remote_services_list->items);
-    mp_obj_list_clear(self->remote_services_list);
+    mp_obj_tuple_t *services_tuple = mp_obj_new_tuple(self->remote_service_list->len,
+                                                      self->remote_service_list->items);
+    mp_obj_list_clear(self->remote_service_list);
     return services_tuple;
 }
 
 mp_obj_list_t *common_hal_bleio_central_get_remote_services(bleio_central_obj_t *self) {
-    return self->remote_services_list;
+    return self->remote_service_list;
 }

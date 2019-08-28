@@ -75,11 +75,11 @@ uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device) {
     }
 }
 
-mp_obj_list_t *common_hal_bleio_device_get_remote_services_list(mp_obj_t device) {
+mp_obj_list_t *common_hal_bleio_device_get_remote_service_list(mp_obj_t device) {
     if (MP_OBJ_IS_TYPE(device, &bleio_peripheral_type)) {
-        return ((bleio_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->remote_services_list;
+        return ((bleio_peripheral_obj_t*) MP_OBJ_TO_PTR(device))->remote_service_list;
     } else if (MP_OBJ_IS_TYPE(device, &bleio_central_type)) {
-        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->remote_services_list;
+        return ((bleio_central_obj_t*) MP_OBJ_TO_PTR(device))->remote_service_list;
     } else {
         return NULL;
     }
@@ -158,7 +158,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
         service->base.type = &bleio_service_type;
 
         // Initialize several fields at once.
-        common_hal_bleio_service_construct(service, NULL, mp_obj_new_list(0, NULL), false);
+        common_hal_bleio_service_construct(service, NULL, false);
 
         service->device = device;
         service->is_remote = true;
@@ -179,7 +179,7 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
             service->uuid = NULL;
         }
 
-        mp_obj_list_append(common_hal_bleio_device_get_remote_services_list(device), service);
+        mp_obj_list_append(common_hal_bleio_device_get_remote_service_list(device), service);
     }
 
     if (response->count > 0) {
@@ -275,7 +275,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, mp_ob
         }
 
         common_hal_bleio_descriptor_construct(descriptor, uuid, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
-                                              GATT_MAX_DATA_LENGTH, false);
+                                              GATT_MAX_DATA_LENGTH, false, mp_const_empty_bytes);
         descriptor->handle = gattc_desc->handle;
         descriptor->characteristic = m_desc_discovery_characteristic;
 
@@ -316,12 +316,12 @@ STATIC void discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t device) {
 
 
 void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t service_uuids_whitelist) {
-    mp_obj_list_t *remote_services_list = common_hal_bleio_device_get_remote_services_list(device);
+    mp_obj_list_t *remote_services_list = common_hal_bleio_device_get_remote_service_list(device);
 
     ble_drv_add_event_handler(discovery_on_ble_evt, device);
 
     // Start over with an empty list.
-    mp_obj_list_clear(MP_OBJ_FROM_PTR(common_hal_bleio_device_get_remote_services_list(device)));
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(common_hal_bleio_device_get_remote_service_list(device)));
 
     if (service_uuids_whitelist == mp_const_none) {
         // List of service UUID's not given, so discover all available services.

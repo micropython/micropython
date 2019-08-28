@@ -29,12 +29,13 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_DESCRIPTOR_H
 
 #include "shared-module/bleio/Attribute.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "common-hal/bleio/Descriptor.h"
 #include "common-hal/bleio/UUID.h"
 
 extern const mp_obj_type_t bleio_descriptor_type;
 
-extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length);
+extern void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo);
 extern bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self);
 extern bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio_descriptor_obj_t *self);
 extern mp_obj_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self);

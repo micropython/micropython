@@ -49,9 +49,9 @@ typedef struct {
     mp_obj_t name;
     volatile uint16_t conn_handle;
     // Services provided by this peripheral.
-    mp_obj_list_t *services_list;
+    mp_obj_list_t *service_list;
     // Remote services discovered when this peripheral is acting as a client.
-    mp_obj_list_t *remote_services_list;
+    mp_obj_list_t *remote_service_list;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).

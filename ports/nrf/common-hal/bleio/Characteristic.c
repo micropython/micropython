@@ -124,29 +124,24 @@ STATIC void characteristic_gattc_read(bleio_characteristic_obj_t *characteristic
     ble_drv_remove_event_handler(characteristic_on_gattc_read_rsp_evt, characteristic);
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_obj_list_t *descriptor_list) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->service = MP_OBJ_NULL;
     self->uuid = uuid;
-    self->value = mp_const_empty_bytes;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->descriptor_list = descriptor_list;
+    self->descriptor_list = mp_obj_new_list(0, NULL);
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
-        mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
+        mp_raise_ValueError_varg(translate("mnax_length must be 0-%d when fixed_length is %s"),
                                  max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
 
-    for (size_t descriptor_idx = 0; descriptor_idx < descriptor_list->len; ++descriptor_idx) {
-        bleio_descriptor_obj_t *descriptor =
-            MP_OBJ_TO_PTR(descriptor_list->items[descriptor_idx]);
-        descriptor->characteristic = self;
-    }
+    common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
 }
 
 mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
@@ -173,6 +168,15 @@ mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *s
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+    if (self->fixed_length && bufinfo->len != self->max_length) {
+        mp_raise_ValueError(translate("Value length != required fixed length"));
+    }
+    if (bufinfo->len > self->max_length) {
+        mp_raise_ValueError(translate("Value length > max_length"));
+    }
+
+    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
+
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
         uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
@@ -182,12 +186,6 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo,
                                          (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
-            if (self->fixed_length && bufinfo->len != self->max_length) {
-                mp_raise_ValueError(translate("Value length != required fixed length"));
-            }
-            if (bufinfo->len > self->max_length) {
-                mp_raise_ValueError(translate("Value length > max_length"));
-            }
 
             bool sent = false;
             uint16_t cccd = 0;
@@ -213,8 +211,6 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             }
         }
     }
-
-    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 }
 
 bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self) {
@@ -223,6 +219,43 @@ bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_
 
 bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties(bleio_characteristic_obj_t *self) {
     return self->props;
+}
+
+void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
+    // Connect descriptor to parent characteristic.
+    descriptor->characteristic = self;
+
+    ble_uuid_t desc_uuid;
+    bleio_uuid_convert_to_nrf_ble_uuid(descriptor->uuid, &desc_uuid);
+
+    ble_gatts_attr_md_t desc_attr_md = {
+        // Data passed is not in a permanent location and should be copied.
+        .vloc = BLE_GATTS_VLOC_STACK,
+        .vlen = !descriptor->fixed_length,
+    };
+
+    bleio_attribute_gatts_set_security_mode(&desc_attr_md.read_perm, descriptor->read_perm);
+    bleio_attribute_gatts_set_security_mode(&desc_attr_md.write_perm, descriptor->write_perm);
+
+    mp_buffer_info_t desc_value_bufinfo;
+    mp_get_buffer_raise(descriptor->value, &desc_value_bufinfo, MP_BUFFER_READ);
+
+    ble_gatts_attr_t desc_attr = {
+        .p_uuid = &desc_uuid,
+        .p_attr_md = &desc_attr_md,
+        .init_len = desc_value_bufinfo.len,
+        .p_value = desc_value_bufinfo.buf,
+        .init_offs = 0,
+        .max_len = descriptor->max_length,
+    };
+
+    uint32_t err_code = sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle);
+
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to add characteristic, err 0x%04x"), err_code);
+    }
+
+    mp_obj_list_append(self->descriptor_list, MP_OBJ_FROM_PTR(descriptor));
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {

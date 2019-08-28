@@ -31,7 +31,7 @@
 
 #include "py/obj.h"
 
-#include "shared-bindings/bleio/Characteristic.h"
+#include "common-hal/bleio/Characteristic.h"
 #include "common-hal/bleio/UUID.h"
 
 typedef struct {

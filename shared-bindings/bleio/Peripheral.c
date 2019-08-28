@@ -64,70 +64,97 @@
 //|    import bleio
 //|    from adafruit_ble.advertising import ServerAdvertisement
 //|
-//|    # Create a Characteristic.
-//|    chara = bleio.Characteristic(bleio.UUID(0x2919), read=True, notify=True)
-//|
-//|    # Create a Service providing that one Characteristic.
-//|    serv = bleio.Service(bleio.UUID(0x180f), [chara])
-//|
 //|    # Create a peripheral and start it up.
-//|    periph = bleio.Peripheral([serv])
-//|    adv = ServerAdvertisement(periph)
-//|    periph.start_advertising(adv.advertising_data_bytes, adv.scan_response_bytes)
+//|    peripheral = bleio.Peripheral()
 //|
-//|    while not periph.connected:
+//|    # Create a Service and add it to this Peripheral.
+//|    service = peripheral.addService(bleio.UUID(0x180f))
+//|
+//|    # Create a Characteristic and add it to the Service.
+//|    characteristic = service.addCharacteristic(
+//|        bleio.UUID(0x2919), properties=Characteristic.READ | Characteristic.NOTIFY)
+//|
+//|    adv = ServerAdvertisement(peripheral)
+//|    peripheral.start_advertising(adv.advertising_data_bytes, adv.scan_response_bytes)
+//|
+//|    while not peripheral.connected:
 //|        # Wait for connection.
 //|        pass
 //|
-//| .. class:: Peripheral(services=(), \*, name=None)
+//| .. class:: Peripheral(name=None)
 //|
 //|   Create a new Peripheral object.
 //|
-//|   :param iterable services: the Service objects representing services available from this peripheral, if any.
-//|     A non-connectable peripheral will have no services.
 //|   :param str name: The name used when advertising this peripheral. If name is None,
 //|     bleio.adapter.default_name will be used.
 //|
 STATIC mp_obj_t bleio_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_services, ARG_name };
+    enum { ARG_name };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_services, MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple} },
-        { MP_QSTR_name, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_name, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // If services is not an iterable, an exception will be thrown.
-    mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(args[ARG_services].u_obj, &iter_buf);
-
     bleio_peripheral_obj_t *self = m_new_obj(bleio_peripheral_obj_t);
     self->base.type = &bleio_peripheral_type;
 
-    // Copy the services list and validate its items.
-    mp_obj_t services_list_obj = mp_obj_new_list(0, NULL);
-    mp_obj_list_t *services_list = MP_OBJ_FROM_PTR(services_list_obj);
-
-    mp_obj_t service;
-    while ((service = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        if (!MP_OBJ_IS_TYPE(service, &bleio_service_type)) {
-            mp_raise_ValueError(translate("non-Service found in services"));
-        }
-        mp_obj_list_append(services_list, service);
-    }
-
     mp_obj_t name = args[ARG_name].u_obj;
-    if (name == MP_OBJ_NULL || name == mp_const_none) {
+    if (name == mp_const_none) {
         name = common_hal_bleio_adapter_get_default_name();
     } else if (!MP_OBJ_IS_STR(name)) {
         mp_raise_ValueError(translate("name must be a string"));
     }
 
-    common_hal_bleio_peripheral_construct(self, services_list, name);
+    common_hal_bleio_peripheral_construct(self, name);
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+//|   .. method:: add_service(uuid, *, secondary=False)
+//|
+//|   Create a new `Service` object, identitied by the specified UUID, and add it to this ``Peripheral``.
+//|
+//|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
+//|
+//|   :param bleio.UUID uuid: The uuid of the service
+//|   :param bool secondary: If the service is a secondary one
+//
+//|   :return: the new `Service`
+//|
+STATIC mp_obj_t bleio_peripheral_add_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    enum { ARG_uuid, ARG_secondary };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_secondary, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
+
+    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+        mp_raise_ValueError(translate("Expected a UUID"));
+    }
+
+    const bool is_secondary = args[ARG_secondary].u_bool;
+    bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
+
+    bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
+    service->base.type = &bleio_service_type;
+
+    common_hal_bleio_service_construct(service, uuid, is_secondary);
+
+    common_hal_bleio_peripheral_add_service(self, service);
+
+    return MP_OBJ_FROM_PTR(service);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_peripheral_add_service_obj, 2, bleio_peripheral_add_service);
+
 
 //|   .. attribute:: connected (read-only)
 //|
@@ -320,11 +347,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_peripheral_pair_obj, bleio_peripheral_pai
 
 STATIC const mp_rom_map_elem_t bleio_peripheral_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR_add_service),              MP_ROM_PTR(&bleio_peripheral_add_service_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_peripheral_start_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_advertising),         MP_ROM_PTR(&bleio_peripheral_stop_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_disconnect),               MP_ROM_PTR(&bleio_peripheral_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_discover_remote_services), MP_ROM_PTR(&bleio_peripheral_discover_remote_services_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pair)                    , MP_ROM_PTR(&bleio_peripheral_pair_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pair),                     MP_ROM_PTR(&bleio_peripheral_pair_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_peripheral_connected_obj) },

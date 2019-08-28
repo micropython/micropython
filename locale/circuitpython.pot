@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -427,18 +427,6 @@ msgstr ""
 msgid "Cannot write without MOSI pin."
 msgstr ""
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr ""
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr ""
@@ -513,10 +501,6 @@ msgstr ""
 msgid "Data too large for advertisement packet"
 msgstr ""
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
@@ -554,7 +538,7 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr ""
@@ -577,6 +561,7 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -849,7 +834,7 @@ msgstr ""
 msgid "Invalid polarity"
 msgstr ""
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1671,10 +1656,6 @@ msgstr ""
 msgid "casting"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr ""
@@ -1733,10 +1714,6 @@ msgstr ""
 
 #: py/compile.c
 msgid "default 'except' must be last"
-msgstr ""
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2078,7 +2055,6 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2095,6 +2071,11 @@ msgstr ""
 
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
+msgstr ""
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: py/builtinimport.c
@@ -2181,10 +2162,6 @@ msgstr ""
 
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
-msgstr ""
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
 msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c

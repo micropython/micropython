@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -435,18 +435,6 @@ msgstr "No se puede obtener inequívocamente sizeof escalar"
 msgid "Cannot write without MOSI pin."
 msgstr "No se puede escribir sin pin MOSI."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "Características UUID no concide con el Service UUID"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "Características ya esta en uso por otro Serivice"
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "CharateristicBuffer escritura no proporcionada"
@@ -521,10 +509,6 @@ msgstr "Trozo de datos debe seguir fmt chunk"
 msgid "Data too large for advertisement packet"
 msgstr "Data es muy grande para el paquete de advertisement."
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Capacidad de destino es mas pequeña que destination_length."
@@ -562,7 +546,7 @@ msgstr "Se espera un %q"
 msgid "Expected a Characteristic"
 msgstr "Se esperaba una Característica."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Se esperaba un UUID"
@@ -585,6 +569,7 @@ msgstr "Fallo enviando comando"
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "No se puede adquirir el mutex, status: 0x%08lX"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -860,7 +845,7 @@ msgstr "pines inválidos"
 msgid "Invalid polarity"
 msgstr "Polaridad inválida"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1723,10 +1708,6 @@ msgstr "no se puedo realizar importación relativa"
 msgid "casting"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr "characteristics incluye un objeto que no es una Characteristica"
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "chars buffer es demasiado pequeño"
@@ -1786,10 +1767,6 @@ msgstr "números decimales no soportados"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' por defecto deberia estar de último"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2135,7 +2112,6 @@ msgstr "map buffer muy pequeño"
 msgid "math domain error"
 msgstr "error de dominio matemático"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2153,6 +2129,11 @@ msgstr "la asignación de memoria falló, asignando %u bytes"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "la asignación de memoria falló, el heap está bloqueado"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2239,10 +2220,6 @@ msgstr ""
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "no hay tal atributo"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -2798,6 +2775,12 @@ msgstr "paso cero"
 #~ msgid "Cannot update i/f status"
 #~ msgstr "No se puede actualizar i/f status"
 
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "Características UUID no concide con el Service UUID"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "Características ya esta en uso por otro Serivice"
+
 #, fuzzy
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Los datos no caben en el paquete de anuncio."
@@ -2905,8 +2888,8 @@ msgstr "paso cero"
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
-#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:"
-#~ "% d bppdado"
+#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% "
+#~ "d bppdado"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo color verdadero (24 bpp o superior) BMP admitido %x"
@@ -2974,6 +2957,9 @@ msgstr "paso cero"
 
 #~ msgid "can't set STA config"
 #~ msgstr "no se puede establecer STA config"
+
+#~ msgid "characteristics includes an object that is not a Characteristic"
+#~ msgstr "characteristics incluye un objeto que no es una Characteristica"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "ya sea pos o kw args son permitidos"

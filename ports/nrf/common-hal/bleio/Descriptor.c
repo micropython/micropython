@@ -35,10 +35,9 @@
 
 static volatile bleio_descriptor_obj_t *m_read_descriptor;
 
-void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length) {
+void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->characteristic = MP_OBJ_NULL;
     self->uuid = uuid;
-    self->value = mp_const_empty_bytes;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
@@ -50,6 +49,8 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_u
     }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
+
+    common_hal_bleio_descriptor_set_value(self, initial_value_bufinfo);
 }
 
 bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
@@ -119,6 +120,15 @@ mp_obj_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self) {
 }
 
 void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo) {
+    if (self->fixed_length && bufinfo->len != self->max_length) {
+        mp_raise_ValueError(translate("Value length != required fixed length"));
+    }
+    if (bufinfo->len > self->max_length) {
+        mp_raise_ValueError(translate("Value length > max_length"));
+    }
+
+    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
+
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
         uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->characteristic->service->device);
@@ -126,16 +136,8 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
             // false means WRITE_REQ, not write-no-response
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo, false);
         } else {
-            if (self->fixed_length && bufinfo->len != self->max_length) {
-                mp_raise_ValueError(translate("Value length != required fixed length"));
-            }
-            if (bufinfo->len > self->max_length) {
-                mp_raise_ValueError(translate("Value length > max_length"));
-            }
-
             common_hal_bleio_gatts_write(self->handle, conn_handle, bufinfo);
         }
     }
 
-    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 }

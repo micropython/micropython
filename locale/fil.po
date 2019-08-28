@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -435,18 +435,6 @@ msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
 msgid "Cannot write without MOSI pin."
 msgstr "Hindi maaring isulat kapag walang MOSI pin."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr ""
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr ""
@@ -524,10 +512,6 @@ msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 msgid "Data too large for advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
@@ -567,7 +551,7 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
@@ -591,6 +575,7 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -869,7 +854,7 @@ msgstr "Mali ang pins"
 msgid "Invalid polarity"
 msgstr "Mali ang polarity"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1731,10 +1716,6 @@ msgstr "hindi maaring isagawa ang relative import"
 msgid "casting"
 msgstr "casting"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "masyadong maliit ang buffer"
@@ -1794,10 +1775,6 @@ msgstr "decimal numbers hindi sinusuportahan"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "default 'except' ay dapat sa huli"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2148,7 +2125,6 @@ msgstr "masyadong maliit ang buffer map"
 msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2166,6 +2142,11 @@ msgstr "nabigo ang paglalaan ng memorya, paglalaan ng %u bytes"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "abigo ang paglalaan ng memorya, ang heap ay naka-lock"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2253,10 +2234,6 @@ msgstr ""
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"

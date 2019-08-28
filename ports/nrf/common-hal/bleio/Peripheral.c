@@ -71,7 +71,7 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     bleio_peripheral_obj_t *self = (bleio_peripheral_obj_t*)self_in;
 
     // For debugging.
-     mp_printf(&mp_plat_print, "Peripheral event: 0x%04x\n", ble_evt->header.evt_id);
+    // mp_printf(&mp_plat_print, "Peripheral event: 0x%04x\n", ble_evt->header.evt_id);
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED: {
@@ -156,10 +156,8 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
                 // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
-                mp_printf(&mp_plat_print, "Pairing succeeded, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_PAIRED;
             } else {
-                mp_printf(&mp_plat_print, "Pairing failed, status: 0x%04x\n", status->auth_status);
                 self->pair_status = PAIR_NOT_PAIRED;
             }
             break;
@@ -204,17 +202,17 @@ STATIC void peripheral_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         default:
             // For debugging.
-            mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
+            // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
             break;
     }
 }
 
-void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_list_t *services_list, mp_obj_t name) {
+void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_t name) {
     common_hal_bleio_adapter_set_enabled(true);
 
-    self->services_list = services_list;
+    self->service_list = mp_obj_new_list(0, NULL);
     // Used only for discovery when acting as a client.
-    self->remote_services_list = mp_obj_new_list(0, NULL);
+    self->remote_service_list = mp_obj_new_list(0, NULL);
     self->name = name;
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -222,35 +220,30 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
     self->pair_status = PAIR_NOT_PAIRED;
 
     memset(&self->bonding_keys, 0, sizeof(self->bonding_keys));
+}
 
-    // Add all the services.
+void common_hal_bleio_peripheral_add_service(bleio_peripheral_obj_t *self, bleio_service_obj_t *service) {
+    service->device = MP_OBJ_FROM_PTR(self);
 
-    for (size_t service_idx = 0; service_idx < services_list->len; ++service_idx) {
-        bleio_service_obj_t *service = MP_OBJ_TO_PTR(services_list->items[service_idx]);
+    ble_uuid_t uuid;
+    bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
-        service->device = MP_OBJ_FROM_PTR(self);
-
-        ble_uuid_t uuid;
-        bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
-
-        uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
-        if (common_hal_bleio_service_get_is_secondary(service)) {
-            service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
-        }
-
-        const uint32_t err_code = sd_ble_gatts_service_add(service_type, &uuid, &service->handle);
-        if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg_varg(translate("Failed to add service, err 0x%04x"), err_code);
-        }
-
-        // Once the service has been registered, its characteristics can be added.
-        common_hal_bleio_service_add_all_characteristics(service);
+    uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
+    if (common_hal_bleio_service_get_is_secondary(service)) {
+        service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
     }
+
+    const uint32_t err_code = sd_ble_gatts_service_add(service_type, &uuid, &service->handle);
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to add service, err 0x%04x"), err_code);
+    }
+
+    mp_obj_list_append(self->service_list, MP_OBJ_FROM_PTR(service));
 }
 
 
 mp_obj_list_t *common_hal_bleio_peripheral_get_services(bleio_peripheral_obj_t *self) {
-    return self->services_list;
+    return self->service_list;
 }
 
 bool common_hal_bleio_peripheral_get_connected(bleio_peripheral_obj_t *self) {
@@ -344,9 +337,9 @@ void common_hal_bleio_peripheral_disconnect(bleio_peripheral_obj_t *self) {
 mp_obj_tuple_t *common_hal_bleio_peripheral_discover_remote_services(bleio_peripheral_obj_t *self, mp_obj_t service_uuids_whitelist) {
     common_hal_bleio_device_discover_remote_services(MP_OBJ_FROM_PTR(self), service_uuids_whitelist);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-    mp_obj_tuple_t *services_tuple = mp_obj_new_tuple(self->remote_services_list->len,
-                                                      self->remote_services_list->items);
-    mp_obj_list_clear(self->remote_services_list);
+    mp_obj_tuple_t *services_tuple = mp_obj_new_tuple(self->remote_service_list->len,
+                                                      self->remote_service_list->items);
+    mp_obj_list_clear(self->remote_service_list);
     return services_tuple;
 }
 

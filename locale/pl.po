@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -430,18 +430,6 @@ msgstr "Wielkość skalara jest niejednoznaczna"
 msgid "Cannot write without MOSI pin."
 msgstr "Nie można pisać bez nóżki MOSI."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "UUID charakterystyki inny niż UUID serwisu"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "Charakterystyka w użyciu w innym serwisie"
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Pisanie do CharacteristicBuffer niewspierane"
@@ -516,10 +504,6 @@ msgstr "Fragment danych musi następować po fragmencie fmt"
 msgid "Data too large for advertisement packet"
 msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Pojemność celu mniejsza od destination_length."
@@ -557,7 +541,7 @@ msgstr "Oczekiwano %q"
 msgid "Expected a Characteristic"
 msgstr "Oczekiwano charakterystyki"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Oczekiwano UUID"
@@ -580,6 +564,7 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -854,7 +839,7 @@ msgstr "Złe nóżki"
 msgid "Invalid polarity"
 msgstr "Zła polaryzacja"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1695,10 +1680,6 @@ msgstr "nie można wykonać relatywnego importu"
 msgid "casting"
 msgstr "rzutowanie"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr "charakterystyki zawierają obiekt, który nie jest typu Characteristic"
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "bufor chars zbyt mały"
@@ -1758,10 +1739,6 @@ msgstr "liczby dziesiętne nieobsługiwane"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "domyślny 'except' musi być ostatni"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2103,7 +2080,6 @@ msgstr "bufor mapy zbyt mały"
 msgid "math domain error"
 msgstr "błąd domeny"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2121,6 +2097,11 @@ msgstr "alokacja pamięci nie powiodła się, alokowano %u bajtów"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "alokacja pamięci nie powiodła się, sterta zablokowana"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2207,10 +2188,6 @@ msgstr ""
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -2743,6 +2720,12 @@ msgstr "zerowy krok"
 #~ msgid "Can't connect in Peripheral mode"
 #~ msgstr "Nie można się łączyć w trybie Peripheral"
 
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "UUID charakterystyki inny niż UUID serwisu"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "Charakterystyka w użyciu w innym serwisie"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
@@ -2798,6 +2781,10 @@ msgstr "zerowy krok"
 
 #~ msgid "bad GATT role"
 #~ msgstr "zła rola GATT"
+
+#~ msgid "characteristics includes an object that is not a Characteristic"
+#~ msgstr ""
+#~ "charakterystyki zawierają obiekt, który nie jest typu Characteristic"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "przedział poza zakresem 0.0020 do 10.24"

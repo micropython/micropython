@@ -38,7 +38,7 @@ typedef struct {
     volatile bool waiting_to_connect;
     volatile uint16_t conn_handle;
     // Services discovered after connecting to a remote peripheral.
-    mp_obj_list_t *remote_services_list;
+    mp_obj_list_t *remote_service_list;
 } bleio_central_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H

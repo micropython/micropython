@@ -66,12 +66,14 @@ STATIC uint32_t ble_stack_enable(void) {
     };
 
     uint32_t err_code = sd_softdevice_enable(&clock_config, softdevice_assert_handler);
-    if (err_code != NRF_SUCCESS)
+    if (err_code != NRF_SUCCESS) {
         return err_code;
+    }
 
     err_code = sd_nvic_EnableIRQ(SD_EVT_IRQn);
-    if (err_code != NRF_SUCCESS)
+    if (err_code != NRF_SUCCESS) {
         return err_code;
+    }
 
     // Start with no event handlers, etc.
     ble_drv_reset();
@@ -112,8 +114,9 @@ STATIC uint32_t ble_stack_enable(void) {
         .conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT,
     };
    err_code = sd_ble_gap_ppcp_set(&gap_conn_params);
-   if (err_code != NRF_SUCCESS)
+   if (err_code != NRF_SUCCESS) {
        return err_code;
+   }
 
    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN);
    return err_code;

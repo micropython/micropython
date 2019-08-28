@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -436,18 +436,6 @@ msgstr "Impossibile ricavare la grandezza scalare di sizeof inequivocabilmente"
 msgid "Cannot write without MOSI pin."
 msgstr "Impossibile scrivere senza pin MOSI."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "caratteristico UUID non assomiglia servizio UUID"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "caratteristico già usato da un altro servizio"
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "CharacteristicBuffer scritura non dato"
@@ -525,10 +513,6 @@ msgstr ""
 msgid "Data too large for advertisement packet"
 msgstr "Impossibile inserire dati nel pacchetto di advertisement."
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "La capacità di destinazione è più piccola di destination_length."
@@ -567,7 +551,7 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
@@ -591,6 +575,7 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -870,7 +855,7 @@ msgstr "Pin non validi"
 msgid "Invalid polarity"
 msgstr "Polarità non valida"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1722,10 +1707,6 @@ msgstr "impossibile effettuare l'importazione relativa"
 msgid "casting"
 msgstr "casting"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "buffer dei caratteri troppo piccolo"
@@ -1787,10 +1768,6 @@ msgstr "numeri decimali non supportati"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' predefinito deve essere ultimo"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2141,7 +2118,6 @@ msgstr "map buffer troppo piccolo"
 msgid "math domain error"
 msgstr "errore di dominio matematico"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2159,6 +2135,11 @@ msgstr "allocazione di memoria fallita, allocando %u byte"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "allocazione di memoria fallita, l'heap è bloccato"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2247,10 +2228,6 @@ msgstr ""
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "attributo inesistente"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -2808,6 +2785,12 @@ msgstr "zero step"
 
 #~ msgid "Cannot update i/f status"
 #~ msgstr "Impossibile aggiornare status di i/f"
+
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "caratteristico UUID non assomiglia servizio UUID"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "caratteristico già usato da un altro servizio"
 
 #, fuzzy
 #~ msgid "Data too large for the advertisement packet"

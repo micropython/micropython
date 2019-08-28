@@ -32,11 +32,11 @@
 
 const mp_obj_type_t bleio_service_type;
 
-extern void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, mp_obj_list_t *characteristic_list, bool is_secondary);
+extern void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary);
 extern bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self);
 extern mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self);
-extern void common_hal_bleio_service_add_all_characteristics(bleio_service_obj_t *self);
+extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H

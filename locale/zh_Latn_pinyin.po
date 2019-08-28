@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-22 14:29-0700\n"
+"POT-Creation-Date: 2019-08-28 16:09-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -431,18 +431,6 @@ msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
 msgid "Cannot write without MOSI pin."
 msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "Zìfú UUID bù fúhé fúwù UUID"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
 #: shared-bindings/bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Wèi tígōng zìfú huǎncún xiě rù"
@@ -517,10 +505,6 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
 
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
@@ -558,7 +542,7 @@ msgstr "Yùqí %q"
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
 #: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Yùqí UUID"
@@ -581,6 +565,7 @@ msgstr "Fāsòng mìnglìng shībài."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
@@ -855,7 +840,7 @@ msgstr "Wúxiào de yǐn jiǎo"
 msgid "Invalid polarity"
 msgstr "Wúxiào liǎng jí zhí"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/bleio/Service.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -1704,10 +1689,6 @@ msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
 msgid "casting"
 msgstr "tóuyǐng"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "zìfú huǎnchōng qū tài xiǎo"
@@ -1769,10 +1750,6 @@ msgstr "bù zhīchí xiǎoshù shù"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "mòrèn 'except' bìxū shì zuìhòu yīgè"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2115,7 +2092,6 @@ msgstr "dìtú huǎnchōng qū tài xiǎo"
 msgid "math domain error"
 msgstr "shùxué yù cuòwù"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2133,6 +2109,11 @@ msgstr "nèicún fēnpèi shībài, fēnpèi %u zì jié"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "jìyì tǐ fēnpèi shībài, duī bèi suǒdìng"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "mnax_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2220,10 +2201,6 @@ msgstr ""
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
 
 #: ports/nrf/common-hal/bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -2759,6 +2736,12 @@ msgstr "líng bù"
 #~ msgid "Can't set CCCD for local Characteristic"
 #~ msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
 
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "Zìfú UUID bù fúhé fúwù UUID"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
@@ -2827,6 +2810,9 @@ msgstr "líng bù"
 
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
+
+#~ msgid "characteristics includes an object that is not a Characteristic"
+#~ msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
