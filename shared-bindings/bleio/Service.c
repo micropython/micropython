@@ -40,24 +40,25 @@
 //|
 //| Stores information about a BLE service and its characteristics.
 //|
-//| There is no regular constructor for a Service. A new local Service can be created
-//| and attached to a Peripheral by calling `Service.add_to_peripheral()`.
-//| Remote Service objects are created by `Central.discover_remote_services()`
-//| or `Peripheral.discover_remote_services()`.
+//| .. class:: Service
 //|
-
+//|   There is no regular constructor for a Service. A new local Service can be created
+//|   and attached to a Peripheral by calling `add_to_peripheral()`.
+//|   Remote Service objects are created by `Central.discover_remote_services()`
+//|   or `Peripheral.discover_remote_services()`.
+//|
 //|   .. classmethod:: add_to_peripheral(peripheral, uuid, *, secondary=False)
 //|
-//|   Create a new `Service` object, identitied by the specified UUID, and add it
-//|   to the given Peripheral.
+//|     Create a new Service object, identitied by the specified UUID, and add it
+//|     to the given Peripheral.
 //|
-//|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
+//|     To mark the service as secondary, pass `True` as :py:data:`secondary`.
 //|
-//|   :param bleio.Peripheral peripheral: The peripheral that will provide this service
-//|   :param bleio.UUID uuid: The uuid of the service
-//|   :param bool secondary: If the service is a secondary one
+//|     :param Peripheral peripheral: The peripheral that will provide this service
+//|     :param UUID uuid: The uuid of the service
+//|     :param bool secondary: If the service is a secondary one
 //
-//|   :return: the new `Service`
+//|     :return: the new Service
 //|
 STATIC mp_obj_t bleio_service_add_to_peripheral(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
@@ -99,7 +100,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_service_add_to_peripheral_obj, MP_R
 
 //|   .. attribute:: characteristics
 //|
-//|     A tuple of `bleio.Characteristic` that are offered by this service. (read-only)
+//|     A tuple of :py:class:`Characteristic` designating the characteristics that are offered by this service. (read-only)
 //|
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);

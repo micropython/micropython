@@ -41,36 +41,37 @@
 //| Stores information about a BLE service characteristic and allows reading
 //| and writing of the characteristic's value.
 //|
-//| There is no regular constructor for a Characteristic. A new local Characteristic can be created
-//| and attached to a Service by calling `Characteristic.add_to_service()`.
-//| Remote Characteristic objects are created by `Central.discover_remote_services()`
-//| or `Peripheral.discover_remote_services()` as part of remote Services.
+//| .. class:: Characteristic
+//|
+//|   There is no regular constructor for a Characteristic. A new local Characteristic can be created
+//|   and attached to a Service by calling `add_to_service()`.
+//|   Remote Characteristic objects are created by `Central.discover_remote_services()`
+//|   or `Peripheral.discover_remote_services()` as part of remote Services.
 //|
 
 //|   .. method:: add_to_service(service, uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=None)
 //|
-//|   Create a new `Characteristic` object, and add it to this Service.
+//|     Create a new Characteristic object, and add it to this Service.
 //|
-//|   :param bleio.Service service: The service that will provide this characteristic
-//|   :param bleio.UUID uuid: The uuid of the characteristic
-//|   :param int properties: The properties of the characteristic,
-//|      specified as a bitmask of these values bitwise-or'd together:
-//|      `Characteristic.BROADCAST`, `Characteristic.INDICATE`, `Characteristic.NOTIFY`,
-//|      `Characteristic.READ`, `Characteristic.WRITE`, `Characteristic.WRITE_NO_RESPONSE`.
-//|   :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
-//|      security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
-//|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
-//|   :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
-//|      security mode is required. Values allowed are the same as ``read_perm``.
-//|   :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
+//|     :param Service service: The service that will provide this characteristic
+//|     :param UUID uuid: The uuid of the characteristic
+//|     :param int properties: The properties of the characteristic,
+//|        specified as a bitmask of these values bitwise-or'd together:
+//|        `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`.
+//|     :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
+//|        security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|        `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
+//|        `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|     :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
+//|        security mode is required. Values allowed are the same as ``read_perm``.
+//|     :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
 //|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|      number of data bytes that fit in a single BLE 4.x ATT packet.
-//|   :param bool fixed_length: True if the characteristic value is of fixed length.
-//|   :param buf initial_value: The initial value for this characteristic. If not given, will be
+//|     :param bool fixed_length: True if the characteristic value is of fixed length.
+//|     :param buf initial_value: The initial value for this characteristic. If not given, will be
 //|      filled with zeros.
 //|
-//|   :return: the new `Characteristic`.
+//|     :return: the new Characteristic.
 //|
 STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
@@ -150,8 +151,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, 
 //|
 //|     An int bitmask representing which properties are set, specified as bitwise or'ing of
 //|     of these possible values.
-//|      `~Characteristic.BROADCAST`, `~Characteristic.INDICATE`, `~Characteristic.NOTIFY`,
-//|      `~Characteristic.READ`, `~Characteristic.WRITE`, `~Characteristic.WRITE_NO_RESPONSE`.
+//|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`.
 //|
 STATIC mp_obj_t bleio_characteristic_get_properties(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -219,7 +219,7 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
 
 //|   .. attribute:: descriptors
 //|
-//|     A tuple of `bleio.Descriptor` that describe this characteristic. (read-only)
+//|     A tuple of :py:class:`Descriptor` that describe this characteristic. (read-only)
 //|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);

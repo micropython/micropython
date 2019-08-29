@@ -61,21 +61,21 @@
 //|
 //| Usage::
 //|
-//|    import bleio
+//|    from bleio import Characteristic, Peripheral, Service
 //|    from adafruit_ble.advertising import ServerAdvertisement
 //|
 //|    # Create a peripheral and start it up.
 //|    peripheral = bleio.Peripheral()
 //|
 //|    # Create a Service and add it to this Peripheral.
-//|    service = peripheral.addService(bleio.UUID(0x180f))
+//|    service = Service.add_to_peripheral(peripheral, bleio.UUID(0x180f))
 //|
 //|    # Create a Characteristic and add it to the Service.
-//|    characteristic = service.addCharacteristic(
+//|    characteristic = Characterist.add_to_service(service,
 //|        bleio.UUID(0x2919), properties=Characteristic.READ | Characteristic.NOTIFY)
 //|
 //|    adv = ServerAdvertisement(peripheral)
-//|    peripheral.start_advertising(adv.advertising_data_bytes, adv.scan_response_bytes)
+//|    peripheral.start_advertising(adv.advertising_data_bytes, scan_response=adv.scan_response_bytes)
 //|
 //|    while not peripheral.connected:
 //|        # Wait for connection.
@@ -132,7 +132,7 @@ const mp_obj_property_t bleio_peripheral_connected_obj = {
 
 //|   .. attribute:: services
 //|
-//|     A `tuple` of `bleio.Service` that are offered by this peripheral. (read-only)
+//|     A tuple of :py:class:`Service` objects offered by this peripheral. (read-only)
 //|
 STATIC mp_obj_t bleio_peripheral_get_services(mp_obj_t self_in) {
     bleio_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);

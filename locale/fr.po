@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 16:09-0400\n"
+"POT-Creation-Date: 2019-08-29 14:16-0400\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -551,11 +551,20 @@ msgid "Expected a %q"
 msgstr "Attendu un %q"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Descriptor.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Une 'Characteristic' est attendue"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
+#: shared-bindings/bleio/Service.c
+msgid "Expected a Peripheral"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
 #: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
@@ -579,11 +588,15 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Echec de l'obtention de mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to add descriptor, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
@@ -862,7 +875,7 @@ msgstr "Broches invalides"
 msgid "Invalid polarity"
 msgstr "Polarité invalide"
 
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -2157,6 +2170,7 @@ msgstr "tampon trop petit"
 msgid "math domain error"
 msgstr "erreur de domaine math"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2174,11 +2188,6 @@ msgstr "l'allocation de mémoire a échoué en allouant %u octets"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "l'allocation de mémoire a échoué, le tas est vérrouillé"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "mnax_length must be 0-%d when fixed_length is %s"
-msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"

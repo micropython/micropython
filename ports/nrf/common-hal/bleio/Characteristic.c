@@ -135,7 +135,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
-        mp_raise_ValueError_varg(translate("mnax_length must be 0-%d when fixed_length is %s"),
+        mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
                                  max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
@@ -249,7 +249,7 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
     uint32_t err_code = sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle);
 
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to add characteristic, err 0x%04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to add descriptor, err 0x%04x"), err_code);
     }
 
     mp_obj_list_append(self->descriptor_list, MP_OBJ_FROM_PTR(descriptor));

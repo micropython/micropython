@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 16:09-0400\n"
+"POT-Creation-Date: 2019-08-29 14:16-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -539,10 +539,19 @@ msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Descriptor.c
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
+#: shared-bindings/bleio/Service.c
+msgid "Expected a Peripheral"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
 #: shared-bindings/bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Eine UUID wird erwartet"
@@ -565,11 +574,15 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Mutex konnte nicht akquiriert werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to add descriptor, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, c-format
@@ -840,7 +853,7 @@ msgstr "Ungültige Pins"
 msgid "Invalid polarity"
 msgstr "Ungültige Polarität"
 
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -2102,6 +2115,7 @@ msgstr "map buffer zu klein"
 msgid "math domain error"
 msgstr ""
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2119,11 +2133,6 @@ msgstr "Speicherzuordnung fehlgeschlagen, Zuweisung von %u Bytes"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "Speicherzuweisung fehlgeschlagen, der Heap ist gesperrt"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "mnax_length must be 0-%d when fixed_length is %s"
-msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"

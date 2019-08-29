@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 16:09-0400\n"
+"POT-Creation-Date: 2019-08-29 14:16-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -547,11 +547,20 @@ msgid "Expected a %q"
 msgstr "Atteso un %q"
 
 #: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/bleio/Descriptor.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Peripheral.c
+#: shared-bindings/bleio/Service.c
+msgid "Expected a Peripheral"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
 #: shared-bindings/bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
@@ -575,11 +584,15 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Service.c
 #, fuzzy, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Impossibile fermare advertisement. status: 0x%02x"
+
+#: ports/nrf/common-hal/bleio/Characteristic.c
+#, c-format
+msgid "Failed to add descriptor, err 0x%04x"
+msgstr ""
 
 #: ports/nrf/common-hal/bleio/Peripheral.c
 #, fuzzy, c-format
@@ -855,7 +868,7 @@ msgstr "Pin non validi"
 msgid "Invalid polarity"
 msgstr "Polarità non valida"
 
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/bleio/Characteristic.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -2118,6 +2131,7 @@ msgstr "map buffer troppo piccolo"
 msgid "math domain error"
 msgstr "errore di dominio matematico"
 
+#: ports/nrf/common-hal/bleio/Characteristic.c
 #: ports/nrf/common-hal/bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
@@ -2135,11 +2149,6 @@ msgstr "allocazione di memoria fallita, allocando %u byte"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr "allocazione di memoria fallita, l'heap è bloccato"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "mnax_length must be 0-%d when fixed_length is %s"
-msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"

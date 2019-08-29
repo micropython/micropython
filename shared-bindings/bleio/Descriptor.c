@@ -42,31 +42,33 @@
 //| Descriptors are attached to BLE characteristics and provide contextual
 //| information about the characteristic.
 //|
-//| There is no regular constructor for a Descriptor. A new local Descriptor can be created
-//| and attached to a Characteristic by calling `Descriptor.add_to_characteristic()`.
-//| Remote Descriptor objects are created by `Central.discover_remote_services()`
-//| or `Peripheral.discover_remote_services()` as part of remote Characteristics
-//| in the remote Services that are discovered.
-
-//|   .. method:: add_to_characteristic(characteristic, uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=b'')
+//| .. class:: Descriptor
 //|
-//|   Create a new `Descriptor` object, and add it to this Service.
+//|   There is no regular constructor for a Descriptor. A new local Descriptor can be created
+//|   and attached to a Characteristic by calling `add_to_characteristic()`.
+//|   Remote Descriptor objects are created by `Central.discover_remote_services()`
+//|   or `Peripheral.discover_remote_services()` as part of remote Characteristics
+//|   in the remote Services that are discovered.
 //|
-//|   :param bleio.Characteristic characteristic: The characteristic that will hold this descriptor
-//|   :param bleio.UUID uuid: The uuid of the descriptor
-//|   :param int read_perm: Specifies whether the descriptor can be read by a client, and if so, which
-//|      security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
-//|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
-//|   :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
-//|      security mode is required. Values allowed are the same as ``read_perm``.
-//|   :param int max_length: Maximum length in bytes of the descriptor value. The maximum allowed is
-//|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
-//|      number of data bytes that fit in a single BLE 4.x ATT packet.
-//|   :param bool fixed_length: True if the descriptor value is of fixed length.
-//|   :param buf initial_value: The initial value for this descriptor.
+//|   .. classmethod:: add_to_characteristic(characteristic, uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=b'')
 //|
-//|   :return: the new `Descriptor`.
+//|     Create a new Descriptor object, and add it to this Service.
+//|
+//|     :param Characteristic characteristic: The characteristic that will hold this descriptor
+//|     :param UUID uuid: The uuid of the descriptor
+//|     :param int read_perm: Specifies whether the descriptor can be read by a client, and if so, which
+//|        security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|        `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
+//|        `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|     :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
+//|        security mode is required. Values allowed are the same as ``read_perm``.
+//|     :param int max_length: Maximum length in bytes of the descriptor value. The maximum allowed is
+//|        is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
+//|        number of data bytes that fit in a single BLE 4.x ATT packet.
+//|     :param bool fixed_length: True if the descriptor value is of fixed length.
+//|     :param buf initial_value: The initial value for this descriptor.
+//|
+//|     :return: the new Descriptor.
 //|
 STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
