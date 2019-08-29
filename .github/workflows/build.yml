@@ -104,6 +104,7 @@ jobs:
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
+        - "hallowing_m4_express"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
         - "kicksat-sprite"
