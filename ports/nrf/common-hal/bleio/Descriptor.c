@@ -35,8 +35,8 @@
 
 static volatile bleio_descriptor_obj_t *m_read_descriptor;
 
-void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
-    self->characteristic = MP_OBJ_NULL;
+void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_characteristic_obj_t *characteristic, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
+    self->characteristic = characteristic;
     self->uuid = uuid;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->read_perm = read_perm;

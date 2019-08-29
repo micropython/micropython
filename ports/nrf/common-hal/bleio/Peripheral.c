@@ -223,8 +223,6 @@ void common_hal_bleio_peripheral_construct(bleio_peripheral_obj_t *self, mp_obj_
 }
 
 void common_hal_bleio_peripheral_add_service(bleio_peripheral_obj_t *self, bleio_service_obj_t *service) {
-    service->device = MP_OBJ_FROM_PTR(self);
-
     ble_uuid_t uuid;
     bleio_uuid_convert_to_nrf_ble_uuid(service->uuid, &uuid);
 
@@ -240,7 +238,6 @@ void common_hal_bleio_peripheral_add_service(bleio_peripheral_obj_t *self, bleio
 
     mp_obj_list_append(self->service_list, MP_OBJ_FROM_PTR(service));
 }
-
 
 mp_obj_list_t *common_hal_bleio_peripheral_get_services(bleio_peripheral_obj_t *self) {
     return self->service_list;

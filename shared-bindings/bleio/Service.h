@@ -28,11 +28,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H
 
+#include "common-hal/bleio/Peripheral.h"
 #include "common-hal/bleio/Service.h"
 
 const mp_obj_type_t bleio_service_type;
 
-extern void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary);
+extern void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_peripheral_obj_t *peripheral, bleio_uuid_obj_t *uuid, bool is_secondary);
 extern bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self);
 extern mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self);

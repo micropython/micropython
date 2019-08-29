@@ -124,8 +124,8 @@ STATIC void characteristic_gattc_read(bleio_characteristic_obj_t *characteristic
     ble_drv_remove_event_handler(characteristic_on_gattc_read_rsp_evt, characteristic);
 }
 
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
-    self->service = MP_OBJ_NULL;
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
+    self->service = service;
     self->uuid = uuid;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
@@ -222,9 +222,6 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 }
 
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
-    // Connect descriptor to parent characteristic.
-    descriptor->characteristic = self;
-
     ble_uuid_t desc_uuid;
     bleio_uuid_convert_to_nrf_ble_uuid(descriptor->uuid, &desc_uuid);
 

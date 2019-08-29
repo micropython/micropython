@@ -31,16 +31,17 @@
 #include "common-hal/bleio/__init__.h"
 #include "shared-bindings/bleio/Characteristic.h"
 #include "shared-bindings/bleio/Descriptor.h"
+#include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/Adapter.h"
 
-void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
+void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_peripheral_obj_t *peripheral, bleio_uuid_obj_t *uuid, bool is_secondary) {
+    self->device = MP_OBJ_FROM_PTR(peripheral);
     self->handle = 0xFFFF;
     self->uuid = uuid;
     self->characteristic_list = mp_obj_new_list(0, NULL);
     self->is_remote = false;
     self->is_secondary = is_secondary;
-    self->device = mp_const_none;
 }
 
 bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
@@ -59,11 +60,7 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
 }
 
-
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic) {
-    // Connect characteristic to parent service.
-    characteristic->service = self;
-
     ble_gatts_char_md_t char_md = {
         .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
         .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,

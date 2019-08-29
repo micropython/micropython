@@ -29,6 +29,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/bleio/Characteristic.h"
+#include "shared-bindings/bleio/Peripheral.h"
 #include "shared-bindings/bleio/Service.h"
 #include "shared-bindings/bleio/UUID.h"
 
@@ -39,11 +40,62 @@
 //|
 //| Stores information about a BLE service and its characteristics.
 //|
-//| A Service cannot be created directly. A new local Service can be created
-//| and attached to a Peripheral by calling `Peripheral.add_service()`.
+//| There is no regular constructor for a Service. A new local Service can be created
+//| and attached to a Peripheral by calling `Service.add_to_peripheral()`.
 //| Remote Service objects are created by `Central.discover_remote_services()`
 //| or `Peripheral.discover_remote_services()`.
 //|
+
+//|   .. classmethod:: add_to_peripheral(peripheral, uuid, *, secondary=False)
+//|
+//|   Create a new `Service` object, identitied by the specified UUID, and add it
+//|   to the given Peripheral.
+//|
+//|   To mark the service as secondary, pass `True` as :py:data:`secondary`.
+//|
+//|   :param bleio.Peripheral peripheral: The peripheral that will provide this service
+//|   :param bleio.UUID uuid: The uuid of the service
+//|   :param bool secondary: If the service is a secondary one
+//
+//|   :return: the new `Service`
+//|
+STATIC mp_obj_t bleio_service_add_to_peripheral(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // class is arg[0], which we can ignore.
+
+    enum { ARG_peripheral, ARG_uuid, ARG_secondary };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_peripheral, MP_ARG_REQUIRED | MP_ARG_OBJ,},
+        { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_secondary, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const mp_obj_t peripheral_obj = args[ARG_peripheral].u_obj;
+    if (!MP_OBJ_IS_TYPE(peripheral_obj, &bleio_peripheral_type)) {
+        mp_raise_ValueError(translate("Expected a Peripheral"));
+    }
+
+    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
+    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
+        mp_raise_ValueError(translate("Expected a UUID"));
+    }
+
+    const bool is_secondary = args[ARG_secondary].u_bool;
+
+    bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
+    service->base.type = &bleio_service_type;
+
+    common_hal_bleio_service_construct(
+        service, MP_OBJ_TO_PTR(peripheral_obj), MP_OBJ_TO_PTR(uuid_obj), is_secondary);
+
+    common_hal_bleio_peripheral_add_service(peripheral_obj, service);
+
+    return MP_OBJ_FROM_PTR(service);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_service_add_to_peripheral_fun_obj, 3, bleio_service_add_to_peripheral);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_service_add_to_peripheral_obj, MP_ROM_PTR(&bleio_service_add_to_peripheral_fun_obj));
 
 //|   .. attribute:: characteristics
 //|
@@ -120,101 +172,12 @@ const mp_obj_property_t bleio_service_uuid_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: add_characteristic(uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=None)
-//|
-//|   Create a new `Characteristic` object, and add it to this Service.
-//|
-//|   :param bleio.UUID uuid: The uuid of the characteristic
-//|   :param int properties: The properties of the characteristic,
-//|      specified as a bitmask of these values bitwise-or'd together:
-//|      `Characteristic.BROADCAST`, `Characteristic.INDICATE`, `Characteristic.NOTIFY`,
-//|      `Characteristic.READ`, `Characteristic.WRITE`, `Characteristic.WRITE_NO_RESPONSE`.
-//|   :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
-//|      security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
-//|      `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|      `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
-//|   :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
-//|      security mode is required. Values allowed are the same as ``read_perm``.
-//|   :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
-//|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
-//|      number of data bytes that fit in a single BLE 4.x ATT packet.
-//|   :param bool fixed_length: True if the characteristic value is of fixed length.
-//|   :param buf initial_value: The initial value for this characteristic. If not given, will be
-//|      filled with zeros.
-//|
-//|   :return: the new `Characteristic`.
-//|
-STATIC mp_obj_t bleio_service_add_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    bleio_service_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-
-    enum { ARG_uuid, ARG_properties, ARG_read_perm, ARG_write_perm,
-           ARG_max_length, ARG_fixed_length, ARG_initial_value };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_uuid,  MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_properties, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_read_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_write_perm, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = SECURITY_MODE_OPEN} },
-        { MP_QSTR_max_length, MP_ARG_KW_ONLY| MP_ARG_INT, {.u_int = 20} },
-        { MP_QSTR_fixed_length, MP_ARG_KW_ONLY| MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_initial_value, MP_ARG_KW_ONLY| MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-
-    if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_ValueError(translate("Expected a UUID"));
-    }
-    bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
-
-    const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
-    if (properties & ~CHAR_PROP_ALL) {
-        mp_raise_ValueError(translate("Invalid properties"));
-    }
-
-    const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
-    common_hal_bleio_attribute_security_mode_check_valid(read_perm);
-
-    const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
-    common_hal_bleio_attribute_security_mode_check_valid(write_perm);
-
-    const mp_int_t max_length = args[ARG_max_length].u_int;
-    const bool fixed_length =  args[ARG_fixed_length].u_bool;
-    mp_obj_t initial_value = args[ARG_initial_value].u_obj;
-
-    // Length will be validated in common_hal.
-    mp_buffer_info_t initial_value_bufinfo;
-    if (initial_value == mp_const_none) {
-        if (fixed_length && max_length > 0) {
-            initial_value = mp_obj_new_bytes_of_zeros(max_length);
-        } else {
-            initial_value = mp_const_empty_bytes;
-        }
-    }
-    mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
-
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-    characteristic->base.type = &bleio_characteristic_type;
-
-    // Range checking on max_length arg is done by the common_hal layer, because
-    // it may vary depending on underlying BLE implementation.
-    common_hal_bleio_characteristic_construct(
-        characteristic, uuid, properties, read_perm, write_perm,
-        max_length, fixed_length, &initial_value_bufinfo);
-
-    common_hal_bleio_service_add_characteristic(self, characteristic);
-
-    return MP_OBJ_FROM_PTR(characteristic);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_service_add_characteristic_obj, 2, bleio_service_add_characteristic);
 
 STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_characteristics),    MP_ROM_PTR(&bleio_service_characteristics_obj) },
-    { MP_ROM_QSTR(MP_QSTR_secondary),          MP_ROM_PTR(&bleio_service_secondary_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uuid),               MP_ROM_PTR(&bleio_service_uuid_obj) },
-    { MP_ROM_QSTR(MP_QSTR_add_characteristic), MP_ROM_PTR(&bleio_service_add_characteristic_obj) },
+    { MP_ROM_QSTR(MP_QSTR_add_to_peripheral), MP_ROM_PTR(&bleio_service_add_to_peripheral_obj) },
+    { MP_ROM_QSTR(MP_QSTR_characteristics),   MP_ROM_PTR(&bleio_service_characteristics_obj) },
+    { MP_ROM_QSTR(MP_QSTR_secondary),         MP_ROM_PTR(&bleio_service_secondary_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid),              MP_ROM_PTR(&bleio_service_uuid_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict_table);
 
