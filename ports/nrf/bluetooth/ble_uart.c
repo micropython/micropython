@@ -34,11 +34,11 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
-#include "shared-bindings/bleio/Adapter.h"
-#include "shared-bindings/bleio/Characteristic.h"
-#include "shared-bindings/bleio/Device.h"
-#include "shared-bindings/bleio/Service.h"
-#include "shared-bindings/bleio/UUID.h"
+#include "shared-bindings/_bleio/Adapter.h"
+#include "shared-bindings/_bleio/Characteristic.h"
+#include "shared-bindings/_bleio/Device.h"
+#include "shared-bindings/_bleio/Service.h"
+#include "shared-bindings/_bleio/UUID.h"
 
 #if (MICROPY_PY_BLE_NUS == 1)
 
