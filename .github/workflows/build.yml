@@ -1,11 +1,6 @@
 name: Build CI
 
-on:
-  push:
-    branches:
-    - master
-  pull_request:
-  release:
+on: [push, pull_request, release]
 
 jobs:
   test:
