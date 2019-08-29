@@ -88,10 +88,8 @@ def get_version_info():
         # No exact match
         pass
 
-    if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
-        sha = os.environ["TRAVIS_COMMIT"]
-        if os.environ["TRAVIS_PULL_REQUEST"] != "false":
-            sha = os.environ["TRAVIS_PULL_REQUEST_SHA"]
+    if "GITHUB_SHA" in os.environ:
+        sha = os.environ["GITHUB_SHA"]
 
     if not version:
         version="{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
@@ -132,7 +130,7 @@ def create_pr(changes, updated, git_info):
         updated_list.append(info)
 
     updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
-    print(updated.decode("utf-8"))
+    #print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
@@ -208,7 +206,7 @@ def generate_download_info():
     boards = {}
     errors = []
 
-    new_tag = os.environ["TRAVIS_TAG"]
+    new_tag = os.environ["RELEASE_TAG"]
 
     changes = {
         "new_release": new_tag,
@@ -240,7 +238,6 @@ def generate_download_info():
 
     board_mapping = get_board_mapping()
 
-    print(previous_releases)
     for release in previous_releases:
         update_downloads(board_mapping, release)
 
@@ -280,7 +277,7 @@ def generate_download_info():
         print("No new release to update")
 
 if __name__ == "__main__":
-    if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
+    if "RELEASE_TAG" in os.environ and os.environ["RELEASE_TAG"]:
         generate_download_info()
     else:
         print("skipping website update because this isn't a tag")
