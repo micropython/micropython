@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-24 23:36-0500\n"
+"POT-Creation-Date: 2019-08-29 22:16-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -880,6 +880,10 @@ msgstr "Modalità di esecuzione non valida."
 
 #: shared-module/bleio/Attribute.c
 msgid "Invalid security_mode"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
