@@ -259,7 +259,7 @@ extern const struct _mp_obj_module_t bitbangio_module;
 #endif
 
 #if CIRCUITPY_BLEIO
-#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bleio), (mp_obj_t)&bleio_module },
+#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
 extern const struct _mp_obj_module_t bleio_module;
 #else
 #define BLEIO_MODULE

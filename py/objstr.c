@@ -2094,6 +2094,14 @@ mp_obj_t mp_obj_new_bytes(const byte* data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+    memset(vstr.buf, 0, len);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+
+
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     if (MP_OBJ_IS_QSTR(s1) && MP_OBJ_IS_QSTR(s2)) {
         return s1 == s2;
