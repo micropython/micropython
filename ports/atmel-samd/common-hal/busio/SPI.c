@@ -122,7 +122,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         }
         Sercom* potential_sercom = sercom_insts[sercom_index];
         if (
-        #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
+        #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
             (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
              potential_sercom != status_apa102.spi_desc.dev.prvt &&
              !apa102_sck_in_use)) {
@@ -181,7 +181,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // Set up SPI clocks on SERCOM.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
-    #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
+    #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
     // if we're re-using the dotstar sercom, make sure it is disabled or the init will fail out
     hri_sercomspi_clear_CTRLA_ENABLE_bit(sercom);
     #endif

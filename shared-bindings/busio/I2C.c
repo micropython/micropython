@@ -189,6 +189,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|      :param int start: Index to start writing at
 //|      :param int end: Index to write up to but not include. Defaults to ``len(buffer)``
 //|
+// Shared arg parsing for readfrom_into and writeto_then_readfrom.
+STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
+
+    size_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, end, &length);
+    if (length == 0) {
+        mp_raise_ValueError(translate("Buffer must be at least length 1"));
+    }
+
+    uint8_t status = common_hal_busio_i2c_read(self, address, ((uint8_t*)bufinfo.buf) + start, length);
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
+}
+
 STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -203,21 +220,8 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
-
-    int32_t start = args[ARG_start].u_int;
-    uint32_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-    if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
-    }
-
-    uint8_t status = common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, length);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
-
+    readfrom(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
+             args[ARG_end].u_int);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
@@ -225,7 +229,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|   .. method:: writeto(address, buffer, *, start=0, end=None, stop=True)
 //|
 //|      Write the bytes from ``buffer`` to the slave specified by ``address``.
-//|      Transmits a stop bit if ``stop`` is set.
+//|      Transmits a stop bit when stop is True. Setting stop=False is deprecated and stop will be
+//|      removed in CircuitPython 6.x. Use `writeto_then_readfrom` when needing a write, no stop and
+//|      repeated start before a read.
 //|
 //|      If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|      as if ``buffer[start:end]``. This will not cause an allocation like
@@ -238,9 +244,26 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|      :param bytearray buffer: buffer containing the bytes to write
 //|      :param int start: Index to start writing from
 //|      :param int end: Index to read up to but not include. Defaults to ``len(buffer)``
-//|      :param bool stop: If true, output an I2C stop condition after the
-//|                        buffer is written
+//|      :param bool stop: If true, output an I2C stop condition after the buffer is written.
+//|                        Deprecated. Will be removed in 6.x and act as stop=True.
 //|
+// Shared arg parsing for writeto and writeto_then_readfrom.
+STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end, bool stop) {
+    // get the buffer to write the data from
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
+
+    size_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, end, &length);
+
+    // do the transfer
+    uint8_t status = common_hal_busio_i2c_write(self, address, ((uint8_t*) bufinfo.buf) + start,
+                                                length, stop);
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
+}
+
 STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end, ARG_stop };
     static const mp_arg_t allowed_args[] = {
@@ -256,24 +279,55 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // get the buffer to write the data from
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
-
-
-    int32_t start = args[ARG_start].u_int;
-    uint32_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-
-    // do the transfer
-    uint8_t status = common_hal_busio_i2c_write(self, args[ARG_address].u_int,
-        ((uint8_t*) bufinfo.buf) + start, length, args[ARG_stop].u_bool);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
+    writeto(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
+            args[ARG_end].u_int, args[ARG_stop].u_bool);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
+
+//|   .. method:: writeto_then_readfrom(address, out_buffer, in_buffer, *, out_start=0, out_end=None, in_start=0, in_end=None)
+//|
+//|      Write the bytes from ``out_buffer`` to the slave specified by ``address``, generate no stop
+//|      bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
+//|      ``in_buffer`` can be the same buffer because they are used sequentially.
+//|
+//|      If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
+//|      as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
+//|      will so it saves memory.
+//|
+//|      :param int address: 7-bit device address
+//|      :param bytearray out_buffer: buffer containing the bytes to write
+//|      :param bytearray in_buffer: buffer to write into
+//|      :param int out_start: Index to start writing from
+//|      :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
+//|      :param int in_start: Index to start writing at
+//|      :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``
+//|
+STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_out_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_in_buffer,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_out_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_out_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_in_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+    check_lock(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    writeto(self, args[ARG_address].u_int, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int,
+            args[ARG_out_end].u_int, false);
+    readfrom(self, args[ARG_address].u_int, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int,
+             args[ARG_in_end].u_int);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_then_readfrom_obj, 3, busio_i2c_writeto_then_readfrom);
 
 STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_i2c_deinit_obj) },
@@ -286,6 +340,7 @@ STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&busio_i2c_readfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&busio_i2c_writeto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeto_then_readfrom), MP_ROM_PTR(&busio_i2c_writeto_then_readfrom_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(busio_i2c_locals_dict, busio_i2c_locals_dict_table);
