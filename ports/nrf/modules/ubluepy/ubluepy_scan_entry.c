@@ -95,7 +95,6 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
         mp_map_elem_t *ad_types_table = MP_OBJ_TO_PTR(constant_map->table);
 
         uint16_t num_of_elements = constant_map->used;
-
         for (uint16_t i = 0; i < num_of_elements; i++) {
             mp_map_elem_t element = (mp_map_elem_t)*ad_types_table;
             ad_types_table++;
@@ -105,7 +104,6 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
                 qstr key_qstr = MP_OBJ_QSTR_VALUE(element.key);
                 const char * text = qstr_str(key_qstr);
                 size_t len = qstr_len(key_qstr);
-
                 vstr_t vstr;
                 vstr_init(&vstr, len);
                 vstr_printf(&vstr, "%s", text);
@@ -116,8 +114,10 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
 
         t->items[0] = MP_OBJ_NEW_SMALL_INT(adv_item_type);
         t->items[1] = description;
-        t->items[2] = mp_obj_new_bytearray(adv_item_len - 1,
+        if (adv_item_len) { // adv_item_len may is zero, trigger memory out error
+            t->items[2] = mp_obj_new_bytearray(adv_item_len - 1,
                                            &((uint8_t * )data->items)[byte_index + 2]);
+        } 
         mp_obj_list_append(retval_list, MP_OBJ_FROM_PTR(t));
 
         byte_index += adv_item_len + 1;
