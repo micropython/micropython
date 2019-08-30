@@ -222,12 +222,71 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. method:: play(sample, *, voice=0, loop=False)
+//|
+//|     Plays the sample once when loop=False and continuously when loop=True.
+//|     Does not block. Use `playing` to block.
+//|
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
+//|
+//|     The sample must match the Mixer's encoding settings given in the constructor.
+//|
+STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_sample, ARG_voice, ARG_loop };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_voice,     MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+        { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+    };
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t v = args[ARG_voice].u_int;
+    if (v > (self->voice_count - 1)) {
+        mp_raise_ValueError(translate("Invalid voice"));
+    }
+    audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
+    mp_obj_t sample = args[ARG_sample].u_obj;
+    common_hal_audiomixer_mixervoice_play(voice, sample, args[ARG_loop].u_bool);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixer_play_obj, 1, audiomixer_mixer_obj_play);
+
+//|   .. method:: stop_voice(voice=0)
+//|
+//|     Stops playback of the sample on the given voice.
+//|
+STATIC mp_obj_t audiomixer_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_voice };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_voice, MP_ARG_INT, {.u_int = 0} },
+    };
+    audiomixer_mixer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t v = args[ARG_voice].u_int;
+    if (v > (self->voice_count - 1)) {
+        mp_raise_ValueError(translate("Invalid voice"));
+    }
+    audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
+    common_hal_audiomixer_mixervoice_stop(voice);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixer_stop_voice_obj, 1, audiomixer_mixer_obj_stop_voice);
+
 
 STATIC const mp_rom_map_elem_t audiomixer_mixer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiomixer_mixer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiomixer_mixer___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audiomixer_mixer_play_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_voice), MP_ROM_PTR(&audiomixer_mixer_stop_voice_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiomixer_mixer_playing_obj) },
