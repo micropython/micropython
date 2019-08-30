@@ -224,14 +224,14 @@ void SystemClock_Config(void)
      RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;	
      RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
      RCC_OscInitStruct.MSIState = RCC_MSI_OFF;
-	    #else
-	    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+     #else
+     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
      RCC_OscInitStruct.LSEState = RCC_LSE_ON;
      RCC_OscInitStruct.MSIState = RCC_MSI_ON;
      RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
      RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
      RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-	    #endif
+     #endif
     #endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
