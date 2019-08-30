@@ -1387,29 +1387,7 @@ unwind_loop:
                 qstr source_file = mp_decode_uint_value(ip);
                 ip = mp_decode_uint_skip(ip);
                 #endif
-                size_t source_line = 1;
-                size_t c;
-                while ((c = *ip)) {
-                    size_t b, l;
-                    if ((c & 0x80) == 0) {
-                        // 0b0LLBBBBB encoding
-                        b = c & 0x1f;
-                        l = c >> 5;
-                        ip += 1;
-                    } else {
-                        // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-                        b = c & 0xf;
-                        l = ((c << 4) & 0x700) | ip[1];
-                        ip += 2;
-                    }
-                    if (bc >= b) {
-                        bc -= b;
-                        source_line += l;
-                    } else {
-                        // found source line corresponding to bytecode offset
-                        break;
-                    }
-                }
+                size_t source_line = mp_bytecode_get_source_line(ip, bc);
                 mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
             }
 

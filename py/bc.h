@@ -119,4 +119,31 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 
 #endif
 
+static inline size_t mp_bytecode_get_source_line(const byte *line_info, size_t bc_offset) {
+    size_t source_line = 1;
+    size_t c;
+    while ((c = *line_info)) {
+        size_t b, l;
+        if ((c & 0x80) == 0) {
+            // 0b0LLBBBBB encoding
+            b = c & 0x1f;
+            l = c >> 5;
+            line_info += 1;
+        } else {
+            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+            b = c & 0xf;
+            l = ((c << 4) & 0x700) | line_info[1];
+            line_info += 2;
+        }
+        if (bc_offset >= b) {
+            bc_offset -= b;
+            source_line += l;
+        } else {
+            // found source line corresponding to bytecode offset
+            break;
+        }
+    }
+    return source_line;
+}
+
 #endif // MICROPY_INCLUDED_PY_BC_H
