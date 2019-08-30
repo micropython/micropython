@@ -213,12 +213,25 @@ void SystemClock_Config(void)
     #endif
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     #elif defined(STM32L4)
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-    RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-    RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+     #if defined(USE_HSE_LSI) && (USE_HSE_LSI)		
+     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+     RCC_OscInitStruct.PLL.PLLM = 1;
+     RCC_OscInitStruct.PLL.PLLN = 20;
+     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+     RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+     RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;	
+     RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+     RCC_OscInitStruct.MSIState = RCC_MSI_OFF;
+	    #else
+	    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+     RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+     RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+	    #endif
     #endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
@@ -379,6 +392,12 @@ void SystemClock_Config(void)
     PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK
                                                  |RCC_PLLSAI1_48M2CLK
                                                  |RCC_PLLSAI1_ADC1CLK;
+    #if defined(USE_HSE_LSI) && (USE_HSE_LSI)
+    	//enbale HSE and LSI	
+    	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI; 	
+    	PeriphClkInitStruct.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSE; 
+	    PeriphClkInitStruct.PLLSAI1.PLLSAI1N = 12; 
+    #endif	
 
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
