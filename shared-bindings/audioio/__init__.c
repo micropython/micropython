@@ -33,12 +33,12 @@
 #include "shared-bindings/audioio/__init__.h"
 #include "shared-bindings/audioio/AudioOut.h"
 
-#ifdef CIRCUITPY_AUDIOIO_COMPAT
+#if CIRCUITPY_AUDIOIO_COMPAT
 #include "shared-bindings/audiomixer/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
 #endif
-#ifdef CIRCUIPY_AUDIOMIXER
+#if CIRCUITPY_AUDIOMIXER
 #include "shared-bindings/audiomixer/Mixer.h"
 #endif
 
@@ -63,8 +63,8 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
-//| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
-//| to :mod:`audiocore`.
+//| Since CircuitPython 5, `RawSample` and `WaveFile` are moved
+//| to :mod:`audiocore`, and `Mixer` is moved to :mod:`audiomixer`.
 //|
 //| For compatibility with CircuitPython 4.x, some builds allow the items in
 //| `audiocore` to be imported from `audioio`.  This will be removed for all
