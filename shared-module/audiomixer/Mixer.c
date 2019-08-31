@@ -95,32 +95,28 @@ void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    return __QADD8(a, b);
+    return __SHADD8(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
         int8_t ai = a >> (sizeof(int8_t) * 8 * i);
         int8_t bi = b >> (sizeof(int8_t) * 8 * i);
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > CHAR_MAX) {
             intermediate = CHAR_MAX;
         } else if (intermediate < CHAR_MIN) {
             intermediate = CHAR_MIN;
         }
-        result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int8_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(int8_t) * 8 * i);
     }
     return result;
     #endif
 }
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
-    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    // Subtract out the DC offset, add and then shift back.
-    a = __USUB8(a, 0x80808080);
-    b = __USUB8(b, 0x80808080);
-    uint32_t sum = __QADD8(a, b);
-    return __UADD8(sum, 0x80808080);
-    #else*/
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    return __UHADD8(a, b);
+    #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
         uint8_t ai = (a >> (sizeof(uint8_t) * 8 * i));
@@ -132,18 +128,18 @@ uint32_t add8unsigned(uint32_t a, uint32_t b) {
         result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
     }
     return result;
-    //#endif
+    #endif
 }
 
 uint32_t add16signed(uint32_t a, uint32_t b) {
-    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    return __QADD16(a, b);
-    #else*/
+    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    return __SHADD16(a, b);
+    #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = a >> (sizeof(int16_t) * 8 * i);
         int16_t bi = b >> (sizeof(int16_t) * 8 * i);
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {
@@ -152,26 +148,22 @@ uint32_t add16signed(uint32_t a, uint32_t b) {
         result |= (((uint32_t) intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
-    //#endif
+    #endif
 }
 
 uint32_t add16unsigned(uint32_t a, uint32_t b) {
     #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    // Subtract out the DC offset, add and then shift back.
-    a = __USUB16(a, 0x80008000);
-    b = __USUB16(b, 0x80008000);
-    uint32_t sum = __QADD16(a, b);
-    return __UADD16(sum, 0x80008000);
+    return __UHADD16(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = (a >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
         int16_t bi = (b >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > USHRT_MAX) {
             intermediate = USHRT_MAX;
         }
-        result |= ((uint16_t) intermediate + 0x8000) << (sizeof(int16_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xffff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
     #endif
