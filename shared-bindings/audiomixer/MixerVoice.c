@@ -141,7 +141,7 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
 
 //|  .. attribute:: playing
 //|
-//|     True when any voice is being output. (read-only)
+//|     True when this voice is being output. (read-only)
 //|
 
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_playing(mp_obj_t self_in) {
