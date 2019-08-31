@@ -55,7 +55,6 @@
 
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
-    //{ MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audioio_mixer_type) },
     { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
     { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
 };
