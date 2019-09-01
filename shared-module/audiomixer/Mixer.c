@@ -94,7 +94,7 @@ void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return __SHADD8(a, b);
     #else
     uint32_t result = 0;
@@ -114,7 +114,7 @@ uint32_t add8signed(uint32_t a, uint32_t b) {
 }
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return __UHADD8(a, b);
     #else
     uint32_t result = 0;
@@ -132,7 +132,7 @@ uint32_t add8unsigned(uint32_t a, uint32_t b) {
 }
 
 uint32_t add16signed(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return __SHADD16(a, b);
     #else
     uint32_t result = 0;
@@ -152,7 +152,7 @@ uint32_t add16signed(uint32_t a, uint32_t b) {
 }
 
 uint32_t add16unsigned(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return __UHADD16(a, b);
     #else
     uint32_t result = 0;
@@ -169,15 +169,16 @@ uint32_t add16unsigned(uint32_t a, uint32_t b) {
     #endif
 }
 
-//TODO:
 static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
     // if mul == 0, no need in wasting cycles
     if (mul == 0) {
         return 0;
     }
-    /*#if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    /* TODO: workout ARMv7 instructions
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return val;
     #else*/
+    mp_printf(&mp_plat_print, "mult8unsigned");
     uint32_t result = 0;
     float mod_mul = (float) mul / (float) ((1<<15)-1);
     for (int8_t i = 0; i < 4; i++) {
@@ -193,14 +194,13 @@ static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
     //#endif
 }
 
-//TODO:
 static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
     // if mul == 0, no need in wasting cycles
     if (mul == 0) {
         return 0;
     }
-    /*
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    /* TODO: workout ARMv7 instructions
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return val;
     #else
     */
@@ -226,8 +226,17 @@ static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
     if (mul == 0) {
         return 0;
     }
-    /*
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    /* TODO: the below ARMv7m instructions "work", but the amplitude is much higher/louder
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    // there is no unsigned equivalent to the 'SMULWx' ARMv7 Thumb function,
+    // so we have to do it by hand.
+    uint32_t lo = val & 0xffff;
+    uint32_t hi = val >> 16;
+    //mp_printf(&mp_plat_print, "pre-asm: (mul: %d)\n\tval: %x\tlo: %x\thi: %x\n", mul, val, lo, hi);
+    uint32_t val_lo;
+    asm volatile("mul %0, %1, %2" : "=r" (val_lo) : "r" (mul), "r" (lo));
+    asm volatile("mla %0, %1, %2, %3" : "=r" (val) : "r" (mul), "r" (hi), "r" (val_lo));
+    //mp_printf(&mp_plat_print, "post-asm:\n\tval: %x\tlo: %x\n\n", val, val_lo);
     return val;
     #else
     */
@@ -243,7 +252,7 @@ static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
         }
         result |= (((uint32_t) intermediate) + 0x8000) << (sizeof(int16_t) * 8 * i);
     }
-    return val;
+    return result;
     //#endif
 }
 
@@ -252,7 +261,7 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     if (mul == 0) {
         return 0;
     }
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     int32_t hi, lo;
     int32_t bits = 16; // saturate to 16 bits
     int32_t shift = 0; // shift is done automatically
