@@ -54,7 +54,7 @@ msgstr "Der Index %q befindet sich außerhalb der Reihung"
 msgid "%q indices must be integers, not %s"
 msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
@@ -219,12 +219,12 @@ msgstr "3-arg pow() wird nicht unterstützt"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 
-#: shared-bindings/bleio/Address.c
+#: shared-bindings/_bleio/Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Die Adresse muss %d Bytes lang sein"
 
-#: shared-bindings/bleio/Address.c
+#: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
 msgstr ""
 
@@ -357,7 +357,7 @@ msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 msgid "Bus pin %d is already in use"
 msgstr "Bus pin %d wird schon benutzt"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
 msgstr "Der Puffer muss 16 Bytes lang sein"
 
@@ -374,7 +374,7 @@ msgstr ""
 msgid "Can not use dotstar with %s"
 msgstr "Kann dotstar nicht mit %s verwenden"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
@@ -431,19 +431,7 @@ msgstr "sizeof scalar kann nicht eindeutig bestimmt werden"
 msgid "Cannot write without MOSI pin."
 msgstr "Kann nicht ohne MOSI-Pin schreiben."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "Characteristic UUID stimmt nicht mit der Service-UUID überein"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
-
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic is already attached to a Service"
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Schreiben von CharacteristicBuffer ist nicht vorgesehen"
 
@@ -479,7 +467,7 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
 msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
@@ -513,13 +501,9 @@ msgstr "Data 0 pin muss am Byte ausgerichtet sein"
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
 msgstr "Zu vielen Daten für das advertisement packet"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "Descriptor is already attached to a Characteristic"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -554,16 +538,25 @@ msgstr "Fehler in regex"
 msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/Descriptor.c
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/_bleio/Service.c
+msgid "Expected a Peripheral"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Service.c
 msgid "Expected a UUID"
 msgstr "Eine UUID wird erwartet"
 
-#: shared-bindings/bleio/Central.c
+#: shared-bindings/_bleio/Central.c
 msgid "Expected an Address"
 msgstr ""
 
@@ -581,12 +574,17 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Mutex konnte nicht akquiriert werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Service.c
+#: ports/nrf/common-hal/_bleio/Service.c
 #, c-format
 msgid "Failed to add characteristic, err 0x%04x"
 msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#, c-format
+msgid "Failed to add descriptor, err 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to add service, err 0x%04x"
 msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
@@ -601,62 +599,62 @@ msgstr "Konnte keinen RX Buffer allozieren"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Konnte keine RX Buffer mit %d allozieren"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to change softdevice state"
 msgstr "Fehler beim Ändern des Softdevice-Status"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to configure advertising, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Central.c
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Scanner.c
 #, c-format
 msgid "Failed to continue scanning, err 0x%04x"
 msgstr "Der Scanvorgang kann nicht fortgesetzt werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Failed to discover services"
 msgstr "Es konnten keine Dienste gefunden werden"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to get local address"
 msgstr "Lokale Adresse konnte nicht abgerufen werden"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to get softdevice state"
 msgstr "Fehler beim Abrufen des Softdevice-Status"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 msgid "Failed to pair"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#: ports/nrf/common-hal/bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "gatts value konnte nicht gelesen werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, c-format
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
@@ -666,47 +664,47 @@ msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to set device name, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to start advertising, err 0x%04x"
 msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Central.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to start pairing, error 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Scanner.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to stop advertising, err 0x%04x"
 msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
-#: ports/nrf/common-hal/bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "gatts value konnte nicht geschrieben werden. Status: 0x%04x"
@@ -855,7 +853,7 @@ msgstr "Ungültige Pins"
 msgid "Invalid polarity"
 msgstr "Ungültige Polarität"
 
-#: shared-bindings/bleio/Characteristic.c
+#: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
 msgstr ""
 
@@ -863,7 +861,7 @@ msgstr ""
 msgid "Invalid run mode."
 msgstr "Ungültiger Ausführungsmodus"
 
-#: shared-module/bleio/Attribute.c
+#: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
 msgstr ""
 
@@ -942,7 +940,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
 
@@ -1000,9 +998,9 @@ msgstr "Kein Speicherplatz auf Gerät"
 msgid "No such file/directory"
 msgstr "Keine solche Datei/Verzeichnis"
 
-#: ports/nrf/common-hal/bleio/__init__.c shared-bindings/bleio/Central.c
-#: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/__init__.c shared-bindings/_bleio/Central.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/Peripheral.c
 msgid "Not connected"
 msgstr "Nicht verbunden"
 
@@ -1160,7 +1158,7 @@ msgstr "Slice und Wert (value) haben unterschiedliche Längen."
 msgid "Slices not supported"
 msgstr "Slices werden nicht unterstützt"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 msgstr ""
@@ -1284,15 +1282,15 @@ msgstr "USB beschäftigt"
 msgid "USB Error"
 msgstr "USB Fehler"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr "UUID Zeichenfolge ist nicht 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
 msgstr "Der UUID-Wert ist kein str-, int- oder Byte-Puffer"
 
@@ -1323,7 +1321,7 @@ msgstr ""
 msgid "Unable to write to nvm."
 msgstr "Schreiben in nvm nicht möglich."
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Unerwarteter nrfx uuid-Typ"
 
@@ -1354,13 +1352,13 @@ msgstr "Nicht unterstützte Operation"
 msgid "Unsupported pull value."
 msgstr "Nicht unterstützter Pull-Wert"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#: ports/nrf/common-hal/bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#: ports/nrf/common-hal/bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr ""
 
@@ -1711,10 +1709,6 @@ msgstr "kann keinen relativen Import durchführen"
 msgid "casting"
 msgstr ""
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr ""
@@ -1774,10 +1768,6 @@ msgstr ""
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "Die Standart-Ausnahmebehandlung muss als letztes sein"
-
-#: shared-bindings/bleio/Characteristic.c
-msgid "descriptors includes an object that is not a Descriptors"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -1997,7 +1987,7 @@ msgstr "int() arg 2 muss >= 2 und <= 36 sein"
 msgid "integer required"
 msgstr "integer erforderlich"
 
-#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#: shared-bindings/_bleio/Peripheral.c shared-bindings/_bleio/Scanner.c
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr ""
@@ -2129,8 +2119,8 @@ msgstr "map buffer zu klein"
 msgid "math domain error"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#: ports/nrf/common-hal/bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
@@ -2180,7 +2170,7 @@ msgstr "muss Schlüsselwortargument für key function verwenden"
 msgid "name '%q' is not defined"
 msgstr "Name '%q' ist nirgends definiert worden (Schreibweise kontrollieren)"
 
-#: shared-bindings/bleio/Peripheral.c
+#: shared-bindings/_bleio/Peripheral.c
 msgid "name must be a string"
 msgstr "name muss ein String sein"
 
@@ -2234,11 +2224,7 @@ msgstr ""
 msgid "no such attribute"
 msgstr ""
 
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
@@ -2258,7 +2244,7 @@ msgstr ""
 msgid "non-keyword arg after keyword arg"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "keine 128-bit UUID"
 
@@ -2572,7 +2558,7 @@ msgstr ""
 msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout muss >= 0.0 sein"
 
@@ -2729,7 +2715,7 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: shared-bindings/bleio/Scanner.c
+#: shared-bindings/_bleio/Scanner.c
 msgid "window must be <= interval"
 msgstr ""
 
@@ -2793,6 +2779,12 @@ msgstr ""
 
 #~ msgid "Cannot update i/f status"
 #~ msgstr "Kann i/f Status nicht updaten"
+
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "Characteristic UUID stimmt nicht mit der Service-UUID überein"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
 
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Daten sind zu groß für das advertisement packet"

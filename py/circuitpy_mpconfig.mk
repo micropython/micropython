@@ -104,7 +104,7 @@ CIRCUITPY_BITBANGIO = $(CIRCUITPY_FULL_BUILD)
 endif
 CFLAGS += -DCIRCUITPY_BITBANGIO=$(CIRCUITPY_BITBANGIO)
 
-# Explicitly enabled for boards that support bleio.
+# Explicitly enabled for boards that support _bleio.
 ifndef CIRCUITPY_BLEIO
 CIRCUITPY_BLEIO = 0
 endif
