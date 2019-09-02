@@ -32,7 +32,7 @@
 #include "py/reader.h"
 #include "py/emitglue.h"
 #include "py/persistentcode.h"
-#include "py/bc.h"
+#include "py/bc0.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -307,12 +307,12 @@ STATIC void load_bytecode(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte
         uint f = mp_opcode_format(ip, &sz, false);
         ++ip;
         --sz;
-        if (f == MP_OPCODE_QSTR) {
+        if (f == MP_BC_FORMAT_QSTR) {
             qstr qst = load_qstr(reader, qw);
             *ip++ = qst;
             *ip++ = qst >> 8;
             sz -= 2;
-        } else if (f == MP_OPCODE_VAR_UINT) {
+        } else if (f == MP_BC_FORMAT_VAR_UINT) {
             while ((*ip++ = read_byte(reader)) & 0x80) {
             }
         }
@@ -600,7 +600,7 @@ STATIC void save_bytecode(mp_print_t *print, qstr_window_t *qw, const byte *ip, 
     while (ip < ip_top) {
         size_t sz;
         uint f = mp_opcode_format(ip, &sz, true);
-        if (f == MP_OPCODE_QSTR) {
+        if (f == MP_BC_FORMAT_QSTR) {
             mp_print_bytes(print, ip, 1);
             qstr qst = ip[1] | (ip[2] << 8);
             save_qstr(print, qw, qst);
