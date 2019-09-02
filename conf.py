@@ -369,3 +369,6 @@ texinfo_documents = [
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
+
+def setup(app):
+    app.add_stylesheet("customstyle.css")
