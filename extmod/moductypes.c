@@ -305,7 +305,7 @@ static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
 static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
     static const char type2char[16] = "BbHhIiQq------fd";
-    mp_binary_set_val(struct_type, type2char[val_type], val, &p);
+    mp_binary_set_val(struct_type, type2char[val_type], val, p, &p);
 }
 
 static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {

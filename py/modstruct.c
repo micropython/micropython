@@ -180,6 +180,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
+    byte *p_base = p;
     size_t i;
     for (i = 0; i < n_args;) {
         mp_uint_t cnt = 1;
@@ -204,7 +205,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
             while (cnt-- && i < n_args) {
-                mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
+                mp_binary_set_val(fmt_type, *fmt, args[i++], p_base, &p);
             }
         }
         fmt++;
