@@ -32,7 +32,7 @@
 File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
-\.\+5b
+\.\+63
 arg names:
 (N_STATE 5)
 (N_EXC_STACK 0)
