@@ -97,7 +97,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             size += cnt;
         } else {
             total_cnt += cnt;
-            mp_uint_t align;
+            size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             while (cnt--) {
                 // Apply alignment
