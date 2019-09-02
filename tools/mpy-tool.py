@@ -109,6 +109,7 @@ MP_OPCODE_VAR_UINT = 2
 MP_OPCODE_OFFSET = 3
 
 # extra bytes:
+MP_BC_UNWIND_JUMP = 0x46
 MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
 MP_BC_RAISE_VARARGS = 0x5c
@@ -215,7 +216,8 @@ def mp_opcode_format(bytecode, ip, count_var_uint, opcode_format=make_opcode_for
         ip += 3
     else:
         extra_byte = (
-            opcode == MP_BC_RAISE_VARARGS
+            opcode == MP_BC_UNWIND_JUMP
+            or opcode == MP_BC_RAISE_VARARGS
             or opcode == MP_BC_MAKE_CLOSURE
             or opcode == MP_BC_MAKE_CLOSURE_DEFARGS
         )
