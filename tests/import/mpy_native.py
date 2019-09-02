@@ -58,8 +58,8 @@ user_files = {
 
         b'\x38' # n bytes, bytecode
             b'\x01\x00\x00\x00\x00\x00\x05\x00\x00\x00\x00\xff' # prelude
-            b'\x11' # LOAD_CONST_NONE
-            b'\x5b' # RETURN_VALUE
+            b'\x51' # LOAD_CONST_NONE
+            b'\x63' # RETURN_VALUE
 
             b'\x02m\x02m\x00\x02' # simple_name, source_file, n_obj, n_raw_code
 
