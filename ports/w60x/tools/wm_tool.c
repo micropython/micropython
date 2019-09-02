@@ -81,8 +81,8 @@ typedef enum {
 } wm_tool_dl_type_e;
 
 typedef enum {
-    WM_TOOL_LAYOUT_TYPE_OLD = 0,
-    WM_TOOL_LAYOUT_TYPE_NEW = 3
+    WM_TOOL_LAYOUT_TYPE_1M = 0,
+    WM_TOOL_LAYOUT_TYPE_2M = 3
 } wm_tool_layout_type_e;
 
 typedef enum {
@@ -116,7 +116,7 @@ typedef struct {
     unsigned int   hd_checksum;
 } wm_tool_firmware_booter_t;
 
-const static char *wm_tool_version = "1.0.2";
+const static char *wm_tool_version = "1.0.4";
 
 static int wm_tool_show_usage = 0;
 static int wm_tool_list_com   = 0;
@@ -137,8 +137,8 @@ static char *wm_tool_secboot_image = NULL;
 static unsigned int wm_tool_src_binary_len = 0;
 static unsigned int wm_tool_src_binary_crc = 0;
 static int wm_tool_is_debug = 0;
-static wm_tool_layout_type_e wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_OLD;
-static wm_tool_zip_type_e wm_tool_zip_type = WM_TOOL_ZIP_TYPE_UNCOMPRESS;
+static wm_tool_layout_type_e wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_1M;
+static wm_tool_zip_type_e wm_tool_zip_type = WM_TOOL_ZIP_TYPE_COMPRESS;
 static unsigned int wm_tool_upd_addr = 0x90000;
 static unsigned int wm_tool_run_addr = 0x10100;
 
@@ -2923,10 +2923,10 @@ static void wm_tool_print_usage(const char *name)
                    "  -o  output_name      , output firmware file\r\n"
                    "                         the default is the same as the original binary file name\r\n"
                    "  -sb second_boot      , second boot file, used to generate fls file\r\n"
-                   "  -fc compress_type    , whether the firmware is compressed, default is uncompressed\r\n"
+                   "  -fc compress_type    , whether the firmware is compressed, default is compressed\r\n"
                    "                         <0 | 1> or <uncompress | compress>\r\n"
-                   "  -it image_type       , firmware image layout type, default is old layout\r\n"
-                   "                         <0 | 3> or <old | new>\r\n"
+                   "  -it image_type       , firmware image layout type, default is 1M layout\r\n"
+                   "                         <0 | 3> or <1M | 2M>\r\n"
                    "  -ua update_address   , upgrade storage location (hexadecimal)\r\n"
                    "                         the default is 90000\r\n"
                    "  -ra run_address      , runtime position (hexadecimal)\r\n"
@@ -2957,7 +2957,7 @@ static void wm_tool_print_usage(const char *name)
                    "                          all     - erase all areas\r\n"
                    "  -dl download_firmware, firmware file to be downloaded, default download compressed image\r\n"
                    "  -sl display_format   , display the log information output from the serial port\r\n"
-                   "                         <1 | 2> or <str | hex>\r\n"
+                   "                         <0 | 1> or <str | hex>\r\n"
                    "                          str - string mode display\r\n"
                    "                          hex - hexadecimal format\r\n"
                    , wm_tool_get_name(name));
@@ -3093,13 +3093,13 @@ static int wm_tool_parse_arv(int argc, char *argv[])
             case 'i':
             {
                 if ('0' == optarg[0])
-                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_OLD;
+                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_1M;
                 else if ('3' == optarg[0])
-                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_NEW;
-                else if (0 == strncmp(optarg, "old", strlen("old")))
-                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_OLD;
-                else if (0 == strncmp(optarg, "new", strlen("new")))
-                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_NEW;
+                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_2M;
+                else if (0 == strncmp(optarg, "1M", strlen("1M")))
+                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_1M;
+                else if (0 == strncmp(optarg, "2M", strlen("2M")))
+                    wm_tool_image_type = WM_TOOL_LAYOUT_TYPE_2M;
                 else
                 {
                     if (isdigit((int)optarg[0]))
@@ -3140,9 +3140,9 @@ static int wm_tool_parse_arv(int argc, char *argv[])
             }
             case 'g':
             {
-                if ('1' == optarg[0])
+                if ('0' == optarg[0])
                     wm_tool_show_log_type = WM_TOOL_SHOW_LOG_STR;
-                else if ('2' == optarg[0])
+                else if ('1' == optarg[0])
                     wm_tool_show_log_type = WM_TOOL_SHOW_LOG_HEX;
                 else if (0 == strncmp(optarg, "str", strlen("str")))
                     wm_tool_show_log_type = WM_TOOL_SHOW_LOG_STR;
@@ -3257,7 +3257,7 @@ static int wm_tool_pack_image(const char *outfile)
 		fclose(fpimg);
 	}
 
-    wm_tool_printf("generate normal image complete.\r\n");
+    wm_tool_printf("generate normal image completed.\r\n");
 
     return 0;
 }
@@ -3350,7 +3350,7 @@ static int wm_tool_pack_gz_image(const char *gzbin, const char *outfile)
 		fclose(fpimg);
 	}
 
-    wm_tool_printf("generate compressed image complete.\r\n");
+    wm_tool_printf("generate compressed image completed.\r\n");
 
     return 0;
 }
@@ -3375,7 +3375,7 @@ static int wm_tool_pack_dbg_image(const char *image, const char *outfile)
 	}
 
 	magic_word = 0;
-	fread(&magic_word, 1, 4, fpimg);
+	readlen = fread(&magic_word, 1, 4, fpimg);
 	if (magic_word != WM_TOOL_IMG_HEAD_MAGIC_NO)
 	{
 		wm_tool_printf("input [%s] file magic error.\n", image);
@@ -3401,7 +3401,7 @@ static int wm_tool_pack_dbg_image(const char *image, const char *outfile)
 
 	/* write sec img to output file */
 	fseek(fpimg, 0, SEEK_SET);
-	fread((unsigned char *)&fbooter, 1, sizeof(wm_tool_firmware_booter_t), fpimg);
+	readlen = fread((unsigned char *)&fbooter, 1, sizeof(wm_tool_firmware_booter_t), fpimg);
 
 	fseek(fout, 0, SEEK_SET);
 	fwrite(&fbooter, 1, sizeof(wm_tool_firmware_booter_t), fout);
@@ -3423,7 +3423,7 @@ static int wm_tool_pack_dbg_image(const char *image, const char *outfile)
 		fclose(fout);
 	}
 
-    wm_tool_printf("generate debug image complete.\r\n");
+    wm_tool_printf("generate debug image completed.\r\n");
 
     return 0;
 }
@@ -3453,7 +3453,7 @@ static int wm_tool_pack_fls(const char *image, const char *outfile)
 	}
 
 	magic_word = 0;
-	fread(&magic_word, 1, 4, fpbin);
+	readlen = fread(&magic_word, 1, 4, fpbin);
 	if (magic_word != WM_TOOL_IMG_HEAD_MAGIC_NO)
 	{
 		wm_tool_printf("input [%s] file magic error.\r\n", wm_tool_secboot_image);
@@ -3469,7 +3469,7 @@ static int wm_tool_pack_fls(const char *image, const char *outfile)
 	}
 
 	magic_word = 0;
-	fread(&magic_word, 1, 4, fpimg);
+	readlen = fread(&magic_word, 1, 4, fpimg);
 	if (magic_word != WM_TOOL_IMG_HEAD_MAGIC_NO)
 	{
 		wm_tool_printf("input [%s] file magic error.\r\n", image);
@@ -3564,7 +3564,7 @@ static int wm_tool_pack_fls(const char *image, const char *outfile)
 		fclose(fout);
 	}
 
-    wm_tool_printf("generate flash file complete.\r\n");
+    wm_tool_printf("generate flash file completed.\r\n");
 
 	return 0;
 }
@@ -3601,7 +3601,7 @@ static int wm_tool_gzip_bin(const char *binary, const char *gzbin)
     gzclose(gzfp);
     fclose(bfp);
 
-    wm_tool_printf("compress binary complete.\r\n");
+    wm_tool_printf("compress binary completed.\r\n");
 
     return 0;
 }
@@ -3828,7 +3828,7 @@ static int wm_tool_uart_open(const char *device)
 		return -1;
 	}
 
-    ret = SetupComm(wm_tool_uart_handle, 32 * 1024 * 1024, 4096);
+    ret = SetupComm(wm_tool_uart_handle, 4096, 4096);
     if (ret)
     {
         ret  = wm_tool_uart_set_speed(WM_TOOL_DEFAULT_BAUD_RATE);
@@ -4378,38 +4378,49 @@ static int wm_tool_erase_image(wm_tool_dl_erase_e type)
 
 static int wm_tool_query_mac(void)
 {
-    int ret;
+    int ret = -1;
+    int err;
     int offset = 0;
     char macstr[32] = {0};
-    int len = strlen("MAC:AABBCCDDEEFF\n");/* resp format */
+    int len = strlen("MAC:AABBCCDDEEFF\n");/* resp format, ROM "Mac:AABBCCDDEEFF\n", SECBOOT "MAC:AABBCCDDEEFF\n" */
     unsigned char macaddr[6] = {0};
 
     wm_tool_uart_clear();
 
     wm_tool_uart_set_block(1);
 
-	ret = wm_tool_uart_write(wm_tool_chip_cmd_get_mac, sizeof(wm_tool_chip_cmd_get_mac));
-    if (ret > 0)
+	err = wm_tool_uart_write(wm_tool_chip_cmd_get_mac, sizeof(wm_tool_chip_cmd_get_mac));
+    if (err > 0)
     {
         do
         {
-            ret = wm_tool_uart_read((unsigned char *)(macstr + offset), sizeof(macstr) - 1 - offset);
-            if (ret > 0)
+            err = wm_tool_uart_read((unsigned char *)(macstr + offset), sizeof(macstr) - 1 - offset);
+            if (err > 0)
             {
-                offset += ret;
+                offset += err;
                 if (offset >= len)
                 {
                     macstr[len - 1] = '\0';/* \n -> 0 */
-                    ret = wm_tool_str_to_hex_array(macstr + strlen("MAC:"), 6, macaddr);
-                    if (!ret)
+                    err = wm_tool_str_to_hex_array(macstr + strlen("MAC:"), 6, macaddr);
+                    if (!err)
                     {
                         wm_tool_printf("mac %02X-%02X-%02X-%02X-%02X-%02X.\r\n", macaddr[0],
                                        macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5]);
+
+                        if (!strncmp(macstr, "Mac:", strlen("Mac:")) && 
+                            (WM_TOOL_DL_TYPE_FLS != wm_tool_dl_type))
+                        {
+                            wm_tool_printf("please download the firmware in .fls format.\r\n");
+                        }
+                        else
+                        {
+                            ret = 0;
+                        }
                     }
                     break;
                 }
             }
-        } while (ret > 0);
+        } while (err > 0);
     }
 
     wm_tool_uart_set_block(0);
@@ -4530,7 +4541,7 @@ static int wm_tool_xmodem_download(const char *image)
 
 	                wm_tool_printf("] 100%%\r\n");
 
-	                wm_tool_printf("download complete.\r\n");
+	                wm_tool_printf("download completed.\r\n");
 
 	                ret = 0;
 	            }
@@ -4704,7 +4715,13 @@ static int wm_tool_download_firmware(void)
 
 	wm_tool_printf("\r\nserial sync sucess.\r\n");
 
-	wm_tool_query_mac();
+	ret = wm_tool_query_mac();
+	if (ret)
+    {
+        wm_tool_uart_close();
+        wm_tool_printf("download failed.\r\n");
+        return ret;
+    }
 
 	if (WM_TOOL_DL_ERASE_SECBOOT == wm_tool_dl_erase)
 	{

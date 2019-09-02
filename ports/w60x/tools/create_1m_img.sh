@@ -43,7 +43,7 @@ shell_do_cmd()
 
 main()
 {
-	./${MKIMG} -b "${BUILD}/${SOBJ}.bin" -sb "${SECBOOT}" -fc compress -it old -ua 90000 -ra 10100 -df -o "${BUILD}/${TARGET}"
+	./${MKIMG} -b "${BUILD}/${SOBJ}.bin" -sb "${SECBOOT}" -fc compress -it 1M -ua 90000 -ra 10100 -df -o "${BUILD}/${TARGET}"
 }
 
 usage()

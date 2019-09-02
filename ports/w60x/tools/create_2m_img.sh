@@ -41,7 +41,7 @@ shell_do_cmd()
 
 main()
 {
-	./${MKIMG} -b "${BUILD}/${SOBJ}.bin" -sb "${WMSDK_PATH}/Bin/secboot.img" -fc compress -it new -ua 100000 -ra 10100 -df -o "${BUILD}/${TARGET}"
+	./${MKIMG} -b "${BUILD}/${SOBJ}.bin" -sb "${WMSDK_PATH}/Bin/secboot.img" -fc compress -it 2M -ua 100000 -ra 10100 -df -o "${BUILD}/${TARGET}"
 }
 
 usage()

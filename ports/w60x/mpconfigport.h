@@ -259,7 +259,7 @@ typedef long mp_off_t;
 #include <sys/types.h>
 
 // board specifics
-#define MICROPY_W600_VERSION    "B1"
+#define MICROPY_W600_VERSION    "B1.2"
 
 #define MICROPY_HW_BOARD_NAME "WinnerMicro module"
 #define MICROPY_HW_MCU_NAME "W600"
