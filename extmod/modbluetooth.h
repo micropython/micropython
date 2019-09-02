@@ -48,7 +48,9 @@
 #endif
 
 // Common constants.
+#ifndef MP_BLUETOOTH_MAX_ATTR_SIZE
 #define MP_BLUETOOTH_MAX_ATTR_SIZE (20)
+#endif
 
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)

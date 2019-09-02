@@ -301,6 +301,11 @@ STATIC void sync_cb(void) {
         assert(rc == 0);
     }
 
+    if (MP_BLUETOOTH_MAX_ATTR_SIZE > 20) {
+        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE+3);
+        assert(rc == 0);
+    }
+
     ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_NAME);
 
     ble_state = BLE_STATE_ACTIVE;
