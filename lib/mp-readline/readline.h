@@ -45,8 +45,4 @@ void readline_init(vstr_t *line, const char *prompt);
 void readline_note_newline(const char *prompt);
 int readline_process_char(int c);
 
-#if MICROPY_REPL_EMACS_KEYS
-size_t get_word_cursor_pos(bool direction);
-#endif
-
 #endif // MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H

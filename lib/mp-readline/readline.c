@@ -103,34 +103,27 @@ typedef struct _readline_t {
 STATIC readline_t rl;
 
 #if MICROPY_REPL_EMACS_KEYS
-#define FORWARD true
-#define BACKWARD false
-
-size_t get_word_cursor_pos(bool direction) {
-    char cursor_pos_step = direction == FORWARD ? 1 : -1;
-    char buf_idx_offset = direction == FORWARD ? 0 : -1;
+STATIC int get_next_word_cursor_offset(int direction) {
+    int buf_idx_offset = direction == 1 ? 0 : -1;
     size_t cursor_pos = rl.cursor_pos;
     bool in_leading_nonalphanum = true;
-    char c;
     while (1) {
-        c = rl.line->buf[cursor_pos + buf_idx_offset];
-        if (!(unichar_isalpha(c) || unichar_isdigit(c))) {
-            if (!in_leading_nonalphanum) {
-                break;
-            }
-        } else if (in_leading_nonalphanum) {
+        char c = rl.line->buf[cursor_pos + buf_idx_offset];
+        if (unichar_isalpha(c) || unichar_isdigit(c)) {
             in_leading_nonalphanum = false;
+        } else if (!in_leading_nonalphanum) {
+            break;
         }
-        if (direction == FORWARD) {
+        if (direction == 1) {
             if (cursor_pos >= rl.line->len) {
                 break;
             }
         } else if (cursor_pos <= 0) {
             break;
         }
-        cursor_pos += cursor_pos_step;
+        cursor_pos += direction;
     }
-    return cursor_pos;
+    return cursor_pos - rl.cursor_pos;
 }
 #endif
 
@@ -256,19 +249,19 @@ int readline_process_char(int c) {
                 break;
             #if MICROPY_REPL_EMACS_KEYS
             case 'b':
-                // backword-word (Alt-b)
-                redraw_step_back = rl.cursor_pos - get_word_cursor_pos(BACKWARD);
+                // backword-word (M-b)
+                redraw_step_back = -get_next_word_cursor_offset(-1);
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 'f':
-                // forward-word (Alt-f)
-                redraw_step_forward = get_word_cursor_pos(FORWARD) - rl.cursor_pos;
+                // forward-word (M-f)
+                redraw_step_forward = get_next_word_cursor_offset(1);
                 rl.escape_seq = ESEQ_NONE;
                 break;
             case 'd': {
-                // kill-word (Alt-d)
+                // kill-word (M-d)
                 size_t num_chars;
-                num_chars = get_word_cursor_pos(FORWARD) - rl.cursor_pos;
+                num_chars = get_next_word_cursor_offset(1);
                 if (num_chars) {
                     vstr_cut_out_bytes(rl.line, rl.cursor_pos, num_chars);
                     redraw_from_cursor = true;
@@ -277,9 +270,9 @@ int readline_process_char(int c) {
                 break;
             }
             case 127: {
-                // backward-kill-word (Alt-Backspace)
+                // backward-kill-word (M-DEL)
                 size_t num_chars;
-                num_chars = rl.cursor_pos - get_word_cursor_pos(BACKWARD);
+                num_chars = -get_next_word_cursor_offset(-1);
                 if (num_chars) {
                     vstr_cut_out_bytes(rl.line, rl.cursor_pos - num_chars, num_chars);
                     redraw_step_back = num_chars;
