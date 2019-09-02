@@ -31,6 +31,14 @@
 #define MP_BC_MASK_FORMAT                   (0xf0)
 #define MP_BC_MASK_EXTRA_BYTE               (0x9e)
 
+#define MP_BC_FORMAT_BYTE                   (0)
+#define MP_BC_FORMAT_QSTR                   (1)
+#define MP_BC_FORMAT_VAR_UINT               (2)
+#define MP_BC_FORMAT_OFFSET                 (3)
+
+// Nibbles in magic number are: BB BB BB BB BB BO VV QU
+#define MP_BC_FORMAT(op) ((0x000003a4 >> (2 * ((op) >> 4))) & 3)
+
 // Load, Store, Delete, Import, Make, Build, Unpack, Call, Jump, Exception, For, sTack, Return, Yield, Op
 #define MP_BC_BASE_RESERVED                 (0x00) // ----------------
 #define MP_BC_BASE_QSTR_O                   (0x10) // LLLLLLSSSDDII---
