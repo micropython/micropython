@@ -31,6 +31,11 @@ HID specific descriptors
 
 from adafruit_usb_descriptor import hid
 
+def remove_report_id(report_descriptor_bytes):
+    #return report_descriptor_bytes
+    report_id_pos = report_descriptor_bytes.index(0x85)
+    return report_descriptor_bytes[:report_id_pos] + report_descriptor_bytes[report_id_pos + 2:]
+
 REPORT_IDS = {
     "KEYBOARD" : 1,
     "MOUSE" : 2,
@@ -38,6 +43,9 @@ REPORT_IDS = {
     "SYS_CONTROL" : 4,
     "GAMEPAD" : 5,
     "DIGITIZER" : 6,
+    "XAC_COMPATIBLE_GAMEPAD" : 7,
+    # RAW must not have a report ID, so it can't be used with other devices.
+    "RAW" : 0,
     }
 
 # Byte count for each kind of report. Length does not include report ID in first byte.
@@ -48,6 +56,8 @@ REPORT_LENGTHS = {
     "SYS_CONTROL" : 1,
     "GAMEPAD" : 6,
     "DIGITIZER" : 5,
+    "XAC_COMPATIBLE_GAMEPAD" : 3,
+    "RAW" : 64,
     }
 
 KEYBOARD_WITH_ID = hid.ReportDescriptor(
@@ -228,6 +238,54 @@ DIGITIZER_WITH_ID = hid.ReportDescriptor(
         0xC0,              # End Collection
     ]))
 
+XAC_COMPATIBLE_GAMEPAD_WITH_ID = hid.ReportDescriptor(
+    description="XAC",
+    report_descriptor=bytes([
+        # This descriptor mimics the simple joystick from PDP that the XBox likes
+        0x05, 0x01,         #  Usage Page (Desktop),
+        0x09, 0x05,         #  Usage (Gamepad),
+        0xA1, 0x01,         #  Collection (Application),
+        0x85, REPORT_IDS["XAC_COMPATIBLE_GAMEPAD"], # Report ID (n)
+        0x15, 0x00,         #      Logical Minimum (0),
+        0x25, 0x01,         #      Logical Maximum (1),
+        0x35, 0x00,         #      Physical Minimum (0),
+        0x45, 0x01,         #      Physical Maximum (1),
+        0x75, 0x01,         #      Report Size (1),
+        0x95, 0x08,         #      Report Count (8),
+        0x05, 0x09,         #      Usage Page (Button),
+        0x19, 0x01,         #      Usage Minimum (01h),
+        0x29, 0x08,         #      Usage Maximum (08h),
+        0x81, 0x02,         #      Input (Variable),
+        0x05, 0x01,         #      Usage Page (Desktop),
+        0x26, 0xFF, 0x00,   #      Logical Maximum (255),
+        0x46, 0xFF, 0x00,   #      Physical Maximum (255),
+        0x09, 0x30,         #      Usage (X),
+        0x09, 0x31,         #      Usage (Y),
+        0x75, 0x08,         #      Report Size (8),
+        0x95, 0x02,         #      Report Count (2),
+        0x81, 0x02,         #      Input (Variable),
+        0xC0                #  End Collection
+    ]))
+
+RAW = hid.ReportDescriptor(
+    description="RAW",
+    report_descriptor=bytes([
+        # Provide vendor-defined
+        0x06, 0xAF, 0xFF,   #  Usage Page (Vendor 0xFFAF "Adafruit"),
+        0x09, 0xAF,         #  Usage (AF),
+        0xA1, 0x01,         #  Collection (Application),
+        0x75, 0x08,         #      Report Size (8),
+        0x15, 0x00,         #      Logical Minimum (0),
+        0x26, 0xFF, 0x00    #      Logical Maximum (255),
+        0x95, 0x08,         #      Report Count (8),
+        0x09, 0x01          #      Usage(xxx)
+        0x81, 0x02          #      Input (Variable)
+        0x95, 0x08,         #      Report Count (8),
+        0x09, 0x02,         #      Usage(xxx)
+        0x91, 0x02,         #      Input (Variable)
+        0xC0                #  End Collection
+    ]))
+
 # Byte count for each kind of report. Length does not include report ID in first byte.
 REPORT_DESCRIPTORS = {
     "KEYBOARD" : KEYBOARD_WITH_ID,
@@ -236,4 +294,6 @@ REPORT_DESCRIPTORS = {
     "SYS_CONTROL" : SYS_CONTROL_WITH_ID,
     "GAMEPAD" : GAMEPAD_WITH_ID,
     "DIGITIZER" : DIGITIZER_WITH_ID,
+    "XAC_COMPATIBLE_GAMEPAD" : XAC_COMPATIBLE_GAMEPAD_WITH_ID,
+    "RAW" : RAW_WITH_ID,
     }

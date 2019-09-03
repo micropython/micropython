@@ -8,6 +8,15 @@ sys.path.append("../../tools/usb_descriptor")
 from adafruit_usb_descriptor import audio, audio10, cdc, hid, midi, msc, standard, util
 import hid_report_descriptors
 
+ALL_DEVICES='CDC,MSC,AUDIO,HID'
+ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
+DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
+
+ALL_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,SYS_CONTROL,GAMEPAD,DIGITIZER,XAC_COMPATIBLE_GAMEPAD'
+ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
+# Digitizer works on Linux but conflicts with mouse, so omit it.
+DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
+
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--manufacturer', type=str,
                     help='manufacturer of the device')
@@ -19,10 +28,23 @@ parser.add_argument('--pid', type=lambda x: int(x, 16),
                     help='product id')
 parser.add_argument('--serial_number_length', type=int, default=32,
                     help='length needed for the serial number in digits')
+parser.add_argument('--devices', type=lambda l: frozenset(l.split(',')), default=DEFAULT_DEVICES,
+                    help='devices to include in descriptor (AUDIO includes MIDI support)')
+parser.add_argument('--hid_devices', type=lambda l: frozenset(l.split(',')), default=DEFAULT_HID_DEVICES,
+                    help='HID devices to include in HID report descriptor')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
 args = parser.parse_args()
+
+unknown_devices = list(args.devices - ALL_DEVICES_SET)
+if unknown_devices:
+    raise ValueError("Unknown device(s)", unknown_devices)
+
+unknown_hid_devices = list(args.hid_devices - ALL_HID_DEVICES_SET)
+if unknown_hid_devices:
+    raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
+
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -138,16 +160,27 @@ msc_interfaces = [
     )
 ]
 
-# Include only these HID devices.
-# DIGITIZER works on Linux but conflicts with MOUSE, so leave it out for now.
-hid_devices = ("KEYBOARD", "MOUSE", "CONSUMER", "GAMEPAD")
+# Sort by Report ID for consistency.
+hid_devices = sorted(args.hid_devices, key=lambda name: hid_report_descriptors.REPORT_IDS[name])
 
-combined_hid_report_descriptor = hid.ReportDescriptor(
+# When there's only one hid_device, it can't be in a composite descriptor.
+# It has no report id (indicated by 0), so remove the existing one.
+
+#if len(hid_devices) == 1:
+if False:
+    name = hid_devices[0]
+    combined_hid_report_descriptor = hid.ReportDescriptor(
+        description=name,
+        report_descriptor=hid_report_descriptors.remove_report_id(
+            hid_report_descriptors.REPORT_DESCRIPTORS[name].report_descriptor))
+    hid_report_ids_dict = { name : 0 }
+else:
+    combined_hid_report_descriptor = hid.ReportDescriptor(
     description="MULTIDEVICE",
     report_descriptor=b''.join(
         hid_report_descriptors.REPORT_DESCRIPTORS[name].report_descriptor for name in hid_devices ))
+    hid_report_ids_dict = { name: hid_report_descriptors.REPORT_IDS[name] for name in hid_devices }
 
-hid_report_ids_dict = { name: hid_report_descriptors.REPORT_IDS[name] for name in hid_devices }
 hid_report_lengths_dict = { name: hid_report_descriptors.REPORT_LENGTHS[name] for name in hid_devices }
 hid_max_report_length = max(hid_report_lengths_dict.values())
 
@@ -271,19 +304,27 @@ cdc_iad = standard.InterfaceAssociationDescriptor(
     bFunctionProtocol=cdc.CDC_PROTOCOL_NONE)
 
 descriptor_list = []
-descriptor_list.append(cdc_iad)
-descriptor_list.extend(cdc_interfaces)
-descriptor_list.extend(msc_interfaces)
-# Only add the control interface because other audio interfaces are managed by it to ensure the
-# correct ordering.
-descriptor_list.append(audio_control_interface)
-# Put the CDC IAD just before the CDC interfaces.
-# There appears to be a bug in the Windows composite USB driver that requests the
-# HID report descriptor with the wrong interface number if the HID interface is not given
-# first. However, it still fetches the descriptor anyway. We could reorder the interfaces but
-# the Windows 7 Adafruit_usbser.inf file thinks CDC is at Interface 0, so we'll leave it
-# there for backwards compatibility.
-descriptor_list.extend(hid_interfaces)
+
+if 'CDC' in args.devices:
+    # Put the CDC IAD just before the CDC interfaces.
+    # There appears to be a bug in the Windows composite USB driver that requests the
+    # HID report descriptor with the wrong interface number if the HID interface is not given
+    # first. However, it still fetches the descriptor anyway. We could reorder the interfaces but
+    # the Windows 7 Adafruit_usbser.inf file thinks CDC is at Interface 0, so we'll leave it
+    # there for backwards compatibility.
+    descriptor_list.append(cdc_iad)
+    descriptor_list.extend(cdc_interfaces)
+
+if 'MSC' in args.devices:
+    descriptor_list.extend(msc_interfaces)
+
+if 'AUDIO' in args.devices:
+    # Only add the control interface because other audio interfaces are managed by it to ensure the
+    # correct ordering.
+    descriptor_list.append(audio_control_interface)
+
+if 'HID' in args.devices:
+    descriptor_list.extend(hid_interfaces)
 
 configuration = standard.ConfigurationDescriptor(
     description="Composite configuration",

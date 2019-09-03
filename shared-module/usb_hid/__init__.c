@@ -53,6 +53,10 @@ static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL];
 static uint8_t gamepad_report_buffer[USB_HID_REPORT_LENGTH_GAMEPAD];
 #endif
 
+#ifdef USB_HID_REPORT_ID_XAC_COMPATIBLE_GAMEPAD
+static uint8_t xac_compatible_gamepad_report_buffer[USB_HID_REPORT_LENGTH_XAC_COMPATIBLE_GAMEPAD];
+#endif
+
 #ifdef USB_HID_REPORT_ID_DIGITIZER
 static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER];
 #endif
@@ -113,6 +117,17 @@ usb_hid_device_obj_t usb_hid_devices[] = {
     },
 #endif
 
+#ifdef USB_HID_REPORT_ID_XAC_COMPATIBLE_GAMEPAD
+    {
+        .base          = { .type = &usb_hid_device_type } ,
+        .report_buffer = xac_compatible_gamepad_report_buffer ,
+        .report_id     = USB_HID_REPORT_ID_XAC_COMPATIBLE_GAMEPAD ,
+        .report_length = USB_HID_REPORT_LENGTH_XAC_COMPATIBLE_GAMEPAD ,
+        .usage_page    = HID_USAGE_PAGE_DESKTOP           ,
+        .usage         = HID_USAGE_DESKTOP_GAMEPAD        ,
+    },
+#endif
+
 #ifdef USB_HID_REPORT_ID_DIGITIZER
     {
         .base          = { .type = &usb_hid_device_type } ,
@@ -149,6 +164,9 @@ mp_obj_tuple_t common_hal_usb_hid_devices = {
 #endif
 #if USB_HID_NUM_DEVICES >= 6
         (mp_obj_t) &usb_hid_devices[5],
+#endif
+#if USB_HID_NUM_DEVICES >= 7
+#error "Too many USB HID devices"
 #endif
     }
 };
