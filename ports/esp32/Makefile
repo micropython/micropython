@@ -290,7 +290,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.
 ################################################################################
 # List of object files from the ESP32 IDF components
 
-ESPIDF_BOOTLOADER_SUPPORT_O = $(subst .c,.o,\
+ESPIDF_BOOTLOADER_SUPPORT_O = $(patsubst %.c,%.o,\
 	$(filter-out $(ESPCOMP)/bootloader_support/src/bootloader_init.c,\
 		$(wildcard $(ESPCOMP)/bootloader_support/src/*.c)))
 
