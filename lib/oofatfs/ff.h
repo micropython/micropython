@@ -303,7 +303,7 @@ FRESULT f_getfree (FATFS *fs, DWORD* nclst);                        /* Get numbe
 FRESULT f_getlabel (FATFS *fs, TCHAR* label, DWORD* vsn);           /* Get volume label */
 FRESULT f_setlabel (FATFS *fs, const TCHAR* label);                 /* Set volume label */
 FRESULT f_forward (FIL* fp, UINT(*func)(const BYTE*,UINT), UINT btf, UINT* bf); /* Forward data to the stream */
-FRESULT f_expand (FIL* fp, FSIZE_t szf, BYTE opt);                  /* Allocate a contiguous block to the file */
+FRESULT f_expand (FIL* fp, FSIZE_t fsz, BYTE opt);                  /* Allocate a contiguous block to the file */
 FRESULT f_mount (FATFS* fs);                                        /* Mount/Unmount a logical drive */
 FRESULT f_umount (FATFS* fs);                                       /* Unmount a logical drive */
 FRESULT f_mkfs (FATFS *fs, BYTE opt, DWORD au, void* work, UINT len); /* Create a FAT volume */

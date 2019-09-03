@@ -4019,9 +4019,9 @@ FRESULT f_getcwd (
     TCHAR *tp = buff;
 #if FF_VOLUMES >= 2
     UINT vl;
-#endif
 #if FF_STR_VOLUME_ID
     const char *vp;
+#endif
 #endif
     FILINFO fno;
     DEF_NAMBUF
