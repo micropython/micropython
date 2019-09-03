@@ -90,7 +90,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, cmd, 1);
             self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, data, data_size);
         }
-        self->core.end_transaction(self->core.bus);
+        displayio_display_core_end_transaction(&self->core);
         uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
