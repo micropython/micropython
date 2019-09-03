@@ -91,11 +91,13 @@ bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t obj) {
     if (!common_hal_busio_i2c_try_lock(self->bus)) {
         return false;
     }
+    common_hal_busio_i2c_unlock(self->bus);
     return true;
 }
 
 bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
-    return common_hal_displayio_i2cdisplay_bus_free(obj);
+    displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
+    return !common_hal_busio_i2c_try_lock(self->bus);
 }
 
 void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
