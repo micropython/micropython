@@ -226,7 +226,7 @@ msgstr "Dìzhǐ bìxū shì %d zì jié zhǎng"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -303,7 +303,7 @@ msgstr ""
 
 #: shared-module/displayio/Display.c
 msgid "Below minimum frame rate"
-msgstr ""
+msgstr "Dī yú zuìdī zhèng sùlǜ"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -319,7 +319,7 @@ msgstr "Liǎng gè yǐn jiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "Liàngdù bìxū wèi 0-1.0"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
@@ -336,16 +336,16 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "Huǎnchōng qū bùshì bytearray"
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is too small"
-msgstr ""
+msgstr "Huǎnchōng qū tài xiǎo"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "Huǎnchōng qū chángdù%d tài dà. Tā bìxū xiǎoyú%d"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -511,7 +511,7 @@ msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
 
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
+msgstr "Xiǎnshì bìxū jùyǒu 16 wèi yánsè kōngjiān."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -545,11 +545,11 @@ msgstr "Yùqí de tèdiǎn"
 
 #: shared-bindings/_bleio/Service.c
 msgid "Expected a Peripheral"
-msgstr ""
+msgstr "Qídài yīgè wàiwéi shèbèi"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr ""
+msgstr "Yùqí fúwù"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -582,7 +582,7 @@ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to add descriptor, err 0x%04x"
-msgstr ""
+msgstr "Wúfǎ tiānjiā miáoshù fú, err 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
@@ -636,7 +636,7 @@ msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 msgid "Failed to pair"
-msgstr ""
+msgstr "Pèiduì shībài"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -682,7 +682,7 @@ msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to start pairing, error 0x%04x"
-msgstr ""
+msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Scanner.c
 #, c-format
@@ -743,7 +743,7 @@ msgstr "Hánshù xūyào suǒdìng"
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
-msgstr ""
+msgstr "Jítuán yǐjīng shǐyòngguò"
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
@@ -855,7 +855,7 @@ msgstr "Wúxiào liǎng jí zhí"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
-msgstr ""
+msgstr "Wúxiào de shǔxìng"
 
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
@@ -863,7 +863,7 @@ msgstr "Wúxiào de yùnxíng móshì."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr ""
+msgstr "Ānquán móshì wúxiào"
 
 #: shared-bindings/audiocore/Mixer.c
 msgid "Invalid voice count"
@@ -879,7 +879,7 @@ msgstr "Guānjiàn zì arg de LHS bìxū shì id"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group."
-msgstr ""
+msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -931,11 +931,11 @@ msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
+msgstr "Bìxū shì %q zi lèi."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
-msgstr ""
+msgstr "Zhège tèzhēng méiyǒu CCCD"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
@@ -972,7 +972,7 @@ msgstr "Méiyǒu kěyòng de yìngjiàn suíjī"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr ""
+msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -981,7 +981,7 @@ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
-msgstr ""
+msgstr "Yǐn jiǎo shàng méiyǒu xiàlā; 1Mohm tuījiàn"
 
 #: py/moduerrno.c
 msgid "No space left on device"
@@ -1105,7 +1105,7 @@ msgstr "Zhǐ dú duìxiàng"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Shuāxīn tài kuàile"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1231,11 +1231,11 @@ msgstr "Píng pū gāodù bìxū huàfēn wèi tú gāodù"
 
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
-msgstr ""
+msgstr "Píng pū zhǐshù chāochū fànwéi"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
-msgstr ""
+msgstr "Píng pū zhí chāochū fànwéi"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1346,12 +1346,12 @@ msgstr "Bù zhīchí de lādòng zhí."
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
-msgstr ""
+msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
-msgstr ""
+msgstr "Zhí chángdù > zuìdà chángdù"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2109,7 +2109,7 @@ msgstr "shùxué yù cuòwù"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
+msgstr "Dāng gùdìng chángdù wèi %s shí, zuìdà chángdù bìxū wèi 0-%d"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2205,7 +2205,7 @@ msgstr "méiyǒu mókuài '%q'"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
@@ -2213,7 +2213,7 @@ msgstr "méiyǒu cǐ shǔxìng"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "Zài service_uuids bái míngdān zhōng zhǎodào fēi UUID"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
@@ -2299,11 +2299,11 @@ msgstr "piānlí biānjiè"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "Jǐn zhīchí wèi shēndù = 16"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
