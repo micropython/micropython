@@ -2821,9 +2821,13 @@ static FRESULT create_name (    /* FR_OK: successful, FR_INVALID_NAME: could not
         if (di >= FF_MAX_LFN) return FR_INVALID_NAME;   /* Reject too long name */
         lfn[di++] = wc;                 /* Store the Unicode character */
     }
-    while (*p == '/' || *p == '\\') p++;    /* Skip duplicated separators if exist */
-    *path = p;                          /* Return pointer to the next segment */
-    cf = (wc < ' ') ? NS_LAST : 0;      /* Set last segment flag if end of the path */
+    if (wc < ' ') {                         /* End of path? */
+            cf = NS_LAST;                   /* Set last segment flag */
+    } else {
+            cf = 0;                                 /* Next segment follows */
+            while (*p == '/' || *p == '\\') p++;    /* Skip duplicated separators if exist */
+    }
+    *path = p;                                      /* Return pointer to the next segment */
 
 #if FF_FS_RPATH != 0
     if ((di == 1 && lfn[di - 1] == '.') ||
