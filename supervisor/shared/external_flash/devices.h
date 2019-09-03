@@ -66,7 +66,7 @@ typedef struct {
     bool single_status_byte: 1;
 } external_flash_device;
 
-// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
+// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. It's on the SAMD21
 // Xplained board.
 // Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
 #define AT25DF081A {\
