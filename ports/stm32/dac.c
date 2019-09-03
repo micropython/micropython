@@ -373,15 +373,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 #if defined(TIM6)
 /// \method triangle(freq)
 /// Generate a triangle wave.  The value on the DAC output changes at
-/// the given frequency, and the frequence of the repeating triangle wave
-/// itself is 256 (or 1024, need to check) times smaller.
+/// the given frequency, and the frequency of the repeating triangle wave
+/// itself is 8192 times smaller.
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
 
-    // Configure DAC in triangle mode with trigger via TIM6
+    // Configure DAC in full-scale triangle mode with trigger via TIM6
     uint32_t cr = DAC_TRIANGLEAMPLITUDE_4095 | DAC_CR_WAVE1_1 | DAC_TRIGGER_T6_TRGO;
     pyb_dac_reconfigure(self, cr, self->outbuf_waveform, 0);
 
