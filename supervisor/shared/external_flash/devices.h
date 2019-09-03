@@ -66,7 +66,7 @@ typedef struct {
     bool single_status_byte: 1;
 } external_flash_device;
 
-// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
+// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. It's on the SAMD21
 // Xplained board.
 // Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
 #define AT25DF081A {\
@@ -100,6 +100,24 @@ typedef struct {
     .supports_qspi = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
+// Settings for the Gigadevice GD25Q32C 4MiB SPI flash.
+// Datasheet: http://www.elm-tech.com/en/products/spi-flash-memory/gd25q32/gd25q32.pdf
+#define GD25Q32C {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc8, \
+    .memory_type = 0x40, \
+    .capacity = 0x16, \
+    .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = true, \
     .single_status_byte = false, \
 }
 
