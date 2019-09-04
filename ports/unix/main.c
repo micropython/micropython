@@ -76,6 +76,18 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
 STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
+    #if MICROPY_PY_SYS_EXCEPTHOOK
+    if (mp_obj_is_callable(MP_STATE_VM(sys_excepthook))) {
+        mp_obj_t fun = MP_STATE_VM(sys_excepthook);
+        mp_obj_t args[3];
+        args[0] = MP_OBJ_FROM_PTR(exc->type);
+        args[1] = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+        args[2] = mp_const_none;
+        mp_call_function_n_kw(fun, 3, 0, args);
+        return 1;
+    }
+    #endif
+
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
