@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +29,13 @@
 #include <string.h>
 #include "supervisor/serial.h"
 #include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
 
 UART_HandleTypeDef huart2;
 
 void serial_init(void) {
     huart2.Instance = USART2;
-    huart2.Init.BaudRate = 9600;
+    huart2.Init.BaudRate = 115200;
     huart2.Init.WordLength = UART_WORDLENGTH_8B;
     huart2.Init.StopBits = UART_STOPBITS_1;
     huart2.Init.Parity = UART_PARITY_NONE;
@@ -42,10 +44,8 @@ void serial_init(void) {
     huart2.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&huart2) == HAL_OK)
     {
-        //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET);
+        stm32f4_peripherals_status_led(1,1);
     }
-    //HAL_UART_Transmit(&huart2, (uint8_t*)"Serial On", 9, 5000);
-    //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
 bool serial_connected(void) {
@@ -54,7 +54,7 @@ bool serial_connected(void) {
 
 char serial_read(void) {
     uint8_t data;
-    HAL_UART_Receive(&huart2, &data, 1,5000);
+    HAL_UART_Receive(&huart2, &data, 1,500);
     return data;
 }
 

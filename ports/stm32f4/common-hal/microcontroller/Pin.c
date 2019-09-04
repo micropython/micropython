@@ -31,11 +31,16 @@
 #include "stm32f4/pins.h"
 #include "stm32f4xx_hal.h"
 
-#define GPIO_PORT_COUNT 5
+#if MCU_PACKAGE == 144
+    #define GPIO_PORT_COUNT 7
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG};
+#elif MCU_PACKAGE == 100
+    #define GPIO_PORT_COUNT 5
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE};
+#endif
 
 STATIC uint16_t claimed_pins[GPIO_PORT_COUNT];
 STATIC uint16_t never_reset_pins[GPIO_PORT_COUNT];
-GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE};
 
 void reset_all_pins(void) {
     // Reset claimed pins

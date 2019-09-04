@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Nick Moore for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +25,21 @@
  * THE SOFTWARE.
  */
 
-// No nvm module functions.
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_I2C_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_I2C_H
+
+#include "common-hal/microcontroller/Pin.h"
+
+#include "stm32f4xx_hal.h"
+
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    I2C_HandleTypeDef i2c_handle;
+    bool has_lock;
+    uint8_t scl_pin;
+    uint8_t sda_pin;
+} busio_i2c_obj_t;
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_I2C_H

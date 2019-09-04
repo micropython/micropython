@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Nick Moore for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_NVM_BYTEARRAY_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_NVM_BYTEARRAY_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_ONEWIRE_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_ONEWIRE_H
 
-#include "py/obj.h"
+// Use bitbangio.
+#include "shared-module/busio/OneWire.h"
 
-typedef struct {
-    mp_obj_base_t base;
-} nvm_bytearray_obj_t;
-
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_NVM_BYTEARRAY_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_ONEWIRE_H

@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,50 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "supervisor/port.h"
-#include "boards/board.h"
-#include "tick.h"
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
 
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "stm32f4xx_hal.h"
+#include "py/obj.h"
 
-safe_mode_t port_init(void) {
-	HAL_Init();
+typedef struct {
+    mp_obj_base_t base;
+    bool has_lock;
+    uint8_t clock_pin;
+    uint8_t MOSI_pin;
+    uint8_t MISO_pin;
+} busio_spi_obj_t;
 
-	stm32f4_peripherals_clocks_init();
-	stm32f4_peripherals_gpio_init();
-
-    tick_init();
-    board_init(); 
-
-    return NO_SAFE_MODE;
-}
-
-void reset_port(void) {
-
-}
-
-void reset_to_bootloader(void) {
-
-}
-
-void reset_cpu(void) {
-
-}
-
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
-}
-
-void HardFault_Handler(void) {
-	while(1) {}
-}
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H

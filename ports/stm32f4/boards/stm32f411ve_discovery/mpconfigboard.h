@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,50 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "supervisor/port.h"
-#include "boards/board.h"
-#include "tick.h"
+//Micropython setup
 
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
+#define MICROPY_HW_MCU_NAME         "STM32F411xE"
 
-#include "stm32f4xx_hal.h"
+#define FLASH_SIZE                  (0x80000) //512K
+#define FLASH_PAGE_SIZE             (0x4000)  //16K
 
-safe_mode_t port_init(void) {
-	HAL_Init();
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-	stm32f4_peripherals_clocks_init();
-	stm32f4_peripherals_gpio_init();
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
 
-    tick_init();
-    board_init(); 
-
-    return NO_SAFE_MODE;
-}
-
-void reset_port(void) {
-
-}
-
-void reset_to_bootloader(void) {
-
-}
-
-void reset_cpu(void) {
-
-}
-
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
-}
-
-void HardFault_Handler(void) {
-	while(1) {}
-}
+#define AUTORESET_DELAY_MS 500

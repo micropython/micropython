@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +24,23 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#include "common-hal/microcontroller/Pin.h"
 
-#define FLASH_SIZE                  (0x7D000)
-#define FLASH_PAGE_SIZE             (0x4000)
+#include "py/obj.h"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
-#define AUTORESET_DELAY_MS 500
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t rx_pin;
+    uint8_t tx_pin;
+    uint8_t character_bits;
+    bool rx_error;
+    uint32_t baudrate;
+    uint32_t timeout_ms;
+    uint32_t buffer_length;
+    uint8_t* buffer;
+} busio_uart_obj_t;
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
