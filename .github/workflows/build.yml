@@ -145,6 +145,7 @@ jobs:
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
+        - "stm32f411ve_discovery"
 
     steps:
     - name: Set up Python 3.5
