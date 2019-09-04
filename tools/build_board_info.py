@@ -41,7 +41,7 @@ extension_by_board = {
     "makerdiary_nrf52840_mdk_usb_dongle": HEX,
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
-    "electronut_labs_blip": HEX,
+    "electronut_labs_blip": HEX
 }
 
 aliases_by_board = {
