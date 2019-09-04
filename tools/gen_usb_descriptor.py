@@ -12,7 +12,7 @@ ALL_DEVICES='CDC,MSC,AUDIO,HID'
 ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
 DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
 
-ALL_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,SYS_CONTROL,GAMEPAD,DIGITIZER,XAC_COMPATIBLE_GAMEPAD'
+ALL_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,SYS_CONTROL,GAMEPAD,DIGITIZER,XAC_COMPATIBLE_GAMEPAD,RAW'
 ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
 # Digitizer works on Linux but conflicts with mouse, so omit it.
 DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
@@ -28,20 +28,20 @@ parser.add_argument('--pid', type=lambda x: int(x, 16),
                     help='product id')
 parser.add_argument('--serial_number_length', type=int, default=32,
                     help='length needed for the serial number in digits')
-parser.add_argument('--devices', type=lambda l: frozenset(l.split(',')), default=DEFAULT_DEVICES,
+parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_DEVICES,
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
-parser.add_argument('--hid_devices', type=lambda l: frozenset(l.split(',')), default=DEFAULT_HID_DEVICES,
+parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
 args = parser.parse_args()
 
-unknown_devices = list(args.devices - ALL_DEVICES_SET)
+unknown_devices = list(frozenset(args.devices) - ALL_DEVICES_SET)
 if unknown_devices:
     raise ValueError("Unknown device(s)", unknown_devices)
 
-unknown_hid_devices = list(args.hid_devices - ALL_HID_DEVICES_SET)
+unknown_hid_devices = list(frozenset(args.hid_devices) - ALL_HID_DEVICES_SET)
 if unknown_hid_devices:
     raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
 
@@ -160,29 +160,27 @@ msc_interfaces = [
     )
 ]
 
-# Sort by Report ID for consistency.
-hid_devices = sorted(args.hid_devices, key=lambda name: hid_report_descriptors.REPORT_IDS[name])
+# When there's only one hid_device, it shouldn't have a report id.
+# Otherwise, report ids are assigned sequentially:
+# args.hid_devices[0] has report_id 1
+# args.hid_devices[1] has report_id 2
+# etc.
 
-# When there's only one hid_device, it can't be in a composite descriptor.
-# It has no report id (indicated by 0), so remove the existing one.
-
-#if len(hid_devices) == 1:
-if False:
-    name = hid_devices[0]
+if len(args.hid_devices) == 1:
+    name = args.hid_devices[0]
     combined_hid_report_descriptor = hid.ReportDescriptor(
         description=name,
-        report_descriptor=hid_report_descriptors.remove_report_id(
-            hid_report_descriptors.REPORT_DESCRIPTORS[name].report_descriptor))
-    hid_report_ids_dict = { name : 0 }
+        report_descriptor=bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](0)))
 else:
+    report_id = 1
+    concatenated_descriptors = bytearray()
+    for name in args.hid_devices:
+        concatenated_descriptors.extend(
+            bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id)))
+        report_id += 1
     combined_hid_report_descriptor = hid.ReportDescriptor(
-    description="MULTIDEVICE",
-    report_descriptor=b''.join(
-        hid_report_descriptors.REPORT_DESCRIPTORS[name].report_descriptor for name in hid_devices ))
-    hid_report_ids_dict = { name: hid_report_descriptors.REPORT_IDS[name] for name in hid_devices }
-
-hid_report_lengths_dict = { name: hid_report_descriptors.REPORT_LENGTHS[name] for name in hid_devices }
-hid_max_report_length = max(hid_report_lengths_dict.values())
+        description="MULTIDEVICE",
+        report_descriptor=bytes(concatenated_descriptors))
 
 # ASF4 expects keyboard and generic devices to have both in and out endpoints,
 # and will fail (possibly silently) if both are not supplied.
@@ -343,6 +341,8 @@ h_file = args.output_h_file
 c_file.write("""\
 #include <stdint.h>
 
+#include "py/objtuple.h"
+#include "shared-bindings/usb_hid/Device.h"
 #include "{H_FILE_NAME}"
 
 """.format(H_FILE_NAME=h_file.name))
@@ -461,7 +461,9 @@ const uint8_t usb_desc_cfg[{configuration_length}];
 uint16_t usb_serial_number[{serial_number_length}];
 uint16_t const * const string_desc_arr [{string_descriptor_length}];
 
-const uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTOR_LENGTH}];
+const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
+
+#define USB_HID_NUM_DEVICES {hid_num_devices}
 
 // Vendor name included in Inquiry response, max 8 bytes
 #define CFG_TUD_MSC_VENDOR          "{msc_vendor}"
@@ -475,35 +477,10 @@ const uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTOR_LENGTH}];
         configuration_length=descriptor_length,
         max_configuration_length=max(hid_descriptor_length, descriptor_length),
         string_descriptor_length=len(pointers_to_strings),
-        HID_REPORT_DESCRIPTOR_LENGTH=len(bytes(combined_hid_report_descriptor)),
+        hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
+        hid_num_devices=len(args.hid_devices),
         msc_vendor=args.manufacturer[:8],
         msc_product=args.product[:16]))
-
-# #define the report ID's used in the combined HID descriptor
-for name, id in hid_report_ids_dict.items():
-    h_file.write("""\
-#define USB_HID_REPORT_ID_{name} {id}
-""".format(name=name,
-           id=id))
-
-h_file.write("\n")
-
-# #define the report sizes used in the combined HID descriptor
-for name, length in hid_report_lengths_dict.items():
-    h_file.write("""\
-#define USB_HID_REPORT_LENGTH_{name} {length}
-""".format(name=name,
-           length=length))
-
-h_file.write("\n")
-
-h_file.write("""\
-#define USB_HID_NUM_DEVICES {num_devices}
-#define USB_HID_MAX_REPORT_LENGTH {max_length}
-""".format(num_devices=len(hid_report_lengths_dict),
-           max_length=hid_max_report_length))
-
-
 
 # Write out the report descriptor and info
 c_file.write("""\
@@ -512,7 +489,55 @@ const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
 
 for b in bytes(combined_hid_report_descriptor):
     c_file.write("0x{:02x}, ".format(b))
+c_file.write("""\
+};
+
+""")
+
+# Write out USB HID report buffer definitions.
+for report_id, name in enumerate(args.hid_devices, start=1):
+    c_file.write("""\
+static uint8_t {name}_report_buffer[{report_length}];
+""".format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length))
+
+# Write out table of device objects.
 c_file.write("""
+usb_hid_device_obj_t usb_hid_devices[] = {
+""");
+for report_id, name in enumerate(args.hid_devices, start=1):
+    device_data = hid_report_descriptors.HID_DEVICE_DATA[name]
+    c_file.write("""\
+    {{
+        .base          = {{ .type = &usb_hid_device_type }},
+        .report_buffer = {name}_report_buffer,
+        .report_id     = {report_id:},
+        .report_length = {report_length},
+        .usage_page    = {usage_page:#04x},
+        .usage         = {usage:#04x},
+    }},
+""".format(name=name.lower(), report_id=report_id,
+           report_length=device_data.report_length,
+           usage_page=device_data.usage_page,
+           usage=device_data.usage))
+c_file.write("""\
+};
+""")
+
+# Write out tuple of device objects.
+c_file.write("""
+mp_obj_tuple_t common_hal_usb_hid_devices = {{
+    .base = {{
+        .type = &mp_type_tuple,
+    }},
+    .len = {num_devices},
+    .items = {{
+""".format(num_devices=len(args.hid_devices)))
+for idx in range(len(args.hid_devices)):
+    c_file.write("""\
+         (mp_obj_t) &usb_hid_devices[{idx}],
+""".format(idx=idx))
+c_file.write("""\
+    },
 };
 """)
 
