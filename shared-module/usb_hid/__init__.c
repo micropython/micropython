@@ -24,4 +24,4 @@
  * THE SOFTWARE.
  */
 
-// Nothing needed here. Tables of HID devices are in autogen_usb_descriptor.c.
+// Nothing needed here. Tables of HID devices are generated in autogen_usb_descriptor.c at compile-time.
