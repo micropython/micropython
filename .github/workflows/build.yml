@@ -146,6 +146,7 @@ jobs:
         - "uchip"
         - "ugame10"
         - "stm32f411ve_discovery"
+        - "stm32f412zg_discovery"
 
     steps:
     - name: Set up Python 3.5
