@@ -38,7 +38,7 @@
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/bleio/__init__.h"
+#include "common-hal/_bleio/__init__.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"

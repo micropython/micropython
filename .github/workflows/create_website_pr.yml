@@ -1,0 +1,38 @@
+name: Update CircuitPython.org
+
+on: release
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
+      run: exit 1
+      if: github.event.action != 'published'
+    - name: Set up Python 3.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.5
+    - name: Install deps
+      run: |
+        pip install requests sh click 
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: CircuitPython version
+      run: git describe --dirty --always --tags
+    - name: Website
+      run: python3 build_board_info.py
+      working-directory: tools
+      env:
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.BLINKA_GITHUB_ACCESS_TOKEN }}
+      if: github.event_name == 'release' && (github.event.action == 'published'  || github.event.action == 'rerequested')

@@ -49,7 +49,7 @@ void run_background_tasks(void) {
     //usb_background();
 
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
     running_background_tasks = false;
 
