@@ -52,7 +52,7 @@
 //|
 //|   :param int voice_count: The maximum number of voices to mix
 //|   :param int buffer_size: The total size in bytes of the buffers to mix into
-//|   :param int channel_count: The maximum number of samples to mix at once
+//|   :param int channel_count: The number of channels the source samples contain. 1 = mono; 2 = stereo.
 //|   :param int bits_per_sample: The bits per sample of the samples being played
 //|   :param bool samples_signed: Samples are signed (True) or unsigned (False)
 //|   :param int sample_rate: The sample rate to be used for all samples
@@ -65,15 +65,11 @@
 //|     import audiomixer
 //|     import digitalio
 //|
-//|     # Required for CircuitPlayground Express
-//|     speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
-//|     speaker_enable.switch_to_output(value=True)
-//|
+//|     a = audioio.AudioOut(board.A0)
 //|     music = audiocore.WaveFile(open("cplay-5.1-16bit-16khz.wav", "rb"))
 //|     drum = audiocore.WaveFile(open("drum.wav", "rb"))
 //|     mixer = audiomixer.Mixer(voice_count=2, sample_rate=16000, channel_count=1,
 //|                              bits_per_sample=16, samples_signed=True)
-//|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
 //|     # Have AudioOut play our Mixer source

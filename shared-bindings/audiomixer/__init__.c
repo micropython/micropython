@@ -37,7 +37,6 @@
 //|
 //| .. module:: audiomixer
 //|   :synopsis: Support for audio mixer
-//|   :platform: SAMD21
 //|
 //| The `audiomixer` module contains core classes for mixing audio sources
 //|
