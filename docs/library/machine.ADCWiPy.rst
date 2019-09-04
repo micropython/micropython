@@ -1,8 +1,15 @@
 .. currentmodule:: machine
-.. _machine.ADC:
+.. _machine.ADCWiPy:
 
-class ADC -- analog to digital conversion
-=========================================
+class ADCWiPy -- analog to digital conversion
+=============================================
+
+.. note::
+
+    This class is a non-standard ADC implementation for the WiPy.
+    It is available simply as ``machine.ADC`` on the WiPy but is named in the
+    documentation below as ``machine.ADCWiPy`` to distinguish it from the
+    more general :ref:`machine.ADC <machine.ADC>` class.
 
 Usage::
 
@@ -15,7 +22,7 @@ Usage::
 Constructors
 ------------
 
-.. class:: ADC(id=0, \*, bits=12)
+.. class:: ADCWiPy(id=0, \*, bits=12)
 
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.
@@ -32,7 +39,7 @@ Constructors
 Methods
 -------
 
-.. method:: ADC.channel(id, \*, pin)
+.. method:: ADCWiPy.channel(id, \*, pin)
 
    Create an analog pin. If only channel ID is given, the correct pin will
    be selected. Alternatively, only the pin can be passed and the correct
@@ -43,11 +50,11 @@ Methods
       apin = adc.channel(pin='GP3')
       apin = adc.channel(id=1, pin='GP3')
 
-.. method:: ADC.init()
+.. method:: ADCWiPy.init()
 
    Enable the ADC block.
 
-.. method:: ADC.deinit()
+.. method:: ADCWiPy.deinit()
 
    Disable the ADC block.
 
