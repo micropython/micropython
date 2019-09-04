@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 DeanM for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MIXER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MIXER_H
+#ifndef SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
+#define SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_
 
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-module/audiocore/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
 
-extern const mp_obj_type_t audioio_mixer_type;
+#include "shared-module/audiomixer/MixerVoice.h"
+#include "shared-module/audiomixer/Mixer.h"
 
-void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
-                                        uint8_t voice_count,
-                                        uint32_t buffer_size,
-                                        uint8_t bits_per_sample,
-                                        bool samples_signed,
-                                        uint8_t channel_count,
-                                        uint32_t sample_rate);
+extern const mp_obj_type_t audiomixer_mixer_type;
+extern const mp_obj_type_t audiomixer_mixervoice_type;
 
-void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self);
-bool common_hal_audioio_mixer_deinited(audioio_mixer_obj_t* self);
-void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, uint8_t voice, bool loop);
-void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice);
+void common_hal_audiomixer_mixervoice_construct(audiomixer_mixervoice_obj_t *self);
+void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t* self, audiomixer_mixer_obj_t *parent);
+void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t* self, mp_obj_t sample, bool loop);
+void common_hal_audiomixer_mixervoice_stop(audiomixer_mixervoice_obj_t* self);
+float common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t* self);
+void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t* self, float gain);
 
-bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self);
-uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self);
+bool common_hal_audiomixer_mixervoice_get_playing(audiomixer_mixervoice_obj_t* self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MIXER_H
+#endif /* SHARED_BINDINGS_AUDIOMIXER_MIXERVOICE_H_ */

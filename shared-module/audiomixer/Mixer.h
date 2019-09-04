@@ -24,20 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
-#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H
+#define MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H
 
 #include "py/obj.h"
+#include "py/objtuple.h"
 
 #include "shared-module/audiocore/__init__.h"
-
-typedef struct {
-    mp_obj_t sample;
-    bool loop;
-    bool more_data;
-    uint32_t* remaining_buffer;
-    uint32_t buffer_length;
-} audioio_mixer_voice_t;
 
 typedef struct {
     mp_obj_base_t base;
@@ -55,21 +48,22 @@ typedef struct {
     uint32_t right_read_count;
 
     uint8_t voice_count;
-    audioio_mixer_voice_t voice[];
-} audioio_mixer_obj_t;
+    mp_obj_tuple_t *voice_tuple;
+    mp_obj_t voice[];
+} audiomixer_mixer_obj_t;
 
 
 // These are not available from Python because it may be called in an interrupt.
-void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
+void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
                                     bool single_channel,
                                     uint8_t channel);
-audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
+audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
                                                          bool single_channel,
                                                          uint8_t channel,
                                                          uint8_t** buffer,
                                                          uint32_t* buffer_length); // length in bytes
-void audioio_mixer_get_buffer_structure(audioio_mixer_obj_t* self, bool single_channel,
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t* self, bool single_channel,
                                             bool* single_buffer, bool* samples_signed,
                                             uint32_t* max_buffer_length, uint8_t* spacing);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MIXER_H
+#endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOMIXER_MIXER_H

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 18:48-0400\n"
+"POT-Creation-Date: 2019-08-29 22:16-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -472,11 +472,11 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr ""
 
@@ -797,7 +797,7 @@ msgstr ""
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr ""
 
@@ -859,7 +859,11 @@ msgstr ""
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr ""
 
@@ -1113,7 +1117,7 @@ msgstr ""
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr ""
 
@@ -1183,19 +1187,19 @@ msgid ""
 "exit safe mode.\n"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
@@ -1331,10 +1335,6 @@ msgstr ""
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr ""
-
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
@@ -1445,7 +1445,7 @@ msgstr ""
 msgid "bits must be 8"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
 
@@ -2038,6 +2038,10 @@ msgstr ""
 
 #: py/stream.c
 msgid "length argument not allowed for this type"
+msgstr ""
+
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
 msgstr ""
 
 #: py/objarray.c

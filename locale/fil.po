@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 18:48-0400\n"
+"POT-Creation-Date: 2019-08-29 22:16-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -481,11 +481,11 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "Hindi ma-iallocate ang first buffer"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "Hindi ma-iallocate ang second buffer"
 
@@ -817,7 +817,7 @@ msgstr "Mali ang buffer size"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Maling bilang ng channel"
 
@@ -879,7 +879,11 @@ msgstr "Mali ang run mode."
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr "Maling bilang ng voice"
 
@@ -1146,7 +1150,7 @@ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
@@ -1226,19 +1230,19 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
@@ -1378,10 +1382,6 @@ msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
 
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Index ng Voice ay masyadong mataas"
-
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
@@ -1498,7 +1498,7 @@ msgstr "bits ay dapat 7, 8 o 9"
 msgid "bits must be 8"
 msgstr "bits ay dapat walo (8)"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
 
@@ -2109,6 +2109,10 @@ msgstr "ang label ay na-define ulit"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "length argument ay walang pahintulot sa ganitong type"
+
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2934,6 +2938,9 @@ msgstr "zero step"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Gamitin ang esptool upang burahin ang flash at muling i-upload ang Python"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Index ng Voice ay masyadong mataas"
 
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"

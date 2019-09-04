@@ -27,12 +27,13 @@
 #include "shared-module/audioio/__init__.h"
 
 #include "py/obj.h"
-#include "shared-bindings/audiocore/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
-#include "shared-module/audiocore/Mixer.h"
 #include "shared-module/audiocore/RawSample.h"
 #include "shared-module/audiocore/WaveFile.h"
+
+#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-module/audiomixer/Mixer.h"
 
 uint32_t audiosample_sample_rate(mp_obj_t sample_obj) {
     if (MP_OBJ_IS_TYPE(sample_obj, &audioio_rawsample_type)) {
@@ -41,9 +42,11 @@ uint32_t audiosample_sample_rate(mp_obj_t sample_obj) {
     } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_wavefile_type)) {
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         return file->sample_rate;
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
         return mixer->sample_rate;
+    #endif
     }
     return 16000;
 }
@@ -55,9 +58,11 @@ uint8_t audiosample_bits_per_sample(mp_obj_t sample_obj) {
     } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_wavefile_type)) {
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         return file->bits_per_sample;
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
         return mixer->bits_per_sample;
+    #endif
     }
     return 8;
 }
@@ -69,9 +74,11 @@ uint8_t audiosample_channel_count(mp_obj_t sample_obj) {
     } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_wavefile_type)) {
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         return file->channel_count;
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* mixer = MP_OBJ_TO_PTR(sample_obj);
         return mixer->channel_count;
+    #endif
     }
     return 1;
 }
@@ -83,9 +90,11 @@ void audiosample_reset_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t 
     } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_wavefile_type)) {
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         audioio_wavefile_reset_buffer(file, single_channel, audio_channel);
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
-        audioio_mixer_reset_buffer(file, single_channel, audio_channel);
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
+        audiomixer_mixer_reset_buffer(file, single_channel, audio_channel);
+    #endif
     }
 }
 
@@ -99,9 +108,11 @@ audioio_get_buffer_result_t audiosample_get_buffer(mp_obj_t sample_obj,
     } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_wavefile_type)) {
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         return audioio_wavefile_get_buffer(file, single_channel, channel, buffer, buffer_length);
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
-        return audioio_mixer_get_buffer(file, single_channel, channel, buffer, buffer_length);
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
+        return audiomixer_mixer_get_buffer(file, single_channel, channel, buffer, buffer_length);
+    #endif
     }
     return GET_BUFFER_DONE;
 }
@@ -117,9 +128,11 @@ void audiosample_get_buffer_structure(mp_obj_t sample_obj, bool single_channel,
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         audioio_wavefile_get_buffer_structure(file, single_channel, single_buffer, samples_signed,
                                               max_buffer_length, spacing);
-    } else if (MP_OBJ_IS_TYPE(sample_obj, &audioio_mixer_type)) {
-        audioio_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
-        audioio_mixer_get_buffer_structure(file, single_channel, single_buffer, samples_signed,
+    #if CIRCUITPY_AUDIOMIXER
+    } else if (MP_OBJ_IS_TYPE(sample_obj, &audiomixer_mixer_type)) {
+        audiomixer_mixer_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
+        audiomixer_mixer_get_buffer_structure(file, single_channel, single_buffer, samples_signed,
                                               max_buffer_length, spacing);
+    #endif
     }
 }

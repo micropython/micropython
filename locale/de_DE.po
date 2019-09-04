@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 18:48-0400\n"
+"POT-Creation-Date: 2019-08-29 22:16-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -476,11 +476,11 @@ msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
 msgid "Could not initialize UART"
 msgstr "Konnte UART nicht initialisieren"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "Konnte first buffer nicht zuteilen"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "Konnte second buffer nicht zuteilen"
 
@@ -803,7 +803,7 @@ msgstr "Ungültige Puffergröße"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Ungültige Anzahl von Kanälen"
 
@@ -865,7 +865,11 @@ msgstr "Ungültiger Ausführungsmodus"
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr "Ungültige Anzahl von Stimmen"
 
@@ -1130,7 +1134,7 @@ msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA oder SCL brauchen pull up"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Abtastrate muss positiv sein"
 
@@ -1212,19 +1216,19 @@ msgstr ""
 "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 "erneut um den abgesicherten Modus zu verlassen. \n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr ""
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
@@ -1362,10 +1366,6 @@ msgstr ""
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr "Viper-Funktionen unterstützen derzeit nicht mehr als 4 Argumente"
 
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Voice index zu hoch"
-
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
@@ -1485,7 +1485,7 @@ msgstr "bits muss 7, 8 oder 9 sein"
 msgid "bits must be 8"
 msgstr "bits müssen 8 sein"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 
@@ -2084,6 +2084,10 @@ msgstr "Label neu definiert"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "Für diesen Typ ist length nicht zulässig"
+
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2914,6 +2918,9 @@ msgstr ""
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Benutze das esptool um den flash zu löschen und Python erneut hochzuladen"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Voice index zu hoch"
 
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"
