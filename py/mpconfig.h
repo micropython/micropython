@@ -1171,6 +1171,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
+// Whether to provide "sys.setexcepthook" function
+#ifndef MICROPY_PY_SYS_EXCEPTHOOK
+#define MICROPY_PY_SYS_EXCEPTHOOK (0)
+#endif
+
 // Whether to provide "sys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)

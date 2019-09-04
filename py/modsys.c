@@ -161,6 +161,50 @@ STATIC mp_obj_t mp_sys_atexit(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
 #endif
 
+#if MICROPY_PY_SYS_EXCEPTHOOK
+STATIC qstr _mp_obj_fun_get_arity(mp_const_obj_t fun_in) {
+    const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
+
+    if (fun->base.type != &mp_type_fun_bc) {
+        return 0;
+    }
+
+    const byte *bc = fun->bytecode;
+    bc = mp_decode_uint_skip(bc); // skip n_state
+    bc = mp_decode_uint_skip(bc); // skip n_exc_stack
+    bc++; // skip scope_params
+    return mp_decode_uint(&bc); // n_pos_args
+}
+
+STATIC mp_obj_t mp_sys_setexcepthook(mp_obj_t obj) {
+    mp_obj_t old = MP_STATE_VM(sys_exitfunc);
+
+    // unset
+    if (obj == mp_const_none) {
+        MP_STATE_VM(sys_excepthook) = obj;
+        return old;
+    }
+
+    if (!mp_obj_is_callable(obj)) {
+        mp_raise_TypeError("object is not callable");
+        return old;
+    }
+
+    uint fun_arity = _mp_obj_fun_get_arity(obj);
+
+    if (fun_arity != 3) {
+        mp_raise_TypeError("expecting callback of arity 3");
+    }
+
+    // set
+    MP_STATE_VM(sys_excepthook) = obj;
+
+    return old;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_setexcepthook_obj, mp_sys_setexcepthook);
+#endif
+
 #if MICROPY_PY_SYS_SETTRACE
 // settrace(tracefunc): Set the system’s trace function.
 STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
@@ -205,6 +249,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_SETTRACE
     { MP_ROM_QSTR(MP_QSTR_settrace), MP_ROM_PTR(&mp_sys_settrace_obj) },
+    #endif
+
+    #if MICROPY_PY_SYS_EXCEPTHOOK
+    { MP_ROM_QSTR(MP_QSTR_setexcepthook), MP_ROM_PTR(&mp_sys_setexcepthook_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
