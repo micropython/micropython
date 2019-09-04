@@ -34,7 +34,6 @@ typedef enum {
     DISPLAY_DATA
 } display_byte_type_t;
 
-
 typedef enum {
     CHIP_SELECT_UNTOUCHED,
     CHIP_SELECT_TOGGLE_EVERY_BYTE
