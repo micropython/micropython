@@ -42,9 +42,6 @@ extension_by_board = {
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
     "electronut_labs_blip": HEX,
-
-    # stm32f4
-    "stm32f411ve_discovery": BIN
 }
 
 aliases_by_board = {
