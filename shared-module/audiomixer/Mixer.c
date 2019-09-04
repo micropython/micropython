@@ -178,7 +178,6 @@ static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
     #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     return val;
     #else*/
-    mp_printf(&mp_plat_print, "mult8unsigned");
     uint32_t result = 0;
     float mod_mul = (float) mul / (float) ((1<<15)-1);
     for (int8_t i = 0; i < 4; i++) {
