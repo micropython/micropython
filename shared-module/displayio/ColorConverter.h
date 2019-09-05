@@ -39,7 +39,7 @@ typedef struct {
 
 bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self);
 void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self);
-bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color);
+void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color);
 
 uint32_t displayio_colorconverter_dither_noise_1 (uint32_t n);
 uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y);

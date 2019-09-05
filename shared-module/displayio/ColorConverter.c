@@ -121,7 +121,7 @@ void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *sel
     (*output_color) = output_pixel.pixel;
 }
 
-bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
+void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
     
     if (colorspace->dither){
@@ -149,7 +149,7 @@ bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     if (colorspace->depth == 16) {
         output_color->pixel = displayio_colorconverter_compute_rgb565(pixel);
         output_color->opaque = true;
-        return true;
+        return;
     } else if (colorspace->tricolor) {
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
         output_color->pixel = luma >> (8 - colorspace->depth);
@@ -158,19 +158,18 @@ bool displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
                 output_color->pixel = 0;
             }
             output_color->opaque = true;
-            return true;
+            return;
         }
         uint8_t pixel_hue = displayio_colorconverter_compute_hue(pixel);
         displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, &output_color->pixel);
-        return true;
+        return;
     }  else if (colorspace->grayscale && colorspace->depth <= 8) {
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
         output_color->pixel = luma >> (8 - colorspace->depth);
         output_color->opaque = true;
-        return true;
+        return;
     }
     output_color->opaque = false;
-    return false;
 }
 
 // Currently no refresh logic is needed for a ColorConverter.
