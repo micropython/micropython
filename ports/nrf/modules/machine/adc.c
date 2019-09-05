@@ -91,10 +91,19 @@ void adc_init0(void) {
 }
 
 STATIC int adc_find(mp_obj_t id) {
-    // given an integer id
-    int adc_id = mp_obj_get_int(id);
-
-    int adc_idx = adc_id;
+    int adc_idx;
+    if (mp_obj_is_int(id)) {
+        // Given an integer id
+        adc_idx = mp_obj_get_int(id);
+    } else {
+        // Assume it's a pin-compatible object and convert it to an ADC channel number
+        mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(id);
+        if (pin->adc_num & PIN_ADC1) {
+            adc_idx = pin->adc_channel;
+        } else {
+            mp_raise_ValueError("invalid Pin for ADC");
+        }
+    }
 
     if (adc_idx >= 0 && adc_idx < MP_ARRAY_SIZE(machine_adc_obj)
         && machine_adc_obj[adc_idx].id != (uint8_t)-1) {
