@@ -146,7 +146,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         .acq_time   = NRF_SAADC_ACQTIME_3US,
         .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
         .burst      = NRF_SAADC_BURST_DISABLED,
-        .pin_p      = self->id, // 0 - 7
+        .pin_p      = 1 + self->id, // pin_p=0 is AIN0, pin_p=8 is AIN7
         .pin_n      = NRF_SAADC_INPUT_DISABLED
     };
 
