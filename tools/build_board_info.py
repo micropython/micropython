@@ -12,7 +12,7 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -23,6 +23,7 @@ HEX = ('hex',)
 extension_by_port = {
     "nrf": UF2,
     "atmel-samd": UF2,
+    "stm32f4": BIN,
 }
 
 # Per board overrides
