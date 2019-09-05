@@ -89,6 +89,11 @@ ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
 endif
 
+# SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
+ifndef USB_MSC_NUM_ENDPOINT_PAIRS
+USB_MSC_NUM_ENDPOINT_PAIRS = 1
+endif
+
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
@@ -106,8 +111,9 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--vid $(USB_VID)\
 		--pid $(USB_PID)\
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
-	        --devices $(USB_DEVICES) \
-		--hid_devices $(USB_HID_DEVICES) \
+	        --devices $(USB_DEVICES)\
+		--hid_devices $(USB_HID_DEVICES)\
+		--msc_num_endpoint_pairs $(USB_MSC_NUM_ENDPOINT_PAIRS)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 

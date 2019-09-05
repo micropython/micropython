@@ -32,6 +32,8 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
+parser.add_argument('--msc_num_endpoint_pairs', type=int, default=1,
+                    help='Use 1 or 2 endpoint pairs for MSC (1 bidirectional, or 1 input + 1 output (required by SAMD21))')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
@@ -44,6 +46,9 @@ if unknown_devices:
 unknown_hid_devices = list(frozenset(args.hid_devices) - ALL_HID_DEVICES_SET)
 if unknown_hid_devices:
     raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
+
+if args.msc_num_endpoint_pairs not in (1, 2):
+    raise ValueError("--msc_num_endpoint_pairs must be 1 or 2")
 
 
 class StringIndex:
@@ -153,7 +158,9 @@ msc_interfaces = [
                 bInterval=0),
             standard.EndpointDescriptor(
                 description="MSC out",
-                bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
+                # SAMD21 needs to use a separate pair of endpoints for MSC.
+                bEndpointAddress=((0x1 if args.msc_num_endpoint_pairs == 2 else 0x0) |
+                                  standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0)
         ]
