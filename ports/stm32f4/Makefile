@@ -98,9 +98,12 @@ endif
 
 ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
 C_DEFS =  \
+	-DUSE_FULL_LL_DRIVER \
 	-DUSE_HAL_DRIVER \
 	-DSTM32F411xE
 endif
+
+C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE)
 
 #TODO: Add ASM Flags? -Werror
 CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
@@ -133,7 +136,7 @@ LIBS += -lm
 endif
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
+CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 
 ######################################
@@ -148,6 +151,7 @@ SRC_STM32 = \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \
@@ -183,6 +187,8 @@ SRC_C += \
 	mphalport.c \
 	tick.c \
 	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
 	lib/libc/string0.c \
@@ -200,11 +206,6 @@ SRC_C += \
 	
 ifneq ($(USB),FALSE)
 SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
-endif
-
-ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-SRC_C += peripherals/stm32f4/stm32f412zx/pins.c
-SRC_C += boards/$(BOARD)/pins.c
 endif
 
 SRC_S = \

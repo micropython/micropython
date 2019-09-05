@@ -13,7 +13,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/translate.c
 
 ifndef $(NO_USB)
-NO_USB = $(wildcard supervisor/usb.c)
+	NO_USB = $(wildcard supervisor/usb.c)
 endif
 
 ifneq ($(INTERNAL_FLASH_FILESYSTEM),)
@@ -44,7 +44,11 @@ ifdef EXTERNAL_FLASH_DEVICES
 		SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
 	endif
 else
-	SRC_SUPERVISOR += supervisor/internal_flash.c
+	ifeq ($(DISABLE_FILESYSTEM),1)
+		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
+	else 
+		SRC_SUPERVISOR += supervisor/internal_flash.c
+	endif
 endif
 
 ifeq ($(USB),FALSE)
@@ -78,6 +82,7 @@ else
 					  shared-module/usb_midi/PortIn.c \
 					  shared-module/usb_midi/PortOut.c \
 					  $(BUILD)/autogen_usb_descriptor.c
+
 	CFLAGS += -DUSB_AVAILABLE
 endif
 

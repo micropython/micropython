@@ -34,6 +34,47 @@ void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_
     displayio_group_construct(self, children, max_size, scale, x, y);
 }
 
+bool common_hal_displayio_group_get_hidden(displayio_group_t* self) {
+    return self->hidden;
+}
+
+void common_hal_displayio_group_set_hidden(displayio_group_t* self, bool hidden) {
+    if (self->hidden == hidden) {
+        return;
+    }
+    self->hidden = hidden;
+    if (self->hidden_by_parent) {
+        return;
+    }
+    for (size_t i = 0; i < self->size; i++) {
+        mp_obj_t layer = self->children[i].native;
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            displayio_tilegrid_set_hidden_by_parent(layer, hidden);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            displayio_group_set_hidden_by_parent(layer, hidden);
+        }
+    }
+}
+
+void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) {
+    if (self->hidden_by_parent == hidden) {
+        return;
+    }
+    self->hidden_by_parent = hidden;
+    // If we're already hidden, then we're done.
+    if (self->hidden) {
+        return;
+    }
+    for (size_t i = 0; i < self->size; i++) {
+        mp_obj_t layer = self->children[i].native;
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            displayio_tilegrid_set_hidden_by_parent(layer, hidden);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            displayio_group_set_hidden_by_parent(layer, hidden);
+        }
+    }
+}
+
 uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
     return self->scale;
 }

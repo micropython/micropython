@@ -31,9 +31,9 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/__init__.h"
-#include "shared-bindings/audiocore/Mixer.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
+//#include "shared-bindings/audiomixer/Mixer.h"
 
 //| :mod:`audiocore` --- Support for audio samples and mixer
 //| ========================================================
@@ -49,14 +49,12 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     Mixer
 //|     RawSample
 //|     WaveFile
 //|
 
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
-    { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audioio_mixer_type) },
     { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
     { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
 };

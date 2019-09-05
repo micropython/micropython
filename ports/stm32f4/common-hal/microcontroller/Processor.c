@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +29,20 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
+#include "stm32f4xx_hal.h"
+
+#define STM32_UUID ((uint32_t *)0x1FFF7A10)
 
 float common_hal_mcu_processor_get_temperature(void) {
     return 0;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return 64000000ul;
+    return SystemCoreClock;
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
-    for (int i=0; i<2; i++) {
-        ((uint32_t*) raw_id)[i] = 0;
+    for (int i=0; i<3; i++) {
+        ((uint32_t*) raw_id)[i] = STM32_UUID[i];
     }
 }

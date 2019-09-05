@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Nick Moore for Adafruit Industries
+ * Copyright (c) 2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,11 @@
  * THE SOFTWARE.
  */
 
-// No nvm module functions.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H
+
+#include "py/obj.h"
+
+// Nothing now.
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOMIXER___INIT___H

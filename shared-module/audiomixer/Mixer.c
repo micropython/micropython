@@ -4,6 +4,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ *               2018 DeanM for Adafruit Industries
+ *               2019 Michael Schroeder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +26,8 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audiocore/Mixer.h"
+#include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-bindings/audiomixer/MixerVoice.h"
 
 #include <stdint.h>
 
@@ -32,24 +35,24 @@
 #include "shared-module/audiocore/__init__.h"
 #include "shared-module/audiocore/RawSample.h"
 
-void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
-                                        uint8_t voice_count,
-                                        uint32_t buffer_size,
-                                        uint8_t bits_per_sample,
-                                        bool samples_signed,
-                                        uint8_t channel_count,
-                                        uint32_t sample_rate) {
+void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t* self,
+                                           uint8_t voice_count,
+                                           uint32_t buffer_size,
+                                           uint8_t bits_per_sample,
+                                           bool samples_signed,
+                                           uint8_t channel_count,
+                                           uint32_t sample_rate) {
     self->len = buffer_size / 2 / sizeof(uint32_t) * sizeof(uint32_t);
 
     self->first_buffer = m_malloc(self->len, false);
     if (self->first_buffer == NULL) {
-        common_hal_audioio_mixer_deinit(self);
+        common_hal_audiomixer_mixer_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate first buffer"));
     }
 
     self->second_buffer = m_malloc(self->len, false);
     if (self->second_buffer == NULL) {
-        common_hal_audioio_mixer_deinit(self);
+        common_hal_audiomixer_mixer_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate second buffer"));
     }
 
@@ -58,130 +61,85 @@ void common_hal_audioio_mixer_construct(audioio_mixer_obj_t* self,
     self->channel_count = channel_count;
     self->sample_rate = sample_rate;
     self->voice_count = voice_count;
-
-    for (uint8_t i = 0; i < self->voice_count; i++) {
-        self->voice[i].sample = NULL;
-    }
 }
 
-void common_hal_audioio_mixer_deinit(audioio_mixer_obj_t* self) {
+void common_hal_audiomixer_mixer_deinit(audiomixer_mixer_obj_t* self) {
     self->first_buffer = NULL;
     self->second_buffer = NULL;
 }
 
-bool common_hal_audioio_mixer_deinited(audioio_mixer_obj_t* self) {
+bool common_hal_audiomixer_mixer_deinited(audiomixer_mixer_obj_t* self) {
     return self->first_buffer == NULL;
 }
 
-uint32_t common_hal_audioio_mixer_get_sample_rate(audioio_mixer_obj_t* self) {
+uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t* self) {
     return self->sample_rate;
 }
 
-void common_hal_audioio_mixer_play(audioio_mixer_obj_t* self, mp_obj_t sample, uint8_t v, bool loop) {
-    if (v >= self->voice_count) {
-        mp_raise_ValueError(translate("Voice index too high"));
-    }
-    if (audiosample_sample_rate(sample) != self->sample_rate) {
-        mp_raise_ValueError(translate("The sample's sample rate does not match the mixer's"));
-    }
-    if (audiosample_channel_count(sample) != self->channel_count) {
-        mp_raise_ValueError(translate("The sample's channel count does not match the mixer's"));
-    }
-    if (audiosample_bits_per_sample(sample) != self->bits_per_sample) {
-        mp_raise_ValueError(translate("The sample's bits_per_sample does not match the mixer's"));
-    }
-    bool single_buffer;
-    bool samples_signed;
-    uint32_t max_buffer_length;
-    uint8_t spacing;
-    audiosample_get_buffer_structure(sample, false, &single_buffer, &samples_signed,
-                                     &max_buffer_length, &spacing);
-    if (samples_signed != self->samples_signed) {
-        mp_raise_ValueError(translate("The sample's signedness does not match the mixer's"));
-    }
-    audioio_mixer_voice_t* voice = &self->voice[v];
-    voice->sample = sample;
-    voice->loop = loop;
-
-    audiosample_reset_buffer(sample, false, 0);
-    audioio_get_buffer_result_t result = audiosample_get_buffer(sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
-    // Track length in terms of words.
-    voice->buffer_length /= sizeof(uint32_t);
-    voice->more_data = result == GET_BUFFER_MORE_DATA;
-}
-
-void common_hal_audioio_mixer_stop_voice(audioio_mixer_obj_t* self, uint8_t voice) {
-    self->voice[voice].sample = NULL;
-}
-
-bool common_hal_audioio_mixer_get_playing(audioio_mixer_obj_t* self) {
-    for (int32_t v = 0; v < self->voice_count; v++) {
-        if (self->voice[v].sample != NULL) {
+bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
+    for (uint8_t v = 0; v < self->voice_count; v++) {
+        if (common_hal_audiomixer_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
             return true;
         }
     }
     return false;
 }
 
-void audioio_mixer_reset_buffer(audioio_mixer_obj_t* self,
-                                bool single_channel,
-                                uint8_t channel) {
-    for (int32_t i = 0; i < self->voice_count; i++) {
-        self->voice[i].sample = NULL;
+void audiomixer_mixer_reset_buffer(audiomixer_mixer_obj_t* self,
+                                   bool single_channel,
+                                   uint8_t channel) {
+    for (uint8_t i = 0; i < self->voice_count; i++) {
+        common_hal_audiomixer_mixervoice_stop(self->voice[i]);
     }
 }
 
 uint32_t add8signed(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    return __QADD8(a, b);
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return __SHADD8(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
         int8_t ai = a >> (sizeof(int8_t) * 8 * i);
         int8_t bi = b >> (sizeof(int8_t) * 8 * i);
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > CHAR_MAX) {
             intermediate = CHAR_MAX;
         } else if (intermediate < CHAR_MIN) {
-            //intermediate = CHAR_MIN;
+            intermediate = CHAR_MIN;
         }
-        result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int8_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(int8_t) * 8 * i);
     }
     return result;
     #endif
 }
 
 uint32_t add8unsigned(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    // Subtract out the DC offset, add and then shift back.
-    a = __USUB8(a, 0x80808080);
-    b = __USUB8(b, 0x80808080);
-    uint32_t sum = __QADD8(a, b);
-    return __UADD8(sum, 0x80808080);
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return __UHADD8(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 4; i++) {
-        int8_t ai = (a >> (sizeof(uint8_t) * 8 * i)) - 128;
-        int8_t bi = (b >> (sizeof(uint8_t) * 8 * i)) - 128;
-        int32_t intermediate = (int32_t) ai + bi;
+        uint8_t ai = (a >> (sizeof(uint8_t) * 8 * i));
+        uint8_t bi = (b >> (sizeof(uint8_t) * 8 * i));
+        int32_t intermediate = (int32_t) (ai + bi) / 2;
         if (intermediate > UCHAR_MAX) {
             intermediate = UCHAR_MAX;
         }
-        result |= ((uint8_t) intermediate + 128) << (sizeof(uint8_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
     }
     return result;
     #endif
 }
 
 uint32_t add16signed(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    return __QADD16(a, b);
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return __SHADD16(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = a >> (sizeof(int16_t) * 8 * i);
         int16_t bi = b >> (sizeof(int16_t) * 8 * i);
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {
@@ -194,32 +152,146 @@ uint32_t add16signed(uint32_t a, uint32_t b) {
 }
 
 uint32_t add16unsigned(uint32_t a, uint32_t b) {
-    #if (defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1))
-    // Subtract out the DC offset, add and then shift back.
-    a = __USUB16(a, 0x80008000);
-    b = __USUB16(b, 0x80008000);
-    uint32_t sum = __QADD16(a, b);
-    return __UADD16(sum, 0x80008000);
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return __UHADD16(a, b);
     #else
     uint32_t result = 0;
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = (a >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
         int16_t bi = (b >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
-        int32_t intermediate = (int32_t) ai + bi;
+        int32_t intermediate = (int32_t) ai + bi / 2;
         if (intermediate > USHRT_MAX) {
             intermediate = USHRT_MAX;
         }
-        result |= ((uint16_t) intermediate + 0x8000) << (sizeof(int16_t) * 8 * i);
+        result |= ((uint32_t) intermediate & 0xffff) << (sizeof(int16_t) * 8 * i);
     }
     return result;
     #endif
 }
 
-audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
-                                                     bool single_channel,
-                                                     uint8_t channel,
-                                                     uint8_t** buffer,
-                                                     uint32_t* buffer_length) {
+static inline uint32_t mult8unsigned(uint32_t val, int32_t mul) {
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    /* TODO: workout ARMv7 instructions
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return val;
+    #else*/
+    uint32_t result = 0;
+    float mod_mul = (float) mul / (float) ((1<<15)-1);
+    for (int8_t i = 0; i < 4; i++) {
+        uint8_t ai = val >> (sizeof(uint8_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        }
+        result |= ((uint32_t) intermediate & 0xff) << (sizeof(uint8_t) * 8 * i);
+    }
+
+    return result;
+    //#endif
+}
+
+static inline uint32_t mult8signed(uint32_t val, int32_t mul) {
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    /* TODO: workout ARMv7 instructions
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    return val;
+    #else
+    */
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 4; i++) {
+        int16_t ai = val >> (sizeof(int8_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > CHAR_MAX) {
+            intermediate = CHAR_MAX;
+        } else if (intermediate < CHAR_MIN) {
+            intermediate = CHAR_MIN;
+        }
+        result |= (((uint32_t) intermediate) & 0xff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    //#endif
+}
+
+//TODO:
+static inline uint32_t mult16unsigned(uint32_t val, int32_t mul) {
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    /* TODO: the below ARMv7m instructions "work", but the amplitude is much higher/louder
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    // there is no unsigned equivalent to the 'SMULWx' ARMv7 Thumb function,
+    // so we have to do it by hand.
+    uint32_t lo = val & 0xffff;
+    uint32_t hi = val >> 16;
+    //mp_printf(&mp_plat_print, "pre-asm: (mul: %d)\n\tval: %x\tlo: %x\thi: %x\n", mul, val, lo, hi);
+    uint32_t val_lo;
+    asm volatile("mul %0, %1, %2" : "=r" (val_lo) : "r" (mul), "r" (lo));
+    asm volatile("mla %0, %1, %2, %3" : "=r" (val) : "r" (mul), "r" (hi), "r" (val_lo));
+    //mp_printf(&mp_plat_print, "post-asm:\n\tval: %x\tlo: %x\n\n", val, val_lo);
+    return val;
+    #else
+    */
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = (val >> (sizeof(uint16_t) * 8 * i)) - 0x8000;
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t) intermediate) + 0x8000) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    //#endif
+}
+
+static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
+    // if mul == 0, no need in wasting cycles
+    if (mul == 0) {
+        return 0;
+    }
+    #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
+    int32_t hi, lo;
+    int32_t bits = 16; // saturate to 16 bits
+    int32_t shift = 0; // shift is done automatically
+    asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
+    asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
+    asm volatile("ssat %0, %1, %2, asr %3" : "=r" (hi) : "I" (bits), "r" (hi), "I" (shift));
+    asm volatile("pkhbt %0, %1, %2, lsl #16" : "=r" (val) : "r" (lo), "r" (hi)); // pack
+    return val;
+    #else
+    uint32_t result = 0;
+    float mod_mul = (float)mul / (float)((1<<15)-1);
+    for (int8_t i = 0; i < 2; i++) {
+        int16_t ai = val >> (sizeof(int16_t) * 8 * i);
+        int32_t intermediate = ai * mod_mul;
+        if (intermediate > SHRT_MAX) {
+            intermediate = SHRT_MAX;
+        } else if (intermediate < SHRT_MIN) {
+            intermediate = SHRT_MIN;
+        }
+        result |= (((uint32_t) intermediate) & 0xffff) << (sizeof(int16_t) * 8 * i);
+    }
+    return result;
+    #endif
+}
+
+audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
+                                                        bool single_channel,
+                                                        uint8_t channel,
+                                                        uint8_t** buffer,
+                                                        uint32_t* buffer_length) {
     if (!single_channel) {
         channel = 0;
     }
@@ -243,7 +315,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
         self->use_first_buffer = !self->use_first_buffer;
         bool voices_active = false;
         for (int32_t v = 0; v < self->voice_count; v++) {
-            audioio_mixer_voice_t* voice = &self->voice[v];
+            audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
 
             uint32_t j = 0;
             bool voice_done = voice->sample == NULL;
@@ -283,6 +355,21 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
                     }
                 } else {
                     sample_value = voice->remaining_buffer[j];
+                }
+
+                // apply the mixer level
+            	if (!self->samples_signed) {
+                    if (self->bits_per_sample == 8) {
+                        sample_value = mult8unsigned(sample_value, voice->level);
+                    } else {
+                        sample_value = mult16unsigned(sample_value, voice->level);
+                    }
+                } else {
+                    if (self->bits_per_sample == 8) {
+                        sample_value = mult8signed(sample_value, voice->level);
+                    } else {
+                        sample_value = mult16signed(sample_value, voice->level);
+                    }
                 }
 
                 if (!voices_active) {
@@ -327,7 +414,7 @@ audioio_get_buffer_result_t audioio_mixer_get_buffer(audioio_mixer_obj_t* self,
     return GET_BUFFER_MORE_DATA;
 }
 
-void audioio_mixer_get_buffer_structure(audioio_mixer_obj_t* self, bool single_channel,
+void audiomixer_mixer_get_buffer_structure(audiomixer_mixer_obj_t* self, bool single_channel,
                                         bool* single_buffer, bool* samples_signed,
                                         uint32_t* max_buffer_length, uint8_t* spacing) {
     *single_buffer = false;

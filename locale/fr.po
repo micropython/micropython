@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 18:48-0400\n"
+"POT-Creation-Date: 2019-08-29 22:16-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -487,11 +487,11 @@ msgstr "Impossible de décoder le 'ble_uuid', err 0x%04x"
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "Impossible d'allouer le 1er tampon"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "Impossible d'allouer le 2e tampon"
 
@@ -824,7 +824,7 @@ msgstr "Longueur de tampon invalide"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide: 1 à 500"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
@@ -887,7 +887,11 @@ msgstr "Mode de lancement invalide."
 msgid "Invalid security_mode"
 msgstr ""
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Invalid voice count"
 msgstr "Nombre de voix invalide"
@@ -1161,7 +1165,7 @@ msgstr "Mode sans-échec! Le code sauvegardé n'est pas éxecuté.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Sample rate must be positive"
 msgstr "Le taux d'échantillonage doit être positif"
@@ -1245,20 +1249,20 @@ msgstr ""
 "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
 "Appuyer de nouveau pour quitter de le mode sans-échec.\n"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 "Le 'bits_per_sample' de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Le canal de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "L'échantillonage de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Le signe de l'échantillon ne correspond pas à celui du mixer"
 
@@ -1401,10 +1405,6 @@ msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
 
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Index de la voix trop grand"
-
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION: le nom de fichier de votre code a deux extensions\n"
@@ -1522,7 +1522,7 @@ msgstr "bits doivent être 7, 8 ou 9"
 msgid "bits must be 8"
 msgstr "les bits doivent être 8"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "bits_per_sample must be 8 or 16"
 msgstr "'bits_per_sample' doivent être 8 ou 16"
@@ -2141,6 +2141,10 @@ msgstr "label redéfini"
 #: py/stream.c
 msgid "length argument not allowed for this type"
 msgstr "argument 'length' non-permis pour ce type"
+
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
@@ -2997,6 +3001,9 @@ msgstr "'step' nul"
 #~ msgid "Use esptool to erase flash and re-upload Python instead"
 #~ msgstr ""
 #~ "Utilisez 'esptool' pour effacer la flash et recharger Python à la place"
+
+#~ msgid "Voice index too high"
+#~ msgstr "Index de la voix trop grand"
 
 #~ msgid "bad GATT role"
 #~ msgstr "mauvais rôle GATT"

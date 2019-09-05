@@ -96,21 +96,8 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         scale = mp_obj_get_int(args[7]);
     }
 
-    // TODO: Everything below should be in shared-module because it's not argument parsing.
-    while (!displayio_display_core_begin_transaction(&display->core)) {
-        RUN_BACKGROUND_TASKS;
-    }
-    displayio_area_t area;
-    area.x1 = x0;
-    area.y1 = y0;
-    area.x2 = x1;
-    area.y2 = y1;
-    displayio_display_core_set_region_to_update(&display->core, display->set_column_command, display->set_row_command, NO_COMMAND, NO_COMMAND, display->data_as_commands, false, &area);
-
-    display->core.send(display->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &display->write_ram_command, 1);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
                  display, scale);
-    displayio_display_core_end_transaction(&display->core);
 
     return mp_const_none;
 }

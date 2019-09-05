@@ -35,7 +35,9 @@ extern const mcu_pin_obj_t pin_PE04;
 extern const mcu_pin_obj_t pin_PE05;
 extern const mcu_pin_obj_t pin_PE06;
 extern const mcu_pin_obj_t pin_PC13;
+extern const mcu_pin_obj_t pin_PC14;
 //pg 51
+extern const mcu_pin_obj_t pin_PC15;
 extern const mcu_pin_obj_t pin_PF00;  // 144 only 
 extern const mcu_pin_obj_t pin_PF01;  // 144 only 
 extern const mcu_pin_obj_t pin_PF02;  // 144 only 

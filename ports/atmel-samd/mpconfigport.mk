@@ -17,6 +17,7 @@ endif
 # Put samd21-only choices here.
 ifeq ($(CHIP_FAMILY),samd21)
 # frequencyio not yet verified as working on SAMD21.
+CIRCUITPY_AUDIOMIXER = 0
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_TOUCHIO_USE_NATIVE = 1
 

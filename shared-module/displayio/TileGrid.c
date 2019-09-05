@@ -67,14 +67,30 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     self->bitmap = bitmap;
     self->pixel_shader = pixel_shader;
     self->in_group = false;
-    self->first_draw = true;
+    self->hidden = false;
+    self->hidden_by_parent = false;
+    self->previous_area.x1 = 0xffff;
+    self->previous_area.x2 = self->previous_area.x1;
     self->flip_x = false;
     self->flip_y = false;
     self->transpose_xy = false;
 }
 
+
+bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t* self) {
+    return self->hidden;
+}
+
+void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t* self, bool hidden) {
+    self->hidden = hidden;
+}
+
+void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden) {
+    self->hidden_by_parent = hidden;
+}
+
 bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t* area) {
-    if (self->first_draw) {
+    if (self->previous_area.x1 == self->previous_area.x2) {
         return false;
     }
     displayio_area_copy(&self->previous_area, area);
@@ -138,12 +154,10 @@ void displayio_tilegrid_update_transform(displayio_tilegrid_t *self,
     self->in_group = absolute_transform != NULL;
     self->absolute_transform = absolute_transform;
     if (absolute_transform != NULL) {
-        self->moved = !self->first_draw;
+        self->moved = true;
 
         _update_current_x(self);
         _update_current_y(self);
-    } else {
-        self->first_draw = true;
     }
 }
 
@@ -155,7 +169,7 @@ void common_hal_displayio_tilegrid_set_x(displayio_tilegrid_t *self, mp_int_t x)
         return;
     }
 
-    self->moved = !self->first_draw;
+    self->moved = true;
 
     self->x = x;
     if (self->absolute_transform != NULL) {
@@ -170,7 +184,7 @@ void common_hal_displayio_tilegrid_set_y(displayio_tilegrid_t *self, mp_int_t y)
     if (self->y == y) {
         return;
     }
-    self->moved = !self->first_draw;
+    self->moved = true;
     self->y = y;
     if (self->absolute_transform != NULL) {
         _update_current_y(self);
@@ -303,6 +317,11 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
         tiles = (uint8_t*) &self->tiles;
     }
     if (tiles == NULL) {
+        return false;
+    }
+
+    bool hidden = self->hidden || self->hidden_by_parent;
+    if (hidden) {
         return false;
     }
 
@@ -455,14 +474,17 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
 }
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
-    if (self->moved || self->first_draw) {
+    bool first_draw = self->previous_area.x1 == self->previous_area.x2;
+    bool hidden = self->hidden || self->hidden_by_parent;
+    if (!first_draw && hidden) {
+        self->previous_area.x2 = self->previous_area.x1;
+    } else if (self->moved || first_draw) {
         displayio_area_copy(&self->current_area, &self->previous_area);
     }
 
     self->moved = false;
     self->full_change = false;
     self->partial_change = false;
-    self->first_draw = false;
     if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
         displayio_palette_finish_refresh(self->pixel_shader);
     } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
@@ -481,7 +503,17 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 }
 
 displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t* tail) {
-    if (self->moved && !self->first_draw) {
+    bool first_draw = self->previous_area.x1 == self->previous_area.x2;
+    bool hidden = self->hidden || self->hidden_by_parent;
+    // Check hidden first because it trumps all other changes.
+    if (hidden) {
+        if (!first_draw) {
+            self->previous_area.next = tail;
+            return &self->previous_area;
+        } else {
+            return tail;
+        }
+    } else if (self->moved && !first_draw) {
         displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
         if (displayio_area_size(&self->dirty_area) <= 2U * self->pixel_width * self->pixel_height) {
             self->dirty_area.next = tail;
@@ -512,7 +544,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
          displayio_palette_needs_refresh(self->pixel_shader)) ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
          displayio_colorconverter_needs_refresh(self->pixel_shader));
-    if (self->full_change || self->first_draw) {
+    if (self->full_change || first_draw) {
         self->current_area.next = tail;
         return &self->current_area;
     }

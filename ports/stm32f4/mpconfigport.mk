@@ -7,7 +7,7 @@ MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
 INTERNAL_LIBM = 1
 
 # Chip supplied serial number, in bytes
-USB_SERIAL_NUMBER_LENGTH = 16
+USB_SERIAL_NUMBER_LENGTH = 24
 
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
@@ -15,8 +15,11 @@ LONGINT_IMPL = MPZ
 #Reduced feature set for early port
 CIRCUITPY_MINIMAL_BUILD = 1
 
-ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-	CIRCUITPY_BOARD = 1
-	CIRCUITPY_DIGITALIO = 1
-	CIRCUITPY_MICROCONTROLLER = 1
-endif
+CIRCUITPY_BOARD = 1
+CIRCUITPY_DIGITALIO = 1
+CIRCUITPY_MICROCONTROLLER = 1
+CIRCUITPY_BUSIO = 1
+CIRCUITPY_TIME = 1
+
+#ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
+#endif
