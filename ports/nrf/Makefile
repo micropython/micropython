@@ -254,7 +254,7 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 .PHONY: all flash deploy sd binary hex
 
-all: binary hex
+all: binary hex dfu
 
 OUTPUT_FILENAME = firmware
 
@@ -263,12 +263,19 @@ binary: $(BUILD)/$(OUTPUT_FILENAME).bin
 
 $(BUILD)/$(OUTPUT_FILENAME).bin: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O binary $< $@
+	$(Q)$(PYTHON) particle_fw.py $@
 
 ## Create binary .hex file from the .out file
 hex: $(BUILD)/$(OUTPUT_FILENAME).hex
 
 $(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
 	$(OBJCOPY) -O ihex $< $@
+
+dfu: $(BUILD)/$(OUTPUT_FILENAME).dfu
+
+$(BUILD)/$(OUTPUT_FILENAME).dfu: $(BUILD)/$(OUTPUT_FILENAME).bin
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(TOP)/tools/dfu.py -b 0x00030000:$< $@
 
 FLASHER ?=
 

@@ -43,6 +43,9 @@ void Default_Handler(void) {
 }
 
 void Reset_Handler(void) {
+    // VTOR
+    *((volatile uint32_t*)0xe000ed08) = 0x30000;
+
     uint32_t * p_src  = &_sidata;
     uint32_t * p_dest = &_sdata;
 
@@ -179,4 +182,13 @@ const func __Vectors[] __attribute__ ((section(".isr_vector"),used)) = {
     SPIM3_IRQHandler,
     0,
     PWM3_IRQHandler,
+
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+    // At 0x200: particle module_info_t
+    0, 0, 0, 0, 0, 0, 0, 0,
 };
