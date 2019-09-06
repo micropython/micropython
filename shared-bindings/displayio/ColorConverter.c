@@ -88,7 +88,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorc
 
 //|   .. attribute:: dither
 //|
-//|     True when the display is dithered
+//|     When true the color converter dithers the output by adding random noise when
+//|     truncating to display bitdepth
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
