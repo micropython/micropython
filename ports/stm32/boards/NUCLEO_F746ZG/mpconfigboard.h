@@ -5,7 +5,7 @@
 
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F746ZG"
 #define MICROPY_HW_MCU_NAME         "STM32F746"
-
+ 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
@@ -26,7 +26,7 @@
 // 151-180 MHz => 5 wait states
 // 181-210 MHz => 6 wait states
 // 211-216 MHz => 7 wait states
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
+#define MICROPY_HW_FLASH_LATENCY    (FLASH_LATENCY_7) // 210-216 MHz needs 7 wait states
 
 // UART config
 #define MICROPY_HW_UART2_TX         (pin_D5)
@@ -75,3 +75,15 @@
 #define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC          (pin_C1)
+#define MICROPY_HW_ETH_MDIO         (pin_A2)
+#define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
+#define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
+#define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
+#define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
+#define MICROPY_HW_ETH_RMII_TX_EN   (pin_G11)
+#define MICROPY_HW_ETH_RMII_TXD0    (pin_G13)
+#define MICROPY_HW_ETH_RMII_TXD1    (pin_B13)
