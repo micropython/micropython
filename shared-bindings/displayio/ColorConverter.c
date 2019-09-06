@@ -47,22 +47,23 @@
 //|
 //|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
 //|   currently.
-//|
+//|   :param bool dither: Adds random noise to dither the output image
+
 // TODO(tannewt): Add support for other color formats.
 //|
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 1, false);
+    enum { ARG_dither};
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
-    
-    bool dither = false;
 
-    if (n_args > 0) {
-        dither = mp_obj_is_true(pos_args[0]);
-    }
-
-    common_hal_displayio_colorconverter_construct(self, dither);
+    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
