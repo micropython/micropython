@@ -53,34 +53,40 @@ void reset_all_pins(void) {
 }
 
 // Mark pin as free and return it to a quiescent state.
-void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    if (pin_number == NO_PIN) {
+void reset_pin_number(uint8_t pin) {
+    if (pin == NO_PIN) {
         return;
     }
 
     // Clear claimed bit.
-    claimed_pins[pin_port] &= ~(1 << pin_number);
+    claimed_pins[gpio_port_num(pin)] &= ~(gpio_mask(pin));
     // Reset the pin
-    HAL_GPIO_DeInit(ports[pin_port], (1 << pin_number));
+    HAL_GPIO_DeInit(ports[gpio_port_num(pin)], gpio_mask(pin));
 }
 
 
-void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    never_reset_pins[pin_port] |= 1 << pin_number;
+void never_reset_pin_number(uint8_t pin) {
+    never_reset_pins[gpio_port_num(pin)] |= gpio_mask(pin);
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
     // Set bit in claimed_pins bitmask.
-    claimed_pins[pin->port_number] |= 1 << pin->number;
+    claimed_pins[gpio_port_num(pin->number)] |= gpio_mask(pin->number);
 }
 
 
-bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
-    return !(claimed_pins[pin_port] & (1 << pin_number));
+bool pin_number_is_free(uint8_t pin) {
+    return !(claimed_pins[gpio_port_num(pin)] & gpio_mask(pin));
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    return pin_number_is_free(pin->number);
+}
 
-    return pin_number_is_free(pin->port_number, pin->number);
+void* pin_port(uint8_t pin) {
+    return ports[gpio_port_num(pin)];
+}
 
+uint16_t pin_mask(uint8_t pin) {
+    return gpio_mask(pin);
 }
