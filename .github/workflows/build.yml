@@ -123,6 +123,7 @@ jobs:
         - "pca10056"
         - "pca10059"
         - "pewpew10"
+        - "pewpew_m4"
         - "pirkey_m0"
         - "pybadge"
         - "pybadge_airlift"

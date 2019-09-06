@@ -312,6 +312,10 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
         return;
     }
 
+    if (common_hal_audioio_audioout_get_playing(self)) {
+        common_hal_audioio_audioout_stop(self);
+    }
+
     // Ramp the DAC down.
     ramp_value(self->quiescent_value, 0);
 

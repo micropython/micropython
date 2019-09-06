@@ -49,10 +49,6 @@ uint32_t supervisor_flash_get_block_count(void) {
 void supervisor_flash_flush(void) {
 }
 
-static int32_t convert_block_to_flash_addr(uint32_t block) {
-    return -1;
-}
-
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     return 0; // success
 }
