@@ -72,9 +72,9 @@ static inline void adc_stabilisation_delay_us(uint32_t us) {
 STATIC void adc_wait_eoc(ADC_TypeDef *adc, int32_t timeout_ms) {
     uint32_t t0 = mp_hal_ticks_ms();
     #if ADC_V2
-    while (!(adc->ISR & ADC_FLAG_EOC))
+    while (!(adc->ISR & ADC_ISR_EOC))
     #else
-    while (!(adc->SR & ADC_FLAG_EOC))
+    while (!(adc->SR & ADC_SR_EOC))
     #endif
     {
         if (mp_hal_ticks_ms() - t0 > timeout_ms) {
@@ -90,7 +90,9 @@ STATIC const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
 
 STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
+    // Configure ADC clock source and enable ADC clock
     #if defined(STM32L4) || defined(STM32WB)
+    __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
     __HAL_RCC_ADC_CLK_ENABLE();
     #else
     if (adc == ADC1) {
@@ -116,7 +118,43 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #endif
     #endif
 
+    // Configure clock mode
+    #if defined(STM32F0)
+    adc->CFGR2 = 1 << ADC_CFGR2_CKMODE_Pos; // PCLK/2 (synchronous clock mode)
+    #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
+    ADC123_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32H7)
+    ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
+    ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
+    #elif defined(STM32L0) || defined(STM32WB)
+    ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #endif
+
+    #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    if (adc->CR & ADC_CR_DEEPPWD) {
+        adc->CR = 0; // disable deep powerdown
+    }
+    #endif
+
+    #if defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    if (!(adc->CR & ADC_CR_ADVREGEN)) {
+        adc->CR = ADC_CR_ADVREGEN; // enable VREG
+        #if defined(STM32H7)
+        mp_hal_delay_us(10); // T_ADCVREG_STUP
+        #elif defined(STM32L4) || defined(STM32WB)
+        mp_hal_delay_us(20); // T_ADCVREG_STUP
+        #endif
+    }
+    #endif
+
     #if ADC_V2
+    if (adc->CR == 0) {
+        // ADC hasn't been enabled so calibrate it
+        adc->CR |= ADC_CR_ADCAL;
+        while (adc->CR & ADC_CR_ADCAL) {
+        }
+    }
+
     if (adc->CR & ADC_CR_ADEN) {
         // ADC enabled, need to disable it to change configuration
         if (adc->CR & ADC_CR_ADSTART) {
@@ -128,17 +166,6 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         while (adc->CR & ADC_CR_ADDIS) {
         }
     }
-    #endif
-
-    // TODO check all these
-    #if defined(STM32F0)
-    adc->CFGR2 = 1 << ADC_CFGR2_CKMODE_Pos; // PCLK/2 (synchronous clock mode)
-    #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
-    ADC123_COMMON->CCR = 0; // ADCPR=PCLK/2
-    #elif defined(STM32H7)
-    __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
-    #elif defined(STM32L0) || defined(STM32WB)
-    ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
     #endif
 
     // Find resolution, defaulting to last element in table
@@ -193,10 +220,11 @@ STATIC int adc_get_bits(ADC_TypeDef *adc) {
 STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     #if ADC_V2
     if (!(adc->CR & ADC_CR_ADEN)) {
-        if (adc->CR) {
+        if (adc->CR & 0x3f) {
             // Cannot enable ADC with CR!=0
             return;
         }
+        adc->ISR = ADC_ISR_ADRDY; // clear ADRDY
         adc->CR |= ADC_CR_ADEN;
         adc_stabilisation_delay_us(ADC_STAB_DELAY_US);
         while (!(adc->ISR & ADC_ISR_ADRDY)) {
@@ -249,6 +277,7 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
 
     #if defined(STM32H7)
+    adc->PCSEL |= 1 << channel;
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
     ADC_Common_TypeDef *adc_common = ADC123_COMMON;
@@ -263,7 +292,7 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     } else if (channel == ADC_CHANNEL_VBAT) {
         adc_common->CCR |= ADC_CCR_VBATEN;
     }
-    adc->SQR1 = (channel & 0x1f) << ADC_SQR1_SQ1_Pos | 1 << ADC_SQR1_L_Pos;
+    adc->SQR1 = (channel & 0x1f) << ADC_SQR1_SQ1_Pos | (1 - 1) << ADC_SQR1_L_Pos;
     __IO uint32_t *smpr;
     if (channel <= 9) {
         smpr = &adc->SMPR1;
@@ -323,6 +352,11 @@ STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     unsigned adc_id = 1;
     #else
     unsigned adc_id = (self->adc - ADC1) / (ADC2 - ADC1) + 1;
+    #if defined(STM32H7)
+    if (self->adc == ADC3) {
+        adc_id = 3;
+    }
+    #endif
     #endif
     mp_printf(print, "<ADC%u channel=%u>", adc_id, self->channel);
 }
