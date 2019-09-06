@@ -42,10 +42,6 @@ typedef struct {
     uint8_t adc_num_input; //(3)mask ()
 } mcu_pin_obj_t;
 
-    // //uint8_t number; //(3)port,(5)pin 
-    // uint8_t port_number;
-    // GPIO_TypeDef * port;
-
 #define ADC_1 	1
 #define ADC_123	7
 #define ADC_12 	3
