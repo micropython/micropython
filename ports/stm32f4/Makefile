@@ -105,8 +105,7 @@ endif
 
 C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE)
 
-#TODO: Add ASM Flags? -Werror
-CFLAGS += $(INC) -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
 # STM32 apparently also uses undefined preprocessor variables quite casually, 
