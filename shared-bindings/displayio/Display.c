@@ -346,31 +346,7 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: dither
-//|
-//|     True when the display is dithered
-//|
-STATIC mp_obj_t displayio_display_obj_get_dither(mp_obj_t self_in) {
-    displayio_display_obj_t *self = native_display(self_in);
-    return mp_obj_new_bool(common_hal_displayio_display_get_dither(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_dither_obj, displayio_display_obj_get_dither);
 
-STATIC mp_obj_t displayio_display_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
-    displayio_display_obj_t *self = native_display(self_in);
-
-    common_hal_displayio_display_set_dither(self, mp_obj_is_true(dither));
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_dither_obj, displayio_display_obj_set_dither);
-
-const mp_obj_property_t displayio_display_dither_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_display_get_dither_obj,
-              (mp_obj_t)&displayio_display_set_dither_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
 
 
 //|   .. attribute:: width
@@ -514,7 +490,6 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&displayio_display_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_brightness), MP_ROM_PTR(&displayio_display_auto_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_display_dither_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_display_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },

@@ -51,11 +51,18 @@
 // TODO(tannewt): Add support for other color formats.
 //|
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
-    common_hal_displayio_colorconverter_construct(self);
+    
+    bool dither = false;
+
+    if (n_args > 0) {
+        dither = mp_obj_is_true(pos_args[0]);
+    }
+
+    common_hal_displayio_colorconverter_construct(self, dither);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -79,8 +86,35 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
 
+//|   .. attribute:: dither
+//|
+//|     True when the display is dithered
+//|
+STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_displayio_colorconverter_get_dither(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_colorconverter_get_dither_obj, displayio_colorconverter_obj_get_dither);
+
+STATIC mp_obj_t displayio_colorconverter_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_displayio_colorconverter_set_dither(self, mp_obj_is_true(dither));
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_set_dither_obj, displayio_colorconverter_obj_set_dither);
+
+const mp_obj_property_t displayio_colorconverter_dither_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_colorconverter_get_dither_obj,
+              (mp_obj_t)&displayio_colorconverter_set_dither_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t displayio_colorconverter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_convert), MP_ROM_PTR(&displayio_colorconverter_convert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_colorconverter_dither_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_colorconverter_locals_dict, displayio_colorconverter_locals_dict_table);
 
@@ -90,3 +124,4 @@ const mp_obj_type_t displayio_colorconverter_type = {
     .make_new = displayio_colorconverter_make_new,
     .locals_dict = (mp_obj_dict_t*)&displayio_colorconverter_locals_dict,
 };
+

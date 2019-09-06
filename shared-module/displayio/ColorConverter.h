@@ -35,6 +35,7 @@
 
 typedef struct {
     mp_obj_base_t base;
+    bool dither;
 } displayio_colorconverter_t;
 
 bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self);

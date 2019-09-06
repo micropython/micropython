@@ -39,7 +39,8 @@ uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y) {
     return displayio_colorconverter_dither_noise_1(x + y * 0xFFFF);
 }
 
-void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self) {
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self, bool dither) {
+    self->dither = dither;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
@@ -121,10 +122,18 @@ void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *sel
     (*output_color) = output_pixel.pixel;
 }
 
+void common_hal_displayio_colorconverter_set_dither(displayio_colorconverter_t* self, bool dither) {
+    self->dither = dither;
+}
+
+bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* self) {
+    return self->dither;
+}
+
 void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
     
-    if (colorspace->dither){
+    if (self->dither){
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));
         uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x+33,input_pixel->tile_y));
         uint8_t randb = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y+33));
@@ -172,6 +181,8 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     output_color->opaque = false;
 }
 
+
+
 // Currently no refresh logic is needed for a ColorConverter.
 bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self) {
     return false;
@@ -179,3 +190,4 @@ bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self) {
 
 void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self) {
 }
+
