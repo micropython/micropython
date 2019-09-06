@@ -66,7 +66,7 @@ extern const mp_obj_type_t mcu_pin_type;
 #define PIN(p_port, p_number, p_adc)       \
 { \
     { &mcu_pin_type }, \
-    .number = (((mask) << 4) | ((number) & 0x0F)), \
+    .number = (((p_port) << 4) | ((p_number) & 0x0F)), \
     p_adc \
 }
 
