@@ -5,6 +5,8 @@
 
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F746ZG"
 #define MICROPY_HW_MCU_NAME         "STM32F746"
+
+ #define MICROPY_PY_THREAD (1)
  
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
