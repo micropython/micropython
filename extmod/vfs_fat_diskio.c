@@ -69,16 +69,16 @@ DRESULT disk_read (
         return RES_PARERR;
     }
 
-    if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->readblocks[2];
+    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) {
+        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->blockdev.readblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
     } else {
         mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), buff};
-        vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, vfs->readblocks);
+        vfs->blockdev.readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+        vfs->blockdev.readblocks[3] = MP_OBJ_FROM_PTR(&ar);
+        mp_call_method_n_kw(2, 0, vfs->blockdev.readblocks);
         // TODO handle error return
     }
 
@@ -101,21 +101,21 @@ DRESULT disk_write (
         return RES_PARERR;
     }
 
-    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+    if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL) {
         // read-only block device
         return RES_WRPRT;
     }
 
-    if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->writeblocks[2];
+    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) {
+        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->blockdev.writeblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
     } else {
         mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), (void*)buff};
-        vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, vfs->writeblocks);
+        vfs->blockdev.writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+        vfs->blockdev.writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
+        mp_call_method_n_kw(2, 0, vfs->blockdev.writeblocks);
         // TODO handle error return
     }
 
@@ -140,7 +140,7 @@ DRESULT disk_ioctl (
 
     // First part: call the relevant method of the underlying block device
     mp_obj_t ret = mp_const_none;
-    if (vfs->flags & FSUSER_HAVE_IOCTL) {
+    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_HAVE_IOCTL) {
         // new protocol with ioctl
         static const uint8_t op_map[8] = {
             [CTRL_SYNC] = BP_IOCTL_SYNC,
@@ -150,21 +150,21 @@ DRESULT disk_ioctl (
         };
         uint8_t bp_op = op_map[cmd & 7];
         if (bp_op != 0) {
-            vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(bp_op);
-            vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-            ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+            vfs->blockdev.u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(bp_op);
+            vfs->blockdev.u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+            ret = mp_call_method_n_kw(2, 0, vfs->blockdev.u.ioctl);
         }
     } else {
         // old protocol with sync and count
         switch (cmd) {
             case CTRL_SYNC:
-                if (vfs->u.old.sync[0] != MP_OBJ_NULL) {
-                    mp_call_method_n_kw(0, 0, vfs->u.old.sync);
+                if (vfs->blockdev.u.old.sync[0] != MP_OBJ_NULL) {
+                    mp_call_method_n_kw(0, 0, vfs->blockdev.u.old.sync);
                 }
                 break;
 
             case GET_SECTOR_COUNT:
-                ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
+                ret = mp_call_method_n_kw(0, 0, vfs->blockdev.u.old.count);
                 break;
 
             case GET_SECTOR_SIZE:
@@ -211,7 +211,7 @@ DRESULT disk_ioctl (
             if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
                 // error initialising
                 stat = STA_NOINIT;
-            } else if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+            } else if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL) {
                 stat = STA_PROTECT;
             } else {
                 stat = 0;

@@ -180,7 +180,7 @@ pin_init0();
         }
         vfs->str = "/sd";
         vfs->len = 3;
-        vfs->flags = FSUSER_FREE_OBJ;
+        vfs->flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
         sdcard_init_vfs(vfs);
 
         // put the sd device in slot 1 (it will be unused at this point)
