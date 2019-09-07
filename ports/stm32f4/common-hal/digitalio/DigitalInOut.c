@@ -95,7 +95,7 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t *self, bool value) {
-    HAL_GPIO_WritePin(pin_port(self->pin->number), 1 << self->pin->number, value);
+    HAL_GPIO_WritePin(pin_port(self->pin->number), pin_mask(self->pin->number), value);
 }
 
 bool common_hal_digitalio_digitalinout_get_value(
