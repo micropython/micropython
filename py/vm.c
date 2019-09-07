@@ -158,6 +158,23 @@
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
+#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
+static inline mp_map_elem_t *mp_map_cached_lookup(mp_map_t *map, qstr qst, uint8_t *idx_cache) {
+    size_t idx = *idx_cache;
+    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+    mp_map_elem_t *elem = NULL;
+    if (idx < map->alloc && map->table[idx].key == key) {
+        elem = &map->table[idx];
+    } else {
+        elem = mp_map_lookup(map, key, MP_MAP_LOOKUP);
+        if (elem != NULL) {
+            *idx_cache = (elem - &map->table[0]) & 0xff;
+        }
+    }
+    return elem;
+}
+#endif
+
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
@@ -333,19 +350,14 @@ dispatch_loop:
                 ENTRY(MP_BC_LOAD_NAME): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                    mp_uint_t x = *ip;
-                    if (x < mp_locals_get()->map.alloc && mp_locals_get()->map.table[x].key == key) {
-                        PUSH(mp_locals_get()->map.table[x].value);
+                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_locals_get()->map, qst, (uint8_t*)ip);
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&mp_locals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
-                        if (elem != NULL) {
-                            *(byte*)ip = (elem - &mp_locals_get()->map.table[0]) & 0xff;
-                            PUSH(elem->value);
-                        } else {
-                            PUSH(mp_load_name(MP_OBJ_QSTR_VALUE(key)));
-                        }
+                        obj = mp_load_name(qst);
                     }
+                    PUSH(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -362,19 +374,14 @@ dispatch_loop:
                 ENTRY(MP_BC_LOAD_GLOBAL): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                    mp_uint_t x = *ip;
-                    if (x < mp_globals_get()->map.alloc && mp_globals_get()->map.table[x].key == key) {
-                        PUSH(mp_globals_get()->map.table[x].value);
+                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_globals_get()->map, qst, (uint8_t*)ip);
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
-                        if (elem != NULL) {
-                            *(byte*)ip = (elem - &mp_globals_get()->map.table[0]) & 0xff;
-                            PUSH(elem->value);
-                        } else {
-                            PUSH(mp_load_global(MP_OBJ_QSTR_VALUE(key)));
-                        }
+                        obj = mp_load_global(qst);
                     }
+                    PUSH(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -394,27 +401,18 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
+                    mp_map_elem_t *elem = NULL;
                     if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        mp_uint_t x = *ip;
-                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                        mp_map_elem_t *elem;
-                        if (x < self->members.alloc && self->members.table[x].key == key) {
-                            elem = &self->members.table[x];
-                        } else {
-                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
-                            if (elem != NULL) {
-                                *(byte*)ip = elem - &self->members.table[0];
-                            } else {
-                                goto load_attr_cache_fail;
-                            }
-                        }
-                        SET_TOP(elem->value);
-                        ip++;
-                        DISPATCH();
+                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t*)ip);
                     }
-                load_attr_cache_fail:
-                    SET_TOP(mp_load_attr(top, qst));
+                    mp_obj_t obj;
+                    if (elem != NULL) {
+                        obj = elem->value;
+                    } else {
+                        obj = mp_load_attr(top, qst);
+                    }
+                    SET_TOP(obj);
                     ip++;
                     DISPATCH();
                 }
@@ -493,29 +491,17 @@ dispatch_loop:
                     FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
+                    mp_map_elem_t *elem = NULL;
                     mp_obj_t top = TOP();
                     if (mp_obj_is_instance_type(mp_obj_get_type(top)) && sp[-1] != MP_OBJ_NULL) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        mp_uint_t x = *ip;
-                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-                        mp_map_elem_t *elem;
-                        if (x < self->members.alloc && self->members.table[x].key == key) {
-                            elem = &self->members.table[x];
-                        } else {
-                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
-                            if (elem != NULL) {
-                                *(byte*)ip = elem - &self->members.table[0];
-                            } else {
-                                goto store_attr_cache_fail;
-                            }
-                        }
-                        elem->value = sp[-1];
-                        sp -= 2;
-                        ip++;
-                        DISPATCH();
+                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t*)ip);
                     }
-                store_attr_cache_fail:
-                    mp_store_attr(sp[0], qst, sp[-1]);
+                    if (elem != NULL) {
+                        elem->value = sp[-1];
+                    } else {
+                        mp_store_attr(sp[0], qst, sp[-1]);
+                    }
                     sp -= 2;
                     ip++;
                     DISPATCH();
