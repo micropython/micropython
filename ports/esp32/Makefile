@@ -49,7 +49,7 @@ SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # the git hash of the currently supported ESP IDF version
-ESPIDF_SUPHASH := 6b3da6b1882f3b72e904cc90be67e9c4e3f369a9
+ESPIDF_SUPHASH := 6ccb4cf5b7d1fdddb8c2492f9cbc926abaf230df
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
