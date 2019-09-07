@@ -28,6 +28,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
+
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_gpio.h"
 

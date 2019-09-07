@@ -39,21 +39,22 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t number;
-    uint8_t adc_num_input; //(3)mask ()
+    uint8_t adc; //(3)units (5)channel
 } mcu_pin_obj_t;
 
+//Standard stm32 adc unit combinations
 #define ADC_1 	1
-#define ADC_123	7
 #define ADC_12 	3
+#define ADC_123	7
 #define ADC_3 	4
 
 //STM32 ADC pins can have a combination of 1, 2 or all 3 ADCs on a single pin,
 //but all 3 ADCs will share the same input number per pin. 
 #define ADC_INPUT(mask, number) \
-	.adc_num_input = (((mask) << 5) | ((number) & 0x1F)),
+	.adc = (((mask) << 5) | ((number) & 0x1F)),
 
 #define NO_ADC \
-	.adc_num_input = 0xff,
+	.adc = 0xff,
 
 extern const mp_obj_type_t mcu_pin_type;
 
