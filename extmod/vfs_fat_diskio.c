@@ -38,15 +38,10 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objarray.h"
+#include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
-
-#if FF_MAX_SS == FF_MIN_SS
-#define SECSIZE(fs) (FF_MIN_SS)
-#else
-#define SECSIZE(fs) ((fs)->ssize)
-#endif
 
 typedef void *bdev_t;
 STATIC fs_user_mount_t *disk_get_device(void *bdev) {
@@ -69,20 +64,9 @@ DRESULT disk_read (
         return RES_PARERR;
     }
 
-    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->blockdev.readblocks[2];
-        if (f(buff, sector, count) != 0) {
-            return RES_ERROR;
-        }
-    } else {
-        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), buff};
-        vfs->blockdev.readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->blockdev.readblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, vfs->blockdev.readblocks);
-        // TODO handle error return
-    }
+    int ret = mp_vfs_blockdev_read(&vfs->blockdev, sector, count, buff);
 
-    return RES_OK;
+    return ret == 0 ? RES_OK : RES_ERROR;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -101,25 +85,14 @@ DRESULT disk_write (
         return RES_PARERR;
     }
 
-    if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL) {
+    int ret = mp_vfs_blockdev_write(&vfs->blockdev, sector, count, buff);
+
+    if (ret == -MP_EROFS) {
         // read-only block device
         return RES_WRPRT;
     }
 
-    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->blockdev.writeblocks[2];
-        if (f(buff, sector, count) != 0) {
-            return RES_ERROR;
-        }
-    } else {
-        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), (void*)buff};
-        vfs->blockdev.writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->blockdev.writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
-        mp_call_method_n_kw(2, 0, vfs->blockdev.writeblocks);
-        // TODO handle error return
-    }
-
-    return RES_OK;
+    return ret == 0 ? RES_OK : RES_ERROR;
 }
 
 
@@ -139,42 +112,16 @@ DRESULT disk_ioctl (
     }
 
     // First part: call the relevant method of the underlying block device
+    static const uint8_t op_map[8] = {
+        [CTRL_SYNC] = BP_IOCTL_SYNC,
+        [GET_SECTOR_COUNT] = BP_IOCTL_SEC_COUNT,
+        [GET_SECTOR_SIZE] = BP_IOCTL_SEC_SIZE,
+        [IOCTL_INIT] = BP_IOCTL_INIT,
+    };
+    uint8_t bp_op = op_map[cmd & 7];
     mp_obj_t ret = mp_const_none;
-    if (vfs->blockdev.flags & MP_BLOCKDEV_FLAG_HAVE_IOCTL) {
-        // new protocol with ioctl
-        static const uint8_t op_map[8] = {
-            [CTRL_SYNC] = BP_IOCTL_SYNC,
-            [GET_SECTOR_COUNT] = BP_IOCTL_SEC_COUNT,
-            [GET_SECTOR_SIZE] = BP_IOCTL_SEC_SIZE,
-            [IOCTL_INIT] = BP_IOCTL_INIT,
-        };
-        uint8_t bp_op = op_map[cmd & 7];
-        if (bp_op != 0) {
-            vfs->blockdev.u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(bp_op);
-            vfs->blockdev.u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-            ret = mp_call_method_n_kw(2, 0, vfs->blockdev.u.ioctl);
-        }
-    } else {
-        // old protocol with sync and count
-        switch (cmd) {
-            case CTRL_SYNC:
-                if (vfs->blockdev.u.old.sync[0] != MP_OBJ_NULL) {
-                    mp_call_method_n_kw(0, 0, vfs->blockdev.u.old.sync);
-                }
-                break;
-
-            case GET_SECTOR_COUNT:
-                ret = mp_call_method_n_kw(0, 0, vfs->blockdev.u.old.count);
-                break;
-
-            case GET_SECTOR_SIZE:
-                // old protocol has fixed sector size of 512 bytes
-                break;
-
-            case IOCTL_INIT:
-                // old protocol doesn't have init
-                break;
-        }
+    if (bp_op != 0) {
+        ret = mp_vfs_blockdev_ioctl(&vfs->blockdev, bp_op, 0);
     }
 
     // Second part: convert the result for return
@@ -194,10 +141,8 @@ DRESULT disk_ioctl (
             } else {
                 *((WORD*)buff) = mp_obj_get_int(ret);
             }
-            #if FF_MAX_SS != FF_MIN_SS
             // need to store ssize because we use it in disk_read/disk_write
-            vfs->fatfs.ssize = *((WORD*)buff);
-            #endif
+            vfs->blockdev.block_size = *((WORD*)buff);
             return RES_OK;
         }
 

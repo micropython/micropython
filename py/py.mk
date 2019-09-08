@@ -185,6 +185,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modwebrepl.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
+	extmod/vfs_blockdev.o \
 	extmod/vfs_reader.o \
 	extmod/vfs_posix.o \
 	extmod/vfs_posix_file.o \

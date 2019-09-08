@@ -68,21 +68,12 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // create new object
     fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
     vfs->base.type = type;
-    vfs->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
     vfs->fatfs.drv = vfs;
 
-    // load block protocol methods
-    mp_load_method(args[0], MP_QSTR_readblocks, vfs->blockdev.readblocks);
-    mp_load_method_maybe(args[0], MP_QSTR_writeblocks, vfs->blockdev.writeblocks);
-    mp_load_method_maybe(args[0], MP_QSTR_ioctl, vfs->blockdev.u.ioctl);
-    if (vfs->blockdev.u.ioctl[0] != MP_OBJ_NULL) {
-        // device supports new block protocol, so indicate it
-        vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_HAVE_IOCTL;
-    } else {
-        // no ioctl method, so assume the device uses the old block protocol
-        mp_load_method_maybe(args[0], MP_QSTR_sync, vfs->blockdev.u.old.sync);
-        mp_load_method(args[0], MP_QSTR_count, vfs->blockdev.u.old.count);
-    }
+    // Initialise underlying block device
+    vfs->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
+    vfs->blockdev.block_size = FF_MIN_SS; // default, will be populated by call to BP_IOCTL_SEC_SIZE
+    mp_vfs_blockdev_init(&vfs->blockdev, args[0]);
 
     // mount the block device so the VFS methods can be used
     FRESULT res = f_mount(&vfs->fatfs);
