@@ -33,7 +33,6 @@
 #include "stm32f4xx_hal.h"
 
 void init_usb_hardware(void) {
- // HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, GPIO_PIN_RESET); //LED 2
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /**USB_OTG_FS GPIO Configuration
   PA10     ------> USB_OTG_FS_ID
@@ -64,12 +63,12 @@ void init_usb_hardware(void) {
   GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
   /* Peripheral clock enable */
   __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
-
-  // /* Peripheral interrupt init */
-  // HAL_NVIC_SetPriority(OTG_FS_IRQn, 0, 0);
-  // HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
-
-  //HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET); //LED 3
 }
