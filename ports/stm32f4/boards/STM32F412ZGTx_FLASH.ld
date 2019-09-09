@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32F411 via Micropython
+    GNU linker script for STM32F412
 */
 
 /* Specify the memory areas */
@@ -51,8 +51,6 @@ SECTIONS
         . = ALIGN(4);
         *(.text*)          /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    /*  *(.glue_7)   */    /* glue arm to thumb code */
-    /*  *(.glue_7t)  */    /* glue thumb to arm code */
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
