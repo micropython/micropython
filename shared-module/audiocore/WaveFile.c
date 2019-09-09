@@ -216,7 +216,7 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* 
         } else {
             *buffer = self->buffer;
         }
-        if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK) {
+        if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK || length_read != num_bytes_to_load) {
             return GET_BUFFER_ERROR;
         }
         self->bytes_remaining -= length_read;
