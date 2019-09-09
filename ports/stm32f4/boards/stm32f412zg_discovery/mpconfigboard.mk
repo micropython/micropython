@@ -1,5 +1,5 @@
-USB_VID = 0x483
-USB_PID = 0x572B
+USB_VID = 0x239A
+USB_PID = 0x8056
 USB_PRODUCT = "STM32F412ZG Discovery Board - CPy"
 USB_MANUFACTURER = "STMicroelectronics"
 
