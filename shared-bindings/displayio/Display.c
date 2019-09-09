@@ -346,6 +346,9 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+
+
+
 //|   .. attribute:: width
 //|
 //|	Gets the width of the board

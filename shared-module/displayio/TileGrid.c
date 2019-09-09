@@ -396,12 +396,16 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
     }
 
     uint8_t pixels_per_byte = 8 / colorspace->depth;
-    for (int16_t y = start_y; y < end_y; y++) {
-        int16_t row_start = start + (y - start_y + y_shift) * y_stride; // in pixels
-        int16_t local_y = y / self->absolute_transform->scale;
-        for (int16_t x = start_x; x < end_x; x++) {
+
+    displayio_input_pixel_t input_pixel;
+    displayio_output_pixel_t output_pixel;
+
+    for (input_pixel.y = start_y; input_pixel.y < end_y; ++input_pixel.y) {
+        int16_t row_start = start + (input_pixel.y - start_y + y_shift) * y_stride; // in pixels
+        int16_t local_y = input_pixel.y / self->absolute_transform->scale;
+        for (input_pixel.x = start_x; input_pixel.x < end_x; ++input_pixel.x) {
             // Compute the destination pixel in the buffer and mask based on the transformations.
-            int16_t offset = row_start + (x - start_x + x_shift) * x_stride; // in pixels
+            int16_t offset = row_start + (input_pixel.x - start_x + x_shift) * x_stride; // in pixels
 
             // This is super useful for debugging out of range accesses. Uncomment to use.
             // if (offset < 0 || offset >= (int32_t) displayio_area_size(area)) {
@@ -412,41 +416,43 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             if ((mask[offset / 32] & (1 << (offset % 32))) != 0) {
                 continue;
             }
-            int16_t local_x = x / self->absolute_transform->scale;
+            int16_t local_x = input_pixel.x / self->absolute_transform->scale;
             uint16_t tile_location = ((local_y / self->tile_height + self->top_left_y) % self->height_in_tiles) * self->width_in_tiles + (local_x / self->tile_width + self->top_left_x) % self->width_in_tiles;
-            uint8_t tile = tiles[tile_location];
-            uint16_t tile_x = (tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
-            uint16_t tile_y = (tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
+            input_pixel.tile = tiles[tile_location];
+            input_pixel.tile_x = (input_pixel.tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
+            input_pixel.tile_y = (input_pixel.tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
 
-            uint32_t value = 0;
+            //uint32_t value = 0;
+            output_pixel.pixel = 0;
+            input_pixel.pixel = 0;
+
             // We always want to read bitmap pixels by row first and then transpose into the destination
             // buffer because most bitmaps are row associated.
             if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
-                value = common_hal_displayio_bitmap_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_bitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
-                value = common_hal_displayio_shape_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_shape_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
-                value = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             }
-
-            uint32_t pixel;
-            bool opaque = true;
+            
+            output_pixel.opaque = true;
             if (self->pixel_shader == mp_const_none) {
-                pixel = value;
+                output_pixel.pixel = input_pixel.pixel;
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
-                opaque = displayio_palette_get_color(self->pixel_shader, colorspace, value, &pixel);
+                output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
-                opaque = displayio_colorconverter_convert(self->pixel_shader, colorspace, value, &pixel);
+                displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
             }
-            if (!opaque) {
+            if (!output_pixel.opaque) {
                 // A pixel is transparent so we haven't fully covered the area ourselves.
                 full_coverage = false;
             } else {
                 mask[offset / 32] |= 1 << (offset % 32);
                 if (colorspace->depth == 16) {
-                    *(((uint16_t*) buffer) + offset) = pixel;
+                    *(((uint16_t*) buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
-                    *(((uint8_t*) buffer) + offset) = pixel;
+                    *(((uint8_t*) buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {
                     // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
                     if (!colorspace->pixels_in_byte_share_row) {
@@ -465,7 +471,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                         // Reverse the shift by subtracting it from the leftmost shift.
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
-                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << shift;
+                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
         }

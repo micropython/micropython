@@ -41,6 +41,7 @@ typedef struct {
     bool tricolor;
     bool pixels_in_byte_share_row;
     bool reverse_pixels_in_byte;
+    bool dither;
 } _displayio_colorspace_t;
 
 typedef struct {
@@ -51,6 +52,20 @@ typedef struct {
     uint8_t chroma;
     bool transparent; // This may have additional bits added later for blending.
 } _displayio_color_t;
+
+typedef struct {
+    uint32_t pixel;
+    uint16_t x;
+    uint16_t y;
+    uint8_t tile;
+    uint16_t tile_x;
+    uint16_t tile_y;
+} displayio_input_pixel_t;
+
+typedef struct {
+    uint32_t pixel;
+    bool opaque;
+} displayio_output_pixel_t;
 
 typedef struct {
     mp_obj_base_t base;
