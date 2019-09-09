@@ -196,5 +196,6 @@ extern const struct _mp_obj_module_t mp_module_uos;
     mp_obj_t pin_class_map_dict; \
     mp_obj_t pyb_lpi2c_callback[5]; \
     mp_obj_t pyb_gpt_callback[3]; \
+    mp_obj_t pyb_gpio_callback[5]; \
 
 static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }

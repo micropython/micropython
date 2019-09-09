@@ -8,6 +8,8 @@ Series ?= imx
 
 Device ?= MIMXRT1064
 
+SDCARD_INF = usdhc
+
 include board/$(BOARD)/mpconfigboard.mk
 
 #FreeRTos variable
@@ -88,10 +90,7 @@ STARTUP_FILE = $(NXP_TOOLCHAIN_DIR)/startup_$(Device).o
 
 CFLAGS = $(INC) $(CFLAGS_CORE) $(CFLAGS_BOARD) -Wall -Werror -std=gnu99 \
 		-fno-tree-scev-cprop -Wpointer-arith -fdata-sections -ffunction-sections \
-		-DLV_CONF_INCLUDE_SIMPLE=1 \
 		-DFSL_RTOS_FREE_RTOS \
-		-D__STARTUP_CLEAR_BSS \
-		-D__STARTUP_INITIALIZE_NONCACHEDATA \
 		-DFFCONF_H=\"ports/nxp/ffconf.h\" \
 		--specs=nosys.specs \
 		 --specs=nano.specs \
@@ -178,6 +177,7 @@ EXTMOD_SRC_C = $(addprefix extmod/, \
 	vfs_fat_diskio.c \
 )
 
+ifeq ($(Series), imx)
 SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
 	fsl_common.c \
 	fsl_gpio.c \
@@ -189,20 +189,35 @@ SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
 	fsl_clock.c \
 	$(BOARD_FSL_DRIVERS) \
 )
-
-ifeq ($(Series), imx)
 SRC_FSL_DRIVERS += $(NXP_XIP_DIR)/fsl_flexspi_nor_boot.c
 endif
 
+ifeq ($(Series), kinetis)
+SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
+	fsl_clock.c \
+	fsl_common.c \
+	fsl_ftfx_cache.c \
+	fsl_ftfx_controller.c \
+	fsl_ftfx_flash.c \
+	fsl_ftfx_flexnvm.c \
+	fsl_gpio.c \
+	fsl_smc.c \
+	fsl_uart.c \
+	fsl_sdhc.c \
+	fsl_sysmpu.c \
+)
+endif
+
 SRC_MIDDLEWARE = $(addprefix $(NXP_MIDDLEWARE_DIR)/, \
-	sdmmc/port/usdhc/freertos/fsl_sdmmc_host.c \
-	sdmmc/port/usdhc/freertos/fsl_sdmmc_event.c \
+	sdmmc/port/$(SDCARD_INF)/freertos/fsl_sdmmc_host.c \
+	sdmmc/port/$(SDCARD_INF)/freertos/fsl_sdmmc_event.c \
 	sdmmc/src/fsl_mmc.c \
 	sdmmc/src/fsl_sd.c \
 	sdmmc/src/fsl_sdio.c \
 	sdmmc/src/fsl_sdmmc_common.c \
 )
 
+ifeq ($(Series), imx)
 SRC_COMPONENT = $(addprefix $(NXP_COMPONENTS_DIR)/, \
 	lists/generic_list.c \
 	serial_manager/serial_manager.c \
@@ -210,10 +225,20 @@ SRC_COMPONENT = $(addprefix $(NXP_COMPONENTS_DIR)/, \
 	uart/lpuart_adapter.c \
 	i2c/lpi2c_adapter.c \
 )
-
 ifeq ($(LITTLEVGL_ENABLE), 1)
 SRC_COMPONENT += $(addprefix $(NXP_COMPONENTS_DIR)/, \
 	ft5406_rt/fsl_ft5406_rt.c \
+)
+endif
+endif
+
+ifeq ($(Series), kinetis)
+SRC_COMPONENT = $(addprefix $(NXP_COMPONENTS_DIR)/, \
+	lists/generic_list.c \
+	serial_manager/serial_manager.c \
+	serial_manager/serial_port_uart.c \
+	uart/uart_adapter.c \
+	gpio/gpio_kinetis.c \
 )
 endif
 
@@ -233,6 +258,7 @@ SRC_C = \
 	mphalport.c \
 	pybi2c.c \
 	pybpinmux.c \
+	pybgpio.c \
 	moduos.c \
 	modpyb.c
 

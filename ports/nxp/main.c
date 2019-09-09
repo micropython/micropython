@@ -300,8 +300,10 @@ int main(void) {
     // BOARD init
     BOARD_InitHardware();
 
+#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
     pin_init0();
     led_init();
+#endif
 #if defined(MICROPY_PY_LVGL) && MICROPY_PY_LVGL
     lv_port_pre_init();
 #endif

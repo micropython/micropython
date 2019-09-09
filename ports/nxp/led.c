@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #include <stdio.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
 #include "led.h"
 #include "pin.h"
 
@@ -153,3 +153,4 @@ const mp_obj_type_t pyb_led_type = {
     .make_new = led_obj_make_new,
     .locals_dict = (mp_obj_dict_t*)&led_locals_dict,
 };
+#endif /* MICROPY_PY_LED */

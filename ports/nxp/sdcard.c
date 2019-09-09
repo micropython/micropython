@@ -30,48 +30,6 @@
 
 sd_card_t g_sd;
 
-static const sdmmchost_detect_card_t s_sdCardDetect = {
-#ifndef BOARD_SD_DETECT_TYPE
-    .cdType = kSDMMCHOST_DetectCardByGpioCD,
-#else
-    .cdType = BOARD_SD_DETECT_TYPE,
-#endif
-    .cdTimeOut_ms = (~0U),
-};
-
-status_t sdcard_WaitCardInsert(void)
-{
-    memset(&g_sd,0,sizeof(g_sd));
-    g_sd.host.base = BOARD_SD_HOST_BASEADDR;
-    g_sd.host.sourceClock_Hz = BOARD_SD_HOST_CLK_FREQ;
-    g_sd.usrParam.cd = &s_sdCardDetect;
-    #if defined DEMO_SDCARD_POWER_CTRL_FUNCTION_EXIST
-    g_sd.usrParam.pwr = &s_sdCardPwrCtrl;
-    #endif
-    /* SD host init function */
-    if (SD_HostInit(&g_sd) != kStatus_Success)
-    {
-        printf("SD host init fail\r\n");
-        return kStatus_Fail;
-    }
-    /* power off card */
-    SD_PowerOffCard(g_sd.host.base, g_sd.usrParam.pwr);
-    /* wait card insert */
-    if (SD_WaitCardDetectStatus(SD_HOST_BASEADDR, &s_sdCardDetect, true) == kStatus_Success)
-    {
-
-        /* power on the card */
-        SD_PowerOnCard(g_sd.host.base, g_sd.usrParam.pwr);
-    }
-    else
-    {
-        printf("Card detect fail.\r\n");
-
-        return kStatus_Fail;
-    }
-    return kStatus_Success;
-}
-
 status_t ReadBlocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks)
 {
     return SD_ReadBlocks(&g_sd, dest, block_num, num_blocks);
