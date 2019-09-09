@@ -43,7 +43,7 @@
 //|
 //| Converts one color format to another.
 //|
-//| .. class:: ColorConverter()
+//| .. class:: ColorConverter(*, dither=False)
 //|
 //|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
 //|   currently.
@@ -55,7 +55,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
     enum { ARG_dither};
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
