@@ -140,6 +140,10 @@ stopping: ;
                     goto stopping;
                 }
             }
+            if (get_buffer_result == GET_BUFFER_ERROR || sample_buffer_length == 0) {
+                self->stopping = true;
+                goto stopping;
+            }
         }
         uint16_t bytecount = MIN(bytesleft, (size_t)(self->sample_end - self->sample_data));
         if (self->samples_signed) {
