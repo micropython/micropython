@@ -202,6 +202,11 @@ PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 # this is a convenience variable for ports that want core, extmod and frozen code
 PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
 
+# object file for frozen code specified via a manifest
+ifneq ($(FROZEN_MANIFEST),)
+PY_O += $(BUILD)/$(BUILD)/frozen_content.o
+endif
+
 # object file for frozen files
 ifneq ($(FROZEN_DIR),)
 PY_O += $(BUILD)/$(BUILD)/frozen.o

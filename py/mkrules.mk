@@ -97,6 +97,12 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
+ifneq ($(FROZEN_MANIFEST),)
+# to build frozen_content.c from a manifest
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
+	$(Q)$(MAKE_MANIFEST) -o $@ $(TOP) $(BUILD) "$(MPY_CROSS_FLAGS)" $(FROZEN_MANIFEST)
+endif
+
 ifneq ($(FROZEN_DIR),)
 $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
 	$(ECHO) "GEN $@"
