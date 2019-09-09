@@ -27,7 +27,7 @@
 
 // This file requires pin_defs_xxx.h (which has port specific enums and
 // defines, so we include it here. It should never be included directly
-
+#if defined(MICROPY_PY_LED) && MICROPY_PY_LED
 #include "py/obj.h"
 
 #include "fsl_common.h"
@@ -53,5 +53,5 @@ extern const mp_obj_type_t pin_type;
 
 void pin_init0(void);
 uint32_t pin_get_direction(const pin_obj_t *pin);
-
+#endif /* MICROPY_PY_LED */
 #endif

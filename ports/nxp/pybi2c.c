@@ -25,10 +25,11 @@
 
 #include "py/runtime.h"
 #include "py/obj.h"
-
-#include "pybi2c.h"
+#include "py/mpconfig.h"
 
 #if defined(MICROPY_PY_LPI2C) && MICROPY_PY_LPI2C
+#include "pybi2c.h"
+
 typedef union _lpi2c_config
 {
     hal_i2c_master_config_t master_config;

@@ -24,6 +24,7 @@
 #ifndef _PYB_PINMUX_H_
 #define _PYB_PINMUX_H_
 
+#if defined (MICROPY_PY_PINMUX) && MICROPY_PY_PINMUX
 typedef struct _pinmux_obj_t {
     mp_obj_base_t base;
     qstr pinmux_name;
@@ -48,4 +49,5 @@ extern const mp_obj_type_t port_type;
 extern const mp_obj_type_t board_ports_obj_type;
 
 extern const mp_obj_dict_t port_board_pinmux_locals_dict;
+#endif /*MICROPY_PY_PINMUX*/
 #endif

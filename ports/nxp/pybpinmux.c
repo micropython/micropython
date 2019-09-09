@@ -26,6 +26,9 @@
 
 #include "py/runtime.h"
 #include "py/obj.h"
+#include "py/mpconfig.h"
+
+#if defined (MICROPY_PY_PINMUX) && MICROPY_PY_PINMUX
 #include "fsl_iomuxc.h"
 #include "pybpinmux.h"
 
@@ -162,3 +165,4 @@ const mp_obj_type_t pinmux_type = {
     .print = pinmux_print,
     .locals_dict = (mp_obj_dict_t*)&pinmux_dict, 
 };
+#endif /* MICROPY_PY_PINMUX */

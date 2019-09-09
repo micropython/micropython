@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -29,6 +30,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
+
+#if defined(MICROPY_PY_LED) && MICROPY_PY_LED
 #include "pin.h"
 
 #include "fsl_gpio.h" 
@@ -297,5 +300,5 @@ const mp_obj_type_t pin_type = {
     .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
 };
-
+#endif /* MICROPY_PY_LED */
 

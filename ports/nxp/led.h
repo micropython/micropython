@@ -24,7 +24,7 @@
 
 #ifndef _LED_H_
 #define _LED_H_
-
+#if defined(MICROPY_PY_LED) && MICROPY_PY_LED
 typedef enum {
     LED_YELLOW = 1,
 }pyb_led_t;
@@ -35,5 +35,5 @@ void led_init(void);
 
 
 extern const mp_obj_type_t pyb_led_type;
-
+#endif /* MICROPY_PY_LED */
 #endif

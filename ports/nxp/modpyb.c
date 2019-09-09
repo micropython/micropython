@@ -29,11 +29,23 @@
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 
+#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
 #include "led.h"
+#endif
 #include "sdcard.h"
 #include "extmod/vfs.h"
+#if defined (MICROPY_PY_LPI2C) && MICROPY_PY_LPI2C  
 #include "pybi2c.h"
+#endif
+#if defined (MICROPY_PY_GPIO) && MICROPY_PY_GPIO
+#include "pybgpio.h"
+#endif
+#if defined (MICROPY_PY_GPT) && MICROPY_PY_GPT
+#include "pybgpt.h"
+#endif
+#if defined (MICROPY_PY_PINMUX) && MICROPY_PY_PINMUX
 #include "pybpinmux.h"
+#endif
 
 STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
@@ -56,15 +68,26 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
+#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_Sdcard), MP_ROM_PTR(&pyb_sdcard_type) },
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
+#if defined (MICROPY_PY_LPI2C) && MICROPY_PY_LPI2C    
     { MP_ROM_QSTR(MP_QSTR_LPI2C), MP_ROM_PTR(&pyb_i2c_type) },
+#endif
+#if defined (MICROPY_PY_PINMUX) && MICROPY_PY_PINMUX
     { MP_ROM_QSTR(MP_QSTR_port), MP_ROM_PTR(&port_type) },
     { MP_ROM_QSTR(MP_QSTR_pinmux), MP_ROM_PTR(&pinmux_type) },
-//    { MP_ROM_QSTR(MP_QSTR_GPT), MP_ROM_PTR(&pyb_gpt_type) },
+#endif
+#if defined (MICROPY_PY_GPIO) && MICROPY_PY_GPIO
+    { MP_ROM_QSTR(MP_QSTR_gpio), MP_ROM_PTR(&pyb_gpio_type) },
+#endif
+#if defined (MICROPY_PY_GPT) && MICROPY_PY_GPT
+    { MP_ROM_QSTR(MP_QSTR_GPT), MP_ROM_PTR(&pyb_gpt_type) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
