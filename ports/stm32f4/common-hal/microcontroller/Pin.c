@@ -83,7 +83,7 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     return pin_number_is_free(pin->number);
 }
 
-void* pin_port(uint8_t pin) {
+GPIO_TypeDef * pin_port(uint8_t pin) {
     return ports[gpio_port_num(pin)];
 }
 
