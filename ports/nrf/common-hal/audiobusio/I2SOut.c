@@ -247,12 +247,14 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->samples_signed = samples_signed;
 
     choose_i2s_clocking(self, sample_rate);
-    /* Allocate buffers based on a maximum duration */
-    enum { buffer_length_ms = 8 };
-    self->buffer_length = MAX(
-        2*max_buffer_length,
-        sample_rate * buffer_length_ms * self->bytes_per_sample
-            * self->channel_count / 1000);
+    /* Allocate buffers based on a maximum duration
+     * This duration was chosen empirically based on what would
+     * cause os.listdir('') to cause stuttering.  It seems like a
+     * rather long time.
+     */
+    enum { buffer_length_ms = 16 };
+    self->buffer_length = sample_rate * buffer_length_ms
+            * self->bytes_per_sample * self->channel_count / 1000;
     self->buffer_length = (self->buffer_length + 3) & ~3;
     self->buffers[0] = m_malloc(self->buffer_length, false);
     self->buffers[1] = m_malloc(self->buffer_length, false);
