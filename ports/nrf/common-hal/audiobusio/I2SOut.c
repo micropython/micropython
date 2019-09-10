@@ -112,20 +112,7 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
     self->next_buffer = !self->next_buffer;
     size_t bytesleft = self->buffer_length;
 
-    if (self->paused || self->stopping) {
-        if (self->stopping) {
-            NRF_I2S->TASKS_STOP = 1;
-            self->playing = false;
-        }
-stopping: ;
-        uint32_t *bp = (uint32_t*)buffer;
-        uint32_t *be = (uint32_t*)(buffer + bytesleft);
-        for (; bp != be; )
-            *bp++ = self->hold_value;
-        return;
-    }
-
-    while (bytesleft) {
+    while (!self->paused && !self->stopping && bytesleft) {
         if (self->sample_data == self->sample_end) {
             uint32_t sample_buffer_length;
             audioio_get_buffer_result_t get_buffer_result =
@@ -137,12 +124,12 @@ stopping: ;
                     audiosample_reset_buffer(self->sample, false, 0);
                 } else {
                     self->stopping = true;
-                    goto stopping;
+                    break;
                 }
             }
             if (get_buffer_result == GET_BUFFER_ERROR || sample_buffer_length == 0) {
                 self->stopping = true;
-                goto stopping;
+                break;
             }
         }
         uint16_t bytecount = MIN(bytesleft, (size_t)(self->sample_end - self->sample_data));
@@ -179,6 +166,21 @@ stopping: ;
     } else {
         // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
         self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+    }
+
+    // Emulate pausing and stopping by filling the DMA buffer with copies of
+    // the last sample.  This includes the case where this iteration of
+    // i2s_buffer_fill exhausted a non-looping sample.
+    if (self->paused || self->stopping) {
+        if (self->stopping) {
+            NRF_I2S->TASKS_STOP = 1;
+            self->playing = false;
+        }
+        uint32_t *bp = (uint32_t*)buffer;
+        uint32_t *be = (uint32_t*)(buffer + bytesleft);
+        for (; bp != be; )
+            *bp++ = self->hold_value;
+        return;
     }
 }
 
