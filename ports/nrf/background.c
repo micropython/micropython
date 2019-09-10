@@ -33,6 +33,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
+
 #if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
@@ -54,6 +58,10 @@ void run_background_tasks(void) {
 #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_background();
 #endif
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_background();
+#endif
+
 
     #if CIRCUITPY_DISPLAYIO
     displayio_background();

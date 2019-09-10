@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 22:16-0500\n"
+"POT-Creation-Date: 2019-09-08 17:30-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -516,6 +516,10 @@ msgstr "Impossibile inserire dati nel pacchetto di advertisement."
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "La capacità di destinazione è più piccola di destination_length."
+
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."
