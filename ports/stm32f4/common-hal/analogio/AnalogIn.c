@@ -33,6 +33,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_gpio.h"
 #include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_bus.h"
 
 //mp_raise_ValueError(translate("U dun goofed"));
 
@@ -45,7 +46,6 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     }
     //TODO: add ADC traits to structure?
 
-    //LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA); //required?
     LL_GPIO_SetPinMode(pin_port(pin->number), pin_mask(pin->number), LL_GPIO_MODE_ANALOG);
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1); //TODO: conditional on ADC unit
     claim_pin(pin);
@@ -68,32 +68,28 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
+    //LL Implementation
     if (LL_ADC_IsEnabled(ADC1) == 0)
     {
         LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
         LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
         LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
-        LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
+        LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, stm32_adc_channel(self->pin->adc));
+        //LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
 
-        LL_ADC_SetChannelSamplingTime(ADC1, LL_ADC_CHANNEL_4, LL_ADC_SAMPLINGTIME_56CYCLES);
+        LL_ADC_SetChannelSamplingTime(ADC1, stm32_adc_channel(self->pin->adc), LL_ADC_SAMPLINGTIME_56CYCLES);
         LL_ADC_EnableIT_OVR(ADC1);
     }
-
     LL_ADC_Enable(ADC1);
-
-
-    struct adc_sync_descriptor adc;
-
-    samd_peripherals_adc_setup(&adc, self->instance);
-
-    ConversionStartPoll_ADC_GrpRegular();
-    
+    uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
+    LL_ADC_REG_StartConversionSWStart(ADC1);
+    while (LL_ADC_IsActiveFlag_EOCS(ADC1) == 0) {}
     /* Retrieve ADC conversion data */
     /* (data scale corresponds to ADC resolution: 12 bits) */
     uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADC1);
     
     // Shift the value to be 16 bit.
-    return value << 4;
+    return uhADCxConvertedData << 4;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
