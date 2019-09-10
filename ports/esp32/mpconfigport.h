@@ -20,6 +20,9 @@
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#define MICROPY_EMIT_XTENSAWIN              (1)
+void *esp_native_code_commit(void*, size_t);
+#define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)

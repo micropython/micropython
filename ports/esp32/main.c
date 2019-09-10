@@ -172,3 +172,13 @@ void nlr_jump_fail(void *val) {
 void mbedtls_debug_set_threshold(int threshold) {
     (void)threshold;
 }
+
+void *esp_native_code_commit(void *buf, size_t len) {
+    len = (len + 3) & ~3;
+    uint32_t *p = heap_caps_malloc(len, MALLOC_CAP_EXEC);
+    if (p == NULL) {
+        m_malloc_fail(len);
+    }
+    memcpy(p, buf, len);
+    return p;
+}
