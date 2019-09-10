@@ -48,6 +48,7 @@
 
 #include "py/emit.h"
 #include "py/bc.h"
+#include "py/objstr.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -92,6 +93,7 @@
 #define OFFSETOF_CODE_STATE_IP (offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_SP (offsetof(mp_code_state_t, sp) / sizeof(uintptr_t))
 #define OFFSETOF_OBJ_FUN_BC_GLOBALS (offsetof(mp_obj_fun_bc_t, globals) / sizeof(uintptr_t))
+#define OFFSETOF_OBJ_FUN_BC_BYTECODE (offsetof(mp_obj_fun_bc_t, bytecode) / sizeof(uintptr_t))
 #define OFFSETOF_OBJ_FUN_BC_CONST_TABLE (offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t))
 
 // If not already defined, set parent args to same as child call registers
@@ -333,7 +335,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_size = 0;
+    #if N_PRELUDE_AS_BYTES_OBJ
+    emit->const_table_cur_obj = emit->do_viper_types ? 0 : 1; // reserve first obj for prelude bytes obj
+    #else
     emit->const_table_cur_obj = 0;
+    #endif
     emit->const_table_cur_raw_code = 0;
     #if MICROPY_PERSISTENT_CODE_SAVE
     emit->qstr_link_cur = 0;
@@ -483,7 +489,12 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
             emit->code_state_start = 0;
             emit->stack_start = SIZEOF_CODE_STATE;
+            #if N_PRELUDE_AS_BYTES_OBJ
+            // Load index of prelude bytes object in const_table
+            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)(emit->scope->num_pos_args + emit->scope->num_kwonly_args + 1));
+            #else
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_offset);
+            #endif
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
             ASM_ENTRY(emit->as, SIZEOF_NLR_BUF);
 
@@ -528,8 +539,17 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
 
             // Set code_state.ip (offset from start of this function to prelude info)
+            #if N_PRELUDE_AS_BYTES_OBJ
+            // Prelude is a bytes object in const_table; store ip = prelude->data - fun_bc->bytecode
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, emit->scope->num_pos_args + emit->scope->num_kwonly_args + 1);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, offsetof(mp_obj_str_t, data) / sizeof(uintptr_t));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_BYTECODE);
+            ASM_SUB_REG_REG(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1);
+            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_LOCAL_3);
+            #else
             // TODO this encoding may change size in the final pass, need to make it fixed
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, emit->prelude_offset, REG_PARENT_ARG_1);
+            #endif
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
             emit_native_mov_state_imm_via(emit, emit->code_state_start + offsetof(mp_code_state_t, n_state) / sizeof(uintptr_t), emit->n_state, REG_ARG_1);
@@ -634,6 +654,16 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             }
         }
         emit->n_cell = mp_asm_base_get_code_pos(&emit->as->base) - cell_start;
+
+        #if N_PRELUDE_AS_BYTES_OBJ
+        // Prelude bytes object is after qstr arg names and mp_fun_table
+        size_t table_off = emit->scope->num_pos_args + emit->scope->num_kwonly_args + 1;
+        if (emit->pass == MP_PASS_EMIT) {
+            void *buf = emit->as->base.code_base + emit->prelude_offset;
+            size_t n = emit->as->base.code_offset - emit->prelude_offset;
+            emit->const_table[table_off] = (uintptr_t)mp_obj_new_bytes(buf, n);
+        }
+        #endif
     }
 
     ASM_END_PASS(emit->as);
