@@ -2,7 +2,7 @@ import uos
 from flashbdev import bdev
 
 def check_bootsec():
-    buf = bytearray(bdev.SEC_SIZE)
+    buf = bytearray(bdev.ioctl(5, 0)) # 5 is SEC_SIZE
     bdev.readblocks(0, buf)
     empty = True
     for b in buf:
