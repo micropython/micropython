@@ -167,11 +167,17 @@ stopping: ;
         self->sample_data += bytecount;
         bytesleft -= bytecount;
     }
+
+    // Find the last frame of real audio data and replicate its samples until
+    // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
     if (self->bytes_per_sample == 1 && self->channel_count == 1) {
-            self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
+        // For 8-bit mono, 4 copies of the final sample are required
+        self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
     } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
+        // For 16-bit stereo, 1 copy of the final sample is required
         self->hold_value = *(uint32_t*)(buffer-4);
     } else {
+        // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
         self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
     }
 }
