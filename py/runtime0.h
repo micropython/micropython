@@ -201,6 +201,7 @@ typedef enum {
     MP_F_SMALL_INT_FLOOR_DIVIDE,
     MP_F_SMALL_INT_MODULO,
     MP_F_NATIVE_YIELD_FROM,
+    MP_F_SETJMP,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 

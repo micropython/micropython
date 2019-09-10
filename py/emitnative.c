@@ -1154,6 +1154,10 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             // Wrap everything in an nlr context
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
+            #if N_NLR_SETJMP
+            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
+            emit_call(emit, MP_F_SETJMP);
+            #endif
             ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, start_label, true);
         } else {
             // Clear the unwind state
@@ -1168,6 +1172,10 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
+            #if N_NLR_SETJMP
+            ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
+            emit_call(emit, MP_F_SETJMP);
+            #endif
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
@@ -1178,6 +1186,12 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
 
             // Global exception handler: check for valid exception handler
             emit_native_label_assign(emit, global_except_label);
+            #if N_NLR_SETJMP
+            // Reload REG_FUN_TABLE, since it may be clobbered by longjmp
+            emit_native_mov_reg_state(emit, REG_LOCAL_1, LOCAL_IDX_FUN_OBJ(emit));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_1, REG_LOCAL_1, offsetof(mp_obj_fun_bc_t, const_table) / sizeof(uintptr_t));
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_LOCAL_1, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+            #endif
             ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, LOCAL_IDX_EXC_HANDLER_PC(emit));
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);
         }
