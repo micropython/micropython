@@ -3,7 +3,7 @@
  */
 
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-L073RZ"
-#define MICROPY_HW_MCU_NAME         "STM32F073RZT6"
+#define MICROPY_HW_MCU_NAME         "STM32L073RZT6"
 
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
