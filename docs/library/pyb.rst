@@ -271,6 +271,7 @@ Miscellaneous functions
    - ``'MSC'``: enable with MSC (mass storage device class) interface
    - ``'VCP+MSC'``: enable with VCP and MSC
    - ``'VCP+HID'``: enable with VCP and HID (human interface device)
+   - ``'VCP+MSC+HID'``: enabled with VCP, MSC and HID (only available on PYBD boards)
 
    For backwards compatibility, ``'CDC'`` is understood to mean
    ``'VCP'`` (and similarly for ``'CDC+MSC'`` and ``'CDC+HID'``).
