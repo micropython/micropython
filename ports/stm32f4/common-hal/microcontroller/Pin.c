@@ -86,7 +86,6 @@ GPIO_TypeDef * pin_port(uint8_t pin_port) {
     return ports[pin_port];
 }
 
-//TODO: replace with macro?
 uint16_t pin_mask(uint8_t pin_number) {
     return 1<<pin_number;
 }
