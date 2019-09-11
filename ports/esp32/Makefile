@@ -25,6 +25,7 @@ include $(BOARD_DIR)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
+QSTR_GLOBAL_REQUIREMENTS = $(SDKCONFIG_H)
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
