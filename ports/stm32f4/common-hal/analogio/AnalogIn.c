@@ -41,7 +41,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
 
     //No ADC function on pin
-    if (pin->adc == 0xff) {
+    if (pin->adc_unit == 0x00) {
         mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
     }
     //TODO: add ADC traits to structure?
@@ -60,7 +60,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (common_hal_analogio_analogin_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->number);
+    reset_pin_number(self->pin->port,self->pin->number);
     self->pin = mp_const_none;
 }
 
@@ -86,7 +86,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     AdcHandle.Init.DMAContinuousRequests = ENABLE;
     AdcHandle.Init.EOCSelection = DISABLE;
 
-    sConfig.Channel = stm32_adc_channel(self->pin->adc);
+    sConfig.Channel = self->pin->adc_channel;
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
     sConfig.Offset = 0;
