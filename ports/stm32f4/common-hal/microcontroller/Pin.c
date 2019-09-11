@@ -54,7 +54,7 @@ void reset_all_pins(void) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    if (pin_port == 0x00) {
+    if (pin_port == 0x0F) {
         return;
     }
 
