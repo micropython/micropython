@@ -68,27 +68,57 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
-    //LL Implementation
-    if (LL_ADC_IsEnabled(ADC1) == 0)
-    {
-        LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
-        LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
-        LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
-        LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, stm32_adc_channel(self->pin->adc));
-        //LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
+    //HAL Implementation
+    ADC_HandleTypeDef AdcHandle;
+    ADC_ChannelConfTypeDef sConfig;
 
-        LL_ADC_SetChannelSamplingTime(ADC1, stm32_adc_channel(self->pin->adc), LL_ADC_SAMPLINGTIME_56CYCLES);
-        LL_ADC_EnableIT_OVR(ADC1);
-    }
-    LL_ADC_Enable(ADC1);
-    uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
-    LL_ADC_REG_StartConversionSWStart(ADC1);
-    while (LL_ADC_IsActiveFlag_EOCS(ADC1) == 0) {}
-    /* Retrieve ADC conversion data */
-    /* (data scale corresponds to ADC resolution: 12 bits) */
-    uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADC1);
+    AdcHandle.Instance = ADC1;
+    AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
+    AdcHandle.Init.ScanConvMode = DISABLE;
+    AdcHandle.Init.ContinuousConvMode = ENABLE;
+    AdcHandle.Init.DiscontinuousConvMode = DISABLE;
+    AdcHandle.Init.NbrOfDiscConversion = 0;
+    AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+    AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    AdcHandle.Init.NbrOfConversion = 1;
+    AdcHandle.Init.DMAContinuousRequests = ENABLE;
+    AdcHandle.Init.EOCSelection = DISABLE;
+
+    sConfig.Channel = stm32_adc_channel(self->pin->adc);
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+    sConfig.Offset = 0;
+
+    HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
+
+    HAL_ADC_Start(&AdcHandle);
+    HAL_ADC_PollForConversion(&AdcHandle,1); //timeout in ms
+    uint16_t uhADCxConvertedData = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
+    HAL_ADC_Stop(&AdcHandle);
+
+    //LL Implementation
+    // if (LL_ADC_IsEnabled(ADC1) == 0)
+    // {
+    //     LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
+    //     LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
+    //     LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
+    //     LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, stm32_adc_channel(self->pin->adc));
+    //     //LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
+
+    //     LL_ADC_SetChannelSamplingTime(ADC1, stm32_adc_channel(self->pin->adc), LL_ADC_SAMPLINGTIME_56CYCLES);
+    //     LL_ADC_EnableIT_OVR(ADC1);
+    // }
+    // LL_ADC_Enable(ADC1);
+    // uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
+    // LL_ADC_REG_StartConversionSWStart(ADC1);
+    // while (LL_ADC_IsActiveFlag_EOCS(ADC1) == 0) {}
+    // /* Retrieve ADC conversion data */
+    // /* (data scale corresponds to ADC resolution: 12 bits) */
+    // uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADC1);
     
-    // Shift the value to be 16 bit.
+    // // Shift the value to be 16 bit.
     return uhADCxConvertedData << 4;
 }
 

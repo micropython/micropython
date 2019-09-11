@@ -146,6 +146,7 @@ SRC_STM32 = \
 	boards/$(BOARD)/stm32f4xx_hal_msp.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
