@@ -67,9 +67,9 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 
 // FDCAN bus
-#define MICROPY_HW_FDCAN1_NAME  "FDCAN1"
-#define MICROPY_HW_FDCAN1_TX    (pin_D1)
-#define MICROPY_HW_FDCAN1_RX    (pin_D0)
+#define MICROPY_HW_CAN1_NAME  "FDCAN1"
+#define MICROPY_HW_CAN1_TX    (pin_D1)
+#define MICROPY_HW_CAN1_RX    (pin_D0)
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_G2)
