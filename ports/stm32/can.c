@@ -40,7 +40,7 @@
 #include "can.h"
 #include "irq.h"
 
-#if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN && !defined(STM32H7)
 
 #define MASK16 (0)
 #define LIST16 (1)
