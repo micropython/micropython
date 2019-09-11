@@ -65,6 +65,9 @@ bool displayio_display_core_show(displayio_display_core_t* self, displayio_group
 uint16_t displayio_display_core_get_width(displayio_display_core_t* self);
 uint16_t displayio_display_core_get_height(displayio_display_core_t* self);
 
+void displayio_display_core_set_dither(displayio_display_core_t* self, bool dither);
+bool displayio_display_core_get_dither(displayio_display_core_t* self);
+
 bool displayio_display_core_bus_free(displayio_display_core_t *self);
 bool displayio_display_core_begin_transaction(displayio_display_core_t* self);
 void displayio_display_core_end_transaction(displayio_display_core_t* self);

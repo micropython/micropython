@@ -49,6 +49,7 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->colorspace.pixels_in_byte_share_row = pixels_in_byte_share_row;
     self->colorspace.bytes_per_cell = bytes_per_cell;
     self->colorspace.reverse_pixels_in_byte = reverse_pixels_in_byte;
+    self->colorspace.dither = false;
     self->current_group = NULL;
     self->colstart = colstart;
     self->rowstart = rowstart;
@@ -170,6 +171,14 @@ uint16_t displayio_display_core_get_width(displayio_display_core_t* self){
 
 uint16_t displayio_display_core_get_height(displayio_display_core_t* self){
     return self->height;
+}
+
+void displayio_display_core_set_dither(displayio_display_core_t* self, bool dither){
+    self->colorspace.dither = dither;
+}
+
+bool displayio_display_core_get_dither(displayio_display_core_t* self){
+    return self->colorspace.dither;
 }
 
 bool displayio_display_core_bus_free(displayio_display_core_t *self) {

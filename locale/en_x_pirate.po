@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 22:16-0500\n"
+"POT-Creation-Date: 2019-09-08 17:30-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: @sommersoft, @MrCertainly\n"
@@ -507,6 +507,10 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c

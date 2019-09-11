@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 22:16-0500\n"
+"POT-Creation-Date: 2019-09-08 17:30-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -508,6 +508,10 @@ msgstr "Guǎnggào bāo de shùjù tài dà"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
+
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."

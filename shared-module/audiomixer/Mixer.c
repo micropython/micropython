@@ -262,8 +262,8 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     }
     #if (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1)) //Cortex-M4 w/FPU
     int32_t hi, lo;
-    int32_t bits = 16; // saturate to 16 bits
-    int32_t shift = 0; // shift is done automatically
+    enum { bits = 16 }; // saturate to 16 bits
+    enum { shift = 0 }; // shift is done automatically
     asm volatile("smulwb %0, %1, %2" : "=r" (lo) : "r" (mul), "r" (val));
     asm volatile("smulwt %0, %1, %2" : "=r" (hi) : "r" (mul), "r" (val));
     asm volatile("ssat %0, %1, %2, asr %3" : "=r" (lo) : "I" (bits), "r" (lo), "I" (shift));
