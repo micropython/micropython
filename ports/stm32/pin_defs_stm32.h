@@ -51,7 +51,6 @@ enum {
   AF_FN_I2S,
   AF_FN_SDMMC,
   AF_FN_CAN,
-  AF_FN_FDCAN,
 };
 
 enum {
@@ -99,9 +98,6 @@ enum {
 
   AF_PIN_TYPE_CAN_TX = 0,
   AF_PIN_TYPE_CAN_RX,
-
-  AF_PIN_TYPE_FDCAN_TX = 0,
-  AF_PIN_TYPE_FDCAN_RX,
 };
 
 // The HAL uses a slightly different naming than we chose, so we provide
