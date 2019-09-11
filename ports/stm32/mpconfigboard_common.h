@@ -275,19 +275,15 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#elif defined(MICROPY_HW_FDCAN1_TX) || defined(MICROPY_HW_FDCAN2_TX)
-#define MICROPY_HW_ENABLE_FDCAN (1)
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
-#define MICROPY_HW_ENABLE_FDCAN (0)
 #define MICROPY_HW_MAX_CAN (0)
 #endif
-
 #if defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_MAX_CAN (3)
-#elif defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_FDCAN2_TX)
+#elif defined(MICROPY_HW_CAN2_TX)
 #define MICROPY_HW_MAX_CAN (2)
-#elif defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_FDCAN1_TX)
+#elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
