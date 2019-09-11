@@ -165,7 +165,7 @@ static inline uint32_t usbd_cdc_max_packet(USBD_HandleTypeDef *pdev) {
 }
 
 // returns 0 on success, -1 on failure
-int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info, uint8_t max_endpoint);
 // returns the current usb mode
 uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd);
 

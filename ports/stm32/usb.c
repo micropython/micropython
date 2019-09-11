@@ -57,6 +57,19 @@
 #endif
 #endif
 
+// Maximum number of endpoints (excluding EP0)
+#if defined(STM32L0) || defined(STM32WB)
+#define MAX_ENDPOINT(dev_id) (7)
+#elif defined(STM32L4)
+#define MAX_ENDPOINT(dev_id) (5)
+#elif defined(STM32F4)
+#define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 3 : 5)
+#elif defined(STM32F7)
+#define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 5 : 8)
+#elif defined(STM32H7)
+#define MAX_ENDPOINT(dev_id) (8)
+#endif
+
 STATIC void pyb_usb_vcp_init0(void);
 
 // this will be persistent across a soft-reset
@@ -240,7 +253,7 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
         // configure the VID, PID and the USBD mode (interfaces it will expose)
         int cdc_only = (mode & USBD_MODE_IFACE_MASK) == USBD_MODE_CDC;
         USBD_SetVIDPIDRelease(&usb_dev->usbd_cdc_msc_hid_state, vid, pid, 0x0200, cdc_only);
-        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
+        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info, MAX_ENDPOINT(dev_id)) != 0) {
             return false;
         }
 

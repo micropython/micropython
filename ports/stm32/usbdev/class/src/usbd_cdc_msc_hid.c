@@ -489,7 +489,7 @@ uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd) {
     return usbd->usbd_mode;
 }
 
-int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
+int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info, uint8_t max_endpoint) {
     // save mode
     usbd->usbd_mode = mode;
 
@@ -654,6 +654,17 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             usbd->cdc[i]->in_ep = CDC_IN_EP(i);
             usbd->cdc[i]->out_ep = CDC_OUT_EP(i);
         }
+    }
+
+    // Verify that the endpoints that are used fit within the maximum number
+    d = usbd->usbd_config_desc;
+    const uint8_t *d_top = d + n;
+    while (d < d_top) {
+        if (d[0] == 7 && d[1] == USB_DESC_TYPE_ENDPOINT && (d[2] & 0x7f) > max_endpoint) {
+            // Endpoint out of range of hardware
+            return -1;
+        }
+        d += d[0];
     }
 
     return 0;
