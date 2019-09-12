@@ -731,7 +731,7 @@ soft_reset_exit:
     timer_deinit();
     uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
-    can_deinit();
+    can_deinit_all();
     #endif
     machine_deinit();
 
