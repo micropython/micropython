@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -24,19 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4/periph.h"
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 
-//const mcu_i2c_periph_obj_t periph_I2C1_0 = I2C(1, 0, SDA(PB,7), SCL(PB,6));
-//const mcu_i2c_periph_obj_t periph_I2C1_1 = I2C(1, 1, SDA(PB,9), SCL(PB,8));
-//const mcu_i2c_periph_obj_t periph_I2C2 = I2C(1, NO_ALT, SDA(PB,11), SCL(PB,10));
-//const mcu_i2c_periph_obj_t periph_I2C3 = I2C(1, NO_ALT, SDA(PB,9), SCL(PB,8));
+extern const mcu_i2c_periph_obj_t periph_I2C1_0;
+extern const mcu_i2c_periph_obj_t periph_I2C1_1;
+extern const mcu_i2c_periph_obj_t periph_I2C2;
+extern const mcu_i2c_periph_obj_t periph_I2C3;
 
-const mcu_i2c_periph_obj_t periph_I2C1_0 = I2C(1, 0, &pin_PB07, &pin_PB06);
-const mcu_i2c_periph_obj_t periph_I2C1_1 = I2C(1, 1, &pin_PB09, &pin_PB08);
-//const mcu_i2c_periph_obj_t periph_I2C2 = I2C(1, NO_ALT, &pin_PB11, &pin_PB10); //not on LQFP100
-const mcu_i2c_periph_obj_t periph_I2C3 = I2C(1, NO_ALT, &pin_PB09, &pin_PB08);
+extern const mcu_i2c_periph_obj_t* mcu_i2c_list[4];
 
-const mcu_i2c_periph_obj_t* mcu_i2c_list[3] = {&periph_I2C1_0,&periph_I2C1_1,&periph_I2C3};
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H

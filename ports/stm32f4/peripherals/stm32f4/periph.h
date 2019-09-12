@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-// DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
-// that all necessary includes are already included.
-
 #ifndef __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
 #define __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
 
@@ -36,24 +33,25 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-#define GPIO_A  0
-#define GPIO_B  1
-#define GPIO_C  2
-#define GPIO_D  3
-#define GPIO_E  4
-#define GPIO_F  5
-#define GPIO_G  6
-#define GPIO_H  7
-#define GPIO_I  8
-#define GPIO_J  9
-#define GPIO_K  10
+#define PA  0
+#define PB  1
+#define PC  2
+#define PD  3
+#define PE  4
+#define PF  5
+#define PG  6
+#define PH  7
+#define PI  8
+#define PJ  9
+#define PK  10
 
 #define NO_ALT  0x0F
 
-extern const mp_obj_type_t prefix_fields;
-
 // I2C
 
+// Numerical Version
+
+/*
 typedef struct {
     mp_obj_base_t base;
     uint8_t i2c_index:3; // Index of the I2C unit
@@ -64,32 +62,41 @@ typedef struct {
     uint8_t scl_pin_number:4;
 } mcu_i2c_periph_obj_t;
 
-#define I2C(i2c_index, alt_index, sda_port, sda_number, scl_port, scl_number)       \
+#define SDA(port, number) \
+    .sda_pin_port = port, \
+    .sda_pin_number = number, 
+
+#define SCL(port, number) \
+    .scl_pin_port = port, \
+    .scl_pin_number = number 
+
+#define I2C(index, alt, sda, scl)       \
 { \
     { &prefix_fields }, \
-    .i2c_index = i2c_index, \
-    .sda_pin_port = sda_port, \
-    .sda_pin_number = sda_number, \
-    .scl_pin_port = scl_port, \
-    .scl_pin_number = scl_number \
+    .i2c_index = index, \
+    .alt_index = alt, \
+    sda \
+    scl \
+}
+*/
+
+// Address Version
+typedef struct {
+    uint8_t i2c_index:4; // Index of the I2C unit
+    uint8_t alt_index:4; // Alt index is arbitrary, it just lists additional pin options
+    const mcu_pin_obj_t * sda_pin;
+    const mcu_pin_obj_t * scl_pin;
+} mcu_i2c_periph_obj_t;
+
+
+#define I2C(index, alt, sda, scl)       \
+{ \
+    .i2c_index = index, \
+    .alt_index = alt, \
+    .sda_pin = sda, \
+    .scl_pin = scl, \
 }
 
-//ALT
-// typedef struct {
-//     mp_obj_base_t base;
-//     uint8_t i2c_index:4; // Index of the I2C unit
-//     uint8_t alt_index:4; // Alt index is arbitrary, it just lists additional pin options
-//     mcu_pin_obj_t * sda;
-//     mcu_pin_obj_t * scl;
-// } mcu_i2c_periph_obj_t;
-
-// #define I2C(i2c_index, alt_index, sda, scl)       \
-// { \
-//     { &prefix_fields }, \
-//     .i2c_index = i2c_index, \
-//     .sda = sda, \
-//     .scl = scl, \
-// }
 
 // TODO: SPI, UART, etc
 

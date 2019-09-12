@@ -32,23 +32,62 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
+#include "stm32f4/periph.h"
 
-I2C_HandleTypeDef hi2c2;
+I2C_HandleTypeDef hi2c;
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
     //TODO: Rework this entire section to use LL so we can properly assign pins
-    //      This will also be bundled with MSP removal
-    hi2c2.Instance = I2C1;
-    hi2c2.Init.ClockSpeed = 100000;
-    hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
-    hi2c2.Init.OwnAddress1 = 0;
-    hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c2.Init.OwnAddress2 = 0;
-    hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-    hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    if(HAL_I2C_Init(&hi2c2) != HAL_OK) {
+    //      This will also be bundled with MSP removal  
+    I2C_TypeDef * I2Cx = NULL;
+    I2C_TypeDef * I2Cx_check = NULL;
+
+    for(uint i=0; i<(sizeof(mcu_i2c_list)/sizeof(*mcu_i2c_list));i++) {
+        if (mcu_i2c_list[i]->sda_pin == sda) {
+            switch (mcu_i2c_list[i]->i2c_index) {
+                case 1: I2Cx = I2C1;
+                        break;
+                #ifdef I2C2
+                case 2: I2Cx = I2C2;
+                        break;
+                #endif
+                #ifdef I2C3
+                case 3: I2Cx = I2C3;
+                        break;
+                #endif
+            }
+        } else if (mcu_i2c_list[i]->scl_pin == scl) {
+            switch (mcu_i2c_list[i]->i2c_index) {
+                case 1: I2Cx_check = I2C1;
+                        break;
+                #ifdef I2C2
+                case 2: I2Cx_check = I2C2;
+                        break;
+                #endif
+                #ifdef I2C3
+                case 3: I2Cx_check = I2C3;
+                        break;
+                #endif
+            }
+        }
+    }
+
+    if (I2Cx!=I2Cx_check || I2Cx==NULL) {
+        mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
+    }
+    
+
+    hi2c.Instance = I2Cx;
+    hi2c.Init.ClockSpeed = 100000;
+    hi2c.Init.DutyCycle = I2C_DUTYCYCLE_2;
+    hi2c.Init.OwnAddress1 = 0;
+    hi2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c.Init.OwnAddress2 = 0;
+    hi2c.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if(HAL_I2C_Init(&hi2c) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     } else {
         mp_printf(&mp_plat_print, "I2C INIT OK");
@@ -70,14 +109,14 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    HAL_I2C_MspDeInit(&hi2c2);
+    HAL_I2C_MspDeInit(&hi2c);
 
     self->sda_pin = NO_PIN;
     self->scl_pin = NO_PIN;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    return HAL_I2C_IsDeviceReady(&hi2c2, (uint16_t)(addr<<1),2,2) == HAL_OK;
+    return HAL_I2C_IsDeviceReady(&hi2c, (uint16_t)(addr<<1),2,2) == HAL_OK;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -109,10 +148,10 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    return HAL_I2C_Master_Transmit(&hi2c2, (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
+    return HAL_I2C_Master_Transmit(&hi2c, (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    return HAL_I2C_Master_Receive(&hi2c2, (uint16_t)(addr<<1), data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
+    return HAL_I2C_Master_Receive(&hi2c, (uint16_t)(addr<<1), data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
 }

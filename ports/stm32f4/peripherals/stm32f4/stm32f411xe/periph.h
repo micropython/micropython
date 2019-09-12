@@ -27,6 +27,10 @@
 #ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 #define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 
-extern const mcu_i2c_periph_obj_t periph_I2C1;
+extern const mcu_i2c_periph_obj_t periph_I2C1_0;
+extern const mcu_i2c_periph_obj_t periph_I2C1_1;
+extern const mcu_i2c_periph_obj_t periph_I2C3;
+
+extern const mcu_i2c_periph_obj_t* mcu_i2c_list[3];
 
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H

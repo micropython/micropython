@@ -190,6 +190,7 @@ SRC_C += \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/periph.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
