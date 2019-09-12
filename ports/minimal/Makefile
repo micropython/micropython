@@ -28,6 +28,8 @@ CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
+CSUPEROPT = -Os # save some code space
+
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
