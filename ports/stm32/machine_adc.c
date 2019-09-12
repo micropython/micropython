@@ -33,6 +33,12 @@
 #define ADC_V2 (0)
 #endif
 
+#if defined(STM32F4) || defined(STM32L4)
+#define ADCx_COMMON ADC_COMMON_REGISTER(0)
+#elif defined(STM32F7)
+#define ADCx_COMMON ADC123_COMMON
+#endif
+
 #if defined(STM32F0) || defined(STM32L0)
 #define ADC_STAB_DELAY_US (1)
 #define ADC_TEMPSENSOR_DELAY_US (10)
@@ -122,7 +128,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #if defined(STM32F0)
     adc->CFGR2 = 1 << ADC_CFGR2_CKMODE_Pos; // PCLK/2 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
-    ADC123_COMMON->CCR = 0; // ADCPR=PCLK/2
+    ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
@@ -255,12 +261,12 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     #elif defined(STM32F4) || defined(STM32F7)
 
     if (channel == ADC_CHANNEL_VREFINT || channel == ADC_CHANNEL_TEMPSENSOR) {
-        ADC123_COMMON->CCR = (ADC123_COMMON->CCR & ~ADC_CCR_VBATE) | ADC_CCR_TSVREFE;
+        ADCx_COMMON->CCR = (ADCx_COMMON->CCR & ~ADC_CCR_VBATE) | ADC_CCR_TSVREFE;
         if (channel == ADC_CHANNEL_TEMPSENSOR) {
             adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
         }
     } else if (channel == ADC_CHANNEL_VBAT) {
-        ADC123_COMMON->CCR |= ADC_CCR_VBATE;
+        ADCx_COMMON->CCR |= ADC_CCR_VBATE;
     }
 
     adc->SQR3 = (channel & 0x1f) << ADC_SQR3_SQ1_Pos; // select channel for first conversion
@@ -280,7 +286,7 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     adc->PCSEL |= 1 << channel;
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
-    ADC_Common_TypeDef *adc_common = ADC123_COMMON;
+    ADC_Common_TypeDef *adc_common = ADCx_COMMON;
     #elif defined(STM32WB)
     ADC_Common_TypeDef *adc_common = ADC1_COMMON;
     #endif
@@ -348,15 +354,16 @@ typedef struct _machine_adc_obj_t {
 
 STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if defined(STM32F0) || defined(STM32L0) || defined(STM32WB)
     unsigned adc_id = 1;
-    #else
-    unsigned adc_id = (self->adc - ADC1) / (ADC2 - ADC1) + 1;
-    #if defined(STM32H7)
+    #if defined(ADC2)
+    if (self->adc == ADC2) {
+        adc_id = 2;
+    }
+    #endif
+    #if defined(ADC3)
     if (self->adc == ADC3) {
         adc_id = 3;
     }
-    #endif
     #endif
     mp_printf(print, "<ADC%u channel=%u>", adc_id, self->channel);
 }
