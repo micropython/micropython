@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-29 22:16-0500\n"
+"POT-Creation-Date: 2019-09-08 17:30-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -510,6 +510,10 @@ msgstr "Não é possível ajustar dados no pacote de anúncios."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
