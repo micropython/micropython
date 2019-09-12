@@ -58,6 +58,13 @@
                                          // (0xe0) // OOOOOOOOOOOOOOOO
                                          // (0xf0) // OOOOOOOOOO------
 
+#define MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM (64)
+#define MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS (16)
+#define MP_BC_LOAD_FAST_MULTI_NUM           (16)
+#define MP_BC_STORE_FAST_MULTI_NUM          (16)
+#define MP_BC_UNARY_OP_MULTI_NUM            (MP_UNARY_OP_NUM_BYTECODE)
+#define MP_BC_BINARY_OP_MULTI_NUM           (MP_BINARY_OP_NUM_BYTECODE)
+
 #define MP_BC_LOAD_CONST_FALSE              (MP_BC_BASE_BYTE_O + 0x00)
 #define MP_BC_LOAD_CONST_NONE               (MP_BC_BASE_BYTE_O + 0x01)
 #define MP_BC_LOAD_CONST_TRUE               (MP_BC_BASE_BYTE_O + 0x02)

@@ -539,8 +539,10 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 }
 
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
-    if (-16 <= arg && arg <= 47) {
-        emit_write_bytecode_byte(emit, 1, MP_BC_LOAD_CONST_SMALL_INT_MULTI + 16 + arg);
+    if (-MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS <= arg
+        && arg < MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS) {
+        emit_write_bytecode_byte(emit, 1,
+            MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS + arg);
     } else {
         emit_write_bytecode_byte_int(emit, 1, MP_BC_LOAD_CONST_SMALL_INT, arg);
     }
