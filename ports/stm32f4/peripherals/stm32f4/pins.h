@@ -38,28 +38,38 @@
 
 typedef struct {
     mp_obj_base_t base;
-    //uint8_t number; //(3)port,(5)pin 
-    uint8_t port_number;
-    GPIO_TypeDef * port;
-    uint8_t number;
+    uint8_t port:4;
+    uint8_t number:4;
+    uint8_t adc_unit:3; 
+    uint8_t adc_channel:5;
 } mcu_pin_obj_t;
 
-// extern GPIO_TypeDef *port_lookup_table[];
+#define ADC_1 	1
+#define ADC_123	7
+#define ADC_12 	3
+#define ADC_3 	4
 
-// static inline GPIO_TypeDef * get_GPIO_ptr(const mcu_pin_obj_t *p)
-// {
-// 	return port_lookup_table[0x7&( (p->number) >> 5)];
-// }
+//STM32 ADC pins can have a combination of 1, 2 or all 3 ADCs on a single pin,
+//but all 3 ADCs will share the same input number per pin. 
+//F4 family has 3 ADC max, 24 channels max. 
+#define ADC_INPUT(mask, number) \
+	.adc_unit = mask, \
+	.adc_channel = number,
+
+#define NO_ADC \
+	.adc_unit = 0x00, \
+	.adc_channel = 0x1f
 
 extern const mp_obj_type_t mcu_pin_type;
 
-// Used in device-specific pins.c
-#define PIN(p_port_num, p_port, p_number)       \
+// STM32 can have up to 9 ports, each restricted to 16 pins
+// We split the pin/port evenly, in contrast to nrf. 
+#define PIN(p_port, p_number, p_adc)       \
 { \
     { &mcu_pin_type }, \
-    .port_number = (p_port_num), \
-    .port = (p_port),      \
-    .number = (p_number), \
+    .port = p_port, \
+    .number = p_number, \
+    p_adc \
 }
 
 // Use illegal pin value to mark unassigned pins.

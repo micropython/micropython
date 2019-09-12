@@ -54,33 +54,38 @@ void reset_all_pins(void) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    if (pin_number == NO_PIN) {
+    if (pin_port == 0x0F) {
         return;
     }
 
     // Clear claimed bit.
-    claimed_pins[pin_port] &= ~(1 << pin_number);
+    claimed_pins[pin_port] &= ~(1<<pin_number);
     // Reset the pin
-    HAL_GPIO_DeInit(ports[pin_port], (1 << pin_number));
+    HAL_GPIO_DeInit(ports[pin_port], 1<<pin_number);
 }
 
 
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    never_reset_pins[pin_port] |= 1 << pin_number;
+    never_reset_pins[pin_port] |= 1<<pin_number;
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
     // Set bit in claimed_pins bitmask.
-    claimed_pins[pin->port_number] |= 1 << pin->number;
+    claimed_pins[pin->port] |= 1<<pin->number;
 }
 
-
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
-    return !(claimed_pins[pin_port] & (1 << pin_number));
+    return !(claimed_pins[pin_port] & 1<<pin_number);
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    return pin_number_is_free(pin->port, pin->number);
+}
 
-    return pin_number_is_free(pin->port_number, pin->number);
+GPIO_TypeDef * pin_port(uint8_t pin_port) {
+    return ports[pin_port];
+}
 
+uint16_t pin_mask(uint8_t pin_number) {
+    return 1<<pin_number;
 }
