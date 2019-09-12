@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -44,4 +45,4 @@ static inline uint8_t stm32_adc_channel(uint8_t adc_packed) {
     return adc_packed & 0x1f;
 }
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H

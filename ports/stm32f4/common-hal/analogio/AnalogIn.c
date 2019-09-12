@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +48,16 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     //TODO: add ADC traits to structure?
 
     LL_GPIO_SetPinMode(pin_port(pin->port), pin_mask(pin->number), LL_GPIO_MODE_ANALOG);
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1); //TODO: conditional on ADC unit
-    //claim_pin(pin);
+    if (pin->adc_unit & 0x01) {
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1); 
+    } else if (pin->adc_unit == 0x04) {
+        #ifdef LL_APB2_GRP1_PERIPH_ADC3
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC3);
+        #endif
+    } else {
+        mp_raise_ValueError(translate("Invalid ADC Unit value"));
+    }
+    claim_pin(pin);
     self->pin = pin;
 }
 
@@ -67,6 +76,17 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
+    ADC_TypeDef * ADCx;
+
+    if(self->pin->adc_unit & 0x01) {
+        ADCx = ADC1;
+    } else if (self->pin->adc_unit == 0x04) {
+        #ifdef ADC3
+        ADCx = ADC3;
+        #endif
+    } else {
+        mp_raise_ValueError(translate("Invalid ADC Unit value"));
+    }
 
     //HAL Implementation
     // ADC_HandleTypeDef AdcHandle;
@@ -99,24 +119,24 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // HAL_ADC_Stop(&AdcHandle);
 
     //LL Implementation
-    if (LL_ADC_IsEnabled(ADC1) == 0)
+    if (LL_ADC_IsEnabled(ADCx) == 0)
     {
-        LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
-        LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
-        LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
-        LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, self->pin->adc_channel);
+        LL_ADC_REG_SetTriggerSource(ADCx, LL_ADC_REG_TRIG_SOFTWARE);
+        LL_ADC_REG_SetContinuousMode(ADCx, LL_ADC_REG_CONV_SINGLE);
+        LL_ADC_REG_SetSequencerLength(ADCx, LL_ADC_REG_SEQ_SCAN_DISABLE);
+        LL_ADC_REG_SetSequencerRanks(ADCx, LL_ADC_REG_RANK_1, self->pin->adc_channel);
         //LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
 
-        LL_ADC_SetChannelSamplingTime(ADC1, self->pin->adc_channel, LL_ADC_SAMPLINGTIME_56CYCLES);
-        LL_ADC_EnableIT_OVR(ADC1);
+        LL_ADC_SetChannelSamplingTime(ADCx, self->pin->adc_channel, LL_ADC_SAMPLINGTIME_56CYCLES);
+        LL_ADC_EnableIT_OVR(ADCx);
     }
-    LL_ADC_Enable(ADC1);
+    LL_ADC_Enable(ADCx);
     uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
-    LL_ADC_REG_StartConversionSWStart(ADC1);
-    while (LL_ADC_IsActiveFlag_EOCS(ADC1) == 0) {}
+    LL_ADC_REG_StartConversionSWStart(ADCx);
+    while (LL_ADC_IsActiveFlag_EOCS(ADCx) == 0) {}
     /* Retrieve ADC conversion data */
     /* (data scale corresponds to ADC resolution: 12 bits) */
-    uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADC1);
+    uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADCx);
     
     // // Shift the value to be 16 bit.
     return uhADCxConvertedData << 4;
