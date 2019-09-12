@@ -54,6 +54,9 @@
 #if MICROPY_PY_MACHINE_RTCOUNTER
 #include "rtcounter.h"
 #endif
+#if MICROPY_PY_MACHINE_NFC
+#include "nfc.h"
+#endif
 
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
@@ -225,6 +228,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #endif
 #if MICROPY_PY_MACHINE_TEMP
     { MP_ROM_QSTR(MP_QSTR_Temp),               MP_ROM_PTR(&machine_temp_type) },
+#endif
+#if MICROPY_PY_MACHINE_NFC
+    { MP_ROM_QSTR(MP_QSTR_NFC),                MP_ROM_PTR(&machine_nfc_type) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) },

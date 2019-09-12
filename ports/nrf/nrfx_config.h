@@ -47,6 +47,14 @@
   #define GPIO_COUNT 2
 #endif
 
+#if NRF52
+  #define NRFX_NFCT_ENABLED 1
+  #define NRFX_NFCT_CONFIG_IRQ_PRIORITY 6
+#else
+  #define NRFX_NFCT_ENABLED 0
+#endif
+
+
 #define NRFX_GPIOTE_ENABLED 1
 #define NRFX_GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS 1
 #if NRF51

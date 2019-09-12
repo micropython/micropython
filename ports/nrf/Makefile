@@ -125,9 +125,13 @@ LIBS = \
 
 ifeq ($(MCU_VARIANT), nrf52)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LIBNFCTAG2_FILE_NAME = $(TOP)/lib/nrfxlib/nfc/lib/cortex-m4/hard-float/libnfct2t_nrf52.a
 
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
+LIBS += -L $(dir $(LIBNFCTAG2_FILE_NAME)) -lnfct2t_nrf52
 
+INC += -I./drivers/nfc
+INC += -I$(TOP)/lib/nrfxlib/nfc/include
 
 SRC_LIB += $(addprefix lib/,\
         libm/math.c \
@@ -149,6 +153,14 @@ SRC_LIB += $(addprefix lib/,\
         libm/atanf.c \
         libm/atan2f.c \
 	)
+
+SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
+        nrfx_nfct.c \
+        )
+
+DRIVERS_SRC_C += $(addprefix modules/,\
+	machine/nfc.c \
+        )
 
 endif
 

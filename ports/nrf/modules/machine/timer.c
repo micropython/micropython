@@ -61,7 +61,9 @@ STATIC const machine_timer_obj_t machine_timer_obj[] = {
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(2)},
 #if defined(NRF52_SERIES)
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(3)},
+#if !defined(MICROPY_PY_MACHINE_NFC)
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(4)},
+#endif
 #endif
 };
 

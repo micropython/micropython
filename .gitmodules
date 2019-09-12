@@ -27,3 +27,6 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
+[submodule "lib/nrfxlib"]
+	path = lib/nrfxlib
+	url = https://github.com/NordicPlayground/nrfxlib.git
