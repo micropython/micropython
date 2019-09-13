@@ -29,6 +29,7 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/filesystem.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
@@ -52,10 +53,13 @@ void SysTick_Handler(void) {
     (void) SysTick->CTRL;
     common_hal_mcu_enable_interrupts();
 
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+#if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
+    filesystem_tick();
+#endif
+#ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
         autoreload_tick();
-    #endif
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
+#endif
+#ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
         gamepad_tick();
@@ -64,7 +68,7 @@ void SysTick_Handler(void) {
         gamepadshift_tick();
         #endif
     }
-    #endif
+#endif
 }
 
 void tick_init() {
