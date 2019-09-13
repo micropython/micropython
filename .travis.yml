@@ -140,17 +140,26 @@ jobs:
       env: NAME="esp32 port build"
       install:
         - sudo apt-get install python3-pip
-        - sudo pip3 install pyparsing
+        - sudo pip3 install 'pyparsing<2.4'
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
-        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH :=" ports/esp32/Makefile | cut -d " " -f 3)
-        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - export IDF_PATH=$(pwd)/esp-idf
       script:
         - git submodule update --init lib/berkeley-db-1.xx
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+        # IDF v3 build
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - make ${MAKEOPTS} -C ports/esp32
+        # clean
+        - git -C esp-idf clean -f -f -d components/json/cJSON components/esp32/lib components/expat/expat components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - make ${MAKEOPTS} -C ports/esp32 clean
+        # IDF v4 build
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V4 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
+        - make ${MAKEOPTS} -C ports/esp32
 
     # esp8266 port
     - stage: test
