@@ -219,6 +219,7 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "sparkfun_samd51_thing_plus"
         - "spresense"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"

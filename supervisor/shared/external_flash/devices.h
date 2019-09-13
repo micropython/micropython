@@ -105,6 +105,25 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Adesto Tech AT25SF041 1MiB SPI flash. It's on the SparkFun
+// SAMD51 Thing Plus board
+// Datasheet: https://www.adestotech.com/wp-content/uploads/DS-AT25SF041_044.pdf
+#define AT25SF041A {\
+    .total_size = (1 << 19), /* 512 KiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x1f, \
+    .memory_type = 0x84, \
+    .capacity = 0x01, \
+    .max_clock_speed_mhz = 85, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
 #define GD25Q16C {\
