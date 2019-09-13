@@ -109,7 +109,7 @@ STATIC int usage(char **argv) {
 "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
 "-mno-unicode : don't support unicode in compiled strings\n"
 "-mcache-lookup-bc : cache map lookups in the bytecode\n"
-"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa\n"
+"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa, xtensawin\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -288,6 +288,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensa") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSA;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSA;
+                } else if (strcmp(arch, "xtensawin") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
                 } else {
                     return usage(argv);
                 }

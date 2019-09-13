@@ -39,6 +39,7 @@
 #define MICROPY_EMIT_ARM            (1)
 #define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
+#define MICROPY_EMIT_XTENSAWIN      (1)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
