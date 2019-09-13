@@ -30,6 +30,8 @@
 #include "boards/board.h"
 #include "tick.h"
 
+#include "common-hal/microcontroller/Pin.h"
+
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
 
@@ -48,7 +50,7 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-
+	reset_all_pins();
 }
 
 void reset_to_bootloader(void) {
@@ -56,7 +58,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-
+	NVIC_SystemReset();
 }
 
 extern uint32_t _ebss;
@@ -70,5 +72,8 @@ uint32_t port_get_saved_word(void) {
 }
 
 void HardFault_Handler(void) {
-	while(1) {}
+	reset_into_safe_mode(HARD_CRASH);
+    while (true) {
+        asm("nop;");
+    }
 }

@@ -428,6 +428,7 @@ static bool flush_ram_cache(bool keep_cache) {
 }
 
 // Delegates to the correct flash flush method depending on the existing cache.
+// TODO Don't blink the status indicator if we don't actually do any writing (hard to tell right now).
 static void spi_flash_flush_keep_cache(bool keep_cache) {
     #ifdef MICROPY_HW_LED_MSC
         port_pin_set_output_level(MICROPY_HW_LED_MSC, true);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#include <stdint.h>
+#include <string.h>
 
-#include "py/obj.h"
+#include "py/mperrno.h"
+#include "py/runtime.h"
 
-typedef struct {
-    mp_obj_base_t base;
+#include "shared-bindings/analogio/AnalogOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate.h"
 
-    mp_obj_t *sample;
-    uint8_t *buffers[2];
-    uint8_t *sample_data, *sample_end;
+void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
+        const mcu_pin_obj_t *pin) {
+    mp_raise_ValueError(translate("DAC not supported"));
+}
 
-    uint16_t buffer_length;
-    uint16_t sample_rate;
-    uint32_t hold_value;
+bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
+    return self->deinited;
+}
 
-    uint8_t next_buffer;
-    uint8_t bit_clock_pin_number;
-    uint8_t word_select_pin_number;
-    uint8_t data_pin_number;
+void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
-    uint8_t channel_count;
-    uint8_t bytes_per_sample;
+}
 
-    bool left_justified : 1;
-    bool playing : 1;
-    bool stopping : 1;
-    bool paused : 1;
-    bool loop : 1;
-    bool samples_signed : 1;
-    bool single_buffer : 1;
-} audiobusio_i2sout_obj_t;
+void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
+        uint16_t value) {
+}
 
-void i2s_reset(void);
-void i2s_background(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+void analogout_reset(void) {
+    // audioout_reset also resets the DAC, and does a smooth ramp down to avoid clicks
+    // if it was enabled, so do that instead if AudioOut is enabled.
+}

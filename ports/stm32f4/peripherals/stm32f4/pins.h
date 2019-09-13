@@ -44,9 +44,10 @@ typedef struct {
     uint8_t adc_channel:5;
 } mcu_pin_obj_t;
 
+//Standard stm32 adc unit combinations
 #define ADC_1 	1
-#define ADC_123	7
 #define ADC_12 	3
+#define ADC_123	7
 #define ADC_3 	4
 
 //STM32 ADC pins can have a combination of 1, 2 or all 3 ADCs on a single pin,

@@ -173,17 +173,21 @@ msc_interfaces = [
 # args.hid_devices[1] has report_id 2
 # etc.
 
+report_ids = {}
+
 if len(args.hid_devices) == 1:
     name = args.hid_devices[0]
     combined_hid_report_descriptor = hid.ReportDescriptor(
         description=name,
         report_descriptor=bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](0)))
+    report_ids[name] = 0
 else:
     report_id = 1
     concatenated_descriptors = bytearray()
     for name in args.hid_devices:
         concatenated_descriptors.extend(
             bytes(hid_report_descriptors.REPORT_DESCRIPTOR_FUNCTIONS[name](report_id)))
+        report_ids[name] = report_id
         report_id += 1
     combined_hid_report_descriptor = hid.ReportDescriptor(
         description="MULTIDEVICE",
@@ -288,10 +292,24 @@ audio_control_interface = standard.InterfaceDescriptor(
 # Audio streaming interfaces must occur before MIDI ones.
 audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
 
-# This will renumber the endpoints to make them unique across descriptors,
+interfaces_to_join = []
+
+if 'CDC' in args.devices:
+    interfaces_to_join.append(cdc_interfaces)
+
+if 'MSC' in args.devices:
+    interfaces_to_join.append(msc_interfaces)
+
+if 'HID' in args.devices:
+    interfaces_to_join.append(hid_interfaces)
+
+if 'AUDIO' in args.devices:
+    interfaces_to_join.append(audio_interfaces)
+
+# util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
 # interface cross-references.
-interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces, audio_interfaces)
+interfaces = util.join_interfaces(*interfaces_to_join)
 
 # Now adjust the CDC interface cross-references.
 
@@ -323,13 +341,15 @@ if 'CDC' in args.devices:
 if 'MSC' in args.devices:
     descriptor_list.extend(msc_interfaces)
 
+if 'HID' in args.devices:
+    descriptor_list.extend(hid_interfaces)
+
 if 'AUDIO' in args.devices:
     # Only add the control interface because other audio interfaces are managed by it to ensure the
     # correct ordering.
     descriptor_list.append(audio_control_interface)
 
-if 'HID' in args.devices:
-    descriptor_list.extend(hid_interfaces)
+# Finally, build the composite descriptor.
 
 configuration = standard.ConfigurationDescriptor(
     description="Composite configuration",
@@ -502,7 +522,7 @@ c_file.write("""\
 """)
 
 # Write out USB HID report buffer definitions.
-for report_id, name in enumerate(args.hid_devices, start=1):
+for name in args.hid_devices:
     c_file.write("""\
 static uint8_t {name}_report_buffer[{report_length}];
 """.format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length))
@@ -511,18 +531,18 @@ static uint8_t {name}_report_buffer[{report_length}];
 c_file.write("""
 usb_hid_device_obj_t usb_hid_devices[] = {
 """);
-for report_id, name in enumerate(args.hid_devices, start=1):
+for name in args.hid_devices:
     device_data = hid_report_descriptors.HID_DEVICE_DATA[name]
     c_file.write("""\
     {{
         .base          = {{ .type = &usb_hid_device_type }},
         .report_buffer = {name}_report_buffer,
-        .report_id     = {report_id:},
+        .report_id     = {report_id},
         .report_length = {report_length},
         .usage_page    = {usage_page:#04x},
         .usage         = {usage:#04x},
     }},
-""".format(name=name.lower(), report_id=report_id,
+""".format(name=name.lower(), report_id=report_ids[name],
            report_length=device_data.report_length,
            usage_page=device_data.usage_page,
            usage=device_data.usage))

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +25,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H
+
+#include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
+    const mcu_pin_obj_t * pin;
+} analogio_analogin_obj_t;
 
-    mp_obj_t *sample;
-    uint8_t *buffers[2];
-    uint8_t *sample_data, *sample_end;
+static inline uint8_t stm32_adc_units(uint8_t adc_packed) {
+    return adc_packed >> 5;
+}
 
-    uint16_t buffer_length;
-    uint16_t sample_rate;
-    uint32_t hold_value;
+static inline uint8_t stm32_adc_channel(uint8_t adc_packed) {
+    return adc_packed & 0x1f;
+}
 
-    uint8_t next_buffer;
-    uint8_t bit_clock_pin_number;
-    uint8_t word_select_pin_number;
-    uint8_t data_pin_number;
-
-    uint8_t channel_count;
-    uint8_t bytes_per_sample;
-
-    bool left_justified : 1;
-    bool playing : 1;
-    bool stopping : 1;
-    bool paused : 1;
-    bool loop : 1;
-    bool samples_signed : 1;
-    bool single_buffer : 1;
-} audiobusio_i2sout_obj_t;
-
-void i2s_reset(void);
-void i2s_background(void);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGIN_H

@@ -266,9 +266,15 @@ void temp_status_color(uint32_t rgb) {
 
 void clear_temp_status() {
     #ifdef MICROPY_HW_NEOPIXEL
+        if (neopixel_in_use) {
+            return;
+        }
         common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
+        if (apa102_mosi_in_use || apa102_sck_in_use) {
+            return;
+        }
         #if CIRCUITPY_BITBANG_APA102
         shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
         #else

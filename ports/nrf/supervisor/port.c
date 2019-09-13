@@ -50,6 +50,10 @@
 
 #include "shared-bindings/rtc/__init__.h"
 
+#ifdef CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
+
 #ifdef CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
@@ -98,9 +102,14 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 
+#ifdef CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
+#endif
+
 #ifdef CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
 #endif
+
 
 #if CIRCUITPY_PULSEIO
     pwmout_reset();
