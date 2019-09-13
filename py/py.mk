@@ -76,6 +76,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	asmxtensa.o \
 	emitnxtensa.o \
 	emitinlinextensa.o \
+	emitnxtensawin.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \

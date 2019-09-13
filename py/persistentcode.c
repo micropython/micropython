@@ -71,6 +71,8 @@
 #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
 #elif MICROPY_EMIT_XTENSA
 #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
+#elif MICROPY_EMIT_XTENSAWIN
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
 #else
 #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
@@ -196,7 +198,7 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
     if (is_obj) {
         val = (mp_uint_t)MP_OBJ_NEW_QSTR(qst);
     }
-    #if MICROPY_EMIT_X86 || MICROPY_EMIT_X64 || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA
+    #if MICROPY_EMIT_X86 || MICROPY_EMIT_X64 || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
     pc[0] = val & 0xff;
     pc[1] = (val >> 8) & 0xff;
     pc[2] = (val >> 16) & 0xff;

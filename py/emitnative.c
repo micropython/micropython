@@ -58,7 +58,7 @@
 #endif
 
 // wrapper around everything in this file
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -2404,7 +2404,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_ARM_CC_NE,
             };
             asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
-            #elif N_XTENSA
+            #elif N_XTENSA || N_XTENSAWIN
             static uint8_t ccs[6] = {
                 ASM_XTENSA_CC_LT,
                 0x80 | ASM_XTENSA_CC_LT, // for GT we'll swap args

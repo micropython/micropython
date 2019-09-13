@@ -95,6 +95,7 @@ STATIC const emit_method_table_t *emit_native_table[] = {
     &emit_native_thumb_method_table,
     &emit_native_thumb_method_table,
     &emit_native_xtensa_method_table,
+    &emit_native_xtensawin_method_table,
 };
 
 #elif MICROPY_EMIT_NATIVE
@@ -109,6 +110,8 @@ STATIC const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER(f) emit_native_arm_##f
 #elif MICROPY_EMIT_XTENSA
 #define NATIVE_EMITTER(f) emit_native_xtensa_##f
+#elif MICROPY_EMIT_XTENSAWIN
+#define NATIVE_EMITTER(f) emit_native_xtensawin_##f
 #else
 #error "unknown native emitter"
 #endif
@@ -131,6 +134,7 @@ STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
+    NULL,
 };
 
 #elif MICROPY_EMIT_INLINE_ASM

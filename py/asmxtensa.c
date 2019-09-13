@@ -30,7 +30,7 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
 
 #include "py/asmxtensa.h"
 
@@ -250,4 +250,4 @@ void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx) {
     asm_xtensa_op_callx8(as, ASM_XTENSA_REG_A8);
 }
 
-#endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+#endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
