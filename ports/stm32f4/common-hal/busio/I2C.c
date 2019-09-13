@@ -57,7 +57,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                         break;
                 #endif
             }
-        } else if (mcu_i2c_list[i]->scl_pin == scl) {
+        }
+
+        if (mcu_i2c_list[i]->scl_pin == scl) {
             switch (mcu_i2c_list[i]->i2c_index) {
                 case 1: I2Cx_check = I2C1;
                         break;
