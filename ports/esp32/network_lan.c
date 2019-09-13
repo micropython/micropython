@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+#if !MICROPY_ESP_IDF_4
 #include "py/runtime.h"
 #include "py/mphal.h"
 
@@ -216,3 +217,5 @@ const mp_obj_type_t lan_if_type = {
     .name = MP_QSTR_LAN,
     .locals_dict = (mp_obj_dict_t*)&lan_if_locals_dict,
 };
+
+#endif // !MICROPY_ESP_IDF_4
