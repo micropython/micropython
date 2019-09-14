@@ -99,4 +99,11 @@ static inline void ringbuf_put_n(ringbuf_t* r, uint8_t* buf, uint8_t bufsize)
         }
     }
 }
+
+static inline void ringbuf_get_n(ringbuf_t* r, uint8_t* buf, uint8_t bufsize)
+{
+    for(uint8_t i=0; i < bufsize; i++) {
+        buf[i] = ringbuf_get(r);
+    }
+}
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

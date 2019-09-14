@@ -76,3 +76,11 @@ void autoreload_stop() {
     autoreload_delay_ms = 0;
     reload_requested = false;
 }
+
+void autoreload_now() {
+    if (!autoreload_enabled || autoreload_suspended || reload_requested) {
+        return;
+    }
+    mp_raise_reload_exception();
+    reload_requested = true;
+}

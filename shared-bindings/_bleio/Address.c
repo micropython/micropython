@@ -114,10 +114,11 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
 };
 
 //|   .. attribute:: type
-//|
+//|     
 //|     The address type (read-only).
-//|       One of the integer values: `PUBLIC`, `RANDOM_STATIC`,
-//|       `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`.
+//|
+//|     One of the integer values: `PUBLIC`, `RANDOM_STATIC`, `RANDOM_PRIVATE_RESOLVABLE`,
+//|     or `RANDOM_PRIVATE_NON_RESOLVABLE`.
 //|
 STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -154,6 +155,28 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
                 return mp_const_false;
             }
 
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
+//|   .. method:: __hash__()
+//|
+//|     Returns a hash for the Address data.
+//|
+STATIC mp_obj_t bleio_address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    switch (op) {
+        // Two Addresses are equal if their address bytes and address_type are equal
+        case MP_UNARY_OP_HASH: {
+            mp_obj_t bytes = common_hal_bleio_address_get_address_bytes(MP_OBJ_TO_PTR(self_in));
+            GET_STR_HASH(bytes, h);
+            if (h == 0) {
+                GET_STR_DATA_LEN(bytes, data, len);
+                h = qstr_compute_hash(data, len);
+            }
+            h ^= common_hal_bleio_address_get_type(MP_OBJ_TO_PTR(self_in));
+            return MP_OBJ_NEW_SMALL_INT(h);
+        }
         default:
             return MP_OBJ_NULL; // op not supported
     }
@@ -205,6 +228,7 @@ const mp_obj_type_t bleio_address_type = {
     .name = MP_QSTR_Address,
     .make_new = bleio_address_make_new,
     .print = bleio_address_print,
+    .unary_op = bleio_address_unary_op,
     .binary_op = bleio_address_binary_op,
     .locals_dict = (mp_obj_dict_t*)&bleio_address_locals_dict
 };

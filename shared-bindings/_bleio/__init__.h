@@ -36,17 +36,19 @@
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/_bleio/Adapter.h"
 
-extern const super_adapter_obj_t common_hal_bleio_adapter_obj;
+extern bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
-extern void common_hal_bleio_check_connected(uint16_t conn_handle);
+void common_hal_bleio_check_connected(uint16_t conn_handle);
 
-extern uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
-extern mp_obj_list_t *common_hal_bleio_device_get_remote_service_list(mp_obj_t device);
-extern void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t service_uuids_whitelist);
+uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
+mp_obj_list_t *common_hal_bleio_device_get_remote_service_list(mp_obj_t device);
+void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t service_uuids_whitelist);
 
-extern mp_obj_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle);
-extern void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo);
-extern void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, bool write_no_response);
+size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len);
+void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo);
+size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len);
+void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, bool write_no_response);
 
+void common_hal_bleio_gc_collect(void);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO___INIT___H

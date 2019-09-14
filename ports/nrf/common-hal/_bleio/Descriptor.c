@@ -33,8 +33,6 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-static volatile bleio_descriptor_obj_t *m_read_descriptor;
-
 void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_characteristic_obj_t *characteristic, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->characteristic = characteristic;
     self->uuid = uuid;
@@ -61,62 +59,18 @@ bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio
     return self->characteristic;
 }
 
-STATIC void descriptor_on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
-    switch (ble_evt->header.evt_id) {
-
-        // More events may be handled later, so keep this as a switch.
-
-        case BLE_GATTC_EVT_READ_RSP: {
-            ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
-            if (m_read_descriptor) {
-                m_read_descriptor->value = mp_obj_new_bytearray(response->len, response->data);
-            }
-            // Indicate to busy-wait loop that we've read the attribute value.
-            m_read_descriptor = NULL;
-            break;
-        }
-
-        default:
-            // For debugging.
-            // mp_printf(&mp_plat_print, "Unhandled descriptor event: 0x%04x\n", ble_evt->header.evt_id);
-            break;
-    }
-}
-
-STATIC void descriptor_gattc_read(bleio_descriptor_obj_t *descriptor) {
-    const uint16_t conn_handle =
-        common_hal_bleio_device_get_conn_handle(descriptor->characteristic->service->device);
-    common_hal_bleio_check_connected(conn_handle);
-
-    // Set to NULL in event loop after event.
-    m_read_descriptor = descriptor;
-
-    ble_drv_add_event_handler(descriptor_on_gattc_read_rsp_evt, descriptor);
-
-    const uint32_t err_code = sd_ble_gattc_read(conn_handle, descriptor->handle, 0);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), err_code);
-    }
-
-    while (m_read_descriptor != NULL) {
-        MICROPY_VM_HOOK_LOOP;
-    }
-
-    ble_drv_remove_event_handler(descriptor_on_gattc_read_rsp_evt, descriptor);
-}
-
-mp_obj_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self) {
+size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8_t* buf, size_t len) {
     // Do GATT operations only if this descriptor has been registered
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
+        uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-            descriptor_gattc_read(self);
+            return common_hal_bleio_gattc_read(self->handle, conn_handle, buf, len);
         } else {
-            self->value = common_hal_bleio_gatts_read(
-                self->handle, common_hal_bleio_device_get_conn_handle(self->characteristic->service->device));
+            return common_hal_bleio_gatts_read(self->handle, conn_handle, buf, len);
         }
     }
 
-    return self->value;
+    return 0;
 }
 
 void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -131,7 +85,7 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
 
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
-        uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->characteristic->service->device);
+        uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
             // false means WRITE_REQ, not write-no-response
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo, false);

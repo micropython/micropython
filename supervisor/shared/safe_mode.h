@@ -37,7 +37,8 @@ typedef enum {
   MICROPY_NLR_JUMP_FAIL,
   MICROPY_FATAL_ERROR,
   GC_ALLOC_OUTSIDE_VM,
-  PROGRAMMATIC_SAFE_MODE
+  PROGRAMMATIC_SAFE_MODE,
+  NORDIC_SOFT_DEVICE_ASSERT
 } safe_mode_t;
 
 safe_mode_t wait_for_safe_mode_reset(void);

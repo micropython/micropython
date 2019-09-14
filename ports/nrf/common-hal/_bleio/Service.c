@@ -31,17 +31,44 @@
 #include "common-hal/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Descriptor.h"
-#include "shared-bindings/_bleio/Peripheral.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
-void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_peripheral_obj_t *peripheral, bleio_uuid_obj_t *uuid, bool is_secondary) {
-    self->device = MP_OBJ_FROM_PTR(peripheral);
+uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary, mp_obj_list_t * characteristic_list) {
     self->handle = 0xFFFF;
     self->uuid = uuid;
-    self->characteristic_list = mp_obj_new_list(0, NULL);
+    self->characteristic_list = characteristic_list;
     self->is_remote = false;
+    self->connection = NULL;
     self->is_secondary = is_secondary;
+
+    ble_uuid_t nordic_uuid;
+    bleio_uuid_convert_to_nrf_ble_uuid(uuid, &nordic_uuid);
+
+    uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
+    if (is_secondary) {
+        service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
+    }
+
+    vm_used_ble = true;
+
+    return sd_ble_gatts_service_add(service_type, &nordic_uuid, &self->handle);
+}
+
+void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
+    const uint32_t err_code = _common_hal_bleio_service_construct(self, uuid, is_secondary, mp_obj_new_list(0, NULL));
+    if (err_code != NRF_SUCCESS) {
+        mp_raise_OSError_msg_varg(translate("Failed to create service, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
+    }
+}
+
+void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
+    self->handle = 0xFFFF;
+    self->uuid = NULL;
+    self->characteristic_list = mp_obj_new_list(0, NULL);
+    self->is_remote = true;
+    self->is_secondary = false;
+    self->connection = connection;
 }
 
 bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
@@ -60,7 +87,9 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
     return self->is_secondary;
 }
 
-void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic) {
+void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
+                                                 bleio_characteristic_obj_t *characteristic,
+                                                 mp_buffer_info_t *initial_value_bufinfo) {
     ble_gatts_char_md_t char_md = {
         .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
         .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
@@ -93,14 +122,11 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);
     bleio_attribute_gatts_set_security_mode(&char_attr_md.write_perm, characteristic->write_perm);
 
-    mp_buffer_info_t char_value_bufinfo;
-    mp_get_buffer_raise(characteristic->value, &char_value_bufinfo, MP_BUFFER_READ);
-
     ble_gatts_attr_t char_attr = {
         .p_uuid = &char_uuid,
         .p_attr_md = &char_attr_md,
-        .init_len = char_value_bufinfo.len,
-        .p_value = char_value_bufinfo.buf,
+        .init_len = 0,
+        .p_value = NULL,
         .init_offs = 0,
         .max_len = characteristic->max_length,
     };
@@ -110,7 +136,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, blei
     uint32_t err_code;
     err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &char_attr, &char_handles);
     if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to add characteristic, err 0x%04x"), err_code);
+        mp_raise_OSError_msg_varg(translate("Failed to add characteristic, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
     }
 
     characteristic->user_desc_handle = char_handles.user_desc_handle;

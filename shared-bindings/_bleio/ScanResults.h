@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +26,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CENTRAL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CENTRAL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
 
-#include "py/objtuple.h"
-#include "common-hal/_bleio/Central.h"
-#include "common-hal/_bleio/Service.h"
+#include "py/obj.h"
+#include "shared-module/_bleio/ScanResults.h"
 
-extern const mp_obj_type_t bleio_central_type;
+extern const mp_obj_type_t bleio_scanresults_type;
 
-extern void common_hal_bleio_central_construct(bleio_central_obj_t *self);
-extern void common_hal_bleio_central_connect(bleio_central_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout);
-extern void common_hal_bleio_central_disconnect(bleio_central_obj_t *self);
-extern bool common_hal_bleio_central_get_connected(bleio_central_obj_t *self);
-extern mp_obj_tuple_t *common_hal_bleio_central_discover_remote_services(bleio_central_obj_t *self, mp_obj_t service_uuids_whitelist);
+mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CENTRAL_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H

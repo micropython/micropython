@@ -156,9 +156,10 @@ STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
     bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     uint8_t uuid128[16];
-    if (!common_hal_bleio_uuid_get_uuid128(self, uuid128)) {
+    if (common_hal_bleio_uuid_get_size(self) != 128) {
         mp_raise_AttributeError(translate("not a 128-bit UUID"));
     }
+    common_hal_bleio_uuid_get_uuid128(self, uuid128);
     return mp_obj_new_bytes(uuid128, 16);
 }
 
@@ -192,10 +193,42 @@ const mp_obj_property_t bleio_uuid_size_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+
+//|   .. method:: pack_into(buffer, offset=0)
+//|
+//|     Packs the UUID into the given buffer at the given offset.
+//|
+STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bleio_uuid_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    enum { ARG_buffer, ARG_offset };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+
+    size_t offset = args[ARG_offset].u_int;
+    if (offset + common_hal_bleio_uuid_get_size(self) / 8 > bufinfo.len) {
+        mp_raise_ValueError(translate("Buffer + offset too small %d %d %d"));
+    }
+
+    common_hal_bleio_uuid_pack_into(self, bufinfo.buf + offset);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_uuid_pack_into_obj, 2, bleio_uuid_pack_into);
+
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid_uuid16_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid128), MP_ROM_PTR(&bleio_uuid_uuid128_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&bleio_uuid_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pack_into), MP_ROM_PTR(&bleio_uuid_pack_into_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_uuid_locals_dict, bleio_uuid_locals_dict_table);
@@ -231,13 +264,19 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 STATIC mp_obj_t bleio_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
-        // Two UUID's are equal if their uuid16 values and uuid128 references match.
+        // Two UUID's are equal if their uuid16 values match or their uuid128 values match.
         case MP_BINARY_OP_EQUAL:
             if (MP_OBJ_IS_TYPE(rhs_in, &bleio_uuid_type)) {
-                return mp_obj_new_bool(
-                    common_hal_bleio_uuid_get_uuid16(lhs_in) == common_hal_bleio_uuid_get_uuid16(rhs_in) &&
-                    common_hal_bleio_uuid_get_uuid128_reference(lhs_in) ==
-                    common_hal_bleio_uuid_get_uuid128_reference(rhs_in));
+                if (common_hal_bleio_uuid_get_size(lhs_in) == 16 &&
+                    common_hal_bleio_uuid_get_size(rhs_in) == 16) {
+                    return mp_obj_new_bool(common_hal_bleio_uuid_get_uuid16(lhs_in) ==
+                                           common_hal_bleio_uuid_get_uuid16(rhs_in));
+                }
+                uint8_t lhs[16];
+                uint8_t rhs[16];
+                common_hal_bleio_uuid_get_uuid128(lhs_in, lhs);
+                common_hal_bleio_uuid_get_uuid128(rhs_in, rhs);
+                return mp_obj_new_bool(memcmp(lhs, rhs, sizeof(lhs)) == 0);
             } else {
                 return mp_const_false;
             }

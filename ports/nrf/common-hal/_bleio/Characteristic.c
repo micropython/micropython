@@ -32,7 +32,7 @@
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/Service.h"
 
-static volatile bleio_characteristic_obj_t *m_read_characteristic;
+#include "common-hal/_bleio/Adapter.h"
 
 STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;
@@ -53,27 +53,6 @@ STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_hand
     return cccd;
 }
 
-STATIC void characteristic_on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
-    switch (ble_evt->header.evt_id) {
-
-        // More events may be handled later, so keep this as a switch.
-
-        case BLE_GATTC_EVT_READ_RSP: {
-            ble_gattc_evt_read_rsp_t *response = &ble_evt->evt.gattc_evt.params.read_rsp;
-            if (m_read_characteristic) {
-                m_read_characteristic->value = mp_obj_new_bytearray(response->len, response->data);
-            }
-            // Indicate to busy-wait loop that we've read the attribute value.
-            m_read_characteristic = NULL;
-            break;
-        }
-
-        default:
-            // For debugging.
-            // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
-            break;
-    }
-}
 
 STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, uint16_t hvx_type) {
     uint16_t hvx_len = bufinfo->len;
@@ -103,35 +82,14 @@ STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_
     }
 }
 
-STATIC void characteristic_gattc_read(bleio_characteristic_obj_t *characteristic) {
-    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(characteristic->service->device);
-    common_hal_bleio_check_connected(conn_handle);
-
-    // Set to NULL in event loop after event.
-    m_read_characteristic = characteristic;
-
-    ble_drv_add_event_handler(characteristic_on_gattc_read_rsp_evt, characteristic);
-
-    const uint32_t err_code = sd_ble_gattc_read(conn_handle, characteristic->handle, 0);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), err_code);
-    }
-
-    while (m_read_characteristic != NULL) {
-        RUN_BACKGROUND_TASKS;
-    }
-
-    ble_drv_remove_event_handler(characteristic_on_gattc_read_rsp_evt, characteristic);
-}
-
-void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
+void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->service = service;
     self->uuid = uuid;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->descriptor_list = mp_obj_new_list(0, NULL);
+    self->descriptor_list = NULL;
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
@@ -141,10 +99,18 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->max_length = max_length;
     self->fixed_length = fixed_length;
 
-    common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
+    if (service->is_remote) {
+        self->handle = handle;
+    } else {
+        common_hal_bleio_service_add_characteristic(self->service, self, initial_value_bufinfo);
+    }
+
+    if (initial_value_bufinfo != NULL) {
+        common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
+    }
 }
 
-mp_obj_list_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
+bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
     return self->descriptor_list;
 }
 
@@ -152,19 +118,19 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
     return self->service;
 }
 
-mp_obj_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self) {
+size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t* buf, size_t len) {
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
-        uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
+        uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
         if (common_hal_bleio_service_get_is_remote(self->service)) {
             // self->value is set by evt handler.
-            characteristic_gattc_read(self);
+            return common_hal_bleio_gattc_read(self->handle, conn_handle, buf, len);
         } else {
-            self->value = common_hal_bleio_gatts_read(self->handle, conn_handle);
+            return common_hal_bleio_gatts_read(self->handle, conn_handle, buf, len);
         }
     }
 
-    return self->value;
+    return 0;
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -175,39 +141,40 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         mp_raise_ValueError(translate("Value length > max_length"));
     }
 
-    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
-
     // Do GATT operations only if this characteristic has been added to a registered service.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
-        uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
 
         if (common_hal_bleio_service_get_is_remote(self->service)) {
+            uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
             // Last argument is true if write-no-reponse desired.
             common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo,
                                          (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
+            // Always write the value locally even if no connections are active.
+            common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);
+            // Check to see if we need to notify or indicate any active connections.
+            for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+                bleio_connection_internal_t *connection = &connections[i];
+                uint16_t conn_handle = connection->conn_handle;
+                if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
+                    continue;
+                }
 
-            bool sent = false;
-            uint16_t cccd = 0;
+                uint16_t cccd = 0;
 
-            const bool notify = self->props & CHAR_PROP_NOTIFY;
-            const bool indicate = self->props & CHAR_PROP_INDICATE;
-            if (notify | indicate) {
-                cccd = characteristic_get_cccd(self->cccd_handle, conn_handle);
-            }
+                const bool notify = self->props & CHAR_PROP_NOTIFY;
+                const bool indicate = self->props & CHAR_PROP_INDICATE;
+                if (notify | indicate) {
+                    cccd = characteristic_get_cccd(self->cccd_handle, conn_handle);
+                }
 
-            // It's possible that both notify and indicate are set.
-            if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
-                characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_NOTIFICATION);
-                sent = true;
-            }
-            if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
-                characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_INDICATION);
-                sent = true;
-            }
-
-            if (!sent) {
-                common_hal_bleio_gatts_write(self->handle, conn_handle, bufinfo);
+                // It's possible that both notify and indicate are set.
+                if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+                    characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_NOTIFICATION);
+                }
+                if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+                    characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_INDICATION);
+                }
             }
         }
     }
@@ -252,7 +219,8 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
         mp_raise_OSError_msg_varg(translate("Failed to add descriptor, err 0x%04x"), err_code);
     }
 
-    mp_obj_list_append(self->descriptor_list, MP_OBJ_FROM_PTR(descriptor));
+    descriptor->next = self->descriptor_list;
+    self->descriptor_list = descriptor;
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
@@ -264,7 +232,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         mp_raise_ValueError(translate("Can't set CCCD on local Characteristic"));
     }
 
-    const uint16_t conn_handle = common_hal_bleio_device_get_conn_handle(self->service->device);
+    const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
     common_hal_bleio_check_connected(conn_handle);
 
     uint16_t cccd_value =

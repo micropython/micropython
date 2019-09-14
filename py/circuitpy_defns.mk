@@ -229,12 +229,10 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_bleio/Adapter.c \
 	_bleio/Attribute.c \
-	_bleio/Central.c \
 	_bleio/Characteristic.c \
 	_bleio/CharacteristicBuffer.c \
+	_bleio/Connection.c \
 	_bleio/Descriptor.c \
-	_bleio/Peripheral.c \
-	_bleio/Scanner.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
 	analogio/AnalogIn.c \
@@ -307,6 +305,7 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
+	_bleio/ScanResults.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
 	_stage/Layer.c \

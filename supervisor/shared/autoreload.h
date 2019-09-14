@@ -43,4 +43,6 @@ bool autoreload_is_enabled(void);
 void autoreload_suspend(void);
 void autoreload_resume(void);
 
+void autoreload_now(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H

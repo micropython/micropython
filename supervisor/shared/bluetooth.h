@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
 
-#include "py/obj.h"
+void supervisor_start_bluetooth(void);
+bool supervisor_bluetooth_hook(ble_evt_t *ble_evt);
+void supervisor_bluetooth_background(void);
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t scan_entries;
-    uint16_t interval;
-    uint16_t window;
-} bleio_scanner_obj_t;
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#endif

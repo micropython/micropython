@@ -29,13 +29,12 @@
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Attribute.h"
-#include "shared-bindings/_bleio/Central.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
+#include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/Descriptor.h"
-#include "shared-bindings/_bleio/Peripheral.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
-#include "shared-bindings/_bleio/Scanner.h"
+#include "shared-bindings/_bleio/ScanResults.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
@@ -64,34 +63,32 @@
 //|     Address
 //|     Adapter
 //|     Attribute
-//|     Central
 //|     Characteristic
 //|     CharacteristicBuffer
+//|     Connection
 //|     Descriptor
-//|     Peripheral
 //|     ScanEntry
-//|     Scanner
+//|     ScanResults
 //|     Service
 //|     UUID
 //|
 //| .. attribute:: adapter
 //|
-//|   BLE Adapter information, such as enabled state as well as MAC
-//|   address.
+//|   BLE Adapter used to manage device discovery and connections.
 //|   This object is the sole instance of `_bleio.Adapter`.
 //|
 
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
+    { MP_ROM_QSTR(MP_QSTR_Adapter),              MP_ROM_PTR(&bleio_adapter_type) },
     { MP_ROM_QSTR(MP_QSTR_Address),              MP_ROM_PTR(&bleio_address_type) },
     { MP_ROM_QSTR(MP_QSTR_Attribute),            MP_ROM_PTR(&bleio_attribute_type) },
-    { MP_ROM_QSTR(MP_QSTR_Central),              MP_ROM_PTR(&bleio_central_type) },
+    { MP_ROM_QSTR(MP_QSTR_Connection),           MP_ROM_PTR(&bleio_connection_type) },
     { MP_ROM_QSTR(MP_QSTR_Characteristic),       MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer), MP_ROM_PTR(&bleio_characteristic_buffer_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),           MP_ROM_PTR(&bleio_descriptor_type) },
-    { MP_ROM_QSTR(MP_QSTR_Peripheral),           MP_ROM_PTR(&bleio_peripheral_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),            MP_ROM_PTR(&bleio_scanentry_type) },
-    { MP_ROM_QSTR(MP_QSTR_Scanner),              MP_ROM_PTR(&bleio_scanner_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanResults),            MP_ROM_PTR(&bleio_scanresults_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),              MP_ROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),                 MP_ROM_PTR(&bleio_uuid_type) },
 
