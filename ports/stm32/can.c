@@ -40,7 +40,7 @@
 #include "can.h"
 #include "irq.h"
 
-#if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN && !(MICROPY_HW_ENABLE_FDCAN)
 
 void can_init0(void) {
     for (uint i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all)); i++) {
@@ -156,7 +156,7 @@ void can_deinit(pyb_can_obj_t *self) {
     }
 }
 
-void can_clearfilter(uint32_t f, uint8_t bank) {
+void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
     CAN_FilterConfTypeDef filter;
 
     filter.FilterIdHigh         = 0;
@@ -173,12 +173,12 @@ void can_clearfilter(uint32_t f, uint8_t bank) {
     HAL_CAN_ConfigFilter(NULL, &filter);
 }
 
-int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_t timeout_ms) {
+int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms) {
     volatile uint32_t *rfr;
     if (fifo == CAN_FIFO0) {
-        rfr = &can->RF0R;
+        rfr = &can->Instance->RF0R;
     } else {
-        rfr = &can->RF1R;
+        rfr = &can->Instance->RF1R;
     }
 
     // Wait for a message to become available, with timeout
@@ -191,7 +191,7 @@ int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_t timeo
     }
 
     // Read message data
-    CAN_FIFOMailBox_TypeDef *box = &can->sFIFOMailBox[fifo];
+    CAN_FIFOMailBox_TypeDef *box = &can->Instance->sFIFOMailBox[fifo];
     msg->IDE = box->RIR & 4;
     if (msg->IDE == CAN_ID_STD) {
         msg->StdId = box->RIR >> 21;
@@ -202,15 +202,15 @@ int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_t timeo
     msg->DLC = box->RDTR & 0xf;
     msg->FMI = box->RDTR >> 8 & 0xff;
     uint32_t rdlr = box->RDLR;
-    msg->Data[0] = rdlr;
-    msg->Data[1] = rdlr >> 8;
-    msg->Data[2] = rdlr >> 16;
-    msg->Data[3] = rdlr >> 24;
+    data[0] = rdlr;
+    data[1] = rdlr >> 8;
+    data[2] = rdlr >> 16;
+    data[3] = rdlr >> 24;
     uint32_t rdhr = box->RDHR;
-    msg->Data[4] = rdhr;
-    msg->Data[5] = rdhr >> 8;
-    msg->Data[6] = rdhr >> 16;
-    msg->Data[7] = rdhr >> 24;
+    data[4] = rdhr;
+    data[5] = rdhr >> 8;
+    data[6] = rdhr >> 16;
+    data[7] = rdhr >> 24;
 
     // Release (free) message from FIFO
     *rfr |= CAN_RF0R_RFOM0;
