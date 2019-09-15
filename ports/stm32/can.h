@@ -37,6 +37,13 @@
 #define MASK32 (2)
 #define LIST32 (3)
 
+#if MICROPY_HW_ENABLE_FDCAN
+#define CAN_TypeDef                 FDCAN_GlobalTypeDef
+#define CAN_HandleTypeDef           FDCAN_HandleTypeDef
+#define CanTxMsgTypeDef             FDCAN_TxHeaderTypeDef
+#define CanRxMsgTypeDef             FDCAN_RxHeaderTypeDef
+#endif
+
 enum {
     CAN_STATE_STOPPED,
     CAN_STATE_ERROR_ACTIVE,
@@ -74,10 +81,9 @@ void can_deinit_all(void);
 bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart);
 void can_deinit(pyb_can_obj_t *self);
 
-void can_clearfilter(uint32_t f, uint8_t bank);
-int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_t timeout_ms);
+void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank);
+int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
 HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout);
-
 void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callback, mp_obj_t irq_reason);
 
 #endif // MICROPY_INCLUDED_STM32_CAN_H

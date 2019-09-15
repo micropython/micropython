@@ -275,6 +275,9 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
+#if defined(STM32H7)
+#define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
+#endif
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
 #define MICROPY_HW_MAX_CAN (0)
