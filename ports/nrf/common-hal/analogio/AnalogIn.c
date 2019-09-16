@@ -108,5 +108,9 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
-    return 3.3f;
+    // With internal reference, single ended input (grounded negative
+    // input), and a gain of 1/6 the input range will be:
+    //    Input range = (0.6 V)/(1/6) = 3.6 V
+    // The AIN0-AIN7 inputs cannot exceed VDD, or be lower than VSS. (36.8)
+    return 3.6f;
 }
