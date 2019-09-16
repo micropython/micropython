@@ -51,8 +51,8 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode);
-    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self_fun->bytecode));
+    const uint8_t *ip = self_fun->bytecode;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
@@ -88,7 +88,9 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Determine start of prelude, and extract n_state from it
     uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
+    const uint8_t *ip = self_fun->bytecode + prelude_offset;
+    size_t n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args);
     size_t n_exc_stack = 0;
 
     // Allocate the generator object, with room for local stack and exception stack

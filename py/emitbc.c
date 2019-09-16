@@ -328,7 +328,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
 
-    // Write local state size and exception stack size.
+    // Write local state size, exception stack size, scope flags and number of arguments
     {
         mp_uint_t n_state = scope->num_locals + scope->stack_size;
         if (n_state == 0) {
@@ -341,16 +341,10 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         // An extra slot in the stack is needed to detect VM stack overflow
         n_state += 1;
         #endif
-        emit_write_code_info_uint(emit, n_state);
-        emit_write_code_info_uint(emit, scope->exc_stack_size);
-    }
 
-    // Write scope flags and number of arguments.
-    // TODO check that num args all fit in a byte
-    emit_write_code_info_byte(emit, emit->scope->scope_flags);
-    emit_write_code_info_byte(emit, emit->scope->num_pos_args);
-    emit_write_code_info_byte(emit, emit->scope->num_kwonly_args);
-    emit_write_code_info_byte(emit, emit->scope->num_def_pos_args);
+        size_t n_exc_stack = scope->exc_stack_size;
+        MP_BC_PRELUDE_SIG_ENCODE(n_state, n_exc_stack, scope, emit_write_code_info_byte, emit);
+    }
 
     // Write size of the rest of the code info.  We don't know how big this
     // variable uint will be on the MP_PASS_CODE_SIZE pass so we reserve 2 bytes

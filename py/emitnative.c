@@ -573,18 +573,19 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
 }
 
+static inline void emit_native_write_code_info_byte(emit_t *emit, byte val) {
+    mp_asm_base_data(&emit->as->base, 1, val);
+}
+
 STATIC void emit_native_end_pass(emit_t *emit) {
     emit_native_global_exc_exit(emit);
 
     if (!emit->do_viper_types) {
         emit->prelude_offset = mp_asm_base_get_code_pos(&emit->as->base);
-        mp_asm_base_data(&emit->as->base, 1, 0x80 | ((emit->n_state >> 7) & 0x7f));
-        mp_asm_base_data(&emit->as->base, 1, emit->n_state & 0x7f);
-        mp_asm_base_data(&emit->as->base, 1, 0); // n_exc_stack
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->scope_flags);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_pos_args);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_kwonly_args);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_def_pos_args);
+
+        size_t n_state = emit->n_state;
+        size_t n_exc_stack = 0; // exc-stack not needed for native code
+        MP_BC_PRELUDE_SIG_ENCODE(n_state, n_exc_stack, emit->scope, emit_native_write_code_info_byte, emit);
 
         // write code info
         #if MICROPY_PERSISTENT_CODE

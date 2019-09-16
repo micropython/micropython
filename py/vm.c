@@ -1440,12 +1440,7 @@ unwind_loop:
                 && *code_state->ip != MP_BC_END_FINALLY
                 && *code_state->ip != MP_BC_RAISE_LAST) {
                 const byte *ip = code_state->fun_bc->bytecode;
-                ip = mp_decode_uint_skip(ip); // skip n_state
-                ip = mp_decode_uint_skip(ip); // skip n_exc_stack
-                ip++; // skip scope_params
-                ip++; // skip n_pos_args
-                ip++; // skip n_kwonly_args
-                ip++; // skip n_def_pos_args
+                MP_BC_PRELUDE_SIG_DECODE(ip);
                 size_t bc = code_state->ip - ip;
                 size_t code_info_size = mp_decode_uint_value(ip);
                 ip = mp_decode_uint_skip(ip); // skip code_info_size

@@ -83,13 +83,8 @@ const mp_uint_t *mp_showbc_const_table;
 void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
 
-    // get bytecode parameters
-    mp_uint_t n_state = mp_decode_uint(&ip);
-    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
-    /*mp_uint_t scope_flags =*/ ip++;
-    mp_uint_t n_pos_args = *ip++;
-    mp_uint_t n_kwonly_args = *ip++;
-    /*mp_uint_t n_def_pos_args =*/ ip++;
+    // Decode prelude
+    MP_BC_PRELUDE_SIG_DECODE(ip);
 
     const byte *code_info = ip;
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
@@ -123,8 +118,8 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     }
     printf("\n");
 
-    printf("(N_STATE " UINT_FMT ")\n", n_state);
-    printf("(N_EXC_STACK " UINT_FMT ")\n", n_exc_stack);
+    printf("(N_STATE %u)\n", (unsigned)n_state);
+    printf("(N_EXC_STACK %u)\n", (unsigned)n_exc_stack);
 
     // for printing line number info
     const byte *bytecode_start = ip;

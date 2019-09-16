@@ -152,13 +152,38 @@ def decode_uint(bytecode, ip):
             break
     return ip, unum
 
+def read_prelude_sig(read_byte):
+    z = read_byte()
+    # xSSSSEAA
+    S = (z >> 3) & 0xf
+    E = (z >> 2) & 0x1
+    F = 0
+    A = z & 0x3
+    K = 0
+    D = 0
+    n = 0
+    while z & 0x80:
+        z = read_byte()
+        # xFSSKAED
+        S |= (z & 0x30) << (2 * n)
+        E |= (z & 0x02) << n
+        F |= ((z & 0x40) >> 6) << n
+        A |= (z & 0x4) << n
+        K |= ((z & 0x08) >> 3) << n
+        D |= (z & 0x1) << n
+        n += 1
+    S += 1
+    return S, E, F, A, K, D
+
 def extract_prelude(bytecode, ip):
-    ip, n_state = decode_uint(bytecode, ip)
-    ip, n_exc_stack = decode_uint(bytecode, ip)
-    scope_flags = bytecode[ip]; ip += 1
-    n_pos_args = bytecode[ip]; ip += 1
-    n_kwonly_args = bytecode[ip]; ip += 1
-    n_def_pos_args = bytecode[ip]; ip += 1
+    def local_read_byte():
+        b = bytecode[ip_ref[0]]
+        ip_ref[0] += 1
+        return b
+    ip_ref = [ip] # to close over ip in Python 2 and 3
+    n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(local_read_byte)
+    ip = ip_ref[0]
+
     ip2, code_info_size = decode_uint(bytecode, ip)
     ip += code_info_size
     while bytecode[ip] != 0xff:
@@ -557,12 +582,7 @@ def read_obj(f):
             assert 0
 
 def read_prelude(f, bytecode):
-    n_state = read_uint(f, bytecode)
-    n_exc_stack = read_uint(f, bytecode)
-    scope_flags = read_byte(f, bytecode)
-    n_pos_args = read_byte(f, bytecode)
-    n_kwonly_args = read_byte(f, bytecode)
-    n_def_pos_args = read_byte(f, bytecode)
+    n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(lambda: read_byte(f, bytecode))
     l1 = bytecode.idx
     code_info_size = read_uint(f, bytecode)
     l2 = bytecode.idx

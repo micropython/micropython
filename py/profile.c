@@ -40,12 +40,13 @@ STATIC uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
 void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelude) {
     const byte *ip = bytecode;
 
-    prelude->n_state = mp_decode_uint(&ip);
-    prelude->n_exc_stack = mp_decode_uint(&ip);
-    prelude->scope_flags = *ip++;
-    prelude->n_pos_args = *ip++;
-    prelude->n_kwonly_args = *ip++;
-    prelude->n_def_pos_args = *ip++;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
+    prelude->n_state = n_state;
+    prelude->n_exc_stack = n_exc_stack;
+    prelude->scope_flags = scope_flags;
+    prelude->n_pos_args = n_pos_args;
+    prelude->n_kwonly_args = n_kwonly_args;
+    prelude->n_def_pos_args = n_def_pos_args;
 
     const byte *code_info = ip;
     size_t code_info_size = mp_decode_uint(&ip);

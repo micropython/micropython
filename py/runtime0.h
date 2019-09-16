@@ -28,9 +28,9 @@
 
 // The first four must fit in 8 bits, see emitbc.c
 // The remaining must fit in 16 bits, see scope.h
-#define MP_SCOPE_FLAG_VARARGS      (0x01)
+#define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
-#define MP_SCOPE_FLAG_GENERATOR    (0x04)
+#define MP_SCOPE_FLAG_VARARGS      (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
 #define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
 #define MP_SCOPE_FLAG_HASCONSTS    (0x20) // used only if native emitter enabled

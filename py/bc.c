@@ -124,13 +124,14 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->frame = NULL;
     #endif
 
-    // get params
-    size_t n_state = mp_decode_uint(&code_state->ip);
-    code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack
-    size_t scope_flags = *code_state->ip++;
-    size_t n_pos_args = *code_state->ip++;
-    size_t n_kwonly_args = *code_state->ip++;
-    size_t n_def_pos_args = *code_state->ip++;
+    // Get cached n_state (rather than decode it again)
+    size_t n_state = code_state->n_state;
+
+    // Decode prelude
+    size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args);
+    (void)n_state_unused;
+    (void)n_exc_stack_unused;
 
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp_idx = 0;

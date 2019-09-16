@@ -161,12 +161,7 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     #endif
 
     const byte *bc = fun->bytecode;
-    bc = mp_decode_uint_skip(bc); // skip n_state
-    bc = mp_decode_uint_skip(bc); // skip n_exc_stack
-    bc++; // skip scope_params
-    bc++; // skip n_pos_args
-    bc++; // skip n_kwonly_args
-    bc++; // skip n_def_pos_args
+    MP_BC_PRELUDE_SIG_DECODE(bc);
     return mp_obj_code_get_name(bc);
 }
 
@@ -197,10 +192,10 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
     { \
-        /* bytecode prelude: state size and exception stack size */               \
-        n_state_out_var = mp_decode_uint_value(bytecode);                         \
-        size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
-                                                                                  \
+        const uint8_t *ip = bytecode; \
+        size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args; \
+        MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state_out_var, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args); \
+                                    \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
                            + n_exc_stack * sizeof(mp_exc_stack_t);                \
@@ -295,9 +290,11 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
             assert(0);
         }
     }
-    const byte *bytecode_ptr = mp_decode_uint_skip(mp_decode_uint_skip(self->bytecode));
-    size_t n_pos_args = bytecode_ptr[1];
-    size_t n_kwonly_args = bytecode_ptr[2];
+    const byte *bytecode_ptr = self->bytecode;
+    size_t n_state_unused, n_exc_stack_unused, scope_flags_unused;
+    size_t n_pos_args, n_kwonly_args, n_def_args_unused;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(bytecode_ptr, n_state_unused, n_exc_stack_unused,
+        scope_flags_unused, n_pos_args, n_kwonly_args, n_def_args_unused);
     // We can't check the case when an exception is returned in state[0]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
