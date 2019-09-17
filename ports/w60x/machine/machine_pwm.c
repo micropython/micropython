@@ -37,10 +37,10 @@ extern const mp_obj_type_t machine_pwm_type;
 
 typedef struct _w600_pwm_obj_t {
     mp_obj_base_t base;
+    mp_hal_pin_obj_t pin;
     uint8_t channel;
     uint8_t duty;
     uint8_t pnum;
-    uint8_t pin;
     uint32_t freq;
 } w600_pwm_obj_t;
 
@@ -124,7 +124,7 @@ STATIC mp_obj_t w600_pwm_make_new(const mp_obj_type_t *type,
     // create PWM object from the given pin
     w600_pwm_obj_t *self = m_new_obj(w600_pwm_obj_t);
     self->base.type = &machine_pwm_type;
-    self->pin = mp_obj_get_int(args[0]);
+    self->pin = mp_hal_get_pin_obj(args[0]);
     self->channel = 0;
     self->freq = 1;
     self->duty = 0;

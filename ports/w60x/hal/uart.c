@@ -39,7 +39,6 @@ extern int sendchar(int ch);
 
 STATIC uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
-STATIC tls_os_sem_t *w600_uart0_rx_sem = NULL;
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
@@ -48,24 +47,9 @@ int mp_hal_stdin_rx_chr(void) {
         c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
-        }
-        //MICROPY_EVENT_POLL_HOOK
-        //ulTaskNotifyTake(pdFALSE, 1);
-        //tls_os_time_delay(0);
-        tls_os_sem_acquire(w600_uart0_rx_sem, 0);
-        while(tls_uart_read(TLS_UART_0, &c, 1) > 0) {
-            if (c == mp_interrupt_char) {
-                // inline version of mp_keyboard_interrupt();
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
-#if MICROPY_ENABLE_SCHEDULER
-                if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-                    MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-                }
-#endif
-            } else {
-                // this is an inline function so will be in IRAM
-                ringbuf_put(&stdin_ringbuf, c);
-            }
+        } else {
+            MICROPY_EVENT_POLL_HOOK
+            tls_os_time_delay(1);
         }
     }
 }
@@ -103,11 +87,24 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
 }
 
 STATIC s16 uart_rx_callback(u16 len) {
-    tls_os_sem_release(w600_uart0_rx_sem);
+    int c;
+    while(tls_uart_read(TLS_UART_0, &c, 1) > 0) {
+        if (c == mp_interrupt_char) {
+            // inline version of mp_keyboard_interrupt();
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+#if MICROPY_ENABLE_SCHEDULER
+            if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+                MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+            }
+#endif
+        } else {
+            // this is an inline function so will be in IRAM
+            ringbuf_put(&stdin_ringbuf, c);
+        }
+    }
 }
 
 void uart_init(void) {
-    tls_os_sem_create(&w600_uart0_rx_sem, 0);
     tls_uart_port_init(TLS_UART_0, NULL, 0);
     tls_uart_rx_callback_register((u16) TLS_UART_0, uart_rx_callback);
 }

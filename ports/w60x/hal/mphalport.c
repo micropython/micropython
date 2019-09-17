@@ -53,11 +53,35 @@ uint32_t mp_hal_ticks_cpu(void) {
     return tls_os_get_time();
 }
 
-void mp_hal_delay_ms(uint32_t ms) {
+STATIC void __mp_hal_delay_ms(uint32_t ms) {
     if (ms / (1000 / HZ) > 0) {
         tls_os_time_delay(ms / (1000 / HZ));
     } else {
         delay_us(ms * 1000);
+    }
+}
+
+void mp_hal_delay_ms(uint32_t ms) {
+    if (!tls_get_isr_count()) {
+        // IRQs enabled, so can use systick counter to do the delay
+        uint32_t start = tls_os_get_time();
+        // Wraparound of tick is taken care of by 2's complement arithmetic.
+        while (tls_os_get_time() - start < (ms / (1000 / HZ))) {
+            // This macro will execute the necessary idle behaviour.  It may
+            // raise an exception, switch threads or enter sleep mode (waiting for
+            // (at least) the SysTick interrupt).
+            MICROPY_EVENT_POLL_HOOK
+            tls_os_time_delay(1);
+        }
+
+        if (ms < 2) {
+            MICROPY_EVENT_POLL_HOOK
+            tls_os_time_delay(1);
+        }
+    } else {
+        // IRQs disabled, so need to use a busy loop for the delay.
+        // To prevent possible overflow of the counter we use a double loop.
+        __mp_hal_delay_ms(ms);
     }
 }
 

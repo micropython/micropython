@@ -50,7 +50,7 @@
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (1)
-#define MICROPY_USE_INTERNAL_PRINTF         (1)
+#define MICROPY_USE_INTERNAL_PRINTF         (0)
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
@@ -146,7 +146,9 @@
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hard_spi_make_new
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (mp_hal_get_cpu_freq() * 1000000 / 200) // roughly
-//#define MICROPY_PY_USSL_FINALISER           (1)
+#define MICROPY_PY_USSL                     (0)
+#define MICROPY_SSL_MBEDTLS                 (0)
+#define MICROPY_PY_USSL_FINALISER           (0)
 #define MICROPY_PY_WEBSOCKET                (1)
 #define MICROPY_PY_WEBREPL                  (0)
 #define MICROPY_PY_FRAMEBUF                 (1)
@@ -208,7 +210,8 @@ extern const struct _mp_obj_module_t w600_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
 
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&mp_module_ussl }, \
+
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&mp_module_ussl }, \
 
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -216,7 +219,6 @@ extern const struct _mp_obj_module_t w600_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[48]; \
-    mp_obj_t machine_rtc_irq_handler[1]; \
 
 // type definitions for the specific machine
 
@@ -259,7 +261,7 @@ typedef long mp_off_t;
 #include <sys/types.h>
 
 // board specifics
-#define MICROPY_W600_VERSION    "B1.2"
+#define MICROPY_W600_VERSION    "B1.3"
 
 #define MICROPY_HW_BOARD_NAME "WinnerMicro module"
 #define MICROPY_HW_MCU_NAME "W600"

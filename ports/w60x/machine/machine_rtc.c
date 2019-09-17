@@ -44,6 +44,7 @@
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     mp_uint_t alarm_seconds;
+    mp_obj_t handler;
 } machine_rtc_obj_t;
 
 typedef struct machine_rtc_irq_obj_t {
@@ -73,6 +74,9 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
                                              tblock.tm_hour, tblock.tm_min, tblock.tm_sec);
         timeutils_struct_time_t tm;
         timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+
+        //Zeller
+        //tm.tm_wday = ((((tblock.tm_year + W600_YEAR_BASE) / 100) / 4) - 2 * ((tblock.tm_year + W600_YEAR_BASE) / 100) + ((tblock.tm_year + W600_YEAR_BASE) % 100) + (((tblock.tm_year + W600_YEAR_BASE) % 100) / 4) + (13 * ((tblock.tm_mon < 3 ? (12 + tblock.tm_mon) : tblock.tm_mon) + 1) / 5) + tblock.tm_mday - 1) % 7;
 
         mp_obj_t tuple[8] = {
             mp_obj_new_int(tm.tm_year),
@@ -107,7 +111,6 @@ STATIC mp_obj_t machine_rtc_now(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_now_obj, 0, 1, machine_rtc_now);
 
 STATIC mp_obj_t machine_rtc_init(mp_uint_t n_args, const mp_obj_t *args) {
-    memset(&MP_STATE_PORT(machine_rtc_irq_handler[0]), 0, sizeof(MP_STATE_PORT(machine_rtc_irq_handler)));
     return machine_rtc_datetime_helper(n_args, args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_init_obj, 1, 2, machine_rtc_init);
@@ -181,9 +184,11 @@ STATIC mp_obj_t machine_rtc_cancel(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_cancel_obj, 0, 1, machine_rtc_cancel);
 
 STATIC void machine_rtc_alarm_irq(u8 *arg) {
-    machine_rtc_obj_t *self = arg;
-    mp_obj_t handler = MP_STATE_PORT(machine_rtc_irq_handler)[0];
-    mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
+    machine_rtc_obj_t *self = (machine_rtc_obj_t *)arg;
+
+    if (self->handler) {
+        mp_sched_schedule(self->handler, self);//MP_OBJ_FROM_PTR(self));
+    }
 }
 
 STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -191,6 +196,7 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
+
     machine_rtc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -201,13 +207,12 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         if (handler == mp_const_none) {
             handler = MP_OBJ_NULL;
         }
-
-        MP_STATE_PORT(machine_rtc_irq_handler)[0] = handler;
+        self->handler = handler;
         tls_rtc_isr_register(machine_rtc_alarm_irq, self);
     }
 
     // return the irq object
-    return MP_OBJ_FROM_PTR(&machine_rtc_irq_object);
+    return mp_const_none;//MP_OBJ_FROM_PTR(&machine_rtc_irq_object);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 

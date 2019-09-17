@@ -41,10 +41,12 @@
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
+    tls_os_timer_t *stimer;
     u32 timeout;
     mp_obj_t callback;
     u8 timerid;
     bool is_repeat;
+    bool is_hwtimer;
 } machine_timer_obj_t;
 
 const mp_obj_type_t machine_timer_type;
@@ -54,23 +56,32 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
     mp_printf(print, "Timer(%p; ", self);
 
-    mp_printf(print, "timerid=%d, ", self->timerid);
-    mp_printf(print, "period=%d, ", self->timeout);
+    mp_printf(print, "timerid=%x, ", self->is_hwtimer ? self->timerid : self->stimer);
+    mp_printf(print, "period=%u, ", self->timeout);
     mp_printf(print, "auto_reload=%d)", self->is_repeat);
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->base.type = &machine_timer_type;
+    self->stimer = NULL;
     self->timerid = WM_TIMER_ID_INVALID;
-    self->timeout = 100;
     self->is_repeat = TRUE;
+    if (-1 == mp_obj_get_int(args[0])) {
+        self->is_hwtimer = FALSE;
+        self->timeout = HZ;
+    } else {
+        self->is_hwtimer = TRUE;
+        self->timeout = 1000;
+    }
     return self;
 }
 
 STATIC mp_obj_t machine_timer_del(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
-    if (WM_TIMER_ID_INVALID != self->timerid) {
+    if (NULL != self->stimer) {
+        tls_os_timer_delete(self->stimer);
+    } else if (WM_TIMER_ID_INVALID != self->timerid) {
         tls_timer_destroy(self->timerid);
         self->timerid = WM_TIMER_ID_INVALID;
     }
@@ -80,8 +91,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_del_obj, machine_timer_del);
 
 STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
-    if (WM_TIMER_ID_INVALID != self->timerid)
+    if (NULL != self->stimer) {
+        tls_os_timer_stop(self->stimer);
+    } else if (WM_TIMER_ID_INVALID != self->timerid) {
         tls_timer_stop(self->timerid);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
@@ -92,16 +106,21 @@ STATIC void machine_timer_callback(void *arg)
 
     if (self->callback) {
         mp_sched_schedule(self->callback, self);
-        //mp_call_function_1(self->callback, self);
+    }
+}
+
+STATIC void machine_soft_timer_callback(void *ptmr, void *parg)
+{
+    machine_timer_obj_t *self = (machine_timer_obj_t *)parg;
+
+    if (self->callback) {
+        mp_sched_schedule(self->callback, self);
     }
 }
 
 STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     machine_timer_obj_t *self = (machine_timer_obj_t *)args[0];
     struct tls_timer_cfg timercfg;
-    memset(&timercfg, 0, sizeof(timercfg));
-    timercfg.is_repeat = TRUE;
-    timercfg.unit = TLS_TIMER_UNIT_MS;
 
     enum {
         ARG_mode,
@@ -117,6 +136,9 @@ STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_ma
     mp_arg_val_t dargs[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, dargs);
 
+    self->is_repeat = dargs[ARG_mode].u_int;
+    self->timeout = dargs[ARG_period].u_int;
+
     if (mp_obj_is_callable(dargs[ARG_callback].u_obj)) {
         self->callback = dargs[ARG_callback].u_obj;
     } else if (dargs[ARG_callback].u_obj == mp_const_none) {
@@ -125,17 +147,30 @@ STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_ma
         mp_raise_ValueError("callback must be a function");
     }
 
-    timercfg.is_repeat = dargs[ARG_mode].u_int;
-    timercfg.timeout = dargs[ARG_period].u_int;
-    timercfg.callback = machine_timer_callback;
-    timercfg.arg = self;
-
-    if (WM_TIMER_ID_INVALID != self->timerid) {
+    if (NULL != self->stimer) {
+        tls_os_timer_delete(self->stimer);
+    } else if (WM_TIMER_ID_INVALID != self->timerid) {
         tls_timer_destroy(self->timerid);
     }
 
-    self->timerid = tls_timer_create(&timercfg);
-    tls_timer_start(self->timerid);
+    if (self->is_hwtimer) {
+        memset(&timercfg, 0, sizeof(timercfg));
+        timercfg.unit = TLS_TIMER_UNIT_MS;
+        timercfg.is_repeat = self->is_repeat;
+        timercfg.timeout = self->timeout;
+        timercfg.callback = machine_timer_callback;
+        timercfg.arg = self;
+
+        self->timerid = tls_timer_create(&timercfg);
+        if (WM_TIMER_ID_INVALID != self->timerid) {
+            tls_timer_start(self->timerid);
+        }
+    } else {
+        tls_os_timer_create(&self->stimer,
+                            machine_soft_timer_callback,
+                            self, self->timeout / (1000 / HZ), self->is_repeat, NULL);
+        tls_os_timer_start(self->stimer);
+    }
 
     return mp_const_none;
 }

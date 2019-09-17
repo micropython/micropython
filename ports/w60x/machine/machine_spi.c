@@ -68,6 +68,71 @@ STATIC s16 machine_spi_rx_data_callback(char *buf) {
     return 0;
 }
 
+STATIC void w600_spi_set_endian(u8 endian)
+{
+	u32 reg_val;
+
+	reg_val = tls_reg_read32(HR_SPI_SPICFG_REG);
+
+	if (endian == 0) {
+		reg_val &= ~(0x01U << 3);
+		reg_val |= SPI_LITTLE_ENDIAN;
+	} else if(endian == 1) {
+		reg_val &= ~(0x01U << 3);
+		reg_val |= SPI_BIG_ENDIAN;
+	}
+
+	tls_reg_write32(HR_SPI_SPICFG_REG, reg_val);
+}
+
+STATIC u8 w600_spi_write(u8 *data, u32 len)
+{
+    u32 cnt;
+    u32 repeat;
+    u32 remain;
+
+    cnt = 0;
+    remain = len;
+
+    if(len > SPI_DMA_BUF_MAX_SIZE)
+    {
+        repeat = len / SPI_DMA_BUF_MAX_SIZE;
+        remain = len % SPI_DMA_BUF_MAX_SIZE;
+
+        while(cnt < (repeat * SPI_DMA_BUF_MAX_SIZE))
+        {
+            tls_spi_write(data + cnt, SPI_DMA_BUF_MAX_SIZE);
+            cnt += SPI_DMA_BUF_MAX_SIZE;
+        }
+    }
+
+    return tls_spi_write(data + cnt, remain);
+}
+
+STATIC u8 w600_spi_read(u8 *data, u32 len)
+{
+    u32 cnt;
+    u32 repeat;
+    u32 remain;
+
+    cnt = 0;
+    remain = len;
+
+    if(len > SPI_DMA_BUF_MAX_SIZE)
+    {
+        repeat = len / SPI_DMA_BUF_MAX_SIZE;
+        remain = len % SPI_DMA_BUF_MAX_SIZE;
+
+        while(cnt < (repeat * SPI_DMA_BUF_MAX_SIZE))
+        {
+            tls_spi_read(data + cnt, SPI_DMA_BUF_MAX_SIZE);
+            cnt += SPI_DMA_BUF_MAX_SIZE;
+        }
+    }
+
+    return tls_spi_read(data + cnt, remain);
+}
+
 STATIC void machine_spi_init_internal(
     machine_spi_obj_t    *self,
     int32_t                 baudrate,
@@ -78,7 +143,8 @@ STATIC void machine_spi_init_internal(
     int8_t                  sck,
     int8_t                  mosi,
     int8_t                  miso,
-    int8_t                  cs) {
+    int8_t                  cs) 
+{
     int ret;
     u8 mode;
 
@@ -93,12 +159,35 @@ STATIC void machine_spi_init_internal(
     self->cs = cs;
 
     if (0 == self->spi_type) {
+        wm_spi_ck_config(sck);
+        wm_spi_do_config(mosi);
+        wm_spi_di_config(miso);
+        wm_spi_cs_config(cs);
+
+        if (-1 == firstbit) {
+            w600_spi_set_endian(0);
+        } else {
+            w600_spi_set_endian(firstbit ? 1 : 0);
+        }
+
+        if (-1 == bits) {
+            tls_spi_trans_type(SPI_DMA_TRANSFER);
+        } else {
+            if (8 == bits) {
+                tls_spi_trans_type(SPI_BYTE_TRANSFER);
+            } else if (32 == bits) {
+                tls_spi_trans_type(SPI_WORD_TRANSFER);
+            } else {
+                tls_spi_trans_type(SPI_DMA_TRANSFER);
+            }
+        }
+
         if (0 == polarity || 0 == phase) {
             mode = TLS_SPI_MODE_0;
         } else if (0 == polarity || 1 == phase) {
-            mode = TLS_SPI_MODE_1;
-        } else if (1 == polarity || 0 == phase) {
             mode = TLS_SPI_MODE_2;
+        } else if (1 == polarity || 0 == phase) {
+            mode = TLS_SPI_MODE_1;
         } else if (1 == polarity || 1 == phase) {
             mode = TLS_SPI_MODE_3;
         }
@@ -124,13 +213,15 @@ STATIC void machine_spi_deinit(mp_obj_base_t *self_in) {
 }
 
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    int ret;
+    int ret = TLS_SPI_STATUS_OK;
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (0 == self->spi_type) {
-        ret = tls_spi_write(src, len);
-        if (TLS_SPI_STATUS_OK == ret) {
-            ret = tls_spi_read(dest, len);
+        if (src && len) {
+            ret = w600_spi_write(src, len);
+        }
+        if (dest && len) {
+            ret = w600_spi_read(dest, len);
         }
     } else {
         machine_spi_rx_len = len;

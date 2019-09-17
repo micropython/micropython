@@ -31,7 +31,6 @@ INC += -I$(TOP)
 INC += -I$(TOP)/lib/mp-readline
 INC += -I$(TOP)/lib/netutils
 INC += -I$(TOP)/lib/timeutils
-INC += -I$(TOP)/extmod/axtls-include
 INC += -I$(BUILD)
 
 #TOPDIR = $(WMSDK_PATH)
