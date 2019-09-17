@@ -50,7 +50,10 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-	reset_all_pins();
+	//reset_all_pins();
+    //reset_pin_number(uint8_t pin_port, uint8_t pin_number)
+    for(int i=0;i<8;i++) reset_pin_number(0,i); //PA (analog)
+    for(int i=12;i<16;i++) reset_pin_number(3,i); //PD (leds)
 }
 
 void reset_to_bootloader(void) {

@@ -80,11 +80,24 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PC08), MP_ROM_PTR(&pin_PC08) },
   { MP_ROM_QSTR(MP_QSTR_PC07), MP_ROM_PTR(&pin_PC07) },
   { MP_ROM_QSTR(MP_QSTR_PC06), MP_ROM_PTR(&pin_PC06) },
-  //Names
+  //ST LED names
   { MP_ROM_QSTR(MP_QSTR_LD3), MP_ROM_PTR(&pin_PD13) },
   { MP_ROM_QSTR(MP_QSTR_LD4), MP_ROM_PTR(&pin_PD12) },
   { MP_ROM_QSTR(MP_QSTR_LD5), MP_ROM_PTR(&pin_PD14) },
   { MP_ROM_QSTR(MP_QSTR_LD6), MP_ROM_PTR(&pin_PD15) },
+  //more useful LED names
+  { MP_ROM_QSTR(MP_QSTR_LED1), MP_ROM_PTR(&pin_PD13) },
+  { MP_ROM_QSTR(MP_QSTR_LED2), MP_ROM_PTR(&pin_PD12) },
+  { MP_ROM_QSTR(MP_QSTR_LED3), MP_ROM_PTR(&pin_PD14) },
+  { MP_ROM_QSTR(MP_QSTR_LED4), MP_ROM_PTR(&pin_PD15) },
+  //AnalogIO names
+  { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA00) },
+  { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA01) },
+  { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PA02) },
+  { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PA03) },
+  { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PA04) },
+  { MP_ROM_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_PA05) },
+  //actual LED names
   { MP_ROM_QSTR(MP_QSTR_LED_ORANGE), MP_ROM_PTR(&pin_PD13) },
   { MP_ROM_QSTR(MP_QSTR_LED_GREEN), MP_ROM_PTR(&pin_PD12) },
   { MP_ROM_QSTR(MP_QSTR_LED_RED), MP_ROM_PTR(&pin_PD14) },
