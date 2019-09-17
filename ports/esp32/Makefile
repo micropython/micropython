@@ -103,6 +103,13 @@ endif
 # pretty format of ESP IDF version, used internally by the IDF
 IDF_VER := $(shell git -C $(ESPIDF) describe)
 
+ifeq ($(shell which $(CC) 2> /dev/null),)
+$(info ** ERROR **)
+$(info Cannot find C compiler $(CC))
+$(info Add the xtensa toolchain to your PATH. See README.md)
+$(error C compiler missing)
+endif
+
 # include sdkconfig to get needed configuration values
 include $(SDKCONFIG)
 
