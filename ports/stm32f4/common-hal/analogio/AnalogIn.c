@@ -118,7 +118,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
-    HAL_ADC_PollForConversion(&AdcHandle,1); //timeout in ms
+    HAL_ADC_PollForConversion(&AdcHandle,1); //doesn't work as HAL_GetTick always returns 0
+    //uint32_t tickstart = ticks_ms;
     uint16_t uhADCxConvertedData = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
     HAL_ADC_Stop(&AdcHandle);
 
