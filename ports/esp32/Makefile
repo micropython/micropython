@@ -82,6 +82,15 @@ ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V3))
 $(info Building with ESP IDF v3)
 else ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 $(info Building with ESP IDF v4)
+
+PYPARSING_VERSION = $(shell python3 -c 'import pyparsing; print(pyparsing.__version__)')
+ifneq ($(PYPARSING_VERSION),2.3.1)
+$(info ** ERROR **)
+$(info EDP IDF requires pyparsing version less than 2.4)
+$(info You will need to set up a Python virtual environment with pyparsing 2.3.1)
+$(info Please see README.md for more information)
+$(error Incorrect pyparsing version)
+endif
 else
 $(info ** WARNING **)
 $(info The git hash of ESP IDF does not match the supported version)
