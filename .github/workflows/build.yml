@@ -82,6 +82,7 @@ jobs:
         - "circuitplayground_bluefruit"
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
+        - "circuitplayground_express_displayio"
         - "cp32-m4"
         - "datalore_ip_m4"
         - "datum_distance"
