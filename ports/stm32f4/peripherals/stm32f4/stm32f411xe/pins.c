@@ -94,9 +94,9 @@ const mcu_pin_obj_t pin_PA09 = PIN(0, 9, NO_ADC);
 const mcu_pin_obj_t pin_PA10 = PIN(0, 10, NO_ADC);
 const mcu_pin_obj_t pin_PA11 = PIN(0, 11, NO_ADC);
 const mcu_pin_obj_t pin_PA12 = PIN(0, 12, NO_ADC);
-const mcu_pin_obj_t pin_PA13 = PIN(0, 13, NO_ADC);
-const mcu_pin_obj_t pin_PA14 = PIN(0, 14, NO_ADC);
-const mcu_pin_obj_t pin_PA15 = PIN(0, 15, NO_ADC);
+const mcu_pin_obj_t pin_PA13 = PIN(0, 13, NO_ADC); //SWDIO
+const mcu_pin_obj_t pin_PA14 = PIN(0, 14, NO_ADC); //SWCLK
+const mcu_pin_obj_t pin_PA15 = PIN(0, 15, NO_ADC); //JTDI
 
 const mcu_pin_obj_t pin_PC10 = PIN(2, 10, NO_ADC);
 const mcu_pin_obj_t pin_PC11 = PIN(2, 11, NO_ADC);

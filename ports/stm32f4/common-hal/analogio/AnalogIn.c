@@ -92,6 +92,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);
     //LL_GPIO_PIN_0
+    
     //HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
