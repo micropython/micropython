@@ -92,35 +92,35 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);
     //LL_GPIO_PIN_0
-    
+
     //HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
 
     AdcHandle.Instance = ADCx;
-    AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    AdcHandle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
     AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
     AdcHandle.Init.ScanConvMode = DISABLE;
     AdcHandle.Init.ContinuousConvMode = DISABLE;
     AdcHandle.Init.DiscontinuousConvMode = DISABLE;
     AdcHandle.Init.NbrOfDiscConversion = 0;
     AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+    AdcHandle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
     AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
     AdcHandle.Init.NbrOfConversion = 1;
-    AdcHandle.Init.DMAContinuousRequests = ENABLE;
-    AdcHandle.Init.EOCSelection = DISABLE;
+    AdcHandle.Init.DMAContinuousRequests = DISABLE;
+    AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    HAL_ADC_Init(&AdcHandle);
 
     sConfig.Channel = (uint32_t)self->pin->adc_channel; //ADC_CHANNEL_0 <-normal iteration, not mask
     sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
-    sConfig.Offset = 0;
-
+    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES; //Taken from micropython
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
-    HAL_ADC_PollForConversion(&AdcHandle,1); //doesn't work as HAL_GetTick always returns 0
-    uint16_t uhADCxConvertedData = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
+    HAL_ADC_PollForConversion(&AdcHandle,1); 
+    //uint16_t value = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
+    uint32_t value = ADCx->DR;
     HAL_ADC_Stop(&AdcHandle);
 
     //LL Implementation
@@ -145,7 +145,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADCx);
     
     // // Shift the value to be 16 bit.
-    return uhADCxConvertedData << 4;
+    return value << 4;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

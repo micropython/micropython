@@ -51,7 +51,6 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
 	reset_all_pins();
-    //reset_pin_number(uint8_t pin_port, uint8_t pin_number)
 }
 
 void reset_to_bootloader(void) {

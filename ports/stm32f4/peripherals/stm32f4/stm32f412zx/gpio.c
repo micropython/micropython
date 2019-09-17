@@ -179,6 +179,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
 void stm32f4_peripherals_gpio_init(void) {
 	//Enable all GPIO for now
