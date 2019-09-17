@@ -16,7 +16,9 @@ INC += -I$(BUILD)
 CPP = clang -E
 
 ifdef EMSCRIPTEN
-    CPP += -isystem $(EMSCRIPTEN)/system/include/libc -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
+    CPP += -isystem $(EMSCRIPTEN)/system/include/libc 
+    CPP += -isystem $(EMSCRIPTEN)/system/lib/libc/musl/arch/emscripten 
+    CPP += -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
 endif
 
 CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
