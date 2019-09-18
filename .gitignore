@@ -43,3 +43,7 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# IDE Config
+.idea/
+.vscode/

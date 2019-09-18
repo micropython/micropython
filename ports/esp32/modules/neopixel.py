@@ -6,8 +6,11 @@ from esp import neopixel_write
 
 class NeoPixel:
     ORDER = (1, 0, 2, 3)
+    WS2811_TIMING = 0
+    WS2812S_TIMING = 1
+    WS2812B_TIMING = 2
     
-    def __init__(self, pin, n, bpp=3, timing=1):
+    def __init__(self, pin, n, bpp=3, timing=WS2812S_TIMING):
         self.pin = pin
         self.n = n
         self.bpp = bpp
