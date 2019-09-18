@@ -12,6 +12,9 @@ endif
 
 include ../../py/mkenv.mk
 
+# Optional
+-include $(BOARD_DIR)/mpconfigboard.mk
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
