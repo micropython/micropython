@@ -36,18 +36,18 @@
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_bus.h"
 
-//mp_raise_ValueError(translate("U dun goofed"));
-
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
 
-    //No ADC function on pin
+    // No ADC function on pin
     if (pin->adc_unit == 0x00) {
         mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
     }
-    //TODO: add ADC traits to structure?
+    // TODO: add ADC traits to structure?
 
-    LL_GPIO_SetPinMode(pin_port(pin->port), pin_mask(pin->number), LL_GPIO_MODE_ANALOG);
+    // Note that ADC2 is always bundled pin-to-pin with ADC1 if it exists, and used only 
+    // for dual conversion. For this basic application it is never used. 
+    LL_GPIO_SetPinMode(pin_port(pin->port), (uint32_t)pin_mask(pin->number), LL_GPIO_MODE_ANALOG);
     if (pin->adc_unit & 0x01) {
         LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1); 
     } else if (pin->adc_unit == 0x04) {
@@ -88,58 +88,61 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         mp_raise_ValueError(translate("Invalid ADC Unit value"));
     }
 
+    LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);
+    //LL_GPIO_PIN_0
+
     //HAL Implementation
-    // ADC_HandleTypeDef AdcHandle;
-    // ADC_ChannelConfTypeDef sConfig;
+    ADC_HandleTypeDef AdcHandle;
+    ADC_ChannelConfTypeDef sConfig;
 
-    // AdcHandle.Instance = ADC1;
-    // AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
-    // AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
-    // AdcHandle.Init.ScanConvMode = DISABLE;
-    // AdcHandle.Init.ContinuousConvMode = ENABLE;
-    // AdcHandle.Init.DiscontinuousConvMode = DISABLE;
-    // AdcHandle.Init.NbrOfDiscConversion = 0;
-    // AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    // AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
-    // AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    // AdcHandle.Init.NbrOfConversion = 1;
-    // AdcHandle.Init.DMAContinuousRequests = ENABLE;
-    // AdcHandle.Init.EOCSelection = DISABLE;
+    AdcHandle.Instance = ADCx;
+    AdcHandle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+    AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
+    AdcHandle.Init.ScanConvMode = DISABLE;
+    AdcHandle.Init.ContinuousConvMode = DISABLE;
+    AdcHandle.Init.DiscontinuousConvMode = DISABLE;
+    AdcHandle.Init.NbrOfDiscConversion = 0;
+    AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    AdcHandle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    AdcHandle.Init.NbrOfConversion = 1;
+    AdcHandle.Init.DMAContinuousRequests = DISABLE;
+    AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    HAL_ADC_Init(&AdcHandle);
 
-    // sConfig.Channel = self->pin->adc_channel;
-    // sConfig.Rank = 1;
-    // sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
-    // sConfig.Offset = 0;
+    sConfig.Channel = (uint32_t)self->pin->adc_channel; //ADC_CHANNEL_0 <-normal iteration, not mask
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES; //Taken from micropython
+    HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
-    // HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
-
-    // HAL_ADC_Start(&AdcHandle);
-    // HAL_ADC_PollForConversion(&AdcHandle,1); //timeout in ms
-    // uint16_t uhADCxConvertedData = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
-    // HAL_ADC_Stop(&AdcHandle);
+    HAL_ADC_Start(&AdcHandle);
+    HAL_ADC_PollForConversion(&AdcHandle,1); 
+    uint16_t value = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
+    HAL_ADC_Stop(&AdcHandle);
 
     //LL Implementation
-    if (LL_ADC_IsEnabled(ADCx) == 0)
-    {
-        LL_ADC_REG_SetTriggerSource(ADCx, LL_ADC_REG_TRIG_SOFTWARE);
-        LL_ADC_REG_SetContinuousMode(ADCx, LL_ADC_REG_CONV_SINGLE);
-        LL_ADC_REG_SetSequencerLength(ADCx, LL_ADC_REG_SEQ_SCAN_DISABLE);
-        LL_ADC_REG_SetSequencerRanks(ADCx, LL_ADC_REG_RANK_1, self->pin->adc_channel);
-        //LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
+    // if (LL_ADC_IsEnabled(ADCx) == 0)
+    // {
+    //     LL_ADC_REG_SetTriggerSource(ADCx, LL_ADC_REG_TRIG_SOFTWARE);
+    //     LL_ADC_REG_SetContinuousMode(ADCx, LL_ADC_REG_CONV_SINGLE);
+    //     LL_ADC_REG_SetSequencerLength(ADCx, LL_ADC_REG_SEQ_SCAN_DISABLE);
+    //     //LL_ADC_REG_SetSequencerRanks(ADCx, LL_ADC_REG_RANK_1, self->pin->adc_channel);
+    //     //^ Above is WRONG: channel value requires inserted channel information. Hard to iterate through. 
+    //     LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
 
-        LL_ADC_SetChannelSamplingTime(ADCx, self->pin->adc_channel, LL_ADC_SAMPLINGTIME_56CYCLES);
-        LL_ADC_EnableIT_OVR(ADCx);
-    }
-    LL_ADC_Enable(ADCx);
-    uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
-    LL_ADC_REG_StartConversionSWStart(ADCx);
-    while (LL_ADC_IsActiveFlag_EOCS(ADCx) == 0) {}
-    /* Retrieve ADC conversion data */
-    /* (data scale corresponds to ADC resolution: 12 bits) */
-    uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADCx);
+    //     LL_ADC_SetChannelSamplingTime(ADCx, self->pin->adc_channel, LL_ADC_SAMPLINGTIME_56CYCLES);
+    //     LL_ADC_EnableIT_OVR(ADCx);
+    // }
+    // LL_ADC_Enable(ADCx);
+    // uint16_t uhADCxConvertedData = (__LL_ADC_DIGITAL_SCALE(LL_ADC_RESOLUTION_12B) + 1);
+    // LL_ADC_REG_StartConversionSWStart(ADCx);
+    // while (LL_ADC_IsActiveFlag_EOCS(ADCx) == 0) {}
+    // /* Retrieve ADC conversion data */
+    // /* (data scale corresponds to ADC resolution: 12 bits) */
+    // uhADCxConvertedData = LL_ADC_REG_ReadConversionData12(ADCx);
     
     // // Shift the value to be 16 bit.
-    return uhADCxConvertedData << 4;
+    return value << 4;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

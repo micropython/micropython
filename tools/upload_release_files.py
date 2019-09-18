@@ -25,6 +25,9 @@ for dirpath, dirnames, filenames in os.walk("../bin"):
         with open(full_filename, "rb") as f:
             response = github.post(url, data=f, headers=headers)
         if not response.ok:
+            if response.status_code == 422 and response.json().get("errors", [{"code":""}])[0]["code"] == "already_exists":
+                print("File already uploaded. Skipping.")
+                continue
             print("Upload of {} failed with {}.".format(filename, response.status_code))
             print(response.text)
             sys.exit(response.status_code)

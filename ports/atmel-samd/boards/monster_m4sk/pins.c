@@ -10,9 +10,13 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_HEADPHONE_RIGHT),  MP_ROM_PTR(&pin_PA05) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A1),  MP_ROM_PTR(&pin_PA05) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D2),  MP_ROM_PTR(&pin_PB03) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NOSE),  MP_ROM_PTR(&pin_PB03) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D3),  MP_ROM_PTR(&pin_PB02) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D2),  MP_ROM_PTR(&pin_PB08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A2),  MP_ROM_PTR(&pin_PB08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_NOSE),  MP_ROM_PTR(&pin_PB08) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D3),  MP_ROM_PTR(&pin_PB09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A3),  MP_ROM_PTR(&pin_PB09) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D13),  MP_ROM_PTR(&pin_PA27) },
 
     // I2C
