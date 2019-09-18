@@ -81,7 +81,11 @@
 //                              (L0-L2 may be in regs instead)
 
 // Native emitter needs to know the following sizes and offsets of C structs (on the target):
+#if MICROPY_DYNAMIC_COMPILER
+#define SIZEOF_NLR_BUF (2 + mp_dynamic_compiler.nlr_buf_num_regs + 1) // the +1 is conservative in case MICROPY_ENABLE_PYSTACK enabled
+#else
 #define SIZEOF_NLR_BUF (sizeof(nlr_buf_t) / sizeof(uintptr_t))
+#endif
 #define SIZEOF_CODE_STATE (sizeof(mp_code_state_t) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_STATE (offsetof(mp_code_state_t, state) / sizeof(uintptr_t))
 #define OFFSETOF_CODE_STATE_FUN_BC (offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
