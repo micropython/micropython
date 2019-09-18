@@ -143,7 +143,6 @@ CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BU
 ######################################
 
 SRC_STM32 = \
-	boards/$(BOARD)/stm32f4xx_hal_msp.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \

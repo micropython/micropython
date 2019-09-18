@@ -36,7 +36,7 @@
 
 const mcu_i2c_periph_obj_t periph_I2C1_0 = I2C(1, 0, &pin_PB07, &pin_PB06);
 const mcu_i2c_periph_obj_t periph_I2C1_1 = I2C(1, 1, &pin_PB09, &pin_PB08);
-//const mcu_i2c_periph_obj_t periph_I2C2 = I2C(1, NO_ALT, &pin_PB11, &pin_PB10); //not on LQFP100
+//const mcu_i2c_periph_obj_t periph_I2C2 = I2C(1, NO_ALT, &pin_PB11, &pin_PB10); //AFN only
 const mcu_i2c_periph_obj_t periph_I2C3 = I2C(1, NO_ALT, &pin_PB09, &pin_PB08);
 
 const mcu_i2c_periph_obj_t* mcu_i2c_list[3] = {&periph_I2C1_0,&periph_I2C1_1,&periph_I2C3};

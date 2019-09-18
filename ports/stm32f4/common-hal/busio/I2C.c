@@ -32,6 +32,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "stm32f4/periph.h"
 
 STATIC I2C_HandleTypeDef hi2c;
@@ -57,7 +58,8 @@ STATIC I2C_TypeDef * I2Cbanks[3] =
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
-    
+
+    I2C_TypeDef * I2Cx;
     uint8_t i2cidx = 0;
     uint8_t i2cidx_c = 0;
     uint8_t len = sizeof(mcu_i2c_list)/sizeof(*mcu_i2c_list);
@@ -66,17 +68,26 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
             i2cidx = mcu_i2c_list[i]->i2c_index;
         }
         if (mcu_i2c_list[i]->scl_pin == scl) {
-            i2cidx_c = mcu_i2c_list[i]->i2c_index
+            i2cidx_c = mcu_i2c_list[i]->i2c_index;
         }
     }
-    if(idcidx == i2cidx_c) {
-        if(I2Cbanks[idcidx] == NULL || idcidx>=len) {
+    if(i2cidx == i2cidx_c) {
+        if(I2Cbanks[i2cidx] == NULL || i2cidx>=len) {
             mp_raise_RuntimeError(translate("Bad I2C pin definition, check peripheral files"));
         }
-        I2Cx = I2Cbanks[idcidx];
+        I2Cx = I2Cbanks[i2cidx];
     } else {
         mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
     } 
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = pin_mask(sda->number)|pin_mask(scl->number);
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C1; //TODO; custom per pin? Or error if mixed is bad.
+    HAL_GPIO_Init(pin_port(sda->port), &GPIO_InitStruct);
+    __HAL_RCC_I2C1_CLK_ENABLE(); //TODO custom per periph
 
     hi2c.Instance = I2Cx;
     hi2c.Init.ClockSpeed = 100000;
@@ -93,15 +104,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_printf(&mp_plat_print, "I2C INIT OK");
     }
 
-    self->sda_pin = sda->number;
-    self->scl_pin = scl->number;
+    self->sda_pin = sda;
+    self->scl_pin = scl;
 
     claim_pin(sda);
     claim_pin(scl);
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
-    return self->sda_pin == NO_PIN;
+    return self->sda_pin == NULL;
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
@@ -111,8 +122,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
     HAL_I2C_MspDeInit(&hi2c);
 
-    self->sda_pin = NO_PIN;
-    self->scl_pin = NO_PIN;
+    self->sda_pin = NULL;
+    self->scl_pin = NULL;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {

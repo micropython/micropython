@@ -39,6 +39,8 @@
 
 safe_mode_t port_init(void) {
 	HAL_Init();
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
 
 	stm32f4_peripherals_clocks_init();
 	stm32f4_peripherals_gpio_init();
