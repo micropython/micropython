@@ -32,6 +32,8 @@
 #include "lib/mp-readline/readline.h"
 #include "stm32f4xx_hal.h"
 
+#include "common-hal/microcontroller/Pin.h"
+
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management. 
 
@@ -50,12 +52,15 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    never_reset_pin_number(0, 11);
+    never_reset_pin_number(0, 12);
 
     /* Configure VBUS Pin */
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    never_reset_pin_number(0, 9);
 
     /* This for ID line debug */
     GPIO_InitStruct.Pin = GPIO_PIN_10;
@@ -64,6 +69,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    never_reset_pin_number(0, 10);
 
 #ifdef STM32F412Zx
     /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
@@ -71,6 +77,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    never_reset_pin_number(0, 8);
 #endif
 
     /* Peripheral clock enable */
