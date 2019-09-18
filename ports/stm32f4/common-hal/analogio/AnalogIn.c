@@ -36,8 +36,6 @@
 #include "stm32f4xx_ll_adc.h"
 #include "stm32f4xx_ll_bus.h"
 
-//mp_raise_ValueError(translate("U dun goofed"));
-
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
 
