@@ -220,4 +220,4 @@ include $(TOP)/py/mkrules.mk
 
 clean-modules:
 	git clean -f -d modules
-	rm -f build/frozen*.c
+	rm -f $(BUILD)/frozen*.c
