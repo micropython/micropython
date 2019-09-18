@@ -412,13 +412,35 @@ Use the ``neopixel`` module::
 For low-level driving of a NeoPixel::
 
     import esp
-    esp.neopixel_write(pin, grb_buf, is800khz)
+    esp.neopixel_write(pin, grb_buf, timing=NeoPixel.WS2812B_TIMING)
 
 .. Warning::
-   By default ``NeoPixel`` is configured to control the more popular *800kHz*
-   units. It is possible to use alternative timing to control other (typically
-   400kHz) devices by passing ``timing=0`` when constructing the
-   ``NeoPixel`` object.
+   By default ``NeoPixel`` is configured to control the more popular 800kHz
+   WS2812B units. It is possible to use alternative timing to control other
+   (typically 400kHz WS2811) devices by passing ``timing=NeoPixel.WS2811_TIMING``
+   when constructing the ``NeoPixel`` object.
+
+For extremely low-level driving of NeoPixel-like strands, such as the SK6812,
+or future types that may not yet be supported, or the "totally" "neopixels" you
+got off of eBay, an even lower-level function is available, that allows
+you to specify custom clock cycle timings. This may be helpful even if your
+NeoPixel strand is supported by the higher level functions, if you're looking
+to drive your strand to its limits, as fast as it will go, particularly for
+persistence of vision effects. You could also flip the timing for the 0 and
+the 1 and then stream the same bits, but send the opposite colors.::
+
+    from esp import neopixel_write_timings
+    pin23 = Pin(23)
+    pixel_grb_data = bytearray(b'\x10\x00\x00\x00\x10\x00\x00\x00\x10\x10\x10\x10')
+    # Clock cycles to drive timing (be sure to consider your CPU frequency)
+    # Consult the datasheet for your particular strand timings
+    t0high_ticks = 1
+    # This works! One clock cycle!
+    t1high_ticks = 216
+    t0low_ticks = 216
+    t1low_ticks = 50
+    latch_ticks = 35000
+    neopixel_write_timings(pin23, pixel_grb_data, t0high_ticks, t1high_ticks, t0low_ticks, t1low_ticks, latch_ticks)
 
 
 Capacitive Touch

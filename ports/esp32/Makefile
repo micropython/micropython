@@ -105,6 +105,25 @@ endif
 # pretty format of ESP IDF version, used internally by the IDF
 IDF_VER := $(shell git -C $(ESPIDF) describe)
 
+CROSS_COMPILE_VER = $(shell xtensa-esp32-elf-c++ --version | head -n1)
+
+# NOTE: If you change this, also change the README.md, 
+#   where it mentions the version of the toolchain
+# As of this writing, that's around these strings:
+# - "Currently this project uses the v3.3 toolchain"
+# - "xtensa-esp32-elf-c++ --version"
+CROSS_COMPILE_SUPVER = xtensa-esp32-elf-c++ (crosstool-NG crosstool-ng-1.22.0-80-g6c4433a) 5.2.0
+ifneq ($(CROSS_COMPILE_VER), $(CROSS_COMPILE_SUPVER))
+$(info ** WARNING **)
+$(info The version of xtensa cross-compiler does not match the supported version)
+$(info The build may complete and the firmware may work but it is not guaranteed)
+$(info The current toolchain supported by this project can be found here:)
+$(info - https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started/index.html#setup-toolchain)
+$(info Toolchain path:    $(shell which xtensa-esp32-elf-c++))
+$(info Current version:   $(CROSS_COMPILE_VER))
+$(info Supported version: $(CROSS_COMPILE_SUPVER))
+endif
+
 ifeq ($(shell which $(CC) 2> /dev/null),)
 $(info ** ERROR **)
 $(info Cannot find C compiler $(CC))

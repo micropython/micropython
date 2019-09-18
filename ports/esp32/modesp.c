@@ -118,11 +118,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_gpio_matrix_out_obj, 4, 4, esp_gp
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t timing) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    esp_neopixel_write(mp_hal_get_pin_obj(pin),
-        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_get_int(timing));
-    return mp_const_none;
+    return mp_obj_new_int_from_uint(esp_neopixel_write(mp_hal_get_pin_obj(pin),
+        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_get_int(timing)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
+
+STATIC mp_obj_t esp_neopixel_write_timings_(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    mp_obj_t pin = args[0], buf = args[1], t0high = args[2], t1high = args[3], t0low = args[4], t1low = args[5], t_latch = args[6];
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    return mp_obj_new_int_from_uint(
+        esp_neopixel_write_timings(
+            mp_hal_get_pin_obj(pin),
+            (uint8_t*)bufinfo.buf, 
+            bufinfo.len, 
+            mp_obj_get_int(t0high), 
+            mp_obj_get_int(t1high), 
+            mp_obj_get_int(t0low), 
+            mp_obj_get_int(t1low), 
+            mp_obj_get_int(t_latch)
+        )
+    );
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_neopixel_write_timings_obj, 7, 7, esp_neopixel_write_timings_);
 
 STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp) },
@@ -139,6 +158,7 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_neopixel_write_timings), MP_ROM_PTR(&esp_neopixel_write_timings_obj) },
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     // Constants for second arg of osdebug()
