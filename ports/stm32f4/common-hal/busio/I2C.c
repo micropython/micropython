@@ -34,51 +34,49 @@
 #include "supervisor/shared/translate.h"
 #include "stm32f4/periph.h"
 
-I2C_HandleTypeDef hi2c;
+STATIC I2C_HandleTypeDef hi2c;
+
+STATIC I2C_TypeDef * I2Cbanks[3] = 
+{
+#ifdef I2C1
+    I2C1, 
+#else 
+    NULL,
+#endif
+#ifdef I2C2
+    I2C2,
+#else
+    NULL,
+#endif
+#ifdef I2C3
+    I2C3
+#else
+    NULL
+#endif
+};
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
-    //TODO: Rework this entire section to use LL so we can properly assign pins
-    //      This will also be bundled with MSP removal  
-    I2C_TypeDef * I2Cx = NULL;
-    I2C_TypeDef * I2Cx_check = NULL;
-
-    for(uint i=0; i<(sizeof(mcu_i2c_list)/sizeof(*mcu_i2c_list));i++) {
-        if (mcu_i2c_list[i]->sda_pin == sda) {
-            switch (mcu_i2c_list[i]->i2c_index) {
-                case 1: I2Cx = I2C1;
-                        break;
-                #ifdef I2C2
-                case 2: I2Cx = I2C2;
-                        break;
-                #endif
-                #ifdef I2C3
-                case 3: I2Cx = I2C3;
-                        break;
-                #endif
-            }
-        }
-
-        if (mcu_i2c_list[i]->scl_pin == scl) {
-            switch (mcu_i2c_list[i]->i2c_index) {
-                case 1: I2Cx_check = I2C1;
-                        break;
-                #ifdef I2C2
-                case 2: I2Cx_check = I2C2;
-                        break;
-                #endif
-                #ifdef I2C3
-                case 3: I2Cx_check = I2C3;
-                        break;
-                #endif
-            }
-        }
-    }
-
-    if (I2Cx!=I2Cx_check || I2Cx==NULL) {
-        mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
-    }
     
+    uint8_t i2cidx = 0;
+    uint8_t i2cidx_c = 0;
+    uint8_t len = sizeof(mcu_i2c_list)/sizeof(*mcu_i2c_list);
+    for(uint i=0; i<len;i++) {
+        if (mcu_i2c_list[i]->sda_pin == sda) {
+            i2cidx = mcu_i2c_list[i]->i2c_index;
+        }
+        if (mcu_i2c_list[i]->scl_pin == scl) {
+            i2cidx_c = mcu_i2c_list[i]->i2c_index
+        }
+    }
+    if(idcidx == i2cidx_c) {
+        if(I2Cbanks[idcidx] == NULL || idcidx>=len) {
+            mp_raise_RuntimeError(translate("Bad I2C pin definition, check peripheral files"));
+        }
+        I2Cx = I2Cbanks[idcidx];
+    } else {
+        mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
+    } 
 
     hi2c.Instance = I2Cx;
     hi2c.Init.ClockSpeed = 100000;
