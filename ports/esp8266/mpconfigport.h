@@ -1,6 +1,10 @@
-#include <stdint.h>
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
 
-// options to control how MicroPython is built
+// Board-specific definitions
+#include "mpconfigboard.h"
+
+#include <stdint.h>
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
@@ -211,8 +215,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 // board specifics
 
 #define MICROPY_MPHALPORT_H "esp_mphal.h"
-#define MICROPY_HW_BOARD_NAME "ESP module"
-#define MICROPY_HW_MCU_NAME "ESP8266"
 #define MICROPY_PY_SYS_PLATFORM "esp8266"
 
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
