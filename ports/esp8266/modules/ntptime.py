@@ -10,9 +10,11 @@ except:
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
 
-host = "pool.ntp.org"
+DEFAULT_HOST = "pool.ntp.org"
 
-def time():
+def time(host=None):
+    if host==None:
+        host = DEFAULT_HOST
     NTP_QUERY = bytearray(48)
     NTP_QUERY[0] = 0x1b
     addr = socket.getaddrinfo(host, 123)[0][-1]
