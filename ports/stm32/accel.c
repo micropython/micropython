@@ -33,18 +33,24 @@
 #include "i2c.h"
 #include "accel.h"
 
+
+#if MICROPY_HW_HAS_MMA7660 && MICROPY_HW_HAS_KXTJ3
+#error "MICROPY_HW_HAS_MMA7660 and MICROPY_HW_HAS_KXTJ3 can't be set at the same time"
+#endif
+
 #if MICROPY_HW_HAS_MMA7660
 
 /// \moduleref pyb
 /// \class Accel - accelerometer control
 ///
-/// Accel is an object that controls the accelerometer.  Example usage:
+/// Accel is an object that controls the MMA7660 accelerometer.
+/// Example usage:
 ///
 ///     accel = pyb.Accel()
 ///     for i in range(10):
 ///         print(accel.x(), accel.y(), accel.z())
 ///
-/// Raw values are between -32 and 31.
+/// Raw values are between -32 and 31 for -/+ 1.5G acceleration.
 
 #define I2C_TIMEOUT_MS (50)
 
@@ -226,3 +232,180 @@ const mp_obj_type_t pyb_accel_type = {
 };
 
 #endif // MICROPY_HW_HAS_MMA7660
+
+
+#if MICROPY_HW_HAS_KXTJ3
+
+/// \moduleref pyb
+/// \class Accel - accelerometer control
+///
+/// Accel is an object that controls the KXTJ3 accelerometer.
+//  Example usage:
+///
+///     accel = pyb.Accel()
+///     for i in range(10):
+///         print(accel.x(), accel.y(), accel.z())
+///
+/// Raw values are between -128 and 127 for -/+ 2G acceleration.
+
+
+#define I2C_TIMEOUT_MS (50)
+
+#define KXT_ADDR            (0x0F)
+#define KXT_REG_DCST_RESP   (0x0C)
+#define KXT_REG_WHO_AM_I    (0x0F)
+#define KXT_REG_XOUT_H      (0x07)
+#define KXT_REG_YOUT_H      (0x09)
+#define KXT_REG_ZOUT_H      (0x0B)
+#define KXT_REG_CTRL_REG1   (0x1B)
+#define KXT_REG_CTRL_REG2   (0x1D)
+
+// KXTJ3 is 8bit signed, with +/- 2G per axis.
+#define KXT_AXIS_SIGNED_VALUE(i) (((i) & 0x7f) | ((i) & 0x80 ? (~0x7f) : 0))
+
+
+STATIC void accel_start(void) {
+    // start the I2C bus in master mode
+    i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000, I2C_TIMEOUT_MS);
+
+    // readout WHO_AM_I register to check KXTJ3 device presence
+    uint8_t data[2] = { KXT_REG_WHO_AM_I };
+    i2c_writeto(I2C1, KXT_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, KXT_ADDR, data, 1, true);
+    if ( data[0] != 0x35 ) {
+        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
+    }
+
+    // set operating mode (default: 8 bits)
+    data[0] = KXT_REG_CTRL_REG1;
+    data[1] = 0x80;
+    i2c_writeto(I2C1, KXT_ADDR, data, 2, true);
+
+}
+
+/******************************************************************************/
+/* MicroPython bindings                                                      */
+
+#define NUM_AXIS (3)
+#define FILT_DEPTH (4)
+
+typedef struct _pyb_accel_obj_t {
+    mp_obj_base_t base;
+    int16_t buf[NUM_AXIS * FILT_DEPTH];
+} pyb_accel_obj_t;
+
+STATIC pyb_accel_obj_t pyb_accel_obj;
+
+/// \classmethod \constructor()
+/// Create and return an accelerometer object.
+///
+/// Note: if you read accelerometer values immediately after creating this object
+/// you will get 0.  It takes around 20ms for the first sample to be ready, so,
+/// unless you have some other code between creating this object and reading its
+/// values, you should put a `pyb.delay(20)` after creating it.  For example:
+///
+///     accel = pyb.Accel()
+///     pyb.delay(20)
+///     print(accel.x())
+STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // init accel object
+    pyb_accel_obj.base.type = &pyb_accel_type;
+    accel_start();
+
+    return MP_OBJ_FROM_PTR(&pyb_accel_obj);
+}
+
+STATIC mp_obj_t read_axis(int axis) {
+    uint8_t data[1] = { axis };
+    i2c_writeto(I2C1, KXT_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, KXT_ADDR, data, 1, true);
+    return mp_obj_new_int(KXT_AXIS_SIGNED_VALUE(data[0]));
+}
+
+/// \method x()
+/// Get the x-axis value.
+STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
+    return read_axis(KXT_REG_XOUT_H);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
+
+/// \method y()
+/// Get the y-axis value.
+STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
+    return read_axis(KXT_REG_YOUT_H);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
+
+/// \method z()
+/// Get the z-axis value.
+STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
+    return read_axis(KXT_REG_ZOUT_H);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
+
+/// \method tilt()
+/// Not implemented with KXTJ3 accelerometer
+
+/// \method filtered_xyz()
+/// Not implemented with KXTJ3 accelerometer
+
+/// \method xyz()
+/// Get a 3-tuple of x, y and z values.
+STATIC mp_obj_t pyb_accel_xyz(mp_obj_t self_in) {
+    uint8_t data[5];
+    mp_obj_t tuple[NUM_AXIS];
+
+    data[0] = KXT_REG_XOUT_H;
+    i2c_writeto(I2C1, KXT_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, KXT_ADDR, data, 5, true);
+    tuple[0] = mp_obj_new_int( KXT_AXIS_SIGNED_VALUE(data[0]) );
+    tuple[1] = mp_obj_new_int( KXT_AXIS_SIGNED_VALUE(data[2]) );
+    tuple[2] = mp_obj_new_int( KXT_AXIS_SIGNED_VALUE(data[4]) );
+
+    return mp_obj_new_tuple(3, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_xyz_obj, pyb_accel_xyz);
+
+STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
+    uint8_t data[1] = { mp_obj_get_int(reg) };
+    i2c_writeto(I2C1, KXT_ADDR, data, 1, false);
+    i2c_writeto(I2C1, KXT_ADDR, data, 1, true);
+    return mp_obj_new_int(data[0]);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
+
+STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
+    uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
+    i2c_writeto(I2C1, KXT_ADDR, data, 2, true);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
+
+STATIC const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
+    // TODO add init, deinit, and perhaps reset methods
+    { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&pyb_accel_x_obj) },
+    { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&pyb_accel_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_z), MP_ROM_PTR(&pyb_accel_z_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_filtered_xyz), MP_ROM_PTR(&pyb_accel_filtered_xyz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_xyz), MP_ROM_PTR(&pyb_accel_xyz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&pyb_accel_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_accel_write_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
+
+const mp_obj_type_t pyb_accel_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Accel,
+    .make_new = pyb_accel_make_new,
+    .locals_dict = (mp_obj_dict_t*)&pyb_accel_locals_dict,
+};
+
+#endif // MICROPY_HW_HAS_KXTJ3
+
+
+
+
