@@ -51,7 +51,7 @@
 // <i> This defines the current in output buffer according to conversion rate
 // <id> dac0_arch_cctrl
 #ifndef CONF_DAC0_CCTRL
-#define CONF_DAC0_CCTRL 1
+#define CONF_DAC0_CCTRL 0
 #endif
 
 // <q> Run in standby
@@ -90,7 +90,7 @@
 // <i> This defines the current in output buffer according to conversion rate
 // <id> dac1_arch_cctrl
 #ifndef CONF_DAC1_CCTRL
-#define CONF_DAC1_CCTRL 1
+#define CONF_DAC1_CCTRL 0
 #endif
 
 // <q> Run in standby
