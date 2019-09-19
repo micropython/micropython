@@ -35,21 +35,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void i2c_reset(void) {
-    #ifdef I2C1
-    __HAL_RCC_I2C1_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C1_RELEASE_RESET();
-    #endif
-    #ifdef I2C2
-    __HAL_RCC_I2C2_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C2_RELEASE_RESET();
-    #endif
-    #ifdef I2C3
-    __HAL_RCC_I2C3_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C3_RELEASE_RESET();
-    #endif
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
@@ -99,6 +84,22 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
+
+    #ifdef I2C1
+    __HAL_RCC_I2C1_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C1_RELEASE_RESET();
+    #endif
+    #ifdef I2C2
+    __HAL_RCC_I2C2_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C2_RELEASE_RESET();
+    #endif
+    #ifdef I2C3
+    __HAL_RCC_I2C3_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C3_RELEASE_RESET();
+    #endif
 
     #ifdef I2C1
     if(I2Cx==I2C1) __HAL_RCC_I2C1_CLK_ENABLE(); 
