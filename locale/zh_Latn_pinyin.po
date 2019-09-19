@@ -511,7 +511,7 @@ msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
-msgstr ""
+msgstr "Zhèngzài shǐyòng de shèbèi"
 
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."
@@ -871,7 +871,7 @@ msgstr "Ānquán móshì wúxiào"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
-msgstr ""
+msgstr "Yǔyīn wúxiào"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
@@ -2083,7 +2083,7 @@ msgstr "bù yǔnxǔ gāi lèixíng de chángdù cānshù"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
-msgstr ""
+msgstr "Level bìxū jiè yú 0 hé 1 zhī jiān"
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
