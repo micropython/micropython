@@ -35,6 +35,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void i2c_reset(void) {
+    //TODO: implement something better than eratta workaround. 
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
@@ -63,11 +64,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         I2Cx = mcu_i2c_banks[self->sda->i2c_index-1];
     } else {
         mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
-    } 
-
-    //not it
-    // HAL_GPIO_DeInit(pin_port(self->sda->pin->port), pin_mask(self->sda->pin->number));
-    // HAL_GPIO_DeInit(pin_port(self->scl->pin->port), pin_mask(self->scl->pin->number));
+    }
 
     //Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -85,6 +82,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
+    //Fix for HAL error caused by soft reboot GPIO init SDA pin voltage drop. See Eratta. 
+    //Must be in this exact spot or I2C will get stuck in infinite loop. 
+    //TODO: delet 
     #ifdef I2C1
     __HAL_RCC_I2C1_FORCE_RESET();
     HAL_Delay(2);
@@ -120,14 +120,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->handle.Init.OwnAddress2 = 0;
     self->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     self->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    if(HAL_I2C_DeInit(&(self->handle)) != HAL_OK) {
-        mp_raise_RuntimeError(translate("I2C DeInit Error"));
-    } else {
-        mp_printf(&mp_plat_print, "I2C DEINIT OK\n");
-    }
     if(HAL_I2C_Init(&(self->handle)) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     } else {
+        //TODO: remove post testing
         mp_printf(&mp_plat_print, "I2C INIT OK\n");
     }
     claim_pin(sda);
