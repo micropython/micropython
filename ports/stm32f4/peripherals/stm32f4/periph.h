@@ -33,19 +33,17 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-#define PA  0
-#define PB  1
-#define PC  2
-#define PD  3
-#define PE  4
-#define PF  5
-#define PG  6
-#define PH  7
-#define PI  8
-#define PJ  9
-#define PK  10
-
-#define NO_ALT  0x0F
+// #define PA  0
+// #define PB  1
+// #define PC  2
+// #define PD  3
+// #define PE  4
+// #define PF  5
+// #define PG  6
+// #define PH  7
+// #define PI  8
+// #define PJ  9
+// #define PK  10
 
 // I2C
 
@@ -82,21 +80,32 @@ typedef struct {
 
 // Address Version
 typedef struct {
-    uint8_t i2c_index:4; // Index of the I2C unit
-    uint8_t alt_index:4; // Alt index is arbitrary, it just lists additional pin options
-    const mcu_pin_obj_t * sda_pin;
-    const mcu_pin_obj_t * scl_pin;
-} mcu_i2c_periph_obj_t;
+    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
+    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t * pin;
+} mcu_i2c_sda_obj_t;
+
+// Address Version
+typedef struct {
+    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
+    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t * pin;
+} mcu_i2c_scl_obj_t;
 
 
-#define I2C(index, alt, sda, scl)       \
+#define I2C_SDA(index, alt, sda_pin)       \
 { \
     .i2c_index = index, \
-    .alt_index = alt, \
-    .sda_pin = sda, \
-    .scl_pin = scl, \
+    .altfn_index = alt, \
+    .pin = sda_pin, \
 }
 
+#define I2C_SCL(index, alt, scl_pin)       \
+{ \
+    .i2c_index = index, \
+    .altfn_index = alt, \
+    .pin = scl_pin, \
+}
 
 // TODO: SPI, UART, etc
 

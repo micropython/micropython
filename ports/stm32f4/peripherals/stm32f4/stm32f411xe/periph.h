@@ -27,10 +27,24 @@
 #ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 #define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 
-extern const mcu_i2c_periph_obj_t periph_I2C1_0;
-extern const mcu_i2c_periph_obj_t periph_I2C1_1;
-extern const mcu_i2c_periph_obj_t periph_I2C3;
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[3];
 
-extern const mcu_i2c_periph_obj_t* mcu_i2c_list[3];
+extern const mcu_i2c_sda_obj_t per_SDA_1B07;
+extern const mcu_i2c_sda_obj_t per_SDA_1B09;
+//extern const mcu_i2c_sda_obj_t per_SDA_2B11;
+extern const mcu_i2c_sda_obj_t per_SDA_2B09;
+extern const mcu_i2c_sda_obj_t per_SDA_2B03;
+extern const mcu_i2c_sda_obj_t per_SDA_3C09;
+extern const mcu_i2c_sda_obj_t per_SDA_3B04;
+extern const mcu_i2c_sda_obj_t per_SDA_3B08;
+
+extern const mcu_i2c_scl_obj_t per_SCL_1B06;
+extern const mcu_i2c_scl_obj_t per_SCL_1B08;
+extern const mcu_i2c_scl_obj_t per_SCL_2B10;
+extern const mcu_i2c_scl_obj_t per_SCL_3B08;
+
+extern const mcu_i2c_sda_obj_t* mcu_i2c_sda_list[7];
+extern const mcu_i2c_scl_obj_t* mcu_i2c_scl_list[4];
 
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
