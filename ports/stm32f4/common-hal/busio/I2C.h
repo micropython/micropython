@@ -43,4 +43,6 @@ typedef struct {
     const mcu_i2c_sda_obj_t *sda;
 } busio_i2c_obj_t;
 
+void i2c_reset(void);
+
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_I2C_H

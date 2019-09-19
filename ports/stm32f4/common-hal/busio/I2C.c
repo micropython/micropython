@@ -34,11 +34,30 @@
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
+void i2c_reset(void) {
+    #ifdef I2C1
+    __HAL_RCC_I2C1_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C1_RELEASE_RESET();
+    #endif
+    #ifdef I2C2
+    __HAL_RCC_I2C2_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C2_RELEASE_RESET();
+    #endif
+    #ifdef I2C3
+    __HAL_RCC_I2C3_FORCE_RESET();
+    HAL_Delay(2);
+    __HAL_RCC_I2C3_RELEASE_RESET();
+    #endif
+}
+
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
 
     //match pins to I2C objects
     I2C_TypeDef * I2Cx;
+
     uint8_t sda_len = sizeof(mcu_i2c_sda_list)/sizeof(*mcu_i2c_sda_list);
     uint8_t scl_len = sizeof(mcu_i2c_scl_list)/sizeof(*mcu_i2c_scl_list);
     for(uint i=0; i<sda_len;i++) {
@@ -55,11 +74,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if(self->sda!=NULL && self->scl!=NULL) {
+    if(self->sda!=NULL && self->scl!=NULL ) {
         I2Cx = mcu_i2c_banks[self->sda->i2c_index-1];
     } else {
         mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
     } 
+
+    //not it
+    // HAL_GPIO_DeInit(pin_port(self->sda->pin->port), pin_mask(self->sda->pin->number));
+    // HAL_GPIO_DeInit(pin_port(self->scl->pin->port), pin_mask(self->scl->pin->number));
 
     //Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -96,6 +119,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->handle.Init.OwnAddress2 = 0;
     self->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     self->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if(HAL_I2C_DeInit(&(self->handle)) != HAL_OK) {
+        mp_raise_RuntimeError(translate("I2C DeInit Error"));
+    } else {
+        mp_printf(&mp_plat_print, "I2C DEINIT OK\n");
+    }
     if(HAL_I2C_Init(&(self->handle)) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     } else {
@@ -161,7 +189,8 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    return HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
+    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 2);
+    return result == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
