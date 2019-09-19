@@ -55,7 +55,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if(self->sda->i2c_index == self->scl->i2c_index) {
+    if(self->sda!=NULL && self->scl!=NULL) {
         I2Cx = mcu_i2c_banks[self->sda->i2c_index-1];
     } else {
         mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
@@ -67,14 +67,14 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = 4;//self->sda->altfn_index; 
+    GPIO_InitStruct.Alternate = self->sda->altfn_index; 
     HAL_GPIO_Init(pin_port(sda->port), &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = pin_mask(scl->number);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = 4; //self->scl->altfn_index; 
+    GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
     #ifdef I2C1
@@ -87,7 +87,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if(I2Cx==I2C3) __HAL_RCC_I2C3_CLK_ENABLE(); 
     #endif
 
-    self->handle.Instance = I2C1;//I2Cx;
+    self->handle.Instance = I2Cx;
     self->handle.Init.ClockSpeed = 100000;
     self->handle.Init.DutyCycle = I2C_DUTYCYCLE_2;
     self->handle.Init.OwnAddress1 = 0;
