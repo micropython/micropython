@@ -1,0 +1,428 @@
+variables:
+  GITHUB_OAUTH_CONNECTION_NAME: 'github-pulkin'
+  GITHUB_MICROPY_REPO: 'pulkin/micropython'
+  GITHUB_RELEASE_TAG: 'latest-build'
+  MAKEOPTS: "-j4"
+
+stages:
+- stage: build
+  displayName: 'Test and build'
+  jobs:
+  - job: port_stm32
+    displayName: 'stm32 port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
+      displayName: 'Checkout submodules'
+
+    - script: |
+        sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+        sudo apt-get update -qq || true
+        sudo apt-get install gcc-arm-embedded
+        sudo apt-get install libnewlib-arm-none-eabi
+        arm-none-eabi-gcc --version
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/stm32
+        make $(MAKEOPTS) -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+        make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
+        make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
+        make $(MAKEOPTS) -C ports/stm32 BOARD=STM32L476DISC
+        make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
+      displayName: 'Build'
+  
+  - job: port_qemu_arm
+    displayName: 'qemu-arm port build and tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+        sudo apt-get install qemu-system
+        arm-none-eabi-gcc --version
+        qemu-system-arm --version
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/qemu-arm -f Makefile.test test
+      displayName: 'Build'
+  
+  - job: test_unix
+    displayName: 'unix coverage build and tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+      submodules: recursive
+
+    - script: git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo pip install cpp-coveralls
+        gcc --version
+        python3 --version
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/unix deplibs
+        make $(MAKEOPTS) -C ports/unix coverage
+        # run the main test suite
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float micropython)
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy --emit native -d basics float micropython)
+        # test when input script comes from stdin
+        cat tests/basics/0prelim.py | ports/unix/micropython_coverage | grep -q 'abc'
+        # run coveralls coverage analysis (try to, even if some builds/tests failed)
+        # (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+      displayName: 'Test'
+  
+  - job: port_unix
+    displayName: 'unix port build and tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/unix deplibs
+        make $(MAKEOPTS) -C ports/unix
+        make $(MAKEOPTS) -C ports/unix test
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
+      displayName: 'Build'
+  
+  - job: port_unix_nanbox
+    displayName: 'unix nanbox port build and tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install gcc-multilib libffi-dev:i386
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/unix deplibs
+        make $(MAKEOPTS) -C ports/unix nanbox
+        (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
+      displayName: 'Build'
+  
+  - job: port_unix_stackless
+    displayName: 'unix stackless port build and tests with clang'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+      displayName: 'Checkout submodules'
+
+    - script: |
+        sudo apt-get install clang
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C mpy-cross CC=clang
+        make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        make ${MAKEOPTS} -C ports/unix CC=clang test
+      displayName: 'Build'
+
+  - job: port_unix_systrace
+    displayName: 'unix port with sys.settrace build and tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        make ${MAKEOPTS} -C mpy-cross
+        make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test
+        make ${MAKEOPTS} -C ports/unix clean
+        make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
+      displayName: 'Build'
+  
+  - job: port_mingw
+    displayName: 'windows port build via mingw'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        sudo apt-get install gcc-mingw-w64
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make $(MAKEOPTS) -C mpy-cross
+        make $(MAKEOPTS) -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+      displayName: 'Build'
+  
+  - job: port_esp32_idfv3
+    displayName: 'esp32 port build IDF v3'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/berkeley-db-1.xx
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo apt-get install python-pip python3-pip
+        sudo pip3 install 'pyparsing<2.4'
+        sudo pip install pyserial
+        wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
+        git clone https://github.com/espressif/esp-idf.git
+        git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+      displayName: 'Install dependencies and toolchain'
+  
+    - script: |
+        export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
+        export IDF_PATH=$(pwd)/esp-idf
+        make ${MAKEOPTS} -C mpy-cross
+        make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+      displayName: 'Build'
+  
+  - job: port_esp32_idfv4
+    displayName: 'esp32 port build IDF v4'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/berkeley-db-1.xx
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo apt-get install python-pip python3-pip
+        sudo pip3 install 'pyparsing<2.4'
+        sudo pip install pyserial
+        wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+        zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
+        git clone https://github.com/espressif/esp-idf.git
+        git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V4 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        git -C esp-idf submodule update --init components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
+      displayName: 'Install dependencies and toolchain'
+  
+    - script: |
+        export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
+        export IDF_PATH=$(pwd)/esp-idf
+        make ${MAKEOPTS} -C mpy-cross
+        make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+      displayName: 'Build'
+  
+  - job: port_esp8266
+    displayName: 'esp8266 port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/axtls lib/berkeley-db-1.xx
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo apt-get install python-pip python3-pip
+        sudo pip3 install pyparsing
+        sudo pip install pyserial
+        wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
+        zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+      displayName: 'Install dependencies and toolchain'
+  
+    - script: |
+        export PATH=$(pwd)/xtensa-lx106-elf/bin:$PATH
+        make ${MAKEOPTS} -C mpy-cross
+        make ${MAKEOPTS} -C ports/esp8266
+      displayName: 'Build'
+
+    - script: |
+        cd ports/esp8266/build
+        find . \! -name '*.bin' -delete
+        cd -
+      displayName: 'Cleanup build before publishing'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Collect the build'
+      inputs:
+        targetPath: '$(Build.Repository.LocalPath)/ports/esp8266/build'
+        artifact: 'build_esp8266'
+  
+  - job: port_nrf
+    displayName: 'nrf port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: git submodule update --init lib/nrfx
+      displayName: 'Checkout submodules'
+
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+        arm-none-eabi-gcc --version
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C ports/nrf
+      displayName: 'Build'
+  
+  - job: port_bare_arm
+    displayName: 'bare-arm and minimal ports build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+        arm-none-eabi-gcc --version
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C ports/bare-arm
+        make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
+        ls -l ports/minimal/build/firmware.bin
+        tools/check_code_size.sh
+      displayName: 'Build'
+  
+  - job: port_cc3200
+    displayName: 'cc3200 port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
+        make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+      displayName: 'Build'
+  
+  - job: port_samd
+    displayName: 'samd port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+
+    - script: git submodule update --init lib/asf4 lib/tinyusb
+      displayName: 'Checkout submodules'
+  
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C ports/samd
+      displayName: 'Build'
+  
+  - job: port_teensy
+    displayName: 'teensy port build'
+    pool:
+      vmImage: 'ubuntu-latest'
+  
+    steps:
+    - checkout: self
+  
+    - script: |
+        sudo apt-get install gcc-arm-none-eabi
+        sudo apt-get install libnewlib-arm-none-eabi
+      displayName: 'Install dependencies'
+  
+    - script: |
+        make ${MAKEOPTS} -C ports/teensy
+      displayName: 'Build'
+
+- stage: publish
+  displayName: 'Publish builds'
+  dependsOn: build
+  jobs:
+  - job: publish
+    displayName: 'Download and publish builds'
+    steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download all builds'
+      inputs:
+        buildType: 'current'
+        targetPath: '$(Build.BinariesDirectory)'
+
+    - script: |
+        mv $(Build.BinariesDirectory)/build_esp8266/*.bin $(Build.BinariesDirectory)
+        rm -rf $(Build.BinariesDirectory)/build_esp8266
+      displayName: 'Sort and filter binaries'
+
+    - task: GitHubRelease@0
+      displayName: 'Publish on Github releases'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      inputs:
+        gitHubConnection: $(GITHUB_OAUTH_CONNECTION_NAME)
+        repositoryName: $(GITHUB_MICROPY_REPO)
+        action: 'edit'
+        target: '$(Build.SourceVersion)'
+        tag: $(GITHUB_RELEASE_TAG)
+        title: 'Latest master build'
+        releaseNotesSource: 'input'
+        releaseNotes: |
+          The latest successful `master` build.
+
+          Firmware files
+          --------------
+
+          - **esp8266**
+
+            Burn instructions: use [esptool](https://github.com/espressif/esptool)
+
+            Firmware files:
+            - [firmware_combined.bin](https://github.com/$(GITHUB_MICROPY_REPO)/releases/download/$(GITHUB_RELEASE_TAG)/firmware-combined.bin)
+        assets: '$(Build.BinariesDirectory)/*'
+        assetUploadMode: 'replace'
+        isPreRelease: true
+        addChangeLog: false
+
