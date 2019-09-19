@@ -19,8 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{740F3C30-EB6C-4B59-9C50-AE4D5A4A9D12}</ProjectGuid>
-    <RootNamespace>micropython</RootNamespace>
+    <ProjectGuid>{740F3A30-3B6C-4B59-9C50-AE4D5A4A9D12}</ProjectGuid>
+    <RootNamespace>mpy-cross</RootNamespace>
+    <PyBuildingMpyCross>True</PyBuildingMpyCross>
+    <PyBuildDir>$(MSBuildThisFileDirectory)build\</PyBuildDir>
+    <PyIncDirs>$(MSBuildThisFileDirectory)</PyIncDirs>
+    <PyTargetDir>$(MSBuildThisFileDirectory)</PyTargetDir>
+    <PyMsvcDir>$(MSBuildThisFileDirectory)..\ports\windows\msvc\</PyMsvcDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,23 +49,23 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="msvc/common.props" />
-    <Import Project="msvc/debug.props" />
+    <Import Project="$(PyMsvcDir)common.props" />
+    <Import Project="$(PyMsvcDir)debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="msvc/common.props" />
-    <Import Project="msvc/release.props" />
+    <Import Project="$(PyMsvcDir)common.props" />
+    <Import Project="$(PyMsvcDir)release.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="msvc/common.props" />
-    <Import Project="msvc/debug.props" />
+    <Import Project="$(PyMsvcDir)common.props" />
+    <Import Project="$(PyMsvcDir)debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="msvc/common.props" />
-    <Import Project="msvc/release.props" />
+    <Import Project="$(PyMsvcDir)common.props" />
+    <Import Project="$(PyMsvcDir)release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <CustomPropsFile Condition="'$(CustomPropsFile)'==''">msvc/user.props</CustomPropsFile>
@@ -81,28 +86,14 @@
     <ClCompile />
     <Link />
   </ItemDefinitionGroup>
-  <Import Project="msvc/sources.props" />
+  <Import Project="$(PyMsvcDir)sources.props" />
   <ItemGroup>
     <ClCompile Include="@(PyCoreSource)" />
-    <ClCompile Include="@(PyExtModSource)" />
-    <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\unix\file.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)mpy-cross\gccollect.c"/>
+    <ClCompile Include="$(PyBaseDir)mpy-cross\main.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\windows\fmode.c" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="@(PyCoreInclude)" />
-    <ClInclude Include="@(PyExtModInclude)" />
-    <ClInclude Include="$(PyBaseDir)ports\windows\*.h" />
-    <ClInclude Include="$(PyBaseDir)ports\windows\msvc\*.h" />
-  </ItemGroup>
-  <Import Project="msvc/genhdr.targets" />
+  <Import Project="$(PyMsvcDir)genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
   <Target Name="GenHeaders" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders">
   </Target>

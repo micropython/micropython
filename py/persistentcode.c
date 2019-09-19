@@ -753,7 +753,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 // here we define mp_raw_code_save_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__) || defined(__unix__)
+#if defined(__i386__) || defined(__x86_64__) || defined(_WIN32) || defined(__unix__)
 
 #include <unistd.h>
 #include <sys/stat.h>
