@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,59 +24,51 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
+#define __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
+
 #include <stdint.h>
-#include "supervisor/port.h"
-#include "boards/board.h"
-#include "tick.h"
-
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/busio/I2C.h"
-
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+#include <stdbool.h>
 
 #include "stm32f4xx_hal.h"
+#include "stm32f4/pins.h"
 
-safe_mode_t port_init(void) {
-	HAL_Init();
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
+// Address Version
+typedef struct {
+    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
+    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t * pin;
+} mcu_i2c_sda_obj_t;
 
-	stm32f4_peripherals_clocks_init();
-	stm32f4_peripherals_gpio_init();
+// Address Version
+typedef struct {
+    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
+    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t * pin;
+} mcu_i2c_scl_obj_t;
 
-    tick_init();
-    board_init(); 
 
-    return NO_SAFE_MODE;
+#define I2C_SDA(index, alt, sda_pin)       \
+{ \
+    .i2c_index = index, \
+    .altfn_index = alt, \
+    .pin = sda_pin, \
 }
 
-void reset_port(void) {
-	reset_all_pins();
-    i2c_reset();
+#define I2C_SCL(index, alt, scl_pin)       \
+{ \
+    .i2c_index = index, \
+    .altfn_index = alt, \
+    .pin = scl_pin, \
 }
 
-void reset_to_bootloader(void) {
+// TODO: SPI, UART, etc
 
-}
-
-void reset_cpu(void) {
-	NVIC_SystemReset();
-}
-
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
-}
-
-void HardFault_Handler(void) {
-	reset_into_safe_mode(HARD_CRASH);
-    while (true) {
-        asm("nop;");
-    }
-}
+// Choose based on chip
+#ifdef STM32F412Zx
+#include "stm32f412zx/periph.h"
+#endif
+#ifdef STM32F411xE
+#include "stm32f411xe/periph.h"
+#endif
+#endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__

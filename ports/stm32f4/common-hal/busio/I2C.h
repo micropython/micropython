@@ -31,15 +31,18 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    I2C_HandleTypeDef i2c_handle;
+    I2C_HandleTypeDef handle;
     bool has_lock;
-    uint8_t scl_pin;
-    uint8_t sda_pin;
+    const mcu_i2c_scl_obj_t *scl;
+    const mcu_i2c_sda_obj_t *sda;
 } busio_i2c_obj_t;
+
+void i2c_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_I2C_H

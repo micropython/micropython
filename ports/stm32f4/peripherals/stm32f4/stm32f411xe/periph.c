@@ -1,9 +1,8 @@
-/*
+ /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,59 +24,29 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "supervisor/port.h"
-#include "boards/board.h"
-#include "tick.h"
+#include "py/obj.h"
+#include "py/mphal.h"
+#include "stm32f4/pins.h"
+#include "stm32f4/periph.h"
 
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/busio/I2C.h"
+// I2C
 
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
 
-#include "stm32f4xx_hal.h"
+const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7] = {
+	I2C_SDA(1, 4, &pin_PB07),
+	I2C_SDA(1, 4, &pin_PB09),
+	I2C_SDA(2, 9, &pin_PB09),
+	I2C_SDA(2, 9, &pin_PB03),
+	I2C_SDA(3, 4, &pin_PC09),
+	I2C_SDA(3, 9, &pin_PB04),
+	I2C_SDA(3, 9, &pin_PB08)
+};
 
-safe_mode_t port_init(void) {
-	HAL_Init();
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
-
-	stm32f4_peripherals_clocks_init();
-	stm32f4_peripherals_gpio_init();
-
-    tick_init();
-    board_init(); 
-
-    return NO_SAFE_MODE;
-}
-
-void reset_port(void) {
-	reset_all_pins();
-    i2c_reset();
-}
-
-void reset_to_bootloader(void) {
-
-}
-
-void reset_cpu(void) {
-	NVIC_SystemReset();
-}
-
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
-}
-
-void HardFault_Handler(void) {
-	reset_into_safe_mode(HARD_CRASH);
-    while (true) {
-        asm("nop;");
-    }
-}
+const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
+	I2C_SCL(1, 4, &pin_PB06),
+	I2C_SCL(1, 4, &pin_PB08),
+	I2C_SCL(2, 4, &pin_PB10),
+	I2C_SCL(3, 4, &pin_PA08)
+};
+//SPI, UART, Etc
