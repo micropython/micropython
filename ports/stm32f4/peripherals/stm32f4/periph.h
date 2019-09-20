@@ -33,51 +33,6 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-// #define PA  0
-// #define PB  1
-// #define PC  2
-// #define PD  3
-// #define PE  4
-// #define PF  5
-// #define PG  6
-// #define PH  7
-// #define PI  8
-// #define PJ  9
-// #define PK  10
-
-// I2C
-
-// Numerical Version
-
-/*
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t i2c_index:3; // Index of the I2C unit
-    uint8_t alt_index:4; // Alt index is arbitrary, it just lists additional pin options
-    uint8_t sda_pin_port:4;
-    uint8_t sda_pin_number:4;
-    uint8_t scl_pin_port:4;
-    uint8_t scl_pin_number:4;
-} mcu_i2c_periph_obj_t;
-
-#define SDA(port, number) \
-    .sda_pin_port = port, \
-    .sda_pin_number = number, 
-
-#define SCL(port, number) \
-    .scl_pin_port = port, \
-    .scl_pin_number = number 
-
-#define I2C(index, alt, sda, scl)       \
-{ \
-    { &prefix_fields }, \
-    .i2c_index = index, \
-    .alt_index = alt, \
-    sda \
-    scl \
-}
-*/
-
 // Address Version
 typedef struct {
     uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
