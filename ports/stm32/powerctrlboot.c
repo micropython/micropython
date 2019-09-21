@@ -38,11 +38,15 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_CLK_USE_HSI48
     // Use the 48MHz internal oscillator
+    // HAL does not support RCC CFGR SW=3 (HSI48 direct to SYSCLK)
+    // so use HSI48 -> PREDIV(divide by 2) -> PLL (mult by 2) -> SYSCLK.
 
     RCC->CR2 |= RCC_CR2_HSI48ON;
     while ((RCC->CR2 & RCC_CR2_HSI48RDY) == 0) {
+        // Wait for HSI48 to be ready
     }
-    const uint32_t sysclk_src = 3;
+    RCC->CFGR = 0 << RCC_CFGR_PLLMUL_Pos | 3 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 2, src = HSI48/PREDIV
+    RCC->CFGR2 = 1; // Input clock divided by 2
 
     #else
     // Use HSE and the PLL to get a 48MHz SYSCLK
@@ -56,13 +60,14 @@ void SystemClock_Config(void) {
     }
     RCC->CFGR = ((48000000 / HSE_VALUE) - 2) << RCC_CFGR_PLLMUL_Pos | 2 << RCC_CFGR_PLLSRC_Pos;
     RCC->CFGR2 = 0; // Input clock not divided
+
+    #endif
+
     RCC->CR |= RCC_CR_PLLON; // Turn PLL on
     while ((RCC->CR & RCC_CR_PLLRDY) == 0) {
         // Wait for PLL to lock
     }
     const uint32_t sysclk_src = 2;
-
-    #endif
 
     // Select SYSCLK source
     RCC->CFGR |= sysclk_src << RCC_CFGR_SW_Pos;
