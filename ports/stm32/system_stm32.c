@@ -213,12 +213,31 @@ void SystemClock_Config(void)
     #endif
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
     #elif defined(STM32L4)
+
+    #if MICROPY_HW_CLK_USE_HSE
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
+    RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
+    RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
+    RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
+    RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
+    RCC_OscInitStruct.MSIState = RCC_MSI_OFF;
+    #else
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
     RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+    #endif
+
+    #if MICROPY_HW_RTC_USE_LSE
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    #else
+    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+    #endif
+
     #endif
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
@@ -362,20 +381,36 @@ void SystemClock_Config(void)
                                               |RCC_PERIPHCLK_USB |RCC_PERIPHCLK_ADC
                                               |RCC_PERIPHCLK_RNG |RCC_PERIPHCLK_RTC;
     PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
-    /* PLLSAI is used to clock USB, ADC, I2C1 and RNG. The frequency is
-       MSI(4MHz)/PLLM(1)*PLLSAI1N(24)/PLLSAIQ(2) = 48MHz. See the STM32CubeMx
-       application or the reference manual. */
+
     PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
     PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
-    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_PLLSAI1;
+
+    #if MICROPY_HW_RTC_USE_LSE
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    #else
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+    #endif
+
+    #if MICROPY_HW_CLK_USE_HSE
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSE;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1M = 1; //MICROPY_HW_CLK_PLLSAIM;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1N = MICROPY_HW_CLK_PLLSAIN;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1P = MICROPY_HW_CLK_PLLSAIP;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1Q = MICROPY_HW_CLK_PLLSAIQ;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1R = MICROPY_HW_CLK_PLLSAIR;
+    #else
+    /* PLLSAI is used to clock USB, ADC, I2C1 and RNG. The frequency is
+       MSI(4MHz)/PLLM(1)*PLLSAI1N(24)/PLLSAIQ(2) = 48MHz. See the STM32CubeMx
+       application or the reference manual. */
     PeriphClkInitStruct.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1M = 1;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1N = 24;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+    #endif
     PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK
                                                  |RCC_PLLSAI1_48M2CLK
                                                  |RCC_PLLSAI1_ADC1CLK;
