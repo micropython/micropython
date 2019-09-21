@@ -34,6 +34,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <stdio.h>
 
 typedef struct _mp_obj_vfs_posix_t {
     mp_obj_base_t base;
