@@ -21,6 +21,13 @@ stages:
 # order of the jobs has longest running first to optimise total time
 jobs:
   include:
+    # lint Python code for syntax errors
+    - stage: test
+      language: python
+      python: 3.7
+      install: pip install flake8
+      script: flake8 . --count --select=E9,F63,F7 --show-source --statistics
+      
     # stm32 port
     - stage: test
       env: NAME="stm32 port build"
