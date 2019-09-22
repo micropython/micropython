@@ -21,6 +21,7 @@ except ImportError:
 TARGET_OPTS = {
     "unix": "-mcache-lookup-bc",
     "baremetal": "",
+    "pycom": "",
     "bytecode": "-X emit=bytecode",
     "native": "-X emit=native",
     "viper": "-X emit=viper",
