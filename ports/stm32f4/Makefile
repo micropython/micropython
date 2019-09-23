@@ -143,7 +143,6 @@ CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BU
 ######################################
 
 SRC_STM32 = \
-	boards/$(BOARD)/stm32f4xx_hal_msp.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
@@ -192,6 +191,7 @@ SRC_C += \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/periph.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
