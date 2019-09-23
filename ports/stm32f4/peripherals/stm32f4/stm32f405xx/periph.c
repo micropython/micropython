@@ -1,4 +1,4 @@
-/*
+ /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -24,54 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
-#define __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
-
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "stm32f4xx_hal.h"
+#include "py/obj.h"
+#include "py/mphal.h"
 #include "stm32f4/pins.h"
+#include "stm32f4/periph.h"
 
-// Address Version
-typedef struct {
-    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
-    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
-    const mcu_pin_obj_t * pin;
-} mcu_i2c_sda_obj_t;
+// I2C
 
-// Address Version
-typedef struct {
-    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
-    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
-    const mcu_pin_obj_t * pin;
-} mcu_i2c_scl_obj_t;
+I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
 
+const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4] = {
+	I2C_SDA(1, 4, &pin_PB07),
+	I2C_SDA(1, 4, &pin_PB09),
+	I2C_SDA(2, 4, &pin_PB11),
+	I2C_SDA(3, 4, &pin_PC09),
+};
 
-#define I2C_SDA(index, alt, sda_pin)       \
-{ \
-    .i2c_index = index, \
-    .altfn_index = alt, \
-    .pin = sda_pin, \
-}
-
-#define I2C_SCL(index, alt, scl_pin)       \
-{ \
-    .i2c_index = index, \
-    .altfn_index = alt, \
-    .pin = scl_pin, \
-}
-
-// TODO: SPI, UART, etc
-
-// Choose based on chip
-#ifdef stm32f412zx
-#include "stm32f412zx/periph.h"
-#endif
-#ifdef stm32f411xe
-#include "stm32f411xe/periph.h"
-#endif
-#ifdef stm32f405xx
-#include "stm32f405xx/periph.h"
-#endif
-#endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
+const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
+	I2C_SCL(1, 4, &pin_PB06),
+	I2C_SCL(1, 4, &pin_PB08),
+	I2C_SCL(2, 4, &pin_PB10),
+	I2C_SCL(3, 4, &pin_PA08)
+};
+//SPI, UART, Etc

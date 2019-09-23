@@ -88,22 +88,7 @@ else
   ### CFLAGS += -flto
 endif
 
-# C defines and other board specifics
-ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-C_DEFS =  \
-	-DUSE_FULL_LL_DRIVER \
-	-DUSE_HAL_DRIVER \
-	-DSTM32F412Zx
-endif
-
-ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
-C_DEFS =  \
-	-DUSE_FULL_LL_DRIVER \
-	-DUSE_HAL_DRIVER \
-	-DSTM32F411xE
-endif
-
-C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE)
+C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_SUB_VARIANT)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 

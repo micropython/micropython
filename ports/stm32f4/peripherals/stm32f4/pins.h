@@ -77,10 +77,13 @@ extern const mp_obj_type_t mcu_pin_type;
 #define NO_PIN 0xff
 
 // Choose based on chip
-#ifdef STM32F412Zx
+#ifdef stm32f412zx
 #include "stm32f412zx/pins.h"
 #endif
-#ifdef STM32F411xE
+#ifdef stm32f411xe
 #include "stm32f411xe/pins.h"
+#endif
+#ifdef stm32f405xx
+#include "stm32f405xx/pins.h"
 #endif
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
