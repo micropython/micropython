@@ -71,7 +71,7 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
-#if MCU_PACKAGE <= 100
+#if MCU_PACKAGE >= 100
   { MP_ROM_QSTR(MP_QSTR_PE02), MP_ROM_PTR(&pin_PE02) },
   { MP_ROM_QSTR(MP_QSTR_PE03), MP_ROM_PTR(&pin_PE03) },
   { MP_ROM_QSTR(MP_QSTR_PE04), MP_ROM_PTR(&pin_PE04) },
@@ -79,7 +79,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PE06), MP_ROM_PTR(&pin_PE06) },
 #endif
   { MP_ROM_QSTR(MP_QSTR_PC13), MP_ROM_PTR(&pin_PC13) },
-#if MCU_PACKAGE <= 144
+#if MCU_PACKAGE == 144
   { MP_ROM_QSTR(MP_QSTR_PF00), MP_ROM_PTR(&pin_PF00) },
   { MP_ROM_QSTR(MP_QSTR_PF01), MP_ROM_PTR(&pin_PF01) },
   { MP_ROM_QSTR(MP_QSTR_PF02), MP_ROM_PTR(&pin_PF02) },
@@ -118,7 +118,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PG00), MP_ROM_PTR(&pin_PG00) },
   { MP_ROM_QSTR(MP_QSTR_PG01), MP_ROM_PTR(&pin_PG01) },
 #endif
-#if MCU_PACKAGE <= 100
+#if MCU_PACKAGE >= 100
   { MP_ROM_QSTR(MP_QSTR_PE07), MP_ROM_PTR(&pin_PE07) },
   { MP_ROM_QSTR(MP_QSTR_PE08), MP_ROM_PTR(&pin_PE08) },
   { MP_ROM_QSTR(MP_QSTR_PE09), MP_ROM_PTR(&pin_PE09) },
@@ -130,14 +130,14 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PE15), MP_ROM_PTR(&pin_PE15) },
 #endif
   { MP_ROM_QSTR(MP_QSTR_PB10), MP_ROM_PTR(&pin_PB10) },
-#if MCU_PACKAGE != 144
+#if MCU_PACKAGE != 100
   { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
 #endif  
   { MP_ROM_QSTR(MP_QSTR_PB12), MP_ROM_PTR(&pin_PB12) },
   { MP_ROM_QSTR(MP_QSTR_PB13), MP_ROM_PTR(&pin_PB13) },
   { MP_ROM_QSTR(MP_QSTR_PB14), MP_ROM_PTR(&pin_PB14) },
   { MP_ROM_QSTR(MP_QSTR_PB15), MP_ROM_PTR(&pin_PB15) },
-#if MCU_PACKAGE <= 100
+#if MCU_PACKAGE >= 100
   { MP_ROM_QSTR(MP_QSTR_PD08), MP_ROM_PTR(&pin_PD08) },
   { MP_ROM_QSTR(MP_QSTR_PD09), MP_ROM_PTR(&pin_PD09) },
   { MP_ROM_QSTR(MP_QSTR_PD10), MP_ROM_PTR(&pin_PD10) },
@@ -171,7 +171,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PC10), MP_ROM_PTR(&pin_PC10) },
   { MP_ROM_QSTR(MP_QSTR_PC11), MP_ROM_PTR(&pin_PC11) },
   { MP_ROM_QSTR(MP_QSTR_PC12), MP_ROM_PTR(&pin_PC12) },
-#if MCU_PACKAGE <= 100
+#if MCU_PACKAGE >= 100
   { MP_ROM_QSTR(MP_QSTR_PD00), MP_ROM_PTR(&pin_PD00) },
   { MP_ROM_QSTR(MP_QSTR_PD01), MP_ROM_PTR(&pin_PD01) },
   { MP_ROM_QSTR(MP_QSTR_PD02), MP_ROM_PTR(&pin_PD02) },
@@ -197,7 +197,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PB07), MP_ROM_PTR(&pin_PB07) },
   { MP_ROM_QSTR(MP_QSTR_PB08), MP_ROM_PTR(&pin_PB08) },
   { MP_ROM_QSTR(MP_QSTR_PB09), MP_ROM_PTR(&pin_PB09) },
-#if MCU_PACKAGE <= 100
+#if MCU_PACKAGE >= 100
   { MP_ROM_QSTR(MP_QSTR_PE00), MP_ROM_PTR(&pin_PE00) },
   { MP_ROM_QSTR(MP_QSTR_PE01), MP_ROM_PTR(&pin_PE01) },
 #endif
