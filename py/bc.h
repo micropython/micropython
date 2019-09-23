@@ -77,10 +77,10 @@ typedef struct _mp_bytecode_prelude_t {
 // Exception stack entry
 typedef struct _mp_exc_stack_t {
     const byte *handler;
-    // bit 0 is saved currently_in_except_block value
+    // bit 0 is currently unused
     // bit 1 is whether the opcode was SETUP_WITH or SETUP_FINALLY
     mp_obj_t *val_sp;
-    // Saved exception, valid if currently_in_except_block bit is 1
+    // Saved exception
     mp_obj_base_t *prev_exc;
 } mp_exc_stack_t;
 
@@ -92,7 +92,6 @@ typedef struct _mp_code_state_t {
     mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
-    // bit 0 is saved currently_in_except_block value
     mp_exc_stack_t *exc_sp;
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
