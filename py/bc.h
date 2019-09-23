@@ -60,6 +60,13 @@
 //  const0          : obj
 //  constN          : obj
 
+// Sentinel value for mp_code_state_t.exc_sp_idx
+#define MP_CODE_STATE_EXC_SP_IDX_SENTINEL ((uint16_t)-1)
+
+// To convert mp_code_state_t.exc_sp_idx to/from a pointer to mp_exc_stack_t
+#define MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp) ((exc_sp) + 1 - (exc_stack))
+#define MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, exc_sp_idx) ((exc_stack) + (exc_sp_idx) - 1)
+
 typedef struct _mp_bytecode_prelude_t {
     uint n_state;
     uint n_exc_stack;
@@ -92,7 +99,7 @@ typedef struct _mp_code_state_t {
     mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
-    mp_exc_stack_t *exc_sp;
+    uint16_t exc_sp_idx;
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;

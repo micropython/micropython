@@ -133,7 +133,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     size_t n_def_pos_args = *code_state->ip++;
 
     code_state->sp = &code_state->state[0] - 1;
-    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->exc_sp_idx = 0;
 
     // zero out the local stack to begin with
     memset(code_state->state, 0, n_state * sizeof(*code_state->state));

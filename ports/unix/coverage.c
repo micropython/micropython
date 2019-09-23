@@ -385,7 +385,7 @@ STATIC mp_obj_t extra_coverage(void) {
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
-        code_state->exc_sp = NULL;
+        code_state->exc_sp_idx = 0;
         code_state->old_globals = NULL;
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
         mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
