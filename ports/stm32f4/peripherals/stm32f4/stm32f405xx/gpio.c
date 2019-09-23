@@ -30,7 +30,6 @@
 
 void stm32f4_peripherals_gpio_init(void) {
 	//Enable all GPIO for now
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	__HAL_RCC_GPIOE_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOF_CLK_ENABLE();
