@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #include "py/objarray.h"
@@ -875,7 +874,7 @@ void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callbac
         } else {
             // Uncaught exception; disable the callback so it doesn't run again.
             pyb_can_rxcallback(MP_OBJ_FROM_PTR(self), MP_OBJ_NEW_SMALL_INT(fifo_id), mp_const_none);
-            printf("uncaught exception in CAN(%u) rx interrupt handler\n", self->can_id);
+            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in CAN(%u) rx interrupt handler\n", self->can_id);
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
         gc_unlock();
