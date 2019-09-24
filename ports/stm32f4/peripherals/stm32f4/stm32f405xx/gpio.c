@@ -29,24 +29,19 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void stm32f4_peripherals_gpio_init(void) {
-	//Enable all GPIO for now
-	__HAL_RCC_GPIOE_CLK_ENABLE();
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOF_CLK_ENABLE();
-	__HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_GPIOG_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+    //Enable all GPIO for now
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-	//Status LED chain
-	stm32f4_peripherals_status_led(0,1);
-	stm32f4_peripherals_status_led(1,0);
-	stm32f4_peripherals_status_led(2,0);
-	stm32f4_peripherals_status_led(3,0);
+    //Status LED chain
+    stm32f4_peripherals_status_led(0,1);
+    stm32f4_peripherals_status_led(1,0);
+    stm32f4_peripherals_status_led(2,0);
+    stm32f4_peripherals_status_led(3,0);
 
-	//Never reset pins
-	never_reset_pin_number(2,13); //PC13 anti tamp
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
     never_reset_pin_number(2,14); //PC14 OSC32_IN
     never_reset_pin_number(2,15); //PC15 OSC32_OUT
     never_reset_pin_number(0,13); //PA13 SWDIO

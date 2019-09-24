@@ -45,21 +45,21 @@ typedef struct {
 } mcu_pin_obj_t;
 
 //Standard stm32 adc unit combinations
-#define ADC_1 	1
-#define ADC_12 	3
-#define ADC_123	7
-#define ADC_3 	4
+#define ADC_1   1
+#define ADC_12  3
+#define ADC_123 7
+#define ADC_3   4
 
 //STM32 ADC pins can have a combination of 1, 2 or all 3 ADCs on a single pin,
 //but all 3 ADCs will share the same input number per pin. 
 //F4 family has 3 ADC max, 24 channels max. 
 #define ADC_INPUT(mask, number) \
-	.adc_unit = mask, \
-	.adc_channel = number,
+    .adc_unit = mask, \
+    .adc_channel = number,
 
 #define NO_ADC \
-	.adc_unit = 0x00, \
-	.adc_channel = 0x1f
+    .adc_unit = 0x00, \
+    .adc_channel = 0x1f
 
 extern const mp_obj_type_t mcu_pin_type;
 
