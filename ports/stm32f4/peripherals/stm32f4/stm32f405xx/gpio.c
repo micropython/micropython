@@ -34,12 +34,6 @@ void stm32f4_peripherals_gpio_init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    //Status LED chain
-    stm32f4_peripherals_status_led(0,1);
-    stm32f4_peripherals_status_led(1,0);
-    stm32f4_peripherals_status_led(2,0);
-    stm32f4_peripherals_status_led(3,0);
-
     //Never reset pins
     never_reset_pin_number(2,13); //PC13 anti tamp
     never_reset_pin_number(2,14); //PC14 OSC32_IN
