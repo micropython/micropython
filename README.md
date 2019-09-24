@@ -23,8 +23,14 @@ Here is the command to build ESP32 + LittlevGL which is compatible with ILI9341 
 
 ```
 make -C mpy-cross
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" deploy
+```
+
+If you plan to use the [Pure Micropython Display Driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver), you need to define `LV_COLOR_16_SWAP=1` as well:
+```
 make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" deploy
 ```
+
 
 This make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
 `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.  
