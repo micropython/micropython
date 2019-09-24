@@ -521,6 +521,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             // TODO this encoding may change size in the final pass, need to make it fixed
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, emit->prelude_offset, REG_ARG_1);
 
+            // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
+            emit_native_mov_state_imm_via(emit, emit->code_state_start + offsetof(mp_code_state_t, n_state) / sizeof(uintptr_t), emit->n_state, REG_ARG_1);
+
             // Put address of code_state into first arg
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, emit->code_state_start);
 

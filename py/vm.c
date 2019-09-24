@@ -228,7 +228,7 @@ FRAME_SETUP();
     mp_obj_t * /*const*/ fastn;
     mp_exc_stack_t * /*const*/ exc_stack;
     {
-        size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
+        size_t n_state = code_state->n_state;
         fastn = &code_state->state[n_state - 1];
         exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
     }
@@ -1499,7 +1499,7 @@ unwind_loop:
                 mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
                 #endif
                 code_state = new_code_state;
-                size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
+                size_t n_state = code_state->n_state;
                 fastn = &code_state->state[n_state - 1];
                 exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
                 // variables that are visible to the exception handler (declared volatile)

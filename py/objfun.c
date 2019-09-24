@@ -206,9 +206,10 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
                            + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
-#define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \
+#define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
     code_state->ip = 0; \
+    code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
 
@@ -235,7 +236,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     }
     #endif
 
-    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);
@@ -280,7 +281,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     }
     #endif
 
-    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     mp_globals_set(self->globals);

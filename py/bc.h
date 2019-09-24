@@ -99,6 +99,7 @@ typedef struct _mp_code_state_t {
     mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
+    uint16_t n_state;
     uint16_t exc_sp_idx;
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS

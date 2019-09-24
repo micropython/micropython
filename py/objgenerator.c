@@ -62,6 +62,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
 }
@@ -99,6 +100,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte*)prelude_offset;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
 
     // Indicate we are a native function, which doesn't use this variable
