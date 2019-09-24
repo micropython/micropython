@@ -98,11 +98,14 @@ lv.indev_drv_register(indev_drv);
 Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
 
 ```python
-# Import ESP32 driver (advnaces tick count and schedules tasks)
+import lvgl as lv
 
+# Import ESP32 and ILI9341 drivers (advnaces tick count and schedules tasks)
+
+import ILI9341 as ili
 import lvesp32
 
-# Import ILI9341, initialize it and register it to LittlevGL
+# Initialize the driver and register it to LittlevGL
 
 disp = ili.display(miso=5, mosi=18, clk=19, cs=13, dc=12, rst=4, backlight=2)
 disp.init()
