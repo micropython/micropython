@@ -1014,6 +1014,21 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_NEW_QSTR(self->name);
             return;
         }
+        if (attr == MP_QSTR___bases__) {
+            if (self == &mp_type_object) {
+                dest[0] = mp_const_empty_tuple;
+                return;
+            }
+            mp_obj_t parent_obj = self->parent ? MP_OBJ_FROM_PTR(self->parent) : MP_OBJ_FROM_PTR(&mp_type_object);
+            #if MICROPY_MULTIPLE_INHERITANCE
+            if (mp_obj_is_type(parent_obj, &mp_type_tuple)) {
+                dest[0] = parent_obj;
+                return;
+            }
+            #endif
+            dest[0] = mp_obj_new_tuple(1, &parent_obj);
+            return;
+        }
         #endif
         struct class_lookup_data lookup = {
             .obj = (mp_obj_instance_t*)self,
