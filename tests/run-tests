@@ -204,6 +204,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 break
         output_mupy = b''.join(lines_mupy)
 
+    with open('cmdline/cmd_showbc.py.exp.1', 'wb') as f:
+        f.write(output_mupy)
     return output_mupy
 
 
