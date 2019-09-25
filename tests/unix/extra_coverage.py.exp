@@ -107,3 +107,4 @@ frzmpy_pkg2.mod
 1
 ZeroDivisionError
 b'# test frozen package'
+NULL

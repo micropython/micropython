@@ -502,7 +502,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
         // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
-        qstr qst = MP_QSTR_NULL;
+        qstr qst = MP_QSTRnull;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
             // intern short strings
             qst = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
@@ -510,7 +510,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
             // check if this string is already interned
             qst = qstr_find_strn(lex->vstr.buf, lex->vstr.len);
         }
-        if (qst != MP_QSTR_NULL) {
+        if (qst != MP_QSTRnull) {
             // qstr exists, make a leaf node
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
@@ -705,7 +705,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                         "constant must be an integer");
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
-                        ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTR_NULL);
+                        ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
                 }
 
@@ -1138,7 +1138,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this
-        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
         nlr_raise(exc);
     }
 

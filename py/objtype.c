@@ -460,7 +460,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 // Binary-op enum values not listed here will have the default value of 0 in the
-// table, corresponding to MP_QSTR_NULL, and are therefore unsupported (a lookup will
+// table, corresponding to MP_QSTRnull, and are therefore unsupported (a lookup will
 // fail).  They can be added at the expense of code size for the qstr.
 // Qstrs for special methods are guaranteed to have a small value, so we use byte
 // type to represent them.

@@ -1205,7 +1205,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // do the import
         qstr dummy_q;
         do_import_name(comp, pn_import_source, &dummy_q);
-        EMIT_ARG(import, MP_QSTR_NULL, MP_EMIT_IMPORT_STAR);
+        EMIT_ARG(import, MP_QSTRnull, MP_EMIT_IMPORT_STAR);
 
     } else {
         EMIT_ARG(load_const_small_int, import_level);
@@ -2823,7 +2823,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         return;
     }
 
-    qstr param_name = MP_QSTR_NULL;
+    qstr param_name = MP_QSTRnull;
     uint param_flag = ID_FLAG_IS_PARAM;
     mp_parse_node_struct_t *pns = NULL;
     if (MP_PARSE_NODE_IS_ID(pn)) {
@@ -2882,7 +2882,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         }
     }
 
-    if (param_name != MP_QSTR_NULL) {
+    if (param_name != MP_QSTRnull) {
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, ID_INFO_KIND_UNDECIDED);
         if (id_info->kind != ID_INFO_KIND_UNDECIDED) {
             compile_syntax_error(comp, pn, "argument name reused");

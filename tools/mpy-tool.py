@@ -70,7 +70,7 @@ class QStrType:
         self.qstr_id = 'MP_QSTR_' + self.qstr_esc
 
 # Initialise global list of qstrs with static qstrs
-global_qstrs = [None] # MP_QSTR_NULL should never be referenced
+global_qstrs = [None] # MP_QSTRnull should never be referenced
 for n in qstrutil.static_qstr_list:
     global_qstrs.append(QStrType(n))
 
