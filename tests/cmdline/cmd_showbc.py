@@ -155,5 +155,5 @@ del Class
 def f(self):
     super().f()
 
-# import * (needs to be in module scope)
+# import * (with MICROPY_CPYTHON_COMPAT, needs to be in module scope)
 from sys import *
