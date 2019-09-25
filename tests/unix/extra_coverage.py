@@ -74,3 +74,7 @@ except ZeroDivisionError:
 import uio
 buf = uio.resource_stream('frzstr_pkg2', 'mod.py')
 print(buf.read(21))
+
+# test for MP_QSTR_NULL regression
+from frzqstr import returns_NULL
+print(returns_NULL())
