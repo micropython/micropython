@@ -48,7 +48,7 @@ void SystemClock_Config(void) {
     RCC->CFGR = 0 << RCC_CFGR_PLLMUL_Pos | 3 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 2, src = HSI48/PREDIV
     RCC->CFGR2 = 1; // Input clock divided by 2
 
-    #else
+    #elif MICROPY_HW_CLK_USE_HSE
     // Use HSE and the PLL to get a 48MHz SYSCLK
 
     #if MICROPY_HW_CLK_USE_BYPASS
@@ -61,6 +61,18 @@ void SystemClock_Config(void) {
     RCC->CFGR = ((48000000 / HSE_VALUE) - 2) << RCC_CFGR_PLLMUL_Pos | 2 << RCC_CFGR_PLLSRC_Pos;
     RCC->CFGR2 = 0; // Input clock not divided
 
+    #elif MICROPY_HW_CLK_USE_HSI
+    // Use the 8MHz internal oscillator and the PLL to get a 48MHz SYSCLK
+
+    RCC->CR |= RCC_CR_HSION;
+    while ((RCC->CR & RCC_CR_HSIRDY) == 0) {
+        // Wait for HSI to be ready
+    }
+    RCC->CFGR = 4 << RCC_CFGR_PLLMUL_Pos | 1 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 6, src = HSI
+    RCC->CFGR2 = 0; // Input clock not divided
+
+    #else
+    #error System clock not specified
     #endif
 
     RCC->CR |= RCC_CR_PLLON; // Turn PLL on
