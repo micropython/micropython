@@ -31,10 +31,28 @@
 #include "boards/board.h"
 #include "common-hal/microcontroller/Pin.h"
 
+//mp_raise_NotImplementedError(translate("SPI not yet supported"));
+
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
          const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
          const mcu_pin_obj_t * miso) {
-    mp_raise_NotImplementedError(translate("SPI not yet supported"));
+    
+    hspi1.Instance = SPI1; 
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 10;
+    if (HAL_SPI_Init(&hspi1) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
