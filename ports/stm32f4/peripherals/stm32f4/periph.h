@@ -74,16 +74,16 @@ typedef struct {
     uint8_t spi_index:4; 
     uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
-} mcu_spi_miso_obj_t;
+} mcu_spi_mosi_obj_t;
 
 typedef struct {
     uint8_t spi_index:4; 
     uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
-} mcu_spi_mosi_obj_t;
+} mcu_spi_miso_obj_t;
 
 typedef struct {
-    uint8_t i2c_index:4; 
+    uint8_t spi_index:4; 
     uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_spi_nss_obj_t;
