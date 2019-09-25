@@ -25,10 +25,28 @@
 #define _PYBGPIO_H_
 
 #if defined (MICROPY_PY_GPIO) && MICROPY_PY_GPIO
-#include "fsl_common.h"
-#include "gpio/gpio.h"
+
+#if MICROPY_USE_IMXRT1064_MCU || MICROPY_USE_IMXRT1060_MCU || MICROPY_USE_IMXRT1050_MCU || MICROPY_USE_IMXRT1020_MCU
+typedef struct
+{
+    mp_obj_base_t base;
+    GPIO_Type* port;
+    uint32_t pin;
+}gpio_obj_t;
+mp_obj_t pyb_gpio_Toggle(mp_obj_t self_in);
+#else
+typedef struct 
+{
+    mp_obj_base_t base;
+    hal_gpio_pin_config_t config;
+    hal_gpio_handle_t handle;
+    mp_obj_t callback;
+}gpio_obj_t;
+#endif /* MICROPY_USE_IMXRT1064_MCU || MICROPY_USE_IMXRT1060_MCU || MICROPY_USE_IMXRT1050_MCU || MICROPY_USE_IMXRT1020_MCU */
 
 extern const mp_obj_type_t pyb_gpio_type;
-#endif /* MICROPY_PY_GPIO */
 
+mp_obj_t pyb_gpio_SetOutput(mp_obj_t self_in, mp_obj_t pinValue);
+mp_obj_t pyb_gpio_init_helper(gpio_obj_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+#endif /* MICROPY_PY_GPIO */
 #endif /* _PYBGPIO_H_ */

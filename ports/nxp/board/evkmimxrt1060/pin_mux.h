@@ -67,6 +67,8 @@ void BOARD_InitI2C1Pins(void);
  */
 void BOARD_InitPins(void);
 
+void LCD_InitPins(void);
+
 #if defined(__cplusplus)
 }
 #endif

@@ -24,18 +24,16 @@
 
 #include <stdio.h>
 
+#include "mpconfigport.h"
+#if defined(MICROPY_PY_SPI) && MICROPY_PY_SPI
+#include BOARD_SPI_CMSIS_HEADER
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mpconfig.h"
 
-#if defined(MICROPY_PY_SPI) && MICROPY_PY_SPI
-#include BOARD_SPI_CMSIS_HEADER
 #include "pybspi.h"
 #include "spi.h"
 #include "bufferhelper.h"
-
-// #define Get_Driver_SPI(instance) (Driver_SPI0)
-
 
 typedef struct _spi_obj
 {
@@ -51,6 +49,7 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t* type, size_t n_args, size_
     spi_obj_t *self = m_new_obj(spi_obj_t);
     uint8_t instance;
     
+    spi_init();
     self->Driver_SPI = spi_find_index(args[0], &instance);
     self->base.type = type;
     self->instance = instance;
@@ -69,8 +68,6 @@ STATIC mp_obj_t pyb_spi_Initialize(mp_obj_t self_in)
 {
     spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    spi_init();
-    
     ARM_SPI_SignalEvent_t cb_event = spi_find_callback(self->instance);
     (self->Driver_SPI)->Initialize(cb_event);
     return mp_const_none;

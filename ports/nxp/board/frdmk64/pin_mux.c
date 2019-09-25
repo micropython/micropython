@@ -33,6 +33,7 @@ processor_version: 2.0.0
 #define PIN16_IDX                       16u   /*!< Pin number for pin 16 in a port */
 #define PIN17_IDX                       17u   /*!< Pin number for pin 17 in a port */
 #define SOPT5_UART0TXSRC_UART_TX      0x00u   /*!< UART 0 transmit data source select: UART0_TX pin */
+#define SOPT5_UART1TXSRC_UART_TX 0x00u /*!<@brief UART 1 transmit data source select: UART1_TX pin */
 
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
@@ -144,6 +145,465 @@ void BOARD_InitPins(void) {
     (~(SIM_SOPT5_UART0TXSRC_MASK)))                          /* Mask bits to zero which are setting */
       | SIM_SOPT5_UART0TXSRC(SOPT5_UART0TXSRC_UART_TX)       /* UART 0 transmit data source select: UART0_TX pin */
     );
+}
+
+void DSPI0_InitPins(void)
+{
+    /* Port A Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortA);
+    /* Port C Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortC);
+
+    /* PORTA14 (pin L10) is configured as SPI0_PCS0 */
+    PORT_SetPinMux(PORTA, 14U, kPORT_MuxAlt2);
+
+    PORTA->PCR[14] = ((PORTA->PCR[14] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTA15 (pin L11) is configured as SPI0_SCK */
+    PORT_SetPinMux(PORTA, 15U, kPORT_MuxAlt2);
+
+    PORTA->PCR[15] = ((PORTA->PCR[15] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTC6 (pin C8) is configured as SPI0_SOUT */
+    PORT_SetPinMux(PORTC, 6U, kPORT_MuxAlt2);
+
+    PORTC->PCR[6] = ((PORTC->PCR[6] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTC7 (pin B8) is configured as SPI0_SIN */
+    PORT_SetPinMux(PORTC, 7U, kPORT_MuxAlt2);
+
+    PORTC->PCR[7] = ((PORTC->PCR[7] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+}
+
+void DSPI0_DeinitPins(void)
+{
+    /* Port A Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortA);
+    /* Port C Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortC);
+
+    /* PORTA14 (pin L10) is disabled */
+    PORT_SetPinMux(PORTA, 14U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTA15 (pin L11) is disabled */
+    PORT_SetPinMux(PORTA, 15U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTC6 (pin C8) is configured as CMP0_IN0 */
+    PORT_SetPinMux(PORTC, 6U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTC7 (pin B8) is configured as CMP0_IN1 */
+    PORT_SetPinMux(PORTC, 7U, kPORT_PinDisabledOrAnalog);
+}
+
+void DSPI1_InitPins(void)
+{
+  /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+    /* Port D Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortD);
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTB10 (pin E12) is configured as SPI1_PCS0 */
+    PORT_SetPinMux(PORTB, 10U, kPORT_MuxAlt2);
+
+    PORTB->PCR[10] = ((PORTB->PCR[10] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_PS_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Pull Select: Internal pulldown resistor is enabled on the corresponding pin, if the
+                       * corresponding PE field is set. */
+                      | PORT_PCR_PS(kPORT_PullDown));
+
+    /* PORTD6 (pin A2) is configured as SPI1_SOUT */
+    PORT_SetPinMux(PORTD, 6U, kPORT_MuxAlt7);
+
+    PORTD->PCR[6] = ((PORTD->PCR[6] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_PS_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Pull Select: Internal pulldown resistor is enabled on the corresponding pin, if the
+                      * corresponding PE field is set. */
+                     | PORT_PCR_PS(kPORT_PullDown));
+
+    /* PORTE2 (pin D1) is configured as SPI1_SCK */
+    PORT_SetPinMux(PORTE, 2U, kPORT_MuxAlt2);
+
+    PORTE->PCR[2] = ((PORTE->PCR[2] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_PS_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Pull Select: Internal pulldown resistor is enabled on the corresponding pin, if the
+                      * corresponding PE field is set. */
+                     | PORT_PCR_PS(kPORT_PullDown));
+
+    /* PORTE3 (pin E4) is configured as SPI1_SIN */
+    PORT_SetPinMux(PORTE, 3U, kPORT_MuxAlt2);
+
+    PORTE->PCR[3] = ((PORTE->PCR[3] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_PS_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Pull Select: Internal pulldown resistor is enabled on the corresponding pin, if the
+                      * corresponding PE field is set. */
+                     | PORT_PCR_PS(kPORT_PullDown));
+}
+
+void DSPI1_DeinitPins(void)
+{
+      /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+    /* Port D Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortD);
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTB10 (pin E12) is configured as PTB10 */
+    PORT_SetPinMux(PORTB, 10U, kPORT_MuxAsGpio);
+
+    /* PORTD6 (pin A2) is configured as PTD6 */
+    PORT_SetPinMux(PORTD, 6U, kPORT_MuxAsGpio);
+
+    /* PORTE2 (pin D1) is configured as PTE2 */
+    PORT_SetPinMux(PORTE, 2U, kPORT_MuxAsGpio);
+
+    /* PORTE3 (pin E4) is configured as PTE3 */
+    PORT_SetPinMux(PORTE, 3U, kPORT_MuxAsGpio);
+}
+
+void DSPI2_InitPins(void)
+{
+  /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+
+    /* PORTB20 (pin D10) is configured as SPI2_PCS0 */
+    PORT_SetPinMux(PORTB, 20U, kPORT_MuxAlt2);
+
+    PORTB->PCR[20] = ((PORTB->PCR[20] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTB21 (pin D9) is configured as SPI2_SCK */
+    PORT_SetPinMux(PORTB, 21U, kPORT_MuxAlt2);
+
+    PORTB->PCR[21] = ((PORTB->PCR[21] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTB22 (pin C12) is configured as SPI2_SOUT */
+    PORT_SetPinMux(PORTB, 22U, kPORT_MuxAlt2);
+
+    PORTB->PCR[22] = ((PORTB->PCR[22] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTB23 (pin C11) is configured as SPI2_SIN */
+    PORT_SetPinMux(PORTB, 23U, kPORT_MuxAlt2);
+
+    PORTB->PCR[23] = ((PORTB->PCR[23] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+}
+
+void DSPI2_DeInitPins(void)
+{
+    /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+
+    /* PORTB20 (pin D10) is disabled */
+    PORT_SetPinMux(PORTB, 20U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB21 (pin D9) is configured as PTB21 */
+    PORT_SetPinMux(PORTB, 21U, kPORT_MuxAsGpio);
+
+    /* PORTB22 (pin C12) is configured as PTB22 */
+    PORT_SetPinMux(PORTB, 22U, kPORT_MuxAsGpio);
+
+    /* PORTB23 (pin C11) is disabled */
+    PORT_SetPinMux(PORTB, 23U, kPORT_PinDisabledOrAnalog);
+}
+
+void UART0_InitPins(void)
+{
+  /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+
+    const port_pin_config_t portb16_pinE10_config = {/* Internal pull-up/down resistor is disabled */
+                                                     kPORT_PullDisable,
+                                                     /* Fast slew rate is configured */
+                                                     kPORT_FastSlewRate,
+                                                     /* Passive filter is disabled */
+                                                     kPORT_PassiveFilterDisable,
+                                                     /* Open drain is disabled */
+                                                     kPORT_OpenDrainDisable,
+                                                     /* Low drive strength is configured */
+                                                     kPORT_LowDriveStrength,
+                                                     /* Pin is configured as UART0_RX */
+                                                     kPORT_MuxAlt3,
+                                                     /* Pin Control Register fields [15:0] are not locked */
+                                                     kPORT_UnlockRegister};
+    /* PORTB16 (pin E10) is configured as UART0_RX */
+    PORT_SetPinConfig(PORTB, 16U, &portb16_pinE10_config);
+
+    const port_pin_config_t portb17_pinE9_config = {/* Internal pull-up/down resistor is disabled */
+                                                    kPORT_PullDisable,
+                                                    /* Fast slew rate is configured */
+                                                    kPORT_FastSlewRate,
+                                                    /* Passive filter is disabled */
+                                                    kPORT_PassiveFilterDisable,
+                                                    /* Open drain is disabled */
+                                                    kPORT_OpenDrainDisable,
+                                                    /* Low drive strength is configured */
+                                                    kPORT_LowDriveStrength,
+                                                    /* Pin is configured as UART0_TX */
+                                                    kPORT_MuxAlt3,
+                                                    /* Pin Control Register fields [15:0] are not locked */
+                                                    kPORT_UnlockRegister};
+    /* PORTB17 (pin E9) is configured as UART0_TX */
+    PORT_SetPinConfig(PORTB, 17U, &portb17_pinE9_config);
+
+    SIM->SOPT5 = ((SIM->SOPT5 &
+                   /* Mask bits to zero which are setting */
+                   (~(SIM_SOPT5_UART0TXSRC_MASK)))
+
+                  /* UART 0 transmit data source select: UART0_TX pin. */
+                  | SIM_SOPT5_UART0TXSRC(SOPT5_UART0TXSRC_UART_TX));
+}
+
+void UART0_DeinitPins(void)
+{
+
+}
+
+void UART1_InitPins(void)
+{
+  /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE0 (pin D3) is configured as UART1_TX */
+    PORT_SetPinMux(PORTE, 0U, kPORT_MuxAlt3);
+
+    PORTE->PCR[0] = ((PORTE->PCR[0] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTE1 (pin D2) is configured as UART1_RX */
+    PORT_SetPinMux(PORTE, 1U, kPORT_MuxAlt3);
+
+    PORTE->PCR[1] = ((PORTE->PCR[1] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    SIM->SOPT5 = ((SIM->SOPT5 &
+                   /* Mask bits to zero which are setting */
+                   (~(SIM_SOPT5_UART1TXSRC_MASK)))
+
+                  /* UART 1 transmit data source select: UART1_TX pin. */
+                  | SIM_SOPT5_UART1TXSRC(SOPT5_UART1TXSRC_UART_TX));
+}
+
+void UART1_DeinitPins(void)
+{
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE0 (pin D3) is configured as PTE0 */
+    PORT_SetPinMux(PORTE, 0U, kPORT_MuxAsGpio);
+
+    /* PORTE1 (pin D2) is configured as PTE1 */
+    PORT_SetPinMux(PORTE, 1U, kPORT_MuxAsGpio);
+}
+
+void UART2_InitPins(void)
+{
+    /* Port D Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortD);
+
+    /* PORTD2 (pin C4) is configured as UART2_RX */
+    PORT_SetPinMux(PORTD, 2U, kPORT_MuxAlt3);
+
+    PORTD->PCR[2] = ((PORTD->PCR[2] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Drive Strength Enable: Low drive strength is configured on the corresponding pin, if pin
+                      * is configured as a digital output. */
+                     | PORT_PCR_DSE(kPORT_LowDriveStrength));
+
+    /* PORTD3 (pin B4) is configured as UART2_TX */
+    PORT_SetPinMux(PORTD, 3U, kPORT_MuxAlt3);
+
+    PORTD->PCR[3] = ((PORTD->PCR[3] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_DSE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Drive Strength Enable: Low drive strength is configured on the corresponding pin, if pin
+                      * is configured as a digital output. */
+                     | PORT_PCR_DSE(kPORT_LowDriveStrength));
+}
+
+void UART2_DeinitPins(void)
+{
+  /* Port D Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortD);
+
+    /* PORTD2 (pin C4) is disabled */
+    PORT_SetPinMux(PORTD, 2U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTD3 (pin B4) is disabled */
+    PORT_SetPinMux(PORTD, 3U, kPORT_PinDisabledOrAnalog);
+}
+
+void UART3_InitPins(void)
+{
+    /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+
+    /* PORTB10 (pin E12) is configured as UART3_RX */
+    PORT_SetPinMux(PORTB, 10U, kPORT_MuxAlt3);
+
+    PORTB->PCR[10] = ((PORTB->PCR[10] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTB11 (pin E11) is configured as UART3_TX */
+    PORT_SetPinMux(PORTB, 11U, kPORT_MuxAlt3);
+
+    PORTB->PCR[11] = ((PORTB->PCR[11] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+}
+
+void UART3_DeinitPins(void)
+{
+  /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+
+    /* PORTB10 (pin E12) is configured as ADC1_SE14 */
+    PORT_SetPinMux(PORTB, 10U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB11 (pin E11) is configured as ADC1_SE15 */
+    PORT_SetPinMux(PORTB, 11U, kPORT_PinDisabledOrAnalog);
+}
+
+void UART4_InitPins(void)
+{
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE24 (pin M4) is configured as UART4_TX */
+    PORT_SetPinMux(PORTE, 24U, kPORT_MuxAlt3);
+
+    PORTE->PCR[24] = ((PORTE->PCR[24] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTE25 (pin K5) is configured as UART4_RX */
+    PORT_SetPinMux(PORTE, 25U, kPORT_MuxAlt3);
+
+    PORTE->PCR[25] = ((PORTE->PCR[25] &
+                       /* Mask bits to zero which are setting */
+                       (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                      /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                      | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+}
+
+void UART4_DeinitPins(void)
+{
+  /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE24 (pin M4) is configured as ADC0_SE17 */
+    PORT_SetPinMux(PORTE, 24U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTE25 (pin K5) is configured as ADC0_SE18 */
+    PORT_SetPinMux(PORTE, 25U, kPORT_PinDisabledOrAnalog);
+}
+
+void UART5_InitPins(void)
+{
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE8 (pin F3) is configured as UART5_TX */
+    PORT_SetPinMux(PORTE, 8U, kPORT_MuxAlt3);
+
+    PORTE->PCR[8] = ((PORTE->PCR[8] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+
+    /* PORTE9 (pin F2) is configured as UART5_RX */
+    PORT_SetPinMux(PORTE, 9U, kPORT_MuxAlt3);
+
+    PORTE->PCR[9] = ((PORTE->PCR[9] &
+                      /* Mask bits to zero which are setting */
+                      (~(PORT_PCR_ODE_MASK | PORT_PCR_ISF_MASK)))
+
+                     /* Open Drain Enable: Open drain output is disabled on the corresponding pin. */
+                     | PORT_PCR_ODE(kPORT_OpenDrainDisable));
+}
+
+void UART5_DeinitPins(void)
+{
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    /* PORTE8 (pin F3) is disabled */
+    PORT_SetPinMux(PORTE, 8U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTE9 (pin F2) is disabled */
+    PORT_SetPinMux(PORTE, 9U, kPORT_PinDisabledOrAnalog);
 }
 
 /*******************************************************************************

@@ -25,12 +25,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "mpconfigboard.h"
+#include "fsl_clock.h"
+#if defined(BOARD_SPI_CMSIS_HEADER)
 #include "py/runtime.h"
 #include "py/mphal.h"
-
-#if defined(BOARD_SPI_CMSIS_HEADER)
 #include "spi.h"
-#include "fsl_clock.h"
 
 static void spi_init_helper(void)
 {
@@ -43,10 +43,11 @@ static void spi_init_helper(void)
 
 void spi_init(void)
 {
-    #if defined(MICROPY_MIN_USE_IMXRT1064_MCU) || defined(MICROPY_MIN_USE_IMXRT1060_MCU) || defined(MICROPY_MIN_USE_IMXRT1050_MCU) || defined(MICROPY_MIN_USE_IMXRT1020_MCU)
+    #if defined(MICROPY_USE_IMXRT1064_MCU) || defined(MICROPY_USE_IMXRT1060_MCU) || defined(MICROPY_USE_IMXRT1050_MCU) || defined(MICROPY_USE_IMXRT1020_MCU)
     CLOCK_SetMux(kCLOCK_LpspiMux, 1U);
     CLOCK_SetDiv(kCLOCK_LpspiDiv, 7U);
     #endif
+    spi_init_helper();
 }
 
 struct _ARM_DRIVER_SPI *spi_find_index(mp_obj_t id, uint8_t *instance)

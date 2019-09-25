@@ -15,6 +15,7 @@ include board/$(BOARD)/mpconfigboard.mk
 #FreeRTos variable
 FreeRTOS_DIR = lib/nxplib/rtos
 
+CMSIS_DRIVER_INCLUDE = lib/nxplib/CMSIS/Driver/Include
 #NXP lib variable
 NXP_DRIVER_DIR = lib/nxplib/devices/$(Device)/drivers
 NXP_MIDDLEWARE_DIR = lib/nxplib/middleware
@@ -24,6 +25,7 @@ NXP_COMPONENTS_DIR = lib/nxplib/components
 NXP_UTILITIES_DIR = $(NXP_DEVICE_DIR)/utilities
 NXP_TOOLCHAIN_DIR = $(NXP_DEVICE_DIR)/$(Toolchain)
 NXP_XIP_DIR = $(NXP_DEVICE_DIR)/xip
+NXP_CMSIS_DRIVER_DIR = $(NXP_DEVICE_DIR)/cmsis_drivers
 
 LVGL_SRC =
 ifeq ($(LITTLEVGL_ENABLE), 1)
@@ -61,6 +63,7 @@ INC += -I$(TOP)/lib
 INC += -I$(TOP)/$(FreeRTOS_DIR)/amazon-freertos/lib/include 
 INC += -I$(TOP)/$(FreeRTOS_DIR)/amazon-freertos/lib/include/private
 INC += -I$(TOP)/$(FreeRTOS_DIR)/amazon-freertos/lib/FreeRTOS/portable/GCC/ARM_CM4F
+INC += -I$(TOP)/$(CMSIS_DRIVER_INCLUDE)
 INC += -I$(TOP)/$(NXP_DEVICE_DIR)
 INC += -I$(TOP)/$(NXP_MIDDLEWARE_DIR)/sdmmc/inc
 INC += -I$(TOP)/$(NXP_MIDDLEWARE_DIR)/sdmmc/port
@@ -70,7 +73,9 @@ INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/uart
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/ft5406_rt
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)/i2c
 INC += -I$(TOP)/$(NXP_COMPONENTS_DIR)
+INC += -I$(TOP)/$(NXP_CMSIS_DRIVER_DIR)
 INC += -I$(TOP)/$(NXP_XIP_DIR)
+INC += -I$(TOP)/$(NXP_TEMPLATE_DIR)
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)/debug_console
 INC += -I$(TOP)/$(NXP_UTILITIES_DIR)/str
@@ -187,6 +192,11 @@ SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
 	fsl_lpi2c.c \
 	fsl_gpt.c \
 	fsl_clock.c \
+	fsl_lpspi.c \
+	fsl_lpspi_edma.c \
+	fsl_dmamux.c \
+	fsl_edma.c \
+	fsl_lpuart_edma.c \
 	$(BOARD_FSL_DRIVERS) \
 )
 SRC_FSL_DRIVERS += $(NXP_XIP_DIR)/fsl_flexspi_nor_boot.c
@@ -205,7 +215,30 @@ SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
 	fsl_uart.c \
 	fsl_sdhc.c \
 	fsl_sysmpu.c \
+	fsl_dmamux.c \
+	fsl_uart_edma.c \
+	fsl_dspi.c \
 )
+endif
+
+ifeq ($(Series), lpc)
+SRC_FSL_DRIVERS = $(addprefix $(NXP_DRIVER_DIR)/, \
+	fsl_clock.c \
+	fsl_common.c \
+	fsl_emc.c \
+	fsl_flexcomm.c \
+	fsl_gpio.c \
+	fsl_power.c \
+	fsl_reset.c \
+	fsl_sdif.c \
+	fsl_usart.c \
+	fsl_i2c.c \
+	fsl_spi.c \
+	fsl_pint.c \
+	fsl_inputmux.c \
+	fsl_power_lib.c \
+)
+
 endif
 
 SRC_MIDDLEWARE = $(addprefix $(NXP_MIDDLEWARE_DIR)/, \
@@ -242,6 +275,40 @@ SRC_COMPONENT = $(addprefix $(NXP_COMPONENTS_DIR)/, \
 )
 endif
 
+ifeq ($(Series), lpc)
+SRC_COMPONENT = $(addprefix $(NXP_COMPONENTS_DIR)/, \
+	lists/generic_list.c \
+	serial_manager/serial_manager.c \
+	serial_manager/serial_port_uart.c \
+	uart/usart_adapter.c \
+	gpio/gpio_lpc.c \
+)
+endif
+
+ifeq ($(Series), imx)
+SRC_CMSIS_DRIVER = $(addprefix $(NXP_CMSIS_DRIVER_DIR)/, \
+	fsl_lpspi_cmsis.c \
+	fsl_lpuart_cmsis.c \
+	fsl_lpi2c_cmsis.c \
+)
+endif
+
+ifeq ($(Series), kinetis)
+SRC_CMSIS_DRIVER = $(addprefix $(NXP_CMSIS_DRIVER_DIR)/, \
+	fsl_dspi_cmsis.c \
+	fsl_uart_cmsis.c \
+	fsl_i2c_cmsis.c \
+)
+endif
+
+ifeq ($(Series), lpc)
+SRC_CMSIS_DRIVER = $(addprefix $(NXP_CMSIS_DRIVER_DIR)/, \
+	fsl_spi_cmsis.c \
+	fsl_usart_cmsis.c \
+	fsl_i2c_cmsis.c \
+)
+endif
+
 SRC_UTILITIES = $(addprefix $(NXP_UTILITIES_DIR)/, \
 	fsl_assert.c \
 	debug_console/fsl_debug_console.c \
@@ -251,14 +318,19 @@ SRC_UTILITIES = $(addprefix $(NXP_UTILITIES_DIR)/, \
 SRC_C = \
 	main.c \
 	gccollect.c \
-	uart_core.c \
-	pin.c \
-	led.c \
+	bufferhelper.c \
+	pybled.c \
 	sdcard.c \
 	mphalport.c \
 	pybi2c.c \
 	pybpinmux.c \
+	mpgpio.c \
 	pybgpio.c \
+	spi.c \
+	pybspi.c \
+	usart.c \
+	pybusart.c \
+	i2c.c \
 	moduos.c \
 	modpyb.c
 
@@ -268,6 +340,7 @@ SRC_O = \
 	$(NXP_DEVICE_DIR)/system_$(Device).o \
 	lib/utils/gchelper_m3.o \
 
+OBJ += $(addprefix $(BUILD)/, $(SRC_CMSIS_DRIVER:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FSL_DRIVERS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_FreeRTOS:.c=.o))
@@ -277,10 +350,10 @@ OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_UTILITIES:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_BOARD:.c=.o))	
 OBJ += $(addprefix $(BUILD)/, $(SRC_SPECIFIC:.c=.o))	
-OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LVGL_SRC:.c=.o))
+OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os

@@ -22,18 +22,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef _LED_H_
-#define _LED_H_
-#if defined(MICROPY_PY_LED) && MICROPY_PY_LED
-typedef enum {
-    LED_YELLOW = 1,
-}pyb_led_t;
- 
+#ifndef _I2C_H_
+#define _I2C_H_
 
-void led_state(pyb_led_t led, int state);
-void led_init(void);
+void i2c_init(void);
 
+struct _ARM_DRIVER_I2C *i2c_find_index(mp_obj_t id, uint8_t* instance);
 
-extern const mp_obj_type_t pyb_led_type;
-#endif /* MICROPY_PY_LED */
-#endif
+void *i2c_find_callback(uint8_t instance);
+
+#endif /* _I2C_H_ */

@@ -25,6 +25,7 @@
 #ifndef _SDCARD_H_
 #define _SDCARD_H_
 
+#include "fsl_sd.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -34,7 +35,6 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 
-#include "fsl_sd.h"
 status_t ReadBlocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 status_t WriteBlocks(const uint8_t *buffer, uint32_t startBlock, uint32_t blockCount);
 status_t sdcard_WaitCardInsert(void);

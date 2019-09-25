@@ -21,25 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _PYBI2C_H_
-#define _PYBI2C_H_
 
-#if defined(MICROPY_PY_LPI2C) && MICROPY_PY_LPI2C
-#include "fsl_common.h"
-#include "i2c.h"
+#ifndef _PYB_I2C_H_
+#define _PYB_I2C_H_
 
-#define MASTER (0)
-#define SLAVE  (1)
-
-#define LPI2C_Write     (0)
-#define LPI2C_Read      (1)
-
-#define LPI2C_TransferDefaultFlag   (0x0U)
-#define LPI2C_TransferNoStartFlag   (0x1U)
-#define LPI2C_TransferRepeatedStartFlag (0x2U)
-#define LPI2C_TransferNoStopFlag    (0x4U)
-
+#if defined(MICROPY_PY_I2C) && MICROPY_PY_I2C
 extern const mp_obj_type_t pyb_i2c_type;
-#endif /*MICROPY_PY_LPI2C*/
-
+#endif /* MICROPY_PY_I2C */
 #endif 

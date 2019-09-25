@@ -25,15 +25,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "lib/utils/pyexec.h"
-
-#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
-#include "led.h"
-#endif
+#include "mpconfigport.h"
 #include "sdcard.h"
-#include "extmod/vfs.h"
+#include "obj.h"
+#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
+#include "pybled.h"
+#endif
 #if defined (MICROPY_PY_LPI2C) && MICROPY_PY_LPI2C  
 #include "pybi2c.h"
 #endif
@@ -46,6 +43,16 @@
 #if defined (MICROPY_PY_PINMUX) && MICROPY_PY_PINMUX
 #include "pybpinmux.h"
 #endif
+#if defined (MICROPY_PY_SPI) && MICROPY_PY_SPI
+#include "pybspi.h"
+#endif
+#if defined (MICROPY_PY_USART) && MICROPY_PY_USART
+#include "pybusart.h"
+#endif
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "lib/utils/pyexec.h"
+#include "extmod/vfs.h"
 
 STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
@@ -69,7 +76,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
 #if defined (MICROPY_PY_LED) && MICROPY_PY_LED
-    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
+    // { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_Sdcard), MP_ROM_PTR(&pyb_sdcard_type) },
@@ -87,6 +94,12 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 #endif
 #if defined (MICROPY_PY_GPT) && MICROPY_PY_GPT
     { MP_ROM_QSTR(MP_QSTR_GPT), MP_ROM_PTR(&pyb_gpt_type) },
+#endif
+#if defined (MICROPY_PY_SPI) && MICROPY_PY_SPI
+    { MP_ROM_QSTR(MP_QSTR_spi), MP_ROM_PTR(&pyb_spi_type) },
+#endif 
+#if defined (MICROPY_PY_USART) && MICROPY_PY_USART
+    { MP_ROM_QSTR(MP_QSTR_usart), MP_ROM_PTR(&pyb_usart_type) },
 #endif
 };
 

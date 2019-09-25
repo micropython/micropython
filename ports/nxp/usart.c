@@ -24,21 +24,21 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "mpconfigboard.h"
+#if defined(BOARD_USART_CMSIS_HEADER)
+#include BOARD_USART_CMSIS_HEADER
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "board.h"
-
-#if defined(BOARD_USART_CMSIS_HEADER)
 #include "usart.h"
-#include BOARD_USART_CMSIS_HEADER
+#include "board.h"
 
 static void usart_init_helper(void)
 {
     uint8_t i = 0;
     for(i=0; i<MP_ARRAY_SIZE(MP_STATE_PORT(pyb_usart_callback)); i++)
     {
-        MP_STATE_PORT(pyb_usart_callback)[i] = mp_const_none;
+        MP_STATE_PORT(pyb_usart_callback)[i] = MP_OBJ_NULL;
     }
 }
 
@@ -212,7 +212,7 @@ STATIC void DriverUSART0_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[0];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -224,7 +224,7 @@ STATIC void DriverUSART1_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[1];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -236,7 +236,7 @@ STATIC void DriverUSART2_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[2];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -248,7 +248,7 @@ STATIC void DriverUSART3_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[3];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -260,7 +260,7 @@ STATIC void DriverUSART4_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[4];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -272,7 +272,7 @@ STATIC void DriverUSART5_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[5];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -284,7 +284,7 @@ STATIC void DriverUSART6_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[5];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -296,7 +296,7 @@ STATIC void DriverUSART7_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[5];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }
@@ -308,7 +308,7 @@ STATIC void DriverUSART8_Signal_Event(uint32_t event)
 {
     mp_obj_t *cb = NULL;
     cb = &MP_STATE_PORT(pyb_usart_callback)[5];
-    if(*cb != mp_const_none)
+    if(*cb != MP_OBJ_NULL)
     {
         mp_call_function_1_protected(*cb, mp_obj_new_int(event));
     }

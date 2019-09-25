@@ -26,6 +26,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "fsl_debug_console.h"
+#include "app.h"
+
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
@@ -38,16 +41,12 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
-#include "fsl_debug_console.h"
-#include "app.h"
 #include "gccollect.h"
 
 #if defined(MICROPY_PY_LVGL) && MICROPY_PY_LVGL
 #include "littlevgl_support.h"
 #endif 
 
-#include "led.h"
-#include "pin.h"
 #include "sdcard.h"
 
 #include "FreeRTOSConfig.h"
@@ -299,11 +298,6 @@ void SdcardInitTask(void *param)
 int main(void) { 
     // BOARD init
     BOARD_InitHardware();
-
-#if defined (MICROPY_PY_LED) && MICROPY_PY_LED
-    pin_init0();
-    led_init();
-#endif
 #if defined(MICROPY_PY_LVGL) && MICROPY_PY_LVGL
     lv_port_pre_init();
 #endif

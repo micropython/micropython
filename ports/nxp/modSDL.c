@@ -39,6 +39,7 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 #include "task.h"
+#include "pin_mux.h"
 
 #if LV_HOR_RES != 480
 #error "LV_HOR_RES must be set to 480!"
@@ -67,6 +68,7 @@ void vTimerCallback(TimerHandle_t pxTimer)
 
 void InitLcd(void)
 {
+    LCD_InitPins();
     DEMO_InitLcd();
 }
 

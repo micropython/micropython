@@ -24,25 +24,3 @@
 
 static inline void mp_hal_set_interrupt_char(char c) {}
 
-
-
-// C-leave pin 
-#include "pin.h"
-#define mp_hal_pin_obj_t const pin_obj_t*
-
-/* 
- Use nxp fsl_gpio driver realize pin read and write 
- */
-
-#define IS_GPIO_DIRECTION(d) (((d) == kGPIO_DigitalInput) || ((d) == kGPIO_DigitalOutput))
-#define mp_hal_pin_read(p) GPIO_PinRead(p->gpio, p->pin) 
-#define mp_hal_pin_write(p, v) GPIO_PinWrite(p->gpio, p->pin, v)
-
-#define mp_hal_pin_high(p) mp_hal_pin_write(p,1)
-#define mp_hal_pin_low(p) mp_hal_pin_write(p,0)
-
-#define mp_hal_pin_toggle(p) GPIO_PortToggle(p->gpio, (1<<p->pin))
-
-
-//void mp_hal_delay_ms(mp_int_t delay_ms);
-//void mp_hal_delay_us(mp_int_t delay_ms);

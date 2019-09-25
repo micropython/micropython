@@ -31,7 +31,7 @@
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
 #define MICROPY_ENABLE_COMPILER     (1)
 
-#define MICROPY_QSTR_BYTES_IN_HASH  (1)
+// #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 //#define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 #define MICROPY_ALLOC_PATH_MAX      (128)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
@@ -69,7 +69,7 @@
 #define MICROPY_PY_BUILTINS_STR_OP_MODULO (0)
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
-#define MICROPY_PY_ARRAY            (0)
+#define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ATTRTUPLE        (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_MATH             (0)
@@ -194,8 +194,8 @@ extern const struct _mp_obj_module_t mp_module_uos;
     mp_obj_t pyb_config_main; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
-    mp_obj_t pyb_lpi2c_callback[5]; \
+    mp_obj_t pyb_i2c_callback[MP_FEATURE_I2C_COUNTS]; \
     mp_obj_t pyb_gpt_callback[3]; \
-    mp_obj_t pyb_gpio_callback[5]; \
+    mp_obj_t pyb_spi_callback[MP_FEATURE_SPI_COUNTS]; \
+    mp_obj_t pyb_usart_callback[MP_FEATURE_USART_COUNTS]; \
 
-static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }
