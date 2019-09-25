@@ -142,16 +142,6 @@ def mp_opcode_format(bytecode, ip, count_var_uint):
         ip += extra_byte
     return f, ip - ip_start
 
-def decode_uint(bytecode, ip):
-    unum = 0
-    while True:
-        val = bytecode[ip]
-        ip += 1
-        unum = (unum << 7) | (val & 0x7f)
-        if not (val & 0x80):
-            break
-    return ip, unum
-
 def read_prelude_sig(read_byte):
     z = read_byte()
     # xSSSSEAA
@@ -175,6 +165,20 @@ def read_prelude_sig(read_byte):
     S += 1
     return S, E, F, A, K, D
 
+def read_prelude_size(read_byte):
+    I = 0
+    C = 0
+    n = 0
+    while True:
+        z = read_byte()
+        # xIIIIIIC
+        I |= ((z & 0x7e) >> 1) << (6 * n)
+        C |= (z & 1) << n
+        if not (z & 0x80):
+            break
+        n += 1
+    return I, C
+
 def extract_prelude(bytecode, ip):
     def local_read_byte():
         b = bytecode[ip_ref[0]]
@@ -182,16 +186,14 @@ def extract_prelude(bytecode, ip):
         return b
     ip_ref = [ip] # to close over ip in Python 2 and 3
     n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(local_read_byte)
+    n_info, n_cell = read_prelude_size(local_read_byte)
     ip = ip_ref[0]
 
-    ip2, code_info_size = decode_uint(bytecode, ip)
-    ip += code_info_size
-    while bytecode[ip] != 0xff:
-        ip += 1
-    ip += 1
+    ip2 = ip
+    ip = ip2 + n_info + n_cell
     # ip now points to first opcode
     # ip2 points to simple_name qstr
-    return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
+    return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
 
 class MPFunTable:
     pass
@@ -359,7 +361,6 @@ class RawCode(object):
             print('        .qstr_block_name = %s,' % self.simple_name.qstr_id)
             print('        .qstr_source_file = %s,' % self.source_file.qstr_id)
             print('        .line_info = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
-            print('        .locals = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
             print('        .opcodes = fun_data_%s + %u,' % (self.escaped_name, self.ip))
             print('    },')
             print('    .line_of_definition = %u,' % 0) # TODO
@@ -583,14 +584,11 @@ def read_obj(f):
 
 def read_prelude(f, bytecode):
     n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(lambda: read_byte(f, bytecode))
-    l1 = bytecode.idx
-    code_info_size = read_uint(f, bytecode)
+    n_info, n_cell = read_prelude_size(lambda: read_byte(f, bytecode))
     l2 = bytecode.idx
-    for _ in range(code_info_size - (l2 - l1)):
+    for _ in range(n_info + n_cell):
         read_byte(f, bytecode)
-    while read_byte(f, bytecode) != 255:
-        pass
-    return l2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
+    return l2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
 
 def read_qstr_and_pack(f, bytecode, qstr_win):
     qst = read_qstr(f, qstr_win)

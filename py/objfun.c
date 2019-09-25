@@ -139,7 +139,7 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 /* byte code functions                                                        */
 
 qstr mp_obj_code_get_name(const byte *code_info) {
-    code_info = mp_decode_uint_skip(code_info); // skip code_info_size entry
+    MP_BC_PRELUDE_SIZE_DECODE(code_info);
     #if MICROPY_PERSISTENT_CODE
     return code_info[0] | (code_info[1] << 8);
     #else

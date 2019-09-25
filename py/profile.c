@@ -34,7 +34,7 @@
 
 STATIC uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    return mp_bytecode_get_source_line(prelude->line_info, bc + prelude->opcodes - prelude->locals);
+    return mp_bytecode_get_source_line(prelude->line_info, bc);
 }
 
 void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelude) {
@@ -48,22 +48,15 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
     prelude->n_kwonly_args = n_kwonly_args;
     prelude->n_def_pos_args = n_def_pos_args;
 
-    const byte *code_info = ip;
-    size_t code_info_size = mp_decode_uint(&ip);
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
+
+    prelude->line_info = ip + 4;
+    prelude->opcodes = ip + n_info + n_cell;
 
     qstr block_name = ip[0] | (ip[1] << 8);
     qstr source_file = ip[2] | (ip[3] << 8);
-    ip += 4;
     prelude->qstr_block_name = block_name;
     prelude->qstr_source_file = source_file;
-
-    prelude->line_info = ip;
-    prelude->locals = code_info + code_info_size;
-
-    ip = prelude->locals;
-    while (*ip++ != 255) {
-    }
-    prelude->opcodes = ip;
 }
 
 /******************************************************************************/

@@ -269,18 +269,24 @@ continue2:;
         }
     }
 
-    // get the ip and skip argument names
+    // read the size part of the prelude
     const byte *ip = code_state->ip;
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
 
     // jump over code info (source file and line-number mapping)
-    ip += mp_decode_uint_value(ip);
+    ip += n_info;
 
     // bytecode prelude: initialise closed over variables
-    size_t local_num;
-    while ((local_num = *ip++) != 255) {
+    for (; n_cell; --n_cell) {
+        size_t local_num = *ip++;
         code_state->state[n_state - 1 - local_num] =
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
+
+    #if !MICROPY_PERSISTENT_CODE
+    // so bytecode is aligned
+    ip = MP_ALIGN(ip, sizeof(mp_uint_t));
+    #endif
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;

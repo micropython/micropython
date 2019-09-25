@@ -5,7 +5,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
 ########
   bc=\\d\+ line=155
 00 MAKE_FUNCTION \.\+
@@ -38,7 +38,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 (INIT_CELL 14)
 (INIT_CELL 15)
 (INIT_CELL 16)
-  bc=-4 line=1
+  bc=0 line=1
 ########
   bc=\\d\+ line=126
 00 LOAD_CONST_NONE
@@ -318,7 +318,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \.\+rg names:
 (N_STATE 22)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
 ########
   bc=\\d\+ line=132
 00 LOAD_CONST_SMALL_INT 1
@@ -392,7 +392,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
   bc=0 line=143
   bc=3 line=144
   bc=6 line=145
@@ -416,7 +416,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
 ########
   bc=13 line=149
 00 LOAD_NAME __name__ (cache=0)
@@ -432,7 +432,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: self
 (N_STATE 4)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
   bc=0 line=156
 00 LOAD_GLOBAL super (cache=0)
 \\d\+ LOAD_GLOBAL __class__ (cache=0)
@@ -449,7 +449,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: * * *
 (N_STATE 9)
 (N_EXC_STACK 0)
-  bc=-\\d\+ line=1
+  bc=0 line=1
   bc=0 line=59
 ########
 00 LOAD_NULL
@@ -473,7 +473,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: * * *
 (N_STATE 10)
 (N_EXC_STACK 0)
-  bc=-\\d\+ line=1
+  bc=0 line=1
   bc=0 line=60
 ########
 00 BUILD_LIST 0
@@ -494,7 +494,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: * * *
 (N_STATE 11)
 (N_EXC_STACK 0)
-  bc=-\\d\+ line=1
+  bc=0 line=1
 ########
 00 BUILD_MAP 0
 02 LOAD_FAST 2
@@ -515,7 +515,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: *
 (N_STATE 4)
 (N_EXC_STACK 0)
-  bc=-\\d\+ line=1
+  bc=0 line=1
 ########
   bc=\\d\+ line=113
 00 LOAD_DEREF 0
@@ -534,7 +534,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: * b
 (N_STATE 4)
 (N_EXC_STACK 0)
-  bc=-\\d\+ line=1
+  bc=0 line=1
 ########
   bc=\\d\+ line=139
 00 LOAD_FAST 1

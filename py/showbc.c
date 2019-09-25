@@ -85,10 +85,8 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
 
     // Decode prelude
     MP_BC_PRELUDE_SIG_DECODE(ip);
-
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
     const byte *code_info = ip;
-    mp_uint_t code_info_size = mp_decode_uint(&code_info);
-    ip += code_info_size;
 
     #if MICROPY_PERSISTENT_CODE
     qstr block_name = code_info[0] | (code_info[1] << 8);
@@ -102,7 +100,9 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
         qstr_str(source_file), qstr_str(block_name), descr, mp_showbc_code_start, len);
 
     // raw bytecode dump
-    printf("Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n", code_info_size, len - code_info_size);
+    size_t prelude_size = ip - mp_showbc_code_start + n_info + n_cell;
+    printf("Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n",
+        prelude_size, len - prelude_size);
     for (mp_uint_t i = 0; i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             printf("\n");
@@ -121,21 +121,18 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     printf("(N_STATE %u)\n", (unsigned)n_state);
     printf("(N_EXC_STACK %u)\n", (unsigned)n_exc_stack);
 
-    // for printing line number info
-    const byte *bytecode_start = ip;
+    // skip over code_info
+    ip += n_info;
 
     // bytecode prelude: initialise closed over variables
-    {
-        uint local_num;
-        while ((local_num = *ip++) != 255) {
-            printf("(INIT_CELL %u)\n", local_num);
-        }
-        len -= ip - mp_showbc_code_start;
+    for (size_t i = 0; i < n_cell; ++i) {
+        uint local_num = *ip++;
+        printf("(INIT_CELL %u)\n", local_num);
     }
 
     // print out line number info
     {
-        mp_int_t bc = bytecode_start - ip;
+        mp_int_t bc = 0;
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         for (const byte* ci = code_info; *ci;) {
@@ -153,7 +150,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
-    mp_bytecode_print2(ip, len - 0, const_table);
+    mp_bytecode_print2(ip, len - prelude_size, const_table);
 }
 
 const byte *mp_bytecode_print_str(const byte *ip) {

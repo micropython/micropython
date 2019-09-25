@@ -64,6 +64,9 @@ struct _emit_t {
     size_t bytecode_size;
     byte *code_base; // stores both byte code and code info
 
+    size_t n_info;
+    size_t n_cell;
+
     #if MICROPY_PERSISTENT_CODE
     uint16_t ct_cur_obj;
     uint16_t ct_num_obj;
@@ -121,10 +124,6 @@ STATIC byte *emit_get_cur_to_write_code_info(emit_t *emit, int num_bytes_to_writ
 
 STATIC void emit_write_code_info_byte(emit_t* emit, byte val) {
     *emit_get_cur_to_write_code_info(emit, 1) = val;
-}
-
-STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
-    emit_write_uint(emit, emit_get_cur_to_write_code_info, val);
 }
 
 STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
@@ -346,28 +345,16 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         MP_BC_PRELUDE_SIG_ENCODE(n_state, n_exc_stack, scope, emit_write_code_info_byte, emit);
     }
 
-    // Write size of the rest of the code info.  We don't know how big this
-    // variable uint will be on the MP_PASS_CODE_SIZE pass so we reserve 2 bytes
-    // for it and hope that is enough!  TODO assert this or something.
-    if (pass == MP_PASS_EMIT) {
-        emit_write_code_info_uint(emit, emit->code_info_size - emit->code_info_offset);
-    } else  {
-        emit_get_cur_to_write_code_info(emit, 2);
+    // Write number of cells and size of the source code info
+    if (pass >= MP_PASS_CODE_SIZE) {
+        MP_BC_PRELUDE_SIZE_ENCODE(emit->n_info, emit->n_cell, emit_write_code_info_byte, emit);
     }
+
+    emit->n_info = emit->code_info_offset;
 
     // Write the name and source file of this function.
     emit_write_code_info_qstr(emit, scope->simple_name);
     emit_write_code_info_qstr(emit, scope->source_file);
-
-    // bytecode prelude: initialise closed over variables
-    for (int i = 0; i < scope->id_info_len; i++) {
-        id_info_t *id = &scope->id_info[i];
-        if (id->kind == ID_INFO_KIND_CELL) {
-            assert(id->local_num < 255);
-            emit_write_bytecode_raw_byte(emit, id->local_num); // write the local which should be converted to a cell
-        }
-    }
-    emit_write_bytecode_raw_byte(emit, 255); // end of list sentinel
 
     #if MICROPY_PERSISTENT_CODE
     emit->ct_cur_obj = 0;
@@ -413,6 +400,20 @@ void mp_emit_bc_end_pass(emit_t *emit) {
     assert(emit->stack_size == 0);
 
     emit_write_code_info_byte(emit, 0); // end of line number info
+
+    // Calculate size of source code info section
+    emit->n_info = emit->code_info_offset - emit->n_info;
+
+    // Emit closure section of prelude
+    emit->n_cell = 0;
+    for (size_t i = 0; i < emit->scope->id_info_len; ++i) {
+        id_info_t *id = &emit->scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
+            assert(id->local_num <= 255);
+            emit_write_code_info_byte(emit, id->local_num); // write the local which should be converted to a cell
+            ++emit->n_cell;
+        }
+    }
 
     #if MICROPY_PERSISTENT_CODE
     assert(emit->pass <= MP_PASS_STACK_SIZE || (emit->ct_num_obj == emit->ct_cur_obj));

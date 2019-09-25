@@ -1441,10 +1441,13 @@ unwind_loop:
                 && *code_state->ip != MP_BC_RAISE_LAST) {
                 const byte *ip = code_state->fun_bc->bytecode;
                 MP_BC_PRELUDE_SIG_DECODE(ip);
-                size_t bc = code_state->ip - ip;
-                size_t code_info_size = mp_decode_uint_value(ip);
-                ip = mp_decode_uint_skip(ip); // skip code_info_size
-                bc -= code_info_size;
+                MP_BC_PRELUDE_SIZE_DECODE(ip);
+                const byte *bytecode_start = ip + n_info + n_cell;
+                #if !MICROPY_PERSISTENT_CODE
+                // so bytecode is aligned
+                bytecode_start = MP_ALIGN(bytecode_start, sizeof(mp_uint_t));
+                #endif
+                size_t bc = code_state->ip - bytecode_start;
                 #if MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);

@@ -56,8 +56,8 @@ user_files = {
     '/mod1.mpy': (
         b'M\x05\x0b\x1f\x20' # header
 
-        b'\x24' # n bytes, bytecode
-            b'\x00\x05\x00\x00\x00\x00\xff' # prelude
+        b'\x20' # n bytes, bytecode
+            b'\x00\x08\x00\x00\x00\x00' # prelude
             b'\x51' # LOAD_CONST_NONE
             b'\x63' # RETURN_VALUE
 

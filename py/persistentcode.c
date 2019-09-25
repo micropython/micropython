@@ -167,11 +167,10 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
     prelude->n_pos_args = n_pos_args;
     prelude->n_kwonly_args = n_kwonly_args;
     prelude->n_def_pos_args = n_def_pos_args;
+    MP_BC_PRELUDE_SIZE_DECODE(*ip);
     *ip2 = *ip;
-    prelude->code_info_size = mp_decode_uint(ip2);
-    *ip += prelude->code_info_size;
-    while (*(*ip)++ != 255) {
-    }
+    *ip += n_info;
+    *ip += n_cell;
 }
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
@@ -286,12 +285,9 @@ STATIC void load_prelude(mp_reader_t *reader, byte **ip, byte **ip2, bytecode_pr
     byte *ip_read = *ip;
     read_uint(reader, &ip_read);                    // read in n_state/etc (is effectively a var-uint)
     byte *ip_read_save = ip_read;
-    size_t code_info_size = read_uint(reader, &ip_read); // read in code_info_size
-    code_info_size -= ip_read - ip_read_save;       // subtract bytes taken by code_info_size itself
-    read_bytes(reader, ip_read, code_info_size);    // read remaining code info
-    ip_read += code_info_size;
-    while ((*ip_read++ = read_byte(reader)) != 255) {
-    }
+    read_uint(reader, &ip_read);                    // read in n_info/n_cell (is effectively a var-uint)
+    MP_BC_PRELUDE_SIZE_DECODE(ip_read_save);
+    read_bytes(reader, ip_read, n_info + n_cell);   // read remaining code info
 
     // Entire prelude has been read into *ip, now decode and extract values from it
     extract_prelude((const byte**)ip, (const byte**)ip2, prelude);
