@@ -45,11 +45,14 @@ typedef struct _esp32_rmt_obj_t {
 
 // TODO
 //
+//   o Write up documentation
 //   o Check all the input parameters
 //   o Return exceptions when errors occur
 //   o Manage an array of channels (so user can't create the same one repeatedly)
 //     - Check if channel is initialised (in particular: after deinit)
 //   o Investigate: Send without blocking? (Need an 'is_sending' method)
+//     - Memory management becomes significantly more complex. Need to ensure memory is not freed before it's used.
+//     - Also need to take care that memory is not freed by the MicroPython GC.
 //   o Add debug option? Emit printf debug messages?
 //     - Idea: Generate timing diagram (maybe with https://wavedrom.com/ ?) Extension.
 //   o Consider: Auto-manage RMT channels? Currently user chooses a channel
@@ -65,6 +68,8 @@ typedef struct _esp32_rmt_obj_t {
 //   o Add carrier modulation methods
 //   o Add rx support
 
+// ESP-IDF RMT:
+// Espressif examples: https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/RMT
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // fixme: check arguments
@@ -154,6 +159,10 @@ STATIC mp_obj_t esp32_rmt_send_pulses(mp_obj_t self_in, mp_obj_t pulses, mp_obj_
     // fixme: Handle if not a tuple
     if(MP_OBJ_IS_TYPE(pulses, &mp_type_tuple) == true) {
         mp_obj_tuple_get(pulses, &pulses_length, &pulses_ptr);
+    } else if(MP_OBJ_IS_TYPE(pulses, &mp_type_list) == true) {
+        mp_obj_list_get(pulses, &pulses_length, &pulses_ptr);
+    } else {
+        mp_raise_TypeError("Pulses must be defined as a tuple or list");
     }
 
     mp_uint_t num_items = (pulses_length / 2) + (pulses_length % 2);
