@@ -98,7 +98,6 @@ void mp_hal_delay_us(mp_uint_t us)
     if (us == 0) {
         return;
     }
-
     register uint32_t delay __ASM ("r0") = us;
     __ASM volatile (
 #ifdef NRF51
@@ -118,7 +117,7 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#ifdef NRF52
+#if defined(NRF52) || defined(NRF9160_XXAA)
         " NOP\n"
         " NOP\n"
         " NOP\n"

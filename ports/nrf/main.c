@@ -299,9 +299,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
+
 void HardFault_Handler(void)
 {
-#if defined(NRF52_SERIES)
+#if defined(NRF52_SERIES) || defined(NRF91_SERIES)
     static volatile uint32_t reg;
     static volatile uint32_t reg2;
     static volatile uint32_t bfar;
