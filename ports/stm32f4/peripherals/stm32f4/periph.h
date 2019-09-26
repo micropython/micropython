@@ -34,6 +34,8 @@
 #include "stm32f4/pins.h"
 
 // I2C 
+//TODO: these objects should be condensed into a single 'periph_pin' unless we
+//find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
@@ -63,6 +65,8 @@ typedef struct {
 }
 
 // SPI 
+//TODO: these objects should be condensed into a single 'periph_pin' unless we
+//find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t spi_index:4; //Up to 6 SPI units

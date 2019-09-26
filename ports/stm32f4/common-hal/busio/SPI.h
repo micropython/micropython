@@ -33,10 +33,14 @@
 
 typedef struct {
     mp_obj_base_t base;
+    SPI_HandleTypeDef handle;
     bool has_lock;
-    uint8_t clock_pin;
-    uint8_t MOSI_pin;
-    uint8_t MISO_pin;
+    const mcu_spi_sck_obj_t *sck;
+    const mcu_spi_mosi_obj_t *mosi;
+    const mcu_spi_miso_obj_t *miso;
+    const mcu_spi_nss_obj_t *nss;
 } busio_spi_obj_t;
+
+void spi_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
