@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x8056
+USB_PID = 0x805C
 USB_PRODUCT = "Pyboard Version 1.1"
 USB_MANUFACTURER = "George Robotic"
 USB_DEVICES = "CDC,MSC"
