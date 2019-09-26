@@ -37,6 +37,9 @@
 #elif MCU_PACKAGE == 100
     #define GPIO_PORT_COUNT 5
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE};
+#elif MCU_PACKAGE == 64
+    #define GPIO_PORT_COUNT 3
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
 #endif
 
 STATIC uint16_t claimed_pins[GPIO_PORT_COUNT];

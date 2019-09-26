@@ -1,9 +1,10 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +25,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4/periph.h"
+//Micropython setup
 
-// I2C
+#define MICROPY_HW_BOARD_NAME       "PyboardV1_1"
+#define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
-I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7] = {
-    I2C_SDA(1, 4, &pin_PB07),
-    I2C_SDA(1, 4, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB03),
-    I2C_SDA(3, 4, &pin_PC09),
-    I2C_SDA(3, 9, &pin_PB04),
-    I2C_SDA(3, 9, &pin_PB08)
-};
-
-const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
-    I2C_SCL(1, 4, &pin_PB06),
-    I2C_SCL(1, 4, &pin_PB08),
-    I2C_SCL(2, 4, &pin_PB10),
-    I2C_SCL(3, 4, &pin_PA08)
-};
-//SPI, UART, Etc
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
