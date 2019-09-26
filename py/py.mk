@@ -255,6 +255,10 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_C
 	$(Q)$(CAT) $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^\"\(Q(.*)\)\"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
+$(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
+
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
 	@$(ECHO) "GEN $@"

@@ -257,4 +257,58 @@ typedef union _mp_float_union_t {
 
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
+/** ROM string compression *************/
+
+#ifdef NO_QSTR
+
+// QSTR extraction sets NO_QSTR.
+// So leave MP_COMPRESSED_ROM_TEXT in place for makeqstrdefs.py / makecompresseddata.py to find them.
+
+// However, dynamic native modules also set NO_QSTR, so provide a dummy implementation.
+#if MICROPY_ENABLE_DYNRUNTIME
+typedef const char *mp_rom_error_text_t;
+#define MP_COMPRESSED_ROM_TEXT(x) x
+#endif
+
+#else
+
+#if MICROPY_ROM_TEXT_COMPRESSION
+
+// Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
+typedef struct {} *mp_rom_error_text_t;
+
+// Regular build -- map MP_COMPRESSED_ROM_TEXT to the compressed strings.
+
+#include <string.h>
+
+inline __attribute__((always_inline)) const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
+    // "genhdr/compressed.data.h" contains an invocation of the MP_MATCH_COMPRESSED macro for each compressed string.
+    // The giant if(strcmp) tree is optimized by the compiler, which turns this into a direct return of the compressed data.
+    #define MP_MATCH_COMPRESSED(a, b) if (strcmp(msg, a) == 0) { return b; } else
+
+    // It also contains a single invocation of the MP_COMPRESSED_DATA macro, we don't need that here.
+    #define MP_COMPRESSED_DATA(x)
+
+    #include "genhdr/compressed.data.h"
+
+#undef MP_COMPRESSED_DATA
+#undef MP_MATCH_COMPRESSED
+
+    return msg;
+}
+
+#else
+
+// Compression not enabled, just make it a no-op.
+typedef const char *mp_rom_error_text_t;
+#define MP_COMPRESSED_ROM_TEXT(x) x
+
+#endif // MICROPY_ROM_TEXT_COMPRESSION
+
+#endif // NO_QSTR
+
+// Might add more types of compressed text in the future.
+// For now, forward directly to MP_COMPRESSED_ROM_TEXT.
+#define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
+
 #endif // MICROPY_INCLUDED_PY_MISC_H
