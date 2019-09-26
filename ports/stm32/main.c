@@ -144,7 +144,9 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
         mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        #if MICROPY_ENABLE_COMPILER
         MP_STATE_VM(mp_optimise_value) = args[0].u_int;
+        #endif
     }
     return mp_const_none;
 }
@@ -701,6 +703,7 @@ soft_reset:
         }
     }
 
+    #if MICROPY_ENABLE_COMPILER
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
@@ -714,6 +717,7 @@ soft_reset:
             }
         }
     }
+    #endif
 
 soft_reset_exit:
 
