@@ -111,16 +111,3 @@ assert ('a' 'b' f'{x}' f'str<{y:^4}>' 'd' 'e') == 'ab10str< hi >de'
 
 # Other tests
 assert f'{{{4*10}}}' == '{40}'
-
-try:
-    eval("fr''")
-except NotImplementedError:
-    pass
-else:
-    raise RuntimeError('expected raw f-string to raise NotImplementedError')
-try:
-    eval("rf''")
-except NotImplementedError:
-    pass
-else:
-    raise RuntimeError('expected raw f-string to raise NotImplementedError')

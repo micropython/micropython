@@ -1178,6 +1178,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
                     translate("unindent does not match any outer indentation level"));
                 break;
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
             case MP_TOKEN_FSTRING_BACKSLASH:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                     translate("f-string expression part cannot include a backslash"));
@@ -1202,6 +1203,17 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
                     translate("raw f-strings are not implemented"));
                 break;
+#else
+            case MP_TOKEN_FSTRING_BACKSLASH:
+            case MP_TOKEN_FSTRING_COMMENT:
+            case MP_TOKEN_FSTRING_UNCLOSED:
+            case MP_TOKEN_FSTRING_UNOPENED:
+            case MP_TOKEN_FSTRING_EMPTY_EXP:
+            case MP_TOKEN_FSTRING_RAW:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("malformed f-string"));
+                break;
+#endif
             default:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                     translate("invalid syntax"));

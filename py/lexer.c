@@ -129,29 +129,21 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
 
 STATIC void swap_char_banks(mp_lexer_t *lex) {
     if (lex->vstr_postfix_processing) {
-        unichar h0, h1, h2;
+        lex->chr3 = lex->chr0;
+        lex->chr4 = lex->chr1;
+        lex->chr5 = lex->chr2;
+        lex->chr0 = lex->vstr_postfix.buf[0];
+        lex->chr1 = lex->vstr_postfix.buf[1];
+        lex->chr2 = lex->vstr_postfix.buf[2];
 
-        h0 = lex->chr0;
-        h1 = lex->chr1;
-        h2 = lex->chr2;
-
-        lex->chr0 = lex->vstr_postfix.len > 0 ? lex->vstr_postfix.buf[0] : 0;
-        lex->chr1 = lex->vstr_postfix.len > 1 ? lex->vstr_postfix.buf[1] : 0;
-        lex->chr2 = lex->vstr_postfix.len > 2 ? lex->vstr_postfix.buf[2] : 0;
-        lex->chr3 = h0;
-        lex->chr4 = h1;
-        lex->chr5 = h2;
-
-        lex->vstr_postfix_idx = lex->vstr_postfix.len > 2 ? 3 : lex->vstr_postfix.len;
+        lex->vstr_postfix_idx = 3;
     } else {
         // blindly reset to the "backup" bank when done postfix processing
         // this restores control to the mp_reader
         lex->chr0 = lex->chr3;
         lex->chr1 = lex->chr4;
         lex->chr2 = lex->chr5;
-        lex->chr3 = 0;
-        lex->chr4 = 0;
-        lex->chr5 = 0;
+        // willfully ignoring setting chr3-5 here - WARNING consider those garbage data now
 
         vstr_reset(&lex->vstr_postfix);
         lex->vstr_postfix_idx = 0;
