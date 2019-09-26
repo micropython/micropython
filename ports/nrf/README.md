@@ -41,6 +41,8 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
   * [PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
   * [Particle Xenon](https://docs.particle.io/xenon/)
+* nRF9160
+  * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
 
 ## Compile and Flash
 
@@ -132,6 +134,7 @@ evk_nina_b1          | s132                    | Peripheral and Central | [Segge
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
 particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
+pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
 
 ## IDAP-M/IDAP-Link Targets
 
