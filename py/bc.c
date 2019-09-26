@@ -40,6 +40,8 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if !MICROPY_PERSISTENT_CODE
+
 mp_uint_t mp_decode_uint(const byte **ptr) {
     mp_uint_t unum = 0;
     byte val;
@@ -69,6 +71,8 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     }
     return ptr;
 }
+
+#endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
