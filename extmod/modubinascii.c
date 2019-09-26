@@ -32,6 +32,8 @@
 #include "py/binary.h"
 #include "extmod/modubinascii.h"
 
+#if MICROPY_PY_UBINASCII
+
 mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     // Second argument is for an extension to allow a separator to be used
     // between values.
@@ -228,8 +230,6 @@ mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_binascii_crc32);
 #endif
-
-#if MICROPY_PY_UBINASCII
 
 STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubinascii) },
