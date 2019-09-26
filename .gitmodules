@@ -30,3 +30,6 @@
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
 	url = https://github.com/apache/mynewt-nimble.git
+[submodule "lib/littlefs"]
+	path = lib/littlefs
+	url = https://github.com/ARMmbed/littlefs.git
