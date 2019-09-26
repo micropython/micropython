@@ -108,4 +108,7 @@ typedef struct {
 #ifdef STM32F411xE
 #include "stm32f411xe/periph.h"
 #endif
+#ifdef STM32F405xx
+#include "stm32f405xx/periph.h"
+#endif
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__

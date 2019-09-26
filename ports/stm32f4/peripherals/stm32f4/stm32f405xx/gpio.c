@@ -1,5 +1,5 @@
- /*
- * This file is part of the MicroPython project, http://micropython.org/
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,29 +24,33 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4/periph.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-// I2C
+void stm32f4_peripherals_gpio_init(void) {
+    //Enable all GPIO for now
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
+    never_reset_pin_number(2,14); //PC14 OSC32_IN
+    never_reset_pin_number(2,15); //PC15 OSC32_OUT
+    never_reset_pin_number(0,13); //PA13 SWDIO
+    never_reset_pin_number(0,14); //PA14 SWCLK
+    never_reset_pin_number(0,15); //PA15 JTDI
+    never_reset_pin_number(1,3); //PB3 JTDO
+    never_reset_pin_number(1,4); //PB4 JTRST
 
-const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7] = {
-    I2C_SDA(1, 4, &pin_PB07),
-    I2C_SDA(1, 4, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB03),
-    I2C_SDA(3, 4, &pin_PC09),
-    I2C_SDA(3, 9, &pin_PB04),
-    I2C_SDA(3, 9, &pin_PB08)
-};
+    // Port H is not included in GPIO port array
+    // never_reset_pin_number(5,0); //PH0 JTDO   
+    // never_reset_pin_number(5,1); //PH1 JTRST
+}
 
-const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
-    I2C_SCL(1, 4, &pin_PB06),
-    I2C_SCL(1, 4, &pin_PB08),
-    I2C_SCL(2, 4, &pin_PB10),
-    I2C_SCL(3, 4, &pin_PA08)
-};
-//SPI, UART, Etc
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+
+}
+
+

@@ -33,14 +33,11 @@
 
 I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
 
-const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7] = {
+const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4] = {
     I2C_SDA(1, 4, &pin_PB07),
     I2C_SDA(1, 4, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB03),
+    I2C_SDA(2, 4, &pin_PB11),
     I2C_SDA(3, 4, &pin_PC09),
-    I2C_SDA(3, 9, &pin_PB04),
-    I2C_SDA(3, 9, &pin_PB08)
 };
 
 const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {

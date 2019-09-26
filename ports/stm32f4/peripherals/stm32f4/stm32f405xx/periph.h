@@ -1,4 +1,4 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -24,29 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
-#include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4/periph.h"
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
 
-// I2C
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[3];
 
-I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
+extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4];
+extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
-const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7] = {
-    I2C_SDA(1, 4, &pin_PB07),
-    I2C_SDA(1, 4, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB09),
-    I2C_SDA(2, 9, &pin_PB03),
-    I2C_SDA(3, 4, &pin_PC09),
-    I2C_SDA(3, 9, &pin_PB04),
-    I2C_SDA(3, 9, &pin_PB08)
-};
 
-const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
-    I2C_SCL(1, 4, &pin_PB06),
-    I2C_SCL(1, 4, &pin_PB08),
-    I2C_SCL(2, 4, &pin_PB10),
-    I2C_SCL(3, 4, &pin_PA08)
-};
-//SPI, UART, Etc
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
