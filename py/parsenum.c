@@ -144,15 +144,16 @@ overflow:
     }
 
 value_error:
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_ValueError,
             "invalid syntax for integer");
         raise_exc(exc, lex);
-    } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
+        #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "invalid syntax for integer with base %d", base);
         raise_exc(exc, lex);
-    } else {
+        #else
         vstr_t vstr;
         mp_print_t print;
         vstr_init_print(&vstr, 50, &print);
@@ -161,6 +162,7 @@ value_error:
         mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError,
             mp_obj_new_str_from_vstr(&mp_type_str, &vstr));
         raise_exc(exc, lex);
+        #endif
     }
 }
 
