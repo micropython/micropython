@@ -31,7 +31,7 @@
 #include "py/emitglue.h"
 
 // The current version of .mpy files
-#define MPY_VERSION 4
+#define MPY_VERSION 5
 
 enum {
     MP_NATIVE_ARCH_NONE = 0,

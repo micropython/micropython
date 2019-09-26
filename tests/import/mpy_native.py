@@ -50,11 +50,11 @@ class UserFS:
 # these are the test .mpy files
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x04\xff\x00\x10',
+    '/mod0.mpy': b'M\x05\xff\x00\x10',
 
     # test loading of viper and asm
     '/mod1.mpy': (
-        b'M\x04\x0b\x1f\x20' # header
+        b'M\x05\x0b\x1f\x20' # header
 
         b'\x38' # n bytes, bytecode
             b'\x01\x00\x00\x00\x00\x00\x05\x00\x00\x00\x00\xff' # prelude
