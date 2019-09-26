@@ -71,8 +71,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
 	// SPI on SERCOM4
 	{ MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB08) },
-	{ MP_ROM_QSTR(MP_QSTR_SS), MP_ROM_PTR(&pin_PB09) },
-	{ MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PB10) },
+	{ MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PB09) },
+	{ MP_ROM_QSTR(MP_QSTR_SS), MP_ROM_PTR(&pin_PB10) },
 	{ MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PB11) },
 
 	// GPS on SERCOM5
