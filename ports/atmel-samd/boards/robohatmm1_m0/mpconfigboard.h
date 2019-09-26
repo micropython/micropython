@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Robo HAT MM1"
+#define MICROPY_HW_BOARD_NAME "Robo HAT MM1 M0"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define MICROPY_HW_LED_STATUS   (&pin_PB22)

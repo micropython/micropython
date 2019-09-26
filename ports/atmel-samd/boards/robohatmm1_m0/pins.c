@@ -1,5 +1,5 @@
 #include "shared-bindings/board/__init__.h"
-
+// Version 2.4
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	// SERVO Pins
 	{ MP_ROM_QSTR(MP_QSTR_SERVO1), MP_ROM_PTR(&pin_PA18) },
@@ -28,8 +28,6 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
 	{ MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PB23) },
 	{ MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PB22) },
-	{ MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA22) },
-	{ MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA23) },
 	{ MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB02) },
 	{ MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB03) },
 
@@ -49,15 +47,27 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_UART_CTS), MP_ROM_PTR(&pin_PA06) },
 	{ MP_ROM_QSTR(MP_QSTR_UART_RTS), MP_ROM_PTR(&pin_PA07) },
 
+	// I2C on SERCOM1 (External Connector)
+	{ MP_ROM_QSTR(MP_QSTR_SDA1), MP_ROM_PTR(&pin_PA00) },
+	{ MP_ROM_QSTR(MP_QSTR_SCL1), MP_ROM_PTR(&pin_PA01) },
+
+	// UART on SERCOM1 or SERCOM3 (Raspberry Pi) - broken on V2.3
+	{ MP_ROM_QSTR(MP_QSTR_TX1), MP_ROM_PTR(&pin_PA16) },
+	{ MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_PA17) },
+	{ MP_ROM_QSTR(MP_QSTR_PI_RX), MP_ROM_PTR(&pin_PA16) },
+	{ MP_ROM_QSTR(MP_QSTR_PI_TX), MP_ROM_PTR(&pin_PA17) },
+
 	// SPI Flash on SERCOM2
 	{ MP_ROM_QSTR(MP_QSTR_FLASH_SCK), MP_ROM_PTR(&pin_PA13) },
 	{ MP_ROM_QSTR(MP_QSTR_FLASH_MISO), MP_ROM_PTR(&pin_PA14) },
 	{ MP_ROM_QSTR(MP_QSTR_FLASH_MOSI), MP_ROM_PTR(&pin_PA12) },
 	{ MP_ROM_QSTR(MP_QSTR_FLASH_CS), MP_ROM_PTR(&pin_PA15) },
 
-	// I2C on SERCOM3
-	{ MP_ROM_QSTR(MP_QSTR_SDA1), MP_ROM_PTR(&pin_PA00) },
-	{ MP_ROM_QSTR(MP_QSTR_SCL1), MP_ROM_PTR(&pin_PA01) },
+	// I2C on SERCOM3 or SERCOM5 (RPi & Internal)
+	{ MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA22) },
+	{ MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA23) },
+	{ MP_ROM_QSTR(MP_QSTR_PI_SDA), MP_ROM_PTR(&pin_PA22) },
+	{ MP_ROM_QSTR(MP_QSTR_PI_SCL), MP_ROM_PTR(&pin_PA23) },
 
 	// SPI on SERCOM4
 	{ MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB08) },
@@ -68,20 +78,13 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 	// GPS on SERCOM5
 	{ MP_ROM_QSTR(MP_QSTR_GPS_TX), MP_ROM_PTR(&pin_PB02) },
 	{ MP_ROM_QSTR(MP_QSTR_GPS_RX), MP_ROM_PTR(&pin_PB03) },
-	{ MP_ROM_QSTR(MP_QSTR_GPS_SDA), MP_ROM_PTR(&pin_PA00) },
-	{ MP_ROM_QSTR(MP_QSTR_GPS_SCL), MP_ROM_PTR(&pin_PA01) },
 
 	// Raspberry Pi
 	{ MP_ROM_QSTR(MP_QSTR_PI_GP25), MP_ROM_PTR(&pin_PA30) },
 	{ MP_ROM_QSTR(MP_QSTR_SWCLK), MP_ROM_PTR(&pin_PA30) },
 	{ MP_ROM_QSTR(MP_QSTR_PI_GP24), MP_ROM_PTR(&pin_PA31) },
 	{ MP_ROM_QSTR(MP_QSTR_SWDIO), MP_ROM_PTR(&pin_PA31) },
-	{ MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_PA16) },
-	{ MP_ROM_QSTR(MP_QSTR_PI_RX), MP_ROM_PTR(&pin_PA16) },
-	{ MP_ROM_QSTR(MP_QSTR_TX1), MP_ROM_PTR(&pin_PA17) },
-	{ MP_ROM_QSTR(MP_QSTR_PI_TX), MP_ROM_PTR(&pin_PA17) },
-
-
+	
 	{ MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
 	//{ MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
