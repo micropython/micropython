@@ -97,6 +97,29 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
+#if !MICROPY_PY_BUILTINS_SET
+mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
+    (void)n_args;
+    (void)items;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+
+void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
+    (void)self_in;
+    (void)item;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+#endif
+
+#if !MICROPY_PY_BUILTINS_SLICE
+mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
+    (void)ostart;
+    (void)ostop;
+    (void)ostep;
+    mp_raise_msg(&mp_type_RuntimeError, "slice unsupported");
+}
+#endif
+
 STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
@@ -211,10 +234,8 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_new_tuple,
     mp_obj_new_list,
     mp_obj_new_dict,
-#if MICROPY_PY_BUILTINS_SET
     mp_obj_new_set,
     mp_obj_set_store,
-#endif
     mp_obj_list_append,
     mp_obj_dict_store,
     mp_make_function_from_raw_code,
@@ -229,9 +250,7 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_import_name,
     mp_import_from,
     mp_import_all,
-#if MICROPY_PY_BUILTINS_SLICE
     mp_obj_new_slice,
-#endif
     mp_unpack_sequence,
     mp_unpack_ex,
     mp_delete_name,
