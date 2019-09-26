@@ -372,12 +372,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         }
     }
 
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_TypeError("ord expects a character");
-    } else {
-        mp_raise_msg_varg(&mp_type_TypeError,
-            "ord() expected a character, but string of length %d found", (int)len);
-    }
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    mp_raise_TypeError("ord expects a character");
+    #else
+    mp_raise_msg_varg(&mp_type_TypeError,
+        "ord() expected a character, but string of length %d found", (int)len);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
