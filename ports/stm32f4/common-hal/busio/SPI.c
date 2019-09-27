@@ -37,7 +37,6 @@
 STATIC bool reserved_spi[6];
 
 void spi_reset(void) {
-    //Note: I2Cs are also forcibly reset in construct, due to silicon error
     #ifdef SPI1
         reserved_spi[0] = false;
         __HAL_RCC_SPI1_CLK_DISABLE(); 
@@ -65,10 +64,10 @@ void spi_reset(void) {
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
+         const mcu_pin_obj_t * sck, const mcu_pin_obj_t * mosi,
          const mcu_pin_obj_t * miso) {
 
-    //match pins to I2C objects
+    //match pins to SPI objects
     SPI_TypeDef * SPIx;
 
     uint8_t sck_len = sizeof(mcu_spi_sck_list)/sizeof(*mcu_spi_sck_list);
@@ -77,7 +76,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     //sck
     for(uint i=0; i<sck_len;i++) {
-        if (mcu_spi_sck_list[i].pin == clock) {
+        if (mcu_spi_sck_list[i].pin == sck) {
             //mosi
             for(uint j=0; j<mosi_len;j++) {
                 if (mcu_spi_mosi_list[j].pin == mosi) {
@@ -99,8 +98,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if(self->clk!=NULL && self->mosi!=NULL && self->miso!=NULL ) {
-        SPIx = mcu_spi_banks[self->clk->spi_index-1];
+    if(self->sck!=NULL && self->mosi!=NULL && self->miso!=NULL ) {
+        SPIx = mcu_spi_banks[self->sck->spi_index-1];
     } else {
         mp_raise_RuntimeError(translate("Invalid SPI pin selection"));
     }

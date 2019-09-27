@@ -94,7 +94,7 @@ typedef struct {
 
 #define SPI(index, alt, spi_pin)       \
 { \
-    .i2c_index = index, \
+    .spi_index = index, \
     .altfn_index = alt, \
     .pin = spi_pin, \
 }

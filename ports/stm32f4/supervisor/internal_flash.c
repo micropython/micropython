@@ -62,7 +62,11 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-static uint8_t sector_copy[0x4000] __attribute__((aligned(4)));
+static uint8_t sector_copy_16[0x4000] __attribute__((aligned(4)));
+
+#if INTERNAL_FLASH_FILESYSTEM_SIZE >= 0x1C000 
+static uint8_t sector_copy_64[0x10000] __attribute__((aligned(4)));
+#endif
 
 //Return the sector of a given flash address. 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
@@ -126,7 +130,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     int32_t dest = convert_block_to_flash_addr(block);
     if (dest == -1) {
         // bad block number
-        mp_printf(&mp_plat_print, "BAD FLASH BLOCK ERROR");
+        mp_printf(&mp_plat_print, "Error: flash block not in filesystem");
         return false;
     }
 
@@ -142,7 +146,28 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     uint32_t sector_start_addr;
     EraseInitStruct.Sector = flash_get_sector_info(dest, &sector_start_addr, &sector_size);
     EraseInitStruct.NbSectors = 1;
-    if (sector_size>0x4000) return false;
+
+    //If we have lots of ram the filesystem can be bigger. 
+    if (INTERNAL_FLASH_FILESYSTEM_SIZE>=0x1C000) {
+        if (sector_size>0x10000) { //support 64KB sector 4
+            mp_printf(&mp_plat_print, "Error: flash sector too large");
+            return false;
+        }
+    } else {
+        if (sector_size>0x4000) {
+            mp_printf(&mp_plat_print, "Error: flash sector too large");
+            return false;
+        }
+    }
+
+    uint8_t * sector_copy;
+    if (sector_size == 0x4000) {
+        sector_copy = sector_copy_16;
+    } else if (sector_size == 0x10000) {
+        sector_copy = sector_copy_64;
+    } else {
+        mp_printf(&mp_plat_print, "Error: flash sector incorrect size");
+    }
 
     // copy the sector
     memcpy(sector_copy,(void *)sector_start_addr,sector_size);
@@ -159,7 +184,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
         // error occurred during sector erase
         HAL_FLASH_Lock(); // lock the flash
-        mp_printf(&mp_plat_print, "FLASH SECTOR ERASE ERROR");
+        mp_printf(&mp_plat_print, "Error: flash sector erase failure");
         return false;
     }
 
@@ -177,7 +202,7 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
         if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, sector_start_addr, (uint64_t)sector_copy[i]) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
-            mp_printf(&mp_plat_print, "FLASH WRITE ERROR");
+            mp_printf(&mp_plat_print, "Error: flash sector write error");
             return false;
         }
         sector_start_addr += 1;

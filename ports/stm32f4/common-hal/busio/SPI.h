@@ -29,6 +29,9 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
+
 #include "py/obj.h"
 
 typedef struct {

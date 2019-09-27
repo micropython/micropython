@@ -53,7 +53,7 @@ const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
 
 // SPI
 
-SPI_TypeDef * mcu_i2c_banks[3] = {SPI1, SPI2, SPI3, SPI4, SPI5};
+SPI_TypeDef * mcu_spi_banks[5] = {SPI1, SPI2, SPI3, SPI4, SPI5};
 
 const mcu_spi_sck_obj_t mcu_spi_sck_list[16] = {
     SPI(1, 5, &pin_PA05),
