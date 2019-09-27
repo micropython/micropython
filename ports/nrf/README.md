@@ -36,6 +36,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
   * [IBK-BLYST-NANO breakout board](https://www.crowdsupply.com/i-syst/blyst-nano)
   * [BLUEIO-TAG-EVIM BLYST Nano Sensor board](https://www.crowdsupply.com/i-syst/blyst-nano)
+  * [uBlox EVK-NINA-B1](https://www.u-blox.com/en/product/evk-nina-b1)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
   * [Particle Xenon](https://docs.particle.io/xenon/)
@@ -126,6 +127,7 @@ arduino_primo        | s132                    | Peripheral and Central | [PyOCD
 ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
+evk_nina_b1          | s132                    | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
 

@@ -104,7 +104,7 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        return MP_QSTR_NULL;
+        return MP_QSTRnull;
     } else {
         return MP_OBJ_QSTR_VALUE(elem->value);
     }
@@ -115,7 +115,7 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
             return MP_OBJ_QSTR_VALUE(mp_module_uerrno_globals_table[i].key);
         }
     }
-    return MP_QSTR_NULL;
+    return MP_QSTRnull;
     #endif
 }
 

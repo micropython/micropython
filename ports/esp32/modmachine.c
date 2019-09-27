@@ -32,9 +32,15 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#if MICROPY_ESP_IDF_4
+#include "esp32/rom/rtc.h"
+#include "esp32/clk.h"
+#include "esp_sleep.h"
+#else
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
 #include "esp_clk.h"
+#endif
 #include "esp_pm.h"
 #include "driver/touch_pad.h"
 

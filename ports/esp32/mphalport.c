@@ -31,7 +31,12 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#if MICROPY_ESP_IDF_4
+#include "esp32/rom/uart.h"
+#else
 #include "rom/uart.h"
+#endif
 
 #include "py/obj.h"
 #include "py/stream.h"

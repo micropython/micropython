@@ -135,8 +135,8 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 #define RULE_EXPAND(x) x
 #define RULE_PADDING(rule, ...) RULE_PADDING2(rule, __VA_ARGS__, RULE_PADDING_IDS(rule))
 #define RULE_PADDING2(rule, ...) RULE_EXPAND(RULE_PADDING3(rule, __VA_ARGS__))
-#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, ...) __VA_ARGS__
-#define RULE_PADDING_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
+#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) __VA_ARGS__
+#define RULE_PADDING_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
 
 // Use an enum to create constants specifying how much room a rule takes in rule_arg_combined_table
 enum {
@@ -155,8 +155,8 @@ enum {
 // Macro to compute the start of a rule in rule_arg_combined_table
 #define RULE_ARG_OFFSET(rule, ...) RULE_ARG_OFFSET2(rule, __VA_ARGS__, RULE_ARG_OFFSET_IDS(rule))
 #define RULE_ARG_OFFSET2(rule, ...) RULE_EXPAND(RULE_ARG_OFFSET3(rule, __VA_ARGS__))
-#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) _13
-#define RULE_ARG_OFFSET_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
+#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, ...) _14
+#define RULE_ARG_OFFSET_IDS(r) PAD13_##r, PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
 
 // Use the above enum values to create a table of offsets for each rule's arg
 // data, which indexes rule_arg_combined_table.  The offsets require 9 bits of
@@ -502,7 +502,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
         // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
-        qstr qst = MP_QSTR_NULL;
+        qstr qst = MP_QSTRnull;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
             // intern short strings
             qst = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
@@ -510,7 +510,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
             // check if this string is already interned
             qst = qstr_find_strn(lex->vstr.buf, lex->vstr.len);
         }
-        if (qst != MP_QSTR_NULL) {
+        if (qst != MP_QSTRnull) {
             // qstr exists, make a leaf node
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
@@ -632,7 +632,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     } else if (rule_id == RULE_shift_expr
         || rule_id == RULE_arith_expr
         || rule_id == RULE_term) {
-        // folding for binary ops: << >> + - * / % //
+        // folding for binary ops: << >> + - * @ / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -644,23 +644,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            static const uint8_t token_to_op[] = {
-                MP_BINARY_OP_ADD,
-                MP_BINARY_OP_SUBTRACT,
-                MP_BINARY_OP_MULTIPLY,
-                255,//MP_BINARY_OP_POWER,
-                255,//MP_BINARY_OP_TRUE_DIVIDE,
-                MP_BINARY_OP_FLOOR_DIVIDE,
-                MP_BINARY_OP_MODULO,
-                255,//MP_BINARY_OP_LESS
-                MP_BINARY_OP_LSHIFT,
-                255,//MP_BINARY_OP_MORE
-                MP_BINARY_OP_RSHIFT,
-            };
-            mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_PLUS];
-            if (op == (mp_binary_op_t)255) {
+            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
+                // Can't fold @ or / or **
                 return false;
             }
+            mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
             int rhs_sign = mp_obj_int_sign(arg1);
             if (op <= MP_BINARY_OP_RSHIFT) {
                 // << and >> can't have negative rhs
@@ -683,13 +671,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
         mp_unary_op_t op;
-        if (tok == MP_TOKEN_OP_PLUS) {
-            op = MP_UNARY_OP_POSITIVE;
-        } else if (tok == MP_TOKEN_OP_MINUS) {
-            op = MP_UNARY_OP_NEGATIVE;
-        } else {
-            assert(tok == MP_TOKEN_OP_TILDE); // should be
+        if (tok == MP_TOKEN_OP_TILDE) {
             op = MP_UNARY_OP_INVERT;
+        } else {
+            assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS); // should be
+            op = MP_UNARY_OP_POSITIVE + (tok - MP_TOKEN_OP_PLUS);
         }
         arg0 = mp_unary_op(op, arg0);
 
@@ -719,7 +705,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                         "constant must be an integer");
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
-                        ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTR_NULL);
+                        ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
                 }
 
@@ -1152,7 +1138,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this
-        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
         nlr_raise(exc);
     }
 

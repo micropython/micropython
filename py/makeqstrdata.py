@@ -339,7 +339,7 @@ def print_qstr_data(qcfgs, qstrs):
     print('')
 
     # add NULL qstr with no hash or data
-    print('QDEF(MP_QSTR_NULL, (const byte*)"%s%s" "")' % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len))
+    print('QDEF(MP_QSTRnull, (const byte*)"%s%s" "")' % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len))
 
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):

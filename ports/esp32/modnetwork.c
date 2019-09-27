@@ -43,12 +43,15 @@
 #include "netutils.h"
 #include "esp_eth.h"
 #include "esp_wifi.h"
-#include "esp_wifi_types.h"
 #include "esp_log.h"
-#include "esp_event_loop.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
 #include "mdns.h"
+
+#if !MICROPY_ESP_IDF_4
+#include "esp_wifi_types.h"
+#include "esp_event_loop.h"
+#endif
 
 #include "modnetwork.h"
 
@@ -56,7 +59,7 @@
 
 NORETURN void _esp_exceptions(esp_err_t e) {
    switch (e) {
-      case ESP_ERR_WIFI_NOT_INIT: 
+      case ESP_ERR_WIFI_NOT_INIT:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
       case ESP_ERR_WIFI_NOT_STARTED:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
@@ -93,7 +96,7 @@ NORETURN void _esp_exceptions(esp_err_t e) {
       case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
         mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-        mp_raise_OSError(MP_ENOMEM); 
+        mp_raise_OSError(MP_ENOMEM);
       default:
         nlr_raise(mp_obj_new_exception_msg_varg(
           &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
@@ -650,9 +653,12 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                   ESP_EXCEPTIONS(esp_wifi_get_mac(self->if_id, mac));
                   return mp_obj_new_bytes(mac, sizeof(mac));
 
+              #if !MICROPY_ESP_IDF_4
               case ESP_IF_ETH:
                   esp_eth_get_mac(mac);
                   return mp_obj_new_bytes(mac, sizeof(mac));
+              #endif
+
               default:
                   goto unknown;
             }
@@ -734,8 +740,10 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
+    #if !MICROPY_ESP_IDF_4
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
     { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
@@ -757,12 +765,14 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
 
     // ETH Clock modes from ESP-IDF
+    #if !MICROPY_ESP_IDF_4
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_IN), MP_ROM_INT(ETH_CLOCK_GPIO0_IN) },
     // Disabled at Aug 22nd 2018, reenabled Jan 28th 2019 in ESP-IDF
     // Because we use older SDK, it's currently disabled
     //{ MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_OUT), MP_ROM_INT(ETH_CLOCK_GPIO0_OUT) },
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO16_OUT), MP_ROM_INT(ETH_CLOCK_GPIO16_OUT) },
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO17_OUT), MP_ROM_INT(ETH_CLOCK_GPIO17_OUT) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
     { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
