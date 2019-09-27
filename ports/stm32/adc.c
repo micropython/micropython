@@ -241,7 +241,13 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
     adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
     adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F0)
+    adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV4; // 12MHz
+    adch->Init.ScanConvMode          = DISABLE;
+    adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+    adch->Init.DMAContinuousRequests = DISABLE;
+    adch->Init.SamplingTimeCommon    = ADC_SAMPLETIME_55CYCLES_5; // ~4uS
+    #elif defined(STM32F4) || defined(STM32F7)
     adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adch->Init.ScanConvMode          = DISABLE;
     adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
@@ -264,10 +270,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DMAContinuousRequests = DISABLE;
     #else
     #error Unsupported processor
-    #endif
-
-    #if defined(STM32F0)
-    adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_71CYCLES_5;
     #endif
 
     HAL_ADC_Init(adch);
@@ -309,7 +311,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.Channel = channel;
     sConfig.Rank = 1;
 #if defined(STM32F0)
-    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
 #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
