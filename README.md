@@ -9,8 +9,9 @@ See also [Micropython + LittlevGL](https://blog.littlevgl.com/2019-02-20/micropy
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python`
 2. `git clone --recurse-submodules https://github.com/littlevgl/lv_micropython.git`
 3. `cd lv_micropython`
-4. `make -C ports/unix/`
-5. `./ports/unix/micropython`
+4. `make -C mpy-cross/`
+5. `make -C ports/unix/`
+6. `./ports/unix/micropython`
 
 ### For ESP32 port
 
