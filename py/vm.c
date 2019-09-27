@@ -109,6 +109,21 @@
     exc_sp--; /* pop back to previous exception handler */ \
     CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
+#define CANCEL_ACTIVE_FINALLY(sp) do { \
+    if (mp_obj_is_small_int(sp[-1])) { \
+        /* Stack: (..., prev_dest_ip, prev_cause, dest_ip) */ \
+        /* Cancel the unwind through the previous finally, replace with current one */ \
+        sp[-2] = sp[0]; \
+        sp -= 2; \
+    } else { \
+        assert(sp[-1] == mp_const_none || mp_obj_is_exception_instance(sp[-1])); \
+        /* Stack: (..., None/exception, dest_ip) */ \
+        /* Silence the finally's exception value (may be None or an exception) */ \
+        sp[-1] = sp[0]; \
+        --sp; \
+    } \
+} while (0)
+
 #if MICROPY_PY_SYS_SETTRACE
 
 #define FRAME_SETUP() do { \
@@ -698,21 +713,28 @@ unwind_jump:;
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
-                        if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
-                            // Getting here the stack looks like:
-                            //     (..., X, dest_ip)
-                            // where X is pointed to by exc_sp->val_sp and in the case
-                            // of a "with" block contains the context manager info.
-                            // We're going to run "finally" code as a coroutine
-                            // (not calling it recursively). Set up a sentinel
-                            // on the stack so it can return back to us when it is
-                            // done (when WITH_CLEANUP or END_FINALLY reached).
-                            // The sentinel is the number of exception handlers left to
-                            // unwind, which is a non-negative integer.
-                            PUSH(MP_OBJ_NEW_SMALL_INT(unum));
-                            ip = exc_sp->handler; // get exception handler byte code address
-                            exc_sp--; // pop exception handler
-                            goto dispatch_loop; // run the exception handler
+
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                            if (exc_sp->handler > ip) {
+                                // Found a finally handler that isn't active; run it.
+                                // Getting here the stack looks like:
+                                //     (..., X, dest_ip)
+                                // where X is pointed to by exc_sp->val_sp and in the case
+                                // of a "with" block contains the context manager info.
+                                assert(&sp[-1] == MP_TAGPTR_PTR(exc_sp->val_sp));
+                                // We're going to run "finally" code as a coroutine
+                                // (not calling it recursively). Set up a sentinel
+                                // on the stack so it can return back to us when it is
+                                // done (when WITH_CLEANUP or END_FINALLY reached).
+                                // The sentinel is the number of exception handlers left to
+                                // unwind, which is a non-negative integer.
+                                PUSH(MP_OBJ_NEW_SMALL_INT(unum));
+                                ip = exc_sp->handler;
+                                goto dispatch_loop;
+                            } else {
+                                // Found a finally handler that is already active; cancel it.
+                                CANCEL_ACTIVE_FINALLY(sp);
+                            }
                         }
                         POP_EXC_BLOCK();
                     }
@@ -740,9 +762,9 @@ unwind_jump:;
                     // if TOS is None, just pops it and continues
                     // if TOS is an integer, finishes coroutine and returns control to caller
                     // if TOS is an exception, reraises the exception
+                    assert(exc_sp >= exc_stack);
+                    POP_EXC_BLOCK();
                     if (TOP() == mp_const_none) {
-                        assert(exc_sp >= exc_stack);
-                        POP_EXC_BLOCK();
                         sp--;
                     } else if (mp_obj_is_small_int(TOP())) {
                         // We finished "finally" coroutine and now dispatch back
@@ -1113,28 +1135,32 @@ unwind_jump:;
 unwind_return:
                     // Search for and execute finally handlers that aren't already active
                     while (exc_sp >= exc_stack) {
-                        if (MP_TAGPTR_TAG1(exc_sp->val_sp) && exc_sp->handler > ip) {
-                            // Found a finally handler that isn't active.
-                            // Getting here the stack looks like:
-                            //     (..., X, [iter0, iter1, ...,] ret_val)
-                            // where X is pointed to by exc_sp->val_sp and in the case
-                            // of a "with" block contains the context manager info.
-                            // There may be 0 or more for-iterators between X and the
-                            // return value, and these must be removed before control can
-                            // pass to the finally code.  We simply copy the ret_value down
-                            // over these iterators, if they exist.  If they don't then the
-                            // following is a null operation.
-                            mp_obj_t *finally_sp = MP_TAGPTR_PTR(exc_sp->val_sp);
-                            finally_sp[1] = sp[0];
-                            sp = &finally_sp[1];
-                            // We're going to run "finally" code as a coroutine
-                            // (not calling it recursively). Set up a sentinel
-                            // on a stack so it can return back to us when it is
-                            // done (when WITH_CLEANUP or END_FINALLY reached).
-                            PUSH(MP_OBJ_NEW_SMALL_INT(-1));
-                            ip = exc_sp->handler;
-                            POP_EXC_BLOCK();
-                            goto dispatch_loop;
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                            if (exc_sp->handler > ip) {
+                                // Found a finally handler that isn't active; run it.
+                                // Getting here the stack looks like:
+                                //     (..., X, [iter0, iter1, ...,] ret_val)
+                                // where X is pointed to by exc_sp->val_sp and in the case
+                                // of a "with" block contains the context manager info.
+                                // There may be 0 or more for-iterators between X and the
+                                // return value, and these must be removed before control can
+                                // pass to the finally code.  We simply copy the ret_value down
+                                // over these iterators, if they exist.  If they don't then the
+                                // following is a null operation.
+                                mp_obj_t *finally_sp = MP_TAGPTR_PTR(exc_sp->val_sp);
+                                finally_sp[1] = sp[0];
+                                sp = &finally_sp[1];
+                                // We're going to run "finally" code as a coroutine
+                                // (not calling it recursively). Set up a sentinel
+                                // on a stack so it can return back to us when it is
+                                // done (when WITH_CLEANUP or END_FINALLY reached).
+                                PUSH(MP_OBJ_NEW_SMALL_INT(-1));
+                                ip = exc_sp->handler;
+                                goto dispatch_loop;
+                            } else {
+                                // Found a finally handler that is already active; cancel it.
+                                CANCEL_ACTIVE_FINALLY(sp);
+                            }
                         }
                         POP_EXC_BLOCK();
                     }
