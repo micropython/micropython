@@ -35,7 +35,7 @@
 #define __MICROPY_INCLUDED_LIB_TICKER_H__
 
 /*************************************
- * 62.5kHz (16µs cycle time) ticker.
+ * 62.5kHz (16us cycle time) ticker.
  ************************************/
 
 #include "nrf.h"

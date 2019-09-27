@@ -1079,6 +1079,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_FACTORIAL (0)
 #endif
 
+// Whether to provide math.isclose function
+#ifndef MICROPY_PY_MATH_ISCLOSE
+#define MICROPY_PY_MATH_ISCLOSE (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
@@ -1159,6 +1164,16 @@ typedef double mp_float_t;
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (1)
+#endif
+
+// Whether to provide "sys.atexit" function (MicroPython extension)
+#ifndef MICROPY_PY_SYS_ATEXIT
+#define MICROPY_PY_SYS_ATEXIT (0)
+#endif
+
+// Whether to provide "sys.settrace" function
+#ifndef MICROPY_PY_SYS_SETTRACE
+#define MICROPY_PY_SYS_SETTRACE (0)
 #endif
 
 // Whether to provide "sys.getsizeof" function
@@ -1247,6 +1262,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
+#endif
+
+#ifndef MICROPY_PY_URE_DEBUG
+#define MICROPY_PY_URE_DEBUG (0)
 #endif
 
 #ifndef MICROPY_PY_URE_MATCH_GROUPS
@@ -1517,6 +1536,15 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
+// To annotate that code is unreachable
+#ifndef MP_UNREACHABLE
+#if defined(__GNUC__)
+#define MP_UNREACHABLE __builtin_unreachable();
+#else
+#define MP_UNREACHABLE for (;;);
+#endif
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
 # define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
@@ -1546,6 +1574,16 @@ typedef double mp_float_t;
 #else
 # undef MP_WARN_CAT
 # define MP_WARN_CAT(x) (NULL)
+#endif
+
+// Feature dependency check.
+#if MICROPY_PY_SYS_SETTRACE
+#if !MICROPY_PERSISTENT_CODE_SAVE
+#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_PERSISTENT_CODE_SAVE to be enabled"
+#endif
+#if MICROPY_COMP_CONST
+#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_COMP_CONST to be disabled"
+#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

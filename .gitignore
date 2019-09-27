@@ -30,9 +30,10 @@ Session.vim
 tags
 TAGS
 
-# Build directory
+# Build directories
 ######################
 build/
+build-*/
 
 # Test failure outputs
 ######################

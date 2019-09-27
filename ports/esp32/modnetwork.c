@@ -48,6 +48,7 @@
 #include "esp_event_loop.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
+#include "mdns.h"
 
 #include "modnetwork.h"
 
@@ -128,6 +129,11 @@ static bool wifi_sta_connected = false;
 // Store the current status. 0 means None here, safe to do so as first enum value is WIFI_REASON_UNSPECIFIED=1.
 static uint8_t wifi_sta_disconn_reason = 0;
 
+#if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+// Whether mDNS has been initialised or not
+static bool mdns_initialised = false;
+#endif
+
 // This function is called by the system-event task and so runs in a different
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
@@ -142,6 +148,20 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         ESP_LOGI("network", "GOT_IP");
         wifi_sta_connected = true;
         wifi_sta_disconn_reason = 0; // Success so clear error. (in case of new error will be replaced anyway)
+        #if MICROPY_HW_ENABLE_MDNS_QUERIES || MICROPY_HW_ENABLE_MDNS_RESPONDER
+        if (!mdns_initialised) {
+            mdns_init();
+            #if MICROPY_HW_ENABLE_MDNS_RESPONDER
+            const char *hostname = NULL;
+            if (tcpip_adapter_get_hostname(WIFI_IF_STA, &hostname) != ESP_OK || hostname == NULL) {
+                hostname = "esp32";
+            }
+            mdns_hostname_set(hostname);
+            mdns_instance_name_set(hostname);
+            #endif
+            mdns_initialised = true;
+        }
+        #endif
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
@@ -530,17 +550,24 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    // get the config for the interface
+    bool is_wifi = self->if_id == WIFI_IF_AP || self->if_id == WIFI_IF_STA;
+
     wifi_config_t cfg;
-    ESP_EXCEPTIONS(esp_wifi_get_config(self->if_id, &cfg));
+    if (is_wifi) {
+        ESP_EXCEPTIONS(esp_wifi_get_config(self->if_id, &cfg));
+    }
+
+    #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
 
     if (kwargs->used != 0) {
+        if (!is_wifi) {
+            goto unknown;
+        }
 
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
                 int req_if = -1;
 
-                #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_mac): {
                         mp_buffer_info_t bufinfo;
@@ -592,7 +619,6 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     default:
                         goto unknown;
                 }
-                #undef QS
 
                 // We post-check interface requirements to save on code size
                 if (req_if >= 0) {
@@ -613,20 +639,34 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     }
 
     int req_if = -1;
-    mp_obj_t val;
+    mp_obj_t val = mp_const_none;
 
-    #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     switch ((uintptr_t)args[1]) {
         case QS(MP_QSTR_mac): {
             uint8_t mac[6];
-            ESP_EXCEPTIONS(esp_wifi_get_mac(self->if_id, mac));
-            return mp_obj_new_bytes(mac, sizeof(mac));
+            switch (self->if_id) {
+              case WIFI_IF_AP: // fallthrough intentional
+              case WIFI_IF_STA:
+                  ESP_EXCEPTIONS(esp_wifi_get_mac(self->if_id, mac));
+                  return mp_obj_new_bytes(mac, sizeof(mac));
+
+              case ESP_IF_ETH:
+                  esp_eth_get_mac(mac);
+                  return mp_obj_new_bytes(mac, sizeof(mac));
+              default:
+                  goto unknown;
+            }
         }
         case QS(MP_QSTR_essid):
-            if (self->if_id == WIFI_IF_STA) {
-                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
-            } else {
-                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+            switch (self->if_id) {
+                case WIFI_IF_STA:
+                    val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+                    break;
+                case WIFI_IF_AP:
+                    val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+                    break;
+                default:
+                    req_if = WIFI_IF_AP;
             }
             break;
         case QS(MP_QSTR_hidden):
@@ -650,6 +690,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         default:
             goto unknown;
     }
+
     #undef QS
 
     // We post-check interface requirements to save on code size
@@ -662,8 +703,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 unknown:
     mp_raise_ValueError("unknown config param");
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
 STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },

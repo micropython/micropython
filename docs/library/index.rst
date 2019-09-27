@@ -136,6 +136,7 @@ The following libraries and classes are specific to the WiPy.
   :maxdepth: 2
 
   wipy.rst
+  machine.ADCWiPy.rst
   machine.TimerWiPy.rst
 
 

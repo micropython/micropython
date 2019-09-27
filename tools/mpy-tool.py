@@ -109,6 +109,7 @@ MP_OPCODE_VAR_UINT = 2
 MP_OPCODE_OFFSET = 3
 
 # extra bytes:
+MP_BC_UNWIND_JUMP = 0x46
 MP_BC_MAKE_CLOSURE = 0x62
 MP_BC_MAKE_CLOSURE_DEFARGS = 0x63
 MP_BC_RAISE_VARARGS = 0x5c
@@ -215,7 +216,8 @@ def mp_opcode_format(bytecode, ip, count_var_uint, opcode_format=make_opcode_for
         ip += 3
     else:
         extra_byte = (
-            opcode == MP_BC_RAISE_VARARGS
+            opcode == MP_BC_UNWIND_JUMP
+            or opcode == MP_BC_RAISE_VARARGS
             or opcode == MP_BC_MAKE_CLOSURE
             or opcode == MP_BC_MAKE_CLOSURE_DEFARGS
         )
@@ -410,6 +412,23 @@ class RawCode(object):
         print('    .fun_data_len = %u,' % len(self.bytecode))
         print('    .n_obj = %u,' % len(self.objs))
         print('    .n_raw_code = %u,' % len(self.raw_codes))
+        if self.code_kind == MP_CODE_BYTECODE:
+            print('    #if MICROPY_PY_SYS_SETTRACE')
+            print('    .prelude = {')
+            print('        .n_state = %u,' % self.prelude[0])
+            print('        .n_exc_stack = %u,' % self.prelude[1])
+            print('        .scope_flags = %u,' % self.prelude[2])
+            print('        .n_pos_args = %u,' % self.prelude[3])
+            print('        .n_kwonly_args = %u,' % self.prelude[4])
+            print('        .n_def_pos_args = %u,' % self.prelude[5])
+            print('        .qstr_block_name = %s,' % self.simple_name.qstr_id)
+            print('        .qstr_source_file = %s,' % self.source_file.qstr_id)
+            print('        .line_info = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
+            print('        .locals = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
+            print('        .opcodes = fun_data_%s + %u,' % (self.escaped_name, self.ip))
+            print('    },')
+            print('    .line_of_definition = %u,' % 0) # TODO
+            print('    #endif')
         print('    #if MICROPY_EMIT_MACHINE_CODE')
         print('    .prelude_offset = %u,' % self.prelude_offset)
         print('    .n_qstr = %u,' % len(qstr_links))
@@ -470,6 +489,14 @@ class RawCodeNative(RawCode):
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",@progbits # ")))'
         else:
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",%progbits @ ")))'
+
+        # Allow single-byte alignment by default for x86/x64/xtensa, but on ARM we need halfword- or word- alignment.
+        if config.native_arch == MP_NATIVE_ARCH_ARMV6:
+            # ARMV6 -- four byte align.
+            self.fun_data_attributes += ' __attribute__ ((aligned (4)))'
+        elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
+            # ARMVxxM -- two byte align.
+            self.fun_data_attributes += ' __attribute__ ((aligned (2)))'
 
     def _asm_thumb_rewrite_mov(self, pc, val):
         print('    (%u & 0xf0) | (%s >> 12),' % (self.bytecode[pc], val), end='')

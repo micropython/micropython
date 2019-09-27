@@ -1,9 +1,3 @@
-build
-build-fast
-build-minimal
-build-coverage
-build-nanbox
-build-freedos
 micropython
 micropython_fast
 micropython_minimal

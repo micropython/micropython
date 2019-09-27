@@ -119,6 +119,11 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->prev = NULL;
     #endif
 
+    #if MICROPY_PY_SYS_SETTRACE
+    code_state->prev_state = NULL;
+    code_state->frame = NULL;
+    #endif
+
     // get params
     size_t n_state = mp_decode_uint(&code_state->ip);
     code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack
@@ -287,7 +292,8 @@ continue2:;
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 // The following table encodes the number of bytes that a specific opcode
-// takes up.  There are 3 special opcodes that always have an extra byte:
+// takes up.  There are 4 special opcodes that always have an extra byte:
+//     MP_BC_UNWIND_JUMP
 //     MP_BC_MAKE_CLOSURE
 //     MP_BC_MAKE_CLOSURE_DEFARGS
 //     MP_BC_RAISE_VARARGS
@@ -397,7 +403,8 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
         ip += 3;
     } else {
         int extra_byte = (
-            *ip == MP_BC_RAISE_VARARGS
+            *ip == MP_BC_UNWIND_JUMP
+            || *ip == MP_BC_RAISE_VARARGS
             || *ip == MP_BC_MAKE_CLOSURE
             || *ip == MP_BC_MAKE_CLOSURE_DEFARGS
         );

@@ -418,7 +418,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                                        p_adv_params->p_device_name,
                                        p_adv_params->device_name_len) != 0) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-	              "Can not apply device name in the stack."));
+                "Can not apply device name in the stack."));
         }
 
         BLE_DRIVER_LOG("Device name applied\n");

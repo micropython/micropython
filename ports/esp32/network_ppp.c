@@ -129,29 +129,26 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
             if (self->pcb == NULL) {
                 mp_raise_msg(&mp_type_RuntimeError, "init failed");
             }
-            pppapi_set_default(self->pcb);
-            ppp_set_usepeerdns(self->pcb, 1);
-            pppapi_connect(self->pcb, 0);
-
-            xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle, MP_TASK_COREID);
             self->active = true;
         } else {
             if (!self->active) {
                 return mp_const_false;
             }
 
-            // Wait for PPPERR_USER, with timeout
-            pppapi_close(self->pcb, 0);
-            uint32_t t0 = mp_hal_ticks_ms();
-            while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                mp_hal_delay_ms(10);
-            }
+            if (self->client_task_handle != NULL) { // is connecting or connected?
+                // Wait for PPPERR_USER, with timeout
+                pppapi_close(self->pcb, 0);
+                uint32_t t0 = mp_hal_ticks_ms();
+                while (!self->clean_close && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+                    mp_hal_delay_ms(10);
+                }
 
-            // Shutdown task
-            xTaskNotifyGive(self->client_task_handle);
-            t0 = mp_hal_ticks_ms();
-            while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
-                mp_hal_delay_ms(10);
+                // Shutdown task
+                xTaskNotifyGive(self->client_task_handle);
+                t0 = mp_hal_ticks_ms();
+                while (self->client_task_handle != NULL && mp_hal_ticks_ms() - t0 < PPP_CLOSE_TIMEOUT_MS) {
+                    mp_hal_delay_ms(10);
+                }
             }
 
             // Release PPP
@@ -165,6 +162,59 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_bool(self->active);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
+
+STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    enum { ARG_authmode, ARG_username, ARG_password };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
+        { MP_QSTR_username, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_password, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    };
+
+    mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
+
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (!self->active) {
+        mp_raise_msg(&mp_type_OSError, "must be active");
+    }
+
+    if (self->client_task_handle != NULL) {
+        mp_raise_OSError(MP_EALREADY);
+    }
+
+    switch (parsed_args[ARG_authmode].u_int) {
+        case PPPAUTHTYPE_NONE:
+        case PPPAUTHTYPE_PAP:
+        case PPPAUTHTYPE_CHAP:
+            break;
+        default:
+            mp_raise_msg(&mp_type_ValueError, "invalid auth");
+    }
+
+    if (parsed_args[ARG_authmode].u_int != PPPAUTHTYPE_NONE) {
+        const char* username_str = mp_obj_str_get_str(parsed_args[ARG_username].u_obj);
+        const char* password_str = mp_obj_str_get_str(parsed_args[ARG_password].u_obj);
+        pppapi_set_auth(self->pcb, parsed_args[ARG_authmode].u_int, username_str, password_str);
+    }
+    if (pppapi_set_default(self->pcb) != ESP_OK) {
+        mp_raise_msg(&mp_type_OSError, "set default failed");
+    }
+
+    ppp_set_usepeerdns(self->pcb, true);
+
+    if (pppapi_connect(self->pcb, 0) != ESP_OK) {
+        mp_raise_msg(&mp_type_OSError, "connect failed");
+    }
+
+    if (xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle, MP_TASK_COREID) != pdPASS) {
+        mp_raise_msg(&mp_type_RuntimeError, "failed to create worker task");
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(ppp_connect_obj, 1, ppp_connect_py);
 
 STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
     ppp_if_obj_t* self = MP_OBJ_TO_PTR(self_in);
@@ -216,10 +266,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
 STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_PAP), MP_ROM_INT(PPPAUTHTYPE_PAP) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_CHAP), MP_ROM_INT(PPPAUTHTYPE_CHAP) },
 };
 STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 

@@ -298,7 +298,7 @@ void DebugMon_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
-#if defined(STM32L0)
+#if defined(STM32L0) || defined(STM32L432xx)
 
 #if MICROPY_HW_USB_FS
 void USB_IRQHandler(void) {
@@ -531,7 +531,7 @@ void RTC_WKUP_IRQHandler(void) {
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32L0)
 
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);

@@ -13,8 +13,10 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
-# Any files listed by this variable will cause a full regeneration of qstrs
+# Any files listed by these variables will cause a full regeneration of qstrs
+# DEPENDENCIES: included in qstr processing; REQUIREMENTS: not included
 QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
@@ -42,9 +44,9 @@ SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR)
 
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
-# pre-define USERMOD variables as expanded so that variables are immediate 
+# pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-SRC_USERMOD := 
+SRC_USERMOD :=
 CFLAGS_USERMOD :=
 LDFLAGS_USERMOD :=
 $(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
@@ -127,6 +129,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	stackctrl.o \
 	argcheck.o \
 	warning.o \
+	profile.o \
 	map.o \
 	obj.o \
 	objarray.o \

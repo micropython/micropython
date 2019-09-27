@@ -72,7 +72,7 @@ STATIC const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_handleConnection),   MP_ROM_PTR(&ubluepy_delegate_handle_conn_obj) },
     { MP_ROM_QSTR(MP_QSTR_handleNotification), MP_ROM_PTR(&ubluepy_delegate_handle_notif_obj) },
 #if 0
-	{ MP_ROM_QSTR(MP_QSTR_handleDiscovery),    MP_ROM_PTR(&ubluepy_delegate_handle_disc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_handleDiscovery),    MP_ROM_PTR(&ubluepy_delegate_handle_disc_obj) },
 #endif
 };
 

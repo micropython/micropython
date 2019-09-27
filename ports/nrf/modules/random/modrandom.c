@@ -72,7 +72,7 @@ uint32_t machine_rng_generate_random_word(void) {
             status = sd_rand_application_vector_get((uint8_t *)&retval, 4); // Extract 4 bytes
         } while (status != 0);
 
-	return retval;
+        return retval;
     }
 #endif
 

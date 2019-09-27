@@ -115,6 +115,17 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
         - make ${MAKEOPTS} -C ports/unix CC=clang test
 
+    # unix with sys.settrace
+    - stage: test
+      env: NAME="unix port with sys.settrace build and tests"
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test
+        - make ${MAKEOPTS} -C ports/unix clean
+        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
+      after_failure:
+        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+
     # windows port via mingw
     - stage: test
       env: NAME="windows port build via mingw"

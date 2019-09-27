@@ -171,6 +171,42 @@ MATH_FUN_1(lgamma, lgamma)
 #endif
 //TODO: fsum
 
+#if MICROPY_PY_MATH_ISCLOSE
+STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const mp_float_t a = mp_obj_get_float(args[ARG_a].u_obj);
+    const mp_float_t b = mp_obj_get_float(args[ARG_b].u_obj);
+    const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL
+        ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
+    const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj);
+    if (rel_tol < (mp_float_t)0.0 || abs_tol < (mp_float_t)0.0) {
+        math_error();
+    }
+    if (a == b) {
+        return mp_const_true;
+    }
+    const mp_float_t difference = MICROPY_FLOAT_C_FUN(fabs)(a - b);
+    if (isinf(difference)) { // Either a or b is inf
+        return mp_const_false;
+    }
+    if ((difference <= abs_tol) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b))) {
+        return mp_const_true;
+    }
+    return mp_const_false;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_math_isclose_obj, 2, mp_math_isclose);
+#endif
+
 // Function that takes a variable number of arguments
 
 // log(x[, base])
@@ -335,6 +371,9 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isfinite), MP_ROM_PTR(&mp_math_isfinite_obj) },
     { MP_ROM_QSTR(MP_QSTR_isinf), MP_ROM_PTR(&mp_math_isinf_obj) },
     { MP_ROM_QSTR(MP_QSTR_isnan), MP_ROM_PTR(&mp_math_isnan_obj) },
+    #if MICROPY_PY_MATH_ISCLOSE
+    { MP_ROM_QSTR(MP_QSTR_isclose), MP_ROM_PTR(&mp_math_isclose_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_trunc), MP_ROM_PTR(&mp_math_trunc_obj) },
     { MP_ROM_QSTR(MP_QSTR_radians), MP_ROM_PTR(&mp_math_radians_obj) },
     { MP_ROM_QSTR(MP_QSTR_degrees), MP_ROM_PTR(&mp_math_degrees_obj) },

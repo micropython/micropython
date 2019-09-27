@@ -481,7 +481,7 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
 #endif
 #if MICROPY_PY_UBLUEPY_OBSERVER
-	// Nothing yet.
+    // Nothing yet.
 #endif
 };
 

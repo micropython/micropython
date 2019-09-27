@@ -189,10 +189,6 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
             mp_hal_delay_ms(100);
         }
 
-        #if LWIP_MDNS_RESPONDER
-        mdns_resp_netif_settings_changed(netif);
-        #endif
-
         return mp_const_none;
     } else {
         // Release and stop any existing DHCP
@@ -207,9 +203,6 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         ip_addr_t dns;
         netutils_parse_ipv4_addr(items[3], (uint8_t*)&dns, NETUTILS_BIG);
         dns_setserver(0, &dns);
-        #if LWIP_MDNS_RESPONDER
-        mdns_resp_netif_settings_changed(netif);
-        #endif
         return mp_const_none;
     }
 }

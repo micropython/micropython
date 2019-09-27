@@ -72,7 +72,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
+        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, false);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);
@@ -115,7 +115,11 @@ STATIC int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
+#if MICROPY_EMIT_NATIVE
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
+#else
+"  emit=bytecode -- set the default code emitter\n"
+#endif
 );
     impl_opts_cnt++;
     printf(
@@ -140,10 +144,12 @@ STATIC void pre_process_options(int argc, char **argv) {
                 }
                 if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
@@ -189,6 +195,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 #endif
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;

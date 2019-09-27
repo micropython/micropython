@@ -22,6 +22,7 @@
 #define LWIP_SOCKET                     0
 #define LWIP_STATS                      0
 #define LWIP_NETIF_HOSTNAME             1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK  1
 
 #define LWIP_IPV6                       0
 #define LWIP_DHCP                       1
@@ -32,8 +33,9 @@
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
 
-#define LWIP_NUM_NETIF_CLIENT_DATA      1 // mDNS responder requires 1
-#define MEMP_NUM_UDP_PCB                5 // mDNS responder requires 1
+#define LWIP_NUM_NETIF_CLIENT_DATA      LWIP_MDNS_RESPONDER
+#define MEMP_NUM_UDP_PCB                (4 + LWIP_MDNS_RESPONDER)
+#define MEMP_NUM_SYS_TIMEOUT            (LWIP_NUM_SYS_TIMEOUT_INTERNAL + LWIP_MDNS_RESPONDER)
 
 #define SO_REUSE                        1
 #define TCP_LISTEN_BACKLOG              1

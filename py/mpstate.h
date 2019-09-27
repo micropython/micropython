@@ -149,6 +149,11 @@ typedef struct _mp_state_vm_t {
     mp_obj_base_t *cur_exception;
     #endif
 
+    #if MICROPY_PY_SYS_ATEXIT
+    // exposed through sys.atexit function
+    mp_obj_t sys_exitfunc;
+    #endif
+
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 
@@ -200,6 +205,9 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_COMPILER
     mp_uint_t mp_optimise_value;
+    #if MICROPY_EMIT_NATIVE
+    uint8_t default_emit_opt; // one of MP_EMIT_OPT_xxx
+    #endif
     #endif
 
     // size of the emergency exception buf, if it's dynamically allocated
@@ -245,6 +253,12 @@ typedef struct _mp_state_thread_t {
     mp_obj_dict_t *dict_globals;
 
     nlr_buf_t *nlr_top;
+
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_obj_t prof_trace_callback;
+    bool prof_callback_is_executing;
+    struct _mp_code_state_t *current_code_state;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.

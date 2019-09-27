@@ -81,7 +81,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t pn = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&pn, source_name, MP_EMIT_OPT_NONE, true);
+        mp_obj_t module_fun = mp_compile(&pn, source_name, true);
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
@@ -94,7 +94,7 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
-    
+
 soft_reset:
     mp_stack_set_top(&_ram_end);
 
@@ -185,8 +185,8 @@ pin_init0();
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
-			// use SD card as current directory
-			f_chdrive("/sd");
+            // use SD card as current directory
+            f_chdrive("/sd");
         }
         no_mem_for_sd:;
     }
@@ -293,18 +293,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 void HardFault_Handler(void)
 {
 #if defined(NRF52_SERIES)
-	static volatile uint32_t reg;
-	static volatile uint32_t reg2;
-	static volatile uint32_t bfar;
-	reg = SCB->HFSR;
-	reg2 = SCB->CFSR;
-	bfar = SCB->BFAR;
-	for (int i = 0; i < 0; i++)
-	{
-		(void)reg;
-		(void)reg2;
-		(void)bfar;
-	}
+    static volatile uint32_t reg;
+    static volatile uint32_t reg2;
+    static volatile uint32_t bfar;
+    reg = SCB->HFSR;
+    reg2 = SCB->CFSR;
+    bfar = SCB->BFAR;
+    for (int i = 0; i < 0; i++) {
+        (void)reg;
+        (void)reg2;
+        (void)bfar;
+    }
 #endif
 }
 
