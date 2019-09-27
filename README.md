@@ -23,20 +23,16 @@ Here is the command to build ESP32 + LittlevGL which is compatible with ILI9341 
 
 ```
 make -C mpy-cross
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" deploy
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" BOARD=GENERIC_SPIRAM PYTHON=python2 deploy
 ```
 
-If you plan to use the [Pure Micropython Display Driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver), you need to define `LV_COLOR_16_SWAP=1` as well:
-```
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" deploy
-```
-
-
-This make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
-`LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.  
-These flags would also allow you running the [Pure Micropython ILI9341 driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver), if you want.
-
-Depending on `pyparsing` version installed, you might need to add an additional `PYTHON=python2` parameter to the "make" command line.
+Explanation about the paramters:
+- `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.  
+  - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
+  - `LV_COLOR_16_SWAP=1` is **only** needed if you plan to use the [Pure Micropython Display Driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver). Otherwise, remove it.
+- `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
+- `PYTHON=python2` - depending on your installed `pyparsing` version, you might or might not need this.
+- `deploy` - make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
 
 For more details please refer to [Micropython ESP32 README](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md).
 
