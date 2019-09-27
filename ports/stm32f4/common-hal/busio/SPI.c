@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +33,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "boards/board.h"
+#include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
 STATIC bool reserved_spi[6];
@@ -277,16 +279,21 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
-    return 0;
+    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
+    return result == HAL_OK ? 0 : 1;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
-    return 0;
+    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
+    return result == HAL_OK ? 0 : 1;
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
-    return 0;
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
+        uint8_t *data_out, uint8_t *data_in, size_t len) {
+    HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
+        data_out, data_in, (uint16_t)len,2);
+    return result == HAL_OK ? 0 : 1;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {

@@ -164,7 +164,9 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     if (sector_size == 0x4000) {
         sector_copy = sector_copy_16;
     } else if (sector_size == 0x10000) {
+        #ifdef sector_copy_64
         sector_copy = sector_copy_64;
+        #endif
     } else {
         mp_printf(&mp_plat_print, "Error: flash sector incorrect size");
     }
