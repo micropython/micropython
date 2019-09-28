@@ -161,7 +161,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
 INC_ESPCOMP += -I$(ESPCOMP)/smartconfig_ack/include
 INC_ESPCOMP += -I$(ESPCOMP)/sdmmc/include
-#INC_ESPCOMP += -I$(ESPCOMP)/can/include
+INC_ESPCOMP += -I$(ESPCOMP)/can/include
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 INC_ESPCOMP += -I$(ESPCOMP)/esp_common/include
