@@ -284,14 +284,14 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
     if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI write error"));
-    return true; //result == HAL_OK ? 0 : 1;
+    return result == HAL_OK ? 1 : 0;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
     HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
     if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI read error"));
-    return true; //result == HAL_OK ? 0 : 1;
+    return result == HAL_OK ? 1 : 0;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
@@ -299,7 +299,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
         data_out, data_in, (uint16_t)len,2);
     if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI transfer error"));
-    return true; //result == HAL_OK ? 0 : 1;
+    return result == HAL_OK ? 1 : 0;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
