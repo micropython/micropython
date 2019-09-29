@@ -32,6 +32,23 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
+
+// This exposes the ESP32's RMT module to MicroPython. RMT is provided by the Espressif ESP-IDF:
+//
+//    https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html
+//
+// With some examples provided:
+//
+//    https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/RMT
+//
+// RMT allows accurate (down to 12.5ns resolution) transmit - and receive - of pulse signals.
+// Originally designed to generate infrared remote control signals, the module is very
+// flexible and quite easy-to-use.
+//
+// This current MicroPython implementation lacks some major features, notably receive pulses
+// and carrier output.
+
+
 // Forward declaration
 extern const mp_obj_type_t esp32_rmt_type;
 
@@ -53,41 +70,12 @@ STATIC esp_err_t check_esp_err(esp_err_t code) {
     return code;
 }
 
-// TODO
-//
-//   o Write up documentation
-//   o Check all the input parameters
-//   o Return exceptions when errors occur
-//   o Manage an array of channels (so user can't create the same one repeatedly)
-//     - Check if channel is initialised (in particular: after deinit)
-//   o Investigate: Send without blocking? (Need an 'is_sending' method)
-//     - Memory management becomes significantly more complex. Need to ensure memory is not freed before it's used.
-//     - Also need to take care that memory is not freed by the MicroPython GC.
-//   o Add debug option? Emit printf debug messages?
-//     - Idea: Generate timing diagram (maybe with https://wavedrom.com/ ?) Extension.
-//   o Consider: Auto-manage RMT channels? Currently user chooses a channel
-//     - Alternative: Give the user the next available channel
-//   o Raise exception if pulses is not a tuple
-//     - Consider: Using iterables. Will make memory management much trickier though
-//     - Consider: Allowing lists as well as tuples
-//   o Do we need to allow the option to use multiple memory blocks?
-//   o Consider supporting other ways to specify pulses:
-//     - Fixed interval (specify pattern of 1's/0's)
-//     - Specify both value and ticks
-//     - See PyCom RMT docs
-//   o Add carrier modulation methods
-//   o Add rx support
-
-// ESP-IDF RMT:
-// Espressif examples: https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/RMT
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // 0 <= channel_id <= 7
     mp_arg_check_num(n_args, n_kw, 3, MP_OBJ_FUN_ARGS_MAX, true);
     mp_uint_t channel_id = mp_obj_get_int(args[0]);
     gpio_num_t pin_id = machine_pin_get_id(args[1]);
     mp_uint_t clock_divider = mp_obj_get_int(args[2]);
-    // fixme: should have an idle_level...
 
     if (clock_divider < 1 || clock_divider > 255) {
         mp_raise_ValueError("Clock divider must be between 1 and 255");
@@ -137,7 +125,7 @@ STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 
-
+// Helper function to return the resolution for the specified clock divider
 static float resolution_for_divider(uint8_t clock_divider)
 {
     return 1.0 / (APB_CLK_FREQ / clock_divider);
@@ -151,21 +139,32 @@ STATIC mp_obj_t esp32_rmt_resolution(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_resolution_obj, esp32_rmt_resolution);
 
 
-// Return the longest pulse duration
-STATIC mp_obj_t esp32_rmt_max_duration(mp_obj_t self_in) {
+// Return the longest pulse duration, in seconds.
+// Increasing the clock_divider yields longer maximum pulse lengths.
+STATIC mp_obj_t esp32_rmt_max_pulse_length(mp_obj_t self_in) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(resolution_for_divider(self->clock_divider) * 32768); // 2^15 is the maximum number of bits for ticks
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_duration_obj, esp32_rmt_max_duration);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_pulse_length_obj, esp32_rmt_max_pulse_length);
 
 
-STATIC mp_obj_t esp32_rmt_send_pulses(mp_obj_t self_in, mp_obj_t pulses, mp_obj_t start_level) {
-    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t level = mp_obj_get_int(start_level);
-    // fixme: Check inputs
-    // start_level should be a kwargs
-    if (level != 0 && level != 1) {
-        mp_raise_ValueError("Start level can only be 0 or 1");
+STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_self,        MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_pulses,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_start_level, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
+    mp_obj_t pulses = args[1].u_obj;
+    mp_uint_t start_level = args[2].u_int;
+
+    if (start_level < 0 || start_level > 1) {
+        mp_raise_ValueError("start_level can only be 0 or 1");
     }
 
     mp_uint_t pulses_length = 0;
@@ -188,33 +187,29 @@ STATIC mp_obj_t esp32_rmt_send_pulses(mp_obj_t self_in, mp_obj_t pulses, mp_obj_
     {
         mp_uint_t pulse_index = item_index * 2;
         items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
-        items[item_index].level0 = level++; // Note that level _could_ wrap.
-        //printf("duration=%d level=%d\n", items[item_index].duration0, items[item_index].level0);
+        items[item_index].level0 = start_level++; // Note that start_level _could_ wrap.
+        //printf("duration=%d start_level=%d\n", items[item_index].duration0, items[item_index].level0);
         if (pulse_index < pulses_length)
         {
             items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
-            items[item_index].level1 = level++;
-            //printf("duration=%d level=%d\n", items[item_index].duration1, items[item_index].level1);
+            items[item_index].level1 = start_level++;
+            //printf("duration=%d start_level=%d\n", items[item_index].duration1, items[item_index].level1);
         }
     }
-    ESP_ERROR_CHECK(rmt_write_items(self->channel_id, items, num_items, true));
+    check_esp_err(rmt_write_items(self->channel_id, items, num_items, true));
 
-    m_free(items);
+    m_free(items); // Not freed if there's an error in rmt_write_item()
 
-    // if (result != ESP_OK) {
-    //     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "rmt_write_items failed!"));
-    // }
-
-    return MP_OBJ_NEW_SMALL_INT(num_items);
+    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_rmt_send_pulses_obj, esp32_rmt_send_pulses);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_send_pulses_obj, 2, esp32_rmt_send_pulses);
 
 
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_resolution), MP_ROM_PTR(&esp32_rmt_resolution_obj) },
-    { MP_ROM_QSTR(MP_QSTR_max_duration), MP_ROM_PTR(&esp32_rmt_max_duration_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_duration), MP_ROM_PTR(&esp32_rmt_max_pulse_length_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 
