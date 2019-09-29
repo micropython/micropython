@@ -52,6 +52,7 @@ For your convenience, some of technical specifications are provided below:
 * I2S: 2
 * ADC: 12-bit SAR ADC up to 18 channels
 * DAC: 2 8-bit DACs
+* RMT: 8 channels allowing accurate pulse transmit/receive
 * Programming: using BootROM bootloader from UART - due to external FlashROM
   and always-available BootROM bootloader, the ESP32 is not brickable
 
