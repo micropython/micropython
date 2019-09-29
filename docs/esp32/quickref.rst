@@ -365,6 +365,22 @@ Notes:
     
     p1 = Pin(4, Pin.OUT, None)
 
+RMT
+---
+
+The RMT is a module, specific to the ESP32, that allows pulses of very accurate interval
+and duration to be sent and received::
+
+    rmt_channel = esp32.RMT(0, machine.Pin(18), 100)  # Channel 0, bound to Pin 18, clock divider of 100
+    rmt_channel.send_pulses((10, 1000, 10, 2000, 10, 3000))  # Send three long pulses with short delays between
+
+For more details see Espressif `ESP-IDF RMT documentation.
+<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
+
+.. Warning::
+   The current MicroPython RMT implementation lacks some features, notably receiving pulses
+   and carrier transmit.
+
 OneWire driver
 --------------
 
