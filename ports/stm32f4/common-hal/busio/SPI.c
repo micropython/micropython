@@ -113,23 +113,23 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     //Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(sck->number);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = self->sck->altfn_index; 
     HAL_GPIO_Init(pin_port(sck->port), &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = pin_mask(mosi->number);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = self->mosi->altfn_index; 
     HAL_GPIO_Init(pin_port(mosi->port), &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = pin_mask(miso->number);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = self->miso->altfn_index; 
     HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
 
@@ -178,7 +178,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     self->handle.Init.NSS = SPI_NSS_SOFT;
-    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
     self->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     self->handle.Init.TIMode = SPI_TIMODE_DISABLE;
     self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -186,6 +186,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
         mp_raise_RuntimeError(translate("SPI Init Error"));
+    } else {
+        mp_printf(&mp_plat_print, "Success! spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/16));
     }
 
     claim_pin(sck);
@@ -247,6 +249,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    //mp_printf(&mp_plat_print, "SPI Configure\n");
     return true;
 }
 
@@ -280,30 +283,38 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
-    return result == HAL_OK ? 0 : 1;
+    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI write error"));
+    return true; //result == HAL_OK ? 0 : 1;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
     HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
-    return result == HAL_OK ? 0 : 1;
+    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI read error"));
+    return true; //result == HAL_OK ? 0 : 1;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
         uint8_t *data_out, uint8_t *data_in, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
         data_out, data_in, (uint16_t)len,2);
-    return result == HAL_OK ? 0 : 1;
+    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI transfer error"));
+    return true; //result == HAL_OK ? 0 : 1;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
-    return 0;
+
+    uint32_t result = HAL_RCC_GetPCLK2Freq()/16;
+    mp_printf(&mp_plat_print, "spi clock speed:%u\n",result);
+    return result;
 }
 
 uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
+    mp_raise_RuntimeError(translate("SPI call triggered"));
     return 0;
 }
 
 uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
+    mp_raise_RuntimeError(translate("SPI call triggered"));
     return 0;
 }
