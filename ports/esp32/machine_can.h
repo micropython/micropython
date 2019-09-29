@@ -30,37 +30,34 @@
 
 #include "py/obj.h"
 
-
-typedef enum _rx_state_t {
-    RX_STATE_FIFO_EMPTY = 0,
-    RX_STATE_MESSAGE_PENDING,
-    RX_STATE_FIFO_FULL,
-    RX_STATE_FIFO_OVERFLOW,
-} rx_state_t;
-
 typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
-    mp_obj_t rxcallback;
-    gpio_num_t tx;
-    gpio_num_t rx;
-} machine_can_obj_t;
+    uint8_t tx;
+    uint8_t rx;
+} machine_hw_can_obj_t;
 
-extern const mp_obj_type_t machine_can_type;
+//Functions signature definition
+STATIC mp_obj_t machine_hw_can_init(mp_obj_t self_in);
+STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
-//extern const mp_obj_type_t machine_can_type;
-void can_init(machine_can_obj_t *self, gpio_num_t tx, gpio_num_t rx, uint32_t baudrate, uint32_t mode);
-void can_deinit(machine_can_obj_t *self);
+//Python function declarations
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_init_obj, machine_hw_can_init);
 
-//void can_trasmit(uint32_t address, byte data[], uint8_t length);
+//Python objects list declaration
+STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_125k), MP_ROM_INT(125) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_250k), MP_ROM_INT(250) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(500) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(1000) },
+};
+STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
-//void can_init0(void); #TODO:
-//void can_deinit_all(void); #TODO:
-
-
-/*void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank);
-int can_receive(CAN_HandleTypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint8_t *data, uint32_t timeout_ms);
-HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout);
-void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callback, mp_obj_t irq_reason);
-*/
+//Python object definition
+const mp_obj_type_t machine_can_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_CAN,
+    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict,
+};
 
 #endif // MICROPY_INCLUDED_ESP32_CAN_H

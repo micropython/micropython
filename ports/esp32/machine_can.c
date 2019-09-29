@@ -23,6 +23,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/builtin.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include <mpconfigport.h>
@@ -35,12 +36,19 @@
 
 #include "machine_can.h"
 
-#if MICROPY_HW_ENABLE_CAN
+//#if MICROPY_HW_ENABLE_CAN
 
-const mp_obj_type_t machine_can_type;
+const machine_hw_can_obj_t can_default = {.tx=6, .rx=4};
 
-void can_init(machine_can_obj_t *self, gpio_num_t tx, gpio_num_t rx, uint32_t baudrate, uint32_t mode) {
-    static const can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
+STATIC const mp_obj_type_t machine_hw_can_type; //FIXME: da popolare
+
+STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_hw_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "CAN(tx=%u, rx=%u)", self->tx, self->rx);
+}
+
+STATIC mp_obj_t machine_hw_can_init(mp_obj_t self_in) {
+    /*static const can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
     static const can_timing_config_t t_config = CAN_TIMING_CONFIG_25KBITS();
     //Set TX queue length to 0 due to listen only mode
     can_general_config_t g_config = {.mode = mode,
@@ -52,8 +60,10 @@ void can_init(machine_can_obj_t *self, gpio_num_t tx, gpio_num_t rx, uint32_t ba
     ESP_ERROR_CHECK(can_driver_install(&g_config, &t_config, &f_config));
     ESP_LOGI("CAN", "Driver installed");
     ESP_ERROR_CHECK(can_start());
-    ESP_LOGI("CAN", "Driver started");
+    ESP_LOGI("CAN", "Driver started");*/
+    return mp_const_none;
 }
+
 
 /*void machine_can_trasmit(machine_hw_can_obj_t *self, uint32_t address, size_t length, mp_machine_can_buf_t *data)
 {
@@ -62,11 +72,11 @@ void can_init(machine_can_obj_t *self, gpio_num_t tx, gpio_num_t rx, uint32_t ba
     ESP_ERROR_CHECK(can_transmit(&tx_msg, portMAX_DELAY));
 }*/
 
-void machine_can_deinit(machine_can_obj_t *self){
+/*void machine_can_deinit(machine_can_obj_t *self){
 	ESP_ERROR_CHECK(can_stop());
     ESP_LOGI("CAN", "Driver stopped");
     ESP_ERROR_CHECK(can_driver_uninstall());
     ESP_LOGI("CAN", "Driver uninstalled");
-}
+}*/
 
-#endif // MICROPY_HW_ENABLE_CAN
+//#endif // MICROPY_HW_ENABLE_CAN
