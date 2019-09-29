@@ -74,6 +74,10 @@ class SSD1306(framebuf.FrameBuffer):
 
     def invert(self, invert):
         self.write_cmd(SET_NORM_INV | (invert & 1))
+        
+    def upside_down(self):
+        self.write_cmd(SET_SEG_REMAP)
+        self.write_cmd(SET_COM_OUT_DIR)
 
     def show(self):
         x0 = 0
