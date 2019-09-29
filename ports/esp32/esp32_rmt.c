@@ -43,6 +43,16 @@ typedef struct _esp32_rmt_obj_t {
 } esp32_rmt_obj_t;
 
 
+
+// Defined in machine_time.c; simply added the error message
+STATIC esp_err_t check_esp_err(esp_err_t code) {
+    if (code) {
+        mp_raise_msg(&mp_type_OSError, esp_err_to_name(code));
+    }
+
+    return code;
+}
+
 // TODO
 //
 //   o Write up documentation
@@ -72,14 +82,16 @@ typedef struct _esp32_rmt_obj_t {
 // Espressif examples: https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/RMT
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // fixme: check arguments
-    // 1 <= channel_id <= 8
-    // 1 <= clock_divider <= 255
+    // 0 <= channel_id <= 7
     mp_arg_check_num(n_args, n_kw, 3, MP_OBJ_FUN_ARGS_MAX, true);
     mp_uint_t channel_id = mp_obj_get_int(args[0]);
     gpio_num_t pin_id = machine_pin_get_id(args[1]);
     mp_uint_t clock_divider = mp_obj_get_int(args[2]);
     // fixme: should have an idle_level...
+
+    if (clock_divider < 1 || clock_divider > 255) {
+        mp_raise_ValueError("Clock divider must be between 1 and 255");
+    }
 
     esp32_rmt_obj_t *self = m_new_obj(esp32_rmt_obj_t);
     self->base.type = &esp32_rmt_type;
@@ -103,9 +115,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     config.clk_div = self->clock_divider;
 
-    // fixme: Error handling should be nicer; raise an exception
-    ESP_ERROR_CHECK(rmt_config(&config));
-    ESP_ERROR_CHECK(rmt_driver_install(config.channel, 0, 0));
+    check_esp_err(rmt_config(&config));
+    check_esp_err(rmt_driver_install(config.channel, 0, 0));
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -125,6 +136,7 @@ STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
+
 
 static float resolution_for_divider(uint8_t clock_divider)
 {
@@ -151,18 +163,20 @@ STATIC mp_obj_t esp32_rmt_send_pulses(mp_obj_t self_in, mp_obj_t pulses, mp_obj_
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t level = mp_obj_get_int(start_level);
     // fixme: Check inputs
-    // start_level => [0,1]
+    // start_level should be a kwargs
+    if (level != 0 && level != 1) {
+        mp_raise_ValueError("Start level can only be 0 or 1");
+    }
 
     mp_uint_t pulses_length = 0;
     mp_obj_t* pulses_ptr = NULL;
 
-    // fixme: Handle if not a tuple
     if(MP_OBJ_IS_TYPE(pulses, &mp_type_tuple) == true) {
         mp_obj_tuple_get(pulses, &pulses_length, &pulses_ptr);
     } else if(MP_OBJ_IS_TYPE(pulses, &mp_type_list) == true) {
         mp_obj_list_get(pulses, &pulses_length, &pulses_ptr);
     } else {
-        mp_raise_TypeError("Pulses must be defined as a tuple or list");
+        mp_raise_TypeError("Pulses must be specified with a tuple or list");
     }
 
     mp_uint_t num_items = (pulses_length / 2) + (pulses_length % 2);
