@@ -133,7 +133,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     GPIO_InitStruct.Alternate = self->miso->altfn_index; 
     HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
 
-    //Keep separate so above hack can be cleanly replaced
     #ifdef SPI1
     if(SPIx==SPI1) { 
         reserved_spi[0] = true;
@@ -187,8 +186,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     {
         mp_raise_RuntimeError(translate("SPI Init Error"));
     } else {
-        mp_printf(&mp_plat_print, "Success! spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/16));
+        mp_printf(&mp_plat_print, "Constructed! spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/16));
     }
+
+    self->baudrate = (HAL_RCC_GetPCLK2Freq()/16);
+    self->prescaler = 16;
+    self->polarity = 0;
+    self->phase = 1;
+    self->bits = 8;
 
     claim_pin(sck);
     claim_pin(mosi);
@@ -247,9 +252,73 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     self->miso = mp_const_none;
 }
 
+static uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler) {
+    static const uint32_t baud_map[8][2] = {
+        {2,SPI_BAUDRATEPRESCALER_2},
+        {4,SPI_BAUDRATEPRESCALER_4},
+        {8,SPI_BAUDRATEPRESCALER_8},
+        {16,SPI_BAUDRATEPRESCALER_16},
+        {32,SPI_BAUDRATEPRESCALER_32},
+        {64,SPI_BAUDRATEPRESCALER_64},
+        {128,SPI_BAUDRATEPRESCALER_128},
+        {256,SPI_BAUDRATEPRESCALER_256}
+    };
+    size_t i = 0;
+    uint16_t divisor;
+    do {
+        divisor = baud_map[i][0];
+        if (baudrate >= (HAL_RCC_GetPCLK2Freq()/divisor)) {
+            *prescaler = divisor;
+            return baud_map[i][1];
+        }
+        i++;
+    } while (divisor != 256);
+    //should never get here
+    mp_raise_RuntimeError(translate("SPI Divisor error"));
+    return 0;
+}
+
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    //mp_printf(&mp_plat_print, "SPI Configure\n");
+    //This resets the SPI, so check before updating it redundantly
+    if (baudrate == self->baudrate && polarity== self->polarity 
+        && phase == self->phase && bits == self->bits) return true;
+
+    //Deinit SPI
+    HAL_SPI_DeInit(&self->handle);
+
+    if (bits == 8) self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
+    else if (bits == 16) self->handle.Init.DataSize = SPI_DATASIZE_16BIT;
+    else return false;
+
+    if (polarity) self->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
+    else self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
+
+    if (phase) self->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
+    else self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
+
+    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler);
+
+    self->handle.Init.Mode = SPI_MODE_MASTER;
+    self->handle.Init.Direction = SPI_DIRECTION_2LINES;
+    self->handle.Init.NSS = SPI_NSS_SOFT;
+    self->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    self->handle.Init.TIMode = SPI_TIMODE_DISABLE;
+    self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    self->handle.Init.CRCPolynomial = 10;
+
+    if (HAL_SPI_Init(&self->handle) != HAL_OK)
+    {
+        mp_raise_RuntimeError(translate("SPI Re-init error"));
+    } else {
+        mp_printf(&mp_plat_print, "Configured! new spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/self->prescaler));
+        mp_printf(&mp_plat_print, "Prescaler is%u\n",self->prescaler);
+    }
+
+    self->baudrate = baudrate;
+    self->polarity = polarity;
+    self->phase = phase;
+    self->bits = bits;
     return true;
 }
 
@@ -303,18 +372,16 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
-
-    uint32_t result = HAL_RCC_GetPCLK2Freq()/16;
+    //returns actual frequency
+    uint32_t result = HAL_RCC_GetPCLK2Freq()/self->prescaler;
     mp_printf(&mp_plat_print, "spi clock speed:%u\n",result);
     return result;
 }
 
 uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
-    mp_raise_RuntimeError(translate("SPI call triggered"));
-    return 0;
+    return self->phase;
 }
 
 uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
-    mp_raise_RuntimeError(translate("SPI call triggered"));
-    return 0;
+    return self->polarity;
 }

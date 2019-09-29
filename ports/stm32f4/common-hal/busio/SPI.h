@@ -43,6 +43,11 @@ typedef struct {
     const mcu_spi_mosi_obj_t *mosi;
     const mcu_spi_miso_obj_t *miso;
     const mcu_spi_nss_obj_t *nss;
+    uint32_t baudrate;
+    uint16_t prescaler;
+    uint8_t polarity;
+    uint8_t phase;
+    uint8_t bits;
 } busio_spi_obj_t;
 
 void spi_reset(void);
