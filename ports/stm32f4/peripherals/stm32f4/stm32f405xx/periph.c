@@ -46,4 +46,43 @@ const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
     I2C_SCL(2, 4, &pin_PB10),
     I2C_SCL(3, 4, &pin_PA08)
 };
-//SPI, UART, Etc
+
+SPI_TypeDef * mcu_spi_banks[3] = {SPI1, SPI2, SPI3};
+
+const mcu_spi_sck_obj_t mcu_spi_sck_list[7] = {
+    SPI(1, 5, &pin_PA05),
+    SPI(1, 5, &pin_PB03),
+    SPI(2, 5, &pin_PB10),
+    SPI(2, 5, &pin_PB13),
+    SPI(2, 5, &pin_PC07),
+    SPI(3, 6, &pin_PB03),
+    SPI(3, 6, &pin_PC10),
+};
+
+const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6] = {
+    SPI(1, 5, &pin_PA07),
+    SPI(1, 5, &pin_PB05),
+    SPI(2, 5, &pin_PB15),
+    SPI(2, 5, &pin_PC03),
+    SPI(3, 6, &pin_PB05),
+    SPI(3, 6, &pin_PC12),
+};
+
+const mcu_spi_miso_obj_t mcu_spi_miso_list[6] = {
+    SPI(1, 5, &pin_PA06),
+    SPI(1, 5, &pin_PB04),
+    SPI(2, 5, &pin_PB14),
+    SPI(2, 5, &pin_PC02),
+    SPI(3, 6, &pin_PB04),
+    SPI(3, 6, &pin_PC11),
+};
+
+const mcu_spi_nss_obj_t mcu_spi_nss_list[6] = {
+    SPI(1, 5, &pin_PA04),
+    SPI(1, 5, &pin_PA15),
+    SPI(2, 5, &pin_PB09),
+    SPI(2, 5, &pin_PB12),
+    SPI(3, 6, &pin_PA04),
+    SPI(3, 6, &pin_PA15),
+};
+//UART, Etc

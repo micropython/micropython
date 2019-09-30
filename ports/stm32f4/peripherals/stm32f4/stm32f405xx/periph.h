@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
-#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
 
 //I2C
 extern I2C_TypeDef * mcu_i2c_banks[3];
@@ -33,5 +33,13 @@ extern I2C_TypeDef * mcu_i2c_banks[3];
 extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4];
 extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[3];
 
-#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[7];
+extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6];
+extern const mcu_spi_miso_obj_t mcu_spi_miso_list[6];
+extern const mcu_spi_nss_obj_t mcu_spi_nss_list[6];
+
+
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H

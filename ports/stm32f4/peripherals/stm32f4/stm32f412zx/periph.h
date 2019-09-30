@@ -37,7 +37,7 @@ extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 //SPI
 extern SPI_TypeDef * mcu_spi_banks[5];
 
-extern const mcu_spi_sck_obj_t mcu_spi_sck_list[16];
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[15];
 extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
 extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
 extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
