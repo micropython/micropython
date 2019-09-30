@@ -79,7 +79,6 @@
 #include "timer.h"
 #include "uart.h"
 #include "storage.h"
-#include "can.h"
 #include "dma.h"
 #include "i2c.h"
 #include "usb.h"
@@ -790,66 +789,6 @@ void UART10_IRQHandler(void) {
 }
 #endif
 
-#endif
-
-#if defined(MICROPY_HW_CAN1_TX)
-void CAN1_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
-    IRQ_EXIT(CAN1_RX0_IRQn);
-}
-
-void CAN1_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
-    IRQ_EXIT(CAN1_RX1_IRQn);
-}
-
-void CAN1_SCE_IRQHandler(void) {
-    IRQ_ENTER(CAN1_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_1);
-    IRQ_EXIT(CAN1_SCE_IRQn);
-}
-#endif
-
-#if defined(MICROPY_HW_CAN2_TX)
-void CAN2_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
-    IRQ_EXIT(CAN2_RX0_IRQn);
-}
-
-void CAN2_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
-    IRQ_EXIT(CAN2_RX1_IRQn);
-}
-
-void CAN2_SCE_IRQHandler(void) {
-    IRQ_ENTER(CAN2_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_2);
-    IRQ_EXIT(CAN2_SCE_IRQn);
-}
-#endif
-
-#if defined(MICROPY_HW_CAN3_TX)
-void CAN3_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN3_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO0);
-    IRQ_EXIT(CAN3_RX0_IRQn);
-}
-
-void CAN3_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN3_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_3, CAN_FIFO1);
-    IRQ_EXIT(CAN3_RX1_IRQn);
-}
-
-void CAN3_SCE_IRQHandler(void) {
-    IRQ_ENTER(CAN3_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_3);
-    IRQ_EXIT(CAN3_SCE_IRQn);
-}
 #endif
 
 #if MICROPY_PY_PYB_LEGACY

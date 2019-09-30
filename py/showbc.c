@@ -500,9 +500,16 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("RETURN_VALUE");
             break;
 
-        case MP_BC_RAISE_VARARGS:
-            unum = *ip++;
-            printf("RAISE_VARARGS " UINT_FMT, unum);
+        case MP_BC_RAISE_LAST:
+            printf("RAISE_LAST");
+            break;
+
+        case MP_BC_RAISE_OBJ:
+            printf("RAISE_OBJ");
+            break;
+
+        case MP_BC_RAISE_FROM:
+            printf("RAISE_FROM");
             break;
 
         case MP_BC_YIELD_VALUE:

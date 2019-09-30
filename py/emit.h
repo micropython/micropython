@@ -76,15 +76,15 @@ typedef enum {
 
 // Kind for emit->setup_block()
 #define MP_EMIT_SETUP_BLOCK_WITH (0)
-#define MP_EMIT_SETUP_BLOCK_EXCEPT (2)
-#define MP_EMIT_SETUP_BLOCK_FINALLY (3)
+#define MP_EMIT_SETUP_BLOCK_EXCEPT (1)
+#define MP_EMIT_SETUP_BLOCK_FINALLY (2)
 
 // Kind for emit->build()
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
-#define MP_EMIT_BUILD_MAP (3)
-#define MP_EMIT_BUILD_SET (6)
-#define MP_EMIT_BUILD_SLICE (8)
+#define MP_EMIT_BUILD_MAP (2)
+#define MP_EMIT_BUILD_SET (3)
+#define MP_EMIT_BUILD_SLICE (4)
 
 // Kind for emit->yield()
 #define MP_EMIT_YIELD_VALUE (0)

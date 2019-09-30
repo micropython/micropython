@@ -25,7 +25,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "py/runtime.h"
@@ -1548,9 +1547,9 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     tim->callback = mp_const_none;
                     __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
                     if (channel == 0) {
-                        printf("uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
                     } else {
-                        printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
                     }
                     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
@@ -1591,7 +1590,7 @@ void timer_irq_handler(uint tim_id) {
         if (unhandled != 0) {
             __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
-            printf("Unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
+            mp_printf(MICROPY_ERROR_PRINTER, "unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
         }
     }
 }

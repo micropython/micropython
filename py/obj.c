@@ -93,7 +93,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
-                if (block == MP_QSTR_NULL) {
+                if (block == MP_QSTRnull) {
                     mp_print_str(print, "\n");
                 } else {
                     mp_printf(print, ", in %q\n", block);

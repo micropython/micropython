@@ -193,13 +193,6 @@ STATIC void emit_write_bytecode_byte(emit_t *emit, int stack_adj, byte b1) {
     c[0] = b1;
 }
 
-STATIC void emit_write_bytecode_byte_byte(emit_t* emit, int stack_adj, byte b1, byte b2) {
-    mp_emit_bc_adjust_stack_size(emit, stack_adj);
-    byte *c = emit_get_cur_to_write_bytecode(emit, 2);
-    c[0] = b1;
-    c[1] = b2;
-}
-
 // Similar to emit_write_bytecode_uint(), just some extra handling to encode sign
 STATIC void emit_write_bytecode_byte_int(emit_t *emit, int stack_adj, byte b1, mp_int_t num) {
     emit_write_bytecode_byte(emit, stack_adj, b1);
@@ -539,8 +532,10 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 }
 
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
-    if (-16 <= arg && arg <= 47) {
-        emit_write_bytecode_byte(emit, 1, MP_BC_LOAD_CONST_SMALL_INT_MULTI + 16 + arg);
+    if (-MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS <= arg
+        && arg < MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS) {
+        emit_write_bytecode_byte(emit, 1,
+            MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS + arg);
     } else {
         emit_write_bytecode_byte_int(emit, 1, MP_BC_LOAD_CONST_SMALL_INT, arg);
     }
@@ -846,8 +841,10 @@ void mp_emit_bc_return_value(emit_t *emit) {
 }
 
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
+    MP_STATIC_ASSERT(MP_BC_RAISE_LAST + 1 == MP_BC_RAISE_OBJ);
+    MP_STATIC_ASSERT(MP_BC_RAISE_LAST + 2 == MP_BC_RAISE_FROM);
     assert(n_args <= 2);
-    emit_write_bytecode_byte_byte(emit, -n_args, MP_BC_RAISE_VARARGS, n_args);
+    emit_write_bytecode_byte(emit, -n_args, MP_BC_RAISE_LAST + n_args);
 }
 
 void mp_emit_bc_yield(emit_t *emit, int kind) {
