@@ -313,4 +313,4 @@ SECTIONS
 }
 
 /* get ROM code address */
-INCLUDE "eagle.rom.addr.v6.ld"
+INCLUDE "boards/eagle.rom.addr.v6.ld"

@@ -10,4 +10,4 @@ MEMORY
 }
 
 /* define common sections and symbols */
-INCLUDE esp8266_common.ld
+INCLUDE boards/esp8266_common.ld
