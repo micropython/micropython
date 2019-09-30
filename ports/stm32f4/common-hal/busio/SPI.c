@@ -37,31 +37,44 @@
 #include "common-hal/microcontroller/Pin.h"
 
 STATIC bool reserved_spi[6];
+STATIC bool never_reset_spi[6];
 
 void spi_reset(void) {
     #ifdef SPI1
+    if(!never_reset_spi[0]) {
         reserved_spi[0] = false;
         __HAL_RCC_SPI1_CLK_DISABLE(); 
+    }
     #endif
     #ifdef SPI2
+    if(!never_reset_spi[1]) {
         reserved_spi[1] = false;
         __HAL_RCC_SPI2_CLK_DISABLE(); 
+    }
     #endif
     #ifdef SPI3
+    if(!never_reset_spi[2]) {
         reserved_spi[2] = false;
         __HAL_RCC_SPI3_CLK_DISABLE(); 
+    }
     #endif
     #ifdef SPI4
+    if(!never_reset_spi[3]) {
         reserved_spi[3] = false;
-        __HAL_RCC_SPI4_CLK_DISABLE(); 
+        __HAL_RCC_SPI4_CLK_DISABLE();
+    } 
     #endif
     #ifdef SPI5
+    if(!never_reset_spi[4]) {
         reserved_spi[4] = false;
-        __HAL_RCC_SPI5_CLK_DISABLE(); 
+        __HAL_RCC_SPI5_CLK_DISABLE();
+    } 
     #endif
     #ifdef SPI6
+    if(!never_reset_spi[5]) {
         reserved_spi[5] = false;
         __HAL_RCC_SPI6_CLK_DISABLE(); 
+    }
     #endif
 }
 
@@ -198,6 +211,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
+    for(size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
+        if (mcu_spi_banks[i] == self->handle.Instance) {
+            never_reset_spi[i] = true;
+            never_reset_pin_number(self->sck->pin->port, self->sck->pin->number);
+            never_reset_pin_number(self->mosi->pin->port, self->mosi->pin->number);
+            never_reset_pin_number(self->miso->pin->port, self->miso->pin->number);
+            break;
+        }
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {

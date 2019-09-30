@@ -69,7 +69,6 @@ const mcu_spi_sck_obj_t mcu_spi_sck_list[15] = {
     SPI(4, 5, &pin_PE02),
     SPI(4, 5, &pin_PE12),
     SPI(5, 6, &pin_PB00),
-    SPI(5, 6, &pin_PB00),
     SPI(5, 6, &pin_PE02),
     SPI(5, 6, &pin_PE12)
 };
