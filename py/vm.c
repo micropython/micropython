@@ -1266,17 +1266,10 @@ yield:
                         DISPATCH();
                     } else {
                         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
+                        assert(!EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
                         // Pop exhausted gen
                         sp--;
-                        if (EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                            PUSH(mp_obj_exception_get_value(ret_value));
-                            // If we injected GeneratorExit downstream, then even
-                            // if it was swallowed, we re-raise GeneratorExit
-                            GENERATOR_EXIT_IF_NEEDED(t_exc);
-                            DISPATCH();
-                        } else {
-                            RAISE(ret_value);
-                        }
+                        RAISE(ret_value);
                     }
                 }
 
