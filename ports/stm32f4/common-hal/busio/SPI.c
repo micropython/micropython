@@ -185,10 +185,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
         mp_raise_RuntimeError(translate("SPI Init Error"));
-    } else {
-        mp_printf(&mp_plat_print, "Constructed! spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/16));
     }
-
     self->baudrate = (HAL_RCC_GetPCLK2Freq()/16);
     self->prescaler = 16;
     self->polarity = 0;
@@ -273,9 +270,9 @@ static uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler) {
         }
         i++;
     } while (divisor != 256);
-    //should never get here
-    mp_raise_RuntimeError(translate("SPI Divisor error"));
-    return 0;
+    //only gets here if requested baud is lower than minimum
+    *prescaler = 256;
+    return SPI_BAUDRATEPRESCALER_256;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
@@ -287,15 +284,25 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     //Deinit SPI
     HAL_SPI_DeInit(&self->handle);
 
-    if (bits == 8) self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
-    else if (bits == 16) self->handle.Init.DataSize = SPI_DATASIZE_16BIT;
-    else return false;
+    if (bits == 8) {
+        self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
+    } else if (bits == 16) {
+        self->handle.Init.DataSize = SPI_DATASIZE_16BIT;
+    } else {
+        return false;
+    }
 
-    if (polarity) self->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    else self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
+    if (polarity) {
+        self->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
+    } else {
+        self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
+    }
 
-    if (phase) self->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
-    else self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
+    if (phase) {
+        self->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
+    } else {
+        self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
+    }
 
     self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler);
 
@@ -309,10 +316,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
-        mp_raise_RuntimeError(translate("SPI Re-init error"));
-    } else {
-        mp_printf(&mp_plat_print, "Configured! new spi clock speed:%u\n",(HAL_RCC_GetPCLK2Freq()/self->prescaler));
-        mp_printf(&mp_plat_print, "Prescaler is%u\n",self->prescaler);
+        mp_raise_RuntimeError(translate("SPI Re-initialization error"));
     }
 
     self->baudrate = baudrate;
@@ -352,14 +356,12 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
-    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI write error"));
     return result == HAL_OK ? 1 : 0;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
     HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
-    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI read error"));
     return result == HAL_OK ? 1 : 0;
 }
 
@@ -367,14 +369,12 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
         uint8_t *data_out, uint8_t *data_in, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
         data_out, data_in, (uint16_t)len,2);
-    if(!(result==HAL_OK)) mp_raise_RuntimeError(translate("SPI transfer error"));
     return result == HAL_OK ? 1 : 0;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
     //returns actual frequency
     uint32_t result = HAL_RCC_GetPCLK2Freq()/self->prescaler;
-    mp_printf(&mp_plat_print, "spi clock speed:%u\n",result);
     return result;
 }
 
