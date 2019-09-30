@@ -89,6 +89,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t mosi_len = sizeof(mcu_spi_mosi_list)/sizeof(*mcu_spi_mosi_list);
     uint8_t miso_len = sizeof(mcu_spi_miso_list)/sizeof(*mcu_spi_miso_list);
 
+    bool spi_taken = false;
     //sck
     for(uint i=0; i<sck_len;i++) {
         if (mcu_spi_sck_list[i].pin == sck) {
@@ -101,7 +102,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                             && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)
                             && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[k].spi_index)) {
                             //keep looking if the SPI is taken, edge case
-                            if(reserved_spi[mcu_spi_sck_list[i].spi_index-1]) continue;
+                            if(reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
+                                spi_taken = true;
+                                continue;
+                            }
                             //store pins if not
                             self->sck = &mcu_spi_sck_list[j];
                             self->mosi = &mcu_spi_mosi_list[j];
@@ -118,11 +122,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if(self->sck!=NULL && self->mosi!=NULL && self->miso!=NULL ) {
         SPIx = mcu_spi_banks[self->sck->spi_index-1];
     } else {
-        mp_raise_RuntimeError(translate("Invalid SPI pin selection"));
-    }
-
-    if(reserved_spi[self->sck->spi_index-1]) {
-        mp_raise_RuntimeError(translate("Hardware busy, try alternative pins"));
+        if (spi_taken) {
+            mp_raise_RuntimeError(translate("Hardware busy, try alternative pins"));
+        } else {
+            mp_raise_RuntimeError(translate("Invalid SPI pin selection"));
+        }
     }
 
     //Start GPIO for each pin
