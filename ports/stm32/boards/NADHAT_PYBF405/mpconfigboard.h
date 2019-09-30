@@ -1,9 +1,8 @@
-#define MICROPY_HW_BOARD_NAME       "PYB_F405"
+#define MICROPY_HW_BOARD_NAME       "PYBF405"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_HAS_MMA7660      (0)
 #define MICROPY_HW_HAS_KXTJ3        (1)
 #define MICROPY_HW_HAS_LCD          (1)
@@ -12,6 +11,7 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 
 // HSE is 16MHz
 #define MICROPY_HW_CLK_PLLM (16)
@@ -90,7 +90,7 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
-#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_B5)
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_A8)
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
