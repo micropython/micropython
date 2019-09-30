@@ -211,6 +211,7 @@ extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_bluetooth;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_STM
@@ -245,6 +246,12 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define NETWORK_BUILTIN_MODULE
 #endif
 
+#if MICROPY_PY_BLUETOOTH
+#define BLUETOOTH_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_bluetooth), MP_ROM_PTR(&mp_module_bluetooth) },
+#else
+#define BLUETOOTH_BUILTIN_MODULE
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
@@ -253,6 +260,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+    BLUETOOTH_BUILTIN_MODULE \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
