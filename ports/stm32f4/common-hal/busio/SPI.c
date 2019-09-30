@@ -97,10 +97,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 if (mcu_spi_mosi_list[j].pin == mosi) {
                     //miso
                     for(uint k=0; k<miso_len;k++) {
-                        if ((mcu_spi_miso_list[k].pin == miso)
+                        if ((mcu_spi_miso_list[k].pin == miso) //everything needs the same index
                             && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)
                             && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[k].spi_index)) {
-                            //everything needs the same index
+                            //keep looking if the SPI is taken, edge case
+                            if(reserved_spi[mcu_spi_sck_list[i].spi_index-1]) continue;
+                            //store pins if not
                             self->sck = &mcu_spi_sck_list[j];
                             self->mosi = &mcu_spi_mosi_list[j];
                             self->miso = &mcu_spi_miso_list[k];
