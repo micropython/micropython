@@ -353,6 +353,12 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_VAR, 13, buf, self->itf);
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
+            case MP_QSTR_password: {
+                size_t len;
+                const uint8_t *buf;
+                cyw43_wifi_ap_get_password(self->cyw, &len, &buf);
+                return mp_obj_new_str((const char*)buf, len);
+            }
             default:
                 mp_raise_ValueError("unknown config param");
         }
@@ -417,6 +423,10 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         memcpy(buf, "qtxpower\x00", 9);
                         nw_put_le32(buf + 9, dbm * 4);
                         cyw43_ioctl(self->cyw, CYW43_IOCTL_SET_VAR, 9 + 4, buf, self->itf);
+                        break;
+                    }
+                    case MP_QSTR_authmode: {
+                        cyw43_wifi_ap_set_auth(self->cyw, mp_obj_get_int(e->value));
                         break;
                     }
                     default:
