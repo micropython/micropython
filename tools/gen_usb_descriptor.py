@@ -199,7 +199,13 @@ hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
     bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-    bInterval=10)
+    bInterval=8)
+
+hid_endpoint_out_descriptor = standard.EndpointDescriptor(
+    description="HID out",
+    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+    bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
+    bInterval=8)
 
 hid_interfaces = [
     standard.InterfaceDescriptor(
@@ -213,6 +219,7 @@ hid_interfaces = [
                 description="HID",
                 wDescriptorLength=len(bytes(combined_hid_report_descriptor))),
             hid_endpoint_in_descriptor,
+            hid_endpoint_out_descriptor,
             ]
         ),
     ]
