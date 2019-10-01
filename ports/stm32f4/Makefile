@@ -137,6 +137,7 @@ SRC_STM32 = \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \

@@ -32,6 +32,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
 
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
@@ -55,6 +56,7 @@ safe_mode_t port_init(void) {
 void reset_port(void) {
 	reset_all_pins();
     i2c_reset();
+    spi_reset();
 }
 
 void reset_to_bootloader(void) {
