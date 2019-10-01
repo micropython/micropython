@@ -22,7 +22,7 @@ CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_TOUCHIO_USE_NATIVE = 1
 
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
-USB_MSC_NUM_ENDPOINT_PAIRS = 2
+USB_MSC_EP_NUM_OUT = 1
 endif
 
 # Put samd51-only choices here.

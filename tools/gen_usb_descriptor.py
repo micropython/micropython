@@ -32,8 +32,24 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
-parser.add_argument('--msc_num_endpoint_pairs', type=int, default=1,
-                    help='Use 1 or 2 endpoint pairs for MSC (1 bidirectional, or 1 input + 1 output (required by SAMD21))')
+parser.add_argument('--relative_ep_num', type=int, default=1,
+                    help='use relative(1) or absolute(0) endpoint number')
+parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
+                    help='endpoint number of CDC NOTIFICATION')
+parser.add_argument('--cdc_ep_num_data_out', type=int, default=0,
+                    help='endpoint number of CDC DATA OUT')
+parser.add_argument('--cdc_ep_num_data_in', type=int, default=0,
+                    help='endpoint number of CDC DATA IN')
+parser.add_argument('--msc_ep_num_out', type=int, default=0,
+                    help='endpoint number of MSC OUT')
+parser.add_argument('--msc_ep_num_in', type=int, default=0,
+                    help='endpoint number of MSC IN')
+parser.add_argument('--hid_ep_num_in', type=int, default=0,
+                    help='endpoint number of HID IN')
+parser.add_argument('--midi_ep_num_out', type=int, default=0,
+                    help='endpoint number of MIDI OUT')
+parser.add_argument('--midi_ep_num_in', type=int, default=0,
+                    help='endpoint number of MIDI IN')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
@@ -46,10 +62,6 @@ if unknown_devices:
 unknown_hid_devices = list(frozenset(args.hid_devices) - ALL_HID_DEVICES_SET)
 if unknown_hid_devices:
     raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
-
-if args.msc_num_endpoint_pairs not in (1, 2):
-    raise ValueError("--msc_num_endpoint_pairs must be 1 or 2")
-
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -120,7 +132,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
         cdc_union,
         standard.EndpointDescriptor(
             description="CDC comm in",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bEndpointAddress=args.cdc_ep_num_notification | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
             wMaxPacketSize=0x0040,
             bInterval=0x10)
@@ -133,11 +145,11 @@ cdc_data_interface = standard.InterfaceDescriptor(
     subdescriptors=[
         standard.EndpointDescriptor(
             description="CDC data out",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+            bEndpointAddress=args.cdc_ep_num_data_out | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
         standard.EndpointDescriptor(
             description="CDC data in",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bEndpointAddress=args.cdc_ep_num_data_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
     ])
 
@@ -153,14 +165,12 @@ msc_interfaces = [
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="MSC in",
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+                bEndpointAddress=args.msc_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0),
             standard.EndpointDescriptor(
                 description="MSC out",
-                # SAMD21 needs to use a separate pair of endpoints for MSC.
-                bEndpointAddress=((0x1 if args.msc_num_endpoint_pairs == 2 else 0x0) |
-                                  standard.EndpointDescriptor.DIRECTION_OUT),
+                bEndpointAddress=(args.msc_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0)
         ]
@@ -197,7 +207,7 @@ else:
 # and will fail (possibly silently) if both are not supplied.
 hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
-    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+    bEndpointAddress=args.hid_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
     bInterval=8)
 
@@ -267,12 +277,12 @@ audio_midi_interface = standard.InterfaceDescriptor(
         ),
         standard.EndpointDescriptor(
             description="MIDI data out to CircuitPython",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+            bEndpointAddress=args.midi_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
         midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
         standard.EndpointDescriptor(
             description="MIDI data in from CircuitPython",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bEndpointAddress=args.midi_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
             bInterval = 0x0),
         midi.DataEndpointDescriptor(baAssocJack=[midi_out_jack_emb]),
@@ -313,10 +323,15 @@ if 'HID' in args.devices:
 if 'AUDIO' in args.devices:
     interfaces_to_join.append(audio_interfaces)
 
-# util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
-# and renumber the interfaces in order. But we still need to fix up certain
-# interface cross-references.
-interfaces = util.join_interfaces(*interfaces_to_join)
+if args.relative_ep_num:
+    # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
+    # and renumber the interfaces in order. But we still need to fix up certain
+    # interface cross-references.
+    interfaces = util.join_interfaces(*interfaces_to_join)
+else:
+    # util.renumbers_interfaces() will renumber the interfaces in order. But we still need to 
+    # fix up certain interface cross-references.
+    interfaces = util.renumbers_interfaces(*interfaces_to_join)
 
 # Now adjust the CDC interface cross-references.
 

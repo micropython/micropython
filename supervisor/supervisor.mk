@@ -94,9 +94,40 @@ ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
 endif
 
-# SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
-ifndef USB_MSC_NUM_ENDPOINT_PAIRS
-USB_MSC_NUM_ENDPOINT_PAIRS = 1
+ifndef USB_RELATIVE_EP_NUM
+USB_RELATIVE_EP_NUM = 1
+endif
+
+ifndef USB_CDC_EP_NUM_NOTIFICATION
+USB_CDC_EP_NUM_NOTIFICATION = 0
+endif
+
+ifndef USB_CDC_EP_NUM_DATA_OUT
+USB_CDC_EP_NUM_DATA_OUT = 0
+endif
+
+ifndef USB_CDC_EP_NUM_DATA_IN
+USB_CDC_EP_NUM_DATA_IN = 0
+endif
+
+ifndef USB_MSC_EP_NUM_OUT
+USB_MSC_EP_NUM_OUT = 0
+endif
+
+ifndef USB_MSC_EP_NUM_IN
+USB_MSC_EP_NUM_IN = 0
+endif
+
+ifndef USB_HID_EP_NUM_IN
+USB_HID_EP_NUM_IN = 0
+endif
+
+ifndef USB_MIDI_EP_NUM_OUT
+USB_MIDI_EP_NUM_OUT = 0
+endif
+
+ifndef USB_MIDI_EP_NUM_IN
+USB_MIDI_EP_NUM_IN = 0
 endif
 
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
@@ -116,9 +147,17 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--vid $(USB_VID)\
 		--pid $(USB_PID)\
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
-	        --devices $(USB_DEVICES)\
+		--devices $(USB_DEVICES)\
 		--hid_devices $(USB_HID_DEVICES)\
-		--msc_num_endpoint_pairs $(USB_MSC_NUM_ENDPOINT_PAIRS)\
+		--relative_ep_num $(USB_RELATIVE_EP_NUM)\
+		--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
+		--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
+		--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
+		--msc_ep_num_out $(USB_MSC_EP_NUM_OUT)\
+		--msc_ep_num_in $(USB_MSC_EP_NUM_IN)\
+		--hid_ep_num_in $(USB_HID_EP_NUM_IN)\
+		--midi_ep_num_out $(USB_MIDI_EP_NUM_OUT)\
+		--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
