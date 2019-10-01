@@ -93,6 +93,7 @@ class Pin(object):
         self.adc_num = 0
         self.adc_channel = 0
         self.board_pin = False
+        self.board_index = None
 
     def cpu_pin_name(self):
         return '{:s}{:d}'.format("P", self.pin)
@@ -102,6 +103,9 @@ class Pin(object):
 
     def set_is_board_pin(self):
         self.board_pin = True
+
+    def set_board_index(self, index):
+        self.board_index = index
 
     def parse_adc(self, adc_str):
         if (adc_str[:3] != 'ADC'):
@@ -233,20 +237,24 @@ class Pins(object):
 
     def print_named(self, label, named_pins):
         print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
-        index = 0
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&machine_pin_obj[{:d}]) }},'.format(named_pin.name(), index))
-                index += 1
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&machine_board_pin_obj[{:d}]) }},'.format(named_pin.name(), pin.board_index))
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 
     def print_const_table(self):
+        num_board_pins = 0
+        for named_pin in self.cpu_pins:
+            pin = named_pin.pin()
+            if pin.is_board_pin():
+                pin.set_board_index(num_board_pins)
+                num_board_pins += 1
         print('')
-        print('const uint8_t machine_pin_num_of_pins = {:d};'.format(len(self.board_pins)))
+        print('const uint8_t machine_pin_num_of_board_pins = {:d};'.format(num_board_pins))
         print('')
-        print('const pin_obj_t machine_pin_obj[{:d}] = {{'.format(len(self.board_pins)))
+        print('const pin_obj_t machine_board_pin_obj[{:d}] = {{'.format(num_board_pins))
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():

@@ -169,7 +169,43 @@ MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
-//TODO: factorial, fsum
+//TODO: fsum
+
+#if MICROPY_PY_MATH_ISCLOSE
+STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const mp_float_t a = mp_obj_get_float(args[ARG_a].u_obj);
+    const mp_float_t b = mp_obj_get_float(args[ARG_b].u_obj);
+    const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL
+        ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
+    const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj);
+    if (rel_tol < (mp_float_t)0.0 || abs_tol < (mp_float_t)0.0) {
+        math_error();
+    }
+    if (a == b) {
+        return mp_const_true;
+    }
+    const mp_float_t difference = MICROPY_FLOAT_C_FUN(fabs)(a - b);
+    if (isinf(difference)) { // Either a or b is inf
+        return mp_const_false;
+    }
+    if ((difference <= abs_tol) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b))) {
+        return mp_const_true;
+    }
+    return mp_const_false;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_math_isclose_obj, 2, mp_math_isclose);
+#endif
 
 // Function that takes a variable number of arguments
 
@@ -187,7 +223,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         if (base <= (mp_float_t)0.0) {
             math_error();
         } else if (base == (mp_float_t)1.0) {
-            mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+            mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }
@@ -232,6 +268,70 @@ STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
 
+#if MICROPY_PY_MATH_FACTORIAL
+
+#if MICROPY_OPT_MATH_FACTORIAL
+
+// factorial(x): slightly efficient recursive implementation
+STATIC mp_obj_t mp_math_factorial_inner(mp_uint_t start, mp_uint_t end) {
+    if (start == end) {
+        return mp_obj_new_int(start);
+    } else if (end - start == 1) {
+        return mp_binary_op(MP_BINARY_OP_MULTIPLY, MP_OBJ_NEW_SMALL_INT(start), MP_OBJ_NEW_SMALL_INT(end));
+    } else if (end - start == 2) {
+        mp_obj_t left = MP_OBJ_NEW_SMALL_INT(start);
+        mp_obj_t middle = MP_OBJ_NEW_SMALL_INT(start + 1);
+        mp_obj_t right = MP_OBJ_NEW_SMALL_INT(end);
+        mp_obj_t tmp = mp_binary_op(MP_BINARY_OP_MULTIPLY, left, middle);
+        return mp_binary_op(MP_BINARY_OP_MULTIPLY, tmp, right);
+    } else {
+        mp_uint_t middle = start + ((end - start) >> 1);
+        mp_obj_t left = mp_math_factorial_inner(start, middle);
+        mp_obj_t right = mp_math_factorial_inner(middle + 1, end);
+        return mp_binary_op(MP_BINARY_OP_MULTIPLY, left, right);
+    }
+}
+STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
+    mp_int_t max = mp_obj_get_int(x_obj);
+    if (max < 0) {
+        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+    } else if (max == 0) {
+        return MP_OBJ_NEW_SMALL_INT(1);
+    }
+    return mp_math_factorial_inner(1, max);
+}
+
+#else
+
+// factorial(x): squared difference implementation
+// based on http://www.luschny.de/math/factorial/index.html
+STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
+    mp_int_t max = mp_obj_get_int(x_obj);
+    if (max < 0) {
+        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+    } else if (max <= 1) {
+        return MP_OBJ_NEW_SMALL_INT(1);
+    }
+    mp_int_t h = max >> 1;
+    mp_int_t q = h * h;
+    mp_int_t r = q << 1;
+    if (max & 1) {
+        r *= max;
+    }
+    mp_obj_t prod = MP_OBJ_NEW_SMALL_INT(r);
+    for (mp_int_t num = 1; num < max - 2; num += 2) {
+        q -= num;
+        prod = mp_binary_op(MP_BINARY_OP_MULTIPLY, prod, MP_OBJ_NEW_SMALL_INT(q));
+    }
+    return prod;
+}
+
+#endif
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_factorial_obj, mp_math_factorial);
+
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_math) },
     { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
@@ -271,9 +371,15 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isfinite), MP_ROM_PTR(&mp_math_isfinite_obj) },
     { MP_ROM_QSTR(MP_QSTR_isinf), MP_ROM_PTR(&mp_math_isinf_obj) },
     { MP_ROM_QSTR(MP_QSTR_isnan), MP_ROM_PTR(&mp_math_isnan_obj) },
+    #if MICROPY_PY_MATH_ISCLOSE
+    { MP_ROM_QSTR(MP_QSTR_isclose), MP_ROM_PTR(&mp_math_isclose_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_trunc), MP_ROM_PTR(&mp_math_trunc_obj) },
     { MP_ROM_QSTR(MP_QSTR_radians), MP_ROM_PTR(&mp_math_radians_obj) },
     { MP_ROM_QSTR(MP_QSTR_degrees), MP_ROM_PTR(&mp_math_degrees_obj) },
+    #if MICROPY_PY_MATH_FACTORIAL
+    { MP_ROM_QSTR(MP_QSTR_factorial), MP_ROM_PTR(&mp_math_factorial_obj) },
+    #endif
     #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_ROM_QSTR(MP_QSTR_erf), MP_ROM_PTR(&mp_math_erf_obj) },
     { MP_ROM_QSTR(MP_QSTR_erfc), MP_ROM_PTR(&mp_math_erfc_obj) },

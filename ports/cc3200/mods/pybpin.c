@@ -131,7 +131,7 @@ pin_obj_t *pin_find(mp_obj_t user_obj) {
     pin_obj_t *pin_obj;
 
     // if a pin was provided, use it
-    if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)) {
         pin_obj = user_obj;
         return pin_obj;
     }

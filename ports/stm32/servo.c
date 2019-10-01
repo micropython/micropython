@@ -63,8 +63,6 @@ typedef struct _pyb_servo_obj_t {
 STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
 void servo_init(void) {
-    timer_tim5_init();
-
     // reset servo objects
     for (int i = 0; i < PYB_SERVO_NUM; i++) {
         pyb_servo_obj[i].base.type = &pyb_servo_type;
@@ -132,6 +130,10 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
 
     // GPIO configuration
     mp_hal_pin_config(s->pin, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF2_TIM5);
+
+    if (__HAL_RCC_TIM5_IS_CLK_DISABLED()) {
+        timer_tim5_init();
+    }
 
     // PWM mode configuration
     TIM_OC_InitTypeDef oc_init;

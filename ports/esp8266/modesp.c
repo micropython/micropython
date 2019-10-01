@@ -87,7 +87,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
 
     mp_int_t len;
     byte *buf;
-    bool alloc_buf = MP_OBJ_IS_INT(len_or_buf_in);
+    bool alloc_buf = mp_obj_is_int(len_or_buf_in);
 
     if (alloc_buf) {
         len = mp_obj_get_int(len_or_buf_in);
@@ -259,8 +259,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 // esp.set_native_code_location() function; see below.  If flash is selected
 // then it is erased as needed.
 
-#include "gccollect.h"
-
 #define IRAM1_END (0x40108000)
 #define FLASH_START (0x40200000)
 #define FLASH_END (0x40300000)
@@ -282,16 +280,6 @@ void esp_native_code_init(void) {
     esp_native_code_end = IRAM1_END;
     esp_native_code_cur = esp_native_code_start;
     esp_native_code_erased = 0;
-}
-
-void esp_native_code_gc_collect(void) {
-    void *src;
-    if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
-        src = (void*)esp_native_code_start;
-    } else {
-        src = (void*)(FLASH_START + esp_native_code_start);
-    }
-    gc_collect_root(src, (esp_native_code_end - esp_native_code_start) / sizeof(uint32_t));
 }
 
 void *esp_native_code_commit(void *buf, size_t len) {

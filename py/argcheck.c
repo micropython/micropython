@@ -41,7 +41,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else {
-            mp_raise_TypeError("function does not take keyword arguments");
+            mp_raise_TypeError("function doesn't take keyword arguments");
         }
     }
 

@@ -171,7 +171,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
     }
     uint32_t i = mp_obj_get_int_truncated(o);
     if (min != max && ((int)i < min || (int)i > max)) {
-        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer %d is not within range %d..%d", op, i, min, max));
+        emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer %d isn't within range %d..%d", op, i, min, max));
         return 0;
     }
     return i;
@@ -335,6 +335,11 @@ branch_not_in_range:
 }
 
 const emit_inline_asm_method_table_t emit_inline_xtensa_method_table = {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_xtensa_new,
+    emit_inline_xtensa_free,
+    #endif
+
     emit_inline_xtensa_start_pass,
     emit_inline_xtensa_end_pass,
     emit_inline_xtensa_count_params,

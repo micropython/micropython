@@ -58,6 +58,7 @@ int mp_hal_stdin_rx_chr(void) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(board_stdio_uart));
         }
+        __WFI();
     }
 
     return 0;

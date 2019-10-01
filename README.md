@@ -41,8 +41,7 @@ Major components in this repository:
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
-  HTML documentation is available at http://docs.micropython.org (be sure
-  to select needed board/port at the bottom left corner).
+  HTML documentation is available at http://docs.micropython.org.
 
 Additional components:
 - ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
@@ -61,7 +60,20 @@ Additional components:
 The subdirectories above may include READMEs with additional info.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash, gcc, and Python (at least 2.7 or 3.3).
+You will also need bash, gcc, and Python 3.3+ available as the command `python3`
+(if your system only has Python 2.7 then invoke make with the additional option
+`PYTHON=python2`).
+
+The MicroPython cross-compiler, mpy-cross
+-----------------------------------------
+
+Most ports require the MicroPython cross-compiler to be built first.  This
+program, called mpy-cross, is used to pre-compile Python scripts to .mpy
+files which can then be included (frozen) into the firmware/executable for
+a port.  To build mpy-cross use:
+
+    $ cd mpy-cross
+    $ make
 
 The Unix version
 ----------------
@@ -76,7 +88,6 @@ To build (see section below for required dependencies):
 
     $ git submodule update --init
     $ cd ports/unix
-    $ make axtls
     $ make
 
 Then to give it a try:

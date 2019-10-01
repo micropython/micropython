@@ -2,7 +2,7 @@ import uos
 from flashbdev import bdev
 
 def check_bootsec():
-    buf = bytearray(bdev.SEC_SIZE)
+    buf = bytearray(bdev.ioctl(5, 0)) # 5 is SEC_SIZE
     bdev.readblocks(0, buf)
     empty = True
     for b in buf:
@@ -29,8 +29,7 @@ def setup():
     print("Performing initial setup")
     uos.VfsFat.mkfs(bdev)
     vfs = uos.VfsFat(bdev)
-    uos.mount(vfs, '/flash')
-    uos.chdir('/flash')
+    uos.mount(vfs, '/')
     with open("boot.py", "w") as f:
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)

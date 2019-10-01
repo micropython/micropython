@@ -30,11 +30,16 @@ typedef float float_t;
 typedef union {
     float f;
     struct {
-        uint64_t m : 23;
-        uint64_t e : 8;
-        uint64_t s : 1;
+        uint32_t m : 23;
+        uint32_t e : 8;
+        uint32_t s : 1;
     };
 } float_s_t;
+
+int __signbitf(float f) {
+    float_s_t u = {.f = f};
+    return u.s;
+}
 
 #ifndef NDEBUG
 float copysignf(float x, float y) {

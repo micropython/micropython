@@ -34,8 +34,7 @@
 #ifdef MICROPY_PY_WEBREPL_DELAY
 #include "py/mphal.h"
 #endif
-#include "extmod/modwebsocket.h"
-#include "genhdr/mpversion.h"
+#include "extmod/moduwebsocket.h"
 
 #if MICROPY_PY_WEBREPL
 
@@ -68,10 +67,9 @@ typedef struct _mp_obj_webrepl_t {
     mp_obj_t cur_file;
 } mp_obj_webrepl_t;
 
-// These get passed to functions which aren't force-l32, so can't be const
-STATIC char passwd_prompt[] = "Password: ";
-STATIC char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
-STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
+STATIC const char passwd_prompt[] = "Password: ";
+STATIC const char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
+STATIC const char denied_prompt[] = "\r\nAccess denied\r\n";
 
 STATIC char webrepl_passwd[10];
 
@@ -109,6 +107,15 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return o;
 }
 
+STATIC void check_file_op_finished(mp_obj_webrepl_t *self) {
+    if (self->data_to_recv == 0) {
+        mp_stream_close(self->cur_file);
+        self->hdr_to_recv = sizeof(struct webrepl_file);
+        DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
+        write_webrepl_resp(self->sock, 0);
+    }
+}
+
 STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
     const mp_stream_p_t *file_stream = mp_get_stream(self->cur_file);
     byte readbuf[2 + 256];
@@ -130,7 +137,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
 
     switch (self->hdr.type) {
         case GET_VER: {
-            static char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
+            static const char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
             write_webrepl(self->sock, ver, sizeof(ver));
             self->hdr_to_recv = sizeof(struct webrepl_file);
             return;
@@ -161,6 +168,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
 
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
+        check_file_op_finished(self);
     } else if (self->hdr.type == GET_FILE) {
         self->data_to_recv = 1;
     }
@@ -237,7 +245,11 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     }
 
     if (self->data_to_recv != 0) {
-        static byte filebuf[512];
+        // Ports that don't have much available stack can make this filebuf static
+        #if MICROPY_PY_WEBREPL_STATIC_FILEBUF
+        static
+        #endif
+        byte filebuf[512];
         filebuf[0] = *(byte*)buf;
         mp_uint_t buf_sz = 1;
         if (--self->data_to_recv != 0) {
@@ -267,12 +279,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             }
         }
 
-        if (self->data_to_recv == 0) {
-            mp_stream_close(self->cur_file);
-            self->hdr_to_recv = sizeof(struct webrepl_file);
-            DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
-            write_webrepl_resp(self->sock, 0);
-        }
+        check_file_op_finished(self);
 
         #ifdef MICROPY_PY_WEBREPL_DELAY
         // Some platforms may have broken drivers and easily gets

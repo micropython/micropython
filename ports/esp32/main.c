@@ -37,6 +37,11 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
+#if MICROPY_ESP_IDF_4
+#include "esp32/spiram.h"
+#else
+#include "esp_spiram.h"
+#endif
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -57,9 +62,6 @@
 #define MP_TASK_STACK_SIZE      (16 * 1024)
 #define MP_TASK_STACK_LEN       (MP_TASK_STACK_SIZE / sizeof(StackType_t))
 
-STATIC StaticTask_t mp_task_tcb;
-STATIC StackType_t mp_task_stack[MP_TASK_STACK_LEN] __attribute__((aligned (8)));
-
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -68,13 +70,34 @@ int vprintf_null(const char *format, va_list ap) {
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD
-    mp_thread_init(&mp_task_stack[0], MP_TASK_STACK_LEN);
+    mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_LEN);
     #endif
     uart_init();
 
+    // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
+    #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
+    // Try to use the entire external SPIRAM directly for the heap
+    size_t mp_task_heap_size;
+    void *mp_task_heap = (void*)0x3f800000;
+    switch (esp_spiram_get_chip_size()) {
+        case ESP_SPIRAM_SIZE_16MBITS:
+            mp_task_heap_size = 2 * 1024 * 1024;
+            break;
+        case ESP_SPIRAM_SIZE_32MBITS:
+        case ESP_SPIRAM_SIZE_64MBITS:
+            mp_task_heap_size = 4 * 1024 * 1024;
+            break;
+        default:
+            // No SPIRAM, fallback to normal allocation
+            mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+            mp_task_heap = malloc(mp_task_heap_size);
+            break;
+    }
+    #else
     // Allocate the uPy heap using malloc and get the largest available region
     size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     void *mp_task_heap = malloc(mp_task_heap_size);
+    #endif
 
 soft_reset:
     // initialise the stack pointer for the main thread
@@ -93,9 +116,9 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
-    pyexec_file("boot.py");
+    pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        pyexec_file("main.py");
+        pyexec_file_if_exists("main.py");
     }
 
     for (;;) {
@@ -112,13 +135,15 @@ soft_reset:
         }
     }
 
+    machine_timer_deinit_all();
+
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     #endif
 
     gc_sweep_all();
 
-    mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
+    mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
     machine_pins_deinit();
@@ -130,9 +155,12 @@ soft_reset:
 }
 
 void app_main(void) {
-    nvs_flash_init();
-    mp_main_task_handle = xTaskCreateStaticPinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY,
-                                                        &mp_task_stack[0], &mp_task_tcb, 0);
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
+    xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
 void nlr_jump_fail(void *val) {

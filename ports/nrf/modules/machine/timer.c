@@ -53,7 +53,9 @@ STATIC mp_obj_t machine_timer_callbacks[] = {
 
 STATIC const machine_timer_obj_t machine_timer_obj[] = {
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(0)},
-#if !defined(MICROPY_PY_MACHINE_SOFT_PWM) || (MICROPY_PY_MACHINE_SOFT_PWM == 0)
+#if MICROPY_PY_MACHINE_SOFT_PWM
+    { },
+#else
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(1)},
 #endif
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(2)},
@@ -75,8 +77,7 @@ STATIC int timer_find(mp_obj_t id) {
     if (timer_id >= 0 && timer_id < MP_ARRAY_SIZE(machine_timer_obj)) {
         return timer_id;
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-        "Timer(%d) does not exist", timer_id));
+    mp_raise_ValueError("Timer doesn't exist");
 }
 
 STATIC void timer_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -113,21 +114,19 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 
 #if BLUETOOTH_SD
     if (timer_id == 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Timer(%d) reserved by Bluetooth LE stack.", timer_id));
+        mp_raise_ValueError("Timer reserved by Bluetooth LE stack");
     }
 #endif
 
 #if MICROPY_PY_MACHINE_SOFT_PWM
     if (timer_id == 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                  "Timer(%d) reserved by ticker driver.", timer_id));
+        mp_raise_ValueError("Timer reserved by ticker driver");
     }
 #endif
 
     machine_timer_obj_t *self = (machine_timer_obj_t*)&machine_timer_obj[timer_id];
 
-    if (MP_OBJ_IS_FUN(args[ARG_callback].u_obj)) {
+    if (mp_obj_is_fun(args[ARG_callback].u_obj)) {
         machine_timer_callbacks[timer_id] = args[ARG_callback].u_obj;
     } else if (args[ARG_callback].u_obj == mp_const_none) {
         machine_timer_callbacks[timer_id] = NULL;

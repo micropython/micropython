@@ -2,7 +2,7 @@ File cmdline/cmd_verbose.py, code block '<module>' (descriptor: \.\+, bytecode \
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
  02 \.\+
 ########
-\.\+5b
+\.\+63
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)

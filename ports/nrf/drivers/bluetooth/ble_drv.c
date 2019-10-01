@@ -106,10 +106,10 @@ static mp_obj_t mp_gattc_char_data_observer;
 
 #if (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 #include "nrf_nvic.h"
-#define BLE_GAP_ADV_MAX_SIZE BLE_GATT_ATT_MTU_DEFAULT
+#define BLE_GAP_ADV_MAX_SIZE 31
 #define BLE_DRV_CONN_CONFIG_TAG 1
 
-static uint8_t m_adv_handle;
+static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 static uint8_t m_scan_buffer[BLE_GAP_SCAN_BUFFER_MIN];
 
 nrf_nvic_state_t nrf_nvic_state = {0};
@@ -407,7 +407,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     uint8_t byte_pos = 0;
 
-    uint8_t adv_data[BLE_GAP_ADV_MAX_SIZE];
+    static uint8_t adv_data[BLE_GAP_ADV_MAX_SIZE];
 
     if (p_adv_params->device_name_len > 0) {
         ble_gap_conn_sec_mode_t sec_mode;
@@ -418,7 +418,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                                        p_adv_params->p_device_name,
                                        p_adv_params->device_name_len) != 0) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-	              "Can not apply device name in the stack."));
+                "Can not apply device name in the stack."));
         }
 
         BLE_DRIVER_LOG("Device name applied\n");
@@ -1088,7 +1088,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 char_data.decl_handle  = p_char->handle_decl;
                 char_data.value_handle = p_char->handle_value;
 
-                char_data.props |= (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
+                char_data.props  = (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
                 char_data.props |= (p_char->char_props.read) ? UBLUEPY_PROP_READ : 0;
                 char_data.props |= (p_char->char_props.write_wo_resp) ? UBLUEPY_PROP_WRITE_WO_RESP : 0;
                 char_data.props |= (p_char->char_props.write) ? UBLUEPY_PROP_WRITE : 0;

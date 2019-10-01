@@ -81,7 +81,8 @@ void asm_arm_bkpt(asm_arm_t *as);
 
 // mov
 void asm_arm_mov_reg_reg(asm_arm_t *as, uint reg_dest, uint reg_src);
-void asm_arm_mov_reg_i32(asm_arm_t *as, uint rd, int imm);
+size_t asm_arm_mov_reg_i32(asm_arm_t *as, uint rd, int imm);
+void asm_arm_mov_reg_i32_optimised(asm_arm_t *as, uint rd, int imm);
 void asm_arm_mov_local_reg(asm_arm_t *as, int local_num, uint rd);
 void asm_arm_mov_reg_local(asm_arm_t *as, uint rd, int local_num);
 void asm_arm_setcc_reg(asm_arm_t *as, uint rd, uint cond);
@@ -121,8 +122,11 @@ void asm_arm_pop(asm_arm_t *as, uint reglist);
 // control flow
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
-void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
+void asm_arm_bl_ind(asm_arm_t *as, uint fun_id, uint reg_temp);
 void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
+
+// Holds a pointer to mp_fun_table
+#define ASM_ARM_REG_FUN_TABLE ASM_ARM_REG_R7
 
 #if GENERIC_ASM_API
 
@@ -146,6 +150,9 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
 #define REG_LOCAL_3 ASM_ARM_REG_R6
 #define REG_LOCAL_NUM (3)
 
+// Holds a pointer to mp_fun_table
+#define REG_FUN_TABLE ASM_ARM_REG_FUN_TABLE
+
 #define ASM_T               asm_arm_t
 #define ASM_END_PASS        asm_arm_end_pass
 #define ASM_ENTRY           asm_arm_entry
@@ -168,11 +175,12 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src);
         asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
     } while (0)
 #define ASM_JUMP_REG(as, reg) asm_arm_bx_reg((as), (reg))
-#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, ptr, idx, ASM_ARM_REG_R3)
+#define ASM_CALL_IND(as, idx) asm_arm_bl_ind(as, idx, ASM_ARM_REG_R3)
 
 #define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_arm_mov_local_reg((as), (local_num), (reg_src))
-#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
-#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_arm_mov_reg_i32_optimised((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_U16(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_IMM_FIX_WORD(as, reg_dest, imm) asm_arm_mov_reg_i32((as), (reg_dest), (imm))
 #define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_arm_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_arm_mov_reg_reg((as), (reg_dest), (reg_src))
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_arm_mov_reg_local_addr((as), (reg_dest), (local_num))

@@ -36,7 +36,7 @@ static os_event_t uart_evt_queue[16];
 
 // A small, static ring buffer for incoming chars
 // This will only be populated if the UART is not attached to dupterm
-static byte uart_ringbuf_array[16];
+uint8 uart_ringbuf_array[UART0_STATIC_RXBUF_LEN];
 static ringbuf_t uart_ringbuf = {uart_ringbuf_array, sizeof(uart_ringbuf_array), 0, 0};
 
 static void uart0_rx_intr_handler(void *para);
@@ -269,6 +269,19 @@ void ICACHE_FLASH_ATTR uart_setup(uint8 uart) {
     ETS_UART_INTR_ENABLE();
 }
 
+int ICACHE_FLASH_ATTR uart0_get_rxbuf_len(void) {
+    return uart_ringbuf.size;
+}
+
+void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
+    ETS_UART_INTR_DISABLE();
+    uart_ringbuf.buf = buf;
+    uart_ringbuf.size = len;
+    uart_ringbuf.iget = 0;
+    uart_ringbuf.iput = 0;
+    ETS_UART_INTR_ENABLE();
+}
+
 // Task-based UART interface
 
 #include "py/obj.h"
@@ -288,7 +301,7 @@ void uart_task_handler(os_event_t *evt) {
     }
 
     int c, ret = 0;
-    while ((c = ringbuf_get(&input_buf)) >= 0) {
+    while ((c = ringbuf_get(&stdin_ringbuf)) >= 0) {
         if (c == mp_interrupt_char) {
             mp_keyboard_interrupt();
         }

@@ -301,7 +301,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
     }
     uint32_t i = mp_obj_get_int_truncated(o);
     if ((i & (~fit_mask)) != 0) {
-        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer 0x%x does not fit in mask 0x%x", op, i, fit_mask));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer 0x%x doesn't fit in mask 0x%x", op, i, fit_mask));
         return 0;
     }
     return i;
@@ -812,6 +812,11 @@ branch_not_in_range:
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_thumb_new,
+    emit_inline_thumb_free,
+    #endif
+
     emit_inline_thumb_start_pass,
     emit_inline_thumb_end_pass,
     emit_inline_thumb_count_params,

@@ -90,6 +90,9 @@ Functions
    in a row and the lock-depth will increase, and then `heap_unlock()` must be
    called the same number of times to make the heap available again.
 
+   If the REPL becomes active with the heap locked then it will be forcefully
+   unlocked.
+
 .. function:: kbd_intr(chr)
 
    Set the character that will raise a `KeyboardInterrupt` exception.  By
@@ -133,5 +136,5 @@ Functions
    :ref:`reference documentation <isr_rules>` under "Creation of Python
    objects".
 
-   There is a finite stack to hold the scheduled functions and `schedule()`
-   will raise a `RuntimeError` if the stack is full.
+   There is a finite queue to hold the scheduled functions and `schedule()`
+   will raise a `RuntimeError` if the queue is full.

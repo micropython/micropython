@@ -55,14 +55,14 @@ except StopIteration:
 
 
 # Yet another variation - leaf generator gets GeneratorExit,
-# but raises StopIteration instead. This still should close chain properly.
+# and reraises a new GeneratorExit. This still should close chain properly.
 def gen5():
     yield 1
     try:
         yield 2
     except GeneratorExit:
-        print("leaf caught GeneratorExit and raised StopIteration instead")
-        raise StopIteration(123)
+        print("leaf caught GeneratorExit and reraised GeneratorExit")
+        raise GeneratorExit(123)
     yield 3
     yield 4
 

@@ -131,7 +131,7 @@ void spi_init0(void) {
 }
 
 STATIC int spi_find(mp_obj_t id) {
-    if (MP_OBJ_IS_STR(id)) {
+    if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {
@@ -140,25 +140,23 @@ STATIC int spi_find(mp_obj_t id) {
             return 1;
         #endif
         }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%s) does not exist", port));
+        mp_raise_ValueError("SPI doesn't exist");
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
         if (spi_id >= 0 && spi_id < MP_ARRAY_SIZE(machine_hard_spi_obj)) {
             return spi_id;
         }
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%d) does not exist", spi_id));
+        mp_raise_ValueError("SPI doesn't exist");
     }
 }
 
 void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
     nrfx_spi_xfer_desc_t xfer_desc = {
         .p_tx_buffer = src,
-	.tx_length   = len,
-	.p_rx_buffer = dest,
-	.rx_length   = len
+        .tx_length   = len,
+        .p_rx_buffer = dest,
+        .rx_length   = len
     };
 
     nrfx_spi_xfer(self->p_spi, &xfer_desc, 0);
@@ -342,7 +340,7 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
 
     // Active high
     if (args[ARG_INIT_polarity].u_int == 0) {
-	if (args[ARG_INIT_phase].u_int == 0) {
+        if (args[ARG_INIT_phase].u_int == 0) {
             // First clock edge
             self->p_config->mode = NRF_SPI_MODE_0;
         } else {
@@ -351,7 +349,7 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
         }
     // Active low
     } else {
-	if (args[ARG_INIT_phase].u_int == 0) {
+        if (args[ARG_INIT_phase].u_int == 0) {
             // First clock edge
             self->p_config->mode = NRF_SPI_MODE_2;
         } else {

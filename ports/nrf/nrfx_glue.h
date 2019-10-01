@@ -29,6 +29,8 @@
 
 #include <soc/nrfx_irqs.h>
 
+#define NRFX_STATIC_ASSERT(expression)
+
 #define NRFX_ASSERT(expression)  do { bool res = expression; (void)res; } while (0)
 #define NRFX_DELAY_US            mp_hal_delay_us
 

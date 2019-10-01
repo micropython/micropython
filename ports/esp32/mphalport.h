@@ -35,6 +35,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+// The core that the MicroPython task(s) are pinned to
+#define MP_TASK_COREID (1)
+
 extern TaskHandle_t mp_main_task_handle;
 
 extern ringbuf_t stdin_ringbuf;
@@ -47,7 +50,7 @@ __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
 }
 
 void mp_hal_delay_us(uint32_t);
-void mp_hal_delay_us_fast(uint32_t);
+#define mp_hal_delay_us_fast(us) ets_delay_us(us)
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
 

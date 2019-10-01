@@ -41,17 +41,31 @@
 
 #if MICROPY_EMIT_NATIVE
 
+int mp_native_type_from_qstr(qstr qst) {
+    switch (qst) {
+        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
+        default: return -1;
+    }
+}
+
 // convert a MicroPython object to a valid native value based on type
-mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
-    DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
+mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
+    DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL:
+        case MP_NATIVE_TYPE_BOOL: return mp_obj_is_true(obj);
         case MP_NATIVE_TYPE_INT:
         case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
             mp_buffer_info_t bufinfo;
-            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_RW)) {
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
                 return (mp_uint_t)bufinfo.buf;
             } else {
                 // assume obj is an integer that represents an address
@@ -63,11 +77,11 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 
 // convert a native value to a MicroPython object based on type
-mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
-    DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
+mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
+    DEBUG_printf("mp_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
         case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
@@ -81,9 +95,32 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
-mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+#if !MICROPY_PY_BUILTINS_SET
+mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
+    (void)n_args;
+    (void)items;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+
+void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
+    (void)self_in;
+    (void)item;
+    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+}
+#endif
+
+#if !MICROPY_PY_BUILTINS_SLICE
+mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
+    (void)ostart;
+    (void)ostop;
+    (void)ostep;
+    mp_raise_msg(&mp_type_RuntimeError, "slice unsupported");
+}
+#endif
+
+STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
         return NULL;
@@ -99,14 +136,14 @@ mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
     return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
 }
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-void mp_native_raise(mp_obj_t o) {
-    if (o != mp_const_none) {
+STATIC void mp_native_raise(mp_obj_t o) {
+    if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
 }
@@ -137,10 +174,49 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
     return mp_iternext(obj);
 }
 
+STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value) {
+    mp_vm_return_kind_t ret_kind;
+    nlr_buf_t nlr_buf;
+    mp_obj_t throw_value = *ret_value;
+    if (nlr_push(&nlr_buf) == 0) {
+        if (throw_value != MP_OBJ_NULL) {
+            send_value = MP_OBJ_NULL;
+        }
+        ret_kind = mp_resume(gen, send_value, throw_value, ret_value);
+        nlr_pop();
+    } else {
+        ret_kind = MP_VM_RETURN_EXCEPTION;
+        *ret_value = nlr_buf.ret_val;
+    }
+
+    if (ret_kind == MP_VM_RETURN_YIELD) {
+        return true;
+    } else if (ret_kind == MP_VM_RETURN_NORMAL) {
+        if (*ret_value == MP_OBJ_STOP_ITERATION) {
+            *ret_value = mp_const_none;
+        }
+    } else {
+        assert(ret_kind == MP_VM_RETURN_EXCEPTION);
+        if (!mp_obj_exception_match(*ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            nlr_raise(*ret_value);
+        }
+        *ret_value = mp_obj_exception_get_value(*ret_value);
+    }
+
+    if (throw_value != MP_OBJ_NULL && mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
+        nlr_raise(mp_make_raise_obj(throw_value));
+    }
+
+    return false;
+}
+
 // these must correspond to the respective enum in runtime0.h
-void *const mp_fun_table[MP_F_NUMBER_OF] = {
-    mp_convert_obj_to_native,
-    mp_convert_native_to_obj,
+const void *const mp_fun_table[MP_F_NUMBER_OF] = {
+    &mp_const_none_obj,
+    &mp_const_false_obj,
+    &mp_const_true_obj,
+    mp_native_from_obj,
+    mp_native_to_obj,
     mp_native_swap_globals,
     mp_load_name,
     mp_load_global,
@@ -157,13 +233,11 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_binary_op,
     mp_obj_new_tuple,
     mp_obj_new_list,
-    mp_obj_list_append,
     mp_obj_new_dict,
-    mp_obj_dict_store,
-#if MICROPY_PY_BUILTINS_SET
-    mp_obj_set_store,
     mp_obj_new_set,
-#endif
+    mp_obj_set_store,
+    mp_obj_list_append,
+    mp_obj_dict_store,
     mp_make_function_from_raw_code,
     mp_native_call_function_n_kw,
     mp_call_method_n_kw,
@@ -176,9 +250,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_import_name,
     mp_import_from,
     mp_import_all,
-#if MICROPY_PY_BUILTINS_SLICE
     mp_obj_new_slice,
-#endif
     mp_unpack_sequence,
     mp_unpack_ex,
     mp_delete_name,
@@ -189,12 +261,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_setup_code_state,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
+    mp_native_yield_from,
 };
-
-/*
-void mp_f_vector(mp_fun_kind_t fun_kind) {
-    (mp_f_table[fun_kind])();
-}
-*/
 
 #endif // MICROPY_EMIT_NATIVE

@@ -14,6 +14,7 @@ See document UM0391 for a dscription of the DFuse file.
 from __future__ import print_function
 
 import argparse
+import collections
 import re
 import struct
 import sys
@@ -56,6 +57,9 @@ _DFU_DESCRIPTOR_TYPE                 = 0x21
 # USB device handle
 __dev = None
 
+# Configuration descriptor of the device
+__cfg_descr = None
+
 __verbose = None
 
 # USB DFU interface
@@ -76,9 +80,18 @@ else:
         return usb.util.get_string(dev, index)
 
 
+def find_dfu_cfg_descr(descr):
+    if len(descr) == 9 and descr[0] == 9 and descr[1] == _DFU_DESCRIPTOR_TYPE:
+        nt = collections.namedtuple('CfgDescr',
+            ['bLength', 'bDescriptorType', 'bmAttributes',
+            'wDetachTimeOut', 'wTransferSize', 'bcdDFUVersion'])
+        return nt(*struct.unpack('<BBBHHH', bytearray(descr)))
+    return None
+
+
 def init():
     """Initializes the found DFU device so that we can program it."""
-    global __dev
+    global __dev, __cfg_descr
     devices = get_dfu_devices(idVendor=__VID, idProduct=__PID)
     if not devices:
         raise ValueError('No DFU device found')
@@ -90,8 +103,32 @@ def init():
     # Claim DFU interface
     usb.util.claim_interface(__dev, __DFU_INTERFACE)
 
-    # Clear status
-    clr_status()
+    # Find the DFU configuration descriptor, either in the device or interfaces
+    __cfg_descr = None
+    for cfg in __dev.configurations():
+        __cfg_descr = find_dfu_cfg_descr(cfg.extra_descriptors)
+        if __cfg_descr:
+            break
+        for itf in cfg.interfaces():
+            __cfg_descr = find_dfu_cfg_descr(itf.extra_descriptors)
+            if __cfg_descr:
+                break
+
+    # Get device into idle state
+    for attempt in range(4):
+        status = get_status()
+        if status == __DFU_STATE_DFU_IDLE:
+            break
+        elif (status == __DFU_STATE_DFU_DOWNLOAD_IDLE
+            or status == __DFU_STATE_DFU_UPLOAD_IDLE):
+            abort_request()
+        else:
+            clr_status()
+
+
+def abort_request():
+    """Sends an abort request."""
+    __dev.ctrl_transfer(0x21, __DFU_ABORT, 0, __DFU_INTERFACE, None, __TIMEOUT)
 
 
 def clr_status():
@@ -180,9 +217,7 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
         set_address(xfer_base+xfer_bytes)
 
         # Send DNLOAD with fw data
-        # the "2048" is the DFU transfer size supported by the ST DFU bootloader
-        # TODO: this number should be extracted from the USB config descriptor
-        chunk = min(2048, xfer_total-xfer_bytes)
+        chunk = min(__cfg_descr.wTransferSize, xfer_total-xfer_bytes)
         __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE,
                             buf[xfer_bytes:xfer_bytes + chunk], __TIMEOUT)
 
@@ -482,7 +517,10 @@ def cli_progress(addr, offset, size):
     print("\r0x{:08x} {:7d} [{}{}] {:3d}% "
           .format(addr, size, '=' * done, ' ' * (width - done),
                   offset * 100 // size), end="")
-    sys.stdout.flush()
+    try:
+        sys.stdout.flush()
+    except OSError:
+        pass # Ignore Windows CLI "WinError 87" on Python 3.6
     if offset == size:
         print("")
 

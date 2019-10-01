@@ -5,7 +5,7 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
-AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096 -Wno-implicit-function-declaration
+AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
@@ -58,6 +58,9 @@ CFLAGS += -fdata-sections -ffunction-sections
 COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
+
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=xtensa
 
 SRC_C = \
 	strtoll.c \
@@ -129,7 +132,7 @@ LIB_SRC_C = $(addprefix lib/,\
 ifeq ($(MICROPY_FATFS), 1)
 LIB_SRC_C += \
 	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c
+	lib/oofatfs/ffunicode.c
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\

@@ -23,3 +23,8 @@ static inline void mp_hal_delay_us(mp_uint_t delay) {
 static inline void mp_hal_delay_ms(mp_uint_t delay) {
     k_sleep(delay);
 }
+
+#define mp_hal_delay_us_fast(us)   (mp_hal_delay_us(us))
+#define mp_hal_pin_od_low(p)       (mp_raise_NotImplementedError("mp_hal_pin_od_low"))
+#define mp_hal_pin_od_high(p)      (mp_raise_NotImplementedError("mp_hal_pin_od_high"))
+#define mp_hal_pin_open_drain(p)   (mp_raise_NotImplementedError("mp_hal_pin_open_drain"))

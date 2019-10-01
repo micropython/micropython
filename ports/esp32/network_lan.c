@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+#if !MICROPY_ESP_IDF_4
 #include "py/runtime.h"
 #include "py/mphal.h"
 
@@ -94,14 +95,15 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         return MP_OBJ_FROM_PTR(&lan_obj);
     }
 
-    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type };
+    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type, ARG_clock_mode };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_clock_mode,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -125,6 +127,15 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_ValueError("invalid phy type");
     }
 
+    if (args[ARG_clock_mode].u_int != -1 &&
+        args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_IN &&
+        // Disabled due ESP-IDF (see modnetwork.c note)
+        //args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_OUT &&
+        args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO16_OUT &&
+        args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO17_OUT) {
+        mp_raise_ValueError("invalid clock mode");
+    }
+
     eth_config_t config;
 
     switch (args[ARG_phy_type].u_int) {
@@ -145,6 +156,10 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     config.phy_addr = args[ARG_phy_addr].u_int;
     config.gpio_config = init_lan_rmii;
     config.tcpip_input = tcpip_adapter_eth_input;
+
+    if (args[ARG_clock_mode].u_int != -1) {
+        config.clock_mode = args[ARG_clock_mode].u_int;
+    }
 
     if (esp_eth_init(&config) == ESP_OK) {
         self->active = false;
@@ -191,6 +206,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&lan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
@@ -201,3 +217,5 @@ const mp_obj_type_t lan_if_type = {
     .name = MP_QSTR_LAN,
     .locals_dict = (mp_obj_dict_t*)&lan_if_locals_dict,
 };
+
+#endif // !MICROPY_ESP_IDF_4

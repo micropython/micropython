@@ -401,14 +401,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("FOR_ITER " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
             break;
 
-        case MP_BC_POP_BLOCK:
-            // pops block and restores the stack
-            printf("POP_BLOCK");
-            break;
-
-        case MP_BC_POP_EXCEPT:
-            // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
-            printf("POP_EXCEPT");
+        case MP_BC_POP_EXCEPT_JUMP:
+            DECODE_ULABEL; // these labels are always forward
+            printf("POP_EXCEPT_JUMP " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
             break;
 
         case MP_BC_BUILD_TUPLE:
@@ -505,9 +500,16 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("RETURN_VALUE");
             break;
 
-        case MP_BC_RAISE_VARARGS:
-            unum = *ip++;
-            printf("RAISE_VARARGS " UINT_FMT, unum);
+        case MP_BC_RAISE_LAST:
+            printf("RAISE_LAST");
+            break;
+
+        case MP_BC_RAISE_OBJ:
+            printf("RAISE_OBJ");
+            break;
+
+        case MP_BC_RAISE_FROM:
+            printf("RAISE_FROM");
             break;
 
         case MP_BC_YIELD_VALUE:
@@ -545,7 +547,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
                 mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
                 printf("BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));
             } else {
-                printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
+                printf("code %p, byte code 0x%02x not implemented\n", ip - 1, ip[-1]);
                 assert(0);
                 return ip;
             }

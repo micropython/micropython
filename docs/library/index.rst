@@ -136,15 +136,17 @@ The following libraries and classes are specific to the WiPy.
   :maxdepth: 2
 
   wipy.rst
+  machine.ADCWiPy.rst
   machine.TimerWiPy.rst
 
 
-Libraries specific to the ESP8266
----------------------------------
+Libraries specific to the ESP8266 and ESP32
+-------------------------------------------
 
-The following libraries are specific to the ESP8266.
+The following libraries are specific to the ESP8266 and ESP32.
 
 .. toctree::
   :maxdepth: 2
 
   esp.rst
+  esp32.rst

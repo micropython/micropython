@@ -28,54 +28,71 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "user_interface.h"
 
-const mp_obj_type_t pyb_adc_type;
-
-typedef struct _pyb_adc_obj_t {
+typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
     bool isvdd;
-} pyb_adc_obj_t;
+} machine_adc_obj_t;
 
-STATIC pyb_adc_obj_t pyb_adc_vdd3 = {{&pyb_adc_type}, true};
-STATIC pyb_adc_obj_t pyb_adc_adc = {{&pyb_adc_type}, false};
+extern const mp_obj_type_t machine_adc_type;
 
-STATIC mp_obj_t pyb_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw,
-    const mp_obj_t *args) {
+STATIC machine_adc_obj_t machine_adc_vdd3 = {{&machine_adc_type}, true};
+STATIC machine_adc_obj_t machine_adc_adc = {{&machine_adc_type}, false};
+
+STATIC uint16_t adc_read(machine_adc_obj_t *self) {
+    if (self->isvdd) {
+        return system_get_vdd33();
+    } else {
+        return system_adc_read();
+    }
+}
+void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "ADC(%u)", self->isvdd);
+}
+
+mp_obj_t machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_int_t chn = mp_obj_get_int(args[0]);
 
     switch (chn) {
     case 0:
-        return &pyb_adc_adc;
+        return &machine_adc_adc;
     case 1:
-        return &pyb_adc_vdd3;
+        return &machine_adc_vdd3;
     default:
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "not a valid ADC Channel: %d", chn));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ADC(%d) doesn't exist", chn));
     }
 }
 
-STATIC mp_obj_t pyb_adc_read(mp_obj_t self_in) {
-    pyb_adc_obj_t *adc = self_in;
-
-    if (adc->isvdd) {
-        return mp_obj_new_int(system_get_vdd33());
-    } else {
-        return mp_obj_new_int(system_adc_read());
-    }
+// read_u16()
+STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t value = adc_read(self);
+    return MP_OBJ_NEW_SMALL_INT(value * 65535 / 1024);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_adc_read_obj, pyb_adc_read);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
-STATIC const mp_rom_map_elem_t pyb_adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&pyb_adc_read_obj) }
+// Legacy method
+STATIC mp_obj_t machine_adc_read(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(adc_read(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_obj, machine_adc_read);
+
+STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_adc_read_obj) }
 };
-STATIC MP_DEFINE_CONST_DICT(pyb_adc_locals_dict, pyb_adc_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
 
-const mp_obj_type_t pyb_adc_type = {
+const mp_obj_type_t machine_adc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
-    .make_new = pyb_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_adc_locals_dict,
+    .print = machine_adc_print,
+    .make_new = machine_adc_make_new,
+    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
 };

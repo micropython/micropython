@@ -39,7 +39,12 @@
 #define IRQ_ENABLE_STATS (0)
 
 #if IRQ_ENABLE_STATS
-extern uint32_t irq_stats[FPU_IRQn + 1];
+#if defined(STM32H7)
+#define IRQ_STATS_MAX   (256)
+#else
+#define IRQ_STATS_MAX   (128)
+#endif
+extern uint32_t irq_stats[IRQ_STATS_MAX];
 #define IRQ_ENTER(irq) ++irq_stats[irq]
 #define IRQ_EXIT(irq)
 #else
@@ -72,6 +77,17 @@ static inline uint32_t raise_irq_pri(uint32_t pri) {
 // "basepri" should be the value returned from raise_irq_pri
 static inline void restore_irq_pri(uint32_t basepri) {
     __set_BASEPRI(basepri);
+}
+
+#else
+
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    return disable_irq();
+}
+
+// "state" should be the value returned from raise_irq_pri
+static inline void restore_irq_pri(uint32_t state) {
+    enable_irq(state);
 }
 
 #endif
@@ -143,6 +159,8 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 #define IRQ_PRI_TIM5            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 
 #define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
+
+#define IRQ_PRI_SPI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
 
 // Interrupt priority for non-special timers.
 #define IRQ_PRI_TIMX            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 13, 0)

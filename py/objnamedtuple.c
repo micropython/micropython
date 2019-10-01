@@ -172,7 +172,7 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     size_t n_fields;
     mp_obj_t *fields;
     #if MICROPY_CPYTHON_COMPAT
-    if (MP_OBJ_IS_STR(fields_in)) {
+    if (mp_obj_is_str(fields_in)) {
         fields_in = mp_obj_str_split(1, &fields_in);
     }
     #endif

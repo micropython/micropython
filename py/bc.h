@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +60,20 @@
 //  const0          : obj
 //  constN          : obj
 
+typedef struct _mp_bytecode_prelude_t {
+    uint n_state;
+    uint n_exc_stack;
+    uint scope_flags;
+    uint n_pos_args;
+    uint n_kwonly_args;
+    uint n_def_pos_args;
+    qstr qstr_block_name;
+    qstr qstr_source_file;
+    const byte *line_info;
+    const byte *locals;
+    const byte *opcodes;
+} mp_bytecode_prelude_t;
+
 // Exception stack entry
 typedef struct _mp_exc_stack_t {
     const byte *handler;
@@ -82,6 +97,10 @@ typedef struct _mp_code_state_t {
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;
+    #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    struct _mp_code_state_t *prev_state;
+    struct _mp_obj_frame_t *frame;
     #endif
     // Variable-length
     mp_obj_t state[0];
@@ -109,13 +128,35 @@ const byte *mp_bytecode_print_str(const byte *ip);
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
-#define MP_OPCODE_BYTE (0)
-#define MP_OPCODE_QSTR (1)
-#define MP_OPCODE_VAR_UINT (2)
-#define MP_OPCODE_OFFSET (3)
-
-uint mp_opcode_format(const byte *ip, size_t *opcode_size);
+uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 
 #endif
+
+static inline size_t mp_bytecode_get_source_line(const byte *line_info, size_t bc_offset) {
+    size_t source_line = 1;
+    size_t c;
+    while ((c = *line_info)) {
+        size_t b, l;
+        if ((c & 0x80) == 0) {
+            // 0b0LLBBBBB encoding
+            b = c & 0x1f;
+            l = c >> 5;
+            line_info += 1;
+        } else {
+            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+            b = c & 0xf;
+            l = ((c << 4) & 0x700) | line_info[1];
+            line_info += 2;
+        }
+        if (bc_offset >= b) {
+            bc_offset -= b;
+            source_line += l;
+        } else {
+            // found source line corresponding to bytecode offset
+            break;
+        }
+    }
+    return source_line;
+}
 
 #endif // MICROPY_INCLUDED_PY_BC_H

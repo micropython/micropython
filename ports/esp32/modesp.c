@@ -29,7 +29,9 @@
 
 #include <stdio.h>
 
+#if !MICROPY_ESP_IDF_4
 #include "rom/gpio.h"
+#endif
 #include "esp_log.h"
 #include "esp_spi_flash.h"
 

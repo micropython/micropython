@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -194,12 +194,12 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
     mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {
-        if (MP_OBJ_IS_INT(args[0])) {
+        if (mp_obj_is_int(args[0])) {
             sz = mp_obj_get_int(args[0]);
         } else {
             mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
-            if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
+            if (mp_obj_is_str_or_bytes(args[0])) {
                 o->vstr = m_new_obj(vstr_t);
                 vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
                 o->vstr->len = bufinfo.len;
@@ -244,12 +244,6 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .is_text = true,
 };
 
-STATIC const mp_stream_p_t bytesio_stream_p = {
-    .read = stringio_read,
-    .write = stringio_write,
-    .ioctl = stringio_ioctl,
-};
-
 const mp_obj_type_t mp_type_stringio = {
     { &mp_type_type },
     .name = MP_QSTR_StringIO,
@@ -262,6 +256,12 @@ const mp_obj_type_t mp_type_stringio = {
 };
 
 #if MICROPY_PY_IO_BYTESIO
+STATIC const mp_stream_p_t bytesio_stream_p = {
+    .read = stringio_read,
+    .write = stringio_write,
+    .ioctl = stringio_ioctl,
+};
+
 const mp_obj_type_t mp_type_bytesio = {
     { &mp_type_type },
     .name = MP_QSTR_BytesIO,

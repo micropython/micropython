@@ -44,7 +44,7 @@ extern const mp_obj_type_t mp_type_textio;
 
 STATIC const mp_obj_type_t mp_type_iobase;
 
-STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
+STATIC const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
 STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
@@ -147,6 +147,7 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         buf = (byte*)buf + rem;
         size -= rem;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->alloc, errcode);
+        (void)out_sz;
         if (*errcode != 0) {
             return MP_STREAM_ERROR;
         }
@@ -165,6 +166,7 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
     if (self->len != 0) {
         int err;
         mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->len, &err);
+        (void)out_sz;
         // TODO: try to recover from a case of non-blocking stream, e.g. move
         // remaining chunk to the beginning of buffer.
         assert(out_sz == self->len);
@@ -206,15 +208,8 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     // package parameter being None, the path_in is interpreted as a
     // raw path.
     if (package_in != mp_const_none) {
-        mp_obj_t args[5];
-        args[0] = package_in;
-        args[1] = mp_const_none; // TODO should be globals
-        args[2] = mp_const_none; // TODO should be locals
-        args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
-        args[4] = MP_OBJ_NEW_SMALL_INT(0);
-
-        // TODO lookup __import__ and call that instead of going straight to builtin implementation
-        mp_obj_t pkg = mp_builtin___import__(5, args);
+        // Pass "True" as sentinel value in fromlist to force returning of leaf module
+        mp_obj_t pkg = mp_import_name(mp_obj_str_get_qstr(package_in), mp_const_true, MP_OBJ_NEW_SMALL_INT(0));
 
         mp_obj_t dest[2];
         mp_load_method_maybe(pkg, MP_QSTR___path__, dest);

@@ -23,7 +23,7 @@ As long as you take care of the hardware, you should be okay.  It's almost
 impossible to break the software on the WiPy, so feel free to play around
 with writing code as much as you like.  If the filesystem gets corrupt, see
 below on how to reset it. In the worst case you might need to do a safe boot,
-which is explained in detail :ref:`here <wipy_boot_modes>`.
+which is explained in detail in :ref:`wipy_boot_modes`.
 
 Plugging into the expansion board and powering on
 -------------------------------------------------
@@ -32,13 +32,13 @@ The expansion board can power the WiPy via USB. The WiPy comes with a sticker
 on top of the RF shield that labels all pins, and this should match the label
 numbers on the expansion board headers. When plugging it in, the WiPy antenna
 will end up on top of the SD card connector of the expansion board. A video
-showing how to do this can be found `here <https://www.youtube.com/watch?v=47D9MZ9zFQw>`_.
+showing how to do this can be found `here on YouTube <https://www.youtube.com/watch?v=47D9MZ9zFQw>`_.
 
 Expansion board hardware guide
 ------------------------------
 
 The document explaining the hardware details of the expansion board can be found
-`here <https://github.com/wipy/wipy/blob/master/docs/User_manual_exp_board.pdf>`_.
+`in this PDF <https://github.com/wipy/wipy/blob/master/docs/User_manual_exp_board.pdf>`_.
 
 Powering by an external power source
 ------------------------------------

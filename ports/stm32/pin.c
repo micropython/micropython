@@ -105,7 +105,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     const pin_obj_t *pin_obj;
 
     // If a pin was provided, then use it
-    if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)) {
         pin_obj = MP_OBJ_TO_PTR(user_obj);
         if (pin_class_debug) {
             printf("Pin map passed pin ");
@@ -118,7 +118,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
         mp_obj_t o = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (o != mp_const_none) {
-            if (!MP_OBJ_IS_TYPE(o, &pin_type)) {
+            if (!mp_obj_is_type(o, &pin_type)) {
                 mp_raise_ValueError("Pin.mapper didn't return a Pin object");
             }
             if (pin_class_debug) {
@@ -214,14 +214,14 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         mp_print_str(print, qstr_str(mode_qst));
 
         // pull mode
-        qstr pull_qst = MP_QSTR_NULL;
+        qstr pull_qst = MP_QSTRnull;
         uint32_t pull = pin_get_pull(self);
         if (pull == GPIO_PULLUP) {
             pull_qst = MP_QSTR_PULL_UP;
         } else if (pull == GPIO_PULLDOWN) {
             pull_qst = MP_QSTR_PULL_DOWN;
         }
-        if (pull_qst != MP_QSTR_NULL) {
+        if (pull_qst != MP_QSTRnull) {
             mp_printf(print, ", pull=Pin.%q", pull_qst);
         }
 

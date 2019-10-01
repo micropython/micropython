@@ -103,7 +103,16 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         send_get(b'\x04') # exit the REPL, so coverage info is saved
-                        p.kill()
+                        # At this point the process might have exited already, but trying to
+                        # kill it 'again' normally doesn't result in exceptions as Python and/or
+                        # the OS seem to try to handle this nicely. When running Linux on WSL
+                        # though, the situation differs and calling Popen.kill after the process
+                        # terminated results in a ProcessLookupError. Just catch that one here
+                        # since we just want the process to be gone and that's the case.
+                        try:
+                            p.kill()
+                        except ProcessLookupError:
+                            pass
                         os.close(master)
                         os.close(slave)
                 else:
@@ -121,7 +130,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', test_file])
+                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
                 cmdlist.extend(['-m', 'mpytest'])
             else:
                 cmdlist.append(test_file)
@@ -340,6 +349,8 @@ def run_tests(pyb, tests, args, base_path="."):
             for t in tests:
                 if t.startswith('basics/io_'):
                     skip_tests.add(t)
+        elif args.target == 'qemu-arm':
+            skip_tests.add('misc/print_exception.py')       # requires sys stdfiles
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -352,30 +363,22 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_executing gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_name generator_pend_throw generator_return generator_send'.split()}) # require yield
-        skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
-        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2 with_break with_return'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from_close generator_name'.split()}) # require raise_varargs, generator name
+        skip_tests.update({'basics/async_%s.py' % t for t in 'with with2 with_break with_return'.split()}) # require async_with
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
-        skip_tests.add('basics/array_construct2.py') # requires generators
-        skip_tests.add('basics/builtin_hash_gen.py') # requires yield
-        skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
         skip_tests.add('basics/exception_chain.py') # raise from is not supported
-        skip_tests.add('basics/for_range.py') # requires yield_value
+        skip_tests.add('basics/scope_implicit.py') # requires checking for unbound local
         skip_tests.add('basics/try_finally_return2.py') # requires raise_varargs
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
-        skip_tests.add('import/gen_context.py') # requires yield_value
         skip_tests.add('misc/features.py') # requires raise_varargs
-        skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
-        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
+        skip_tests.add('micropython/opt_level_lineno.py') # native doesn't have proper traceback info
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
-        skip_tests.add('stress/gc_trace.py') # requires yield
-        skip_tests.add('stress/recursive_gen.py') # requires yield
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
@@ -527,8 +530,9 @@ the last matching regex is used:
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
+    LOCAL_TARGETS = ('unix', 'qemu-arm',)
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
-    if args.target == 'unix' or args.list_tests:
+    if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
@@ -537,24 +541,28 @@ the last matching regex is used:
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     else:
-        raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
+        raise ValueError('target must be one of %s' % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
 
     if len(args.files) == 0:
         if args.test_dirs is None:
+            test_dirs = ('basics', 'micropython', 'misc', 'extmod',)
             if args.target == 'pyboard':
                 # run pyboard tests
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs += ('float', 'stress', 'pyb', 'pybnative', 'inlineasm')
             elif args.target in ('esp8266', 'esp32', 'minimal', 'nrf'):
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
+                test_dirs += ('float',)
             elif args.target == 'wipy':
                 # run WiPy tests
-                test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
-            else:
+                test_dirs += ('wipy',)
+            elif args.target == 'unix':
                 # run PC tests
-                test_dirs = (
-                    'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
-                )
+                test_dirs += ('float', 'import', 'io', 'stress', 'unicode', 'unix', 'cmdline',)
+            elif args.target == 'qemu-arm':
+                if not args.write_exp:
+                    raise ValueError('--target=qemu-arm must be used with --write-exp')
+                # Generate expected output files for qemu run.
+                # This list should match the test_dirs tuple in tinytest-codegen.py.
+                test_dirs += ('float', 'inlineasm', 'qemu-arm',)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs

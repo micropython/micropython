@@ -48,6 +48,7 @@ user_files = {
     '/mod0.mpy': b'', # empty file
     '/mod1.mpy': b'M', # too short header
     '/mod2.mpy': b'M\x00\x00\x00', # bad version
+    '/mod3.mpy': b'M\x00\x00\x00\x7f', # qstr window too large
 }
 
 # create and mount a user filesystem

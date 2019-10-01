@@ -30,3 +30,7 @@ print(float('1e4294967301'))
 print(float('1e-4294967301'))
 print(float('1e18446744073709551621'))
 print(float('1e-18446744073709551621'))
+
+# check small decimals are as close to their true value as possible
+for n in range(1, 10):
+    print(float('0.%u' % n) == n / 10)
