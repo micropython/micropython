@@ -110,6 +110,16 @@ $(info Add the xtensa toolchain to your PATH. See README.md)
 $(error C compiler missing)
 endif
 
+# Support BLE by default when building with IDF 4.x.
+# Can be explicitly disabled on the command line or board config.
+ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
+MICROPY_PY_BLUETOOTH ?= 1
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SDKCONFIG += boards/sdkconfig.ble
+MICROPY_BLUETOOTH_NIMBLE = 1
+endif
+endif
+
 # include sdkconfig to get needed configuration values
 include $(SDKCONFIG)
 
