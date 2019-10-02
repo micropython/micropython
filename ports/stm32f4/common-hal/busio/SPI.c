@@ -107,7 +107,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 continue;
                             }
                             //store pins if not
-                            self->sck = &mcu_spi_sck_list[j];
+                            self->sck = &mcu_spi_sck_list[i];
                             self->mosi = &mcu_spi_mosi_list[j];
                             self->miso = &mcu_spi_miso_list[k];
                             break;
@@ -196,7 +196,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     self->handle.Init.NSS = SPI_NSS_SOFT;
-    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
     self->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     self->handle.Init.TIMode = SPI_TIMODE_DISABLE;
     self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -383,20 +383,20 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
-    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
+    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 5);
     return result == HAL_OK ? 1 : 0;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
-    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
+    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 5);
     return result == HAL_OK ? 1 : 0;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
         uint8_t *data_out, uint8_t *data_in, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
-        data_out, data_in, (uint16_t)len,2);
+        data_out, data_in, (uint16_t)len,5);
     return result == HAL_OK ? 1 : 0;
 }
 
