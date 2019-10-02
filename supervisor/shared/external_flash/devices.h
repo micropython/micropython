@@ -453,7 +453,7 @@ typedef struct {
     .capacity = 0x18, \
     .max_clock_speed_mhz = 108, \
     .quad_enable_bit_mask = 0x00, \
-    .has_sector_protection = false, \ /*maybe?*/
+    .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
     .supports_qspi_writes = true, \
