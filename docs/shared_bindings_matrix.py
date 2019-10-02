@@ -230,7 +230,7 @@ def get_excluded_boards(base):
 
                 # only exclude the module if there were zero parents enabled
                 # as determined by the 'depend_results' set.
-                if (len(depend_results) == 1 and False in depend_results):
+                if not any(depend_results):
                     if board_chip in base[module]["excluded"]:
                         base[module]["excluded"][board_chip].append(entry.name)
                     else:
