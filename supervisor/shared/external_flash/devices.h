@@ -442,4 +442,23 @@ typedef struct {
     .write_status_register_split = false, \
     .single_status_byte = false, \
 }
+
+// Settings for the Micron N25Q128A 16MiB SPI flash.
+// Datasheet: https://www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/n25q/n25q_128mb_3v_65nm.pdf
+#define N25Q128A {\
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0x20, \
+    .memory_type = 0xBA, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 108, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \ /*maybe?*/
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H
