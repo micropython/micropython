@@ -123,9 +123,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         SPIx = mcu_spi_banks[self->sck->spi_index-1];
     } else {
         if (spi_taken) {
-            mp_raise_RuntimeError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_RuntimeError(translate("Invalid SPI pin selection"));
+            mp_raise_ValueError(translate("Invalid SPI pin selection"));
         }
     }
 
@@ -203,7 +203,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CRCPolynomial = 10;
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
-        mp_raise_RuntimeError(translate("SPI Init Error"));
+        mp_raise_ValueError(translate("SPI Init Error"));
     }
     self->baudrate = (HAL_RCC_GetPCLK2Freq()/16);
     self->prescaler = 16;
@@ -344,7 +344,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
-        mp_raise_RuntimeError(translate("SPI Re-initialization error"));
+        mp_raise_ValueError(translate("SPI Re-initialization error"));
     }
 
     self->baudrate = baudrate;
