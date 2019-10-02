@@ -40,6 +40,8 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if !MICROPY_PERSISTENT_CODE
+
 mp_uint_t mp_decode_uint(const byte **ptr) {
     mp_uint_t unum = 0;
     byte val;
@@ -69,6 +71,8 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     }
     return ptr;
 }
+
+#endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
@@ -124,16 +128,17 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->frame = NULL;
     #endif
 
-    // get params
-    size_t n_state = mp_decode_uint(&code_state->ip);
-    code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack
-    size_t scope_flags = *code_state->ip++;
-    size_t n_pos_args = *code_state->ip++;
-    size_t n_kwonly_args = *code_state->ip++;
-    size_t n_def_pos_args = *code_state->ip++;
+    // Get cached n_state (rather than decode it again)
+    size_t n_state = code_state->n_state;
+
+    // Decode prelude
+    size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args);
+    (void)n_state_unused;
+    (void)n_exc_stack_unused;
 
     code_state->sp = &code_state->state[0] - 1;
-    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->exc_sp_idx = 0;
 
     // zero out the local stack to begin with
     memset(code_state->state, 0, n_state * sizeof(*code_state->state));
@@ -268,18 +273,24 @@ continue2:;
         }
     }
 
-    // get the ip and skip argument names
+    // read the size part of the prelude
     const byte *ip = code_state->ip;
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
 
     // jump over code info (source file and line-number mapping)
-    ip += mp_decode_uint_value(ip);
+    ip += n_info;
 
     // bytecode prelude: initialise closed over variables
-    size_t local_num;
-    while ((local_num = *ip++) != 255) {
+    for (; n_cell; --n_cell) {
+        size_t local_num = *ip++;
         code_state->state[n_state - 1 - local_num] =
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
+
+    #if !MICROPY_PERSISTENT_CODE
+    // so bytecode is aligned
+    ip = MP_ALIGN(ip, sizeof(mp_uint_t));
+    #endif
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;

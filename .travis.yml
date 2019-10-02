@@ -32,7 +32,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
+        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib lib/mynewt-nimble
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1

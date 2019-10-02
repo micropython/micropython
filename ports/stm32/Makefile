@@ -379,6 +379,12 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_scsi.c \
 	)
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+endif
+
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
 SRC_C += sdio.c
@@ -426,6 +432,15 @@ endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+include $(TOP)/extmod/nimble/nimble.mk
+SRC_C += nimble_hci_uart.c
+EXTMOD_SRC_C += extmod/modbluetooth_nimble.c
+ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
+DRIVERS_SRC_C += drivers/cyw43/cywbt.c
+endif
 endif
 
 OBJ =

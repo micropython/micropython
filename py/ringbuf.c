@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
+#include "ringbuf.h"
 
-enum {
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #if MICROPY_PY_NETWORK_CYW43
-    PENDSV_DISPATCH_CYW43,
-    #endif
-    #endif
-    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
-    PENDSV_DISPATCH_NIMBLE,
-    #endif
-    PENDSV_DISPATCH_MAX
-};
+int ringbuf_get16(ringbuf_t *r) {
+    if (r->iget == r->iput) {
+        return -1;
+    }
+    uint32_t iget_a = r->iget + 1;
+    if (iget_a == r->size) {
+        iget_a = 0;
+    }
+    if (iget_a == r->iput) {
+        return -1;
+    }
+    uint16_t v = (r->buf[r->iget] << 8) | (r->buf[iget_a]);
+    r->iget = iget_a + 1;
+    if (r->iget == r->size) {
+        r->iget = 0;
+    }
+    return v;
+}
 
-#if (MICROPY_PY_NETWORK && MICROPY_PY_LWIP) || (MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE)
-#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
-#endif
-
-typedef void (*pendsv_dispatch_t)(void);
-
-void pendsv_init(void);
-void pendsv_kbd_intr(void);
-void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
-
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+int ringbuf_put16(ringbuf_t *r, uint16_t v) {
+    uint32_t iput_a = r->iput + 1;
+    if (iput_a == r->size) {
+        iput_a = 0;
+    }
+    if (iput_a == r->iget) {
+        return -1;
+    }
+    uint32_t iput_b = iput_a + 1;
+    if (iput_b == r->size) {
+        iput_b = 0;
+    }
+    if (iput_b == r->iget) {
+        return -1;
+    }
+    r->buf[r->iput] = (v >> 8) & 0xff;
+    r->buf[iput_a] = v & 0xff;
+    r->iput = iput_b;
+    return 0;
+}

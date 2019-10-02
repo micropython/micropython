@@ -27,3 +27,6 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
+[submodule "lib/mynewt-nimble"]
+	path = lib/mynewt-nimble
+	url = https://github.com/apache/mynewt-nimble.git

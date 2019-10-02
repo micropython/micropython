@@ -157,25 +157,21 @@ typedef struct _bytecode_prelude_t {
     uint code_info_size;
 } bytecode_prelude_t;
 
-#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_EMIT_MACHINE_CODE
-
 // ip will point to start of opcodes
 // ip2 will point to simple_name, source_file qstrs
 STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_t *prelude) {
-    prelude->n_state = mp_decode_uint(ip);
-    prelude->n_exc_stack = mp_decode_uint(ip);
-    prelude->scope_flags = *(*ip)++;
-    prelude->n_pos_args = *(*ip)++;
-    prelude->n_kwonly_args = *(*ip)++;
-    prelude->n_def_pos_args = *(*ip)++;
+    MP_BC_PRELUDE_SIG_DECODE(*ip);
+    prelude->n_state = n_state;
+    prelude->n_exc_stack = n_exc_stack;
+    prelude->scope_flags = scope_flags;
+    prelude->n_pos_args = n_pos_args;
+    prelude->n_kwonly_args = n_kwonly_args;
+    prelude->n_def_pos_args = n_def_pos_args;
+    MP_BC_PRELUDE_SIZE_DECODE(*ip);
     *ip2 = *ip;
-    prelude->code_info_size = mp_decode_uint(ip2);
-    *ip += prelude->code_info_size;
-    while (*(*ip)++ != 255) {
-    }
+    *ip += n_info;
+    *ip += n_cell;
 }
-
-#endif
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -285,19 +281,16 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
 }
 
 STATIC void load_prelude(mp_reader_t *reader, byte **ip, byte **ip2, bytecode_prelude_t *prelude) {
-    prelude->n_state = read_uint(reader, ip);
-    prelude->n_exc_stack = read_uint(reader, ip);
-    read_bytes(reader, *ip, 4);
-    prelude->scope_flags = *(*ip)++;
-    prelude->n_pos_args = *(*ip)++;
-    prelude->n_kwonly_args = *(*ip)++;
-    prelude->n_def_pos_args = *(*ip)++;
-    *ip2 = *ip;
-    prelude->code_info_size = read_uint(reader, ip2);
-    read_bytes(reader, *ip2, prelude->code_info_size - (*ip2 - *ip));
-    *ip += prelude->code_info_size;
-    while ((*(*ip)++ = read_byte(reader)) != 255) {
-    }
+    // Read in the prelude
+    byte *ip_read = *ip;
+    read_uint(reader, &ip_read);                    // read in n_state/etc (is effectively a var-uint)
+    byte *ip_read_save = ip_read;
+    read_uint(reader, &ip_read);                    // read in n_info/n_cell (is effectively a var-uint)
+    MP_BC_PRELUDE_SIZE_DECODE(ip_read_save);
+    read_bytes(reader, ip_read, n_info + n_cell);   // read remaining code info
+
+    // Entire prelude has been read into *ip, now decode and extract values from it
+    extract_prelude((const byte**)ip, (const byte**)ip2, prelude);
 }
 
 STATIC void load_bytecode(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte *ip_top) {

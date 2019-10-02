@@ -85,6 +85,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	runtime_utils.o \
 	scheduler.o \
 	nativeglue.o \
+	ringbuf.o \
 	stackctrl.o \
 	argcheck.o \
 	warning.o \
@@ -173,6 +174,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/machine_pulse.o \
 	extmod/machine_i2c.o \
 	extmod/machine_spi.o \
+	extmod/modbluetooth.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \

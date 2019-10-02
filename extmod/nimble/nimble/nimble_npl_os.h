@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2018-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
 
-enum {
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #if MICROPY_PY_NETWORK_CYW43
-    PENDSV_DISPATCH_CYW43,
-    #endif
-    #endif
-    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
-    PENDSV_DISPATCH_NIMBLE,
-    #endif
-    PENDSV_DISPATCH_MAX
+#ifndef MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
+#define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
+
+#include <stdint.h>
+
+#define BLE_NPL_OS_ALIGNMENT (4)
+#define BLE_NPL_TIME_FOREVER (0xffffffff)
+
+typedef uint32_t ble_npl_time_t;
+typedef int32_t ble_npl_stime_t;
+
+struct ble_npl_event {
+    ble_npl_event_fn *fn;
+    void *arg;
+    struct ble_npl_event *prev;
+    struct ble_npl_event *next;
 };
 
-#if (MICROPY_PY_NETWORK && MICROPY_PY_LWIP) || (MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE)
-#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
-#endif
+struct ble_npl_eventq {
+    struct ble_npl_event *head;
+    struct ble_npl_eventq *nextq;
+};
 
-typedef void (*pendsv_dispatch_t)(void);
+struct ble_npl_callout {
+    bool active;
+    uint32_t ticks;
+    struct ble_npl_eventq *evq;
+    struct ble_npl_event ev;
+    struct ble_npl_callout *nextc;
+};
 
-void pendsv_init(void);
-void pendsv_kbd_intr(void);
-void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+struct ble_npl_mutex {
+    volatile uint8_t locked;
+};
 
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+struct ble_npl_sem {
+    volatile uint16_t count;
+};
+
+#endif // MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H

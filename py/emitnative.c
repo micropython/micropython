@@ -208,6 +208,7 @@ struct _emit_t {
     uint16_t code_state_start;
     uint16_t stack_start;
     int stack_size;
+    uint16_t n_cell;
 
     uint16_t const_table_cur_obj;
     uint16_t const_table_num_obj;
@@ -521,6 +522,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             // TODO this encoding may change size in the final pass, need to make it fixed
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, emit->prelude_offset, REG_ARG_1);
 
+            // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
+            emit_native_mov_state_imm_via(emit, emit->code_state_start + offsetof(mp_code_state_t, n_state) / sizeof(uintptr_t), emit->n_state, REG_ARG_1);
+
             // Put address of code_state into first arg
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, emit->code_state_start);
 
@@ -570,22 +574,28 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
 }
 
+static inline void emit_native_write_code_info_byte(emit_t *emit, byte val) {
+    mp_asm_base_data(&emit->as->base, 1, val);
+}
+
 STATIC void emit_native_end_pass(emit_t *emit) {
     emit_native_global_exc_exit(emit);
 
     if (!emit->do_viper_types) {
         emit->prelude_offset = mp_asm_base_get_code_pos(&emit->as->base);
-        mp_asm_base_data(&emit->as->base, 1, 0x80 | ((emit->n_state >> 7) & 0x7f));
-        mp_asm_base_data(&emit->as->base, 1, emit->n_state & 0x7f);
-        mp_asm_base_data(&emit->as->base, 1, 0); // n_exc_stack
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->scope_flags);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_pos_args);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_kwonly_args);
-        mp_asm_base_data(&emit->as->base, 1, emit->scope->num_def_pos_args);
 
-        // write code info
+        size_t n_state = emit->n_state;
+        size_t n_exc_stack = 0; // exc-stack not needed for native code
+        MP_BC_PRELUDE_SIG_ENCODE(n_state, n_exc_stack, emit->scope, emit_native_write_code_info_byte, emit);
+
         #if MICROPY_PERSISTENT_CODE
-        mp_asm_base_data(&emit->as->base, 1, 5);
+        size_t n_info = 4;
+        #else
+        size_t n_info = 1;
+        #endif
+        MP_BC_PRELUDE_SIZE_ENCODE(n_info, emit->n_cell, emit_native_write_code_info_byte, emit);
+
+        #if MICROPY_PERSISTENT_CODE
         mp_asm_base_data(&emit->as->base, 1, emit->scope->simple_name);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->simple_name >> 8);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->source_file);
@@ -595,14 +605,15 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         #endif
 
         // bytecode prelude: initialise closed over variables
+        size_t cell_start = mp_asm_base_get_code_pos(&emit->as->base);
         for (int i = 0; i < emit->scope->id_info_len; i++) {
             id_info_t *id = &emit->scope->id_info[i];
             if (id->kind == ID_INFO_KIND_CELL) {
-                assert(id->local_num < 255);
+                assert(id->local_num <= 255);
                 mp_asm_base_data(&emit->as->base, 1, id->local_num); // write the local which should be converted to a cell
             }
         }
-        mp_asm_base_data(&emit->as->base, 1, 255); // end of list sentinel
+        emit->n_cell = mp_asm_base_get_code_pos(&emit->as->base) - cell_start;
     }
 
     ASM_END_PASS(emit->as);

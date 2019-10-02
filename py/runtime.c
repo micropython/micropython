@@ -131,6 +131,10 @@ void mp_init(void) {
     MP_STATE_THREAD(current_code_state) = NULL;
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
