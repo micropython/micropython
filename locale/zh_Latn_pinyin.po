@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -368,11 +368,6 @@ msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -802,6 +797,10 @@ msgstr "Měi gè zhí de wèi wúxiào"
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1525,9 +1524,8 @@ msgid "byte code not implemented"
 msgstr "zì jié dàimǎ wèi zhíxíng"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "zì jié bùshì zì jié xù shílì (yǒu %s)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2215,7 +2213,7 @@ msgstr "méiyǒu mókuài '%q'"
 msgid "no reset pin available"
 msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
@@ -2395,10 +2393,6 @@ msgstr "duìliè yìchū"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "yuánshǐ huǎnchōng qū hé huǎnchōng qū de dàxiǎo bùtóng"
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "readonly attribute"
-msgstr "zhǐ dú shǔxìng"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2738,6 +2732,10 @@ msgstr "líng bù"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
 
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Wúfǎ zài zhōngyāng móshì xià tiānjiā fúwù"
 
@@ -2831,6 +2829,10 @@ msgstr "líng bù"
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "zì jié bùshì zì jié xù shílì (yǒu %s)"
+
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
 
@@ -2839,6 +2841,9 @@ msgstr "líng bù"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
+
+#~ msgid "readonly attribute"
+#~ msgstr "zhǐ dú shǔxìng"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"

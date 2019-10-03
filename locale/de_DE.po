@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -368,11 +368,6 @@ msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Kann dotstar nicht mit %s verwenden"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -802,6 +797,10 @@ msgstr ""
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1532,8 +1531,7 @@ msgid "byte code not implemented"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2224,7 +2222,7 @@ msgstr "Kein Modul mit dem Namen '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr ""
 
@@ -2406,10 +2404,6 @@ msgstr "Warteschlangenüberlauf"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "rawbuf hat nicht die gleiche Größe wie buf"
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "readonly attribute"
-msgstr "Readonly-Attribut"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2760,6 +2754,10 @@ msgstr ""
 #~ msgid "C-level assert"
 #~ msgstr "C-Level Assert"
 
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Kann dotstar nicht mit %s verwenden"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Im Central mode können Dienste nicht hinzugefügt werden"
 
@@ -2977,6 +2975,9 @@ msgstr ""
 
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "Pin hat keine IRQ Fähigkeiten"
+
+#~ msgid "readonly attribute"
+#~ msgstr "Readonly-Attribut"
 
 #~ msgid "scan failed"
 #~ msgstr "Scan fehlgeschlagen"

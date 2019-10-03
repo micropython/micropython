@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -370,11 +370,6 @@ msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -816,6 +811,10 @@ msgstr ""
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1546,8 +1545,7 @@ msgid "byte code not implemented"
 msgstr "byte code hindi pa implemented"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2248,7 +2246,7 @@ msgstr "walang module na '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
 
@@ -2430,11 +2428,6 @@ msgstr "puno na ang pila (overflow)"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "hindi mabasa ang attribute"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -3018,6 +3011,10 @@ msgstr "zero step"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position ay dapat 2-tuple"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "hindi mabasa ang attribute"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "row ay dapat packed at ang word nakahanay"

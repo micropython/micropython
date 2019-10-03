@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -363,11 +363,6 @@ msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -795,6 +790,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -1492,8 +1491,7 @@ msgid "byte code not implemented"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2177,7 +2175,7 @@ msgstr ""
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr ""
 
@@ -2356,10 +2354,6 @@ msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "readonly attribute"
 msgstr ""
 
 #: py/builtinimport.c

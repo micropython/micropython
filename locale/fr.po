@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -376,11 +376,6 @@ msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Impossible d'utiliser 'dotstar' avec %s"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -823,6 +818,10 @@ msgstr "Bits par valeur invalides"
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Longueur de tampon invalide"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1572,9 +1571,8 @@ msgid "byte code not implemented"
 msgstr "bytecode non implémenté"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "'byteorder' n'est pas une instance de ByteOrder (reçu un %s)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2281,7 +2279,7 @@ msgstr "pas de module '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
@@ -2470,11 +2468,6 @@ msgstr "dépassement de file"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "'rawbuf' n'est pas de la même taille que 'buf'"
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "attribut en lecture seule"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2824,6 +2817,10 @@ msgstr "'step' nul"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "L'adresse n'est pas longue de %d octets ou est d'un format erroné"
 
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Impossible d'utiliser 'dotstar' avec %s"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Impossible d'ajouter des services en mode Central"
 
@@ -3015,6 +3012,10 @@ msgstr "'step' nul"
 #~ msgid "buffer too long"
 #~ msgstr "tampon trop long"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "'byteorder' n'est pas une instance de ByteOrder (reçu un %s)"
+
 #~ msgid "can query only one param"
 #~ msgstr "ne peut demander qu'un seul paramètre"
 
@@ -3086,6 +3087,10 @@ msgstr "'step' nul"
 #, fuzzy
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position doit être un 2-tuple"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "attribut en lecture seule"
 
 #~ msgid "scan failed"
 #~ msgstr "échec du scan"

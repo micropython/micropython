@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -367,11 +367,6 @@ msgstr "Os bytes devem estar entre 0 e 255."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -809,6 +804,10 @@ msgstr ""
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Arquivo inválido"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1516,8 +1515,7 @@ msgid "byte code not implemented"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2203,7 +2201,7 @@ msgstr ""
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr ""
 
@@ -2383,11 +2381,6 @@ msgstr "estouro de fila"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "atributo ilegível"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2926,6 +2919,10 @@ msgstr "passo zero"
 
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "Pino não tem recursos de IRQ"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "atributo ilegível"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "Linha deve ser comprimida e com as palavras alinhadas"

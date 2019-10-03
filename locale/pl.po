@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-03 19:41-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -367,11 +367,6 @@ msgstr "Bytes musi być między 0 a 255."
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Nie można używać dotstar z %s"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -801,6 +796,10 @@ msgstr "Zła liczba bitów wartości"
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Zła wielkość bufora"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -1516,9 +1515,8 @@ msgid "byte code not implemented"
 msgstr "bajtkod niezaimplemntowany"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "byteorder musi być typu ByteOrder (jest %s)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2202,7 +2200,7 @@ msgstr "brak modułu o nazwie '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "nie ma takiego atrybutu"
 
@@ -2383,10 +2381,6 @@ msgstr "przepełnienie kolejki"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "rawbuf nie jest tej samej wielkości co buf"
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "readonly attribute"
-msgstr "atrybut tylko do odczytu"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2725,6 +2719,10 @@ msgstr "zerowy krok"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Adres nie ma długości %d bajtów lub zły format"
 
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Nie można używać dotstar z %s"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Nie można dodać serwisów w trybie Central"
 
@@ -2802,12 +2800,19 @@ msgstr "zerowy krok"
 #~ msgid "bad GATT role"
 #~ msgstr "zła rola GATT"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "byteorder musi być typu ByteOrder (jest %s)"
+
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr ""
 #~ "charakterystyki zawierają obiekt, który nie jest typu Characteristic"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "przedział poza zakresem 0.0020 do 10.24"
+
+#~ msgid "readonly attribute"
+#~ msgstr "atrybut tylko do odczytu"
 
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "obiekt typu innego niż Service w services"
