@@ -107,7 +107,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 continue;
                             }
                             //store pins if not
-                            self->sck = &mcu_spi_sck_list[j];
+                            self->sck = &mcu_spi_sck_list[i];
                             self->mosi = &mcu_spi_mosi_list[j];
                             self->miso = &mcu_spi_miso_list[k];
                             break;
@@ -123,9 +123,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         SPIx = mcu_spi_banks[self->sck->spi_index-1];
     } else {
         if (spi_taken) {
-            mp_raise_RuntimeError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_RuntimeError(translate("Invalid SPI pin selection"));
+            mp_raise_ValueError(translate("Invalid SPI pin selection"));
         }
     }
 
@@ -196,14 +196,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     self->handle.Init.NSS = SPI_NSS_SOFT;
-    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
     self->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     self->handle.Init.TIMode = SPI_TIMODE_DISABLE;
     self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     self->handle.Init.CRCPolynomial = 10;
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
-        mp_raise_RuntimeError(translate("SPI Init Error"));
+        mp_raise_ValueError(translate("SPI Init Error"));
     }
     self->baudrate = (HAL_RCC_GetPCLK2Freq()/16);
     self->prescaler = 16;
@@ -344,7 +344,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
     {
-        mp_raise_RuntimeError(translate("SPI Re-initialization error"));
+        mp_raise_ValueError(translate("SPI Re-initialization error"));
     }
 
     self->baudrate = baudrate;
@@ -383,21 +383,21 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
-    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, 2);
-    return result == HAL_OK ? 1 : 0;
+    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
+    return result == HAL_OK;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
-    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, 2);
-    return result == HAL_OK ? 1 : 0;
+    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
+    return result == HAL_OK;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
         uint8_t *data_out, uint8_t *data_in, size_t len) {
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
-        data_out, data_in, (uint16_t)len,2);
-    return result == HAL_OK ? 1 : 0;
+        data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
+    return result == HAL_OK;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {

@@ -442,4 +442,5 @@ typedef struct {
     .write_status_register_split = false, \
     .single_status_byte = false, \
 }
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H
