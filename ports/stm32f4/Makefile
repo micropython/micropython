@@ -93,7 +93,7 @@ C_DEFS = -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
-# STM32 apparently also uses undefined preprocessor variables quite casually, 
+# STM32 apparently also uses undefined preprocessor variables quite casually,
 # so we can't do warning checks for these.
 CFLAGS += -Wno-undef
 # STM32 might do casts that increase alignment requirements.
@@ -165,7 +165,7 @@ SRC_STM32 = \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	system_stm32f4xx.c  
+	system_stm32f4xx.c
 
 SRC_C += \
 	background.c \
@@ -190,9 +190,9 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c
-	
+
 ifneq ($(USB),FALSE)
-SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
 endif
 
 SRC_S = \
