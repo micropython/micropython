@@ -82,8 +82,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
 
-    supervisor_terminal.cursor_x = 0;
-    supervisor_terminal.cursor_y = 0;
+    common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
 }
 
 void supervisor_stop_terminal(void) {
@@ -147,17 +146,61 @@ displayio_bitmap_t blinka_bitmap = {
     .read_only = true
 };
 
-uint32_t blinka_transparency[1] = {0x80000000};
-
-// These colors are RGB 565 with the bytes swapped.
-uint32_t blinka_colors[8] = {0x78890000, 0x9F86B8FC, 0xffff0D5A, 0x0000f501,
-                             0x00000000, 0x00000000, 0x00000000, 0x00000000};
+_displayio_color_t blinka_colors[7] = {
+    {
+        .rgb888 = 0x000000,
+        .rgb565 = 0x0000,
+        .luma = 0x00,
+        .chroma = 0,
+        .transparent = true
+    },
+    {
+        .rgb888 = 0x8428bc,
+        .rgb565 = 0x7889,
+        .luma = 0xff, // We cheat the luma here. It is actually 0x60
+        .hue = 184,
+        .chroma = 148
+    },
+    {
+        .rgb888 = 0xff89bc,
+        .rgb565 = 0xB8FC,
+        .luma = 0xb5,
+        .hue = 222,
+        .chroma = 118
+    },
+    {
+        .rgb888 = 0x7beffe,
+        .rgb565 = 0x9F86,
+        .luma = 0xe0,
+        .hue = 124,
+        .chroma = 131
+    },
+    {
+        .rgb888 = 0x51395f,
+        .rgb565 = 0x0D5A,
+        .luma = 0x47,
+        .hue = 185,
+        .chroma = 38
+    },
+    {
+        .rgb888 = 0xffffff,
+        .rgb565 = 0xffff,
+        .luma = 0xff,
+        .chroma = 0
+    },
+    {
+        .rgb888 = 0x0736a0,
+        .rgb565 = 0xf501,
+        .luma = 0x44,
+        .hue = 147,
+        .chroma = 153
+    },
+};
 
 displayio_palette_t blinka_palette = {
     .base = {.type = &displayio_palette_type },
-    .opaque = blinka_transparency,
     .colors = blinka_colors,
-    .color_count = 16,
+    .color_count = 7,
     .needs_refresh = false
 };
 
@@ -179,7 +222,8 @@ displayio_tilegrid_t blinka_sprite = {
     .tiles = 0,
     .partial_change = false,
     .full_change = false,
-    .first_draw = true,
+    .hidden = false,
+    .hidden_by_parent = false,
     .moved = false,
     .inline_tiles = true,
     .in_group = true
@@ -198,5 +242,8 @@ displayio_group_t circuitpython_splash = {
     .size = 2,
     .max_size = 2,
     .children = splash_children,
-    .item_removed = false
+    .item_removed = false,
+    .in_group = false,
+    .hidden = false,
+    .hidden_by_parent = false
 };

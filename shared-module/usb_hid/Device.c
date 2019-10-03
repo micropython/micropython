@@ -47,15 +47,17 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
 
     // Wait until interface is ready, timeout = 2 seconds
     uint64_t end_ticks = ticks_ms + 2000;
-    while ( (ticks_ms < end_ticks) && !tud_hid_generic_ready() ) { }
+    while ( (ticks_ms < end_ticks) && !tud_hid_ready() ) {
+        RUN_BACKGROUND_TASKS;
+    }
 
-    if ( !tud_hid_generic_ready() ) {
+    if ( !tud_hid_ready() ) {
         mp_raise_msg(&mp_type_OSError,  translate("USB Busy"));
     }
 
     memcpy(self->report_buffer, report, len);
 
-    if ( !tud_hid_generic_report(self->report_id, self->report_buffer, len) ) {
+    if ( !tud_hid_report(self->report_id, self->report_buffer, len) ) {
         mp_raise_msg(&mp_type_OSError, translate("USB Error"));
     }
 }
@@ -70,7 +72,7 @@ static usb_hid_device_obj_t* get_hid_device(uint8_t report_id) {
 }
 
 // Callbacks invoked when receive Get_Report request through control endpoint
-uint16_t tud_hid_generic_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
     // only support Input Report
     if ( report_type != HID_REPORT_TYPE_INPUT ) return 0;
 
@@ -80,7 +82,7 @@ uint16_t tud_hid_generic_get_report_cb(uint8_t report_id, hid_report_type_t repo
 }
 
 // Callbacks invoked when receive Set_Report request through control endpoint
-void tud_hid_generic_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
     usb_hid_device_obj_t* hid_device = get_hid_device(report_id);
 
     if ( report_type == HID_REPORT_TYPE_OUTPUT ) {

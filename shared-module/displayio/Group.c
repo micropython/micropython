@@ -34,6 +34,47 @@ void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_
     displayio_group_construct(self, children, max_size, scale, x, y);
 }
 
+bool common_hal_displayio_group_get_hidden(displayio_group_t* self) {
+    return self->hidden;
+}
+
+void common_hal_displayio_group_set_hidden(displayio_group_t* self, bool hidden) {
+    if (self->hidden == hidden) {
+        return;
+    }
+    self->hidden = hidden;
+    if (self->hidden_by_parent) {
+        return;
+    }
+    for (size_t i = 0; i < self->size; i++) {
+        mp_obj_t layer = self->children[i].native;
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            displayio_tilegrid_set_hidden_by_parent(layer, hidden);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            displayio_group_set_hidden_by_parent(layer, hidden);
+        }
+    }
+}
+
+void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden) {
+    if (self->hidden_by_parent == hidden) {
+        return;
+    }
+    self->hidden_by_parent = hidden;
+    // If we're already hidden, then we're done.
+    if (self->hidden) {
+        return;
+    }
+    for (size_t i = 0; i < self->size; i++) {
+        mp_obj_t layer = self->children[i].native;
+        if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
+            displayio_tilegrid_set_hidden_by_parent(layer, hidden);
+        } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
+            displayio_group_set_hidden_by_parent(layer, hidden);
+        }
+    }
+}
+
 uint32_t common_hal_displayio_group_get_scale(displayio_group_t* self) {
     return self->scale;
 }
@@ -270,19 +311,19 @@ void displayio_group_construct(displayio_group_t* self, displayio_group_child_t*
     self->in_group = false;
 }
 
-bool displayio_group_fill_area(displayio_group_t *self, const displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
+bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t* buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
     bool full_coverage = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
-            if (displayio_tilegrid_fill_area(layer, area, mask, buffer)) {
+            if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
                 full_coverage = true;
                 break;
             }
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
-            if (displayio_group_fill_area(layer, area, mask, buffer)) {
+            if (displayio_group_fill_area(layer, colorspace, area, mask, buffer)) {
                 full_coverage = true;
                 break;
             }

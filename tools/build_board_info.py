@@ -12,7 +12,7 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -23,6 +23,7 @@ HEX = ('hex',)
 extension_by_port = {
     "nrf": UF2,
     "atmel-samd": UF2,
+    "stm32f4": BIN,
 }
 
 # Per board overrides
@@ -88,10 +89,8 @@ def get_version_info():
         # No exact match
         pass
 
-    if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
-        sha = os.environ["TRAVIS_COMMIT"]
-        if os.environ["TRAVIS_PULL_REQUEST"] != "false":
-            sha = os.environ["TRAVIS_PULL_REQUEST_SHA"]
+    if "GITHUB_SHA" in os.environ:
+        sha = os.environ["GITHUB_SHA"]
 
     if not version:
         version="{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
@@ -119,7 +118,7 @@ def get_current_info():
         current_info[info["id"]] = info
     return git_info, current_info
 
-def create_pr(changes, updated, git_info):
+def create_pr(changes, updated, git_info, user):
     commit_sha, original_blob_sha = git_info
     branch_name = "new_release_" + changes["new_release"]
 
@@ -132,7 +131,7 @@ def create_pr(changes, updated, git_info):
         updated_list.append(info)
 
     updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
-    print(updated.decode("utf-8"))
+    #print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
@@ -140,7 +139,7 @@ def create_pr(changes, updated, git_info):
     languages = ""
     if changes["new_languages"]:
         languages = "New languages:\n* " + "\n* ".join(changes["new_languages"])
-    message = "Automated website update for release {} by AdaBot.\n\n{}\n\n{}\n".format(
+    message = "Automated website update for release {} by Blinka.\n\n{}\n\n{}\n".format(
         changes["new_release"],
         boards,
         languages
@@ -150,7 +149,7 @@ def create_pr(changes, updated, git_info):
         "ref": "refs/heads/" + branch_name,
         "sha": commit_sha
     }
-    response = github.post("/repos/adafruit-adabot/circuitpython-org/git/refs", json=create_branch)
+    response = github.post("/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch)
     if not response.ok and response.json()["message"] != "Reference already exists":
         print("unable to create branch")
         print(response.text)
@@ -163,14 +162,14 @@ def create_pr(changes, updated, git_info):
         "branch": branch_name
     }
 
-    response = github.put("/repos/adafruit-adabot/circuitpython-org/contents/_data/files.json", json=update_file)
+    response = github.put("/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file)
     if not response.ok:
         print("unable to post new file")
         print(response.text)
         return
     pr_info = {
         "title": pr_title,
-        "head": "adafruit-adabot:" + branch_name,
+        "head": user + ":" + branch_name,
         "base": "master",
         "body": message,
         "maintainer_can_modify": True
@@ -200,15 +199,18 @@ def update_downloads(boards, release):
 def print_active_user():
     response = github.get("/user")
     if response.ok:
-        print("Logged in as {}".format(response.json()["login"]))
+        user = response.json()["login"]
+        print("Logged in as {}".format(user))
+        return user
     else:
         print("Not logged in")
+    return None
 
 def generate_download_info():
     boards = {}
     errors = []
 
-    new_tag = os.environ["TRAVIS_TAG"]
+    new_tag = os.environ["RELEASE_TAG"]
 
     changes = {
         "new_release": new_tag,
@@ -216,7 +218,7 @@ def generate_download_info():
         "new_languages": []
     }
 
-    print_active_user()
+    user = print_active_user()
 
     sha, this_version = get_version_info()
 
@@ -240,7 +242,6 @@ def generate_download_info():
 
     board_mapping = get_board_mapping()
 
-    print(previous_releases)
     for release in previous_releases:
         update_downloads(board_mapping, release)
 
@@ -274,13 +275,13 @@ def generate_download_info():
 
     changes["new_languages"] = set(languages) - previous_languages
 
-    if changes["new_release"]:
-        create_pr(changes, current_info, git_info)
+    if changes["new_release"] and user:
+        create_pr(changes, current_info, git_info, user)
     else:
         print("No new release to update")
 
 if __name__ == "__main__":
-    if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
+    if "RELEASE_TAG" in os.environ and os.environ["RELEASE_TAG"]:
         generate_download_info()
     else:
         print("skipping website update because this isn't a tag")

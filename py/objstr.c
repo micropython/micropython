@@ -41,6 +41,12 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
+const char nibble_to_hex_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                                      'A', 'B', 'C', 'D', 'E', 'F'};
+
+const char nibble_to_hex_lower[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                                      'a', 'b', 'c', 'd', 'e', 'f'};
+
 /******************************************************************************/
 /* str                                                                        */
 
@@ -2087,6 +2093,14 @@ mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj) {
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
+
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+    memset(vstr.buf, 0, len);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     if (MP_OBJ_IS_QSTR(s1) && MP_OBJ_IS_QSTR(s2)) {

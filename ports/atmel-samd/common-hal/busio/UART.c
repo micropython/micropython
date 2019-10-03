@@ -291,13 +291,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
             // Reset the timeout on every character read.
             start_ticks = ticks_ms;
         }
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
+        RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if (mp_hal_is_interrupted()) {
             break;
         }
-#endif
         // If we are zero timeout, make sure we don't loop again (in the event
         // we read in under 1ms)
         if (self->timeout_ms == 0) {
@@ -339,9 +337,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
             done = true;
             break;
         }
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     if (!done) {

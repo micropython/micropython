@@ -68,6 +68,11 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
+mp_obj_t mp_obj_new_list_from_iter(mp_obj_t iterable) {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    return list_extend_from_iter(list, iterable);
+}
+
 STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
     mp_arg_check_num(n_args, kw_args, 0, 1, false);

@@ -341,6 +341,9 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             p = vstr_extend(&vstr, DEFAULT_BUFFER_SIZE);
             current_read = DEFAULT_BUFFER_SIZE;
         }
+        #ifdef RUN_BACKGROUND_TASKS
+        RUN_BACKGROUND_TASKS;
+        #endif
     }
 
     vstr.len = total_size;

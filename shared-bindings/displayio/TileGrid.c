@@ -131,7 +131,8 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
     displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
     self->base.type = &displayio_tilegrid_type;
-    common_hal_displayio_tilegrid_construct(self, native, bitmap_width / tile_width,
+    common_hal_displayio_tilegrid_construct(self, native,
+        bitmap_width / tile_width, bitmap_height / tile_height,
         pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,
         tile_width, tile_height, x, y, args[ARG_default_tile].u_int);
     return MP_OBJ_FROM_PTR(self);
@@ -143,6 +144,30 @@ static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
+//|   .. attribute:: hidden
+//|
+//|     True when the TileGrid is hidden. This may be False even when a part of a hidden Group.
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_hidden(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_get_hidden(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_hidden_obj, displayio_tilegrid_obj_get_hidden);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden_obj) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    common_hal_displayio_tilegrid_set_hidden(self, mp_obj_is_true(hidden_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_hidden_obj, displayio_tilegrid_obj_set_hidden);
+
+const mp_obj_property_t displayio_tilegrid_hidden_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_hidden_obj,
+              (mp_obj_t)&displayio_tilegrid_set_hidden_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 //|   .. attribute:: x
 //|
@@ -346,7 +371,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         }
         if (x >= common_hal_displayio_tilegrid_get_width(self) ||
                 y >= common_hal_displayio_tilegrid_get_height(self)) {
-            mp_raise_IndexError(translate("tile index out of bounds"));
+            mp_raise_IndexError(translate("Tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {
@@ -357,7 +382,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         } else {
             mp_int_t value = mp_obj_get_int(value_obj);
             if (value < 0 || value > 255) {
-                mp_raise_ValueError(translate("Tile indices must be 0 - 255"));
+                mp_raise_ValueError(translate("Tile value out of bounds"));
             }
             common_hal_displayio_tilegrid_set_tile(self, x, y, value);
         }
@@ -367,6 +392,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
 
 STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     // Properties
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&displayio_tilegrid_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&displayio_tilegrid_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_tilegrid_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },

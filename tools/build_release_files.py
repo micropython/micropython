@@ -10,21 +10,14 @@ import time
 for port in build_info.SUPPORTED_PORTS:
     result = subprocess.run("rm -rf ../ports/{port}/build*".format(port=port), shell=True)
 
-ROSIE_SETUPS = ["rosie-ci"]
-rosie_ok = {}
-for rosie in ROSIE_SETUPS:
-    rosie_ok[rosie] = True
-
 PARALLEL = "-j 5"
-travis = False
-if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
+if "GITHUB_ACTION" in os.environ:
     PARALLEL="-j 2"
-    travis = True
 
 all_boards = build_info.get_board_mapping()
 build_boards = list(all_boards.keys())
-if "TRAVIS_BOARDS" in os.environ:
-    build_boards = os.environ["TRAVIS_BOARDS"].split()
+if "BOARDS" in os.environ:
+    build_boards = os.environ["BOARDS"].split()
 
 sha, version = build_info.get_version_info()
 
@@ -83,25 +76,14 @@ for board in build_boards:
                     if exit_status == 0:
                         exit_status = 1
 
-        if travis:
-            print('travis_fold:start:adafruit-bins-{}-{}\\r'.format(language, board))
         print("Build {board} for {language}{clean_build} took {build_duration:.2f}s and {success}".format(
             board=board, language=language, clean_build=(" (clean_build)" if clean_build else ""),
             build_duration=build_duration, success=success))
-        if make_result.returncode != 0:
-            print(make_result.stdout.decode("utf-8"))
-            print(other_output)
-        # Only upload to Rosie if its a pull request.
-        if travis:
-            for rosie in ROSIE_SETUPS:
-                if not rosie_ok[rosie]:
-                    break
-                print("Uploading to https://{rosie}.ngrok.io/upload/{sha}".format(rosie=rosie, sha=sha))
-                #curl -F "file=@$final_filename" https://$rosie.ngrok.io/upload/$sha
-        if travis:
-            print('travis_fold:end:adafruit-bins-{}-{}\\r'.format(language, board))
 
-        # Flush so travis will see something before 10 minutes has passed.
+        print(make_result.stdout.decode("utf-8"))
+        print(other_output)
+
+        # Flush so we will see something before 10 minutes has passed.
         print(flush=True)
 
 sys.exit(exit_status)

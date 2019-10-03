@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/AudioOut.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
@@ -55,6 +55,7 @@
 //|
 //|   Simple 8ksps 440 Hz sin wave::
 //|
+//|     import audiocore
 //|     import audioio
 //|     import board
 //|     import array
@@ -68,7 +69,7 @@
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
 //|     dac = audioio.AudioOut(board.SPEAKER)
-//|     sine_wave = audioio.RawSample(sine_wave, sample_rate=8000)
+//|     sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
 //|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
 //|     dac.stop()
@@ -84,7 +85,7 @@
 //|     speaker_enable.switch_to_output(value=True)
 //|
 //|     data = open("cplay-5.1-16bit-16khz.wav", "rb")
-//|     wav = audioio.WaveFile(data)
+//|     wav = audiocore.WaveFile(data)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
@@ -162,7 +163,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, 
 //|     Plays the sample once when loop=False and continuously when loop=True.
 //|     Does not block. Use `playing` to block.
 //|
-//|     Sample must be an `audioio.WaveFile` or `audioio.RawSample`.
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
 //|
 //|     The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
 //|     resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit

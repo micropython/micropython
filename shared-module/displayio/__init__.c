@@ -4,7 +4,6 @@
 #include "shared-module/displayio/__init__.h"
 
 #include "lib/utils/interrupt_char.h"
-#include "py/gc.h"
 #include "py/reload.h"
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"
@@ -16,89 +15,13 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/memory.h"
-#include "supervisor/usb.h"
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
-bool refresh_area(displayio_display_obj_t* display, const displayio_area_t* area) {
-    uint16_t buffer_size = 512;
+// Check for recursive calls to displayio_background.
+bool displayio_background_in_progress = false;
 
-    displayio_area_t clipped;
-    // Clip the area to the display by overlapping the areas. If there is no overlap then we're done.
-    if (!displayio_display_clip_area(display, area, &clipped)) {
-        return true;
-    }
-    uint16_t subrectangles = 1;
-    uint16_t rows_per_buffer = displayio_area_height(&clipped);
-    if (displayio_area_size(area) > buffer_size) {
-        rows_per_buffer = buffer_size / displayio_area_width(&clipped);
-        subrectangles = displayio_area_height(&clipped) / rows_per_buffer;
-        if (displayio_area_height(&clipped) % rows_per_buffer != 0) {
-            subrectangles++;
-        }
-        buffer_size = rows_per_buffer * displayio_area_width(&clipped);
-    }
-    uint32_t buffer[buffer_size / 2];
-    uint16_t remaining_rows = displayio_area_height(&clipped);
-
-    for (uint16_t j = 0; j < subrectangles; j++) {
-        displayio_area_t subrectangle = {
-            .x1 = clipped.x1,
-            .y1 = clipped.y1 + rows_per_buffer * j,
-            .x2 = clipped.x2,
-            .y2 = clipped.y1 + rows_per_buffer * (j + 1)
-        };
-        if (remaining_rows < rows_per_buffer) {
-            subrectangle.y2 = subrectangle.y1 + remaining_rows;
-        }
-        remaining_rows -= rows_per_buffer;
-
-        displayio_display_begin_transaction(display);
-        displayio_display_set_region_to_update(display, subrectangle.x1, subrectangle.y1,
-                                                        subrectangle.x2, subrectangle.y2);
-        displayio_display_end_transaction(display);
-
-        uint32_t mask[(buffer_size / 32) + 1];
-        for (uint16_t k = 0; k < (buffer_size / 32) + 1; k++) {
-            mask[k] = 0x00000000;
-        }
-
-        bool full_coverage = displayio_display_fill_area(display, &subrectangle, mask, buffer);
-        if (!full_coverage) {
-            uint32_t index = 0;
-            uint32_t current_mask = 0;
-            for (int16_t y = subrectangle.y1; y < subrectangle.y2; y++) {
-                for (int16_t x = subrectangle.x1; x < subrectangle.x2; x++) {
-                    if (index % 32 == 0) {
-                        current_mask = mask[index / 32];
-                    }
-                    if ((current_mask & (1 << (index % 32))) == 0) {
-                        ((uint16_t*) buffer)[index] = 0x0000;
-                    }
-                    index++;
-                }
-            }
-        }
-
-        if (!displayio_display_begin_transaction(display)) {
-            // Can't acquire display bus; skip the rest of the data. Try next display.
-            return false;
-        }
-        displayio_display_send_pixels(display, (uint8_t*) buffer, displayio_area_size(&subrectangle) * sizeof(uint16_t));
-        displayio_display_end_transaction(display);
-
-        // TODO(tannewt): Make refresh displays faster so we don't starve other
-        // background tasks.
-        usb_background();
-    }
-    return true;
-}
-
-// Check for recursive calls to displayio_refresh_displays.
-bool refresh_displays_in_progress = false;
-uint32_t frame_count = 0;
-
-void displayio_refresh_displays(void) {
+void displayio_background(void) {
     if (mp_hal_is_interrupted()) {
         return;
     }
@@ -107,60 +30,55 @@ void displayio_refresh_displays(void) {
         return;
     }
 
-    if (refresh_displays_in_progress) {
+    if (displayio_background_in_progress) {
         // Don't allow recursive calls to this routine.
         return;
     }
 
-    refresh_displays_in_progress = true;
+    displayio_background_in_progress = true;
 
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
             // Skip null display.
             continue;
         }
-        displayio_display_obj_t* display = &displays[i].display;
-        displayio_display_update_backlight(display);
-
-        // Time to refresh at specified frame rate?
-        if (!displayio_display_frame_queued(display)) {
-            // Too soon. Try next display.
-            continue;
+        if (displays[i].display.base.type == &displayio_display_type) {
+            displayio_display_background(&displays[i].display);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_background(&displays[i].epaper_display);
         }
-        if (!displayio_display_begin_transaction(display)) {
-            // Can't acquire display bus; skip updating this display. Try next display.
-            continue;
-        }
-        displayio_display_end_transaction(display);
-        displayio_display_start_refresh(display);
-        const displayio_area_t* current_area = displayio_display_get_refresh_areas(display);
-        while (current_area != NULL) {
-            refresh_area(display, current_area);
-            current_area = current_area->next;
-        }
-        displayio_display_finish_refresh(display);
-        frame_count++;
     }
 
     // All done.
-    refresh_displays_in_progress = false;
+    displayio_background_in_progress = false;
 }
 
 void common_hal_displayio_release_displays(void) {
+    // Release displays before busses so that they can send any final commands to turn the display
+    // off properly.
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        mp_const_obj_t display_type = displays[i].display.base.type;
+        if (display_type == NULL || display_type == &mp_type_NoneType) {
+            continue;
+        } else if (display_type == &displayio_display_type) {
+            release_display(&displays[i].display);
+        } else if (display_type == &displayio_epaperdisplay_type) {
+            release_epaperdisplay(&displays[i].epaper_display);
+        }
+        displays[i].display.base.type = &mp_type_NoneType;
+    }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = displays[i].fourwire_bus.base.type;
-        if (bus_type == NULL) {
+        if (bus_type == NULL || bus_type == &mp_type_NoneType) {
             continue;
         } else if (bus_type == &displayio_fourwire_type) {
             common_hal_displayio_fourwire_deinit(&displays[i].fourwire_bus);
+        } else if (bus_type == &displayio_i2cdisplay_type) {
+            common_hal_displayio_i2cdisplay_deinit(&displays[i].i2cdisplay_bus);
         } else if (bus_type == &displayio_parallelbus_type) {
             common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
-    }
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        release_display(&displays[i].display);
-        displays[i].display.base.type = &mp_type_NoneType;
     }
 
     supervisor_stop_terminal();
@@ -169,39 +87,67 @@ void common_hal_displayio_release_displays(void) {
 void reset_displays(void) {
     // The SPI buses used by FourWires may be allocated on the heap so we need to move them inline.
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].fourwire_bus.base.type != &displayio_fourwire_type) {
-            continue;
-        }
-        displayio_fourwire_obj_t* fourwire = &displays[i].fourwire_bus;
-        if (((uint32_t) fourwire->bus) < ((uint32_t) &displays) ||
-            ((uint32_t) fourwire->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
-            busio_spi_obj_t* original_spi = fourwire->bus;
-            #if BOARD_SPI
-                // We don't need to move original_spi if it is the board.SPI object because it is
-                // statically allocated already. (Doing so would also make it impossible to reference in
-                // a subsequent VM run.)
-                if (original_spi == common_hal_board_get_spi()) {
-                    continue;
-                }
-            #endif
-            memcpy(&fourwire->inline_bus, original_spi, sizeof(busio_spi_obj_t));
-            fourwire->bus = &fourwire->inline_bus;
-            // Check for other displays that use the same spi bus and swap them too.
-            for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
-                if (displays[i].fourwire_bus.bus == original_spi) {
-                    displays[i].fourwire_bus.bus = &fourwire->inline_bus;
+        if (displays[i].fourwire_bus.base.type == &displayio_fourwire_type) {
+            displayio_fourwire_obj_t* fourwire = &displays[i].fourwire_bus;
+            if (((uint32_t) fourwire->bus) < ((uint32_t) &displays) ||
+                ((uint32_t) fourwire->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
+                busio_spi_obj_t* original_spi = fourwire->bus;
+                #if BOARD_SPI
+                    // We don't need to move original_spi if it is the board.SPI object because it is
+                    // statically allocated already. (Doing so would also make it impossible to reference in
+                    // a subsequent VM run.)
+                    if (original_spi == common_hal_board_get_spi()) {
+                        continue;
+                    }
+                #endif
+                memcpy(&fourwire->inline_bus, original_spi, sizeof(busio_spi_obj_t));
+                fourwire->bus = &fourwire->inline_bus;
+                // Check for other displays that use the same spi bus and swap them too.
+                for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
+                    if (displays[i].fourwire_bus.base.type == &displayio_fourwire_type &&
+                            displays[i].fourwire_bus.bus == original_spi) {
+                        displays[i].fourwire_bus.bus = &fourwire->inline_bus;
+                    }
                 }
             }
+        } else if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type) {
+            displayio_i2cdisplay_obj_t* i2c = &displays[i].i2cdisplay_bus;
+            if (((uint32_t) i2c->bus) < ((uint32_t) &displays) ||
+                ((uint32_t) i2c->bus) > ((uint32_t) &displays + CIRCUITPY_DISPLAY_LIMIT)) {
+                busio_i2c_obj_t* original_i2c = i2c->bus;
+                #if BOARD_I2C
+                    // We don't need to move original_i2c if it is the board.I2C object because it is
+                    // statically allocated already. (Doing so would also make it impossible to reference in
+                    // a subsequent VM run.)
+                    if (original_i2c == common_hal_board_get_i2c()) {
+                        continue;
+                    }
+                #endif
+                memcpy(&i2c->inline_bus, original_i2c, sizeof(busio_i2c_obj_t));
+                i2c->bus = &i2c->inline_bus;
+                // Check for other displays that use the same i2c bus and swap them too.
+                for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
+                    if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
+                            displays[i].i2cdisplay_bus.bus == original_i2c) {
+                        displays[i].i2cdisplay_bus.bus = &i2c->inline_bus;
+                    }
+                }
+            }
+        } else {
+            // Not an active display bus.
+            continue;
         }
     }
 
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL) {
-            continue;
+        // Reset the displayed group. Only the first will get the terminal but
+        // that's ok.
+        if (displays[i].display.base.type == &displayio_display_type) {
+            reset_display(&displays[i].display);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
+            common_hal_displayio_epaperdisplay_show(display, NULL);
         }
-        displayio_display_obj_t* display = &displays[i].display;
-        display->auto_brightness = true;
-        common_hal_displayio_display_show(display, &circuitpython_splash);
     }
 }
 
@@ -213,8 +159,11 @@ void displayio_gc_collect(void) {
 
         // Alternatively, we could use gc_collect_root over the whole object,
         // but this is more precise, and is the only field that needs marking.
-        gc_collect_ptr(displays[i].display.current_group);
-
+        if (displays[i].display.base.type == &displayio_display_type) {
+            displayio_display_collect_ptrs(&displays[i].display);
+        } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
+            displayio_epaperdisplay_collect_ptrs(&displays[i].epaper_display);
+        }
     }
 }
 

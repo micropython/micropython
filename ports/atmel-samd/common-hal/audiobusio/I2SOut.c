@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "common-hal/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 

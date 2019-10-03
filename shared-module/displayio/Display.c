@@ -28,70 +28,70 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
+#include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/usb.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "tick.h"
 
-#define DELAY 0x80
-
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
-        mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart, uint16_t rotation,
-        uint16_t color_depth, uint8_t set_column_command, uint8_t set_row_command,
-        uint8_t write_ram_command, uint8_t set_vertical_scroll, uint8_t* init_sequence, uint16_t init_sequence_len,
-        const mcu_pin_obj_t* backlight_pin, mp_float_t brightness, bool auto_brightness,
-        bool single_byte_bounds, bool data_as_commands) {
-    self->color_depth = color_depth;
+        mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
+        uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
+        uint8_t bytes_per_cell, bool reverse_pixels_in_byte, uint8_t set_column_command,
+        uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
+        uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
+        uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
+        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second) {
+    // Turn off auto-refresh as we init.
+    self->auto_refresh = false;
+    uint16_t ram_width = 0x100;
+    uint16_t ram_height = 0x100;
+    if (single_byte_bounds) {
+        ram_width = 0xff;
+        ram_height = 0xff;
+    }
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation,
+        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte);
+
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
     self->write_ram_command = write_ram_command;
-    self->refresh = false;
-    self->current_group = NULL;
-    self->colstart = colstart;
-    self->rowstart = rowstart;
+    self->brightness_command = brightness_command;
     self->auto_brightness = auto_brightness;
+    self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
-    self->single_byte_bounds = single_byte_bounds;
 
-    if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
-        self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
-        self->send = common_hal_displayio_parallelbus_send;
-        self->end_transaction = common_hal_displayio_parallelbus_end_transaction;
-    } else if (MP_OBJ_IS_TYPE(bus, &displayio_fourwire_type)) {
-        self->begin_transaction = common_hal_displayio_fourwire_begin_transaction;
-        self->send = common_hal_displayio_fourwire_send;
-        self->end_transaction = common_hal_displayio_fourwire_end_transaction;
-    } else {
-        mp_raise_ValueError(translate("Unsupported display bus type"));
-    }
-    self->bus = bus;
+    self->native_frames_per_second = native_frames_per_second;
+    self->native_ms_per_frame = 1000 / native_frames_per_second;
 
     uint32_t i = 0;
-    while (!self->begin_transaction(self->bus)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
-    }
     while (i < init_sequence_len) {
         uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
         uint8_t *data = cmd + 2;
-        self->send(self->bus, true, cmd, 1);
-        if (self->data_as_commands) {
-            // Loop through each parameter to force a CS toggle
-            for (uint32_t j=0; j < data_size; j++) {
-                self->send(self->bus, true, data + j, 1);
-            }
-        } else {
-            self->send(self->bus, false, data, data_size);
+        while (!displayio_display_core_begin_transaction(&self->core)) {
+            RUN_BACKGROUND_TASKS;
         }
+        if (self->data_as_commands) {
+            uint8_t full_command[data_size + 1];
+            full_command[0] = cmd[0];
+            memcpy(full_command + 1, data, data_size);
+            self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, full_command, data_size + 1);
+        } else {
+            self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, cmd, 1);
+            self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, data, data_size);
+        }
+        displayio_display_core_end_transaction(&self->core);
         uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
@@ -103,32 +103,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         common_hal_time_delay_ms(delay_length_ms);
         i += 2 + data_size;
     }
-    self->end_transaction(self->bus);
 
     supervisor_start_terminal(width, height);
-
-    self->width = width;
-    self->height = height;
-    rotation = rotation % 360;
-    self->transform.x = 0;
-    self->transform.y = 0;
-    self->transform.scale = 1;
-    self->transform.mirror_x = false;
-    self->transform.mirror_y = false;
-    self->transform.transpose_xy = false;
-    if (rotation == 0 || rotation == 180) {
-        if (rotation == 180) {
-            self->transform.mirror_x = true;
-            self->transform.mirror_y = true;
-        }
-    } else {
-        self->transform.transpose_xy = true;
-        if (rotation == 270) {
-            self->transform.mirror_y = true;
-        } else {
-            self->transform.mirror_x = true;
-        }
-    }
 
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;
@@ -141,92 +117,35 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         } else {
             self->backlight_pwm.base.type = &pulseio_pwmout_type;
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
-            if (!self->auto_brightness) {
-                common_hal_displayio_display_set_brightness(self, brightness);
-            }
         }
     }
-
-    self->area.x1 = 0;
-    self->area.y1 = 0;
-    self->area.next = NULL;
-
-    self->transform.dx = 1;
-    self->transform.dy = 1;
-    if (self->transform.transpose_xy) {
-        self->area.x2 = height;
-        self->area.y2 = width;
-        if (self->transform.mirror_x) {
-            self->transform.x = height;
-            self->transform.dx = -1;
-        }
-        if (self->transform.mirror_y) {
-            self->transform.y = width;
-            self->transform.dy = -1;
-        }
+    if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType ||
+                                   brightness_command != NO_BRIGHTNESS_COMMAND)) {
+        common_hal_displayio_display_set_brightness(self, brightness);
     } else {
-        self->area.x2 = width;
-        self->area.y2 = height;
-        if (self->transform.mirror_x) {
-            self->transform.x = width;
-            self->transform.dx = -1;
-        }
-        if (self->transform.mirror_y) {
-            self->transform.y = height;
-            self->transform.dy = -1;
-        }
+        self->current_brightness = -1.0;
     }
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_displayio_display_show(self, &circuitpython_splash);
+    self->auto_refresh = auto_refresh;
 }
 
-void common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    if (root_group == self->current_group) {
-        return;
-    }
-    displayio_group_update_transform(root_group, &self->transform);
-    self->current_group = root_group;
-    self->full_refresh = true;
-    common_hal_displayio_display_refresh_soon(self);
+bool common_hal_displayio_display_show(displayio_display_obj_t* self, displayio_group_t* root_group) {
+    return displayio_display_core_show(&self->core, root_group);
 }
 
-void common_hal_displayio_display_refresh_soon(displayio_display_obj_t* self) {
-    self->refresh = true;
+uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self){
+    return displayio_display_core_get_width(&self->core);
 }
 
-const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self) {
-    if (self->full_refresh) {
-        self->area.next = NULL;
-        return &self->area;
-    } else {
-        return displayio_group_get_refresh_areas(self->current_group, NULL);
-    }
-}
-
-int32_t common_hal_displayio_display_wait_for_frame(displayio_display_obj_t* self) {
-    uint64_t last_refresh = self->last_refresh;
-    // Don't try to refresh if we got an exception.
-    while (last_refresh == self->last_refresh && MP_STATE_VM(mp_pending_exception) == NULL) {
-        MICROPY_VM_HOOK_LOOP
-    }
-    return 0;
+uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self){
+    return displayio_display_core_get_height(&self->core);
 }
 
 bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self) {
     return self->auto_brightness;
-}
-
-uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self){
-    return self->width;
-}
-
-uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self){
-    return self->height;
 }
 
 void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness) {
@@ -234,17 +153,7 @@ void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* s
 }
 
 mp_float_t common_hal_displayio_display_get_brightness(displayio_display_obj_t* self) {
-    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
-        uint16_t duty_cycle = common_hal_pulseio_pwmout_get_duty_cycle(&self->backlight_pwm);
-        return duty_cycle / ((mp_float_t) 0xffff);
-    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
-        if (common_hal_digitalio_digitalinout_get_value(&self->backlight_inout)) {
-            return 1.0;
-        } else {
-            return 0.0;
-        }
-    }
-    return -1.0;
+    return self->current_brightness;
 }
 
 bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, mp_float_t brightness) {
@@ -256,76 +165,188 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, brightness > 0.99);
         ok = true;
+    } else if (self->brightness_command != NO_BRIGHTNESS_COMMAND) {
+        ok = displayio_display_core_begin_transaction(&self->core);
+        if (ok) {
+            if (self->data_as_commands) {
+                uint8_t set_brightness[2] = {self->brightness_command, (uint8_t) (0xff * brightness)};
+                self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, set_brightness, 2);
+            } else {
+                uint8_t command = self->brightness_command;
+                uint8_t hex_brightness = 0xff * brightness;
+                self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &command, 1);
+                self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, &hex_brightness, 1);
+            }
+            displayio_display_core_end_transaction(&self->core);
+        }
+
     }
     self->updating_backlight = false;
+    if (ok) {
+        self->current_brightness = brightness;
+    }
     return ok;
 }
 
-bool displayio_display_begin_transaction(displayio_display_obj_t* self) {
-    return self->begin_transaction(self->bus);
+mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t* self) {
+    return self->core.bus;
 }
 
-void displayio_display_end_transaction(displayio_display_obj_t* self) {
-    self->end_transaction(self->bus);
+STATIC const displayio_area_t* _get_refresh_areas(displayio_display_obj_t *self) {
+    if (self->core.full_refresh) {
+        self->core.area.next = NULL;
+        return &self->core.area;
+    } else if (self->core.current_group != NULL) {
+        return displayio_group_get_refresh_areas(self->core.current_group, NULL);
+    }
+    return NULL;
 }
 
-void displayio_display_set_region_to_update(displayio_display_obj_t* self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    self->send(self->bus, true, &self->set_column_command, 1);
-    bool isCommand = self->data_as_commands;
-    if (self->single_byte_bounds) {
-        uint8_t data[2];
-        data[0] = x0 + self->colstart;
-        data[1] = x1 - 1 + self->colstart;
-        self->send(self->bus, isCommand, (uint8_t*) data, 2);
-    } else {
-        uint16_t data[2];
-        data[0] = __builtin_bswap16(x0 + self->colstart);
-        data[1] = __builtin_bswap16(x1 - 1 + self->colstart);
-        self->send(self->bus, isCommand, (uint8_t*) data, 4);
-    }
-    self->send(self->bus, true, &self->set_row_command, 1);
-    if (self->single_byte_bounds) {
-        uint8_t data[2];
-        data[0] = y0 + self->rowstart;
-        data[1] = y1 - 1 + self->rowstart;
-        self->send(self->bus, isCommand, (uint8_t*) data, 2);
-    } else {
-        uint16_t data[2];
-        data[0] = __builtin_bswap16(y0  + self->rowstart);
-        data[1] = __builtin_bswap16(y1 - 1 + self->rowstart);
-        self->send(self->bus, isCommand, (uint8_t*) data, 4);
-    }
+STATIC void _send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
     if (!self->data_as_commands) {
-        self->send(self->bus, true, &self->write_ram_command, 1);
+        self->core.send(self->core.bus, DISPLAY_COMMAND, CHIP_SELECT_TOGGLE_EVERY_BYTE, &self->write_ram_command, 1);
     }
+    self->core.send(self->core.bus, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, pixels, length);
 }
 
-void displayio_display_start_refresh(displayio_display_obj_t* self) {
-    self->last_refresh = ticks_ms;
-}
+STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t* area) {
+    uint16_t buffer_size = 128; // In uint32_ts
 
-bool displayio_display_frame_queued(displayio_display_obj_t* self) {
-    if (self->current_group == NULL) {
-        return false;
+    displayio_area_t clipped;
+    // Clip the area to the display by overlapping the areas. If there is no overlap then we're done.
+    if (!displayio_display_core_clip_area(&self->core, area, &clipped)) {
+        return true;
     }
-    // Refresh at ~60 fps.
-    return (ticks_ms - self->last_refresh) > 16;
-}
-
-void displayio_display_finish_refresh(displayio_display_obj_t* self) {
-    if (self->current_group != NULL) {
-        displayio_group_finish_refresh(self->current_group);
+    uint16_t subrectangles = 1;
+    uint16_t rows_per_buffer = displayio_area_height(&clipped);
+    uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
+    uint16_t pixels_per_buffer = displayio_area_size(&clipped);
+    if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
+        rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
+        if (rows_per_buffer == 0) {
+            rows_per_buffer = 1;
+        }
+        // If pixels are packed by column then ensure rows_per_buffer is on a byte boundary.
+        if (self->core.colorspace.depth < 8 && !self->core.colorspace.pixels_in_byte_share_row) {
+            uint8_t pixels_per_byte = 8 / self->core.colorspace.depth;
+            if (rows_per_buffer % pixels_per_byte != 0) {
+                rows_per_buffer -= rows_per_buffer % pixels_per_byte;
+            }
+        }
+        subrectangles = displayio_area_height(&clipped) / rows_per_buffer;
+        if (displayio_area_height(&clipped) % rows_per_buffer != 0) {
+            subrectangles++;
+        }
+        pixels_per_buffer = rows_per_buffer * displayio_area_width(&clipped);
+        buffer_size = pixels_per_buffer / pixels_per_word;
+        if (pixels_per_buffer % pixels_per_word) {
+            buffer_size += 1;
+        }
     }
-    self->refresh = false;
-    self->full_refresh = false;
-    self->last_refresh = ticks_ms;
+
+    // Allocated and shared as a uint32_t array so the compiler knows the
+    // alignment everywhere.
+    uint32_t buffer[buffer_size];
+    uint32_t mask_length = (pixels_per_buffer / 32) + 1;
+    uint32_t mask[mask_length];
+    uint16_t remaining_rows = displayio_area_height(&clipped);
+
+    for (uint16_t j = 0; j < subrectangles; j++) {
+        displayio_area_t subrectangle = {
+            .x1 = clipped.x1,
+            .y1 = clipped.y1 + rows_per_buffer * j,
+            .x2 = clipped.x2,
+            .y2 = clipped.y1 + rows_per_buffer * (j + 1)
+        };
+        if (remaining_rows < rows_per_buffer) {
+            subrectangle.y2 = subrectangle.y1 + remaining_rows;
+        }
+        remaining_rows -= rows_per_buffer;
+
+        displayio_display_core_set_region_to_update(&self->core, self->set_column_command, self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, &subrectangle);
+
+        uint16_t subrectangle_size_bytes;
+        if (self->core.colorspace.depth >= 8) {
+            subrectangle_size_bytes = displayio_area_size(&subrectangle) * (self->core.colorspace.depth / 8);
+        } else {
+            subrectangle_size_bytes = displayio_area_size(&subrectangle) / (8 / self->core.colorspace.depth);
+        }
+
+        memset(mask, 0, mask_length * sizeof(mask[0]));
+        memset(buffer, 0, buffer_size * sizeof(buffer[0]));
+
+        displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
+
+        // Can't acquire display bus; skip the rest of the data.
+        if (!displayio_display_core_bus_free(&self->core)) {
+            return false;
+        }
+
+        displayio_display_core_begin_transaction(&self->core);
+        _send_pixels(self, (uint8_t*) buffer, subrectangle_size_bytes);
+        displayio_display_core_end_transaction(&self->core);
+
+        // TODO(tannewt): Make refresh displays faster so we don't starve other
+        // background tasks.
+        usb_background();
+    }
+    return true;
 }
 
-void displayio_display_send_pixels(displayio_display_obj_t* self, uint8_t* pixels, uint32_t length) {
-    self->send(self->bus, false, pixels, length);
+STATIC void _refresh_display(displayio_display_obj_t* self) {
+    if (!displayio_display_core_bus_free(&self->core)) {
+        // Can't acquire display bus; skip updating this display. Try next display.
+        return;
+    }
+    displayio_display_core_start_refresh(&self->core);
+    const displayio_area_t* current_area = _get_refresh_areas(self);
+    while (current_area != NULL) {
+        _refresh_area(self, current_area);
+        current_area = current_area->next;
+    }
+    displayio_display_core_finish_refresh(&self->core);
 }
 
-void displayio_display_update_backlight(displayio_display_obj_t* self) {
+uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self){
+    return self->core.rotation;
+}
+
+bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
+    if (!self->auto_refresh && !self->first_manual_refresh) {
+        uint64_t current_time = ticks_ms;
+        uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
+        // Test to see if the real frame time is below our minimum.
+        if (current_ms_since_real_refresh > maximum_ms_per_real_frame) {
+            mp_raise_RuntimeError(translate("Below minimum frame rate"));
+        }
+        uint32_t current_ms_since_last_call = current_time - self->last_refresh_call;
+        self->last_refresh_call = current_time;
+        // Skip the actual refresh to help catch up.
+        if (current_ms_since_last_call > target_ms_per_frame) {
+            return false;
+        }
+        uint32_t remaining_time = target_ms_per_frame - (current_ms_since_real_refresh % target_ms_per_frame);
+        // We're ahead of the game so wait until we align with the frame rate.
+        while (ticks_ms - self->last_refresh_call < remaining_time) {
+            RUN_BACKGROUND_TASKS;
+        }
+    }
+    self->first_manual_refresh = false;
+    _refresh_display(self);
+    return true;
+}
+
+bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t* self) {
+    return self->auto_refresh;
+}
+
+void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t* self,
+                                                   bool auto_refresh) {
+    self->first_manual_refresh = !auto_refresh;
+    self->auto_refresh = auto_refresh;
+}
+
+STATIC void _update_backlight(displayio_display_obj_t* self) {
     if (!self->auto_brightness || self->updating_backlight) {
         return;
     }
@@ -339,7 +360,16 @@ void displayio_display_update_backlight(displayio_display_obj_t* self) {
     self->last_backlight_refresh = ticks_ms;
 }
 
+void displayio_display_background(displayio_display_obj_t* self) {
+    _update_backlight(self);
+
+    if (self->auto_refresh && (ticks_ms - self->core.last_refresh) > self->native_ms_per_frame) {
+        _refresh_display(self);
+    }
+}
+
 void release_display(displayio_display_obj_t* self) {
+    release_display_core(&self->core);
     if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
         common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
         common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
@@ -348,10 +378,12 @@ void release_display(displayio_display_obj_t* self) {
     }
 }
 
-bool displayio_display_fill_area(displayio_display_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer) {
-    return displayio_group_fill_area(self->current_group, area, mask, buffer);
+void reset_display(displayio_display_obj_t* self) {
+    self->auto_refresh = true;
+    self->auto_brightness = true;
+    common_hal_displayio_display_show(self, NULL);
 }
 
-bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped) {
-    return displayio_area_compute_overlap(&self->area, area, clipped);
+void displayio_display_collect_ptrs(displayio_display_obj_t* self) {
+    displayio_display_core_collect_ptrs(&self->core);
 }

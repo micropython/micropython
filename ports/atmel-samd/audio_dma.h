@@ -29,8 +29,8 @@
 
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
-#include "shared-module/audioio/RawSample.h"
-#include "shared-module/audioio/WaveFile.h"
+#include "shared-module/audiocore/RawSample.h"
+#include "shared-module/audiocore/WaveFile.h"
 
 typedef struct {
     mp_obj_t sample;
@@ -64,7 +64,8 @@ uint8_t audiosample_channel_count(mp_obj_t sample_obj);
 void audio_dma_init(audio_dma_t* dma);
 void audio_dma_reset(void);
 
-uint8_t find_free_audio_dma_channel(void);
+uint8_t audio_dma_allocate_channel(void);
+void audio_dma_free_channel(uint8_t channel);
 
 // This sets everything up but doesn't start the timer.
 // Sample is the python object for the sample to play.
@@ -83,6 +84,9 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
                                           bool output_signed,
                                           uint32_t output_register_address,
                                           uint8_t dma_trigger_source);
+
+void audio_dma_disable_channel(uint8_t channel);
+void audio_dma_enable_channel(uint8_t channel);
 void audio_dma_stop(audio_dma_t* dma);
 bool audio_dma_get_playing(audio_dma_t* dma);
 void audio_dma_pause(audio_dma_t* dma);

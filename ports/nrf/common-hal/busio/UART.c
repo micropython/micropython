@@ -235,13 +235,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Wait for all bytes received or timeout
     while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
+        RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
             return 0;
         }
-#endif
     }
 
     // prevent conflict with uart irq
@@ -271,9 +269,7 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
 
     // Wait for on-going transfer to complete
     while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 
     // Time up
@@ -295,9 +291,7 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
     (*errcode) = 0;
 
     while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 
     if ( !nrfx_is_in_ram(data) ) {

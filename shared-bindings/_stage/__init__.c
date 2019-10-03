@@ -30,6 +30,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-module/_stage/__init__.h"
+#include "shared-module/displayio/display_core.h"
 #include "Layer.h"
 #include "Text.h"
 
@@ -50,7 +51,7 @@
 //|     Layer
 //|     Text
 //|
-//| .. function:: render(x0, y0, x1, y1, layers, buffer, display)
+//| .. function:: render(x0, y0, x1, y1, layers, buffer, display[, scale])
 //|
 //|     Render and send to the display a fragment of the screen.
 //|
@@ -61,6 +62,7 @@
 //|     :param list layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :param bytearray buffer: A buffer to use for rendering.
 //|     :param ~displayio.Display display: The display to use.
+//|     :param int scale: How many times should the image be scaled up.
 //|
 //|     There are also no sanity checks, outside of the basic overflow
 //|     checking. The caller is responsible for making the passed parameters
@@ -89,19 +91,17 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);
-
-    while (!displayio_display_begin_transaction(display)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+    uint8_t scale = 1;
+    if (n_args >= 8) {
+        scale = mp_obj_get_int(args[7]);
     }
-    displayio_display_set_region_to_update(display, x0, y0, x1, y1);
-    render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size, display);
-    displayio_display_end_transaction(display);
+
+    render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
+                 display, scale);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 7, 7, stage_render);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 7, 8, stage_render);
 
 
 STATIC const mp_rom_map_elem_t stage_module_globals_table[] = {

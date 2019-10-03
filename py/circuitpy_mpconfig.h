@@ -230,11 +230,32 @@ extern const struct _mp_obj_module_t audiobusio_module;
 #define AUDIOBUSIO_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOCORE
+#define AUDIOCORE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiocore), (mp_obj_t)&audiocore_module },
+extern const struct _mp_obj_module_t audiocore_module;
+#else
+#define AUDIOCORE_MODULE
+#endif
+
 #if CIRCUITPY_AUDIOIO
 #define AUDIOIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
 extern const struct _mp_obj_module_t audioio_module;
 #else
 #define AUDIOIO_MODULE
+#endif
+
+#if CIRCUITPY_AUDIOMIXER
+#define AUDIOMIXER_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomixer), (mp_obj_t)&audiomixer_module },
+extern const struct _mp_obj_module_t audiomixer_module;
+#else
+#define AUDIOMIXER_MODULE
+#endif
+
+#if CIRCUITPY_AUDIOPWMIO
+#define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
+extern const struct _mp_obj_module_t audiopwmio_module;
+#else
+#define AUDIOPWMIO_MODULE
 #endif
 
 #if CIRCUITPY_BITBANGIO
@@ -245,7 +266,7 @@ extern const struct _mp_obj_module_t bitbangio_module;
 #endif
 
 #if CIRCUITPY_BLEIO
-#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bleio), (mp_obj_t)&bleio_module },
+#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
 extern const struct _mp_obj_module_t bleio_module;
 #else
 #define BLEIO_MODULE
@@ -259,13 +280,7 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
 
-#if BOARD_I2C
-#define BOARD_I2C_ROOT_POINTER mp_obj_t shared_i2c_bus;
-#else
-#define BOARD_I2C_ROOT_POINTER
-#endif
-
-// SPI is always allocated off the heap.
+// I2C and SPI are always allocated off the heap.
 
 #if BOARD_UART
 #define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
@@ -275,7 +290,6 @@ extern const struct _mp_obj_module_t board_module;
 
 #else
 #define BOARD_MODULE
-#define BOARD_I2C_ROOT_POINTER
 #define BOARD_UART_ROOT_POINTER
 #endif
 
@@ -300,7 +314,7 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
 #define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
 #define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
-#define CIRCUITPY_DISPLAY_LIMIT (3)
+#define CIRCUITPY_DISPLAY_LIMIT (1)
 #else
 #define DISPLAYIO_MODULE
 #define FONTIO_MODULE
@@ -564,7 +578,10 @@ extern const struct _mp_obj_module_t ustack_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
+    AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
+    AUDIOMIXER_MODULE \
+    AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
@@ -587,8 +604,8 @@ extern const struct _mp_obj_module_t ustack_module;
       WIZNET_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
-    PULSEIO_MODULE \
     PS2IO_MODULE \
+    PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     ROTARYIO_MODULE \
@@ -631,12 +648,12 @@ extern const struct _mp_obj_module_t ustack_module;
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     mp_obj_t terminal_tilegrid_tiles; \
-    BOARD_I2C_ROOT_POINTER \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
 void run_background_tasks(void);
+#define RUN_BACKGROUND_TASKS (run_background_tasks())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()

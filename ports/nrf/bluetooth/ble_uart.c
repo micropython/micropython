@@ -34,11 +34,11 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
-#include "shared-bindings/bleio/Adapter.h"
-#include "shared-bindings/bleio/Characteristic.h"
-#include "shared-bindings/bleio/Device.h"
-#include "shared-bindings/bleio/Service.h"
-#include "shared-bindings/bleio/UUID.h"
+#include "shared-bindings/_bleio/Adapter.h"
+#include "shared-bindings/_bleio/Characteristic.h"
+#include "shared-bindings/_bleio/Device.h"
+#include "shared-bindings/_bleio/Service.h"
+#include "shared-bindings/_bleio/UUID.h"
 
 #if (MICROPY_PY_BLE_NUS == 1)
 
@@ -138,9 +138,7 @@ void ble_uart_init(void) {
     m_cccd_enabled = false;
 
     while (!m_cccd_enabled) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 
@@ -150,9 +148,7 @@ bool ble_uart_connected(void) {
 
 char ble_uart_rx_chr(void) {
     while (isBufferEmpty(&m_rx_ring_buffer)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 
     uint8_t byte;

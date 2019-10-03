@@ -69,9 +69,7 @@ static void ramp_value(uint16_t start, uint16_t end) {
         DAC->DATA.reg = value;
         DAC->DATABUF.reg = value;
         common_hal_mcu_delay_us(50);
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 #endif
@@ -94,9 +92,7 @@ static void ramp_value(uint16_t start, uint16_t end) {
         DAC->DATABUF[1].reg = value;
 
         common_hal_mcu_delay_us(50);
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 #endif
@@ -202,7 +198,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
         #endif
         #ifdef SAMD51
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI0;
-        DAC->DACCTRL[0].reg = DAC_DACCTRL_CCTRL_CC1M |
+        DAC->DACCTRL[0].reg = DAC_DACCTRL_CCTRL_CC100K |
                               DAC_DACCTRL_ENABLE |
                               DAC_DACCTRL_LEFTADJ;
         DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;
@@ -211,7 +207,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     #ifdef SAMD51
     if (channel1_enabled) {
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI1;
-        DAC->DACCTRL[1].reg = DAC_DACCTRL_CCTRL_CC1M |
+        DAC->DACCTRL[1].reg = DAC_DACCTRL_CCTRL_CC100K |
                               DAC_DACCTRL_ENABLE |
                               DAC_DACCTRL_LEFTADJ;
         DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;
@@ -316,6 +312,10 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
         return;
     }
 
+    if (common_hal_audioio_audioout_get_playing(self)) {
+        common_hal_audioio_audioout_stop(self);
+    }
+
     // Ramp the DAC down.
     ramp_value(self->quiescent_value, 0);
 
@@ -385,19 +385,17 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
 
     #ifdef SAMD51
     uint32_t left_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
-    uint8_t left_channel_trigger = DAC_DMAC_ID_EMPTY_0;
+    uint8_t tc_trig_id = TC0_DMAC_ID_OVF + 3 * self->tc_index;
+    uint8_t left_channel_trigger = tc_trig_id;
     uint32_t right_channel_reg = 0;
-    uint8_t right_channel_trigger = 0;
+    uint8_t right_channel_trigger = tc_trig_id;
     if (self->left_channel == &pin_PA05) {
         left_channel_reg = (uint32_t) &DAC->DATABUF[1].reg;
-        left_channel_trigger = DAC_DMAC_ID_EMPTY_1;
     } else if (self->right_channel == &pin_PA05) {
         right_channel_reg = (uint32_t) &DAC->DATABUF[1].reg;
-        right_channel_trigger = DAC_DMAC_ID_EMPTY_1;
     }
     if (self->right_channel == &pin_PA02) {
         right_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
-        right_channel_trigger = DAC_DMAC_ID_EMPTY_0;
     }
     result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
                                       false /* output unsigned */,

@@ -38,7 +38,7 @@
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/bleio/__init__.h"
+#include "common-hal/_bleio/__init__.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
@@ -49,6 +49,14 @@
 #include "tick.h"
 
 #include "shared-bindings/rtc/__init__.h"
+
+#ifdef CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
+
+#ifdef CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
 
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
@@ -93,6 +101,15 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+
+#ifdef CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
+#endif
+
+#ifdef CIRCUITPY_AUDIOPWMIO
+    audiopwmout_reset();
+#endif
+
 
 #if CIRCUITPY_PULSEIO
     pwmout_reset();

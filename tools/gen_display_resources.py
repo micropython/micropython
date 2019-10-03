@@ -98,14 +98,23 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-uint32_t terminal_transparency[1] = {0x00000000};
-
-// These colors are RGB 565 with the bytes swapped.
-uint32_t terminal_colors[1] = {0xffff0000};
+_displayio_color_t terminal_colors[2] = {
+    {
+        .rgb888 = 0x000000,
+        .rgb565 = 0x0000,
+        .luma = 0x00,
+        .chroma = 0
+    },
+    {
+        .rgb888 = 0xffffff,
+        .rgb565 = 0xffff,
+        .luma = 0xff,
+        .chroma = 0
+    },
+};
 
 displayio_palette_t supervisor_terminal_color = {
     .base = {.type = &displayio_palette_type },
-    .opaque = terminal_transparency,
     .colors = terminal_colors,
     .color_count = 2,
     .needs_refresh = false
@@ -122,6 +131,7 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .pixel_width = {1},
     .pixel_height = {2},
     .bitmap_width_in_tiles = {0},
+    .tiles_in_bitmap = {0},
     .width_in_tiles = 1,
     .height_in_tiles = 1,
     .tile_width = {1},
@@ -129,7 +139,8 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .tiles = NULL,
     .partial_change = false,
     .full_change = false,
-    .first_draw = true,
+    .hidden = false,
+    .hidden_by_parent = false,
     .moved = false,
     .inline_tiles = false,
     .in_group = true
@@ -150,7 +161,7 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-const displayio_bitmap_t supervisor_terminal_font_bitmap = {{
+displayio_bitmap_t supervisor_terminal_font_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {},
     .height = {},

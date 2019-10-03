@@ -81,6 +81,7 @@ INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
 INC += -I./nrfx/drivers/include
+INC += -I./nrfx/drivers/src
 INC += -I./bluetooth
 INC += -I./peripherals
 INC += -I../../lib/mp-readline
@@ -89,13 +90,10 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
-  # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+  CFLAGS += -ggdb3 -Og
 else
   CFLAGS += -Os -DNDEBUG
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
 endif
 
 
@@ -184,8 +182,7 @@ SRC_C += \
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
 SRC_C += \
-	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c \
-	lib/tinyusb/src/portable/nordic/nrf5x/hal_nrf5x.c
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
@@ -193,7 +190,8 @@ SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 SRC_S = supervisor/cpu.s
 

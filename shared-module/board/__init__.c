@@ -24,31 +24,41 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/busio/UART.h"
-
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_BUSIO
+#include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/busio/UART.h"
+#endif
+
+#if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
 
 #if BOARD_I2C
+// Statically allocate the I2C object so it can live past the end of the heap and into the next VM.
+// That way it can be used by built-in I2CDisplay displays and be accessible through board.I2C().
+STATIC busio_i2c_obj_t i2c_obj;
+STATIC mp_obj_t i2c_singleton = NULL;
+
 mp_obj_t common_hal_board_get_i2c(void) {
-    return MP_STATE_VM(shared_i2c_bus);
+    return i2c_singleton;
 }
 
 mp_obj_t common_hal_board_create_i2c(void) {
-    busio_i2c_obj_t *self = m_new_ll_obj(busio_i2c_obj_t);
+    if (i2c_singleton != NULL) {
+        return i2c_singleton;
+    }
+    busio_i2c_obj_t *self = &i2c_obj;
     self->base.type = &busio_i2c_type;
 
     common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 0);
-    MP_STATE_VM(shared_i2c_bus) = MP_OBJ_FROM_PTR(self);
-    return MP_STATE_VM(shared_i2c_bus);
+    i2c_singleton = (mp_obj_t)self;
+    return i2c_singleton;
 }
 #endif
 
@@ -99,7 +109,18 @@ mp_obj_t common_hal_board_create_uart(void) {
 
 void reset_board_busses(void) {
 #if BOARD_I2C
-    MP_STATE_VM(shared_i2c_bus) = NULL;
+    bool display_using_i2c = false;
+    #if CIRCUITPY_DISPLAYIO
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].i2cdisplay_bus.bus == i2c_singleton) {
+            display_using_i2c = true;
+            break;
+        }
+    }
+    #endif
+    if (!display_using_i2c) {
+        i2c_singleton = NULL;
+    }
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
