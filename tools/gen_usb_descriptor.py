@@ -32,7 +32,7 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
-parser.add_argument('--relative_ep_num', type=int, default=1,
+parser.add_argument('--renumber_endpoints', type=int, default=1,
                     help='use relative(1) or absolute(0) endpoint number')
 parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
                     help='endpoint number of CDC NOTIFICATION')
@@ -62,6 +62,24 @@ if unknown_devices:
 unknown_hid_devices = list(frozenset(args.hid_devices) - ALL_HID_DEVICES_SET)
 if unknown_hid_devices:
     raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
+
+if not args.renumber_endpoints:
+    if 'CDC' in args.devices:
+        if (args.cdc_ep_num_notification == 0 or args.cdc_ep_num_data_out == 0 or
+            args.cdc_ep_num_data_in == 0):
+            raise ValueError("Endpoint address must not be 0")
+
+    if 'MSC' in args.devices:
+        if args.msc_ep_num_out == 0 or args.msc_ep_num_in == 0:
+            raise ValueError("Endpoint address must not be 0")
+
+    if 'HID' in args.devices:
+        if args.hid_ep_num_in == 0:
+            raise ValueError("Endpoint address must not be 0")
+
+    if 'AUDIO' in args.devices:
+        if args.midi_ep_num_out == 0 or args.midi_ep_num_in == 0:
+            raise ValueError("Endpoint address must not be 0")
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -323,15 +341,10 @@ if 'HID' in args.devices:
 if 'AUDIO' in args.devices:
     interfaces_to_join.append(audio_interfaces)
 
-if args.relative_ep_num:
-    # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
-    # and renumber the interfaces in order. But we still need to fix up certain
-    # interface cross-references.
-    interfaces = util.join_interfaces(*interfaces_to_join)
-else:
-    # util.renumbers_interfaces() will renumber the interfaces in order. But we still need to 
-    # fix up certain interface cross-references.
-    interfaces = util.renumbers_interfaces(*interfaces_to_join)
+# util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
+# and renumber the interfaces in order. But we still need to fix up certain
+# interface cross-references.
+interfaces = util.join_interfaces(interfaces_to_join, renumber_endpoints=args.renumber_endpoints)
 
 # Now adjust the CDC interface cross-references.
 

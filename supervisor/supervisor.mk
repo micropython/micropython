@@ -94,8 +94,8 @@ ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
 endif
 
-ifndef USB_RELATIVE_EP_NUM
-USB_RELATIVE_EP_NUM = 1
+ifndef USB_RENUMBER_ENDPOINTS
+USB_RENUMBER_ENDPOINTS = 1
 endif
 
 ifndef USB_CDC_EP_NUM_NOTIFICATION
@@ -149,7 +149,7 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
 		--devices $(USB_DEVICES)\
 		--hid_devices $(USB_HID_DEVICES)\
-		--relative_ep_num $(USB_RELATIVE_EP_NUM)\
+		--renumber_endpoints $(USB_RENUMBER_ENDPOINTS)\
 		--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
 		--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
 		--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
