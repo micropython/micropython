@@ -109,6 +109,12 @@
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((uintptr_t)end & (~(BYTES_PER_BLOCK - 1)));
+
+#if MICROPY_PY_THREAD_GIL
+    mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
+#endif
+    MP_THREAD_GIL_ENTER();
+
     DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
 
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
