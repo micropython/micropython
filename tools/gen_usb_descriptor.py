@@ -34,6 +34,8 @@ parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default
                     help='HID devices to include in HID report descriptor')
 parser.add_argument('--msc_num_endpoint_pairs', type=int, default=1,
                     help='Use 1 or 2 endpoint pairs for MSC (1 bidirectional, or 1 input + 1 output (required by SAMD21))')
+parser.add_argument('--msc_max_packet_size', type=int, default=64,
+                    help='Max packet size for MSC')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
@@ -155,14 +157,16 @@ msc_interfaces = [
                 description="MSC in",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0),
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size),
             standard.EndpointDescriptor(
                 description="MSC out",
                 # SAMD21 needs to use a separate pair of endpoints for MSC.
                 bEndpointAddress=((0x1 if args.msc_num_endpoint_pairs == 2 else 0x0) |
                                   standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0)
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size)
         ]
     )
 ]

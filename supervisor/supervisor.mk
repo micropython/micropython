@@ -99,6 +99,10 @@ ifndef USB_MSC_NUM_ENDPOINT_PAIRS
 USB_MSC_NUM_ENDPOINT_PAIRS = 1
 endif
 
+ifndef USB_MSC_MAX_PACKET_SIZE
+USB_MSC_MAX_PACKET_SIZE = 64
+endif
+
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
@@ -119,6 +123,7 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 	        --devices $(USB_DEVICES)\
 		--hid_devices $(USB_HID_DEVICES)\
 		--msc_num_endpoint_pairs $(USB_MSC_NUM_ENDPOINT_PAIRS)\
+		--msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\
 		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
