@@ -25,6 +25,9 @@
 #define MICROPY_HW_CLK_PLLP (7)
 #define MICROPY_HW_CLK_PLLQ (2)
 
+// The board has an external 32kHz crystal
+#define MICROPY_HW_RTC_USE_LSE      (1)
+
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_B6)
 #define MICROPY_HW_UART1_RX     (pin_B7)

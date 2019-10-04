@@ -1196,6 +1196,13 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     } while (0);
 
     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
+        #if MICROPY_CPYTHON_COMPAT
+        if (comp->scope_cur->kind != SCOPE_MODULE) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns, "import * not at module level");
+            return;
+        }
+        #endif
+
         EMIT_ARG(load_const_small_int, import_level);
 
         // build the "fromlist" tuple

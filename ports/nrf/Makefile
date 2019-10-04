@@ -181,10 +181,7 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_timer.c \
 	nrfx_pwm.c \
 	nrfx_gpiote.c \
-	)
-
-SRC_NRFX_HAL += $(addprefix lib/nrfx/hal/,\
-	nrf_nvmc.c \
+	nrfx_nvmc.c \
 	)
 
 SRC_C += \

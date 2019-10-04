@@ -95,7 +95,13 @@ extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
 
+
 soft_reset:
+
+    led_init();
+
+    led_state(1, 1); // MICROPY_HW_LED_1 aka MICROPY_HW_LED_RED
+
     mp_stack_set_top(&_ram_end);
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -192,14 +198,6 @@ pin_init0();
     }
 #endif
 
-#if (MICROPY_HW_HAS_LED)
-    led_init();
-
-    do_str("import board\r\n" \
-           "board.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
-#endif
-
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
@@ -224,6 +222,8 @@ pin_init0();
     ticker_start();
     pwm_start();
 #endif
+
+led_state(1, 0);
 
 #if MICROPY_VFS || MICROPY_MBFS
     // run boot.py and main.py if they exist.
