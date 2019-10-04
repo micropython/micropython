@@ -24,8 +24,3 @@
 #define MICROPY_PY_URE_SUB              (0)
 
 #define MICROPY_PY_UCRYPTOLIB           (0)
-
-// TODO
-// #undef mp_import_stat
-// #undef mp_builtin_open
-// #undef mp_builtin_open_obj

@@ -209,9 +209,6 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-#512k:
-#	$(MAKE) LDSCRIPT=boards/esp8266_512k.ld CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_512k.h>"' MICROPY_FATFS=0 MICROPY_PY_BTREE=0
-
 ota:
 	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
 	$(MAKE) LDSCRIPT=boards/esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
