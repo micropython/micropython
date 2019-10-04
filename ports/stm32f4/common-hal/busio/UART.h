@@ -28,11 +28,13 @@
 #define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "stm32f4/periph.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
+    UART_HandleTypeDef handle;
     const mcu_uart_tx_obj_t *tx;
     const mcu_uart_rx_obj_t *rx;
     uint8_t character_bits;
@@ -42,5 +44,7 @@ typedef struct {
     uint32_t buffer_length;
     uint8_t* buffer;
 } busio_uart_obj_t;
+
+void uart_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
