@@ -41,7 +41,28 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
         uint16_t receiver_buffer_size) {
-	mp_raise_NotImplementedError(translate("UART not yet supported"));
+
+    GPIO_InitStruct.Pin = pin_mask(10)|pin_mask(11);
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart2) != HAL_OK)
+    {
+        mp_raise_NotImplementedError(translate("UART explode"));
+    }
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {

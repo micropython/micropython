@@ -33,8 +33,8 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t rx_pin;
-    uint8_t tx_pin;
+    const mcu_uart_tx_obj_t *tx;
+    const mcu_uart_rx_obj_t *rx;
     uint8_t character_bits;
     bool rx_error;
     uint32_t baudrate;
