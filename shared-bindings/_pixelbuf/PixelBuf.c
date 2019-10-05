@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/objarray.h"
+#include "py/objtype.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/binary.h"
@@ -223,13 +224,20 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
+
+// Helper to ensure we have the native super class instead of a subclass.
+static pixelbuf_pixelbuf_obj_t* native_pixelbuf(mp_obj_t pixelbuf_obj) {
+    mp_obj_t native_pixelbuf = mp_instance_cast_to_native_base(pixelbuf_obj, &pixelbuf_pixelbuf_type);
+    mp_obj_assert_native_inited(native_pixelbuf);
+    return MP_OBJ_TO_PTR(native_pixelbuf);
+}
+
 //|   .. attribute:: bpp
 //|
 //|     The number of bytes per pixel in the buffer (read-only)
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return mp_obj_new_int_from_uint(self->byteorder.bpp);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_bpp_obj, pixelbuf_pixelbuf_obj_get_bpp);
@@ -252,16 +260,14 @@ const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
 //|     In DotStar mode
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_brightness(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return mp_obj_new_float(self->brightness);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_brightness_obj, pixelbuf_pixelbuf_obj_get_brightness);
 
 
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t value) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     self->brightness = mp_obj_float_get(value);
     if (self->brightness > 1)
         self->brightness = 1;
@@ -298,16 +304,14 @@ void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self) {
 //|     Whether to automatically write the pixels after each update.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return mp_obj_new_bool(self->auto_write);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_auto_write_obj, pixelbuf_pixelbuf_obj_get_auto_write);
 
 
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_auto_write(mp_obj_t self_in, mp_obj_t value) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     self->auto_write = mp_obj_is_true(value);
     return mp_const_none;
 }
@@ -328,8 +332,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
 //|     actual pixels.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_buf(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return mp_obj_new_bytearray_by_ref(self->bytes, self->buf);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_buf_obj, pixelbuf_pixelbuf_obj_get_buf);
@@ -346,8 +349,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_buf_obj = {
 //|     byteorder string for the buffer (read-only)
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     return mp_obj_new_str(self->byteorder.order, strlen(self->byteorder.order));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_byteorder_str, pixelbuf_pixelbuf_obj_get_byteorder);
@@ -360,8 +362,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_byteorder_str = {
 };
 
 STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_const_true;
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->pixels);
@@ -375,8 +376,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     call_write_function(self);
     return mp_const_none;
 }
@@ -398,15 +398,13 @@ void call_write_function(pixelbuf_pixelbuf_obj_t *self) {
 //|     Sets the pixel value at the given index.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &pixelbuf_pixelbuf_type));
-
     if (value == MP_OBJ_NULL) {
         // delete item
         // slice deletion
         return MP_OBJ_NULL; // op not supported
     }
 
-    pixelbuf_pixelbuf_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
     if (0) {
 #if MICROPY_PY_BUILTINS_SLICE
     } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
