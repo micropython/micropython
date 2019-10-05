@@ -50,7 +50,7 @@ extern const int32_t colorwheel(float pos);
 //|
 //| :class:`~_pixelbuf.PixelBuf` implements an RGB[W] bytearray abstraction.
 //|
-//| .. class:: PixelBuf(size, buf, byteorder="BGR", brightness=0, rawbuf=None, offset=0, auto_write=False, write_function=None, write_args=None)
+//| .. class:: PixelBuf(size, buf, byteorder="BGR", brightness=0, rawbuf=None, offset=0, auto_write=False)
 //|
 //|   Create a PixelBuf object of the specified size, byteorder, and bits per pixel.
 //|
@@ -69,14 +69,11 @@ extern const int32_t colorwheel(float pos);
 //|   :param ~bytearray rawbuf: Bytearray in which to store raw pixel data (before brightness adjustment)
 //|   :param ~int offset: Offset from start of buffer (default 0)
 //|   :param ~bool auto_write: Whether to automatically write pixels (Default False)
-//|   :param ~callable write_function: (optional) Callable to use to send pixels
-//|   :param ~list write_args: (optional) Tuple or list of args to pass to ``write_function``.  The
-//|          PixelBuf instance is appended after these args.
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 2, MP_OBJ_FUN_ARGS_MAX, true);
     enum { ARG_size, ARG_buf, ARG_byteorder, ARG_brightness, ARG_rawbuf, ARG_offset,
-           ARG_auto_write, ARG_write_function, ARG_write_args };
+           ARG_auto_write };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_size, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_buf, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -85,8 +82,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_rawbuf, MP_ARG_OBJ, { .u_obj = mp_const_none } },
         { MP_QSTR_offset, MP_ARG_INT, { .u_int = 0 } },
         { MP_QSTR_auto_write, MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_write_function, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_write_args, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -155,13 +150,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     if (bytes + offset > bufinfo.len)
         mp_raise_ValueError_varg(translate("buf is too small. need %d bytes"), bytes + offset);
 
-    if (!MP_OBJ_IS_TYPE(args[ARG_write_args].u_obj, &mp_type_list) &&
-        !MP_OBJ_IS_TYPE(args[ARG_write_args].u_obj, &mp_type_tuple) &&
-        args[ARG_write_args].u_obj != mp_const_none)
-    {
-        mp_raise_ValueError(translate("write_args must be a list, tuple, or None"));
-    }
-
     // Validation complete, allocate and populate object.
     pixelbuf_pixelbuf_obj_t *self = m_new_obj(pixelbuf_pixelbuf_obj_t);
 
@@ -177,28 +165,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     self->rawbuf = two_buffers ? (uint8_t *)rawbufinfo.buf + offset : NULL;
     self->pixel_step = effective_bpp;
     self->auto_write = args[ARG_auto_write].u_bool;
-
-    // Show/auto-write callbacks
-    self->write_function = args[ARG_write_function].u_obj;
-    mp_obj_t function_args = args[ARG_write_args].u_obj;
-    mp_obj_t *src_objs = (mp_obj_t *)&mp_const_none_obj;
-    size_t num_items = 0;
-    if (function_args != mp_const_none) {
-        if (MP_OBJ_IS_TYPE(function_args, &mp_type_list)) {
-            mp_obj_list_t *t = MP_OBJ_TO_PTR(function_args);
-            num_items = t->len;
-            src_objs = t->items;
-        } else {
-            mp_obj_tuple_t *l = MP_OBJ_TO_PTR(function_args);
-            num_items = l->len;
-            src_objs = l->items;
-        }
-    }
-    self->write_function_args = mp_obj_new_tuple(num_items + 1, NULL);
-    for (size_t i = 0; i < num_items; i++) {
-        self->write_function_args->items[i] = src_objs[i];
-    }
-    self->write_function_args->items[num_items] = self;
 
     if (args[ARG_brightness].u_obj == mp_const_none) {
         self->brightness = 1.0;
@@ -276,7 +242,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
     if (self->two_buffers)
         pixelbuf_recalculate_brightness(self);
     if (self->auto_write)
-        call_write_function(self);
+        call_show(self_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_brightness_obj, pixelbuf_pixelbuf_obj_set_brightness);
@@ -297,6 +263,14 @@ void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self) {
         if (!self->byteorder.is_dotstar || (i % 4 != 0))
             buf[i] = rawbuf[i] * self->brightness;
     }
+}
+
+mp_obj_t call_show(mp_obj_t self_in) {
+    mp_obj_t dest[2];
+    mp_load_method(self_in, MP_QSTR_show, dest);
+    if (dest[0] == MP_OBJ_NULL)
+        return mp_const_none;
+    return mp_call_method_self_n_kw(dest[0], self_in, 0, 0, mp_const_none);
 }
 
 //|   .. attribute:: auto_write
@@ -372,22 +346,13 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 //|   .. method:: show()
 //|
-//|     Call the associated write function to display the pixels.
+//|     Does nothing unless subclassed.
 //|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
-    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
-    call_write_function(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
-
-void call_write_function(pixelbuf_pixelbuf_obj_t *self) {
-    // execute function if it's set
-    if (self->write_function != mp_const_none) {
-        mp_call_function_n_kw(self->write_function, self->write_function_args->len, 0, self->write_function_args->items);
-    }
-}
 
 //|   .. method:: __getitem__(index)
 //|
@@ -450,7 +415,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 }
             }
             if (self->auto_write)
-                call_write_function(self);
+                call_show(self_in);
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported
@@ -470,7 +435,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
                 self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
             if (self->auto_write)
-                call_write_function(self);
+                call_show(self_in);
             return mp_const_none;
         }
     }

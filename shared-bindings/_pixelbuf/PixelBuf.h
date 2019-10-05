@@ -50,6 +50,6 @@ typedef struct {
 } pixelbuf_pixelbuf_obj_t;
 
 void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self);
-void call_write_function(pixelbuf_pixelbuf_obj_t *self);
+mp_obj_t call_show(mp_obj_t self_in);
 
 #endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
