@@ -46,6 +46,7 @@ machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERA
                                    
 STATIC const machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
 
+//Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
     if(can_get_status_info(&status)!=ESP_OK){
@@ -69,7 +70,6 @@ STATIC mp_obj_t machine_hw_can_get_tx_waiting_messages(mp_obj_t self_in){
     return mp_obj_new_int(status.msgs_to_tx);
 }
 
-//Return status information
 STATIC mp_obj_t machine_hw_can_get_tec(mp_obj_t self_in){
     can_status_info_t status = _machine_hw_can_get_status();
     return mp_obj_new_int(status.tx_error_counter);
@@ -84,66 +84,112 @@ STATIC mp_obj_t machine_hw_can_get_state(mp_obj_t self_in){
     return mp_obj_new_int(_machine_hw_can_get_state()); 
 }
 
+//Clear TX Queue
 STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_transmit_queue()==ESP_OK);
 }
-
+//Clear RX Queue
 STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_receive_queue()==ESP_OK);
 }
 
-
-STATIC mp_obj_t machine_hw_can_write(mp_obj_t self_in, mp_obj_t address) {
-    int value = mp_obj_get_int(address);
-    if (value < 0 || value > 255) mp_raise_ValueError("Value out of range");
-
+//send([data], id, timeout=0, rtr=False, self_flag=False)
+STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_self };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_id,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_rtr,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_self_flag,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+    
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
+    // populate message
+    size_t length;
+    mp_obj_t *items;
+    mp_obj_get_array(args[ARG_data].u_obj,&length, &items);
+    if (length>8){
+        mp_raise_ValueError("CAN data field too long");
+    }
+    uint8_t flags = (args[ARG_rtr].u_bool==true ? CAN_MSG_FLAG_RTR : CAN_MSG_FLAG_NONE);
+    if (args[ARG_id].u_int>0x7ff){
+        flags += CAN_MSG_FLAG_EXTD;
+    }
+    if (args[ARG_self].u_bool){
+        flags += CAN_MSG_FLAG_SELF;
+    }
+    
+    can_message_t tx_msg = {.data_length_code = length, 
+                            .identifier = args[ARG_id].u_int & 0x1FFFFFFF, 
+                            .flags = flags};
+    for (uint8_t i=0; i<length; i++ ){
+        tx_msg.data[i] = mp_obj_get_int(items[i]);
+    }
     if (_machine_hw_can_get_state()==CAN_STATE_RUNNING){
-        //TODO: Check if queue is full
-        can_message_t tx_msg = {.data_length_code = 2, .identifier = 0x86, .flags = CAN_MSG_FLAG_SELF};
-        tx_msg.data[0] = 0x58;
-        tx_msg.data[1] = 0x86;
-        ESP_ERROR_CHECK(can_transmit(&tx_msg, 100));  //FIXME: remove ESP_ERROR_CHECK
-        return machine_hw_can_get_rx_waiting_messages(self_in);
+        switch(can_transmit(&tx_msg, args[ARG_timeout].u_int)){
+            case ESP_ERR_INVALID_ARG: ESP_LOGW(DEVICE_NAME, "Arguments are invalid"); break;
+            case ESP_ERR_TIMEOUT: //TX Queue is full
+            case ESP_FAIL: ESP_LOGW(DEVICE_NAME, "Message transmission failed"); break;
+            case ESP_ERR_INVALID_STATE: ESP_LOGW(DEVICE_NAME, "Device is not initialized"); break;
+            case ESP_ERR_NOT_SUPPORTED: ESP_LOGW(DEVICE_NAME, "Listen Only Mode active"); break;
+        }
+        return machine_hw_can_get_tx_waiting_messages(pos_args[0]);
     }else{
         ESP_LOGW(DEVICE_NAME, "Unable to send the message");
         return MP_OBJ_NEW_SMALL_INT(-1);
     }
 }
 
-STATIC mp_obj_t machine_hw_can_read(mp_obj_t self_in) {
+// recv(timeout=5000)
+STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_timeout };
+    mp_obj_t ret_obj = mp_obj_new_tuple(3, NULL);
+    mp_obj_t *items = ((mp_obj_tuple_t*)MP_OBJ_TO_PTR(ret_obj))->items;
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     can_message_t rx_message;
     switch(can_receive(&rx_message, 1)){
-        case ESP_ERR_TIMEOUT:
-            ESP_LOGW(DEVICE_NAME, "Time-out"); break;
-        case ESP_ERR_INVALID_ARG:
-            ESP_LOGE(DEVICE_NAME, "Invalid Args"); break;
-        case ESP_ERR_INVALID_STATE:
-            ESP_LOGW(DEVICE_NAME, "Invalid State"); break;
         case ESP_OK:
-            return MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
+            items[0] = MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
+            items[1] = mp_obj_new_bytes(rx_message.data, rx_message.data_length_code);
+            items[2] = MP_OBJ_NEW_SMALL_INT(rx_message.flags);
+            return ret_obj;
+        case ESP_ERR_TIMEOUT:
+            mp_raise_ValueError("Timeout");
+        case ESP_ERR_INVALID_ARG:
+            mp_raise_ValueError("Invalid Args");
+        case ESP_ERR_INVALID_STATE:
+            mp_raise_ValueError("Invalid State");
+        default:
+            mp_raise_ValueError("");
     };
-    return MP_OBJ_NEW_SMALL_INT(-1);
-    
 }
 
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->config->initialized){
+        qstr mode;
+        switch(self->config->general->mode){
+            case CAN_MODE_LISTEN_ONLY: mode = MP_QSTR_LISTEN; break;
+            case CAN_MODE_NO_ACK: mode = MP_QSTR_NO_ACK; break;
+            case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
+            default: mode = MP_QSTR_UNKNOWN; break;
+        }
         mp_printf(print, "CAN(tx=%u, rx=%u, baudrate=%ukb, mode=%u)", self->config->general->tx_io, self->config->general->rx_io, 
-                                                                self->config->baudrate, self->config->general->mode);
+                                                                self->config->baudrate, mode);
     }else{
         mp_printf(print, "CAN Device is not initialized");
     }
     
 }
-
-
-/*void machine_can_trasmit(machine_hw_can_obj_t *self, uint32_t address, size_t length, mp_machine_can_buf_t *data)
-{
-    can_message_t tx_msg = {.data_length_code = length, .identifier = address, .flags = CAN_MSG_FLAG_SELF};
-    for (uint8_t i=0; i<length; i++){ tx_msg.data[i] = data[i]; }
-    ESP_ERROR_CHECK(can_transmit(&tx_msg, portMAX_DELAY));
-}*/
 
 // CAN(...) No argument to get the object
 // Any argument will be used to init the device through init function
@@ -257,6 +303,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     return mp_const_none;
 }
 
+//deinit()
 STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
     const machine_can_obj_t *self =  &machine_can_obj;
     if (self->config->initialized != true){
