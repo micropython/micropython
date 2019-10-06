@@ -211,6 +211,9 @@ LDFLAGS += -u call_user_start_cpu0 -u uxTopUsedPriority -u ld_include_panic_high
 LDFLAGS += -u __cxa_guard_dummy # so that implementation of static guards is taken from cxx_guards.o instead of libstdc++.a
 LDFLAGS += -L$(ESPCOMP)/esp32/ld
 LDFLAGS += -L$(ESPCOMP)/esp_rom/esp32/ld
+ifeq ($(CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY),y)
+LDFLAGS += -T esp32.extram.bss.ld
+endif
 LDFLAGS += -T $(BUILD)/esp32_out.ld
 LDFLAGS += -T $(BUILD)/esp32.project.ld
 LDFLAGS += -T esp32.rom.ld
