@@ -325,6 +325,22 @@ pins can be used for SCL and SDA.  The driver is accessed via the
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
+CAN bus
+-------
+
+The CAN driver is based on hardware implementation.  
+Any available output-capablepins can be used for SCL and SDA.  
+The driver is accessed via the :ref:`machine.CAN <machine.CAN>` class::
+
+    from machine import CAN
+
+    # construct a CAN bus
+    bus = CAN(tx=4, rx=2, baudrate=500, mode=CAN.MODE_NO_ACK)
+
+    bus.send([0,1,2,3], 0x86, self_flag=True)   #Send a self message
+    bus.recv()                                  #Read the message sent
+ 
+
 Real time clock (RTC)
 ---------------------
 
