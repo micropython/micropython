@@ -26,7 +26,7 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include <mpconfigport.h>
+#include "mpconfigport.h"
 
 //Headers of ESP-IDF library
 #include "soc/dport_reg.h" //FIXME: check if path is found. full path is ESPIDF/components/soc/esp32/include/soc/dport_reg.h
@@ -46,27 +46,52 @@ machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERA
                                    
 STATIC const machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
 
-
-
-
+STATIC can_status_info_t _machine_hw_can_get_status(){
+    can_status_info_t status;
+    if(can_get_status_info(&status)!=ESP_OK){
+        mp_raise_ValueError("Unable to get CAN status");
+    }
+    return status;
+}
 
 STATIC can_state_t _machine_hw_can_get_state(){
-    can_status_info_t status;
-    ESP_ERROR_CHECK(can_get_status_info(&status)); //FIXME: remove ESP_ERROR_CHECK
-    return status.state; 
+    can_status_info_t status = _machine_hw_can_get_status();
+    return status.state;
 }
 
 STATIC mp_obj_t machine_hw_can_get_rx_waiting_messages(mp_obj_t self_in){
-    can_status_info_t status;
-    ESP_ERROR_CHECK(can_get_status_info(&status)); //FIXME: remove ESP_ERROR_CHECK
-    return mp_obj_new_int(status.msgs_to_rx);
+    can_status_info_t status = _machine_hw_can_get_status();
+        return mp_obj_new_int(status.msgs_to_rx);
 }
 
 STATIC mp_obj_t machine_hw_can_get_tx_waiting_messages(mp_obj_t self_in){
-    can_status_info_t status;
-    ESP_ERROR_CHECK(can_get_status_info(&status)); //FIXME: remove ESP_ERROR_CHECK
+    can_status_info_t status = _machine_hw_can_get_status();
     return mp_obj_new_int(status.msgs_to_tx);
 }
+
+//Return status information
+STATIC mp_obj_t machine_hw_can_get_tec(mp_obj_t self_in){
+    can_status_info_t status = _machine_hw_can_get_status();
+    return mp_obj_new_int(status.tx_error_counter);
+}
+
+STATIC mp_obj_t machine_hw_can_get_rec(mp_obj_t self_in){
+    can_status_info_t status = _machine_hw_can_get_status();
+    return mp_obj_new_int(status.rx_error_counter);
+}
+
+STATIC mp_obj_t machine_hw_can_get_state(mp_obj_t self_in){
+    return mp_obj_new_int(_machine_hw_can_get_state()); 
+}
+
+STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in){
+    return mp_obj_new_bool(can_clear_transmit_queue()==ESP_OK);
+}
+
+STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in){
+    return mp_obj_new_bool(can_clear_receive_queue()==ESP_OK);
+}
+
 
 STATIC mp_obj_t machine_hw_can_write(mp_obj_t self_in, mp_obj_t address) {
     int value = mp_obj_get_int(address);

@@ -67,13 +67,26 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 STATIC mp_obj_t machine_hw_can_read(mp_obj_t self_in);
 STATIC mp_obj_t machine_hw_can_write(mp_obj_t self_in, mp_obj_t address) ;
+STATIC mp_obj_t machine_hw_can_get_tec(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_get_rec(mp_obj_t self_in);
 STATIC mp_obj_t machine_hw_can_get_tx_waiting_messages(mp_obj_t self_in);
 STATIC mp_obj_t machine_hw_can_get_rx_waiting_messages(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_get_state(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in);
+
 //Python function declarations
 MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_write_obj, machine_hw_can_write);
 MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_read_obj, machine_hw_can_read);
 MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_deinit_obj, machine_hw_can_deinit);
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_init_obj, 4, machine_hw_can_init);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_get_tec_obj, machine_hw_can_get_tec);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_get_rec_obj, machine_hw_can_get_rec);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_get_tx_waiting_messages_obj, machine_hw_can_get_tx_waiting_messages);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_get_rx_waiting_messages_obj, machine_hw_can_get_rx_waiting_messages);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_get_state_obj, machine_hw_can_get_state);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_tx_queue_obj, machine_hw_can_clear_tx_queue);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_rx_queue_obj, machine_hw_can_clear_rx_queue);
 
 //Python objects list declaration
 STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
@@ -84,6 +97,13 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_write_obj)},
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_hw_can_read_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_tec), MP_ROM_PTR(&machine_hw_can_get_tec_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_rec), MP_ROM_PTR(&machine_hw_can_get_rec_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_tx_waiting_messages), MP_ROM_PTR(&machine_hw_can_get_tx_waiting_messages_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_rx_waiting_messages), MP_ROM_PTR(&machine_hw_can_get_rx_waiting_messages_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_state), MP_ROM_PTR(&machine_hw_can_get_state_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
     //CAN_MODE
     { MP_ROM_QSTR(MP_QSTR_CAN_MODE_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
     { MP_ROM_QSTR(MP_QSTR_CAN_MODE_NO_ACK), MP_ROM_INT(CAN_MODE_NO_ACK) },
