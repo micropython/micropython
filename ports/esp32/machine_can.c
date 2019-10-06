@@ -183,8 +183,11 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
             case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
             default: mode = MP_QSTR_UNKNOWN; break;
         }
-        mp_printf(print, "CAN(tx=%u, rx=%u, baudrate=%ukb, mode=%u)", self->config->general->tx_io, self->config->general->rx_io, 
-                                                                self->config->baudrate, mode);
+        mp_printf(print, 
+                    "CAN(tx=%u, rx=%u, baudrate=%ukb, mode=%q)", 
+                    self->config->general->tx_io, 
+                    self->config->general->rx_io, 
+                    self->config->baudrate, mode);
     }else{
         mp_printf(print, "CAN Device is not initialized");
     }
