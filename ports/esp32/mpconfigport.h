@@ -21,8 +21,6 @@
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 #define MICROPY_EMIT_XTENSAWIN              (1)
-void *esp_native_code_commit(void*, size_t);
-#define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)
@@ -225,6 +223,8 @@ struct mp_bluetooth_nimble_root_pointers_t;
 #define BYTES_PER_WORD (4)
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+void *esp_native_code_commit(void*, size_t, void*);
+#define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 #define MP_SSIZE_MAX (0x7fffffff)
 
 // Note: these "critical nested" macros do not ensure cross-CPU exclusion,

@@ -74,7 +74,7 @@
 #define MP_BC_PRELUDE_SIG_ENCODE(S, E, scope, out_byte, out_env) \
 do {                                                            \
     /*// Get values to store in prelude */                      \
-    size_t F = scope->scope_flags & 0x0f; /* only need to store lower 4 flag bits */ \
+    size_t F = scope->scope_flags & MP_SCOPE_FLAG_ALL_SIG;      \
     size_t A = scope->num_pos_args;                             \
     size_t K = scope->num_kwonly_args;                          \
     size_t D = scope->num_def_pos_args;                         \
