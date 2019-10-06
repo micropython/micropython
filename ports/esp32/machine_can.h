@@ -30,26 +30,78 @@
 
 #include "py/obj.h"
 
+#define DEVICE_NAME "CAN"
+
+#define CAN_BAUDRATE_25k 25
+#define CAN_BAUDRATE_50k 50
+#define CAN_BAUDRATE_100k 100
+#define CAN_BAUDRATE_125k 125
+#define CAN_BAUDRATE_250k 250
+#define CAN_BAUDRATE_500k 500
+#define CAN_BAUDRATE_800k 800
+#define CAN_BAUDRATE_1M 1000
+
+
+typedef struct _machine_can_config_t {
+    const can_timing_config_t *timing;
+    const can_filter_config_t *filter;
+    const can_general_config_t *general;
+    uint16_t baudrate;
+    bool initialized;
+} machine_can_config_t;
+
 typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
-    uint8_t tx;
-    uint8_t rx;
-} machine_hw_can_obj_t;
+    machine_can_config_t *config;
+} machine_can_obj_t;
+
+//Internal functions
+STATIC can_state_t _machine_hw_can_get_state();
 
 //Functions signature definition
-STATIC mp_obj_t machine_hw_can_init(mp_obj_t self_in);
+mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in);
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
+STATIC mp_obj_t machine_hw_can_read(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_write(mp_obj_t self_in, mp_obj_t address) ;
+STATIC mp_obj_t machine_hw_can_get_tx_waiting_messages(mp_obj_t self_in);
+STATIC mp_obj_t machine_hw_can_get_rx_waiting_messages(mp_obj_t self_in);
 //Python function declarations
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_init_obj, machine_hw_can_init);
+MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_write_obj, machine_hw_can_write);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_read_obj, machine_hw_can_read);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_deinit_obj, machine_hw_can_deinit);
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_init_obj, 4, machine_hw_can_init);
 
 //Python objects list declaration
 STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
+    //CAN_ATTRIBUTES
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_CAN) },
+    //CAN_FUNCTIONS
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_125k), MP_ROM_INT(125) },
-    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_250k), MP_ROM_INT(250) },
-    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(500) },
-    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(1000) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_write_obj)},
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_hw_can_read_obj)},
+    //CAN_MODE
+    { MP_ROM_QSTR(MP_QSTR_CAN_MODE_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_CAN_MODE_NO_ACK), MP_ROM_INT(CAN_MODE_NO_ACK) },
+    { MP_ROM_QSTR(MP_QSTR_CAN_MODE_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
+    //CAN_STATE
+    { MP_ROM_QSTR(MP_QSTR_CAN_STATE_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
+    { MP_ROM_QSTR(MP_QSTR_CAN_STATE_RUNNING), MP_ROM_INT(CAN_STATE_RUNNING) },
+    { MP_ROM_QSTR(MP_QSTR_CAN_STATE_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_CAN_STATE_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING) },
+    //CAN_BAUDRATE
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_25k), MP_ROM_INT(CAN_BAUDRATE_25k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_50k), MP_ROM_INT(CAN_BAUDRATE_50k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_100k), MP_ROM_INT(CAN_BAUDRATE_100k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_125k), MP_ROM_INT(CAN_BAUDRATE_125k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_250k), MP_ROM_INT(CAN_BAUDRATE_250k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(CAN_BAUDRATE_500k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_800k), MP_ROM_INT(CAN_BAUDRATE_800k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(CAN_BAUDRATE_1M) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
@@ -57,7 +109,9 @@ STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_tab
 const mp_obj_type_t machine_can_type = {
     { &mp_type_type },
     .name = MP_QSTR_CAN,
-    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict,
+    .print = machine_hw_can_print, // give it a print-function
+    .make_new = machine_hw_can_make_new,  // give it a constructor
+    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
 };
 
 #endif // MICROPY_INCLUDED_ESP32_CAN_H
