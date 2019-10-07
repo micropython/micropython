@@ -368,11 +368,15 @@ Notes:
 RMT
 ---
 
-The RMT is a module, specific to the ESP32, that allows pulses of very accurate interval
-and duration to be sent and received::
+The RMT (Remote Control) module, specific to the ESP32, was originally designed to send
+and receive infrared remote control signals. However, due to a flexible design and
+very accurate (12.5ns) pulse generation, it can also be used to transmit or receive
+many other types of digital signals::
 
-    rmt_channel = esp32.RMT(0, machine.Pin(18), 100)  # Channel 0, bound to Pin 18, clock divider of 100
-    rmt_channel.send_pulses((10, 1000, 10, 2000, 10, 3000))  # Send three long pulses with short delays between
+    r = esp32.RMT(0, Pin(18), 80)
+    r  # RMT(channel=0, pin=18, clock_divider=80)
+    r.resolution(), r.max_pulse_length()  # (1e-06, 0.032768)
+    r.send_pulses((100, 2000, 100, 4000), start_level=0)  # Send 0 for 100*1e-06s, 1 for 2000*1e-06s etc
 
 For more details see Espressif `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
