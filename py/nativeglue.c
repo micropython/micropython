@@ -30,8 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/smallint.h"
-#include "py/emitglue.h"
-#include "py/bc.h"
+#include "py/nativeglue.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -211,7 +210,7 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
 }
 
 // these must correspond to the respective enum in runtime0.h
-const void *const mp_fun_table[MP_F_NUMBER_OF] = {
+const mp_fun_table_t mp_fun_table = {
     &mp_const_none_obj,
     &mp_const_false_obj,
     &mp_const_true_obj,

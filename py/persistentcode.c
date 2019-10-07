@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include "py/reader.h"
-#include "py/emitglue.h"
+#include "py/nativeglue.h"
 #include "py/persistentcode.h"
 #include "py/bc0.h"
 #include "py/objstr.h"
@@ -453,7 +453,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         #if MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             // Populate mp_fun_table entry
-            *ct++ = (mp_uint_t)(uintptr_t)mp_fun_table;
+            *ct++ = (mp_uint_t)(uintptr_t)&mp_fun_table;
         }
         #endif
 

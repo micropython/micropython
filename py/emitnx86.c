@@ -1,7 +1,7 @@
 // x86 specific stuff
 
 #include "py/mpconfig.h"
-#include "py/runtime0.h"
+#include "py/nativeglue.h"
 
 #if MICROPY_EMIT_X86
 

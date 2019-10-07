@@ -314,7 +314,7 @@ class RawCode(object):
                 print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
             for i in range(len(self.objs)):
                 if self.objs[i] is MPFunTable:
-                    print('    mp_fun_table,')
+                    print('    &mp_fun_table,')
                 elif type(self.objs[i]) is float:
                     print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
@@ -711,6 +711,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#include "py/objint.h"')
     print('#include "py/objstr.h"')
     print('#include "py/emitglue.h"')
+    print('#include "py/nativeglue.h"')
     print()
 
     print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE != %u' % config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
