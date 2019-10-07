@@ -173,7 +173,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     #endif
 
     self->handle.Instance = USARTx;
-    self->handle.Init.BaudRate = 115200;
+    self->handle.Init.BaudRate = 9600;
     self->handle.Init.WordLength = UART_WORDLENGTH_8B;
     self->handle.Init.StopBits = UART_STOPBITS_1;
     self->handle.Init.Parity = UART_PARITY_NONE;
@@ -183,6 +183,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (HAL_UART_Init(&self->handle) != HAL_OK)
     {
         mp_raise_ValueError(translate("UART Init Error"));
+
+    } else {
+        mp_printf(&mp_plat_print, "Init Success, ");
+        const char msg[] = "Program has started";
+        if(HAL_UART_Transmit(&self->handle, (uint8_t *)msg, sizeof(msg)/sizeof(*msg), 5000) == HAL_OK) mp_printf(&mp_plat_print, "Write Success");
     }
     claim_pin(tx);
     claim_pin(rx);
