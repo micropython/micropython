@@ -44,6 +44,8 @@ parser.add_argument('--msc_ep_num_out', type=int, default=0,
                     help='endpoint number of MSC OUT')
 parser.add_argument('--msc_ep_num_in', type=int, default=0,
                     help='endpoint number of MSC IN')
+parser.add_argument('--hid_ep_num_out', type=int, default=0,
+                    help='endpoint number of HID OUT')
 parser.add_argument('--hid_ep_num_in', type=int, default=0,
                     help='endpoint number of HID IN')
 parser.add_argument('--midi_ep_num_out', type=int, default=0,
@@ -74,7 +76,7 @@ if not args.renumber_endpoints:
             raise ValueError("Endpoint address must not be 0")
 
     if 'HID' in args.devices:
-        if args.hid_ep_num_in == 0:
+        if args.args.hid_ep_num_out == 0 or args.hid_ep_num_in == 0:
             raise ValueError("Endpoint address must not be 0")
 
     if 'AUDIO' in args.devices:
@@ -231,7 +233,7 @@ hid_endpoint_in_descriptor = standard.EndpointDescriptor(
 
 hid_endpoint_out_descriptor = standard.EndpointDescriptor(
     description="HID out",
-    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+    bEndpointAddress=args.hid_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
     bInterval=8)
 

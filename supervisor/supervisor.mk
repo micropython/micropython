@@ -118,6 +118,10 @@ ifndef USB_MSC_EP_NUM_IN
 USB_MSC_EP_NUM_IN = 0
 endif
 
+ifndef USB_HID_EP_NUM_OUT
+USB_HID_EP_NUM_OUT = 0
+endif
+
 ifndef USB_HID_EP_NUM_IN
 USB_HID_EP_NUM_IN = 0
 endif
@@ -155,6 +159,7 @@ autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile 
 		--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
 		--msc_ep_num_out $(USB_MSC_EP_NUM_OUT)\
 		--msc_ep_num_in $(USB_MSC_EP_NUM_IN)\
+		--hid_ep_num_out $(USB_HID_EP_NUM_OUT)\
 		--hid_ep_num_in $(USB_HID_EP_NUM_IN)\
 		--midi_ep_num_out $(USB_MIDI_EP_NUM_OUT)\
 		--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
