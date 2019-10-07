@@ -41,7 +41,7 @@ typedef struct {
     pixelbuf_rgbw_t byteorder;
     bool has_white;
     bool is_dotstar;
-    char order[5];
+    mp_obj_t *order;
 } pixelbuf_byteorder_details_t;
 
 #endif // CIRCUITPYTHON_PIXELBUF_TYPES_H

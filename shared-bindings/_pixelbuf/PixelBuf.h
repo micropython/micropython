@@ -44,8 +44,6 @@ typedef struct {
     size_t offset;
     uint8_t *rawbuf;
     uint8_t *buf;
-    mp_obj_t write_function;
-    mp_obj_tuple_t *write_function_args;
     bool auto_write;
 } pixelbuf_pixelbuf_obj_t;
 
