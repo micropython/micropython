@@ -35,9 +35,12 @@ INC += -I$(BUILD)
 INC += -I$(ZEPHYR_BASE)/net/ip
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
+INC += -I$(ZEPHYR_BASE)/../modules/fs/fatfs/include
+INC += -I$(ZEPHYR_BASE)/../modules/fs/littlefs
 
 SRC_C = main.c \
 	help.c \
+	moduos.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
@@ -46,6 +49,8 @@ SRC_C = main.c \
 	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
+	zfs.c \
+	zfs_file.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
