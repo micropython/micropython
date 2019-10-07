@@ -46,7 +46,7 @@ ifdef EXTERNAL_FLASH_DEVICES
 else
 	ifeq ($(DISABLE_FILESYSTEM),1)
 		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
-	else 
+	else
 		SRC_SUPERVISOR += supervisor/internal_flash.c
 	endif
 endif
@@ -58,30 +58,31 @@ ifeq ($(USB),FALSE)
 		SRC_SUPERVISOR += supervisor/serial.c
 	endif
 else
-	SRC_SUPERVISOR += lib/tinyusb/src/common/tusb_fifo.c \
-					  lib/tinyusb/src/device/usbd.c \
-					  lib/tinyusb/src/device/usbd_control.c \
-					  lib/tinyusb/src/class/msc/msc_device.c \
-					  lib/tinyusb/src/class/cdc/cdc_device.c \
-					  lib/tinyusb/src/class/hid/hid_device.c \
-					  lib/tinyusb/src/class/midi/midi_device.c \
-					  lib/tinyusb/src/tusb.c \
-					  supervisor/shared/serial.c \
-					  supervisor/usb.c \
-					  supervisor/shared/usb/usb_desc.c \
-					  supervisor/shared/usb/usb.c \
-					  supervisor/shared/usb/usb_msc_flash.c \
-					  shared-bindings/usb_hid/__init__.c \
-					  shared-bindings/usb_hid/Device.c \
-					  shared-bindings/usb_midi/__init__.c \
-					  shared-bindings/usb_midi/PortIn.c \
-					  shared-bindings/usb_midi/PortOut.c \
-					  shared-module/usb_hid/__init__.c \
-					  shared-module/usb_hid/Device.c \
-					  shared-module/usb_midi/__init__.c \
-					  shared-module/usb_midi/PortIn.c \
-					  shared-module/usb_midi/PortOut.c \
-					  $(BUILD)/autogen_usb_descriptor.c
+	SRC_SUPERVISOR += \
+		lib/tinyusb/src/common/tusb_fifo.c \
+		lib/tinyusb/src/device/usbd.c \
+		lib/tinyusb/src/device/usbd_control.c \
+		lib/tinyusb/src/class/msc/msc_device.c \
+		lib/tinyusb/src/class/cdc/cdc_device.c \
+		lib/tinyusb/src/class/hid/hid_device.c \
+		lib/tinyusb/src/class/midi/midi_device.c \
+		lib/tinyusb/src/tusb.c \
+		supervisor/shared/serial.c \
+		supervisor/usb.c \
+		supervisor/shared/usb/usb_desc.c \
+		supervisor/shared/usb/usb.c \
+		supervisor/shared/usb/usb_msc_flash.c \
+		shared-bindings/usb_hid/__init__.c \
+		shared-bindings/usb_hid/Device.c \
+		shared-bindings/usb_midi/__init__.c \
+		shared-bindings/usb_midi/PortIn.c \
+		shared-bindings/usb_midi/PortOut.c \
+		shared-module/usb_hid/__init__.c \
+		shared-module/usb_hid/Device.c \
+		shared-module/usb_midi/__init__.c \
+		shared-module/usb_midi/PortIn.c \
+		shared-module/usb_midi/PortOut.c \
+		$(BUILD)/autogen_usb_descriptor.c
 
 	CFLAGS += -DUSB_AVAILABLE
 endif

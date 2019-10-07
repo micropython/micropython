@@ -28,15 +28,15 @@
 
 #include "supervisor/serial.h"
 
-#if (MICROPY_PY_BLE_NUS == 1)
+#if CIRCUITPY_SERIAL_BLE
 #include "ble_uart.h"
-#else
+#elif CIRCUITPY_SERIAL_UART
 #include <string.h>
 #include "nrf_gpio.h"
 #include "nrfx_uarte.h"
 #endif
 
-#if (MICROPY_PY_BLE_NUS == 1)
+#if CIRCUITPY_SERIAL_BLE
 
 void serial_init(void) {
     ble_uart_init();
@@ -58,7 +58,7 @@ void serial_write(const char *text) {
     ble_uart_stdout_tx_str(text);
 }
 
-#elif !defined(NRF52840_XXAA)
+#elif CIRCUITPY_SERIAL_UART
 
 uint8_t serial_received_char;
 nrfx_uarte_t serial_instance = NRFX_UARTE_INSTANCE(0);
@@ -124,4 +124,4 @@ void serial_write_substring(const char *text, uint32_t len) {
     }
 }
 
-#endif
+#endif  // CIRCUITPY_SERIAL_UART

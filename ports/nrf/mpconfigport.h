@@ -38,16 +38,6 @@
 #define MICROPY_PY_UBINASCII                     (1)
 #define MICROPY_PY_UJSON                         (1)
 
-// TODO this is old BLE stuff
-#if BLUETOOTH_SD
-    #define MICROPY_PY_BLEIO                     (1)
-    #define MICROPY_PY_BLE_NUS                   (0)
-#else
-    #ifndef MICROPY_PY_BLEIO
-        #define MICROPY_PY_BLEIO                 (0)
-    #endif
-#endif
-
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 

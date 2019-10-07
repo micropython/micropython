@@ -40,7 +40,7 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-#if (MICROPY_PY_BLE_NUS == 1)
+#if CIRCUITPY_SERIAL_BLE
 
 static const char default_name[] = "CP-REPL"; // max 8 chars or uuid won't fit in adv data
 static const char NUS_UUID[] = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -190,4 +190,4 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // MICROPY_PY_BLE_NUS
+#endif // CIRCUITPY_SERIAL_BLE
