@@ -75,6 +75,7 @@ it will fallback to loading the built-in ``ujson`` module.
 
    builtins.rst
    array.rst
+   bluetooth.rst
    cmath.rst
    gc.rst
    math.rst
