@@ -73,7 +73,7 @@ if not args.renumber_endpoints:
             raise ValueError("CDC notification endpoint number must not be 0")
         elif args.cdc_ep_num_data_out == 0:
             raise ValueError("CDC data OUT endpoint number must not be 0")
-        elif args.cdc_ep_num_data_in == 0):
+        elif args.cdc_ep_num_data_in == 0:
             raise ValueError("CDC data IN endpoint number must not be 0")
 
     if 'MSC' in args.devices:
