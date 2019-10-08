@@ -32,6 +32,8 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
+parser.add_argument('--msc_max_packet_size', type=int, default=64,
+                    help='Max packet size for MSC')
 parser.add_argument('--no-renumber_endpoints', dest='renumber_endpoints', action='store_false',
                     help='use to not renumber endpoint')
 parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
@@ -196,12 +198,14 @@ msc_interfaces = [
                 description="MSC in",
                 bEndpointAddress=args.msc_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0),
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size),
             standard.EndpointDescriptor(
                 description="MSC out",
                 bEndpointAddress=(args.msc_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0)
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size)
         ]
     )
 ]
