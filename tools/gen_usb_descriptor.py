@@ -67,21 +67,30 @@ if unknown_hid_devices:
 
 if not args.renumber_endpoints:
     if 'CDC' in args.devices:
-        if (args.cdc_ep_num_notification == 0 or args.cdc_ep_num_data_out == 0 or
-            args.cdc_ep_num_data_in == 0):
-            raise ValueError("Endpoint address must not be 0")
+        if args.cdc_ep_num_notification == 0:
+            raise ValueError("CDC notification endpoint number must not be 0")
+        elif args.cdc_ep_num_data_out == 0:
+            raise ValueError("CDC data OUT endpoint number must not be 0")
+        elif args.cdc_ep_num_data_in == 0):
+            raise ValueError("CDC data IN endpoint number must not be 0")
 
     if 'MSC' in args.devices:
-        if args.msc_ep_num_out == 0 or args.msc_ep_num_in == 0:
-            raise ValueError("Endpoint address must not be 0")
+        if args.msc_ep_num_out == 0:
+            raise ValueError("MSC endpoint OUT number must not be 0")
+        elif  args.msc_ep_num_in == 0:
+            raise ValueError("MSC endpoint IN number must not be 0")
 
     if 'HID' in args.devices:
-        if args.args.hid_ep_num_out == 0 or args.hid_ep_num_in == 0:
-            raise ValueError("Endpoint address must not be 0")
+        if args.args.hid_ep_num_out == 0:
+            raise ValueError("HID endpoint OUT number must not be 0")
+        elif  args.hid_ep_num_in == 0:
+            raise ValueError("HID endpoint IN number must not be 0")
 
     if 'AUDIO' in args.devices:
-        if args.midi_ep_num_out == 0 or args.midi_ep_num_in == 0:
-            raise ValueError("Endpoint address must not be 0")
+        if args.args.midi_ep_num_out == 0:
+            raise ValueError("MIDI endpoint OUT number must not be 0")
+        elif  args.midi_ep_num_in == 0:
+            raise ValueError("MIDI endpoint IN number must not be 0")
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
