@@ -32,8 +32,8 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
-parser.add_argument('--renumber_endpoints', type=int, default=1,
-                    help='use relative(1) or absolute(0) endpoint number')
+parser.add_argument('--no-renumber_endpoints', dest='renumber_endpoints', action='store_false',
+                    help='use to not renumber endpoint')
 parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
                     help='endpoint number of CDC NOTIFICATION')
 parser.add_argument('--cdc_ep_num_data_out', type=int, default=0,
