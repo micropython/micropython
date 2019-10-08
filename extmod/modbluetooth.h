@@ -186,7 +186,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Start a discovery (scan). Set duration to zero to run continuously.
-int mp_bluetooth_gap_scan_start(int32_t duration_ms);
+int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us);
 
 // Stop discovery (if currently active).
 int mp_bluetooth_gap_scan_stop(void);

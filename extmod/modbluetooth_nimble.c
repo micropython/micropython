@@ -614,16 +614,16 @@ STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
     return 0;
 }
 
-int mp_bluetooth_gap_scan_start(int32_t duration_ms) {
+int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us) {
     if (duration_ms == 0) {
         duration_ms = BLE_HS_FOREVER;
     }
-    STATIC const struct ble_gap_disc_params discover_params = {
-        .itvl = BLE_GAP_SCAN_SLOW_INTERVAL1,
-        .window = BLE_GAP_SCAN_SLOW_WINDOW1,
+    struct ble_gap_disc_params discover_params = {
+        .itvl = MAX(BLE_HCI_SCAN_ITVL_MIN, MIN(BLE_HCI_SCAN_ITVL_MAX, interval_us / BLE_HCI_SCAN_ITVL)),
+        .window = MAX(BLE_HCI_SCAN_WINDOW_MIN, MIN(BLE_HCI_SCAN_WINDOW_MAX, window_us / BLE_HCI_SCAN_ITVL)),
         .filter_policy = BLE_HCI_CONN_FILT_NO_WL,
         .limited = 0,
-        .passive = 0,
+        .passive = 1,  // TODO: Handle BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP in gap_scan_cb above.
         .filter_duplicates = 0,
     };
     int err = ble_gap_disc(BLE_OWN_ADDR_PUBLIC, duration_ms, &discover_params, gap_scan_cb, NULL);

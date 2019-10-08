@@ -501,23 +501,26 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 3, 4, bluetooth_ble_gap_connect);
 
 STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 2 && args[1] == mp_const_none) {
-        int err = mp_bluetooth_gap_scan_stop();
-        return bluetooth_handle_errno(err);
-    } else {
-        mp_int_t duration_ms = 0;
-        if (n_args == 2) {
-            if (!mp_obj_is_int(args[1])) {
-                mp_raise_ValueError("invalid duration");
-            }
-            duration_ms = mp_obj_get_int(args[1]);
+    // Default is indefinite scan, with the NimBLE "background scan" interval and window.
+    mp_int_t duration_ms = 0;
+    mp_int_t interval_us = 1280000;
+    mp_int_t window_us = 11250;
+    if (n_args > 1) {
+        if (args[1] == mp_const_none) {
+            // scan(None) --> stop scan.
+            return bluetooth_handle_errno(mp_bluetooth_gap_scan_stop());
         }
-
-        int err = mp_bluetooth_gap_scan_start(duration_ms);
-        return bluetooth_handle_errno(err);
+        duration_ms = mp_obj_get_int(args[1]);
+        if (n_args > 2) {
+            interval_us = mp_obj_get_int(args[2]);
+            if (n_args > 3) {
+                window_us = mp_obj_get_int(args[3]);
+            }
+        }
     }
+    return bluetooth_handle_errno(mp_bluetooth_gap_scan_start(duration_ms, interval_us, window_us));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 2, bluetooth_ble_gap_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 4, bluetooth_ble_gap_scan);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_handle_in) {
