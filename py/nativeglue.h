@@ -26,8 +26,10 @@
 #ifndef MICROPY_INCLUDED_PY_NATIVEGLUE_H
 #define MICROPY_INCLUDED_PY_NATIVEGLUE_H
 
+#include <stdarg.h>
 #include "py/obj.h"
 #include "py/persistentcode.h"
+#include "py/stream.h"
 
 typedef enum {
     MP_F_CONST_NONE_OBJ = 0,
@@ -134,6 +136,36 @@ typedef struct _mp_fun_table_t {
     mp_int_t (*small_int_modulo)(mp_int_t dividend, mp_int_t divisor);
     bool (*yield_from)(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value);
     void *setjmp;
+    // Additional entries for dynamic runtime, starts at index 50
+    void *(*memset_)(void *s, int c, size_t n);
+    void *(*memmove_)(void *dest, const void *src, size_t n);
+    void *(*realloc_)(void *ptr, size_t n_bytes, bool allow_move);
+    int (*printf_)(const mp_print_t *print, const char *fmt, ...);
+    int (*vprintf_)(const mp_print_t *print, const char *fmt, va_list args);
+    #if defined(__GNUC__)
+    NORETURN // Only certain compilers support no-return attributes in function pointer declarations
+    #endif
+    void (*raise_msg)(const mp_obj_type_t *exc_type, const char *msg);
+    mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
+    mp_obj_t (*obj_new_str)(const char* data, size_t len);
+    mp_obj_t (*obj_new_bytes)(const byte* data, size_t len);
+    mp_obj_t (*obj_new_bytearray_by_ref)(size_t n, void *items);
+    void (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+    const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
+    const mp_print_t *plat_print;
+    const mp_obj_type_t *type_type;
+    const mp_obj_type_t *type_str;
+    const mp_obj_type_t *type_list;
+    const mp_obj_type_t *type_dict;
+    const mp_obj_type_t *type_fun_builtin_0;
+    const mp_obj_type_t *type_fun_builtin_1;
+    const mp_obj_type_t *type_fun_builtin_2;
+    const mp_obj_type_t *type_fun_builtin_3;
+    const mp_obj_type_t *type_fun_builtin_var;
+    const mp_obj_fun_builtin_var_t *stream_read_obj;
+    const mp_obj_fun_builtin_var_t *stream_readinto_obj;
+    const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;
+    const mp_obj_fun_builtin_var_t *stream_write_obj;
 } mp_fun_table_t;
 
 extern const mp_fun_table_t mp_fun_table;

@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -31,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/nativeglue.h"
+#include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -269,6 +271,33 @@ const mp_fun_table_t mp_fun_table = {
     #else
     NULL,
     #endif
+    // Additional entries for dynamic runtime, starts at index 50
+    memset,
+    memmove,
+    gc_realloc,
+    mp_printf,
+    mp_vprintf,
+    mp_raise_msg,
+    mp_obj_get_type,
+    mp_obj_new_str,
+    mp_obj_new_bytes,
+    mp_obj_new_bytearray_by_ref,
+    mp_get_buffer_raise,
+    mp_get_stream_raise,
+    &mp_plat_print,
+    &mp_type_type,
+    &mp_type_str,
+    &mp_type_list,
+    &mp_type_dict,
+    &mp_type_fun_builtin_0,
+    &mp_type_fun_builtin_1,
+    &mp_type_fun_builtin_2,
+    &mp_type_fun_builtin_3,
+    &mp_type_fun_builtin_var,
+    &mp_stream_read_obj,
+    &mp_stream_readinto_obj,
+    &mp_stream_unbuffered_readline_obj,
+    &mp_stream_write_obj,
 };
 
 #endif // MICROPY_EMIT_NATIVE
