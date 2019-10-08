@@ -119,7 +119,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = self->tx->altfn_index; 
+    GPIO_InitStruct.Alternate = self->tx->altfn_index;
     HAL_GPIO_Init(pin_port(tx->port), &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = pin_mask(rx->number);
@@ -133,42 +133,36 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
         __HAL_RCC_USART1_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART1");
     } 
     #endif
     #ifdef UART2
     if(USARTx==USART2) { 
         reserved_uart[1] = true;
         __HAL_RCC_USART2_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART2");
     } 
     #endif
     #ifdef USART3
     if(USARTx==USART3) { 
         reserved_uart[2] = true;
         __HAL_RCC_USART3_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART3");
     } 
     #endif
     #ifdef UART4
     if(USARTx==UART4) { 
         reserved_uart[3] = true;
         __HAL_RCC_UART4_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART4");
     } 
     #endif
     #ifdef UART5
     if(USARTx==UART5) { 
         reserved_uart[4] = true;
         __HAL_RCC_UART5_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART5");
     } 
     #endif
     #ifdef USART6
     if(USARTx==USART6) { 
         reserved_uart[5] = true;
         __HAL_RCC_USART6_CLK_ENABLE();
-        mp_printf(&mp_plat_print, "USART6");
     } 
     #endif
 
@@ -184,36 +178,46 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     {
         mp_raise_ValueError(translate("UART Init Error"));
 
-    } else {
-        mp_printf(&mp_plat_print, "Init Success, ");
-        const char msg[] = "Program has started";
-        if(HAL_UART_Transmit(&self->handle, (uint8_t *)msg, sizeof(msg)/sizeof(*msg), 5000) == HAL_OK) mp_printf(&mp_plat_print, "Write Success");
     }
+
     claim_pin(tx);
     claim_pin(rx);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return 0;
+    return self->tx->pin == mp_const_none;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    reset_pin_number(self->tx->pin->port,self->tx->pin->number);
+    reset_pin_number(self->rx->pin->port,self->rx->pin->number);
+    self->tx = mp_const_none;
+    self->rx = mp_const_none;
 }
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    if (HAL_UART_Receive(&self->handle, data, (uint16_t)len, 500) == HAL_OK) {
-        return len;
-    } else {
-        mp_raise_ValueError(translate("UART read error"));
+    uint pos = 0;
+    HAL_StatusTypeDef result = HAL_OK;
+    uint8_t cha[1];
+    if (__HAL_UART_GET_FLAG(&self->handle, UART_FLAG_RXNE)) {
+        while(pos<len && result==HAL_OK) {
+            result = HAL_UART_Receive(&self->handle, cha, 1, 500);
+            data[pos] = cha[0];
+            pos++;
+        }
     }
-    return 0;
+
+    if (pos == 0) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
+    return pos;
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    //const char aTxBuffer[] = "This is the internal message";
-
     if (HAL_UART_Transmit(&self->handle, (uint8_t *)data, len, 500) == HAL_OK) {
         return len;
     } else {
