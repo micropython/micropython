@@ -66,6 +66,7 @@ INC += -I../../lib/nrfx/drivers
 INC += -I../../lib/nrfx/drivers/include
 INC += -I../../lib/nrfx/mdk
 INC += -I../../lib/nrfx/hal
+INC += -I../../lib/nrfx/drivers/src/
 
 MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
 MCU_SUB_VARIANT_UPPER = $(shell echo $(MCU_SUB_VARIANT) | tr '[:lower:]' '[:upper:]')
@@ -183,6 +184,8 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_pwm.c \
 	nrfx_gpiote.c \
 	nrfx_nvmc.c \
+	nrfx_power.c \
+	nrfx_clock.c \
 	)
 
 SRC_C += \
@@ -197,6 +200,34 @@ SRC_C += \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+
+ifeq ($(MCU_SUB_VARIANT), nrf52840)
+
+INC += -I./drivers/usb
+INC += -I../../lib/tinyusb/src
+
+
+# If SoftDevice is selected.
+ifneq ($(SD), )
+# For external tinyusb drivers to enable SoftDevice mode.
+CFLAGS += -DSOFTDEVICE_PRESENT
+endif
+
+SRC_C += $(addprefix drivers/usb/,\
+	usb_cdc.c \
+	usb_descriptors.c \
+	)
+
+SRC_C += $(addprefix lib/tinyusb/src/,\
+	common/tusb_fifo.c \
+	device/usbd.c \
+	device/usbd_control.c \
+	class/cdc/cdc_device.c \
+	tusb.c \
+	portable/nordic/nrf5x/dcd_nrf5x.c \
+	portable/nordic/nrf5x/hal_nrf5x.c \
+	)
+endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
