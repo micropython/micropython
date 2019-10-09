@@ -131,10 +131,12 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
         printf("  1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
     }
 
+    #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS || MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(true, true);
     }
+    #endif
 
     return mp_const_none;
 }

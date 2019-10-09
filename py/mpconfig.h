@@ -1184,7 +1184,17 @@ typedef double mp_float_t;
 
 // Whether to provide mem-info related functions in micropython module
 #ifndef MICROPY_PY_MICROPYTHON_MEM_INFO
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
+#endif
+
+// If mem-info is available, whether to support the full block dump.
+#ifndef MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
+#define MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// If mem-info is available, whether to support fragmentation stats.
+#ifndef MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+#define MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES)
 #endif
 
 // Whether to provide "micropython.stack_use" function

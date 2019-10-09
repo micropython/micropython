@@ -58,12 +58,23 @@ Functions
 
 .. function:: mem_info([verbose])
 
-   Print information about currently used memory.  If the *verbose* argument
-   is given then extra information is printed.
+   Print information about currently used memory.  The information that is
+   printed is implementation dependent, but always includes the amount of
+   stack and heap used.
 
-   The information that is printed is implementation dependent, but currently
-   includes the amount of stack and heap used.  In verbose mode it prints out
-   the entire heap indicating which blocks are used and which are free.
+   The *verbose* argument is a bitfield (defaulting to zero), and will enable
+   additional information as follows:
+
+   If *verbose* is ``1``, then it will additionally print out the entire
+   heap, showing the status of each block. (This may not be supported on all
+   boards and ports).
+
+   If *verbose* is ``2``, then it will additionally print a summary of
+   heap fragmentation, showing the number of allocations that would succeed
+   for successive powers of two sized allocations.
+
+   To get both the heap dump and the fragmentation statistics, set *verbose* to
+   ``3``.
 
 .. function:: qstr_info([verbose])
 

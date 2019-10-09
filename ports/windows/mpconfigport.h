@@ -125,6 +125,8 @@
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
+#define MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION (1)
 
 #define MICROPY_PY_UOS              (1)
 #define MICROPY_PY_UOS_INCLUDEFILE  "ports/unix/moduos.c"

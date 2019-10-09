@@ -152,10 +152,12 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     pyb_thread_dump();
     #endif
 
+    #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS || MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(true, true);
     }
+    #endif
 
     return mp_const_none;
 }
