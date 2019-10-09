@@ -173,12 +173,16 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	scalbn.c \
 	sin.c \
 	sinh.c \
-	sqrt.c \
 	tan.c \
 	tanh.c \
 	tgamma.c \
 	trunc.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f7 h7))
+SRC_LIBM += lib/libm_dbl/thumb_vfp_sqrt.c
+else
+SRC_LIBM += lib/libm_dbl/sqrt.c
+endif
 else
 SRC_LIBM = $(addprefix lib/libm/,\
 	math.c \
