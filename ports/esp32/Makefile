@@ -222,8 +222,8 @@ LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBSTDCXX_FILE_NAME = $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)
 
 # Debugging/Optimization
-ifeq ($(DEBUG), 1)
 CFLAGS += -g
+ifeq ($(DEBUG), 1)
 COPT = -O0
 else
 #CFLAGS += -fdata-sections -ffunction-sections
