@@ -39,6 +39,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [uBlox EVK-NINA-B1](https://www.u-blox.com/en/product/evk-nina-b1)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
+  * [PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
   * [Particle Xenon](https://docs.particle.io/xenon/)
 
 ## Compile and Flash
@@ -129,6 +130,7 @@ idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP]
 blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 evk_nina_b1          | s132                    | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
+pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
 particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
 
 ## IDAP-M/IDAP-Link Targets
