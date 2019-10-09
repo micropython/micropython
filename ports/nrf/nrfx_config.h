@@ -47,6 +47,14 @@
   #define GPIO_COUNT 2
 #endif
 
+#if defined(NRF52840)
+// for tinyusb
+//#define NRFX_IRQ_IS_ENABLED 1
+#define NRFX_POWER_ENABLED 1
+#define NRFX_POWER_CONFIG_IRQ_PRIORITY 2
+#define NRFX_SYSTICK_ENABLED 1
+#endif
+
 #define NRFX_GPIOTE_ENABLED 1
 #define NRFX_GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS 1
 #if NRF51
