@@ -3,6 +3,7 @@
 # The MIT License (MIT)
 #
 # Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# Copyright (c) 2019 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +29,7 @@ ifeq ($(BOARD),)
   $(error You must provide a BOARD parameter)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
-	$(error Invalid BOARD specified)
+    $(error Invalid BOARD specified)
   endif
 endif
 
@@ -204,12 +205,12 @@ SRC_S = \
 	boards/startup_$(MCU_SUB_VARIANT).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 
 ifneq ($(FROZEN_MPY_DIR),)
