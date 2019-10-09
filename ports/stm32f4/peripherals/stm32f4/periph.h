@@ -102,17 +102,19 @@ typedef struct {
 //Starter Lines
 
 #ifdef STM32F411xE
+#define HAS_DAC 0
 #include "stm32f411xe/periph.h"
 #endif
 
 #ifdef STM32F412Zx
+#define HAS_DAC 0
 #include "stm32f412zx/periph.h"
 #endif
 
 //Foundation Lines
 
 #ifdef STM32F405xx
-#define HAS_DAC
+#define HAS_DAC 1
 #include "stm32f405xx/periph.h"
 #endif
 

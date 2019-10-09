@@ -42,13 +42,13 @@
 //DAC is shared between both channels. 
 //TODO: store as struct with channel info, automatically turn it off if unused 
 //on both channels for power save?
-#if defined(HAS_DAC)
+#if HAS_DAC
 DAC_HandleTypeDef handle;
 #endif
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    #if !defined(HAS_DAC)
+    #if !(HAS_DAC)
     mp_raise_ValueError(translate("No DAC on chip"));
     #else
     if (pin == &pin_PA04) {
@@ -93,7 +93,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-    #if defined(HAS_DAC)
+    #if HAS_DAC
     reset_pin_number(self->pin->port,self->pin->number);
     self->pin = mp_const_none;
     self->deinited = true;
@@ -103,14 +103,14 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
-    #if defined(HAS_DAC)
+    #if HAS_DAC
     HAL_DAC_SetValue(&handle, self->channel, DAC_ALIGN_12B_R, value >> 4);
     HAL_DAC_Start(&handle, self->channel);
     #endif
 }
 
 void analogout_reset(void) {
-    #if defined(HAS_DAC)
+    #if HAS_DAC
     __HAL_RCC_DAC_CLK_DISABLE();
     HAL_DAC_DeInit(&handle);
     #endif

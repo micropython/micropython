@@ -36,7 +36,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-#if defined(HAS_DAC)
+#if HAS_DAC
     DAC_ChannelConfTypeDef ch_handle;
 #endif
     const mcu_pin_obj_t * pin;
