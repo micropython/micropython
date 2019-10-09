@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +31,13 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
 
 typedef struct {
     mp_obj_base_t base;
+    DAC_ChannelConfTypeDef ch_handle;
+    const mcu_pin_obj_t * pin;
     uint8_t channel;
     bool deinited;
 } analogio_analogout_obj_t;

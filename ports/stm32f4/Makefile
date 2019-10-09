@@ -28,7 +28,7 @@ ifeq ($(BOARD),)
   $(error You must provide a BOARD parameter)
 else
   ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
+	$(error Invalid BOARD specified)
   endif
 endif
 
@@ -128,30 +128,21 @@ CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BU
 ######################################
 
 SRC_STM32 = \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
@@ -165,7 +156,20 @@ SRC_STM32 = \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
 	system_stm32f4xx.c
+
 
 SRC_C += \
 	background.c \
@@ -200,12 +204,12 @@ SRC_S = \
 	boards/startup_$(MCU_SUB_VARIANT).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 
 ifneq ($(FROZEN_MPY_DIR),)
@@ -242,12 +246,12 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary $^ $@
-#	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
+#   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $^ $@
-#	$(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
+#   $(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
