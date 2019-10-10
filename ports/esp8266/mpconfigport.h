@@ -14,27 +14,8 @@
 #define MICROPY_ALLOC_PARSE_RULE_INC    (8)
 #define MICROPY_ALLOC_PARSE_RESULT_INC  (8)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
-
-#ifndef MICROPY_PERSISTENT_CODE_LOAD
-#define MICROPY_PERSISTENT_CODE_LOAD (1)
-#endif
-
-#ifndef MICROPY_EMIT_XTENSA
-#define MICROPY_EMIT_XTENSA         (1)
-#endif
-
-#ifndef MICROPY_EMIT_INLINE_XTENSA
-#define MICROPY_EMIT_INLINE_XTENSA  (1)
-#endif
-
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTER       (&mp_debug_print)
-
-#ifndef MICROPY_DEBUG_PRINTERS
-#define MICROPY_DEBUG_PRINTERS      (1)
-#endif
-
-#define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -50,11 +31,6 @@
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
-
-#ifndef MICROPY_PY_ALL_SPECIAL_METHODS
-#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
-#endif
-
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
@@ -62,11 +38,6 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_SET     (1)
 #define MICROPY_PY_BUILTINS_SLICE   (1)
-
-#ifndef MICROPY_PY_BUILTINS_SLICE_ATTRS
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
-#endif
-
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_BUILTINS_INPUT   (1)
@@ -84,41 +55,21 @@
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_IOBASE        (1)
-
-#ifndef MICROPY_PY_IO_FILEIO
-#define MICROPY_PY_IO_FILEIO        (1)
-#endif
-
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
-
-#ifndef MICROPY_PY_SYS_STDIO_BUFFER
-#define MICROPY_PY_SYS_STDIO_BUFFER (1)
-#endif
-
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
-
-#ifndef MICROPY_PY_UCRYPTOLIB
-#define MICROPY_PY_UCRYPTOLIB       (1)
-#endif
-
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URE              (1)
-
-#ifndef MICROPY_PY_URE_SUB
-#define MICROPY_PY_URE_SUB          (1)
-#endif
-
 #define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_UZLIB            (1)
@@ -134,21 +85,11 @@
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_WEBREPL_STATIC_FILEBUF (1)
-
-#ifndef MICROPY_PY_FRAMEBUF
-#define MICROPY_PY_FRAMEBUF         (1)
-#endif
-
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_OS_DUPTERM       (2)
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
-
-#ifndef MICROPY_ERROR_REPORTING
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
-#endif
-
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
@@ -158,18 +99,10 @@
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 
-#ifndef MICROPY_VFS
-#define MICROPY_VFS                    (1)
-#endif
-
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-
-#ifndef MICROPY_VFS_FAT
-#define MICROPY_VFS_FAT                (1)
-#endif
 #define MICROPY_ESP8266_APA102         (1)
 #define MICROPY_ESP8266_NEOPIXEL       (1)
 
