@@ -336,7 +336,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, cons
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = MP_OBJ_FROM_PTR(self);
             memcpy(args2 + 1, args, n_args * sizeof(mp_obj_t));
-            if (n_kw) {
+            if (kw_args) {
                 // copy in kwargs
                 memcpy(args2 + 1 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
             }
