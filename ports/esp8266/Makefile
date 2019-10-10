@@ -26,8 +26,9 @@ MICROPY_FATFS ?= 1
 MICROPY_PY_BTREE ?= 1
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
-FROZEN_DIR ?= scripts
-FROZEN_MPY_DIR ?= modules
+FROZEN_MANIFEST ?= boards/manifest.py
+FROZEN_DIR ?=
+FROZEN_MPY_DIR ?=
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -179,9 +180,9 @@ CONFVARS_FILE = $(BUILD)/confvars
 
 ifeq ($(wildcard $(CONFVARS_FILE)),)
 $(shell $(MKDIR) -p $(BUILD))
-$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
-else ifneq ($(shell cat $(CONFVARS_FILE)), $(FROZEN_DIR) $(UART_OS))
-$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
+$(shell echo $(FROZEN_MANIFEST) $(UART_OS) > $(CONFVARS_FILE))
+else ifneq ($(shell cat $(CONFVARS_FILE)), $(FROZEN_MANIFEST) $(UART_OS))
+$(shell echo $(FROZEN_MANIFEST) $(UART_OS) > $(CONFVARS_FILE))
 endif
 
 $(BUILD)/uart.o: $(CONFVARS_FILE)
