@@ -48,7 +48,7 @@ msgstr "%q in Benutzung"
 
 #: py/obj.c
 msgid "%q index out of range"
-msgstr "Der Index %q befindet sich außerhalb der Reihung"
+msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
@@ -124,7 +124,7 @@ msgstr "'%s' Integer 0x%x passt nicht in Maske 0x%x"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "'%s' Objekt unterstützt keine item assignment"
+msgstr "'%s' Objekt unterstützt keine Zuordnung von Elementen"
 
 #: py/obj.c
 #, c-format
@@ -226,7 +226,7 @@ msgstr "Die Adresse muss %d Bytes lang sein"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Adresstyp außerhalb des zulässigen Bereichs"
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -303,7 +303,7 @@ msgstr ""
 
 #: shared-module/displayio/Display.c
 msgid "Below minimum frame rate"
-msgstr ""
+msgstr "Unterhalb der minimalen Frame Rate"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -319,7 +319,7 @@ msgstr "Beide pins müssen Hardware Interrupts unterstützen"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
@@ -340,7 +340,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is too small"
-msgstr ""
+msgstr "Der Puffer ist zu klein"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
@@ -562,7 +562,7 @@ msgstr "Eine UUID wird erwartet"
 
 #: shared-bindings/_bleio/Central.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Erwartet eine Adresse"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -571,7 +571,7 @@ msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
-msgstr ""
+msgstr "Kommando nicht gesendet."
 
 #: ports/nrf/sd_mutex.c
 #, c-format
@@ -614,7 +614,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Central.c
 msgid "Failed to connect: timeout"
-msgstr ""
+msgstr "Verbindung nicht erfolgreich: timeout"
 
 #: ports/nrf/common-hal/_bleio/Scanner.c
 #, c-format
@@ -681,7 +681,7 @@ msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Central.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
+msgstr "Verbindung konnte nicht hergestellt werden. Fehler: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
