@@ -99,16 +99,23 @@ typedef struct {
     .pin = spi_pin, \
 }
 
-// TODO: SPI, UART, etc
+//Starter Lines
 
-// Choose based on chip
-#ifdef STM32F412Zx
-#include "stm32f412zx/periph.h"
-#endif
 #ifdef STM32F411xE
+#define HAS_DAC 0
 #include "stm32f411xe/periph.h"
 #endif
+
+#ifdef STM32F412Zx
+#define HAS_DAC 0
+#include "stm32f412zx/periph.h"
+#endif
+
+//Foundation Lines
+
 #ifdef STM32F405xx
+#define HAS_DAC 1
 #include "stm32f405xx/periph.h"
 #endif
+
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__
