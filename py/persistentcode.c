@@ -160,8 +160,8 @@ typedef struct _bytecode_prelude_t {
 } bytecode_prelude_t;
 
 // ip will point to start of opcodes
-// ip2 will point to simple_name, source_file qstrs
-STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_t *prelude) {
+// return value will point to simple_name, source_file qstrs
+STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
     MP_BC_PRELUDE_SIG_DECODE(*ip);
     prelude->n_state = n_state;
     prelude->n_exc_stack = n_exc_stack;
@@ -170,9 +170,10 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
     prelude->n_kwonly_args = n_kwonly_args;
     prelude->n_def_pos_args = n_def_pos_args;
     MP_BC_PRELUDE_SIZE_DECODE(*ip);
-    *ip2 = *ip;
+    byte *ip_info = (byte*)*ip;
     *ip += n_info;
     *ip += n_cell;
+    return ip_info;
 }
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
@@ -282,17 +283,28 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC void load_prelude(mp_reader_t *reader, byte **ip, byte **ip2, bytecode_prelude_t *prelude) {
-    // Read in the prelude
+STATIC void load_prelude_qstrs(mp_reader_t *reader, qstr_window_t *qw, byte *ip) {
+    qstr simple_name = load_qstr(reader, qw);
+    ip[0] = simple_name; ip[1] = simple_name >> 8;
+    qstr source_file = load_qstr(reader, qw);
+    ip[2] = source_file; ip[3] = source_file >> 8;
+}
+
+STATIC void load_prelude(mp_reader_t *reader, qstr_window_t *qw, byte **ip, bytecode_prelude_t *prelude) {
+    // Read in the prelude header
     byte *ip_read = *ip;
     read_uint(reader, &ip_read);                    // read in n_state/etc (is effectively a var-uint)
-    byte *ip_read_save = ip_read;
     read_uint(reader, &ip_read);                    // read in n_info/n_cell (is effectively a var-uint)
-    MP_BC_PRELUDE_SIZE_DECODE(ip_read_save);
-    read_bytes(reader, ip_read, n_info + n_cell);   // read remaining code info
 
-    // Entire prelude has been read into *ip, now decode and extract values from it
-    extract_prelude((const byte**)ip, (const byte**)ip2, prelude);
+    // Prelude header has been read into *ip, now decode and extract values from it
+    extract_prelude((const byte**)ip, prelude);
+
+    // Load qstrs in prelude
+    load_prelude_qstrs(reader, qw, ip_read);
+    ip_read += 4;
+
+    // Read remaining code info
+    read_bytes(reader, ip_read, *ip - ip_read);
 }
 
 STATIC void load_bytecode(mp_reader_t *reader, qstr_window_t *qw, byte *ip, byte *ip_top) {
@@ -329,7 +341,6 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     #endif
 
     uint8_t *fun_data = NULL;
-    byte *ip2;
     bytecode_prelude_t prelude = {0};
     #if MICROPY_EMIT_MACHINE_CODE
     size_t prelude_offset = 0;
@@ -343,7 +354,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
         // Load prelude
         byte *ip = fun_data;
-        load_prelude(reader, &ip, &ip2, &prelude);
+        load_prelude(reader, qw, &ip, &prelude);
 
         // Load bytecode
         load_bytecode(reader, qw, ip, fun_data + fun_data_len);
@@ -377,7 +388,9 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             // Extract prelude for later use
             prelude_offset = read_uint(reader, NULL);
             const byte *ip = fun_data + prelude_offset;
-            extract_prelude(&ip, (const byte**)&ip2, &prelude);
+            byte *ip_info = extract_prelude(&ip, &prelude);
+            // Load qstrs in prelude
+            load_prelude_qstrs(reader, qw, ip_info);
         } else {
             // Load basic scope info for viper and asm
             prelude.scope_flags = read_uint(reader, NULL);
@@ -389,14 +402,6 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             }
         }
     #endif
-    }
-
-    if (kind == MP_CODE_BYTECODE || kind == MP_CODE_NATIVE_PY) {
-        // Load qstrs in prelude
-        qstr simple_name = load_qstr(reader, qw);
-        qstr source_file = load_qstr(reader, qw);
-        ip2[0] = simple_name; ip2[1] = simple_name >> 8;
-        ip2[2] = source_file; ip2[3] = source_file >> 8;
     }
 
     size_t n_obj = 0;
@@ -591,6 +596,11 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
+STATIC void save_prelude_qstrs(mp_print_t *print, qstr_window_t *qw, const byte *ip) {
+    save_qstr(print, qw, ip[0] | (ip[1] << 8)); // simple_name
+    save_qstr(print, qw, ip[2] | (ip[3] << 8)); // source_file
+}
+
 STATIC void save_bytecode(mp_print_t *print, qstr_window_t *qw, const byte *ip, const byte *ip_top) {
     while (ip < ip_top) {
         size_t sz;
@@ -611,18 +621,21 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
     // Save function kind and data length
     mp_print_uint(print, (rc->fun_data_len << 2) | (rc->kind - MP_CODE_BYTECODE));
 
-    const byte *ip2;
     bytecode_prelude_t prelude;
 
     if (rc->kind == MP_CODE_BYTECODE) {
-        // Save prelude
+        // Extract prelude
         const byte *ip = rc->fun_data;
-        extract_prelude(&ip, &ip2, &prelude);
-        size_t prelude_len = ip - (const byte*)rc->fun_data;
-        const byte *ip_top = (const byte*)rc->fun_data + rc->fun_data_len;
-        mp_print_bytes(print, rc->fun_data, prelude_len);
+        const byte *ip_info = extract_prelude(&ip, &prelude);
+
+        // Save prelude
+        mp_print_bytes(print, rc->fun_data, ip_info - (const byte*)rc->fun_data);
+        save_prelude_qstrs(print, qstr_window, ip_info);
+        ip_info += 4;
+        mp_print_bytes(print, ip_info, ip - ip_info);
 
         // Save bytecode
+        const byte *ip_top = (const byte*)rc->fun_data + rc->fun_data_len;
         save_bytecode(print, qstr_window, ip, ip_top);
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
@@ -639,10 +652,13 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
         }
 
         if (rc->kind == MP_CODE_NATIVE_PY) {
-            // Save prelude size, and extract prelude for later use
+            // Save prelude size
             mp_print_uint(print, rc->prelude_offset);
+
+            // Extract prelude and save qstrs in prelude
             const byte *ip = (const byte*)rc->fun_data + rc->prelude_offset;
-            extract_prelude(&ip, &ip2, &prelude);
+            const byte *ip_info = extract_prelude(&ip, &prelude);
+            save_prelude_qstrs(print, qstr_window, ip_info);
         } else {
             // Save basic scope info for viper and asm
             mp_print_uint(print, rc->scope_flags);
@@ -654,12 +670,6 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
             }
         }
     #endif
-    }
-
-    if (rc->kind == MP_CODE_BYTECODE || rc->kind == MP_CODE_NATIVE_PY) {
-        // Save qstrs in prelude
-        save_qstr(print, qstr_window, ip2[0] | (ip2[1] << 8)); // simple_name
-        save_qstr(print, qstr_window, ip2[2] | (ip2[3] << 8)); // source_file
     }
 
     if (rc->kind != MP_CODE_NATIVE_ASM) {
@@ -699,9 +709,8 @@ STATIC bool mp_raw_code_has_native(mp_raw_code_t *rc) {
     }
 
     const byte *ip = rc->fun_data;
-    const byte *ip2;
     bytecode_prelude_t prelude;
-    extract_prelude(&ip, &ip2, &prelude);
+    extract_prelude(&ip, &prelude);
 
     const mp_uint_t *const_table = rc->const_table
         + prelude.n_pos_args + prelude.n_kwonly_args

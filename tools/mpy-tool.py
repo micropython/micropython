@@ -583,13 +583,14 @@ def read_obj(f):
         else:
             assert 0
 
-def read_prelude(f, bytecode):
+def read_prelude(f, bytecode, qstr_win):
     n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(lambda: read_byte(f, bytecode))
     n_info, n_cell = read_prelude_size(lambda: read_byte(f, bytecode))
-    l2 = bytecode.idx
-    for _ in range(n_info + n_cell):
+    read_qstr_and_pack(f, bytecode, qstr_win) # simple_name
+    read_qstr_and_pack(f, bytecode, qstr_win) # source_file
+    for _ in range(n_info - 4 + n_cell):
         read_byte(f, bytecode)
-    return l2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
+    return n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args
 
 def read_qstr_and_pack(f, bytecode, qstr_win):
     qst = read_qstr(f, qstr_win)
@@ -617,7 +618,7 @@ def read_raw_code(f, qstr_win):
     fun_data = BytecodeBuffer(fun_data_len)
 
     if kind == MP_CODE_BYTECODE:
-        name_idx, prelude = read_prelude(f, fun_data)
+        prelude = read_prelude(f, fun_data, qstr_win)
         read_bytecode(f, fun_data, qstr_win)
     else:
         fun_data.buf[:] = f.read(fun_data_len)
@@ -635,6 +636,9 @@ def read_raw_code(f, qstr_win):
         if kind == MP_CODE_NATIVE_PY:
             prelude_offset = read_uint(f)
             _, name_idx, prelude = extract_prelude(fun_data.buf, prelude_offset)
+            fun_data.idx = name_idx # rewind to where qstrs are in prelude
+            read_qstr_and_pack(f, fun_data, qstr_win) # simple_name
+            read_qstr_and_pack(f, fun_data, qstr_win) # source_file
         else:
             prelude_offset = None
             scope_flags = read_uint(f)
@@ -643,11 +647,6 @@ def read_raw_code(f, qstr_win):
                 n_pos_args = read_uint(f)
                 type_sig = read_uint(f)
             prelude = (None, None, scope_flags, n_pos_args, 0)
-
-    if kind in (MP_CODE_BYTECODE, MP_CODE_NATIVE_PY):
-        fun_data.idx = name_idx # rewind to where qstrs are in prelude
-        read_qstr_and_pack(f, fun_data, qstr_win) # simple_name
-        read_qstr_and_pack(f, fun_data, qstr_win) # source_file
 
     qstrs = []
     objs = []
