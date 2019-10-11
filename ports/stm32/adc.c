@@ -63,7 +63,6 @@
 #endif
 
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
-#define ADC_NUM_CHANNELS        (19)
 
 #if defined(STM32F0)
 
@@ -293,9 +292,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
 }
 
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-    if (!is_adcx_channel(adc_obj->channel)) {
-        return;
-    }
 
     if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
         // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
@@ -731,7 +727,7 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     uint32_t res_reg = ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
-       #if !defined(STM32H7)
+        #if !defined(STM32H7)
         case ADC_RESOLUTION_6B:  return 6;
         #endif
         case ADC_RESOLUTION_8B:  return 8;
