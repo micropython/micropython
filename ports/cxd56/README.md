@@ -39,7 +39,7 @@ Change directory to cxd56:
 
 To build circuitpython image run:
 
-    $ make
+    $ make BOARD=spresense
 
 USB connection
 --------------
@@ -67,14 +67,14 @@ Extract spresense binaries in your PC to ports/spresense/spresense-exported-sdk/
 
 To flash the bootloader run the command:
 
-    $ make flash-bootloader
+    $ make BOARD=spresense flash-bootloader
 
 Flash the circuitpython.spk image
 ---------------------------------
 
 To flash the firmware run the command:
 
-    $ make flash
+    $ make BOARD=spresense flash
 
 Accessing the board
 -------------------

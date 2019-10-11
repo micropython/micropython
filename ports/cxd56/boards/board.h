@@ -24,56 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <sys/boardctl.h>
+// This file defines board specific functions.
 
-#include "boards/board.h"
+#ifndef MICROPY_INCLUDED_CXD56_BOARDS_BOARD_H
+#define MICROPY_INCLUDED_CXD56_BOARDS_BOARD_H
 
-#include "supervisor/port.h"
+#include <stdbool.h>
 
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/analogio/AnalogIn.h"
-#include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+// Initializes board related state once on start up.
+void board_init(void);
 
-safe_mode_t port_init(void) {
-    boardctl(BOARDIOC_INIT, 0);
+// Returns true if the user initiates safe mode in a board specific way.
+// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
+// way.
+bool board_requests_safe_mode(void);
 
-    board_init();
+// Reset the state of off MCU components such as neopixels.
+void reset_board(void);
 
-    if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
-    }
-
-    return NO_SAFE_MODE;
-}
-
-void reset_cpu(void) {
-    boardctl(BOARDIOC_RESET, 0);
-}
-
-void reset_port(void) {
-#if CIRCUITPY_ANALOGIO
-    analogin_reset();
-#endif
-#if CIRCUITPY_PULSEIO
-    pulseout_reset();
-    pwmout_reset();
-#endif
-
-    reset_all_pins();
-}
-
-void reset_to_bootloader(void) {
-}
-
-extern uint32_t _ebss;
-
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
-}
+#endif  // MICROPY_INCLUDED_CXD56_BOARDS_BOARD_H

@@ -24,56 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <sys/boardctl.h>
-
 #include "boards/board.h"
 
-#include "supervisor/port.h"
-
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/analogio/AnalogIn.h"
-#include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
-
-safe_mode_t port_init(void) {
-    boardctl(BOARDIOC_INIT, 0);
-
-    board_init();
-
-    if (board_requests_safe_mode()) {
-        return USER_SAFE_MODE;
-    }
-
-    return NO_SAFE_MODE;
+void board_init(void)
+{
 }
 
-void reset_cpu(void) {
-    boardctl(BOARDIOC_RESET, 0);
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void reset_port(void) {
-#if CIRCUITPY_ANALOGIO
-    analogin_reset();
-#endif
-#if CIRCUITPY_PULSEIO
-    pulseout_reset();
-    pwmout_reset();
-#endif
-
-    reset_all_pins();
-}
-
-void reset_to_bootloader(void) {
-}
-
-extern uint32_t _ebss;
-
-// Place the word to save just after our BSS section that gets blanked.
-void port_set_saved_word(uint32_t value) {
-    _ebss = value;
-}
-
-uint32_t port_get_saved_word(void) {
-    return _ebss;
+void reset_board(void) {
 }

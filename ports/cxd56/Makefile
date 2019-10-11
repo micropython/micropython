@@ -22,7 +22,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Select the board to build for.
+ifeq ($(BOARD),)
+  $(error You must provide a BOARD parameter)
+else
+  ifeq ($(wildcard boards/$(BOARD)/.),)
+    $(error Invalid BOARD specified)
+  endif
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
 include ../../py/mkenv.mk
+
+# Board-specific
+include boards/$(BOARD)/mpconfigboard.mk
 
 # Port-specific
 include mpconfigport.mk
@@ -54,6 +69,7 @@ INC += \
 	-I../lib/timeutils \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
+	-Iboards/$(BOARD) \
 	-I$(BUILD) \
 	-I$(SPRESENSE_SDK)/nuttx/include \
 	-I$(SPRESENSE_SDK)/nuttx/arch \
@@ -123,6 +139,8 @@ SRC_C = \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
+	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
