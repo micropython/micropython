@@ -720,7 +720,7 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     uint32_t res_reg = ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
-       #if !defined(STM32H7)
+        #if !defined(STM32H7)
         case ADC_RESOLUTION_6B:  return 6;
         #endif
         case ADC_RESOLUTION_8B:  return 8;
