@@ -42,12 +42,12 @@ typedef struct {
 } analogin_dev_t;
 
 STATIC analogin_dev_t analogin_dev[] = {
-    {"/dev/lpadc0", &pin_A0, -1},
-    {"/dev/lpadc1", &pin_A1, -1},
-    {"/dev/lpadc2", &pin_A2, -1},
-    {"/dev/lpadc3", &pin_A3, -1},
-    {"/dev/hpadc0", &pin_A4, -1},
-    {"/dev/hpadc1", &pin_A5, -1},
+    {"/dev/lpadc0", &pin_LPADC0, -1},
+    {"/dev/lpadc1", &pin_LPADC1, -1},
+    {"/dev/lpadc2", &pin_LPADC2, -1},
+    {"/dev/lpadc3", &pin_LPADC3, -1},
+    {"/dev/hpadc0", &pin_HPADC0, -1},
+    {"/dev/hpadc1", &pin_HPADC1, -1},
 };
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {

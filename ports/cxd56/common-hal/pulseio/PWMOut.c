@@ -40,10 +40,10 @@ typedef struct {
 } pwmout_dev_t;
 
 STATIC pwmout_dev_t pwmout_dev[] = {
-    {"/dev/pwm0", &pin_D6, -1, true},
-    {"/dev/pwm1", &pin_D5, -1, true},
-    {"/dev/pwm2", &pin_D9, -1, true},
-    {"/dev/pwm3", &pin_D3, -1, true}
+    {"/dev/pwm0", &pin_PWM0, -1, true},
+    {"/dev/pwm1", &pin_PWM1, -1, true},
+    {"/dev/pwm2", &pin_PWM2, -1, true},
+    {"/dev/pwm3", &pin_PWM3, -1, true}
 };
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
