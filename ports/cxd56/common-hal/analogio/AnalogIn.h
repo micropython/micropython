@@ -24,7 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_RTC_RTC_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_RTC_RTC_H
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGIN_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGIN_H
 
-#endif  // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_RTC_RTC_H
+#include "py/obj.h"
+
+#include "common-hal/microcontroller/Pin.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+    uint8_t number;
+} analogio_analogin_obj_t;
+
+void analogin_reset(void);
+
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGIN_H

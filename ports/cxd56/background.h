@@ -24,26 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_CXD56_BACKGROUND_H
+#define MICROPY_INCLUDED_CXD56_BACKGROUND_H
 
-#include <nuttx/spi/spi.h>
+void background_tasks_reset(void);
+void run_background_tasks(void);
 
-#include "py/obj.h"
-
-#include "common-hal/microcontroller/Pin.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    struct spi_dev_s* spi_dev;
-    uint32_t frequency;
-    uint8_t phase;
-    uint8_t polarity;
-    uint8_t bits;
-    bool has_lock;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *mosi_pin;
-    const mcu_pin_obj_t *miso_pin;
-} busio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_SPI_H
+#endif  // MICROPY_INCLUDED_CXD56_BACKGROUND_H

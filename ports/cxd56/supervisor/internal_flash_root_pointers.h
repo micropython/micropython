@@ -23,26 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_ROOT_POINTERS_H
+#define MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_ROOT_POINTERS_H
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PWMOUT_H
+#define FLASH_ROOT_POINTERS
 
-#include <nuttx/drivers/pwm.h>
-
-#include "common-hal/microcontroller/Pin.h"
-
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    struct pwm_info_s info;
-    bool variable_frequency;
-    uint8_t number;
-} pulseio_pwmout_obj_t;
-
-void pwmout_reset(void);
-void pwmout_start(uint8_t pwm_num);
-void pwmout_stop(uint8_t pwm_num);
-
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif  // MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_ROOT_POINTERS_H

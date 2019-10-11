@@ -24,24 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PULSEIN_H
+#ifndef MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_H
+#define MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_H
 
-#include "common-hal/microcontroller/Pin.h"
-
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    uint16_t *buffer;
-    uint16_t maxlen;
-    uint16_t start;
-    uint16_t len;
-    uint32_t last_us;
-    bool idle_state;
-    bool first_edge;
-    bool paused;
-} pulseio_pulsein_obj_t;
-
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_PULSEIO_PULSEIN_H
+#endif  // MICROPY_INCLUDED_CXD56_INTERNAL_FLASH_H

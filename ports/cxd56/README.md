@@ -33,9 +33,9 @@ Build the MicroPython cross-compiler:
 
     $ make -C mpy-cross
 
-Change directory to spresense:
+Change directory to cxd56:
 
-    $ cd ports/spresense
+    $ cd ports/cxd56
 
 To build circuitpython image run:
 

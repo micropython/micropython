@@ -24,19 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGOUT_H
 
 #include "py/obj.h"
 
-#include "common-hal/microcontroller/Pin.h"
-
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool input;
-    bool open_drain;
-    uint8_t pull;
-} digitalio_digitalinout_obj_t;
+} analogio_analogout_obj_t;
 
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_ANALOGIO_ANALOGOUT_H

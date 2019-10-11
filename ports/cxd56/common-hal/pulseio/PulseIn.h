@@ -24,20 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_I2C_H
-
-#include "py/obj.h"
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H
 
 #include "common-hal/microcontroller/Pin.h"
 
+#include "py/obj.h"
+
 typedef struct {
     mp_obj_base_t base;
-    struct i2c_master_s* i2c_dev;
-    uint32_t frequency;
-    bool has_lock;
-    const mcu_pin_obj_t *scl_pin;
-    const mcu_pin_obj_t *sda_pin;
-} busio_i2c_obj_t;
+    const mcu_pin_obj_t *pin;
+    uint16_t *buffer;
+    uint16_t maxlen;
+    uint16_t start;
+    uint16_t len;
+    uint32_t last_us;
+    bool idle_state;
+    bool first_edge;
+    bool paused;
+} pulseio_pulsein_obj_t;
 
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_I2C_H
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PULSEIN_H

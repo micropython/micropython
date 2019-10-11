@@ -24,13 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_MPHALPORT_H
-#define MICROPY_INCLUDED_SPRESENSE_MPHALPORT_H
+#ifndef MICROPY_INCLUDED_CXD56_TICK_H
+#define MICROPY_INCLUDED_CXD56_TICK_H
 
-#include <sys/types.h>
-
-#include "lib/utils/interrupt_char.h"
+#include "py/mpconfig.h"
 
 extern volatile uint64_t ticks_ms;
 
-#endif // MICROPY_INCLUDED_SPRESENSE_MPHALPORT_H
+#endif  // MICROPY_INCLUDED_CXD56_TICK_H

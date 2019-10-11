@@ -10,4 +10,4 @@ and ESP8266.
     ../ports/atmel-samd/README
     ../ports/esp8266/README
     ../ports/nrf/README
-    ../ports/spresense/README
+    ../ports/cxd56/README

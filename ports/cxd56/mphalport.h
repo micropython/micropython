@@ -24,17 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#ifndef MICROPY_INCLUDED_CXD56_MPHALPORT_H
+#define MICROPY_INCLUDED_CXD56_MPHALPORT_H
 
-#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH CONFIG_BOARDCTL_UNIQUEID_SIZE
+#include <sys/types.h>
 
-#include "py/obj.h"
+#include "lib/utils/interrupt_char.h"
 
-typedef struct {
-    mp_obj_base_t base;
-} mcu_processor_obj_t;
+extern volatile uint64_t ticks_ms;
 
-const mp_obj_type_t mcu_processor_type;
-
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#endif // MICROPY_INCLUDED_CXD56_MPHALPORT_H

@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
 
 #include "py/obj.h"
 
@@ -33,11 +33,10 @@
 
 typedef struct {
     mp_obj_base_t base;
-    int uart_fd;
-    const mcu_pin_obj_t *tx_pin;
-    const mcu_pin_obj_t *rx_pin;
-    uint32_t baudrate;
-    uint32_t timeout;
-} busio_uart_obj_t;
+    const mcu_pin_obj_t *pin;
+    bool input;
+    bool open_drain;
+    uint8_t pull;
+} digitalio_digitalinout_obj_t;
 
-#endif // MICROPY_INCLUDED_SPRESENSE_COMMON_HAL_BUSIO_UART_H
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

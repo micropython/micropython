@@ -24,10 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SPRESENSE_BACKGROUND_H
-#define MICROPY_INCLUDED_SPRESENSE_BACKGROUND_H
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
 
-void background_tasks_reset(void);
-void run_background_tasks(void);
+#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH CONFIG_BOARDCTL_UNIQUEID_SIZE
 
-#endif  // MICROPY_INCLUDED_SPRESENSE_BACKGROUND_H
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+} mcu_processor_obj_t;
+
+const mp_obj_type_t mcu_processor_type;
+
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
