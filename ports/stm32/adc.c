@@ -330,7 +330,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
-        sConfig.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;
+        sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
     } else {
         sConfig.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
     }
