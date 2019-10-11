@@ -341,7 +341,7 @@ void mp_bluetooth_get_device_addr(uint8_t *addr) {
     #endif
 }
 
-int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
+int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
     int ret;
 
     mp_bluetooth_gap_advertise_stop();
@@ -360,18 +360,12 @@ int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, con
         }
     }
 
-    // Convert from 1ms to 0.625ms units.
-    interval_ms = interval_ms * 8 / 5;
-    if (interval_ms < 0x20 || interval_ms > 0x4000) {
-        return MP_EINVAL;
-    }
-
     struct ble_gap_adv_params adv_params = {
         .conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON,
         .disc_mode = BLE_GAP_DISC_MODE_GEN,
-        .itvl_min = interval_ms,
-        .itvl_max = interval_ms,
-        .channel_map = 7, // all 3 channels
+        .itvl_min = interval_us / BLE_HCI_ADV_ITVL, // convert to 625us units.
+        .itvl_max = interval_us / BLE_HCI_ADV_ITVL,
+        .channel_map = 7, // all 3 channels.
     };
 
     ret = ble_gap_adv_start(BLE_OWN_ADDR_PUBLIC, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);

@@ -301,9 +301,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_irq_obj, 1, bluetooth_ble_irq);
 // ----------------------------------------------------------------------------
 
 STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_interval_ms, ARG_adv_data, ARG_resp_data, ARG_connectable };
+    enum { ARG_interval_us, ARG_adv_data, ARG_resp_data, ARG_connectable };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_interval_ms, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(100)} },
+        { MP_QSTR_interval_us, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(100)} },
         { MP_QSTR_adv_data, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_resp_data, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_connectable, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_true } },
@@ -311,8 +311,8 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t interval_ms;
-    if (args[ARG_interval_ms].u_obj == mp_const_none || (interval_ms = mp_obj_get_int(args[ARG_interval_ms].u_obj)) == 0) {
+    mp_int_t interval_us;
+    if (args[ARG_interval_us].u_obj == mp_const_none || (interval_us = mp_obj_get_int(args[ARG_interval_us].u_obj)) == 0) {
         mp_bluetooth_gap_advertise_stop();
         return mp_const_none;
     }
@@ -329,7 +329,7 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
         mp_get_buffer_raise(args[ARG_resp_data].u_obj, &resp_bufinfo, MP_BUFFER_READ);
     }
 
-    return bluetooth_handle_errno(mp_bluetooth_gap_advertise_start(connectable, interval_ms, adv_bufinfo.buf, adv_bufinfo.len, resp_bufinfo.buf, resp_bufinfo.len));
+    return bluetooth_handle_errno(mp_bluetooth_gap_advertise_start(connectable, interval_us, adv_bufinfo.buf, adv_bufinfo.len, resp_bufinfo.buf, resp_bufinfo.len));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_gap_advertise_obj, 1, bluetooth_ble_gap_advertise);
 

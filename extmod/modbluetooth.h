@@ -157,7 +157,7 @@ void mp_bluetooth_get_device_addr(uint8_t *addr);
 
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
-int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
+int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
 
 // Stop advertisement. No-op when already stopped.
 void mp_bluetooth_gap_advertise_stop(void);
