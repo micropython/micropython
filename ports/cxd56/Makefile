@@ -128,7 +128,7 @@ LDFLAGS = \
 	-T$(SPRESENSE_SDK)/nuttx/build/ramconfig.ld \
 	--gc-sections \
 	-Map=$(BUILD)/output.map \
-	-o $(BUILD)/circuitpython.elf \
+	-o $(BUILD)/firmware.elf \
 	--start-group \
 	-u spresense_main \
 	$(BUILD)/libmpy.a \
@@ -181,7 +181,7 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_M
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR += 
 
-all: $(BUILD)/circuitpython.spk
+all: $(BUILD)/firmware.spk
 
 $(FIRMWARE):
 	$(ECHO) ""
@@ -196,17 +196,17 @@ $(BUILD)/libmpy.a: $(SPRESENSE_SDK) $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) rcs $(BUILD)/libmpy.a $(OBJ)
 
-$(BUILD)/circuitpython.elf: $(BUILD)/libmpy.a
+$(BUILD)/firmware.elf: $(BUILD)/libmpy.a
 	$(ECHO) "LD $@"
 	$(Q)$(LD) $(LDFLAGS)
 
-$(BUILD)/circuitpython.spk: $(BUILD)/circuitpython.elf
+$(BUILD)/firmware.spk: $(BUILD)/firmware.elf
 	$(ECHO) "Creating $@"
-	$(MKSPK) -c 2 $(BUILD)/circuitpython.elf nuttx $(BUILD)/circuitpython.spk
+	$(MKSPK) -c 2 $(BUILD)/firmware.elf nuttx $(BUILD)/firmware.spk
 
-flash: $(BUILD)/circuitpython.spk
+flash: $(BUILD)/firmware.spk
 	$(ECHO) "Writing $< to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c $(SERIAL) $(BUILD)/circuitpython.spk
+	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c $(SERIAL) $(BUILD)/firmware.spk
 
 flash-bootloader: $(SPRESENSE_SDK) $(FIRMWARE)
 	$(ECHO) "Writing loader to the board"

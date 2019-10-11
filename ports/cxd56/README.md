@@ -83,7 +83,7 @@ To flash the bootloader run the command:
 
     $ make BOARD=spresense flash-bootloader
 
-## Flash the circuitpython.spk image ##
+## Flash the circuitpython image ##
 
 To flash the firmware run the command:
 
