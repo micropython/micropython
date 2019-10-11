@@ -63,7 +63,6 @@
 #endif
 
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
-#define ADC_NUM_CHANNELS        (19)
 
 #if defined(STM32F0)
 
