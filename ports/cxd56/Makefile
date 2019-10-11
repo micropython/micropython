@@ -76,6 +76,8 @@ else
   MKSPK = $(SPRESENSE_SDK)/sdk/tools/windows/mkspk.exe
 endif
 
+SERIAL ?= /dev/ttyUSB0
+
 INC += \
 	-I. \
 	-I../.. \
@@ -204,11 +206,11 @@ $(BUILD)/circuitpython.spk: $(BUILD)/circuitpython.elf
 
 flash: $(BUILD)/circuitpython.spk
 	$(ECHO) "Writing $< to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c /dev/ttyUSB0 $(BUILD)/circuitpython.spk
+	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c $(SERIAL) $(BUILD)/circuitpython.spk
 
 flash-bootloader: $(SPRESENSE_SDK) $(FIRMWARE)
 	$(ECHO) "Writing loader to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -l $(FIRMWARE) -c /dev/ttyUSB0
+	$(SPRESENSE_SDK)/sdk/tools/flash.sh -l $(FIRMWARE) -c $(SERIAL)
 
 include $(TOP)/py/mkrules.mk
 
