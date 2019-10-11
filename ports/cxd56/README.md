@@ -1,5 +1,4 @@
-CircuitPython port to Spresense
-==============================
+# CircuitPython port to Spresense #
 
 This directory contains the port of CircuitPython to Spresense. It is a compact
 development board based on Sony’s power-efficient multicore microcontroller
@@ -22,8 +21,29 @@ Currently, Spresense port does not support GNSS, Audio and Multicore.
 Refer to [developer.sony.com/develop/spresense/](https://developer.sony.com/develop/spresense/)
 for further information about this board.
 
-Build instructions
-------------------
+## Prerequisites ##
+
+### Linux ###
+
+Add user to `dialout` group:
+
+    $ sudo usermod -a -G dialout <user-name>
+
+### Windows ###
+
+Download and install USB serial driver
+
+* [CP210x USB to serial driver for Windows 7/8/8.1](https://www.silabs.com/documents/public/software/CP210x_Windows_Drivers.zip)
+
+* [CP210x USB to serial driver for Windows 10](https://www.silabs.com/documents/public/software/CP210x_Universal_Windows_Driver.zip)
+
+### macOS ###
+
+Download and install USB serial driver
+
+* [CP210x USB to serial driver for Mac OS X](https://www.silabs.com/documents/public/software/Mac_OSX_VCP_Driver.zip)
+
+## Build instructions ##
 
 Pull all submodules into your clone:
 
@@ -41,17 +61,11 @@ To build circuitpython image run:
 
     $ make BOARD=spresense
 
-USB connection
---------------
+## USB connection ##
 
-Add user to `dialout` group:
+Connect the `Spresense main board` to the PC via the USB cable.
 
-    $ sudo usermod -a -G dialout <user-name>
-
-Connect the Spresense main board to the PC via the USB cable.
-
-Flash the bootloader
---------------------
+## Flash the bootloader ##
 
 The correct bootloader is required for the Spresense board to function.
 
@@ -69,17 +83,15 @@ To flash the bootloader run the command:
 
     $ make BOARD=spresense flash-bootloader
 
-Flash the circuitpython.spk image
----------------------------------
+## Flash the circuitpython.spk image ##
 
 To flash the firmware run the command:
 
     $ make BOARD=spresense flash
 
-Accessing the board
--------------------
+## Accessing the board ##
 
-Connect the Spresense extension board to the PC via the USB cable.
+Connect the `Spresense extension board` to the PC via the USB cable.
 
 Once built and deployed, access the CircuitPython REPL (the Python prompt) via USB. You can run:
 
