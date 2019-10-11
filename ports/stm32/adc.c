@@ -165,6 +165,13 @@
 #define ADC_SCALE (ADC_SCALE_V / ((1 << ADC_CAL_BITS) - 1))
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
+#ifndef __HAL_ADC_IS_CHANNEL_INTERNAL
+#define __HAL_ADC_IS_CHANNEL_INTERNAL(channel) \
+    (channel == ADC_CHANNEL_VBAT \
+     || channel == ADC_CHANNEL_VREFINT \
+     || channel == ADC_CHANNEL_TEMPSENSOR)
+#endif
+
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
     mp_obj_t pin_name;
@@ -188,8 +195,11 @@ STATIC bool is_adcx_channel(int channel) {
 #if defined(STM32F411xE)
     // The HAL has an incorrect IS_ADC_CHANNEL macro for the F411 so we check for temp
     return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
-#elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
+#elif defined(STM32H7)
+    return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
+        || IS_ADC_CHANNEL(__HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel));
 #elif defined(STM32L4)
     ADC_HandleTypeDef handle;
     handle.Instance = ADCx;
@@ -308,8 +318,16 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    sConfig.Channel = channel;
+    #if defined (STM32H7)
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
+        channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
+    }
+    #else
     sConfig.Rank = 1;
+    #endif
+    sConfig.Channel = channel;
+
 #if defined(STM32F0)
     sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
 #elif defined(STM32F4) || defined(STM32F7)
