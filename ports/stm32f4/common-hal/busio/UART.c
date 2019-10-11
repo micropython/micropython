@@ -35,15 +35,15 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "common-hal/microcontroller/Pin.h"
-#include "stm32f4xx_hal.h"
-
 #include "tick.h"
+#include "stm32f4xx_hal.h" 
+
 
 STATIC bool reserved_uart[10];
+//TODO: remove this horrible hack
+STATIC busio_uart_obj_t * context_pointers[10]; //numbered by uart module
 
 void uart_reset(void) {
-    //ugh. reduce this
     #ifdef USART1
         reserved_uart[0] = false;
         __HAL_RCC_USART1_CLK_DISABLE(); 
@@ -68,6 +68,7 @@ void uart_reset(void) {
         reserved_uart[5] = false;
         __HAL_RCC_USART6_CLK_DISABLE(); 
     #endif
+    //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -80,54 +81,127 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     uint8_t tx_len = sizeof(mcu_uart_tx_list)/sizeof(*mcu_uart_tx_list);
     uint8_t rx_len = sizeof(mcu_uart_rx_list)/sizeof(*mcu_uart_rx_list);
-
     bool uart_taken = false;
-    //tx
-    for(uint i=0; i<tx_len;i++) {
-        if (mcu_uart_tx_list[i].pin == tx) {
-            //rx
-            for(uint j=0; j<rx_len;j++) {
-                if (mcu_uart_rx_list[j].pin == rx 
-                    && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
-                    //keep looking if the UART is taken, edge case
-                    if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
-                        uart_taken = true;
-                        continue;
+    
+    //Can have both pins, or either
+    //TODO: condense in some elegant clever way that I can't currently think of
+    if ((tx != mp_const_none) && (rx != mp_const_none)) {
+        //normal find loop if both pins exist
+        for(uint i=0; i<tx_len;i++) {
+            if (mcu_uart_tx_list[i].pin == tx) {
+                //rx
+                for(uint j=0; j<rx_len;j++) {
+                    if (mcu_uart_rx_list[j].pin == rx 
+                        && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
+                        //keep looking if the UART is taken, edge case
+                        if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
+                            uart_taken = true;
+                            continue;
+                        }
+                        //store pins if not
+                        self->tx = &mcu_uart_tx_list[i];
+                        self->rx = &mcu_uart_rx_list[j];
+                        break;
                     }
-                    //store pins if not
-                    self->tx = &mcu_uart_tx_list[i];
-                    self->rx = &mcu_uart_rx_list[j];
-                    break;
                 }
             }
         }
-    }
-
-    //handle typedef selection, errors
-    if(self->tx!=NULL && self->rx!=NULL) {
-        USARTx = mcu_uart_banks[self->tx->uart_index-1];
-    } else {
-        if (uart_taken) {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        //handle typedef selection, errors
+        if(self->tx!=NULL && self->rx!=NULL) {
+            USARTx = mcu_uart_banks[self->tx->uart_index-1];
+            mp_printf(&mp_plat_print, "UART:%d \n", self->tx->uart_index);
+            //TODO: remove this horrible hack 
+            context_pointers[self->tx->uart_index-1] = self;
         } else {
-            mp_raise_ValueError(translate("Invalid UART pin selection"));
+            if (uart_taken) {
+                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            } else {
+                mp_raise_ValueError(translate("Invalid UART pin selection"));
+            }
         }
+    } else if (tx==mp_const_none) {
+        //run only rx
+        for(uint i=0; i<rx_len;i++) {
+            if (mcu_uart_rx_list[i].pin == rx) {
+                //keep looking if the UART is taken, edge case
+                if(reserved_uart[mcu_uart_rx_list[i].uart_index-1]) {
+                    uart_taken = true;
+                    continue;
+                }
+                //store pins if not
+                self->rx = &mcu_uart_rx_list[i];
+                break;
+            }
+        }
+        //handle typedef selection, errors
+        if(self->rx!=NULL) {
+            USARTx = mcu_uart_banks[self->rx->uart_index-1];
+            //TODO: remove this horrible hack 
+            context_pointers[self->rx->uart_index-1] = self;
+        } else {
+            if (uart_taken) {
+                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            } else {
+                mp_raise_ValueError(translate("Invalid UART pin selection"));
+            }
+        }
+    } else if (rx==mp_const_none) {
+        //run only tx
+        for(uint i=0; i<tx_len;i++) {
+            if (mcu_uart_tx_list[i].pin == tx) {
+                //keep looking if the UART is taken, edge case
+                if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
+                    uart_taken = true;
+                    continue;
+                }
+                //store pins if not
+                self->tx = &mcu_uart_tx_list[i];
+                break;
+            }
+        }
+        //handle typedef selection, errors
+        if(self->tx!=NULL) {
+            USARTx = mcu_uart_banks[self->tx->uart_index-1];
+            //TODO: remove this horrible hack 
+            context_pointers[self->tx->uart_index-1] = self;
+        } else {
+            if (uart_taken) {
+                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            } else {
+                mp_raise_ValueError(translate("Invalid UART pin selection"));
+            }
+        }
+    } else {
+        //both pins cannot be empty
+        mp_raise_ValueError(translate("You must supply at least one UART pin"));
     }
 
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = pin_mask(tx->number);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = self->tx->altfn_index;
-    HAL_GPIO_Init(pin_port(tx->port), &GPIO_InitStruct);
+    //Other errors
+    if ( receiver_buffer_size == 0 ) {
+        mp_raise_ValueError(translate("Invalid buffer size"));
+    }
+    if ( bits != 8 && bits != 9 ) {
+        mp_raise_ValueError(translate("Invalid word/bit length"));
+    }
 
-    GPIO_InitStruct.Pin = pin_mask(rx->number);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = self->rx->altfn_index; 
-    HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
+    //GPIO Init
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (self->tx!=NULL) {
+        GPIO_InitStruct.Pin = pin_mask(tx->number);
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = self->tx->altfn_index;
+        HAL_GPIO_Init(pin_port(tx->port), &GPIO_InitStruct);
+    }
+    if (self->rx!=NULL) {
+        GPIO_InitStruct.Pin = pin_mask(rx->number);
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = self->rx->altfn_index; 
+        HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
+    }
 
     #ifdef USART1
     if(USARTx==USART1) { 
@@ -166,12 +240,21 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     } 
     #endif
 
+    HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+
+    //TODO: this technically needs to go to 10 to support F413. Condense?
+
     self->handle.Instance = USARTx;
-    self->handle.Init.BaudRate = 9600;
-    self->handle.Init.WordLength = UART_WORDLENGTH_8B;
-    self->handle.Init.StopBits = UART_STOPBITS_1;
-    self->handle.Init.Parity = UART_PARITY_NONE;
-    self->handle.Init.Mode = UART_MODE_TX_RX;
+    self->handle.Init.BaudRate = baudrate;
+    self->handle.Init.WordLength = (bits == 9) ? UART_WORDLENGTH_9B : UART_WORDLENGTH_8B;
+    self->handle.Init.StopBits = (stop>1) ? UART_STOPBITS_2 : UART_STOPBITS_1;
+    self->handle.Init.Parity = (parity==PARITY_ODD) ? UART_PARITY_ODD : 
+                               (parity==PARITY_EVEN) ? UART_PARITY_EVEN :
+                               UART_PARITY_NONE;
+    self->handle.Init.Mode = (self->tx != NULL && self->rx != NULL) ? UART_MODE_TX_RX :
+                             (self->tx != NULL) ? UART_MODE_TX :
+                             UART_MODE_RX;
     self->handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     self->handle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&self->handle) != HAL_OK)
@@ -180,8 +263,24 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     }
 
-    claim_pin(tx);
-    claim_pin(rx);
+    // Init buffer for rx and claim pins
+    if (self->rx != NULL) {
+        ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
+        if (!self->rbuf.buf) {
+            mp_raise_ValueError(translate("UART Buffer allocation error"));
+        }
+        claim_pin(rx);
+    }
+    if (self->tx != NULL) {
+        claim_pin(tx);
+    }
+
+    self->baudrate = baudrate;
+    self->timeout_ms = timeout * 1000;
+
+    if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
+        mp_raise_ValueError(translate("HAL recieve IT start error"));
+    }
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -197,23 +296,43 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    uint pos = 0;
-    HAL_StatusTypeDef result = HAL_OK;
-    uint8_t cha[1];
-    if (__HAL_UART_GET_FLAG(&self->handle, UART_FLAG_RXNE)) {
-        while(pos<len && result==HAL_OK) {
-            result = HAL_UART_Receive(&self->handle, cha, 1, 500);
-            data[pos] = cha[0];
-            pos++;
+    //     if ( nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
+    //     mp_raise_ValueError(translate("No RX pin"));
+    // }
+
+    size_t rx_bytes = 0;
+    uint64_t start_ticks = ticks_ms;
+
+    // Wait for all bytes received or timeout, same as nrf
+    while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+        RUN_BACKGROUND_TASKS;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if ( mp_hal_is_interrupted() ) {
+            return 0;
         }
     }
 
-    if (pos == 0) {
+    // Halt reception
+    HAL_UART_AbortReceive_IT(&self->handle);
+
+    // copy received data
+    rx_bytes = ringbuf_count(&self->rbuf);
+    rx_bytes = MIN(rx_bytes, len);
+    for ( uint16_t i = 0; i < rx_bytes; i++ ) {
+        data[i] = ringbuf_get(&self->rbuf);
+    }
+
+    if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
+        mp_raise_ValueError(translate("HAL recieve IT start error"));
+    }
+
+    mp_printf(&mp_plat_print, "bytes:%d, char:%c", rx_bytes, self->rx_char);
+    
+    if (rx_bytes == 0) {
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
     }
-
-    return pos;
+    return rx_bytes; 
 }
 
 // Write characters.
@@ -226,20 +345,60 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     return 0;
 }
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *handle)
+{
+    //not used at the moment. 
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
+{
+    //TODO: I feel bad just writing this
+    for(int i=0; i<7; i++) {
+        if(handle == &context_pointers[i]->handle) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, translate("error = 0x%d ,%c"), i, &context_pointers[i]->rx_char);
+            ringbuf_put_n(&context_pointers[i]->rbuf, &context_pointers[i]->rx_char, 1);
+            HAL_UART_Receive_IT(handle, &context_pointers[i]->rx_char, 1);
+            return;
+        }
+    }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
+{
+    mp_raise_RuntimeError(translate("UART Callback Error"));
+}
+
 uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
-    return 0;
+    return self->baudrate;
 }
 
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
+    //Don't reset if it's the same value
+    if (baudrate == self->baudrate) return;
+
+    //Otherwise de-init and set new rate
+    if(HAL_UART_DeInit(&self->handle) != HAL_OK) {
+        mp_raise_ValueError(translate("UART De-init error"));
+    }
+    self->handle.Init.BaudRate = baudrate;
+    if(HAL_UART_Init(&self->handle) != HAL_OK) {
+        mp_raise_ValueError(translate("UART Re-init error"));
+    }
+
+    self->baudrate = baudrate;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return 0;
+    return ringbuf_count(&self->rbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    // Halt reception
+    HAL_UART_AbortReceive_IT(&self->handle);
+    ringbuf_clear(&self->rbuf);
+    HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-    return 0;
+    return true;
 }

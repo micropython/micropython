@@ -29,22 +29,27 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "stm32f4/periph.h"
+#include "stm32f4xx_hal.h" 
 
 #include "py/obj.h"
+#include "py/ringbuf.h"
 
 typedef struct {
     mp_obj_base_t base;
     UART_HandleTypeDef handle;
     const mcu_uart_tx_obj_t *tx;
     const mcu_uart_rx_obj_t *rx;
-    uint8_t character_bits;
-    bool rx_error;
+
+    ringbuf_t rbuf;
+    uint8_t rx_char;
+
     uint32_t baudrate;
     uint32_t timeout_ms;
-    uint32_t buffer_length;
-    uint8_t* buffer;
+    //bool tx_complete;
 } busio_uart_obj_t;
 
 void uart_reset(void);
+
+void USART2_IRQHandler(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
