@@ -62,6 +62,20 @@ SPRESENSE_SDK = spresense-exported-sdk
 
 FIRMWARE = $(SPRESENSE_SDK)/firmware
 
+# Platforms are: Linux, Darwin, MSYS, CYGWIN
+PLATFORM := $(firstword $(subst _, ,$(shell uname -s 2>/dev/null)))
+
+ifeq ($(PLATFORM),Darwin)
+  # macOS
+  MKSPK = $(SPRESENSE_SDK)/sdk/tools/macos/mkspk
+else ifeq ($(PLATFORM),Linux)
+  # Linux
+  MKSPK = $(SPRESENSE_SDK)/sdk/tools/linux/mkspk
+else
+  # Cygwin/MSYS2
+  MKSPK = $(SPRESENSE_SDK)/sdk/tools/windows/mkspk.exe
+endif
+
 INC += \
 	-I. \
 	-I../.. \
@@ -186,7 +200,7 @@ $(BUILD)/circuitpython.elf: $(BUILD)/libmpy.a
 
 $(BUILD)/circuitpython.spk: $(BUILD)/circuitpython.elf
 	$(ECHO) "Creating $@"
-	$(SPRESENSE_SDK)/sdk/tools/linux/mkspk -c 2 $(BUILD)/circuitpython.elf nuttx $(BUILD)/circuitpython.spk
+	$(MKSPK) -c 2 $(BUILD)/circuitpython.elf nuttx $(BUILD)/circuitpython.spk
 
 flash: $(BUILD)/circuitpython.spk
 	$(ECHO) "Writing $< to the board"
