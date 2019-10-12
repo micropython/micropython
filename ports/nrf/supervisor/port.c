@@ -39,6 +39,7 @@
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
@@ -102,11 +103,15 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 
-#ifdef CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_ANALOGIO
+    analogin_reset();
+#endif
+
+#if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
 #endif
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
 #endif
 
