@@ -194,6 +194,8 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self
     if (common_hal_audiopwmio_pwmaudioout_deinited(self)) {
         return;
     }
+    deactivate_audiopwmout_obj(self);
+
     // TODO: ramp the pwm down from quiescent value to 0
     self->pwm->ENABLE = 0;
 
