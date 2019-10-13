@@ -1,1 +1,0 @@
-// No analogio module functions.
