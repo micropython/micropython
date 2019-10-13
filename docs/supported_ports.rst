@@ -8,5 +8,5 @@ and ESP8266.
     :maxdepth: 2
 
     ../ports/atmel-samd/README
-    ../ports/esp8266/README
     ../ports/nrf/README
+    ../ports/stm32f4/README
