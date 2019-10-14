@@ -116,7 +116,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 // - Reference Voltage of A0 ~ A5 pins on External Interface board
 //   is selected 3.3V or 5.0V by a IO Volt jumper pin.
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
-    return 3.3f;
+    return 0.0f;
 }
 
 void analogin_reset(void) {
