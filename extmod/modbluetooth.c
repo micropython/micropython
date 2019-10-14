@@ -829,7 +829,7 @@ void mp_bluetooth_gap_on_connected_disconnected(uint16_t event, uint16_t conn_ha
     schedule_ringbuf(sched);
 }
 
-void mp_bluetooth_gatts_on_write(uint16_t value_handle, uint16_t conn_handle) {
+void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle) {
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     bool sched;
