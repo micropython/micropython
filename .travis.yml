@@ -32,7 +32,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib lib/mynewt-nimble
+        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib lib/mynewt-nimble lib/littlefs
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
@@ -66,7 +66,7 @@ jobs:
         - gcc --version
         - python3 --version
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi lib/littlefs
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
@@ -87,7 +87,7 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi lib/littlefs
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
