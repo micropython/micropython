@@ -140,7 +140,7 @@ STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     check_for_deinit(self);
 
     float reference_voltage = common_hal_analogio_analogin_get_reference_voltage(self);
-    if (reference_voltage == 0.0f) {
+    if (reference_voltage <= 0.0f) {
         return mp_const_none; 
     } else {
         return mp_obj_new_float(reference_voltage);
