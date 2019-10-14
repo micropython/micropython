@@ -6,7 +6,8 @@
 
 This module provides an interface to a Bluetooth controller on a board.
 Currently this supports Bluetooth Low Energy (BLE) in Central, Peripheral,
-Broadcaster, and Observer roles.
+Broadcaster, and Observer roles, and a device may operate in multiple
+roles concurrently.
 
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
@@ -66,6 +67,7 @@ Event Handling
             elif event == _IRQ_GATTS_READ_REQUEST:
                 # A central has issued a read. Note: this is a hard IRQ.
                 # Return None to deny the read.
+                # Note: This event is not supported on ESP32.
                 conn_handle, attr_handle = data
             elif event == _IRQ_SCAN_RESULT:
                 # A single scan result.
@@ -138,6 +140,11 @@ Broadcaster Role (Advertiser)
     protocol (e.g. ``bytes``, ``bytearray``, ``str``). *adv_data* is included
     in all broadcasts, and *resp_data* is send in reply to an active scan.
 
+    Note: if *adv_data* (or *resp_data*) is ``None``, then the data passed
+    to the previous call to ``gap_advertise`` will be re-used. This allows a
+    broadcaster to resume advertising with just ``gap_advertise(interval_us)``.
+    To clear the advertising payload pass an empty ``bytes``, i.e. ``b''``.
+
 
 Observer Role (Scanner)
 -----------------------
@@ -169,9 +176,10 @@ A BLE peripheral has a set of registered services. Each service may contain
 characteristics, which each have a value. Characteristics can also contain
 descriptors, which themselves have values.
 
-These values are stored locally and can be read from or written to by a remote
-central device. Additionally, a peripheral can "notify" its value to a connected
-central via its connection handle.
+These values are stored locally, and are accessed by their "value handle" which
+is generated during service registration. They can also be read from or written
+to by a remote central device. Additionally, a peripheral can "notify" a
+characteristic to a connected central via a connection handle.
 
 .. method:: BLE.gatts_register_services(services_definition)
 
