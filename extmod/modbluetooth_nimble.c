@@ -346,14 +346,14 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
 
     mp_bluetooth_gap_advertise_stop();
 
-    if ((adv_data != NULL) && (adv_data_len > 0)) {
+    if (adv_data) {
         ret = ble_gap_adv_set_data(adv_data, adv_data_len);
         if (ret != 0) {
             return ble_hs_err_to_errno(ret);
         }
     }
 
-    if ((sr_data != NULL) && (sr_data_len > 0)) {
+    if (sr_data) {
         ret = ble_gap_adv_rsp_set_data(sr_data, sr_data_len);
         if (ret != 0) {
             return ble_hs_err_to_errno(ret);
@@ -384,6 +384,7 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
     if (ret == 0) {
         return 0;
     }
+    DEBUG_EVENT_printf("ble_gap_adv_start: %d\n", ret);
 
     return ble_hs_err_to_errno(ret);
 }
@@ -583,7 +584,7 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
-    DEBUG_EVENT_printf("gap_scan_cb: event=%d type=%d\n", event->type, event->disc ? event->disc.event_type : -1);
+    DEBUG_EVENT_printf("gap_scan_cb: event=%d type=%d\n", event->type, event->type == BLE_GAP_EVENT_DISC ? event->disc.event_type : -1);
 
     if (event->type == BLE_GAP_EVENT_DISC_COMPLETE) {
         mp_bluetooth_gap_on_scan_complete();
