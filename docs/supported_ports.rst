@@ -10,3 +10,4 @@ and ESP8266.
     ../ports/atmel-samd/README
     ../ports/nrf/README
     ../ports/stm32f4/README
+    ../ports/cxd56/README

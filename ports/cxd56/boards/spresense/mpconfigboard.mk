@@ -1,0 +1,4 @@
+USB_VID = 0x054c
+USB_PID = 0x0bc2
+USB_PRODUCT = "Spresense"
+USB_MANUFACTURER = "Sony"
