@@ -98,3 +98,6 @@
 [submodule "ports/stm32f4/stm32f4"]
 	path = ports/stm32f4/stm32f4
 	url = https://github.com/adafruit/stm32f4.git
+[submodule "ports/cxd56/spresense-exported-sdk"]
+	path = ports/cxd56/spresense-exported-sdk
+	url = https://github.com/sonydevworld/spresense-exported-sdk.git
