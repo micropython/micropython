@@ -40,7 +40,7 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 /*** nimble */
 #define MYNEWT_VAL_BLE_EXT_ADV (0)
 #define MYNEWT_VAL_BLE_EXT_ADV_MAX_SIZE (31)
-#define MYNEWT_VAL_BLE_MAX_CONNECTIONS (1)
+#define MYNEWT_VAL_BLE_MAX_CONNECTIONS (4)
 #define MYNEWT_VAL_BLE_MULTI_ADV_INSTANCES (0)
 #define MYNEWT_VAL_BLE_ROLE_BROADCASTER (1)
 #define MYNEWT_VAL_BLE_ROLE_CENTRAL (1)
