@@ -181,6 +181,13 @@ is generated during service registration. They can also be read from or written
 to by a remote central device. Additionally, a peripheral can "notify" a
 characteristic to a connected central via a connection handle.
 
+Characteristics and descriptors have a default maximum size of 20 bytes.
+Anything written to them by a central will be truncated to this length. However,
+any local write will increase the maximum size, so if you want to allow larger
+writes from a central to a given characteristic, use
+:meth:`gatts_write<BLE.gatts_write>` after registration. e.g.
+``gatts_write(char_handle, bytes(100))``.
+
 .. method:: BLE.gatts_register_services(services_definition)
 
     Configures the peripheral with the specified services, replacing any
