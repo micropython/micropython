@@ -50,11 +50,11 @@ Prerequisite steps for building the nrf port:
 
     git clone <URL>.git micropython
     cd micropython
-    git submodule update --init
     make -C mpy-cross
 
 By default, the PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
 
+    make submodules
     make
     make flash
 

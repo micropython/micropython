@@ -38,6 +38,8 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+GIT_SUBMODULES = lib/berkeley-db-1.xx
+
 PORT ?= /dev/ttyUSB0
 BAUD ?= 460800
 FLASH_MODE ?= dio

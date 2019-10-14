@@ -32,6 +32,8 @@ FROZEN_MPY_DIR ?= modules
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx
+
 FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200

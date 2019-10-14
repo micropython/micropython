@@ -41,6 +41,8 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 # include py core make definitions
 include ../../py/py.mk
 
+GIT_SUBMODULES = lib/nrfx lib/tinyusb
+
 MICROPY_FATFS ?= 0
 FATFS_DIR = lib/oofatfs
 MPY_CROSS = ../../mpy-cross/mpy-cross
