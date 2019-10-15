@@ -313,12 +313,12 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t interval_us;
-    if (args[ARG_interval_us].u_obj == mp_const_none || (interval_us = mp_obj_get_int(args[ARG_interval_us].u_obj)) == 0) {
+    if (args[ARG_interval_us].u_obj == mp_const_none) {
         mp_bluetooth_gap_advertise_stop();
         return mp_const_none;
     }
 
+    mp_int_t interval_us = mp_obj_get_int(args[ARG_interval_us].u_obj);
     bool connectable = mp_obj_is_true(args[ARG_connectable].u_obj);
 
     mp_buffer_info_t adv_bufinfo = {0};
