@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <math.h>
 #include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
@@ -34,7 +35,11 @@
 #define STM32_UUID ((uint32_t *)0x1FFF7A10)
 
 float common_hal_mcu_processor_get_temperature(void) {
-    return 0;
+    return NAN;
+}
+
+float common_hal_mcu_processor_get_voltage(void) {
+    return NAN;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {

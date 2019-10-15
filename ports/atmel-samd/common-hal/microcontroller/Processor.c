@@ -72,6 +72,8 @@
 #define INT1V_DIVIDER_1000 1000.0
 #define ADC_12BIT_FULL_SCALE_VALUE_FLOAT 4095.0
 
+// channel argument (ignored in calls below)
+#define IGNORED_CHANNEL 0
 
 // Decimal to fraction conversion. (adapted from ASF sample).
 STATIC float convert_dec_to_frac(uint8_t val) {
@@ -196,14 +198,12 @@ float common_hal_mcu_processor_get_temperature(void) {
 
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
-    // Channel passed in adc_sync_enable_channel is actually ignored (!).
-    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val);
+    // Channel arg is ignored.
+    adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
     adc_sync_set_inputs(&adc,
                         ADC_INPUTCTRL_MUXPOS_TEMP_Val,   // pos_input
                         ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        ADC_INPUTCTRL_MUXPOS_TEMP_Val);  // channel channel (this arg is ignored (!))
-
-    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
+                        IGNORED_CHANNEL);                // channel (ignored)
 
     hri_adc_write_CTRLB_PRESCALER_bf(adc.device.hw, ADC_CTRLB_PRESCALER_DIV32_Val);
     hri_adc_write_SAMPCTRL_SAMPLEN_bf(adc.device.hw, ADC_TEMP_SAMPLE_LENGTH);
@@ -222,10 +222,9 @@ float common_hal_mcu_processor_get_temperature(void) {
     // like voltage reference / ADC channel change"
     // Empirical observation shows the first reading is quite different than subsequent ones.
 
-    // The channel listed in adc_sync_read_channel is actually ignored(!).
-    // Must be set as above with adc_sync_set_inputs.
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val, ((uint8_t*) &value), 2);
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val, ((uint8_t*) &value), 2);
+    // Channel arg is ignored.
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &value), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &value), 2);
 
     adc_sync_deinit(&adc);
     return calculate_temperature(value);
@@ -233,51 +232,90 @@ float common_hal_mcu_processor_get_temperature(void) {
 
 #ifdef SAMD51
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
-    // Reference voltage choice is a guess. It's not specified in the datasheet that I can see.
+    // Using INTVCC0 as the reference voltage.
     // INTVCC1 seems to read a little high.
-    // INTREF doesn't work: ADC hangs BUSY.
+    // INTREF doesn't work: ADC hangs BUSY. It's supposed to work, but does not.
+    // The SAME54 example from Atmel START implicitly uses INTREF.
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTVCC0_Val);
 
-    // If ONDEMAND=1, we don't need to use the VREF.TSSEL bit to choose PTAT and CTAT.
     hri_supc_set_VREF_ONDEMAND_bit(SUPC);
+    // Enable temperature sensor.
     hri_supc_set_VREF_TSEN_bit(SUPC);
+    hri_supc_set_VREF_VREFOE_bit(SUPC);
 
-    // Channel passed in adc_sync_enable_channel is actually ignored (!).
-    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val);
+    // Channel arg is ignored.
+    adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
     adc_sync_set_inputs(&adc,
                         ADC_INPUTCTRL_MUXPOS_PTAT_Val,   // pos_input
                         ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        ADC_INPUTCTRL_MUXPOS_PTAT_Val);  // channel (this arg is ignored (!))
+                        IGNORED_CHANNEL);                // channel (ignored)
 
     // Read both temperature sensors.
     volatile uint16_t ptat;
     volatile uint16_t ctat;
 
-    // The channel listed in adc_sync_read_channel is actually ignored(!).
-    // Must be set as above with adc_sync_set_inputs.
-    // Read twice for stability (necessary?)
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val, ((uint8_t*) &ptat), 2);
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val, ((uint8_t*) &ptat), 2);
+    // Read twice for stability (necessary?).
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ptat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ptat), 2);
 
     adc_sync_set_inputs(&adc,
                         ADC_INPUTCTRL_MUXPOS_CTAT_Val,   // pos_input
                         ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
-                        ADC_INPUTCTRL_MUXPOS_CTAT_Val);  // channel (this arg is ignored (!))
+                        IGNORED_CHANNEL);                // channel (ignored)
 
-    // Channel passed in adc_sync_enable_channel is actually ignored (!).
-    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val);
-    // The channel listed in adc_sync_read_channel is actually ignored(!).
-    // Must be set as above with adc_sync_set_inputs.
-    // Read twice for stability (necessary?)
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val, ((uint8_t*) &ctat), 2);
-    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val, ((uint8_t*) &ctat), 2);
-    hri_supc_set_VREF_ONDEMAND_bit(SUPC);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ctat), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &ctat), 2);
+
+    // Turn off temp sensor.
+    hri_supc_clear_VREF_TSEN_bit(SUPC);
 
     adc_sync_deinit(&adc);
     return calculate_temperature(ptat, ctat);
 #endif // SAMD51
 }
 
+float common_hal_mcu_processor_get_voltage(void) {
+    struct adc_sync_descriptor adc;
+
+    static Adc* adc_insts[] = ADC_INSTS;
+    samd_peripherals_adc_setup(&adc, adc_insts[0]);
+
+#ifdef SAMD21
+    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
+#endif
+
+#ifdef SAMD51
+    hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
+    // ONDEMAND must be clear, and VREFOE must be set, or else the ADC conversion will not complete.
+    // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
+    hri_supc_clear_VREF_ONDEMAND_bit(SUPC);
+    hri_supc_set_VREF_VREFOE_bit(SUPC);
+    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTREF_Val);
+#endif
+
+    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
+    // Channel arg is ignored.
+    adc_sync_set_inputs(&adc,
+                        ADC_INPUTCTRL_MUXPOS_SCALEDIOVCC_Val,     // IOVCC/4 (nominal 3.3V/4)
+                        ADC_INPUTCTRL_MUXNEG_GND_Val,             // neg_input
+                        IGNORED_CHANNEL);                         // channel (ignored).
+    adc_sync_enable_channel(&adc, IGNORED_CHANNEL);
+
+    volatile uint16_t reading;
+
+    // Channel arg is ignored.
+    // Read twice and discard first result, as recommended in section 14 of
+    // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
+    // "Discard the first conversion result whenever there is a change in ADC configuration
+    // like voltage reference / ADC channel change"
+    // Empirical observation shows the first reading is quite different than subsequent ones.
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &reading), 2);
+    adc_sync_read_channel(&adc, IGNORED_CHANNEL, ((uint8_t*) &reading), 2);
+
+    adc_sync_deinit(&adc);
+    // Multiply by 4 to compensate for SCALEDIOVCC division by 4.
+    return (reading / 4095.0f) * 4.0f;
+}
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
     // TODO(tannewt): Determine this dynamically.
