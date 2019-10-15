@@ -34,7 +34,7 @@
 
 #define CHANNEL_NO 0
 
-void analogin_reset(void) {
+void analogin_init(void) {
     // Calibrate the ADC once, on startup.
     nrf_saadc_enable();
     nrf_saadc_event_clear(NRF_SAADC_EVENT_CALIBRATEDONE);

@@ -84,6 +84,10 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_ANALOGIO
+    analogin_init();
+#endif
+
     #if CIRCUITPY_RTC
     rtc_init();
     #endif
@@ -102,10 +106,6 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
-
-#if CIRCUITPY_ANALOGIO
-    analogin_reset();
-#endif
 
 #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
