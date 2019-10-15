@@ -39,6 +39,7 @@
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
@@ -83,6 +84,10 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_ANALOGIO
+    analogin_init();
+#endif
+
     #if CIRCUITPY_RTC
     rtc_init();
     #endif
@@ -102,11 +107,11 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 
-#ifdef CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
 #endif
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
 #endif
 

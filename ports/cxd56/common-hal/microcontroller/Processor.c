@@ -26,6 +26,8 @@
 
 #include <sys/boardctl.h>
 
+// For NAN: remove when not needed.
+#include <math.h>
 #include "py/mphal.h"
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
@@ -33,7 +35,11 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
 }
 
 float common_hal_mcu_processor_get_temperature(void) {
-    return 0;
+    return NAN;
+}
+
+float common_hal_mcu_processor_get_voltage(void) {
+    return NAN;
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
