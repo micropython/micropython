@@ -27,6 +27,7 @@
 
 #include "py/binary.h"
 #include "py/misc.h"
+#include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
@@ -527,7 +528,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 4, blu
 STATIC mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_handle_in) {
     uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
     int err = mp_bluetooth_gap_disconnect(conn_handle);
-    return bluetooth_handle_errno(err);
+    if (err == 0) {
+        return mp_const_true;
+    } else if (err == MP_ENOTCONN) {
+        return mp_const_false;
+    } else {
+        return bluetooth_handle_errno(err);
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_disconnect_obj, bluetooth_ble_gap_disconnect);
 
