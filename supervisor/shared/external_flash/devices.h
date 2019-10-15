@@ -443,4 +443,22 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the ISSI IS25LP128F 16MiB SPI flash.
+// Datasheet: http://www.issi.com/WW/pdf/25LP-WP128F.pdf
+#define IS25LP128F {\
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x9d, \
+    .memory_type = 0x60, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H
