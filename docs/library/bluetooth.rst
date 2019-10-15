@@ -262,6 +262,9 @@ Central Role (GATT Client)
 
     On success, the ``_IRQ_PERIPHERAL_DISCONNECT`` event will be raised.
 
+    Returns ``False`` if the connection handle wasn't connected, and ``True``
+    otherwise.
+
 .. method:: BLE.gattc_discover_services(conn_handle)
 
     Query a connected peripheral for its services.
