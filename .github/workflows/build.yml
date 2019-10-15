@@ -145,6 +145,7 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "spresense"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stringcar_m0_express"
