@@ -123,7 +123,6 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
             _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
             if result_out != result_exp:
                 error = 'FAIL truth'
-                break
 
         if error is not None:
             print(error)
