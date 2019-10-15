@@ -48,13 +48,13 @@
 
 #define I2C_TIMEOUT_MS (50)
 
-#define MMA_ADDR (76)
-#define MMA_REG_X (0)
-#define MMA_REG_Y (1)
-#define MMA_REG_Z (2)
-#define MMA_REG_TILT (3)
-#define MMA_REG_MODE (7)
-#define MMA_AXIS_SIGNED_VALUE(i) (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
+#define ACCEL_ADDR                  (76)
+#define ACCEL_REG_X                 (0)
+#define ACCEL_REG_Y                 (1)
+#define ACCEL_REG_Z                 (2)
+#define ACCEL_REG_TILT              (3)
+#define ACCEL_REG_MODE              (7)
+#define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
 
 void accel_init(void) {
     // PB5 is connected to AVDD; pull high to enable MMA accel device
@@ -74,7 +74,7 @@ STATIC void accel_start(void) {
 
     int ret;
     for (int i = 0; i < 4; i++) {
-        ret = i2c_writeto(I2C1, MMA_ADDR, NULL, 0, true);
+        ret = i2c_writeto(I2C1, ACCEL_ADDR, NULL, 0, true);
         if (ret == 0) {
             break;
         }
@@ -85,8 +85,8 @@ STATIC void accel_start(void) {
     }
 
     // set MMA to active mode
-    uint8_t data[2] = {MMA_REG_MODE, 1}; // active mode
-    i2c_writeto(I2C1, MMA_ADDR, data, 2, true);
+    uint8_t data[2] = {ACCEL_REG_MODE, 1}; // active mode
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
 
     // wait for MMA to become active
     mp_hal_delay_ms(30);
@@ -129,38 +129,38 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 STATIC mp_obj_t read_axis(int axis) {
     uint8_t data[1] = { axis };
-    i2c_writeto(I2C1, MMA_ADDR, data, 1, false);
-    i2c_readfrom(I2C1, MMA_ADDR, data, 1, true);
-    return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
+    return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(data[0]));
 }
 
 /// \method x()
 /// Get the x-axis value.
 STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
-    return read_axis(MMA_REG_X);
+    return read_axis(ACCEL_REG_X);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
 
 /// \method y()
 /// Get the y-axis value.
 STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
-    return read_axis(MMA_REG_Y);
+    return read_axis(ACCEL_REG_Y);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
 
 /// \method z()
 /// Get the z-axis value.
 STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
-    return read_axis(MMA_REG_Z);
+    return read_axis(ACCEL_REG_Z);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
 /// \method tilt()
 /// Get the tilt register.
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
-    uint8_t data[1] = { MMA_REG_TILT };
-    i2c_writeto(I2C1, MMA_ADDR, data, 1, false);
-    i2c_readfrom(I2C1, MMA_ADDR, data, 1, true);
+    uint8_t data[1] = { ACCEL_REG_TILT };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
@@ -172,13 +172,13 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
-    uint8_t data[NUM_AXIS] = { MMA_REG_X };
-    i2c_writeto(I2C1, MMA_ADDR, data, 1, false);
-    i2c_readfrom(I2C1, MMA_ADDR, data, 3, true);
+    uint8_t data[NUM_AXIS] = { ACCEL_REG_X };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 3, true);
 
     mp_obj_t tuple[NUM_AXIS];
     for (int i = 0; i < NUM_AXIS; i++) {
-        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = MMA_AXIS_SIGNED_VALUE(data[i]);
+        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = ACCEL_AXIS_SIGNED_VALUE(data[i]);
         int32_t val = 0;
         for (int j = 0; j < FILT_DEPTH; j++) {
             val += self->buf[i + NUM_AXIS * j];
@@ -192,15 +192,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1] = { mp_obj_get_int(reg) };
-    i2c_writeto(I2C1, MMA_ADDR, data, 1, false);
-    i2c_writeto(I2C1, MMA_ADDR, data, 1, true);
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
-    i2c_writeto(I2C1, MMA_ADDR, data, 2, true);
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
