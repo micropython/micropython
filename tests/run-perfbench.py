@@ -77,13 +77,17 @@ def run_benchmark_on_target(target, script):
         return -1, -1, 'CRASH: %r' % err
 
 def run_benchmarks(target, param_n, param_m, n_average, test_list):
+    skip_complex = run_feature_test(target, 'complex') != 'complex'
     skip_native = run_feature_test(target, 'native_check') != ''
 
     for test_file in sorted(test_list):
         print(test_file + ': ', end='')
 
         # Check if test should be skipped
-        skip = skip_native and test_file.find('viper_') != -1
+        skip = (
+            skip_complex and test_file.find('bm_fft') != -1
+            or skip_native and test_file.find('viper_') != -1
+        )
         if skip:
             print('skip')
             continue
