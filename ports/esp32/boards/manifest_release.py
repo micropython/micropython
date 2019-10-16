@@ -1,8 +1,6 @@
-include('boards/manifest.py')
+include('manifest.py')
 
-LIB = '../../../micropython-lib'
-
-freeze(LIB + '/upysh', 'upysh.py')
-freeze(LIB + '/urequests', 'urequests.py')
-freeze(LIB + '/umqtt.simple', 'umqtt/simple.py')
-freeze(LIB + '/umqtt.robust', 'umqtt/robust.py')
+freeze('$(MPY_LIB_DIR)/upysh', 'upysh.py')
+freeze('$(MPY_LIB_DIR)/urequests', 'urequests.py')
+freeze('$(MPY_LIB_DIR)/umqtt.simple', 'umqtt/simple.py')
+freeze('$(MPY_LIB_DIR)/umqtt.robust', 'umqtt/robust.py')

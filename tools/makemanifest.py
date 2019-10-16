@@ -38,14 +38,22 @@ def include(manifest):
 
     The manifest argument can be a string (filename) or an iterable of
     strings.
+
+    Relative paths are resolved with respect to the current manifest file.
     """
 
     if not isinstance(manifest, str):
         for m in manifest:
             include(m)
     else:
+        manifest = convert_path(manifest)
         with open(manifest) as f:
+            # Make paths relative to this manifest file while processing it.
+            # Applies to includes and input files.
+            prev_cwd = os.getcwd()
+            os.chdir(os.path.dirname(manifest))
             exec(f.read())
+            os.chdir(prev_cwd)
 
 def freeze(path, script=None, opt=0):
     """Freeze the input, automatically determining its type.  A .py script
@@ -56,6 +64,10 @@ def freeze(path, script=None, opt=0):
     files from.  When importing the resulting frozen modules, the name of
     the module will start after `path`, ie `path` is excluded from the
     module name.
+
+    If `path` is relative, it is resolved to the current manifest.py.
+    Use $(MPY_DIR), $(MPY_LIB_DIR), $(PORT_DIR), $(BOARD_DIR) if you need
+    to access specific paths.
 
     If `script` is None all files in `path` will be frozen.
 
@@ -102,6 +114,8 @@ KIND_AS_STR = 1
 KIND_AS_MPY = 2
 KIND_MPY = 3
 
+VARS = {}
+
 manifest_list = []
 
 class FreezeError(Exception):
@@ -115,7 +129,12 @@ def system(cmd):
         return -1, er.output
 
 def convert_path(path):
-    return path.replace('$(MPY)', TOP)
+    # Perform variable substituion.
+    for name, value in VARS.items():
+        path = path.replace('$({})'.format(name), value)
+    # Convert to absolute path (so that future operations don't rely on
+    # still being chdir'ed).
+    return os.path.abspath(path)
 
 def get_timestamp(path, default=None):
     try:
@@ -173,23 +192,39 @@ def freeze_internal(kind, path, script, opt):
         manifest_list.append((kind, path, script, opt))
 
 def main():
-    global TOP
-
     # Parse arguments
-    assert sys.argv[1] == '-o'
-    output_file = sys.argv[2]
-    TOP = sys.argv[3]
-    BUILD = sys.argv[4]
-    mpy_cross_flags = sys.argv[5]
-    input_manifest_list = sys.argv[6:]
+    import argparse
+    cmd_parser = argparse.ArgumentParser(description='A tool to generate frozen content in MicroPython firmware images.')
+    cmd_parser.add_argument('-o', '--output', help='output path')
+    cmd_parser.add_argument('-b', '--build-dir', help='output path')
+    cmd_parser.add_argument('-f', '--mpy-cross-flags', default='', help='flags to pass to mpy-cross')
+    cmd_parser.add_argument('-v', '--var', action='append', help='variables to substitute')
+    cmd_parser.add_argument('files', nargs='+', help='input manifest list')
+    args = cmd_parser.parse_args()
+
+    # Extract variables for substitution.
+    for var in args.var:
+        name, value = var.split('=', 1)
+        if os.path.exists(value):
+            value = os.path.abspath(value)
+        VARS[name] = value
+
+    if 'MPY_DIR' not in VARS or 'PORT_DIR' not in VARS:
+        print('MPY_DIR and PORT_DIR variables must be specified')
+        sys.exit(1)
 
     # Get paths to tools
-    MAKE_FROZEN = TOP + '/tools/make-frozen.py'
-    MPY_CROSS = TOP + '/mpy-cross/mpy-cross'
-    MPY_TOOL = TOP + '/tools/mpy-tool.py'
+    MAKE_FROZEN = VARS['MPY_DIR'] + '/tools/make-frozen.py'
+    MPY_CROSS = VARS['MPY_DIR'] + '/mpy-cross/mpy-cross'
+    MPY_TOOL = VARS['MPY_DIR'] + '/tools/mpy-tool.py'
+
+    # Ensure mpy-cross is built
+    if not os.path.exists(MPY_CROSS):
+        print('mpy-cross not found at {}, please build it first'.format(MPY_CROSS))
+        sys.exit(1)
 
     # Include top-level inputs, to generate the manifest
-    for input_manifest in input_manifest_list:
+    for input_manifest in args.files:
         try:
             if input_manifest.endswith('.py'):
                 include(input_manifest)
@@ -209,13 +244,13 @@ def main():
             ts_outfile = get_timestamp_newest(path)
         elif kind == KIND_AS_MPY:
             infile = '{}/{}'.format(path, script)
-            outfile = '{}/frozen_mpy/{}.mpy'.format(BUILD, script[:-3])
+            outfile = '{}/frozen_mpy/{}.mpy'.format(args.build_dir, script[:-3])
             ts_infile = get_timestamp(infile)
             ts_outfile = get_timestamp(outfile, 0)
             if ts_infile >= ts_outfile:
                 print('MPY', script)
                 mkdir(outfile)
-                res, out = system([MPY_CROSS] + mpy_cross_flags.split() + ['-o', outfile, '-s', script, '-O{}'.format(opt), infile])
+                res, out = system([MPY_CROSS] + args.mpy_cross_flags.split() + ['-o', outfile, '-s', script, '-O{}'.format(opt), infile])
                 if res != 0:
                     print('error compiling {}: {}'.format(infile, out))
                     raise SystemExit(1)
@@ -229,20 +264,26 @@ def main():
         ts_newest = max(ts_newest, ts_outfile)
 
     # Check if output file needs generating
-    if ts_newest < get_timestamp(output_file, 0):
+    if ts_newest < get_timestamp(args.output, 0):
         # No files are newer than output file so it does not need updating
         return
 
     # Freeze paths as strings
-    _, output_str = system([MAKE_FROZEN] + str_paths)
+    res, output_str = system([MAKE_FROZEN] + str_paths)
+    if res != 0:
+        print('error freezing strings {}: {}'.format(str_paths, output_str))
+        sys.exit(1)
 
     # Freeze .mpy files
-    _, output_mpy = system([MPY_TOOL, '-f', '-q', BUILD + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+    res, output_mpy = system([MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+    if res != 0:
+        print('error freezing mpy {}: {}'.format(mpy_files, output_mpy))
+        sys.exit(1)
 
     # Generate output
-    print('GEN', output_file)
-    mkdir(output_file)
-    with open(output_file, 'wb') as f:
+    print('GEN', args.output)
+    mkdir(args.output)
+    with open(args.output, 'wb') as f:
         f.write(b'//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n')
         f.write(output_str)
         f.write(b'//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n')

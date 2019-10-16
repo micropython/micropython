@@ -100,7 +100,7 @@ $(HEADER_BUILD):
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
-	$(Q)$(MAKE_MANIFEST) -o $@ $(TOP) $(BUILD) "$(MPY_CROSS_FLAGS)" $(FROZEN_MANIFEST)
+	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
 endif
 
 ifneq ($(FROZEN_DIR),)
