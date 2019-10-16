@@ -122,10 +122,11 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
         if (value > 65535) {
             mp_raise_ValueError("invalid UUID");
         }
-        self->uuid._16 = value;
+        self->data[0] = value & 0xff;
+        self->data[1] = (value >> 8) & 0xff;
     } else {
         self->type = MP_BLUETOOTH_UUID_TYPE_128;
-        mp_bluetooth_parse_uuid_128bit_str(all_args[0], self->uuid._128);
+        mp_bluetooth_parse_uuid_128bit_str(all_args[0], self->data);
     }
 
     return self;
@@ -135,41 +136,39 @@ STATIC mp_obj_t bluetooth_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_bluetooth_uuid_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_HASH: {
-            if (self->type == MP_BLUETOOTH_UUID_TYPE_16) {
-                return mp_unary_op(MP_UNARY_OP_HASH, MP_OBJ_NEW_SMALL_INT(self->uuid._16));
-
-            } else if (self->type == MP_BLUETOOTH_UUID_TYPE_32) {
-                return mp_unary_op(MP_UNARY_OP_HASH, MP_OBJ_NEW_SMALL_INT(self->uuid._32));
-
-            } else if (self->type == MP_BLUETOOTH_UUID_TYPE_128) {
-                return MP_OBJ_NEW_SMALL_INT(qstr_compute_hash(self->uuid._128, sizeof(self->uuid._128)));
-            }
-            return MP_OBJ_NULL;
+            // Use the QSTR hash function.
+            return MP_OBJ_NEW_SMALL_INT(qstr_compute_hash(self->data, self->type));
         }
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
-
 STATIC void bluetooth_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_bluetooth_uuid_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->type == MP_BLUETOOTH_UUID_TYPE_16) {
-        mp_printf(print, "UUID16(0x%04x)", self->uuid._16);
-    } else if (self->type == MP_BLUETOOTH_UUID_TYPE_32) {
-        mp_printf(print, "UUID32(0x%08x)", self->uuid._32);
-    } else if (self->type == MP_BLUETOOTH_UUID_TYPE_128) {
-        mp_printf(print, "UUID128('");
-        for (int i = 0; i < 16; ++i) {
-            mp_printf(print, "%02x", self->uuid._128[15-i]);
-            if (i == 3 || i == 5 || i == 7 || i == 9) {
-                mp_printf(print, "-");
-            }
+    mp_printf(print, "UUID%u(%s", self->type * 8, self->type <= 4 ? "0x" : "'");
+    for (int i = 0; i < self->type; ++i) {
+        if (i == 4 || i == 6 || i == 8 || i == 10) {
+            mp_printf(print, "-");
         }
-        mp_printf(print, "')");
-    } else {
-        mp_printf(print, "UUID?(%d)", self->type);
+        mp_printf(print, "%02x", self->data[self->type - 1 - i]);
     }
+    if (self->type == MP_BLUETOOTH_UUID_TYPE_128) {
+        mp_printf(print, "'");
+    }
+    mp_printf(print, ")");
+}
+
+mp_int_t bluetooth_uuid_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mp_obj_bluetooth_uuid_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (flags != MP_BUFFER_READ) {
+        return 1;
+    }
+
+    bufinfo->buf = self->data;
+    bufinfo->len = self->type;
+    bufinfo->typecode = 'B';
+    return 0;
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -177,19 +176,8 @@ STATIC void bluetooth_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 STATIC void ringbuf_put_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) {
     assert(ringbuf_free(ringbuf) >= uuid->type + 1);
     ringbuf_put(ringbuf, uuid->type);
-    switch (uuid->type) {
-        case MP_BLUETOOTH_UUID_TYPE_16:
-            ringbuf_put16(ringbuf, uuid->uuid._16);
-            break;
-        case MP_BLUETOOTH_UUID_TYPE_32:
-            ringbuf_put16(ringbuf, uuid->uuid._32 >> 16);
-            ringbuf_put16(ringbuf, uuid->uuid._32 & 0xffff);
-            break;
-        case MP_BLUETOOTH_UUID_TYPE_128:
-            for (int i = 0; i < 16; ++i) {
-                ringbuf_put(ringbuf, uuid->uuid._128[i]);
-            }
-            break;
+    for (int i = 0; i < uuid->type; ++i) {
+        ringbuf_put(ringbuf, uuid->data[i]);
     }
 }
 
@@ -197,21 +185,8 @@ STATIC void ringbuf_get_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) 
     assert(ringbuf_avail(ringbuf) >= 1);
     uuid->type = ringbuf_get(ringbuf);
     assert(ringbuf_avail(ringbuf) >= uuid->type);
-    uint16_t h, l;
-    switch (uuid->type) {
-        case MP_BLUETOOTH_UUID_TYPE_16:
-            uuid->uuid._16 = ringbuf_get16(ringbuf);
-            break;
-        case MP_BLUETOOTH_UUID_TYPE_32:
-            h = ringbuf_get16(ringbuf);
-            l = ringbuf_get16(ringbuf);
-            uuid->uuid._32 = (h << 16) | l;
-            break;
-        case MP_BLUETOOTH_UUID_TYPE_128:
-            for (int i = 0; i < 16; ++i) {
-                uuid->uuid._128[i] = ringbuf_get(ringbuf);
-            }
-            break;
+    for (int i = 0; i < uuid->type; ++i) {
+        uuid->data[i] = ringbuf_get(ringbuf);
     }
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -223,6 +198,7 @@ STATIC const mp_obj_type_t bluetooth_uuid_type = {
     .unary_op = bluetooth_uuid_unary_op,
     .locals_dict = NULL,
     .print = bluetooth_uuid_print,
+    .buffer_p = { .get_buffer = bluetooth_uuid_get_buffer },
 };
 
 // ----------------------------------------------------------------------------

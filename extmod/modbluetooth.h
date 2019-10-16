@@ -120,14 +120,14 @@ _IRQ_ALL                             = const(0xffff)
 
 // Common UUID type.
 // Ports are expected to map this to their own internal UUID types.
+// Internally the UUID data is little-endian, but the user should only
+// ever see this if they use the buffer protocol, e.g. in order to
+// construct an advertising payload (which needs to be in LE).
+// Both the constructor and the print function work in BE.
 typedef struct {
     mp_obj_base_t base;
     uint8_t type;
-    union {
-        uint16_t _16;
-        uint32_t _32;
-        uint8_t _128[16];
-    } uuid;
+    uint8_t data[16];
 } mp_obj_bluetooth_uuid_t;
 
 //////////////////////////////////////////////////////////////
@@ -140,8 +140,10 @@ typedef struct {
 // Any method returning an int returns errno on failure, otherwise zero.
 
 // Note: All methods dealing with addresses (as 6-byte uint8 pointers) are in big-endian format.
-// (i.e. the same way they would be printed on a device sticker or in a UI).
-// This means that the lower level implementation might need to reorder them (e.g. Nimble works in little-endian)
+// (i.e. the same way they would be printed on a device sticker or in a UI), so the user sees
+// addresses in a way that looks like what they'd expect.
+// This means that the lower level implementation will likely need to reorder them (e.g. Nimble
+// works in little-endian, as does BLE itself).
 
 // Enables the Bluetooth stack.
 int mp_bluetooth_init(void);
