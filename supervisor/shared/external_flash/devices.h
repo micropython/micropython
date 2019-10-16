@@ -85,6 +85,26 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Adesto Tech AT25SF161-SSHD-T 2MiB SPI flash
+// for the StringCar M0 (SAMD21) Express board.
+// Source: https://www.digikey.com/product-detail/en/adesto-technologies/AT25SF161-SDHD-T/1265-1230-1-ND/
+// Datasheet: https://www.adestotech.com/wpo-content/uploads/jDS-AT25SF161_046.pdf
+#define AT25SF161 {\
+    .total_size = (1 << 21), /* 2 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x1f, \
+    .memory_type = 0x86, \
+    .capacity = 0x01, \
+    .max_clock_speed_mhz = 85, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
 #define GD25Q16C {\
@@ -443,4 +463,21 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the ISSI IS25LP128F 16MiB SPI flash.
+// Datasheet: http://www.issi.com/WW/pdf/25LP-WP128F.pdf
+#define IS25LP128F {\
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x9d, \
+    .memory_type = 0x60, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

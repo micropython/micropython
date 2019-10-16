@@ -1,6 +1,8 @@
 name: Update CircuitPython.org
 
-on: release
+on:
+  release:
+    types: [published]
 
 jobs:
   website:
@@ -10,9 +12,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
-      run: exit 1
-      if: github.event.action != 'published'
     - name: Set up Python 3.5
       uses: actions/setup-python@v1
       with:

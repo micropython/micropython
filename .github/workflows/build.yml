@@ -1,6 +1,12 @@
 name: Build CI
 
-on: [push, pull_request, release]
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  check_suite:
+    types: [rerequested]
 
 jobs:
   test:
@@ -10,9 +16,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
-      run: exit 1
-      if: github.event_name == 'release' && (github.event.action != 'published' && github.event.action != 'rerequested')
     - name: Set up Python 3.5
       uses: actions/setup-python@v1
       with:
@@ -145,8 +148,10 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "spresense"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
+        - "stringcar_m0_express"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"

@@ -29,10 +29,20 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "nrfx_saadc.h"
+#include "nrf_saadc.h"
 #include "nrf_gpio.h"
 
 #define CHANNEL_NO 0
+
+void analogin_init(void) {
+    // Calibrate the ADC once, on startup.
+    nrf_saadc_enable();
+    nrf_saadc_event_clear(NRF_SAADC_EVENT_CALIBRATEDONE);
+    nrf_saadc_task_trigger(NRF_SAADC_TASK_CALIBRATEOFFSET);
+    while (nrf_saadc_event_check(NRF_SAADC_EVENT_CALIBRATEDONE) == 0) { }
+    nrf_saadc_event_clear(NRF_SAADC_EVENT_CALIBRATEDONE);
+    nrf_saadc_disable();
+}
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
     if (pin->adc_channel == 0)
