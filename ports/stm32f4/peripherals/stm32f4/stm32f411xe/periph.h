@@ -41,4 +41,11 @@ extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
 extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
 extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
 
+//UART
+extern USART_TypeDef * mcu_uart_banks[6];
+bool mcu_uart_has_usart[6];
+
+extern const mcu_uart_tx_obj_t mcu_uart_tx_list[7];
+extern const mcu_uart_rx_obj_t mcu_uart_rx_list[7];
+
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H

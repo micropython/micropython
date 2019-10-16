@@ -120,3 +120,26 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[12] = {
 };
 
 //UART, Etc
+
+USART_TypeDef * mcu_uart_banks[6] = {USART1, USART2, NULL, NULL, NULL, USART6};
+bool mcu_uart_has_usart[6] = {true, true, false, false, false, true};
+
+const mcu_uart_tx_obj_t mcu_uart_tx_list[7] = {
+    UART(2, 7, &pin_PA02),
+    UART(1, 7, &pin_PA09),
+    UART(1, 7, &pin_PA15),
+    UART(6, 8, &pin_PA11),
+    UART(1, 7, &pin_PB06),
+    UART(6, 8, &pin_PC06),
+    UART(2, 7, &pin_PD05),
+};
+
+const mcu_uart_rx_obj_t mcu_uart_rx_list[7] = {
+    UART(2, 7, &pin_PA03),
+    UART(1, 7, &pin_PA10),
+    UART(6, 8, &pin_PA12),
+    UART(1, 7, &pin_PB03),
+    UART(1, 7, &pin_PB07),
+    UART(6, 8, &pin_PC07),
+    UART(2, 7, &pin_PD06),
+};
