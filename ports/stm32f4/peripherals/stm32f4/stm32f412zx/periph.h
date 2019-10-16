@@ -43,8 +43,8 @@ extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
 extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
 
 //UART
-extern USART_TypeDef * mcu_uart_banks[6];
-bool mcu_uart_has_usart[6];
+extern USART_TypeDef * mcu_uart_banks[MAX_UART];
+bool mcu_uart_has_usart[MAX_UART];
 
 extern const mcu_uart_tx_obj_t mcu_uart_tx_list[11];
 extern const mcu_uart_rx_obj_t mcu_uart_rx_list[12];

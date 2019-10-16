@@ -39,7 +39,7 @@
 #include "stm32f4xx_hal.h" 
 
 
-STATIC bool reserved_uart[10];
+STATIC bool reserved_uart[MAX_UART];
 
 void uart_reset(void) {
     #ifdef USART1
@@ -75,138 +75,23 @@ void uart_reset(void) {
     //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
 
-void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
-
-    //match pins to UART objects
-    USART_TypeDef * USARTx;
-
-    uint8_t tx_len = sizeof(mcu_uart_tx_list)/sizeof(*mcu_uart_tx_list);
-    uint8_t rx_len = sizeof(mcu_uart_rx_list)/sizeof(*mcu_uart_rx_list);
-    bool uart_taken = false;
-    
-    //Can have both pins, or either
-    //TODO: condense in some elegant clever way that I can't currently think of
-    if ((tx != mp_const_none) && (rx != mp_const_none)) {
-        //normal find loop if both pins exist
-        for(uint i=0; i<tx_len;i++) {
-            if (mcu_uart_tx_list[i].pin == tx) {
-                //rx
-                for(uint j=0; j<rx_len;j++) {
-                    if (mcu_uart_rx_list[j].pin == rx 
-                        && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
-                        //keep looking if the UART is taken, edge case
-                        if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
-                            uart_taken = true;
-                            continue;
-                        }
-                        //store pins if not
-                        self->tx = &mcu_uart_tx_list[i];
-                        self->rx = &mcu_uart_rx_list[j];
-                        break;
-                    }
-                }
-            }
-        }
-        //handle typedef selection, errors
-        if(self->tx!=NULL && self->rx!=NULL) {
-            USARTx = mcu_uart_banks[self->tx->uart_index-1];
-            mp_printf(&mp_plat_print, "UART:%d \n", self->tx->uart_index);
-            //assign a root pointer pointer for IRQ
-            MP_STATE_PORT(cpy_uart_obj_all)[self->tx->uart_index-1] = self;
-        } else {
-            if (uart_taken) {
-                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
-            } else {
-                mp_raise_ValueError(translate("Invalid UART pin selection"));
-            }
-        }
-    } else if (tx==mp_const_none) {
-        //run only rx
-        for(uint i=0; i<rx_len;i++) {
-            if (mcu_uart_rx_list[i].pin == rx) {
-                //keep looking if the UART is taken, edge case
-                if(reserved_uart[mcu_uart_rx_list[i].uart_index-1]) {
-                    uart_taken = true;
-                    continue;
-                }
-                //store pins if not
-                self->rx = &mcu_uart_rx_list[i];
-                break;
-            }
-        }
-        //handle typedef selection, errors
-        if(self->rx!=NULL) {
-            USARTx = mcu_uart_banks[self->rx->uart_index-1];
-            //assign a root pointer pointer for IRQ
-            MP_STATE_PORT(cpy_uart_obj_all)[self->rx->uart_index-1] = self;
-        } else {
-            if (uart_taken) {
-                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
-            } else {
-                mp_raise_ValueError(translate("Invalid UART pin selection"));
-            }
-        }
-    } else if (rx==mp_const_none) {
-        //run only tx
-        for(uint i=0; i<tx_len;i++) {
-            if (mcu_uart_tx_list[i].pin == tx) {
-                //keep looking if the UART is taken, edge case
-                if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
-                    uart_taken = true;
-                    continue;
-                }
-                //store pins if not
-                self->tx = &mcu_uart_tx_list[i];
-                break;
-            }
-        }
-        //handle typedef selection, errors
-        if(self->tx!=NULL) {
-            USARTx = mcu_uart_banks[self->tx->uart_index-1];
-            //assign a root pointer pointer for IRQ
-            MP_STATE_PORT(cpy_uart_obj_all)[self->tx->uart_index-1] = self;
-        } else {
-            if (uart_taken) {
-                mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
-            } else {
-                mp_raise_ValueError(translate("Invalid UART pin selection"));
-            }
-        }
+STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval, 
+                                            int uart_index, bool uart_taken) {
+    if(pin_eval) {
+        //assign a root pointer pointer for IRQ
+        MP_STATE_PORT(cpy_uart_obj_all)[uart_index] = self;
+        return mcu_uart_banks[uart_index];
     } else {
-        //both pins cannot be empty
-        mp_raise_ValueError(translate("You must supply at least one UART pin"));
+        if (uart_taken) {
+            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        } else {
+            mp_raise_ValueError(translate("Invalid UART pin selection"));
+        }
     }
+}
 
-    //Other errors
-    if ( receiver_buffer_size == 0 ) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
-    if ( bits != 8 && bits != 9 ) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
 
-    //GPIO Init
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if (self->tx!=NULL) {
-        GPIO_InitStruct.Pin = pin_mask(tx->number);
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_PULLUP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = self->tx->altfn_index;
-        HAL_GPIO_Init(pin_port(tx->port), &GPIO_InitStruct);
-    }
-    if (self->rx!=NULL) {
-        GPIO_InitStruct.Pin = pin_mask(rx->number);
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_PULLUP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = self->rx->altfn_index; 
-        HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
-    }
-
+STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     #ifdef USART1
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
@@ -255,7 +140,109 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         HAL_NVIC_EnableIRQ(USART6_IRQn);
     } 
     #endif
-    //TODO: this technically needs to go to 10 to support F413. Condense?
+}
+
+void common_hal_busio_uart_construct(busio_uart_obj_t *self,
+        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
+        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
+        uint16_t receiver_buffer_size) {
+
+    //match pins to UART objects
+    USART_TypeDef * USARTx;
+
+    uint8_t tx_len = sizeof(mcu_uart_tx_list)/sizeof(*mcu_uart_tx_list);
+    uint8_t rx_len = sizeof(mcu_uart_rx_list)/sizeof(*mcu_uart_rx_list);
+    bool uart_taken = false;
+    
+    //Can have both pins, or either
+    if ((tx != mp_const_none) && (rx != mp_const_none)) {
+        //normal find loop if both pins exist
+        for(uint i=0; i<tx_len;i++) {
+            if (mcu_uart_tx_list[i].pin == tx) {
+                //rx
+                for(uint j=0; j<rx_len;j++) {
+                    if (mcu_uart_rx_list[j].pin == rx 
+                        && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
+                        //keep looking if the UART is taken, edge case
+                        if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
+                            uart_taken = true;
+                            continue;
+                        }
+                        //store pins if not
+                        self->tx = &mcu_uart_tx_list[i];
+                        self->rx = &mcu_uart_rx_list[j];
+                        break;
+                    }
+                }
+            }
+        }
+        USARTx = assign_uart_or_throw(self, (self->tx!=NULL && self->rx!=NULL), 
+            self->tx->uart_index-1, uart_taken);
+    } else if (tx==mp_const_none) {
+        //If there is no tx, run only rx
+        for(uint i=0; i<rx_len;i++) {
+            if (mcu_uart_rx_list[i].pin == rx) {
+                //keep looking if the UART is taken, edge case
+                if(reserved_uart[mcu_uart_rx_list[i].uart_index-1]) {
+                    uart_taken = true;
+                    continue;
+                }
+                //store pins if not
+                self->rx = &mcu_uart_rx_list[i];
+                break;
+            }
+        }
+        USARTx = assign_uart_or_throw(self, (self->rx!=NULL), 
+            self->rx->uart_index-1, uart_taken);
+    } else if (rx==mp_const_none) {
+        //If there is no rx, run only tx
+        for(uint i=0; i<tx_len;i++) {
+            if (mcu_uart_tx_list[i].pin == tx) {
+                //keep looking if the UART is taken, edge case
+                if(reserved_uart[mcu_uart_tx_list[i].uart_index-1]) {
+                    uart_taken = true;
+                    continue;
+                }
+                //store pins if not
+                self->tx = &mcu_uart_tx_list[i];
+                break;
+            }
+        }
+        USARTx = assign_uart_or_throw(self, (self->tx!=NULL), 
+            (self->tx->uart_index-1), uart_taken);
+    } else {
+        //both pins cannot be empty
+        mp_raise_ValueError(translate("You must supply at least one UART pin"));
+    }
+
+    //Other errors
+    if ( receiver_buffer_size == 0 ) {
+        mp_raise_ValueError(translate("Invalid buffer size"));
+    }
+    if ( bits != 8 && bits != 9 ) {
+        mp_raise_ValueError(translate("Invalid word/bit length"));
+    }
+
+    //GPIO Init
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (self->tx!=NULL) {
+        GPIO_InitStruct.Pin = pin_mask(tx->number);
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = self->tx->altfn_index;
+        HAL_GPIO_Init(pin_port(tx->port), &GPIO_InitStruct);
+    }
+    if (self->rx!=NULL) {
+        GPIO_InitStruct.Pin = pin_mask(rx->number);
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = self->rx->altfn_index; 
+        HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
+    }
+
+    uart_clk_irq_enable(USARTx);
 
     self->handle.Instance = USARTx;
     self->handle.Init.BaudRate = baudrate;
@@ -446,3 +433,4 @@ void UART5_IRQHandler(void) {
 void USART6_IRQHandler(void) {
     call_hal_irq(6);
 }
+

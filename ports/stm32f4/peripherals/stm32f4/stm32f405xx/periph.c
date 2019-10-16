@@ -86,8 +86,8 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[6] = {
     SPI(3, 6, &pin_PA15),
 };
 
-USART_TypeDef * mcu_uart_banks[6] = {USART1, USART2, USART3, UART4, UART5, USART6};
-bool mcu_uart_has_usart[6] = {true, true, true, false, false, true};
+USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, USART6};
+bool mcu_uart_has_usart[MAX_UART] = {true, true, true, false, false, true};
 
 const mcu_uart_tx_obj_t mcu_uart_tx_list[12] = {
     UART(4, 8, &pin_PA00),

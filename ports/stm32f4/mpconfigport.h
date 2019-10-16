@@ -40,8 +40,7 @@
 #include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
-	/* pointers to all 10 UART objects (if they have been created) */ \
-    void *cpy_uart_obj_all[9]; \
+    void *cpy_uart_obj_all[6]; \
 	CIRCUITPY_COMMON_ROOT_POINTERS
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

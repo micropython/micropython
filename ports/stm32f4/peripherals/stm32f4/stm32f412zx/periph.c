@@ -120,6 +120,8 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[12] = {
     SPI(5, 6, &pin_PE11)
 };
 
+//UART
+
 USART_TypeDef * mcu_uart_banks[6] = {USART1, USART2, USART3, NULL, NULL, USART6};
 bool mcu_uart_has_usart[6] = {true, true, true, false, false, true};
 
