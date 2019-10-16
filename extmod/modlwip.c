@@ -1114,7 +1114,7 @@ STATIC void lwip_socket_check_connected(lwip_socket_obj_t *socket) {
     if (socket->pcb.tcp == NULL) {
         // not connected
         int _errno = error_lookup_table[-socket->state];
-        socket->state = _ERR_BADF;
+        //socket->state = _ERR_BADF; retain old error state
         mp_raise_OSError(_errno);
     }
 }
@@ -1476,7 +1476,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         } else if (socket->state == ERR_RST) {
             // Socket was reset by peer, a write will return an error
-            ret |= flags & (MP_STREAM_POLL_WR | MP_STREAM_POLL_HUP);
+            ret |= (flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) | MP_STREAM_POLL_HUP;
         } else if (socket->state == _ERR_BADF) {
             ret |= MP_STREAM_POLL_NVAL;
         } else if (socket->state < 0) {
