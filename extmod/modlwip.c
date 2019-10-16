@@ -1477,6 +1477,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         } else if (socket->state == ERR_RST) {
             // Socket was reset by peer, a write will return an error
             ret |= flags & (MP_STREAM_POLL_WR | MP_STREAM_POLL_HUP);
+        } else if (socket->state == _ERR_BADF) {
+            ret |= MP_STREAM_POLL_NVAL;
         } else if (socket->state < 0) {
             // Socket in some other error state, use catch-all ERR flag
             // TODO: may need to set other return flags here
