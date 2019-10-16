@@ -1468,7 +1468,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
         if (socket->state == STATE_NEW) {
             // New sockets are not connected so set HUP
-            ret |= flags & MP_STREAM_POLL_HUP;
+            ret |= MP_STREAM_POLL_HUP;
         } else if (socket->state == STATE_PEER_CLOSED) {
             // Peer-closed socket is both readable and writable: read will
             // return EOF, write - error. Without this poll will hang on a
