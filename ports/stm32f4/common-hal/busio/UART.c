@@ -40,8 +40,6 @@
 
 
 STATIC bool reserved_uart[10];
-//TODO: remove this horrible hack
-STATIC busio_uart_obj_t * context_pointers[10]; //numbered by uart module
 
 void uart_reset(void) {
     #ifdef USART1
@@ -110,8 +108,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         if(self->tx!=NULL && self->rx!=NULL) {
             USARTx = mcu_uart_banks[self->tx->uart_index-1];
             mp_printf(&mp_plat_print, "UART:%d \n", self->tx->uart_index);
-            //TODO: remove this horrible hack 
-            context_pointers[self->tx->uart_index-1] = self;
+            //assign a root pointer pointer for IRQ
+            MP_STATE_PORT(cpy_uart_obj_all)[self->tx->uart_index-1] = self;
         } else {
             if (uart_taken) {
                 mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -136,8 +134,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         //handle typedef selection, errors
         if(self->rx!=NULL) {
             USARTx = mcu_uart_banks[self->rx->uart_index-1];
-            //TODO: remove this horrible hack 
-            context_pointers[self->rx->uart_index-1] = self;
+            //assign a root pointer pointer for IRQ
+            MP_STATE_PORT(cpy_uart_obj_all)[self->rx->uart_index-1] = self;
         } else {
             if (uart_taken) {
                 mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -162,8 +160,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         //handle typedef selection, errors
         if(self->tx!=NULL) {
             USARTx = mcu_uart_banks[self->tx->uart_index-1];
-            //TODO: remove this horrible hack 
-            context_pointers[self->tx->uart_index-1] = self;
+            //assign a root pointer pointer for IRQ
+            MP_STATE_PORT(cpy_uart_obj_all)[self->tx->uart_index-1] = self;
         } else {
             if (uart_taken) {
                 mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -207,24 +205,32 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
         __HAL_RCC_USART1_CLK_ENABLE();
+        HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(USART1_IRQn);
     } 
     #endif
     #ifdef UART2
     if(USARTx==USART2) { 
         reserved_uart[1] = true;
         __HAL_RCC_USART2_CLK_ENABLE();
+        HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(USART2_IRQn);
     } 
     #endif
     #ifdef USART3
     if(USARTx==USART3) { 
         reserved_uart[2] = true;
         __HAL_RCC_USART3_CLK_ENABLE();
+        HAL_NVIC_SetPriority(USART3_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(USART3_IRQn);
     } 
     #endif
     #ifdef UART4
     if(USARTx==UART4) { 
         reserved_uart[3] = true;
         __HAL_RCC_UART4_CLK_ENABLE();
+        HAL_NVIC_SetPriority(UART4_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(UART4_IRQn);
     } 
     #endif
     #ifdef UART5
@@ -239,9 +245,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         __HAL_RCC_USART6_CLK_ENABLE();
     } 
     #endif
-
-    HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
-    HAL_NVIC_EnableIRQ(USART2_IRQn);
 
     //TODO: this technically needs to go to 10 to support F413. Condense?
 
@@ -281,6 +284,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
         mp_raise_ValueError(translate("HAL recieve IT start error"));
     }
+
+    //__HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -325,8 +330,6 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
         mp_raise_ValueError(translate("HAL recieve IT start error"));
     }
-
-    mp_printf(&mp_plat_print, "bytes:%d, char:%c", rx_bytes, self->rx_char);
     
     if (rx_bytes == 0) {
         *errcode = EAGAIN;
@@ -352,12 +355,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *handle)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
 {
-    //TODO: I feel bad just writing this
     for(int i=0; i<7; i++) {
-        if(handle == &context_pointers[i]->handle) {
-            mp_raise_msg_varg(&mp_type_RuntimeError, translate("error = 0x%d ,%c"), i, &context_pointers[i]->rx_char);
-            ringbuf_put_n(&context_pointers[i]->rbuf, &context_pointers[i]->rx_char, 1);
-            HAL_UART_Receive_IT(handle, &context_pointers[i]->rx_char, 1);
+        //get context pointer and cast it as struct pointer
+        busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[i];
+        if(handle == &context->handle) {
+            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
+            HAL_UART_Receive_IT(handle, &context->rx_char, 1);
             return;
         }
     }
@@ -401,4 +404,39 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     return true;
+}
+
+static void call_hal_irq(int uart_num) {
+    //Create casted context pointer
+    busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[uart_num-1];
+    if(context != NULL) {
+        HAL_UART_IRQHandler(&context->handle);
+    } else {
+        mp_raise_ValueError(translate("UART IRQ bad handle supplied"));
+    }
+}
+
+// UART/USART IRQ handlers
+void USART1_IRQHandler(void) {
+    call_hal_irq(1);
+}
+
+void USART2_IRQHandler(void) {
+    call_hal_irq(2);
+}
+
+void USART3_IRQHandler(void) {
+    call_hal_irq(3);
+}
+
+void UART4_IRQHandler(void) {
+    call_hal_irq(4);
+}
+
+void UART5_IRQHandler(void) {
+    call_hal_irq(5);
+}
+
+void USART6_IRQHandler(void) {
+    call_hal_irq(6);
 }

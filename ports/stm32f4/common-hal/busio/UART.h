@@ -50,6 +50,8 @@ typedef struct {
 
 void uart_reset(void);
 
+void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
-
+void USART3_IRQHandler(void);
+void UART_IRQHandler(void);
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
