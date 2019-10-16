@@ -1,6 +1,10 @@
-#include <stdint.h>
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
 
-// options to control how MicroPython is built
+// Board-specific definitions
+#include "mpconfigboard.h"
+
+#include <stdint.h>
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define MICROPY_GC_STACK_ENTRY_TYPE uint16_t
@@ -10,13 +14,8 @@
 #define MICROPY_ALLOC_PARSE_RULE_INC    (8)
 #define MICROPY_ALLOC_PARSE_RESULT_INC  (8)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
-#define MICROPY_PERSISTENT_CODE_LOAD (1)
-#define MICROPY_EMIT_XTENSA         (1)
-#define MICROPY_EMIT_INLINE_XTENSA  (1)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTER       (&mp_debug_print)
-#define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -32,7 +31,6 @@
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
@@ -40,7 +38,6 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_SET     (1)
 #define MICROPY_PY_BUILTINS_SLICE   (1)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_BUILTINS_INPUT   (1)
@@ -58,25 +55,21 @@
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
-#define MICROPY_PY_SYS_STDIO_BUFFER (1)
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
-#define MICROPY_PY_UCRYPTOLIB       (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URE              (1)
-#define MICROPY_PY_URE_SUB          (1)
 #define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_UZLIB            (1)
@@ -92,13 +85,11 @@
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_WEBREPL_STATIC_FILEBUF (1)
-#define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_OS_DUPTERM       (2)
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
@@ -108,12 +99,10 @@
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 
-#define MICROPY_VFS                    (1)
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_VFS_FAT                (1)
 #define MICROPY_ESP8266_APA102         (1)
 #define MICROPY_ESP8266_NEOPIXEL       (1)
 
@@ -211,8 +200,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 // board specifics
 
 #define MICROPY_MPHALPORT_H "esp_mphal.h"
-#define MICROPY_HW_BOARD_NAME "ESP module"
-#define MICROPY_HW_MCU_NAME "ESP8266"
 #define MICROPY_PY_SYS_PLATFORM "esp8266"
 
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n

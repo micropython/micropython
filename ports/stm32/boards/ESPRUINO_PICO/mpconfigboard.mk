@@ -6,4 +6,4 @@ TEXT0_ADDR = 0x08000000
 TEXT1_ADDR = 0x08020000
 
 # Don't include default frozen modules because MCU is tight on flash space
-FROZEN_MPY_DIR ?=
+FROZEN_MANIFEST ?=

@@ -40,6 +40,7 @@
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB      (10)
 #define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP   (10 + 6)
 #define MICROPY_NLR_NUM_REGS_XTENSA         (10)
+#define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
 #if !MICROPY_NLR_SETJMP

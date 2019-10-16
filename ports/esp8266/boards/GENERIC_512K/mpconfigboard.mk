@@ -1,0 +1,3 @@
+MICROPY_FATFS = 0
+MICROPY_PY_BTREE = 0
+LD_FILES = boards/esp8266_512k.ld

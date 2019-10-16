@@ -1,0 +1,6 @@
+freeze('modules')
+freeze('$(MPY)/tools', ('upip.py', 'upip_utarfile.py'))
+freeze('$(MPY)/ports/esp8266/modules', 'ntptime.py')
+freeze('$(MPY)/ports/esp8266/modules', ('webrepl.py', 'webrepl_setup.py', 'websocket_helper.py',))
+freeze('$(MPY)/drivers/dht', 'dht.py')
+freeze('$(MPY)/drivers/onewire')

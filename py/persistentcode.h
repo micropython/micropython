@@ -44,6 +44,7 @@ enum {
     MP_NATIVE_ARCH_ARMV7EMSP,
     MP_NATIVE_ARCH_ARMV7EMDP,
     MP_NATIVE_ARCH_XTENSA,
+    MP_NATIVE_ARCH_XTENSAWIN,
 };
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);

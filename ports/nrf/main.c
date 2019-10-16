@@ -70,6 +70,10 @@
 #include "softpwm.h"
 #endif
 
+#if MICROPY_HW_USB_CDC
+#include "usb_cdc.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -121,6 +125,7 @@ soft_reset:
 
     readline_init0();
 
+
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
 #endif
@@ -149,7 +154,7 @@ soft_reset:
     uart_init0();
 #endif
 
-#if (MICROPY_PY_BLE_NUS == 0)
+#if (MICROPY_PY_BLE_NUS == 0) && (MICROPY_HW_USB_CDC == 0)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(0),
@@ -231,6 +236,10 @@ led_state(1, 0);
     pyexec_file_if_exists("main.py");
 #endif
 
+#if MICROPY_HW_USB_CDC
+    usb_cdc_init();
+#endif
+
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
@@ -290,9 +299,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
+
 void HardFault_Handler(void)
 {
-#if defined(NRF52_SERIES)
+#if defined(NRF52_SERIES) || defined(NRF91_SERIES)
     static volatile uint32_t reg;
     static volatile uint32_t reg2;
     static volatile uint32_t bfar;

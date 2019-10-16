@@ -157,7 +157,7 @@ void mp_bluetooth_get_device_addr(uint8_t *addr);
 
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
-int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
+int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len);
 
 // Stop advertisement. No-op when already stopped.
 void mp_bluetooth_gap_advertise_stop(void);
@@ -186,7 +186,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Start a discovery (scan). Set duration to zero to run continuously.
-int mp_bluetooth_gap_scan_start(int32_t duration_ms);
+int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us);
 
 // Stop discovery (if currently active).
 int mp_bluetooth_gap_scan_stop(void);

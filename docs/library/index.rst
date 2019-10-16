@@ -75,6 +75,7 @@ it will fallback to loading the built-in ``ujson`` module.
 
    builtins.rst
    array.rst
+   bluetooth.rst
    cmath.rst
    gc.rst
    math.rst
@@ -113,6 +114,19 @@ the following libraries.
    network.rst
    ucryptolib.rst
    uctypes.rst
+
+
+Port-specific libraries
+-----------------------
+
+In some cases the following port/board-specific libraries have functions or
+classes similar to those in the :mod:`machine` library.  Where this occurs, the
+entry in the port specific library exposes hardware functionality unique to
+that platform.
+
+To write portable code use functions and classes from the :mod:`machine` module.
+To access platform-specific hardware use the appropriate library, e.g.
+:mod:`pyb` in the case of the Pyboard.
 
 
 Libraries specific to the pyboard

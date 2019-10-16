@@ -34,6 +34,10 @@
 
 #elif defined(NRF52_SERIES)
 #define FLASH_PAGESIZE (4096)
+
+#elif defined(NRF91_SERIES)
+#define FLASH_PAGESIZE (4096)
+
 #else
 #error Unknown chip
 #endif
