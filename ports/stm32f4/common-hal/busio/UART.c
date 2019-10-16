@@ -45,26 +45,32 @@ void uart_reset(void) {
     #ifdef USART1
         reserved_uart[0] = false;
         __HAL_RCC_USART1_CLK_DISABLE(); 
+        HAL_NVIC_DisableIRQ(USART1_IRQn);
     #endif
     #ifdef USART2
         reserved_uart[1] = false;
         __HAL_RCC_USART2_CLK_DISABLE(); 
+        HAL_NVIC_DisableIRQ(USART2_IRQn);
     #endif
     #ifdef USART3
         reserved_uart[2] = false;
         __HAL_RCC_USART3_CLK_DISABLE(); 
+        HAL_NVIC_DisableIRQ(USART3_IRQn);
     #endif
     #ifdef UART4
         reserved_uart[3] = false;
         __HAL_RCC_UART4_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(UART4_IRQn);
     #endif
     #ifdef UART5
         reserved_uart[4] = false;
         __HAL_RCC_UART5_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(UART5_IRQn);
     #endif
     #ifdef USART6
         reserved_uart[5] = false;
         __HAL_RCC_USART6_CLK_DISABLE(); 
+        HAL_NVIC_DisableIRQ(USART6_IRQn);
     #endif
     //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
@@ -237,15 +243,18 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if(USARTx==UART5) { 
         reserved_uart[4] = true;
         __HAL_RCC_UART5_CLK_ENABLE();
+        HAL_NVIC_SetPriority(UART5_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(UART5_IRQn);
     } 
     #endif
     #ifdef USART6
     if(USARTx==USART6) { 
         reserved_uart[5] = true;
         __HAL_RCC_USART6_CLK_ENABLE();
+        HAL_NVIC_SetPriority(USART6_IRQn, 0, 1);
+        HAL_NVIC_EnableIRQ(USART6_IRQn);
     } 
     #endif
-
     //TODO: this technically needs to go to 10 to support F413. Condense?
 
     self->handle.Instance = USARTx;
@@ -284,8 +293,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
         mp_raise_ValueError(translate("HAL recieve IT start error"));
     }
-
-    //__HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -301,9 +308,9 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    //     if ( nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED ) {
-    //     mp_raise_ValueError(translate("No RX pin"));
-    // }
+    if (self->rx == NULL) {
+        mp_raise_ValueError(translate("No RX pin"));
+    }
 
     size_t rx_bytes = 0;
     uint64_t start_ticks = ticks_ms;
@@ -340,17 +347,16 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
+    if (self->tx == NULL) {
+        mp_raise_ValueError(translate("No TX pin"));
+    }
+
     if (HAL_UART_Transmit(&self->handle, (uint8_t *)data, len, 500) == HAL_OK) {
         return len;
     } else {
         mp_raise_ValueError(translate("UART write error"));
     }
     return 0;
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *handle)
-{
-    //not used at the moment. 
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
