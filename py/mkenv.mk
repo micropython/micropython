@@ -66,6 +66,8 @@ MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
 
+MPY_LIB_DIR = $(TOP)/../micropython-lib
+
 all:
 .PHONY: all
 
