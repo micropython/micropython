@@ -11,7 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
-"Language: en_US\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -453,7 +453,7 @@ msgstr ""
 
 #: shared-bindings/displayio/I2CDisplay.c
 msgid "Command must be 0-255"
-msgstr ""
+msgstr "Der Befehl muss zwischen 0 und 255 liegen"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -461,11 +461,11 @@ msgstr "Der Befehl muss ein int zwischen 0 und 255 sein"
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
+msgstr "Beschädigte .mpy Datei"
 
 #: py/emitglue.c
 msgid "Corrupt raw code"
-msgstr ""
+msgstr "Beschädigter raw code"
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 #, c-format
@@ -499,7 +499,7 @@ msgstr "Data 0 pin muss am Byte ausgerichtet sein"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
-msgstr ""
+msgstr "Dem fmt Block muss ein Datenblock folgen"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 msgid "Data too large for advertisement packet"
@@ -511,11 +511,11 @@ msgstr "Die Zielkapazität ist kleiner als destination_length."
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
-msgstr ""
+msgstr "Gerät in Benutzung"
 
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
+msgstr "Display muss einen 16 Bit Farbraum haben."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -553,7 +553,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr ""
+msgstr "Ein Service wird erwartet"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -640,7 +640,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 msgid "Failed to pair"
-msgstr ""
+msgstr "Koppeln fehlgeschlagen"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -651,7 +651,7 @@ msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
-msgstr ""
+msgstr "Kann Attributwert nicht lesen, Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -671,7 +671,7 @@ msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to set device name, err 0x%04x"
-msgstr ""
+msgstr "Gerätename konnte nicht gesetzt werden, Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
@@ -686,7 +686,7 @@ msgstr "Verbindung konnte nicht hergestellt werden. Fehler: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
 msgid "Failed to start pairing, error 0x%04x"
-msgstr ""
+msgstr "Starten des Koppelns fehlgeschlagen, Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Scanner.c
 #, c-format
@@ -747,7 +747,7 @@ msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
-msgstr ""
+msgstr "Gruppe schon benutzt"
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
@@ -771,7 +771,7 @@ msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
-msgstr ""
+msgstr "Inkorrekte Puffergröße"
 
 #: py/moduerrno.c
 msgid "Input/output error"
@@ -797,7 +797,7 @@ msgstr "Ungültiges Argument"
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
-msgstr ""
+msgstr "Ungültige Bits pro Wert"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Invalid buffer size"
@@ -805,7 +805,7 @@ msgstr "Ungültige Puffergröße"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr ""
+msgstr "Ungültiger Aufnahmezeitraum. Gültiger Bereich: 1 - 500"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
@@ -859,7 +859,7 @@ msgstr "Ungültige Polarität"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
-msgstr ""
+msgstr "Ungültige Eigenschaften"
 
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
@@ -867,11 +867,11 @@ msgstr "Ungültiger Ausführungsmodus"
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr ""
+msgstr "Ungültiger security_mode"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
-msgstr ""
+msgstr "Ungültige Stimme"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
@@ -942,7 +942,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
+msgstr "Muss eine %q Unterklasse sein."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -967,7 +967,7 @@ msgstr "Kein TX Pin"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
-msgstr ""
+msgstr "Keine Taktgeber verfügbar"
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
@@ -992,11 +992,11 @@ msgstr "Keine Hardwareunterstützung an diesem Pin"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
-msgstr ""
+msgstr "Kein Pulldown Widerstand am Pin; 1Mohm wird vorgeschlagen"
 
 #: py/moduerrno.c
 msgid "No space left on device"
-msgstr "Kein Speicherplatz auf Gerät"
+msgstr "Kein Speicherplatz mehr verfügbar auf dem Gerät"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1011,7 +1011,7 @@ msgstr "Nicht verbunden"
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
-msgstr "Spielt nicht"
+msgstr "Spielt nicht ab"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1033,6 +1033,7 @@ msgstr "Nur 8 oder 16 bit mono mit "
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
+"Nur Windows-Format, unkomprimiertes BMP unterstützt: die gegebene Header-Größe ist %d"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1100,7 +1101,7 @@ msgstr "Eine RTC wird auf diesem Board nicht unterstützt"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Range out of bounds"
-msgstr ""
+msgstr "Bereich außerhalb der Grenzen"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1306,7 +1307,7 @@ msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "Konnte kein I2C Display finden an %x"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1319,7 +1320,7 @@ msgstr "Parser konnte nicht gestartet werden"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
+msgstr "Konnte Farbpalettendaten nicht lesen"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -1364,7 +1365,7 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
-msgstr ""
+msgstr "Länge des Wertes > max_length"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2506,7 +2507,7 @@ msgstr "stream operation ist nicht unterstützt"
 
 #: py/objstrunicode.c
 msgid "string index out of range"
-msgstr ""
+msgstr "String index außerhalb des Bereiches"
 
 #: py/objstrunicode.c
 #, c-format
@@ -2597,11 +2598,11 @@ msgstr "tx und rx können nicht beide None sein"
 
 #: py/objtype.c
 msgid "type '%q' is not an acceptable base type"
-msgstr ""
+msgstr "Typ '%q' ist kein akzeptierter Basis-Typ"
 
 #: py/objtype.c
 msgid "type is not an acceptable base type"
-msgstr ""
+msgstr "Typ ist kein akzeptierter Basis-Typ"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
@@ -2713,11 +2714,11 @@ msgstr "nicht unterstützte Typen für %q: '%s', '%s'"
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "Wert muss in %d Byte(s) passen"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
+msgstr "value_count muss größer als 0 sein"
 
 #: shared-bindings/_bleio/Scanner.c
 msgid "window must be <= interval"
