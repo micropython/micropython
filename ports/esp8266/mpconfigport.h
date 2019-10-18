@@ -94,10 +94,7 @@
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_STREAMS_POSIX_API   (1)
-#define MICROPY_MODULE_FROZEN_STR   (1)
-#define MICROPY_MODULE_FROZEN_MPY   (1)
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
-#define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
