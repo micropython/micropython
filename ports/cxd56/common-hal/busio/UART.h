@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    int uart_fd;
+    int8_t number;
     const mcu_pin_obj_t *tx_pin;
     const mcu_pin_obj_t *rx_pin;
     uint32_t baudrate;
