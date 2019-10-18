@@ -101,15 +101,25 @@ ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
+
+ifneq ($(FROZEN_DIR),)
+$(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+$(error FROZEN_MPY_DIR cannot be used in conjunction with FROZEN_MANIFEST)
+endif
 endif
 
 ifneq ($(FROZEN_DIR),)
+$(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)
 $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
 	$(ECHO) "GEN $@"
 	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
 ifneq ($(FROZEN_MPY_DIR),)
+$(info Warning: FROZEN_MPY_DIR is deprecated in favour of FROZEN_MANIFEST)
 # make a list of all the .py files that need compiling and freezing
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
