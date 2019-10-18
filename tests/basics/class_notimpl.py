@@ -11,7 +11,7 @@ class C:
         self.value = value
 
     def __str__(self):
-        return "C(%s)" % self.value
+        return "C({})".format(self.value)
 
     def __add__(self, rhs):
         print(self, '+', rhs)
