@@ -33,8 +33,3 @@
 // 91 is a magic number proposed by @dpgeorge, which make pystone run ~ at tie
 // with CPython 3.4.
 #define MICROPY_MODULE_DICT_SIZE (91)
-
-// Don't include builtin upip, as this build is again intended just for
-// synthetic benchmarking
-#undef MICROPY_MODULE_FROZEN_STR
-#define MICROPY_MODULE_FROZEN_STR (0)

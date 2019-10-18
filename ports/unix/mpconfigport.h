@@ -113,7 +113,6 @@
 #define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
-#define MICROPY_MODULE_FROZEN_STR   (1)
 
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)

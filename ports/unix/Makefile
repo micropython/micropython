@@ -188,6 +188,9 @@ CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
 include $(TOP)/py/mkrules.mk
 
@@ -212,7 +215,7 @@ uninstall:
 
 # build synthetically fast interpreter for benchmarking
 fast:
-	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast
+	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast FROZEN_MANIFEST=
 
 # build a minimal interpreter
 minimal:
