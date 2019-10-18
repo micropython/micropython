@@ -1,0 +1,12 @@
+test <class 'VfsLfs1'>
+statvfs OSError
+read OSError
+write OSError
+close OSError
+flush OSError
+test <class 'VfsLfs2'>
+statvfs OSError
+read OSError
+write OSError
+close OSError
+flush OSError
