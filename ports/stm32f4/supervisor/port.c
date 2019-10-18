@@ -67,6 +67,14 @@ void reset_cpu(void) {
 	NVIC_SystemReset();
 }
 
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
+}
+
 extern uint32_t _ebss;
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {

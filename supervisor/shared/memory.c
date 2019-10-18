@@ -25,6 +25,7 @@
  */
 
 #include "supervisor/memory.h"
+#include "supervisor/port.h"
 
 #include <stddef.h>
 
@@ -36,12 +37,10 @@ static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
 // We use uint32_t* to ensure word (4 byte) alignment.
 uint32_t* low_address;
 uint32_t* high_address;
-extern uint32_t _ebss;
-extern uint32_t _estack;
 
 void memory_init(void) {
-    low_address = &_ebss;
-    high_address = &_estack;
+    low_address = port_stack_get_limit();
+    high_address = port_stack_get_top();
 }
 
 void free_memory(supervisor_allocation* allocation) {
