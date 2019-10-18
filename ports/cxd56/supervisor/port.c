@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <sys/boardctl.h>
 
+#include "sched/sched.h"
+
 #include "boards/board.h"
 
 #include "supervisor/port.h"
@@ -68,11 +70,15 @@ void reset_to_bootloader(void) {
 }
 
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    struct tcb_s *rtcb = this_task();
+
+    return rtcb->adj_stack_ptr - (uint32_t)rtcb->adj_stack_size;
 }
 
 uint32_t *port_stack_get_top(void) {
-    return &_estack;
+    struct tcb_s *rtcb = this_task();
+
+    return rtcb->adj_stack_ptr;
 }
 
 extern uint32_t _ebss;
