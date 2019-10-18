@@ -255,7 +255,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1] = { mp_obj_get_int(reg) };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
-    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, true);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
