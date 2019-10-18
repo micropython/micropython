@@ -4,6 +4,22 @@
 CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
 
 ################################################################################
+# VFS littlefs
+
+ifeq ($(MICROPY_VFS_LFS),1)
+CFLAGS_MOD += -DMICROPY_VFS_LFS=1
+CFLAGS_MOD += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
+CFLAGS_MOD += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+LITTLEFS_DIR = lib/littlefs
+SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
+	lfs1.c \
+	lfs1_util.c \
+	lfs2.c \
+	lfs2_util.c \
+	)
+endif
+
+################################################################################
 # ussl
 
 ifeq ($(MICROPY_PY_USSL),1)
