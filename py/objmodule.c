@@ -237,6 +237,61 @@ MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 #if MICROPY_MODULE_WEAK_LINKS
 STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
+#if MICROPY_PY_IO
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) },
+#endif
+#if MICROPY_PY_COLLECTIONS
+    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) },
+#endif
+#if MICROPY_PY_STRUCT
+    { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) },
+#endif
+
+    // extmod modules
+
+#if MICROPY_PY_UERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#endif
+#if MICROPY_PY_UCTYPES
+    { MP_ROM_QSTR(MP_QSTR_ctypes), MP_ROM_PTR(&mp_module_uctypes) },
+#endif
+#if MICROPY_PY_UZLIB
+    { MP_ROM_QSTR(MP_QSTR_zlib), MP_ROM_PTR(&mp_module_uzlib) },
+#endif
+#if MICROPY_PY_UJSON
+    { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#endif
+#if MICROPY_PY_URE
+    { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#endif
+#if MICROPY_PY_UHEAPQ
+    { MP_ROM_QSTR(MP_QSTR_heapq), MP_ROM_PTR(&mp_module_uheapq) },
+#endif
+#if MICROPY_PY_UTIMEQ
+    { MP_ROM_QSTR(MP_QSTR_timeq), MP_ROM_PTR(&mp_module_utimeq) },
+#endif
+#if MICROPY_PY_UHASHLIB
+    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) },
+#endif
+#if MICROPY_PY_UCRYPTOLIB
+    { MP_ROM_QSTR(MP_QSTR_cryptolib), MP_ROM_PTR(&mp_module_ucryptolib) },
+#endif
+#if MICROPY_PY_UBINASCII
+    { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#endif
+#if MICROPY_PY_URANDOM
+    { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&mp_module_urandom) },
+#endif
+#if MICROPY_PY_USELECT
+    { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_module_uselect) },
+#endif
+#if MICROPY_PY_USSL
+    { MP_ROM_QSTR(MP_QSTR_ssl), MP_ROM_PTR(&mp_module_ussl) },
+#endif
+#if MICROPY_PY_UWEBSOCKET
+    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&mp_module_uwebsocket) },
+#endif
+
     MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 };
 
