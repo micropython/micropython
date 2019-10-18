@@ -221,6 +221,7 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_tests = set()
     skip_native = False
     skip_int_big = False
+    skip_bytearray = False
     skip_set_type = False
     skip_async = False
     skip_const = False
@@ -243,6 +244,11 @@ def run_tests(pyb, tests, args, base_path="."):
         output = run_feature_check(pyb, args, base_path, 'int_big.py')
         if output != b'1000000000000000000000000000000000000000000000\n':
             skip_int_big = True
+
+        # Check if bytearray is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'bytearray.py')
+        if output != b'bytearray\n':
+            skip_bytearray = True
 
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'set_check.py')
@@ -397,6 +403,7 @@ def run_tests(pyb, tests, args, base_path="."):
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_async = test_name.startswith("async_")
         is_const = test_name.startswith("const")
@@ -405,6 +412,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
+        skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
