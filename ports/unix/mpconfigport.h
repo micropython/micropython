@@ -66,6 +66,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_STREAMS_POSIX_API   (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
@@ -190,8 +191,10 @@ extern const struct _mp_obj_module_t mp_module_jni;
 
 #if MICROPY_PY_UOS_VFS
 #define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
+#define MICROPY_PY_UOS_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_uos_vfs) },
 #else
 #define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) },
+#define MICROPY_PY_UOS_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_os) },
 #endif
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
@@ -205,8 +208,10 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #endif
 #if MICROPY_PY_UTIME
 #define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
+#define MICROPY_PY_UTIME_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) },
 #else
 #define MICROPY_PY_UTIME_DEF
+#define MICROPY_PY_UTIME_WEAK_DEF
 #endif
 #if MICROPY_PY_TERMIOS
 #define MICROPY_PY_TERMIOS_DEF { MP_ROM_QSTR(MP_QSTR_termios), MP_ROM_PTR(&mp_module_termios) },
@@ -215,13 +220,17 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #endif
 #if MICROPY_PY_SOCKET
 #define MICROPY_PY_SOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_socket) },
+#define MICROPY_PY_SOCKET_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_socket) },
 #else
 #define MICROPY_PY_SOCKET_DEF
+#define MICROPY_PY_SOCKET_WEAK_DEF
 #endif
 #if MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
+#define MICROPY_PY_USELECT_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_module_uselect) },
 #else
 #define MICROPY_PY_USELECT_DEF
+#define MICROPY_PY_USELECT_WEAK_DEF
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -233,6 +242,13 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_UOS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    MICROPY_PY_SOCKET_WEAK_DEF \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
+    MICROPY_PY_UOS_WEAK_DEF \
+    MICROPY_PY_USELECT_WEAK_DEF \
+    MICROPY_PY_UTIME_WEAK_DEF \
 
 // type definitions for the specific machine
 
