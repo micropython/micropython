@@ -44,31 +44,37 @@ STATIC bool reserved_uart[MAX_UART];
 void uart_reset(void) {
     #ifdef USART1
         reserved_uart[0] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[0] = NULL;
         __HAL_RCC_USART1_CLK_DISABLE(); 
         HAL_NVIC_DisableIRQ(USART1_IRQn);
     #endif
     #ifdef USART2
         reserved_uart[1] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[1] = NULL;
         __HAL_RCC_USART2_CLK_DISABLE(); 
         HAL_NVIC_DisableIRQ(USART2_IRQn);
     #endif
     #ifdef USART3
         reserved_uart[2] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[2] = NULL;
         __HAL_RCC_USART3_CLK_DISABLE(); 
         HAL_NVIC_DisableIRQ(USART3_IRQn);
     #endif
     #ifdef UART4
         reserved_uart[3] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[3] = NULL;
         __HAL_RCC_UART4_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(UART4_IRQn);
     #endif
     #ifdef UART5
         reserved_uart[4] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[4] = NULL;
         __HAL_RCC_UART5_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(UART5_IRQn);
     #endif
     #ifdef USART6
         reserved_uart[5] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[5] = NULL;
         __HAL_RCC_USART6_CLK_DISABLE(); 
         HAL_NVIC_DisableIRQ(USART6_IRQn);
     #endif
@@ -96,7 +102,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
         __HAL_RCC_USART1_CLK_ENABLE();
-        HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
     } 
     #endif
@@ -104,7 +110,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART2) { 
         reserved_uart[1] = true;
         __HAL_RCC_USART2_CLK_ENABLE();
-        HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
     } 
     #endif
@@ -112,7 +118,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART3) { 
         reserved_uart[2] = true;
         __HAL_RCC_USART3_CLK_ENABLE();
-        HAL_NVIC_SetPriority(USART3_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(USART3_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(USART3_IRQn);
     } 
     #endif
@@ -120,7 +126,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==UART4) { 
         reserved_uart[3] = true;
         __HAL_RCC_UART4_CLK_ENABLE();
-        HAL_NVIC_SetPriority(UART4_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(UART4_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(UART4_IRQn);
     } 
     #endif
@@ -128,7 +134,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==UART5) { 
         reserved_uart[4] = true;
         __HAL_RCC_UART5_CLK_ENABLE();
-        HAL_NVIC_SetPriority(UART5_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(UART5_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(UART5_IRQn);
     } 
     #endif
@@ -136,7 +142,7 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART6) { 
         reserved_uart[5] = true;
         __HAL_RCC_USART6_CLK_ENABLE();
-        HAL_NVIC_SetPriority(USART6_IRQn, 0, 1);
+        //HAL_NVIC_SetPriority(USART6_IRQn, 0, 1);
         HAL_NVIC_EnableIRQ(USART6_IRQn);
     } 
     #endif
