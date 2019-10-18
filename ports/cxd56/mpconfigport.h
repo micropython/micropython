@@ -27,8 +27,8 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-// 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
+// 64kiB stack
+#define CIRCUITPY_DEFAULT_STACK_SIZE            0x10000
 
 #include "py/circuitpy_mpconfig.h"
 
