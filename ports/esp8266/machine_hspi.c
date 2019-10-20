@@ -42,7 +42,7 @@
 #if MICROPY_PY_MACHINE_SPI
 
 typedef struct _machine_hspi_obj_t {
-    mp_obj_base_t base;
+    mp_machine_spi_obj_t spi;
     uint32_t baudrate;
     uint8_t polarity;
     uint8_t phase;
@@ -181,6 +181,7 @@ const mp_obj_type_t machine_hspi_type = {
     .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &machine_hspi_p,
     .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+    .parent = &mp_machine_spi_type,
 };
 
 #endif // MICROPY_PY_MACHINE_SPI

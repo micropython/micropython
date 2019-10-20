@@ -40,7 +40,7 @@
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
 typedef struct _machine_hw_spi_obj_t {
-    mp_obj_base_t base;
+    mp_machine_spi_obj_t spi;
     spi_host_device_t host;
     uint32_t baudrate;
     uint8_t polarity;
@@ -402,4 +402,5 @@ const mp_obj_type_t machine_hw_spi_type = {
     .make_new = machine_hw_spi_make_new,
     .protocol = &machine_hw_spi_p,
     .locals_dict = (mp_obj_dict_t *) &mp_machine_spi_locals_dict,
+    .parent = &mp_machine_spi_type,
 };

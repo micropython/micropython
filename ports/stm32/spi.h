@@ -50,8 +50,8 @@ typedef struct _pyb_spi_obj_t {
 } pyb_spi_obj_t;
 
 typedef struct _machine_hard_spi_obj_t {
-    mp_obj_base_t base;
-    const spi_t *spi;
+    mp_machine_spi_obj_t spi;
+    const spi_t *config;
 } machine_hard_spi_obj_t;
 
 extern SPI_HandleTypeDef SPIHandle1;

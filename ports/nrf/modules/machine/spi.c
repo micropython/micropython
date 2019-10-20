@@ -98,7 +98,7 @@
 #endif // NRFX_SPIM_ENABLED
 
 typedef struct _machine_hard_spi_obj_t {
-    mp_obj_base_t       base;
+    mp_machine_spi_obj_t spi;
     const nrfx_spi_t   * p_spi;    // Driver instance
     nrfx_spi_config_t  * p_config; // pointer to volatile part
 } machine_hard_spi_obj_t;

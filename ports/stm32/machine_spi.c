@@ -32,12 +32,12 @@
 // Implementation of hard SPI for machine module
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, &spi_obj[0]},
-    {{&machine_hard_spi_type}, &spi_obj[1]},
-    {{&machine_hard_spi_type}, &spi_obj[2]},
-    {{&machine_hard_spi_type}, &spi_obj[3]},
-    {{&machine_hard_spi_type}, &spi_obj[4]},
-    {{&machine_hard_spi_type}, &spi_obj[5]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[0]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[1]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[2]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[3]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[4]},
+    {{{&machine_hard_spi_type}, &spi_proto}, &spi_obj[5]},
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -140,4 +140,5 @@ const mp_obj_type_t machine_hard_spi_type = {
     .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &machine_hard_spi_p,
     .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+    .parent = &mp_machine_spi_type,
 };
