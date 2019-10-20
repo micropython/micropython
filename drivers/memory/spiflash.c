@@ -51,70 +51,64 @@
 #define SECTOR_SIZE MP_SPIFLASH_ERASE_BLOCK_SIZE
 
 STATIC void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE);
+    if (self->qspi_proto != NULL) {
+        self->qspi_proto->ioctl(self->data, MP_QSPI_IOCTL_BUS_ACQUIRE);
     }
 }
 
 STATIC void mp_spiflash_release_bus(mp_spiflash_t *self) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
+    if (self->qspi_proto != NULL) {
+        self->qspi_proto->ioctl(self->data, MP_QSPI_IOCTL_BUS_RELEASE);
     }
 }
 
 STATIC void mp_spiflash_write_cmd_data(mp_spiflash_t *self, uint8_t cmd, size_t len, uint32_t data) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
+    if (self->spi_proto != NULL) {
         // Note: len/data are unused for standard SPI
-        mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        mp_hal_pin_write(c->bus.u_spi.cs, 1);
+        mp_hal_pin_write(self->spi_cs, 0);
+        self->spi_proto->transfer(self->data, 1, &cmd, NULL);
+        mp_hal_pin_write(self->spi_cs, 1);
     } else {
-        c->bus.u_qspi.proto->write_cmd_data(c->bus.u_qspi.data, cmd, len, data);
+        self->qspi_proto->write_cmd_data(self->data, cmd, len, data);
     }
 }
 
 STATIC void mp_spiflash_write_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
+    if (self->spi_proto != NULL) {
         uint8_t buf[4] = {cmd, addr >> 16, addr >> 8, addr};
-        mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 4, buf, NULL);
+        mp_hal_pin_write(self->spi_cs, 0);
+        self->spi_proto->transfer(self->data, 4, buf, NULL);
         if (len) {
-            c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, src, NULL);
+            self->spi_proto->transfer(self->data, len, src, NULL);
         }
-        mp_hal_pin_write(c->bus.u_spi.cs, 1);
+        mp_hal_pin_write(self->spi_cs, 1);
     } else {
-        c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
+        self->qspi_proto->write_cmd_addr_data(self->data, cmd, addr, len, src);
     }
 }
 
 STATIC uint32_t mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
+    if (self->spi_proto != NULL) {
         uint32_t buf;
-        mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)&buf, (void*)&buf);
-        mp_hal_pin_write(c->bus.u_spi.cs, 1);
+        mp_hal_pin_write(self->spi_cs, 0);
+        self->spi_proto->transfer(self->data, 1, &cmd, NULL);
+        self->spi_proto->transfer(self->data, len, (void*)&buf, (void*)&buf);
+        mp_hal_pin_write(self->spi_cs, 1);
         return buf;
     } else {
-        return c->bus.u_qspi.proto->read_cmd(c->bus.u_qspi.data, cmd, len);
+        return self->qspi_proto->read_cmd(self->data, cmd, len);
     }
 }
 
 STATIC void mp_spiflash_read_data(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
-    const mp_spiflash_config_t *c = self->config;
-    if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
+    if (self->spi_proto != NULL) {
         uint8_t buf[4] = {CMD_READ, addr >> 16, addr >> 8, addr};
-        mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 4, buf, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, dest, dest);
-        mp_hal_pin_write(c->bus.u_spi.cs, 1);
+        mp_hal_pin_write(self->spi_cs, 0);
+        self->spi_proto->transfer(self->data, 4, buf, NULL);
+        self->spi_proto->transfer(self->data, len, dest, dest);
+        mp_hal_pin_write(self->spi_cs, 1);
     } else {
-        c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, CMD_C4READ, addr, len, dest);
+        self->qspi_proto->read_cmd_qaddr_qdata(self->data, CMD_C4READ, addr, len, dest);
     }
 }
 
@@ -153,12 +147,12 @@ static inline void mp_spiflash_deepsleep_internal(mp_spiflash_t *self, int value
 void mp_spiflash_init(mp_spiflash_t *self) {
     self->flags = 0;
 
-    if (self->config->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        mp_hal_pin_write(self->config->bus.u_spi.cs, 1);
-        mp_hal_pin_output(self->config->bus.u_spi.cs);
-        self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
+    if (self->spi_proto != NULL) {
+        mp_hal_pin_write(self->spi_cs, 1);
+        mp_hal_pin_output(self->spi_cs);
+        self->spi_proto->ioctl(self->data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
+        self->qspi_proto->ioctl(self->data, MP_QSPI_IOCTL_INIT);
     }
 
     mp_spiflash_acquire_bus(self);
@@ -174,7 +168,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     }
     #endif
 
-    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+    if (self->qspi_proto != NULL) {
         // Set QE bit
         uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
             | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
@@ -282,7 +276,7 @@ void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uin
         return;
     }
     mp_spiflash_acquire_bus(self);
-    mp_spiflash_cache_t *cache = self->config->cache;
+    mp_spiflash_cache_t *cache = self->cache;
     if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
         uint32_t bie = (addr + len - 1) / SECTOR_SIZE;
@@ -325,7 +319,7 @@ STATIC void mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
 
     self->flags &= ~1;
 
-    mp_spiflash_cache_t *cache = self->config->cache;
+    mp_spiflash_cache_t *cache = self->cache;
 
     // Erase sector
     int ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
@@ -362,7 +356,7 @@ STATIC int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
         return -MP_EIO;
     }
 
-    mp_spiflash_cache_t *cache = self->config->cache;
+    mp_spiflash_cache_t *cache = self->cache;
 
     // Acquire the sector buffer
     if (cache->user != self) {
@@ -435,7 +429,7 @@ int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, con
 
     mp_spiflash_acquire_bus(self);
 
-    mp_spiflash_cache_t *cache = self->config->cache;
+    mp_spiflash_cache_t *cache = self->cache;
     if (cache->user == self && bis <= cache->block && bie >= cache->block) {
         // Write straddles current buffer
         uint32_t pre;

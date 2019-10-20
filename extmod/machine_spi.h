@@ -37,13 +37,20 @@ typedef struct _mp_machine_spi_p_t {
     void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
 } mp_machine_spi_p_t;
 
-typedef struct _mp_machine_soft_spi_obj_t {
+typedef struct _mp_machine_spi_obj_t {
     mp_obj_base_t base;
-    mp_soft_spi_obj_t spi;
+    const mp_spi_proto_t *proto;
+} mp_machine_spi_obj_t;
+
+typedef struct _mp_machine_soft_spi_obj_t {
+    mp_machine_spi_obj_t spi;
+    const mp_spi_proto_t *proto;
+    mp_soft_spi_obj_t config;
 } mp_machine_soft_spi_obj_t;
 
-extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
+extern const mp_obj_type_t mp_machine_spi_type;
 extern const mp_obj_type_t mp_machine_soft_spi_type;
+extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
 extern const mp_obj_dict_t mp_machine_spi_locals_dict;
 
 mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);

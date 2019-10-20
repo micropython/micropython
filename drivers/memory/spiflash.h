@@ -29,12 +29,9 @@
 #include "drivers/bus/spi.h"
 #include "drivers/bus/qspi.h"
 
+#ifndef MP_SPIFLASH_ERASE_BLOCK_SIZE
 #define MP_SPIFLASH_ERASE_BLOCK_SIZE (4096) // must be a power of 2
-
-enum {
-    MP_SPIFLASH_BUS_SPI,
-    MP_SPIFLASH_BUS_QSPI,
-};
+#endif
 
 struct _mp_spiflash_t;
 
@@ -46,24 +43,13 @@ typedef struct _mp_spiflash_cache_t {
     uint32_t block; // current block stored in buf; 0xffffffff if invalid
 } mp_spiflash_cache_t;
 
-typedef struct _mp_spiflash_config_t {
-    uint32_t bus_kind;
-    union {
-        struct {
-            mp_hal_pin_obj_t cs;
-            void *data;
-            const mp_spi_proto_t *proto;
-        } u_spi;
-        struct {
-            void *data;
-            const mp_qspi_proto_t *proto;
-        } u_qspi;
-    } bus;
-    mp_spiflash_cache_t *cache; // can be NULL if cache functions not used
-} mp_spiflash_config_t;
-
 typedef struct _mp_spiflash_t {
-    const mp_spiflash_config_t *config;
+    // define one of spi_proto or qspi_proto depending on type of bus.
+    const mp_spi_proto_t *spi_proto;
+    const mp_qspi_proto_t *qspi_proto;
+    void *data;
+    mp_hal_pin_obj_t spi_cs; // only needed for spi, not qspi
+    mp_spiflash_cache_t *cache; // can be NULL if cache functions not used
     volatile uint32_t flags;
 } mp_spiflash_t;
 

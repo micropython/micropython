@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2018 Damien P. George
+ * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_DRIVERS_BUS_SPI_H
-#define MICROPY_INCLUDED_DRIVERS_BUS_SPI_H
+#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_SPIFLASH_H
+#define MICROPY_INCLUDED_EXTMOD_MACHINE_SPIFLASH_H
 
+#include "py/obj.h"
 #include "py/mphal.h"
+#include "drivers/memory/spiflash.h"
 
-enum {
-    MP_SPI_IOCTL_INIT,
-    MP_SPI_IOCTL_DEINIT,
-};
+#define MP_SPIFLASH_DEFAULT_BLOCK_SIZE 512
 
-typedef struct _mp_spi_proto_t {
-    int (*ioctl)(void *self, uint32_t cmd);
-    void (*transfer)(void *self, size_t len, const uint8_t *src, uint8_t *dest);
-} mp_spi_proto_t;
+// micropython interface
+typedef struct _mp_machine_spiflash_obj_t {
+    mp_obj_base_t base;
+    mp_spiflash_t *spiflash;
+    uint32_t block_start;
+    uint32_t block_count;
+    uint32_t block_size;
+    uint32_t flash_tick_counter_last_write;
+} mp_machine_spiflash_obj_t;
 
-typedef struct _mp_soft_spi_obj_t {
-    uint32_t delay_half; // microsecond delay for half SCK period
-    uint8_t polarity;
-    uint8_t phase;
-    mp_hal_pin_obj_t sck;
-    mp_hal_pin_obj_t mosi;
-    mp_hal_pin_obj_t miso;
-} mp_soft_spi_obj_t;
+extern const mp_obj_type_t mp_machine_spiflash_type;
 
-extern const mp_spi_proto_t mp_soft_spi_proto;
+mp_obj_t mp_machine_spiflash_make_bdev(mp_spiflash_t *spiflash, uint32_t block_start, uint32_t block_count, uint32_t block_size);
 
-#endif // MICROPY_INCLUDED_DRIVERS_BUS_SPI_H
+#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_SPIFLASH_H

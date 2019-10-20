@@ -141,7 +141,7 @@ STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
 MP_DEFINE_CONST_DICT(mp_machine_spi_locals_dict, machine_spi_locals_dict_table);
 
 /******************************************************************************/
-// Implementation of soft SPI
+// MicroPython wrapper for soft SPI
 
 STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
     #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
@@ -174,8 +174,8 @@ STATIC void mp_machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in,
     mp_machine_soft_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SoftSPI(baudrate=%u, polarity=%u, phase=%u,"
         " sck=" MP_HAL_PIN_FMT ", mosi=" MP_HAL_PIN_FMT ", miso=" MP_HAL_PIN_FMT ")",
-        baudrate_from_delay_half(self->spi.delay_half), self->spi.polarity, self->spi.phase,
-        mp_hal_pin_name(self->spi.sck), mp_hal_pin_name(self->spi.mosi), mp_hal_pin_name(self->spi.miso));
+        baudrate_from_delay_half(self->config.delay_half), self->config.polarity, self->config.phase,
+        mp_hal_pin_name(self->config.sck), mp_hal_pin_name(self->config.mosi), mp_hal_pin_name(self->config.miso));
 }
 
 STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -195,12 +195,13 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
 
     // create new object
     mp_machine_soft_spi_obj_t *self = m_new_obj(mp_machine_soft_spi_obj_t);
-    self->base.type = &mp_machine_soft_spi_type;
+    self->spi.base.type = &mp_machine_soft_spi_type;
+    self->spi.proto = &mp_soft_spi_proto;
 
     // set parameters
-    self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
-    self->spi.polarity = args[ARG_polarity].u_int;
-    self->spi.phase = args[ARG_phase].u_int;
+    self->config.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
+    self->config.polarity = args[ARG_polarity].u_int;
+    self->config.phase = args[ARG_phase].u_int;
     if (args[ARG_bits].u_int != 8) {
         mp_raise_ValueError("bits must be 8");
     }
@@ -212,12 +213,12 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
         || args[ARG_miso].u_obj == MP_OBJ_NULL) {
         mp_raise_ValueError("must specify all of sck/mosi/miso");
     }
-    self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-    self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
-    self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+    self->config.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+    self->config.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+    self->config.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
 
     // configure bus
-    mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
+    mp_soft_spi_proto.ioctl(&self->config, MP_SPI_IOCTL_INIT);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -238,31 +239,31 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_baudrate].u_int != -1) {
-        self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
+        self->config.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
     }
     if (args[ARG_polarity].u_int != -1) {
-        self->spi.polarity = args[ARG_polarity].u_int;
+        self->config.polarity = args[ARG_polarity].u_int;
     }
     if (args[ARG_phase].u_int != -1) {
-        self->spi.phase = args[ARG_phase].u_int;
+        self->config.phase = args[ARG_phase].u_int;
     }
     if (args[ARG_sck].u_obj != MP_OBJ_NULL) {
-        self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+        self->config.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     }
     if (args[ARG_mosi].u_obj != MP_OBJ_NULL) {
-        self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+        self->config.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
     }
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
-        self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+        self->config.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
     }
 
     // configure bus
-    mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
+    mp_soft_spi_proto.ioctl(&self->config, MP_SPI_IOCTL_INIT);
 }
 
 STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
-    mp_soft_spi_transfer(&self->spi, len, src, dest);
+    mp_soft_spi_proto.transfer(&self->config, len, src, dest);
 }
 
 const mp_machine_spi_p_t mp_machine_soft_spi_p = {
@@ -271,13 +272,20 @@ const mp_machine_spi_p_t mp_machine_soft_spi_p = {
     .transfer = mp_machine_soft_spi_transfer,
 };
 
+// Base type for all SPI drivers
+const mp_obj_type_t mp_machine_spi_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_SPI,
+    .make_new = mp_machine_spi_make_new, // delegate to master constructor
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+};
+
 const mp_obj_type_t mp_machine_soft_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SoftSPI,
     .print = mp_machine_soft_spi_print,
-    .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &mp_machine_soft_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+    .parent = &mp_machine_spi_type,
 };
 
 #endif // MICROPY_PY_MACHINE_SPI
