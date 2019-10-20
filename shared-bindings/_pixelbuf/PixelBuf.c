@@ -230,7 +230,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
     if (self->two_buffers)
         pixelbuf_recalculate_brightness(self);
     if (self->auto_write)
-        call_show(self_in);
+        call_show(self_in, 'b');
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_brightness_obj, pixelbuf_pixelbuf_obj_set_brightness);
@@ -253,7 +253,7 @@ void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self) {
     }
 }
 
-mp_obj_t call_show(mp_obj_t self_in) {
+mp_obj_t call_show(mp_obj_t self_in, char origin) {
     mp_obj_t dest[2];
     mp_load_method(self_in, MP_QSTR_show, dest);
     return mp_call_method_n_kw(0, 0, dest);
@@ -356,29 +356,35 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     }
 
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
+
     if (0) {
 #if MICROPY_PY_BUILTINS_SLICE
     } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
-        if (!mp_seq_get_fast_slice_indexes(self->bytes, index_in, &slice))
-            // TODO support stepping!!!
-            mp_raise_NotImplementedError(translate("Only slices with step=1 (aka None) are supported"));
+        mp_seq_get_fast_slice_indexes(self->bytes, index_in, &slice);
+
         if ((slice.stop * self->pixel_step) > self->bytes)
             mp_raise_IndexError(translate("Range out of bounds"));
+        if (slice.step < 0)
+            mp_raise_IndexError(translate("Negative step not supported"));
 
         if (value == MP_OBJ_SENTINEL) { // Get
             size_t len = slice.stop - slice.start;
             uint8_t *readbuf = self->two_buffers ? self->rawbuf : self->buf;
-            return pixelbuf_get_pixel_array(readbuf + slice.start, len, &self->byteorder, self->pixel_step, self->byteorder.is_dotstar);
+            return pixelbuf_get_pixel_array(readbuf + slice.start, len, &self->byteorder, self->pixel_step, slice.step, self->byteorder.is_dotstar);
         } else { // Set
             #if MICROPY_PY_ARRAY_SLICE_ASSIGN
 
             if (!(MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple)))
                 mp_raise_ValueError(translate("tuple/list required on RHS"));
 
-            size_t dst_len = slice.stop - slice.start;
-
+            size_t dst_len = (slice.stop - slice.start);
+            dst_len = (slice.stop - slice.start) / slice.step;
+            if (slice.step > 1) {
+                if ((slice.stop - slice.start) % slice.step)
+                    dst_len ++;
+            }
             mp_obj_t *src_objs;
             size_t num_items;
             if (MP_OBJ_IS_TYPE(value, &mp_type_list)) {
@@ -394,16 +400,17 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."),
                                                    dst_len, num_items);
 
-            for (size_t i = slice.start; i < slice.stop; i++) {
+            size_t target_i = slice.start;
+            for (size_t i = slice.start; target_i < slice.stop; i++, target_i += slice.step) {
                 mp_obj_t *item = src_objs[i-slice.start];
                 if (MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple) || MP_OBJ_IS_INT(value)) {
-                    pixelbuf_set_pixel(self->buf + (i * self->pixel_step),
+                    pixelbuf_set_pixel(self->buf + (target_i * self->pixel_step),
                         self->two_buffers ? self->rawbuf + (i * self->pixel_step) : NULL,
                         self->brightness, item, &self->byteorder, self->byteorder.is_dotstar);
                 }
             }
             if (self->auto_write)
-                call_show(self_in);
+                call_show(self_in, 's');
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported
@@ -423,7 +430,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
                 self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
             if (self->auto_write)
-                call_show(self_in);
+                call_show(self_in, 'i');
             return mp_const_none;
         }
     }
