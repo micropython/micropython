@@ -34,6 +34,8 @@ extern const mp_map_t mp_builtin_module_weak_links_map;
 mp_obj_t mp_module_get(qstr module_name);
 void mp_module_register(qstr qstr, mp_obj_t module);
 
+mp_obj_t mp_module_search_weak_link(qstr module_name);
+
 #if MICROPY_MODULE_BUILTIN_INIT
 void mp_module_call_init(qstr module_name, mp_obj_t module_obj);
 #else

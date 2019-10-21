@@ -1392,11 +1392,6 @@ typedef double mp_float_t;
 #define MICROPY_PORT_BUILTIN_MODULES
 #endif
 
-// Any module weak links - see objmodule.c:mp_builtin_module_weak_links_table.
-#ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-#endif
-
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.
 #ifndef MICROPY_PORT_CONSTANTS
 #define MICROPY_PORT_CONSTANTS
