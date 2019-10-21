@@ -187,3 +187,12 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     ioctl(busio_uart_dev[self->number].fd, TCFLSH, (long unsigned int)NULL);
     return true;
 }
+
+void busio_uart_reset(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(busio_uart_dev); i++) {
+        if (busio_uart_dev[i].fd >= 0) {
+            close(busio_uart_dev[i].fd);
+            busio_uart_dev[i].fd = -1;
+        }
+    }
+}

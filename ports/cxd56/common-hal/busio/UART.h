@@ -40,4 +40,6 @@ typedef struct {
     uint32_t timeout;
 } busio_uart_obj_t;
 
+void busio_uart_reset(void);
+
 #endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
