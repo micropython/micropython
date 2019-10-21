@@ -430,7 +430,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
             }
             entry = MP_OBJ_TO_PTR(elem->value);
-            entry->data_len = MIN(MP_BLUETOOTH_MAX_ATTR_SIZE, OS_MBUF_PKTLEN(ctxt->om));
+            entry->data_len = MIN(entry->data_alloc, OS_MBUF_PKTLEN(ctxt->om));
             os_mbuf_copydata(ctxt->om, 0, entry->data_len, entry->data);
 
             mp_bluetooth_gatts_on_write(conn_handle, value_handle);
