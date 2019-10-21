@@ -59,8 +59,8 @@ typedef struct _mp_vfs_proto_t {
 typedef struct _mp_vfs_blockdev_t {
     uint16_t flags;
     size_t block_size;
-    mp_obj_t readblocks[4];
-    mp_obj_t writeblocks[4];
+    mp_obj_t readblocks[5];
+    mp_obj_t writeblocks[5];
     // new protocol uses just ioctl, old uses sync (optional) and count
     union {
         mp_obj_t ioctl[4];
@@ -80,7 +80,9 @@ typedef struct _mp_vfs_mount_t {
 
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev);
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf);
+int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, uint8_t *buf);
 int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, const uint8_t *buf);
+int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, const uint8_t *buf);
 mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t arg);
 
 mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out);
