@@ -43,6 +43,10 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
+#endif
+
 #ifndef BOARD_HAS_32KHZ_XTAL
 // Assume crystal is present, which is the most common case.
 #define BOARD_HAS_32KHZ_XTAL (1)

@@ -30,8 +30,6 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "SFE_NRF52840_Mini"
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_08)
 

@@ -39,7 +39,7 @@ void board_timerhook(void)
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
 #endif
-#ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+#if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     autoreload_tick();
 #endif
 }

@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x04D8
 USB_PID = 0xEDB3
 USB_PRODUCT = "Programmable USB Hub"

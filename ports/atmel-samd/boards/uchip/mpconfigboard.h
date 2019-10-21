@@ -7,10 +7,8 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
+// No microcontroller.nvm
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
-
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

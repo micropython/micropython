@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x19-bootloader.ld
 USB_VID = 0x1d50
 USB_PID = 0x60e8
 USB_PRODUCT = "PewPew M4"

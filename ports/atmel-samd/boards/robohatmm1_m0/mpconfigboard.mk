@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x1209
 USB_PID = 0x4D43
 USB_PRODUCT = "Robo HAT MM1 M0"

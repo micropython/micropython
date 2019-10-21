@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash.ld
 USB_VID = 0x1B4F
 USB_PID = 0x0017
 USB_PRODUCT = "LUMIDrive Board"

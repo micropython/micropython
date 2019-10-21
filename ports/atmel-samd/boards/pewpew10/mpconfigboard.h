@@ -5,11 +5,6 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
-
 #define IGNORE_PIN_PB00     1
 #define IGNORE_PIN_PB01     1
 #define IGNORE_PIN_PB02     1

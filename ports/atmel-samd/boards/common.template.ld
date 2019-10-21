@@ -1,0 +1,89 @@
+/* Template for SAMD21/SAMD51 linking. dollar-sign-curly-bracket items are replaced with strings. */
+
+/* Specify the memory areas */
+MEMORY
+{
+    /* CIRCUITPY_BOOTLOADER_SIZE is size of bootloader, if any.
+     * SAMD21 Arduino and UF2 bootloaders are 8KiB. SAMD51 UF2 is 6KiB.
+     * FLASH_SIZE is defined in ASF4.
+     * RAM_SIZE is defined in mpconfigport.h, from constants from ASF4.
+     * CIRCUITPY_INTERNAL_CONFIG_SIZE is size of an optional hidden config area, used currently
+     * for crystalless USB timing calibration.
+     * CIRCUITPY_INTERNAL_NVM_SIZE is the size of microntroller.nvm.
+     */
+    FLASH (rx) : ORIGIN = 0x00000000 + ${BOOTLOADER_SIZE}, LENGTH = ${FLASH_SIZE} - ${BOOTLOADER_SIZE} - ${CIRCUITPY_INTERNAL_CONFIG_SIZE} - ${CIRCUITPY_INTERNAL_NVM_SIZE}
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = ${RAM_SIZE}
+}
+
+/* top end of the stack */
+/* stack must be double-word (8 byte) aligned */
+_estack = ORIGIN(RAM) + LENGTH(RAM) - 8;
+_bootloader_dbl_tap = ORIGIN(RAM) + LENGTH(RAM) - 4;
+
+/* define output sections */
+SECTIONS
+{
+    /* The program code and other data goes into FLASH */
+    .text :
+    {
+        . = ALIGN(4);
+        _sfixed = .;
+        KEEP(*(.vectors)) /* isr vector table */
+        *(.text)           /* .text sections (code) */
+        *(.text*)          /* .text* sections (code) */
+        *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+        *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+
+        . = ALIGN(4);
+    } >FLASH
+
+    .ARM.exidx :
+    {
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        _etext = .;        /* define a global symbol at end of code */
+        _sidata = .;       /* start of .data section */
+    } > FLASH
+
+    /* This is the initialized data section
+    The program executes knowing that the data is in the RAM
+    but the loader puts the initial values in the FLASH (inidata).
+    It is one task of the startup to copy the initial values from FLASH to RAM. */
+    .data : AT ( _sidata )
+    {
+        . = ALIGN(4);
+        _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialize the .data section in RAM */
+        *(.ramfunc)
+        *(.ramfunc*)
+        *(.data)           /* .data sections */
+        *(.data*)          /* .data* sections */
+
+        . = ALIGN(4);
+        _erelocate = .;        /* define a global symbol at data end; used by startup code in order to initialize the .data section in RAM */
+    } >RAM
+
+    /* Uninitialized data section */
+    .bss :
+    {
+        . = ALIGN(4);
+        _sbss = .;
+        _szero = .;         /* define a global symbol at bss start; used by startup code */
+        *(.bss)
+        *(.bss*)
+        *(COMMON)
+
+        . = ALIGN(4);
+        _ezero = .;         /* define a global symbol at bss end; used by startup code */
+        _ebss = .;
+    } >RAM
+
+    /* this just checks there is enough RAM for the requested stack. */
+    .stack :
+    {
+        . = ALIGN(4);
+        . = . + ${CIRCUITPY_DEFAULT_STACK_SIZE};
+        . = ALIGN(4);
+    } >RAM
+
+    .ARM.attributes 0 : { *(.ARM.attributes) }
+}

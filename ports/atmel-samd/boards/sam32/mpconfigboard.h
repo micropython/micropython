@@ -11,11 +11,8 @@
 #define MICROPY_PORT_C        (0)
 #define MICROPY_PORT_D 		  (0)
 
-#define AUTORESET_DELAY_MS 500
-
+// No microcontroller.nvm
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
-
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - 0x010000)
 
 #define BOARD_HAS_CRYSTAL 1
 

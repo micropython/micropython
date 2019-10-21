@@ -31,6 +31,8 @@
 
 typedef struct {
     mp_obj_base_t base;
+    uint8_t* start_address;
+    uint32_t len;
 } nvm_bytearray_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_NVM_BYTEARRAY_H

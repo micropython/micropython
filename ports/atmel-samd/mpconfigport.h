@@ -31,6 +31,30 @@
 #include "include/sam.h"
 
 #ifdef SAMD21
+
+// Default is 0, set by py/circuitpy_mpconfig.h
+#if INTERNAL_FLASH_FILESYSTEM
+// 64kB
+#define INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
+#endif
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (256)
+#endif
+
+// if CALIBRATE_CRYSTALLESS is requested, make room for storing
+// calibration data generated from external USB.
+#ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
+  #ifdef CALIBRATE_CRYSTALLESS
+#define CIRCUITPY_INTERNAL_CONFIG_SIZE (256)
+  #else
+#define CIRCUITPY_INTERNAL_CONFIG_SIZE (0)
+ #endif
+#endif
+
+// HMCRAMC0_SIZE is defined in the ASF4 include files for each SAMD21 chip.
+#define RAM_SIZE                                    HMCRAMC0_SIZE
+#define BOOTLOADER_SIZE                             (8*1024)
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define SPI_FLASH_MAX_BAUDRATE 8000000
@@ -54,9 +78,17 @@
     X(EISDIR) \
     X(EINVAL) \
 
-#endif
+#endif // SAMD21
 
 #ifdef SAMD51
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
+#endif
+
+// HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
+#define RAM_SIZE                                    HSRAM_SIZE
+#define BOOTLOADER_SIZE                             (16*1024)
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define SPI_FLASH_MAX_BAUDRATE 24000000
@@ -69,7 +101,8 @@
 #define MICROPY_PY_UJSON                            (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
-#endif
+
+#endif // SAMD51
 
 // Turning off audioio, audiobusio, and touchio as necessary
 // due to limitations of chips is handled in mpconfigboard.mk

@@ -92,7 +92,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     },
 };
 
-// NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {

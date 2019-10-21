@@ -296,7 +296,6 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
-	supervisor/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \

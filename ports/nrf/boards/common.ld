@@ -6,6 +6,10 @@ __fatfs_flash_length     = LENGTH(FLASH_FATFS);
 __config_flash_start_addr = ORIGIN(FLASH_CONFIG);
 __config_flash_length     = LENGTH(FLASH_CONFIG);
 
+/* Flash region for microcontroller.nvm region */
+__nvm_flash_start_addr = ORIGIN(FLASH_NVM);
+__nvm_flash_length = LENGTH(FLASH_NVM);
+
 /* define output sections */
 SECTIONS
 {

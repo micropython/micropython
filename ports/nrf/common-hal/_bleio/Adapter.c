@@ -39,11 +39,20 @@
 #include "supervisor/usb.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_SLAVE_LATENCY            0
 #define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
+
+const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+    .len = CIRCUITPY_BLE_CONFIG_SIZE,
+    .start_address = CIRCUITPY_BLE_CONFIG_ADDRESS,
+};
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     mp_raise_msg_varg(&mp_type_AssertionError,
