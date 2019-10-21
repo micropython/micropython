@@ -213,7 +213,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type) },
 #endif
 
-#if MICROPY_HW_HAS_FLASH
+#if MICROPY_HW_HAS_FLASH && MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
     { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&pyb_flash_type) },
 #endif
 

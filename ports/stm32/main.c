@@ -610,10 +610,14 @@ soft_reset:
     #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
+        #if MICROPY_HW_ENABLE_STORAGE
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
         if (!mounted_flash || f_stat(&fs_user_mount_flash.fatfs, "/SKIPSD", NULL) != FR_OK) {
             mounted_sdcard = init_sdcard_fs();
         }
+        #else
+        mounted_sdcard = init_sdcard_fs();
+        #endif
     }
     #endif
 
