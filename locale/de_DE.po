@@ -336,7 +336,7 @@ msgstr "Der Puffergröße ist inkorrekt. Sie sollte %d bytes haben."
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "Der Puffer ist kein Byte-Array"
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is too small"
@@ -345,7 +345,7 @@ msgstr "Der Puffer ist zu klein"
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -367,7 +367,7 @@ msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
+msgstr "Rufe super().__init__() vor dem Zugriff auf ein natives Objekt auf."
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -449,7 +449,7 @@ msgstr "Clock unit wird benutzt"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Column entry must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "Spalteneintrag muss digitalio.DigitalInOut sein"
 
 #: shared-bindings/displayio/I2CDisplay.c
 msgid "Command must be 0-255"
@@ -549,7 +549,7 @@ msgstr "Characteristic wird erwartet"
 
 #: shared-bindings/_bleio/Service.c
 msgid "Expected a Peripheral"
-msgstr ""
+msgstr "Ein Peripheriegerät wird erwartet"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -586,7 +586,7 @@ msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to add descriptor, err 0x%04x"
-msgstr ""
+msgstr "Deskriptor konnte nicht hinzugefügt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
@@ -681,7 +681,7 @@ msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Central.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
-msgstr "Verbindung konnte nicht hergestellt werden. Fehler: 0x%04x"
+msgstr "Verbindung konnte nicht hergestellt werden. Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Peripheral.c
 #, c-format
@@ -701,7 +701,7 @@ msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
+msgstr "Konnte CCCD nicht schreiben, Status: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -887,7 +887,7 @@ msgstr "LHS des Schlüsselwortarguments muss eine id sein"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group."
-msgstr ""
+msgstr "Layer ist bereits in einer Gruppe."
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -946,7 +946,7 @@ msgstr "Muss eine %q Unterklasse sein."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
-msgstr ""
+msgstr "Kein CCCD für diese Charakteristik"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
@@ -983,7 +983,7 @@ msgstr "Kein hardware random verfügbar"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr ""
+msgstr "Keine Hardwareunterstützung am clk Pin"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1041,6 +1041,8 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
+"Nur monochrome, indizierte 4bpp oder 8bpp, und 16bpp oder größere BMPs unterstützt: "
+"%d bpp wurden gegeben"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Only slices with step=1 (aka None) are supported"
@@ -1117,7 +1119,7 @@ msgstr "Schreibgeschützte Objekt"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Zu früh neu geladen"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1125,7 +1127,7 @@ msgstr "Rechter Kanal wird nicht unterstützt"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Row entry must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "Zeileneintrag muss ein digitalio.DigitalInOut sein"
 
 #: main.c
 msgid "Running in safe mode! Auto-reload is off.\n"
@@ -1200,6 +1202,8 @@ msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
 msgstr ""
+"Das `Mikrocontroller` Modul wurde benutzt, um in den Sicherheitsmodus zu starten. "
+"Drücke Reset um den Sicherheitsmodus zu verlassen.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1289,7 +1293,7 @@ msgstr "USB Fehler"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "UUID Integer-Wert muss ein Wert von 0 bis 0xffff sein"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1472,11 +1476,11 @@ msgstr ""
 
 #: py/objstr.c
 msgid "bad format string"
-msgstr ""
+msgstr "Falscher Formatstring"
 
 #: py/binary.c
 msgid "bad typecode"
-msgstr ""
+msgstr "Falscher Typcode"
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
@@ -1535,7 +1539,7 @@ msgstr ""
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr ""
+msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1559,7 +1563,7 @@ msgstr "Kalibrierwert nicht im Bereich von +/-127"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr ""
+msgstr "kann nur bis zu 4 Parameter für die Thumb assembly haben"
 
 #: py/emitinlinextensa.c
 msgid "can only have up to 4 parameters to Xtensa assembly"
@@ -1658,7 +1662,7 @@ msgstr "Laden von '%q' nicht möglich"
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
+msgstr "Laden mit '%q' index nicht möglich"
 
 #: py/objgenerator.c
 msgid "can't pend throw to just-started generator"
@@ -1670,7 +1674,7 @@ msgstr ""
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
-msgstr ""
+msgstr "kann Attribut nicht setzen"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
@@ -1696,11 +1700,11 @@ msgstr ""
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
-msgstr ""
+msgstr "Kann '%q' Instanzen nicht erstellen"
 
 #: py/objtype.c
 msgid "cannot create instance"
-msgstr ""
+msgstr "Kann Instanz nicht erstellen"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -1728,31 +1732,31 @@ msgstr "chr() arg ist nicht in range(256)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "Farbpuffer muss 3 Bytes (RGB) oder 4 Bytes (RGB + pad byte) sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer or int"
-msgstr ""
+msgstr "Farbpuffer muss ein Puffer oder ein int sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
+msgstr "Farbpuffer muss ein Byte-Array oder ein Array vom Typ 'b' oder 'B' sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr ""
+msgstr "Farbe muss zwischen 0x000000 und 0xffffff liegen"
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
-msgstr ""
+msgstr "Farbe sollte ein int sein"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
-msgstr ""
+msgstr "Komplexe Division durch null"
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
-msgstr ""
+msgstr "Komplexe Zahlen nicht unterstützt"
 
 #: extmod/moduzlib.c
 msgid "compression header"
@@ -1760,15 +1764,15 @@ msgstr "kompression header"
 
 #: py/parse.c
 msgid "constant must be an integer"
-msgstr ""
+msgstr "constant muss ein integer sein"
 
 #: py/emitnative.c
 msgid "conversion to object"
-msgstr ""
+msgstr "Umwandlung zu Objekt"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
-msgstr ""
+msgstr "Dezimalzahlen nicht unterstützt"
 
 #: py/compile.c
 msgid "default 'except' must be last"
@@ -1785,7 +1789,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
-msgstr ""
+msgstr "destination_length muss ein int >= 0 sein"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
@@ -1818,7 +1822,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
-msgstr ""
+msgstr "end_x sollte ein int sein"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -1995,7 +1999,7 @@ msgstr "integer erforderlich"
 #: shared-bindings/_bleio/Peripheral.c shared-bindings/_bleio/Scanner.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "Das Intervall muss im Bereich %s-%s sein"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
@@ -2128,7 +2132,7 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
+msgstr "max_length muss 0-%d sein, wenn fixed_length %s ist"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2157,7 +2161,7 @@ msgstr ""
 
 #: py/objtype.c
 msgid "multiple inheritance not supported"
-msgstr ""
+msgstr "Mehrfache Vererbung nicht unterstützt"
 
 #: py/emitnative.c
 msgid "must raise an object"
@@ -2210,7 +2214,7 @@ msgstr ""
 
 #: shared-bindings/socket/__init__.c shared-module/network/__init__.c
 msgid "no available NIC"
-msgstr ""
+msgstr "kein verfügbares Netzwerkadapter (NIC)"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
@@ -2223,11 +2227,11 @@ msgstr "Kein Modul mit dem Namen '%q'"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "kein Reset Pin verfügbar"
 
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
-msgstr ""
+msgstr "kein solches Attribut"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -2317,11 +2321,11 @@ msgstr "offset außerhalb der Grenzen"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "nur eine bit_depth=16 wird unterstützt"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "nur eine sample_rate=16000 wird unterstützt"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2341,7 +2345,7 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
-msgstr ""
+msgstr "Überlauf beim konvertieren von long int zu machine word"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -2349,7 +2353,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
-msgstr ""
+msgstr "palette_index sollte ein int sein"
 
 #: py/compile.c
 msgid "parameter annotation must be an identifier"
@@ -2451,7 +2455,7 @@ msgstr "Der schedule stack ist voll"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
-msgstr "kompilieren von Skripten ist nicht unterstützt"
+msgstr "kompilieren von Skripten nicht unterstützt"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2483,11 +2487,11 @@ msgstr "weicher reboot\n"
 
 #: py/objstr.c
 msgid "start/end indices"
-msgstr ""
+msgstr "start/end Indizes"
 
 #: shared-bindings/displayio/Shape.c
 msgid "start_x should be an int"
-msgstr ""
+msgstr "start_x sollte ein int sein"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
