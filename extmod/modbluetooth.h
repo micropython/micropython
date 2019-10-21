@@ -165,7 +165,7 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
 void mp_bluetooth_gap_advertise_stop(void);
 
 // Start adding services. Must be called before mp_bluetooth_register_service.
-int mp_bluetooth_gatts_register_service_begin(bool reset);
+int mp_bluetooth_gatts_register_service_begin(bool append);
 // // Add a service with the given list of characteristics to the queue to be registered.
 // The value_handles won't be valid until after mp_bluetooth_register_service_end is called.
 int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics);

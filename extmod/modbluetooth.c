@@ -421,9 +421,9 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
     uint16_t **handles = m_new0(uint16_t*, len);
     size_t *num_handles = m_new0(size_t, len);
 
-    // We always reset the service list, as Nimble has no other option.
-    // TODO: Add a `reset` or `clear` kwarg (defaulting to True) to make this behavior optional.
-    int err = mp_bluetooth_gatts_register_service_begin(true);
+    // TODO: Add a `append` kwarg (defaulting to False) to make this behavior optional.
+    bool append = false;
+    int err = mp_bluetooth_gatts_register_service_begin(append);
     if (err != 0) {
         return bluetooth_handle_errno(err);
     }

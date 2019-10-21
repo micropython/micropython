@@ -440,7 +440,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     return BLE_ATT_ERR_UNLIKELY;
 }
 
-int mp_bluetooth_gatts_register_service_begin(bool reset) {
+int mp_bluetooth_gatts_register_service_begin(bool append) {
     int ret = ble_gatts_reset();
     if (ret != 0) {
         return ble_hs_err_to_errno(ret);
@@ -452,7 +452,13 @@ int mp_bluetooth_gatts_register_service_begin(bool reset) {
     // By default, just register the default gap service.
     ble_svc_gap_init();
 
-    MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;
+    if (!append) {
+        // Unref any previous service definitions.
+        for (int i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
+            MP_STATE_PORT(bluetooth_nimble_root_pointers)->services[i] = NULL;
+        }
+        MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;
+    }
 
     return 0;
 }
@@ -462,11 +468,6 @@ int mp_bluetooth_gatts_register_service_end() {
     if (ret != 0) {
         return ble_hs_err_to_errno(ret);
     }
-
-    for (int i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
-        MP_STATE_PORT(bluetooth_nimble_root_pointers)->services[i] = NULL;
-    }
-    MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;
 
     return 0;
 }
