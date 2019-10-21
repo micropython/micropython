@@ -38,7 +38,6 @@
 #include "tick.h"
 #include "stm32f4xx_hal.h" 
 
-
 STATIC bool reserved_uart[MAX_UART];
 
 void uart_reset(void) {
@@ -46,37 +45,37 @@ void uart_reset(void) {
         reserved_uart[0] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[0] = NULL;
         __HAL_RCC_USART1_CLK_DISABLE(); 
-        HAL_NVIC_DisableIRQ(USART1_IRQn);
+        //HAL_NVIC_DisableIRQ(USART1_IRQn);
     #endif
     #ifdef USART2
         reserved_uart[1] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[1] = NULL;
         __HAL_RCC_USART2_CLK_DISABLE(); 
-        HAL_NVIC_DisableIRQ(USART2_IRQn);
+        //HAL_NVIC_DisableIRQ(USART2_IRQn);
     #endif
     #ifdef USART3
         reserved_uart[2] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[2] = NULL;
         __HAL_RCC_USART3_CLK_DISABLE(); 
-        HAL_NVIC_DisableIRQ(USART3_IRQn);
+        //HAL_NVIC_DisableIRQ(USART3_IRQn);
     #endif
     #ifdef UART4
         reserved_uart[3] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[3] = NULL;
         __HAL_RCC_UART4_CLK_DISABLE();
-        HAL_NVIC_DisableIRQ(UART4_IRQn);
+        //HAL_NVIC_DisableIRQ(UART4_IRQn);
     #endif
     #ifdef UART5
         reserved_uart[4] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[4] = NULL;
         __HAL_RCC_UART5_CLK_DISABLE();
-        HAL_NVIC_DisableIRQ(UART5_IRQn);
+        //HAL_NVIC_DisableIRQ(UART5_IRQn);
     #endif
     #ifdef USART6
         reserved_uart[5] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[5] = NULL;
         __HAL_RCC_USART6_CLK_DISABLE(); 
-        HAL_NVIC_DisableIRQ(USART6_IRQn);
+        //HAL_NVIC_DisableIRQ(USART6_IRQn);
     #endif
     //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
@@ -97,20 +96,26 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eva
 }
 
 
-STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
+STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) {
     #ifdef USART1
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
         __HAL_RCC_USART1_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
+        self->irq = USART1_IRQn;
+        //HAL_NVIC_SetPriority(USART1_IRQn, 2,1);
+        NVIC_SetPriority(USART1_IRQn, 7);
+        NVIC_ClearPendingIRQ(USART1_IRQn);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
     } 
     #endif
-    #ifdef UART2
+    #ifdef USART2
     if(USARTx==USART2) { 
         reserved_uart[1] = true;
         __HAL_RCC_USART2_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+        self->irq = USART2_IRQn;
+        //HAL_NVIC_SetPriority(USART2_IRQn, 2,1);
+        NVIC_SetPriority(USART2_IRQn, 7);
+        NVIC_ClearPendingIRQ(USART2_IRQn);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
     } 
     #endif
@@ -118,7 +123,10 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART3) { 
         reserved_uart[2] = true;
         __HAL_RCC_USART3_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(USART3_IRQn, 0, 1);
+        self->irq = USART3_IRQn;
+        //HAL_NVIC_SetPriority(USART3_IRQn, 2,1);
+        NVIC_SetPriority(USART3_IRQn, 7);
+        NVIC_ClearPendingIRQ(USART3_IRQn);
         HAL_NVIC_EnableIRQ(USART3_IRQn);
     } 
     #endif
@@ -126,7 +134,10 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==UART4) { 
         reserved_uart[3] = true;
         __HAL_RCC_UART4_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(UART4_IRQn, 0, 1);
+        self->irq = UART4_IRQn;
+        //HAL_NVIC_SetPriority(UART4_IRQn, 2,1);
+        NVIC_SetPriority(UART4_IRQn, 7);
+        NVIC_ClearPendingIRQ(UART4_IRQn);
         HAL_NVIC_EnableIRQ(UART4_IRQn);
     } 
     #endif
@@ -134,7 +145,10 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==UART5) { 
         reserved_uart[4] = true;
         __HAL_RCC_UART5_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(UART5_IRQn, 0, 1);
+        self->irq = UART5_IRQn;
+        //NVIC_SetPriority(UART5_IRQn, 7);
+        NVIC_SetPriority(UART5_IRQn, 7);
+        NVIC_ClearPendingIRQ(UART5_IRQn);
         HAL_NVIC_EnableIRQ(UART5_IRQn);
     } 
     #endif
@@ -142,7 +156,10 @@ STATIC void uart_clk_irq_enable(USART_TypeDef * USARTx) {
     if(USARTx==USART6) { 
         reserved_uart[5] = true;
         __HAL_RCC_USART6_CLK_ENABLE();
-        //HAL_NVIC_SetPriority(USART6_IRQn, 0, 1);
+        self->irq = USART6_IRQn;
+        //NVIC_SetPriority(USART6_IRQn, 7);
+        NVIC_SetPriority(USART6_IRQn, 7);
+        NVIC_ClearPendingIRQ(USART6_IRQn);
         HAL_NVIC_EnableIRQ(USART6_IRQn);
     } 
     #endif
@@ -248,7 +265,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
     }
 
-    uart_clk_irq_enable(USARTx);
+    uart_clk_irq_enable(self,USARTx);
 
     self->handle.Instance = USARTx;
     self->handle.Init.BaudRate = baudrate;
@@ -297,6 +314,9 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
     self->rx = mp_const_none;
+    gc_free(self->rbuf.buf);
+    self->rbuf.size = 0;
+    self->rbuf.iput = self->rbuf.iget = 0;
 }
 
 // Read characters.
@@ -318,7 +338,8 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     // Halt reception
-    HAL_UART_AbortReceive_IT(&self->handle);
+    //HAL_UART_AbortReceive_IT(&self->handle);
+    NVIC_DisableIRQ(self->irq);
 
     // copy received data
     rx_bytes = ringbuf_count(&self->rbuf);
@@ -327,9 +348,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         data[i] = ringbuf_get(&self->rbuf);
     }
 
-    if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
-        mp_raise_ValueError(translate("HAL recieve IT start error"));
-    }
+    NVIC_EnableIRQ(self->irq);
+    // if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
+    //     mp_raise_ValueError(translate("HAL recieve IT re-start error"));
+    // }
     
     if (rx_bytes == 0) {
         *errcode = EAGAIN;
@@ -359,15 +381,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
         busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[i];
         if(handle == &context->handle) {
             ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
-            HAL_UART_Receive_IT(handle, &context->rx_char, 1);
-            return;
+            HAL_StatusTypeDef result = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
+            if(result!=HAL_OK) {
+                mp_raise_RuntimeError(translate("UART rx restart error"));
+            }
+            break;
         }
     }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 {
-    mp_raise_RuntimeError(translate("UART Callback Error"));
+    mp_raise_RuntimeError(translate("UART Error Callback hit"));
 }
 
 uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
@@ -396,16 +421,18 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // Halt reception
-    HAL_UART_AbortReceive_IT(&self->handle);
+    //HAL_UART_AbortReceive_IT(&self->handle);
+    NVIC_DisableIRQ(self->irq);
     ringbuf_clear(&self->rbuf);
-    HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+    NVIC_EnableIRQ(self->irq);
+    //HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     return true;
 }
 
-static void call_hal_irq(int uart_num) {
+STATIC void call_hal_irq(int uart_num) {
     //Create casted context pointer
     busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[uart_num-1];
     if(context != NULL) {
@@ -439,4 +466,3 @@ void UART5_IRQHandler(void) {
 void USART6_IRQHandler(void) {
     call_hal_irq(6);
 }
-

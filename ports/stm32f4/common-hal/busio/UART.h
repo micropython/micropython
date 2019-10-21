@@ -37,6 +37,7 @@
 typedef struct {
     mp_obj_base_t base;
     UART_HandleTypeDef handle;
+    IRQn_Type irq;
     const mcu_uart_tx_obj_t *tx;
     const mcu_uart_rx_obj_t *rx;
 
@@ -52,5 +53,8 @@ void uart_reset(void);
 void USART1_IRQHandler(void);
 void USART2_IRQHandler(void);
 void USART3_IRQHandler(void);
-void UART_IRQHandler(void);
+void UART4_IRQHandler(void);
+void UART5_IRQHandler(void);
+void USART6_IRQHandler(void);
+// void UART_IRQHandler(void);
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
