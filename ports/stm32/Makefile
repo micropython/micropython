@@ -288,7 +288,6 @@ SRC_C = \
 	rtc.c \
 	flash.c \
 	flashbdev.c \
-	spibdev.c \
 	storage.c \
 	sdcard.c \
 	sdram.c \

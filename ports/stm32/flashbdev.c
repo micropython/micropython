@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 #include "py/mperrno.h"
+#include "extmod/vfs.h"
 #include "irq.h"
 #include "led.h"
 #include "flash.h"
@@ -150,20 +151,20 @@ static void flash_bdev_irq_handler(void);
 int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
     (void)arg;
     switch (op) {
-        case BDEV_IOCTL_INIT:
+        case BP_IOCTL_INIT:
             flash_flags = 0;
             flash_cache_sector_id = 0;
             flash_tick_counter_last_write = 0;
             return 0;
 
-        case BDEV_IOCTL_NUM_BLOCKS:
+        case BP_IOCTL_SEC_COUNT:
             return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
 
-        case BDEV_IOCTL_IRQ_HANDLER:
+        case BP_IOCTL_IRQ_HANDLER:
             flash_bdev_irq_handler();
             return 0;
 
-        case BDEV_IOCTL_SYNC: {
+        case BP_IOCTL_SYNC: {
             uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
             if (flash_flags & FLASH_FLAG_DIRTY) {
                 flash_flags |= FLASH_FLAG_FORCE_WRITE;
@@ -186,7 +187,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_sector_size = FLASH_SECTOR_SIZE_MAX;
     }
     if (flash_cache_sector_id != flash_sector_id) {
-        flash_bdev_ioctl(BDEV_IOCTL_SYNC, 0);
+        flash_bdev_ioctl(BP_IOCTL_SYNC, 0);
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
         flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;

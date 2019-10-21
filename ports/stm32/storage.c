@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs.h"
 
 #include "systick.h"
 #include "led.h"
@@ -43,7 +44,7 @@
 #define FLASH_PART1_START_BLOCK (0x100)
 
 #if defined(MICROPY_HW_BDEV2_IOCTL)
-#define FLASH_PART2_START_BLOCK (FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0))
+#define FLASH_PART2_START_BLOCK (FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SEC_COUNT, 0))
 #endif
 
 static bool storage_is_initialised = false;
@@ -56,10 +57,10 @@ void storage_init(void) {
 
         systick_enable_dispatch(SYSTICK_DISPATCH_STORAGE, storage_systick_callback);
 
-        MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
+        MICROPY_HW_BDEV_IOCTL(BP_IOCTL_INIT, 0);
 
         #if defined(MICROPY_HW_BDEV2_IOCTL)
-        MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
+        MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_INIT, 0);
         #endif
 
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
@@ -75,9 +76,9 @@ uint32_t storage_get_block_size(void) {
 
 uint32_t storage_get_block_count(void) {
     #if defined(MICROPY_HW_BDEV2_IOCTL)
-    return FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0);
+    return FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SEC_COUNT, 0);
     #else
-    return FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0);
+    return FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0);
     #endif
 }
 
@@ -90,17 +91,17 @@ static void storage_systick_callback(uint32_t ticks_ms) {
 
 void FLASH_IRQHandler(void) {
     IRQ_ENTER(FLASH_IRQn);
-    MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
+    MICROPY_HW_BDEV_IOCTL(BP_IOCTL_IRQ_HANDLER, 0);
     #if defined(MICROPY_HW_BDEV2_IOCTL)
-    MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
+    MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_IRQ_HANDLER, 0);
     #endif
     IRQ_EXIT(FLASH_IRQn);
 }
 
 void storage_flush(void) {
-    MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_SYNC, 0);
+    MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SYNC, 0);
     #if defined(MICROPY_HW_BDEV2_IOCTL)
-    MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_SYNC, 0);
+    MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SYNC, 0);
     #endif
 }
 
@@ -149,9 +150,9 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
             dest[i] = 0;
         }
 
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, FLASH_PART1_START_BLOCK, MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0));
+        build_partition(dest + 446, 0, 0x01 /* FAT12 */, FLASH_PART1_START_BLOCK, MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0));
         #if defined(MICROPY_HW_BDEV2_IOCTL)
-        build_partition(dest + 462, 0, 0x01 /* FAT12 */, FLASH_PART2_START_BLOCK, MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0));
+        build_partition(dest + 462, 0, 0x01 /* FAT12 */, FLASH_PART2_START_BLOCK, MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SEC_COUNT, 0));
         #else
         build_partition(dest + 462, 0, 0, 0, 0);
         #endif
@@ -164,7 +165,7 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
         return true;
 
     #if defined(MICROPY_HW_BDEV_READBLOCK)
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
     #endif
     } else {
@@ -178,7 +179,7 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         // can't write MBR, but pretend we did
         return true;
     #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV_WRITEBLOCK(src, block - FLASH_PART1_START_BLOCK);
     #endif
     } else {
@@ -188,13 +189,13 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
 
 mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     #if defined(MICROPY_HW_BDEV_READBLOCKS)
-    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV_READBLOCKS(dest, block_num - FLASH_PART1_START_BLOCK, num_blocks);
     }
     #endif
 
     #if defined(MICROPY_HW_BDEV2_READBLOCKS)
-    if (FLASH_PART2_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    if (FLASH_PART2_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV2_READBLOCKS(dest, block_num - FLASH_PART2_START_BLOCK, num_blocks);
     }
     #endif
@@ -209,13 +210,13 @@ mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bl
 
 mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     #if defined(MICROPY_HW_BDEV_WRITEBLOCKS)
-    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV_WRITEBLOCKS(src, block_num - FLASH_PART1_START_BLOCK, num_blocks);
     }
     #endif
 
     #if defined(MICROPY_HW_BDEV2_WRITEBLOCKS)
-    if (FLASH_PART2_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
+    if (FLASH_PART2_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART2_START_BLOCK + MICROPY_HW_BDEV2_IOCTL(BP_IOCTL_SEC_COUNT, 0)) {
         return MICROPY_HW_BDEV2_WRITEBLOCKS(src, block_num - FLASH_PART2_START_BLOCK, num_blocks);
     }
     #endif

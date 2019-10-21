@@ -100,7 +100,6 @@ SRC_C = \
 	ports/stm32/i2cslave.c \
 	ports/stm32/qspi.c \
 	ports/stm32/flashbdev.c \
-	ports/stm32/spibdev.c \
 	ports/stm32/usbd_conf.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
