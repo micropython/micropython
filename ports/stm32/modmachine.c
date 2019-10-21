@@ -37,6 +37,9 @@
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
+#include "extmod/machine_spi.h"
+#include "extmod/machine_qspi.h"
+#include "extmod/machine_spiflash.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
@@ -396,7 +399,15 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
 #endif
-    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
+#if MICROPY_PY_MACHINE_SPI
+    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&mp_machine_spi_type) },
+#endif
+#if MICROPY_PY_MACHINE_SPIFLASH
+    { MP_ROM_QSTR(MP_QSTR_SPIFlash),            MP_ROM_PTR(&mp_machine_spiflash_type) },
+#endif
+#if MICROPY_PY_MACHINE_QSPI
+    { MP_ROM_QSTR(MP_QSTR_QSPI),                MP_ROM_PTR(&mp_machine_qspi_type) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
 #if 0

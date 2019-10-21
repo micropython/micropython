@@ -42,7 +42,7 @@ STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    spi_print(print, self->spi, false);
+    spi_print(print, self->config, false);
 }
 
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -73,7 +73,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     }
 
     // set the SPI configuration values
-    SPI_InitTypeDef *init = &self->spi->spi->Init;
+    SPI_InitTypeDef *init = &self->config->spi->Init;
     init->Mode = SPI_MODE_MASTER;
 
     // these parameters are not currently configurable
@@ -84,12 +84,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     init->CRCPolynomial = 0;
 
     // set configurable paramaters
-    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
+    spi_set_params(self->config, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
 
     // init the SPI bus
-    spi_init(self->spi, false);
+    spi_init(self->config, false);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -109,22 +109,22 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // set the SPI configuration values
-    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
+    spi_set_params(self->config, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
 
     // re-init the SPI bus
-    spi_init(self->spi, false);
+    spi_init(self->config, false);
 }
 
 STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_deinit(self->spi);
+    spi_deinit(self->config);
 }
 
 STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
+    spi_transfer(self->config, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
 STATIC const mp_machine_spi_p_t machine_hard_spi_p = {

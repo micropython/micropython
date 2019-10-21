@@ -29,6 +29,7 @@
 #include "drivers/bus/qspi.h"
 
 extern const mp_qspi_proto_t qspi_proto;
+extern const mp_obj_type_t machine_hard_qspi_type;
 
 void qspi_init(void);
 void qspi_memory_map(void);

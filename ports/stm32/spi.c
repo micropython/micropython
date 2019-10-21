@@ -610,7 +610,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
         return self->spi;
     } else if (mp_obj_is_type(o, &machine_hard_spi_type)) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
-        return self->spi;
+        return self->config;
     } else {
         mp_raise_TypeError("expecting an SPI object");
     }

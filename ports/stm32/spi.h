@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_STM32_SPI_H
 
 #include "drivers/bus/spi.h"
+#include "extmod/machine_spi.h"
 #include "dma.h"
 
 typedef struct _spi_t {
