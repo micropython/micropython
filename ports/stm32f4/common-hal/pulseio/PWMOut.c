@@ -44,6 +44,29 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     uint16_t duty,
                                                     uint32_t frequency,
                                                     bool variable_frequency) {
+
+    __HAL_RCC_TIM4_CLK_ENABLE();
+
+    TIM_HandleTypeDef tim = {0};
+    tim.Instance = TIM4;
+    tim.Init.Period = LED_PWM_TIM_PERIOD - 1;
+    tim.Init.Prescaler = timer_get_source_freq(pwm_cfg->tim_id) / 1000000 - 1; // TIM runs at 1MHz
+    tim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    tim.Init.CounterMode = TIM_COUNTERMODE_UP;
+    tim.Init.RepetitionCounter = 0;
+    HAL_TIM_PWM_Init(&tim);
+
+    // PWM configuration
+    TIM_OC_InitTypeDef oc_init;
+    oc_init.OCMode = TIM_OCMODE_PWM1;
+    oc_init.Pulse = 0; // off
+    oc_init.OCPolarity = MICROPY_HW_LED_INVERTED ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
+    oc_init.OCFastMode = TIM_OCFAST_DISABLE;
+    oc_init.OCNPolarity = TIM_OCNPOLARITY_HIGH; // needed for TIM1 and TIM8
+    oc_init.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
+    oc_init.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
+    HAL_TIM_PWM_ConfigChannel(&tim, &oc_init, pwm_cfg->tim_channel);
+    HAL_TIM_PWM_Start(&tim, pwm_cfg->tim_channel);
     return PWMOUT_OK;
 }
 
