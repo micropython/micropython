@@ -27,6 +27,7 @@ class BLEUART:
         self._connections = set()
         self._rx_buffer = bytearray()
         self._handler = None
+        # Optionally add services=[_UART_UUID], but this is likely to make the payload too large.
         self._payload = advertising_payload(name=name, appearance=_ADV_APPEARANCE_GENERIC_COMPUTER)
         self._advertise()
 

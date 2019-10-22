@@ -29,7 +29,7 @@ class BLETemperature:
         self._ble.irq(handler=self._irq)
         ((self._handle,),) = self._ble.gatts_register_services((_ENV_SENSE_SERVICE,))
         self._connections = set()
-        self._payload = advertising_payload(name=name, services=[0x181A], appearance=_ADV_APPEARANCE_GENERIC_THERMOMETER)
+        self._payload = advertising_payload(name=name, services=[_ENV_SENSE_UUID], appearance=_ADV_APPEARANCE_GENERIC_THERMOMETER)
         self._advertise()
 
     def _irq(self, event, data):

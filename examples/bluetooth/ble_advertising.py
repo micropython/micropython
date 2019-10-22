@@ -11,7 +11,13 @@ import struct
 _ADV_TYPE_FLAGS = const(0x01)
 _ADV_TYPE_NAME = const(0x09)
 _ADV_TYPE_UUID16_COMPLETE = const(0x3)
+_ADV_TYPE_UUID32_COMPLETE = const(0x5)
+_ADV_TYPE_UUID128_COMPLETE = const(0x7)
+_ADV_TYPE_UUID16_MORE = const(0x2)
+_ADV_TYPE_UUID32_MORE = const(0x4)
+_ADV_TYPE_UUID128_MORE = const(0x6)
 _ADV_TYPE_APPEARANCE = const(0x19)
+
 
 # Generate a payload to be passed to gap_advertise(adv_data=...).
 def advertising_payload(limited_disc=False, br_edr=False, name=None, services=None, appearance=0):
@@ -28,8 +34,13 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
 
     if services:
         for uuid in services:
-            # TODO: Support bluetooth.UUID class.
-            _append(_ADV_TYPE_UUID16_COMPLETE, struct.pack('<h', uuid))
+            b = bytes(uuid)
+            if len(b) == 2:
+                _append(_ADV_TYPE_UUID16_COMPLETE, b)
+            elif len(b) == 4:
+                _append(_ADV_TYPE_UUID32_COMPLETE, b)
+            elif len(b) == 16:
+                _append(_ADV_TYPE_UUID128_COMPLETE, b)
 
     # See org.bluetooth.characteristic.gap.appearance.xml
     _append(_ADV_TYPE_APPEARANCE, struct.pack('<h', appearance))
