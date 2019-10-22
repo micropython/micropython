@@ -1485,12 +1485,10 @@ enter_bootloader:
     #endif
 
     #if defined(MBOOT_SPIFLASH_ADDR)
-    MBOOT_SPIFLASH_SPIFLASH->config = MBOOT_SPIFLASH_CONFIG;
     mp_spiflash_init(MBOOT_SPIFLASH_SPIFLASH);
     #endif
 
     #if defined(MBOOT_SPIFLASH2_ADDR)
-    MBOOT_SPIFLASH2_SPIFLASH->config = MBOOT_SPIFLASH2_CONFIG;
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
     #endif
 

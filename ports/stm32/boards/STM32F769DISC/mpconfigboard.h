@@ -205,5 +205,4 @@ extern struct _mp_spiflash_t spiflash_instance;
 #define MBOOT_SPIFLASH_BYTE_SIZE                (512 * 128 * 1024)
 #define MBOOT_SPIFLASH_LAYOUT                   "/0x90000000/512*128Kg"
 #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE    (128 / 4) // 128k page, 4k erase block
-#define MBOOT_SPIFLASH_CONFIG                   (&spiflash_config)
 #define MBOOT_SPIFLASH_SPIFLASH                 (&spiflash_instance)
