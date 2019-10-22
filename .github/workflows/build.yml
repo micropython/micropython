@@ -52,9 +52,6 @@ jobs:
         done
       working-directory: tests
       if: failure()
-    - name: Test threads
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread
-      working-directory: tests
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
