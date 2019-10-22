@@ -1,10 +1,13 @@
 # test construction of array.array from different objects
 
 try:
-    from array import array
+    from uarray import array
 except ImportError:
-    print("SKIP")
-    raise SystemExit
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 # tuple, list
 print(array('b', (1, 2)))
