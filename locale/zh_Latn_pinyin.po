@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-21 19:50-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -261,6 +261,10 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 msgid "All timers in use"
 msgstr "Suǒyǒu jìshí qì shǐyòng"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr ""
+
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Bù zhīchí AnalogOut gōngnéng"
@@ -328,6 +332,11 @@ msgstr "Liàngdù bìxū jiè yú 0 dào 255 zhī jiān"
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
 msgstr "Liàngdù wúfǎ tiáozhěng"
+
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -459,6 +468,12 @@ msgstr "Mìnglìng bìxū wèi 0-255"
 msgid "Command must be an int between 0 and 255"
 msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Fǔbài de .mpy wénjiàn"
@@ -501,7 +516,7 @@ msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
 
@@ -547,10 +562,6 @@ msgstr "Yùqí %q"
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a Peripheral"
-msgstr "Qídài yīgè wàiwéi shèbèi"
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Yùqí fúwù"
@@ -560,7 +571,7 @@ msgstr "Yùqí fúwù"
 msgid "Expected a UUID"
 msgstr "Yùqí UUID"
 
-#: shared-bindings/_bleio/Central.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
 msgstr "Qídài yīgè dìzhǐ"
 
@@ -568,6 +579,11 @@ msgstr "Qídài yīgè dìzhǐ"
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Failed initiate attribute read, err 0x%04x"
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -579,19 +595,13 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Service.c
-#, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
+msgid "Failed to add characteristic, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to add descriptor, err 0x%04x"
 msgstr "Wúfǎ tiānjiā miáoshù fú, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr "Tiānjiā fúwù shībài, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -604,24 +614,22 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state"
-msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
+msgid "Failed to change softdevice state, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to configure advertising, err 0x%04x"
-msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr "Liánjiē shībài: Chāoshí"
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
-#, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Service.c
+msgid "Failed to create service, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "Failed to discover services"
 msgstr "Fāxiàn fúwù shībài"
 
@@ -638,7 +646,7 @@ msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "Failed to pair"
 msgstr "Pèiduì shībài"
 
@@ -647,8 +655,7 @@ msgstr "Pèiduì shībài"
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Dòu qǔ CCCD zhí, err 0x%04x shībài"
 
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Dòu qǔ shǔxìng zhí shībài, err 0x%04x"
@@ -668,35 +675,27 @@ msgstr "Wúfǎ zhùcè màizhǔ tèdìng de UUID, err 0x%04x"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to set device name, err 0x%04x"
-msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to start advertising, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
 msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to start pairing, error 0x%04x"
-msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "Failed to start pairing, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to stop advertising, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -999,9 +998,8 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
-#: ports/nrf/common-hal/_bleio/__init__.c shared-bindings/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Peripheral.c
 msgid "Not connected"
 msgstr "Wèi liánjiē"
 
@@ -1079,6 +1077,10 @@ msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
 msgid "Pop from an empty Ps2 buffer"
 msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
@@ -1145,6 +1147,10 @@ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
@@ -1158,11 +1164,6 @@ msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1986,7 +1987,7 @@ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
 msgid "integer required"
 msgstr "xūyào zhěngshù"
 
-#: shared-bindings/_bleio/Peripheral.c shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
@@ -2164,10 +2165,6 @@ msgstr "bìxū shǐyòng guānjiàn cí cānshù"
 msgid "name '%q' is not defined"
 msgstr "míngchēng '%q' wèi dìngyì"
 
-#: shared-bindings/_bleio/Peripheral.c
-msgid "name must be a string"
-msgstr "míngchēng bìxū shì yīgè zìfú chuàn"
-
 #: py/runtime.c
 msgid "name not defined"
 msgstr "míngchēng wèi dìngyì"
@@ -2219,7 +2216,7 @@ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
 msgid "no such attribute"
 msgstr "méiyǒu cǐ shǔxìng"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "Zài service_uuids bái míngdān zhōng zhǎodào fēi UUID"
 
@@ -2703,7 +2700,7 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "Chuāngkǒu bìxū shì <= jiàngé"
 
@@ -2762,11 +2759,29 @@ msgstr "líng bù"
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
+#~ msgid "Expected a Peripheral"
+#~ msgstr "Qídài yīgè wàiwéi shèbèi"
+
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Wúfǎ huòdé mutex"
 
+#, c-format
+#~ msgid "Failed to add characteristic, err 0x%04x"
+#~ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
+
 #~ msgid "Failed to add service"
 #~ msgstr "Tiānjiā fúwù shībài"
+
+#, c-format
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "Tiānjiā fúwù shībài, err 0x%04x"
+
+#~ msgid "Failed to change softdevice state"
+#~ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
+
+#, c-format
+#~ msgid "Failed to configure advertising, err 0x%04x"
+#~ msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
 
 #~ msgid "Failed to connect:"
 #~ msgstr "Liánjiē shībài:"
@@ -2774,20 +2789,40 @@ msgstr "líng bù"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Jìxù sǎomiáo shībài"
 
+#, c-format
+#~ msgid "Failed to continue scanning, err 0x%04x"
+#~ msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
+
 #~ msgid "Failed to create mutex"
 #~ msgstr "Wúfǎ chuàngjiàn hù chì suǒ"
 
 #~ msgid "Failed to release mutex"
 #~ msgstr "Wúfǎ shìfàng mutex"
 
+#, c-format
+#~ msgid "Failed to set device name, err 0x%04x"
+#~ msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
+
 #~ msgid "Failed to start advertising"
 #~ msgstr "Qǐdòng guǎnggào shībài"
+
+#, c-format
+#~ msgid "Failed to start advertising, err 0x%04x"
+#~ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
+
+#, c-format
+#~ msgid "Failed to start pairing, error 0x%04x"
+#~ msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
 
 #~ msgid "Failed to start scanning"
 #~ msgstr "Qǐdòng sǎomiáo shībài"
 
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào"
+
+#, c-format
+#~ msgid "Failed to stop advertising, err 0x%04x"
+#~ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
 
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
@@ -2819,6 +2854,10 @@ msgstr "líng bù"
 #~ msgstr ""
 #~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
+#, c-format
+#~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+#~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
+
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
 
@@ -2839,6 +2878,9 @@ msgstr "líng bù"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
+
+#~ msgid "name must be a string"
+#~ msgstr "míngchēng bìxū shì yīgè zìfú chuàn"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
