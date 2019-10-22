@@ -36,6 +36,7 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/machine_spiflash.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -80,7 +81,7 @@ STATIC pyb_thread_t pyb_thread_main;
 #endif
 
 #if MICROPY_HW_ENABLE_STORAGE
-STATIC fs_user_mount_t fs_user_mount_flash;
+// STATIC fs_user_mount_t fs_user_mount_flash;
 #endif
 
 #if defined(MICROPY_HW_UART_REPL)
@@ -156,7 +157,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
-#if MICROPY_HW_ENABLE_STORAGE
+#if MICROPY_HW_ENABLE_STORAGE && 0
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // init the vfs object
@@ -602,19 +603,35 @@ soft_reset:
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
-    #if MICROPY_HW_ENABLE_STORAGE
-    mounted_flash = init_flash_fs(reset_mode);
+    #if defined(MICROPY_VFS_ROOT_FS)
+    // nlr_buf_t nlr;
+    // if(0 == nlr_push(&nlr)) {
+        mp_vfs_load_filesystem(
+            MP_OBJ_NEW_QSTR(MICROPY_VFS_ROOT_FS_MOUNT),
+            MICROPY_VFS_ROOT_FS_FORMAT,
+            MP_OBJ_FROM_PTR(MICROPY_VFS_ROOT_FS_BDEV)
+        );
+        // nlr_pop();
+    // } else {
+    //     mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+    // }
+    
     #endif
+    
+    // #if MICROPY_HW_ENABLE_STORAGE
+    // mounted_flash = init_flash_fs(reset_mode);
+    // #endif
 
     bool mounted_sdcard = false;
     #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
-        #if MICROPY_HW_ENABLE_STORAGE
-        // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
-        if (!mounted_flash || f_stat(&fs_user_mount_flash.fatfs, "/SKIPSD", NULL) != FR_OK) {
-            mounted_sdcard = init_sdcard_fs();
-        }
+        #if defined(MICROPY_VFS_ROOT_FS)
+            const char *path_out;
+            mp_vfs_mount_t *vfs = mp_vfs_lookup_path("SKIPSD", &path_out);
+            if (vfs == MP_VFS_NONE && vfs == MP_VFS_ROOT) {
+                mounted_sdcard = init_sdcard_fs();
+            }
         #else
         mounted_sdcard = init_sdcard_fs();
         #endif

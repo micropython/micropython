@@ -264,6 +264,24 @@
 #define MICROPY_HW_ENABLE_STORAGE (0)
 #endif
 
+// default filesystem configuration
+#define MICROPY_VFS_ROOT_FS ( \
+    defined(MICROPY_VFS_ROOT_FS_MOUNT) && \
+    defined(MICROPY_VFS_ROOT_FS_FORMAT) && \
+    defined(MICROPY_VFS_ROOT_FS_BDEV) )
+
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#ifndef MICROPY_VFS_ROOT_FS_MOUNT
+#define MICROPY_VFS_ROOT_FS_MOUNT MP_QSTR__slash_flash
+#endif
+#ifndef MICROPY_VFS_ROOT_FS_FORMAT
+#define MICROPY_VFS_ROOT_FS_FORMAT &mp_fat_vfs_type
+#endif
+#ifndef MICROPY_VFS_ROOT_FS_BDEV
+#define MICROPY_VFS_ROOT_FS_BDEV &pyb_flash_type
+#endif
+#endif // MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+
 // Enable hardware I2C if there are any peripherals defined
 #if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
     || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
