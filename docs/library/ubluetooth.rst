@@ -1,7 +1,7 @@
-:mod:`bluetooth` --- low-level Bluetooth
-========================================
+:mod:`ubluetooth` --- low-level Bluetooth
+=========================================
 
-.. module:: bluetooth
+.. module:: ubluetooth
    :synopsis: Low-level Bluetooth radio functionality
 
 This module provides an interface to a Bluetooth controller on a board.
@@ -123,7 +123,7 @@ The event codes are::
     _IRQ_GATTC_INDICATE                  = const(1 << 14)
 
 In order to save space in the firmware, these constants are not included on the
-:mod:`bluetooth` module. Add the ones that you need from the list above to your
+:mod:`ubluetooth` module. Add the ones that you need from the list above to your
 program.
 
 
@@ -203,8 +203,8 @@ writes from a central to a given characteristic, use
     value.
 
     The **flags** are a bitwise-OR combination of the
-    :data:`bluetooth.FLAGS_READ`, :data:`bluetooth.FLAGS_WRITE` and
-    :data:`bluetooth.FLAGS_NOTIFY` values defined below.
+    :data:`ubluetooth.FLAGS_READ`, :data:`bluetooth.FLAGS_WRITE` and
+    :data:`ubluetooth.FLAGS_NOTIFY` values defined below.
 
     The return value is a list (one element per service) of tuples (each element
     is a value handle). Characteristics and descriptor handles are flattened
@@ -321,6 +321,6 @@ Constructor
 Constants
 ---------
 
-.. data:: bluetooth.FLAG_READ
-          bluetooth.FLAG_WRITE
-          bluetooth.FLAG_NOTIFY
+.. data:: ubluetooth.FLAG_READ
+          ubluetooth.FLAG_WRITE
+          ubluetooth.FLAG_NOTIFY
