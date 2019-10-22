@@ -485,4 +485,23 @@ mp_obj_t mp_vfs_statvfs(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj, mp_vfs_statvfs);
 
+mp_obj_t mp_vfs_load_filesystem(mp_obj_t mount, const mp_obj_type_t *vfs, const mp_obj_t bdev_in) {
+    
+    mp_obj_t bdev = MP_OBJ_TO_PTR(bdev_in);
+    if (mp_obj_is_type(bdev, &mp_type_type)) {
+        // If a block device class is passed in, instantiate it.
+        const mp_obj_type_t *bdev_type = MP_OBJ_TO_PTR(bdev_in);
+        bdev = bdev_type->make_new(bdev_type, 0, 0, NULL);
+    }
+
+    // Create the filesystem
+    mp_obj_t fs = vfs->make_new(vfs, 1, 0, &bdev);
+
+    // Mount and make it current working directory
+    const mp_obj_t mount_args[] = {fs, mount};
+    mp_vfs_mount(2, mount_args, (mp_map_t*)&mp_const_empty_map);
+    mp_vfs_chdir(mount);
+    return mount;
+}
+
 #endif // MICROPY_VFS
