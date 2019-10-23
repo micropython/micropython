@@ -278,6 +278,7 @@ SRC_C = \
 	machine_adc.c \
 	machine_i2c.c \
 	machine_spi.c \
+	machine_timer.c \
 	machine_uart.c \
 	modmachine.c \
 	modpyb.c \
