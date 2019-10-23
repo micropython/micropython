@@ -61,8 +61,8 @@
 //| additional functionality available after the devices establish a connection. For example, a
 //| BLE keyboard may advertise that it can provide key information, but not what the key info is.
 //|
-//| The built-in BLE adapter can do both parts of this process, it can scan for other device
-//| advertisements and it can advertise it's own data. Furthermore, Adapters can accept incoming
+//| The built-in BLE adapter can do both parts of this process: it can scan for other device
+//| advertisements and it can advertise its own data. Furthermore, Adapters can accept incoming
 //| connections and also initiate connections.
 //|
 
@@ -207,7 +207,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapt
 //|     filtered and returned separately.
 //|
 //|     :param sequence prefixes: Sequence of byte string prefixes to filter advertising packets
-//|         with. A packets without an advertising structure that matches one of the prefixes are
+//|         with. A packet without an advertising structure that matches one of the prefixes is
 //|         ignored. Format is one byte for length (n) and n bytes of prefix and can be repeated.
 //|     :param int buffer_size: the maximum number of advertising bytes to buffer.
 //|     :param bool extended: When True, support extended advertising packets. Increasing buffer_size is recommended when this is set.

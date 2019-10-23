@@ -45,10 +45,10 @@
 //|   connections. This is known as a Service server. Client Service objects are created via
 //|   `Connection.discover_remote_services`.
 //|
-//|   To mark the Server as secondary, pass `True` as :py:data:`secondary`.
+//|   To mark the Service as secondary, pass `True` as :py:data:`secondary`.
 //|
-//|   :param UUID uuid: The uuid of the server
-//|   :param bool secondary: If the server is a secondary one
+//|   :param UUID uuid: The uuid of the service
+//|   :param bool secondary: If the service is a secondary one
 //
 //|   :return: the new Service
 //|

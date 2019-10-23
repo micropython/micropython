@@ -50,7 +50,7 @@ extern uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t 
 extern void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo);
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self);
 
-mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, uint8_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active);
+mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active);
 void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self);
 
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);

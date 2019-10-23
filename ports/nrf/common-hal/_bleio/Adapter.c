@@ -123,7 +123,7 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
-    // Double the GATT Server attribute size to accomodate both the CircuitPython built-in service
+    // Triple the GATT Server attribute size to accomodate both the CircuitPython built-in service
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
     ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 3;
@@ -163,7 +163,8 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED: {
-            // Find an empty connection
+            // Find an empty connection. One must always be available because the SD has the same
+            // total connection limit.
             bleio_connection_internal_t *connection;
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
                 connection = &connections[i];
@@ -369,7 +370,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
     return true;
 }
 
-mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, uint8_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
+mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
             mp_raise_RuntimeError(translate("Scan already in progess. Stop with stop_scan."));
