@@ -80,7 +80,6 @@ it will fallback to loading the built-in ``ujson`` module.
    sys.rst
    uarray.rst
    ubinascii.rst
-   ubluetooth.rst
    ucollections.rst
    uerrno.rst
    uhashlib.rst
@@ -112,6 +111,7 @@ the following libraries.
    machine.rst
    micropython.rst
    network.rst
+   ubluetooth.rst
    ucryptolib.rst
    uctypes.rst
 
