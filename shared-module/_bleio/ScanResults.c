@@ -28,6 +28,7 @@
 
 #include <string.h>
 
+#include "lib/utils/interrupt_char.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
@@ -44,10 +45,10 @@ bleio_scanresults_obj_t* shared_module_bleio_new_scanresults(size_t buffer_size,
 }
 
 mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
-    while (ringbuf_count(&self->buf) == 0 && !self->done && !mp_exception_pending()) {
+    while (ringbuf_count(&self->buf) == 0 && !self->done && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
-    if (ringbuf_count(&self->buf) == 0 || mp_exception_pending()) {
+    if (ringbuf_count(&self->buf) == 0 || mp_hal_is_interrupted()) {
         return mp_const_none;
     }
 

@@ -87,7 +87,7 @@ void supervisor_start_bluetooth(void) {
     characteristic_list.items = characteristic_list_items;
     mp_seq_clear(characteristic_list.items, 0, characteristic_list.alloc, sizeof(*characteristic_list.items));
     
-    const uint32_t err_code = _common_hal_bleio_service_construct(&supervisor_ble_service, &supervisor_ble_service_uuid, false /* is secondary */, &characteristic_list);
+    _common_hal_bleio_service_construct(&supervisor_ble_service, &supervisor_ble_service_uuid, false /* is secondary */, &characteristic_list);
 
     // File length
     supervisor_ble_version_uuid.base.type = &bleio_uuid_type;
@@ -186,7 +186,7 @@ void open_current_file(void) {
     path[length] = '\0';
 
     FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-    FRESULT result = f_open(fs, &active_file, (char*) path, FA_READ | FA_WRITE);
+    f_open(fs, &active_file, (char*) path, FA_READ | FA_WRITE);
 
     update_file_length();
 }
@@ -246,7 +246,6 @@ void supervisor_bluetooth_background(void) {
             //uint32_t data_shift_length = fileLength - offset - remove_length;
             int32_t data_shift = insert_length - remove_length;
             uint32_t new_length = file_length + data_shift;
-            FRESULT result;
 
             // TODO: Make these loops smarter to read and write on sector boundaries.
             if (data_shift < 0) {
@@ -254,32 +253,32 @@ void supervisor_bluetooth_background(void) {
                     uint8_t data;
                     UINT actual;
                     f_lseek(&active_file, shift_offset - data_shift);
-                    result = f_read(&active_file, &data, 1, &actual);
+                    f_read(&active_file, &data, 1, &actual);
                     f_lseek(&active_file, shift_offset);
-                    result = f_write(&active_file, &data, 1, &actual);
+                    f_write(&active_file, &data, 1, &actual);
                 }
                 f_truncate(&active_file);
             } else if (data_shift > 0) {
-                result = f_lseek(&active_file, file_length);
+                f_lseek(&active_file, file_length);
                 // Fill end with 0xff so we don't need to erase.
                 uint8_t data = 0xff;
                 for (size_t i = 0; i < (size_t) data_shift; i++) {
                     UINT actual;
-                    result = f_write(&active_file, &data, 1, &actual);
+                    f_write(&active_file, &data, 1, &actual);
                 }
                 for (uint32_t shift_offset = new_length - 1; shift_offset >= offset + insert_length ; shift_offset--) {
                     UINT actual;
                     f_lseek(&active_file, shift_offset - data_shift);
-                    result = f_read(&active_file, &data, 1, &actual);
+                    f_read(&active_file, &data, 1, &actual);
                     f_lseek(&active_file, shift_offset);
-                    result = f_write(&active_file, &data, 1, &actual);
+                    f_write(&active_file, &data, 1, &actual);
                 }
             }
             
             f_lseek(&active_file, offset);
             uint8_t* data = (uint8_t *) (current_command + 4);
             UINT written;
-            result = f_write(&active_file, data, insert_length, &written);
+            f_write(&active_file, data, insert_length, &written);
             f_sync(&active_file);
             // Notify the new file length.
             update_file_length();
