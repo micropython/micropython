@@ -249,6 +249,7 @@ SRC_C = \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	softtimer.c  \
 	powerctrl.c \
 	powerctrlboot.c \
 	pybthread.c \

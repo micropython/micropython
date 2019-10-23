@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
+#ifndef MICROPY_INCLUDED_STM32_SOFTTIMER_H
+#define MICROPY_INCLUDED_STM32_SOFTTIMER_H
 
-enum {
-    PENDSV_DISPATCH_SOFT_TIMER,
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
-    PENDSV_DISPATCH_LWIP,
-    #if MICROPY_PY_NETWORK_CYW43
-    PENDSV_DISPATCH_CYW43,
-    #endif
-    #endif
-    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
-    PENDSV_DISPATCH_NIMBLE,
-    #endif
-    PENDSV_DISPATCH_MAX
-};
+#include "py/obj.h"
 
-#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
+#define SOFT_TIMER_MODE_ONE_SHOT (1)
+#define SOFT_TIMER_MODE_PERIODIC (2)
 
-typedef void (*pendsv_dispatch_t)(void);
+typedef struct _soft_timer_entry_t {
+    mp_obj_base_t base; // so struct can be used as an object and still be traced by GC
+    struct _soft_timer_entry_t *next;
+    uint32_t mode;
+    uint32_t expiry_ms;
+    uint32_t delta_ms; // for periodic mode
+    mp_obj_t callback;
+} soft_timer_entry_t;
 
-void pendsv_init(void);
-void pendsv_kbd_intr(void);
-void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+extern volatile uint32_t soft_timer_next;
 
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+void soft_timer_deinit(void);
+void soft_timer_handler(void);
+void soft_timer_insert(soft_timer_entry_t *entry);
+void soft_timer_remove(soft_timer_entry_t *entry);
+
+#endif // MICROPY_INCLUDED_STM32_SOFTTIMER_H

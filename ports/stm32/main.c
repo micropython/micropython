@@ -55,6 +55,7 @@
 #include "gccollect.h"
 #include "factoryreset.h"
 #include "modmachine.h"
+#include "softtimer.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -743,6 +744,7 @@ soft_reset_exit:
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif
+    soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
