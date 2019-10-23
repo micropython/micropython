@@ -26,15 +26,15 @@
 
 // options to control how MicroPython is built
 
-#include <mpconfigport.h>
+#define MICROPY_PY_USELECT_POSIX (0)
 
-#undef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK (0)
 
-#undef MICROPY_PY_SYS_PLATFORM
 #define MICROPY_PY_SYS_PLATFORM "freedos"
 
 // djgpp dirent struct does not have d_ino field
 #undef _DIRENT_HAVE_D_INO
 
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+
+#include "variants/DEV/mpconfigvariant.h"

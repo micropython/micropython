@@ -24,7 +24,15 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
+
+// Variant-specific definitions.
+#include "mpconfigvariant.h"
+
+// The minimal variant's config covers everything.
+// If we're building the minimal variant, ignore the rest of this file.
+#ifndef MICROPY_UNIX_MINIMAL
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
@@ -64,7 +72,9 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
@@ -97,10 +107,12 @@
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 #define MICROPY_COMP_CONST (0)
 #endif
+#ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
+#endif
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
@@ -331,3 +343,5 @@ void mp_unix_mark_exec(void);
 // For debugging purposes, make printf() available to any source file.
 #include <stdio.h>
 #endif
+
+#endif // MICROPY_UNIX_MINIMAL
