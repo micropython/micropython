@@ -26,6 +26,9 @@
 
 // options to control how MicroPython is built
 
+// Prevent the rest of the default mpconfigport.h being used.
+#define MICROPY_UNIX_MINIMAL (1)
+
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (64)
 #define MICROPY_ALLOC_PARSE_RULE_INIT (8)
 #define MICROPY_ALLOC_PARSE_RULE_INC  (8)

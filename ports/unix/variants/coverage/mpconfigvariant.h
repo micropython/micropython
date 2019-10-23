@@ -24,13 +24,11 @@
  * THE SOFTWARE.
  */
 
-// Default unix config while intended to be comprehensive, may still not enable
-// all the features, this config should enable more (testable) options.
+// This config enables almost all possible features such that it can be used
+// for coverage testing.
 
 #define MICROPY_VFS                    (1)
 #define MICROPY_PY_UOS_VFS             (1)
-
-#include <mpconfigport.h>
 
 #define MICROPY_OPT_MATH_FACTORIAL     (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
