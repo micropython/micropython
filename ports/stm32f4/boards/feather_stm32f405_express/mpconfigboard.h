@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +25,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
+//Micropython setup
 
-#include <nuttx/drivers/pwm.h>
+#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
+#define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
-#include "common-hal/microcontroller/Pin.h"
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-#include "py/obj.h"
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    struct pwm_info_s info;
-    bool variable_frequency;
-    int8_t number;
-} pulseio_pwmout_obj_t;
-
-void pwmout_reset(void);
-void pwmout_start(uint8_t pwm_num);
-void pwmout_stop(uint8_t pwm_num);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
+// On-board flash
+#define SPI_FLASH_MOSI_PIN          &pin_PB05
+#define SPI_FLASH_MISO_PIN          &pin_PB04
+#define SPI_FLASH_SCK_PIN           &pin_PB03
+#define SPI_FLASH_CS_PIN            &pin_PA15
