@@ -33,7 +33,7 @@
 #include "supervisor/shared/translate.h"
 #include "stm32f4xx_hal.h"
 
-#define PWM_MAX_FREQ 1000000
+#define PWM_MAX_FREQ 6000000
 
 // Get the frequency (in Hz) of the source clock for the given timer.
 // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
