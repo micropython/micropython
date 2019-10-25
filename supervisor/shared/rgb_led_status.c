@@ -74,8 +74,14 @@ uint16_t status_rgb_color[3] = {
 static uint32_t current_status_color = 0;
 #endif
 
-
+static bool rgb_led_status_init_in_progress = false;
 void rgb_led_status_init() {
+    if (rgb_led_status_init_in_progress) {
+        // Avoid recursion.
+        return;
+    }
+    rgb_led_status_init_in_progress = true;
+
     #ifdef MICROPY_HW_NEOPIXEL
         common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
         // Pretend we aren't using the pins. digitalio.DigitalInOut
@@ -91,10 +97,9 @@ void rgb_led_status_init() {
                                               mp_const_none);
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
-            // Don't use spi_deinit because that leads to infinite
-            // recursion because reset_pin_number may call
-            // rgb_led_status_init.
-            spi_m_sync_disable(&status_apa102.spi_desc);
+            // This may call us recursively if reset_pin_number() is called,
+            // The rgb_led_status_init_in_progress guard will prevent further recursion.
+            common_hal_busio_spi_deinit(&status_apa102);
         }
         common_hal_busio_spi_construct(&status_apa102,
                                       MICROPY_HW_APA102_SCK,
@@ -149,6 +154,8 @@ void rgb_led_status_init() {
     current_status_color = 0x1000000; // Not a valid color
     new_status_color(rgb);
     #endif
+
+    rgb_led_status_init_in_progress = false;
 }
 
 void reset_status_led() {
