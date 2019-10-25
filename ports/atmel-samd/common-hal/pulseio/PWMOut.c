@@ -323,9 +323,9 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
-    // Store the unadjusted duty cycle. It turns out the the process of adjusting and calucating
+    // Store the unadjusted duty cycle. It turns out the the process of adjusting and calculating
     // the duty cycle here and reading it back is lossy - the value will decay over time.
-    // Track it here so that if frequency is changed we can use this value to recalcuate the
+    // Track it here so that if frequency is changed we can use this value to recalculate the
     // proper duty cycle.
     // See https://github.com/adafruit/circuitpython/issues/2086 for more details
     self->duty_cycle = duty;
