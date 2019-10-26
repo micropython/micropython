@@ -31,7 +31,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "MakerDiary nRF52840 MDK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "MakerDiary52840MDK"
 
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 5)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1, 4)

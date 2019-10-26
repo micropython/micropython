@@ -31,7 +31,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "MakerDiary nRF52840 MDK USB Dongle"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "MakerDiary52840MDKDongle"
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 

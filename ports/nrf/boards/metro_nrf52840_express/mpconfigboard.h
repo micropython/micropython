@@ -29,7 +29,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "Adafruit Metro nRF52840 Express"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "Metro52840Express"
 
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (4096)

@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +24,40 @@
  * THE SOFTWARE.
  */
 
-#include "nrfx/hal/nrf_gpio.h"
+#include "boards/board.h"
+#include "nrf.h"
+#include "nrf_rtc.h"
 
-#define ELECTRONUT_LABS_PAPYR
+void board_init(void) {
+    // Initializations below from Arduino variant.cpp.
 
-#define MICROPY_HW_BOARD_NAME       "Electronut Labs Papyr"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
+    // // turn power LED on
+    // pinMode(LED_PWR, OUTPUT);
+    // digitalWrite(LED_PWR, HIGH);
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+    // Errata Nano33BLE - I2C pullup is on SWO line, need to disable TRACE
+    // was being enabled by nrfx_clock_anomaly_132
+    CoreDebug->DEMCR = 0;
+    NRF_CLOCK->TRACECONFIG = 0;
 
-// TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
+    // FIXME: bootloader enables interrupt on COMPARE[0], which we don't handle
+    // Disable it here to avoid getting stuck when OVERFLOW irq is triggered
+    nrf_rtc_event_disable(NRF_RTC1, NRF_RTC_INT_COMPARE0_MASK);
+    nrf_rtc_int_disable(NRF_RTC1, NRF_RTC_INT_COMPARE0_MASK);
 
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
+    // // FIXME: always enable I2C pullup and power @startup
+    // // Change for maximum powersave
+    // pinMode(PIN_ENABLE_SENSORS_3V3, OUTPUT);
+    // pinMode(PIN_ENABLE_I2C_PULLUP, OUTPUT);
 
-#define BOARD_HAS_CRYSTAL 1
+    // digitalWrite(PIN_ENABLE_SENSORS_3V3, HIGH);
+    // digitalWrite(PIN_ENABLE_I2C_PULLUP, HIGH);
+}
 
-#define DEFAULT_I2C_BUS_SCL         (&pin_P0_06)
-#define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_P0_31)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_P0_29)
-#define DEFAULT_SPI_BUS_MISO        (&pin_P1_01)
+void reset_board(void) {
 
-#define DEFAULT_UART_BUS_RX         (&pin_P0_07)
-#define DEFAULT_UART_BUS_TX         (&pin_P0_08)
+}

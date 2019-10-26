@@ -75,6 +75,7 @@ jobs:
         board:
         - "arduino_mkr1300"
         - "arduino_mkrzero"
+        - "arduino_nano_33_ble"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
