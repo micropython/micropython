@@ -1483,7 +1483,7 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         } else if (socket->state < 0) {
             // Socket in some other error state, use catch-all ERR flag
             // TODO: may need to set other return flags here
-            ret |= flags & MP_STREAM_POLL_ERR;
+            ret |= MP_STREAM_POLL_ERR;
         }
 
     } else if (request == MP_STREAM_CLOSE) {
