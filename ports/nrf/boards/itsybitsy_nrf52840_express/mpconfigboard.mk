@@ -21,7 +21,7 @@ endif
 
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 
-# Don't use up a hardware SPI peripheral for the status DotStar: we only have two or three.
+# Don't use up a hardware SPI peripheral for the status DotStar: we only have one or two.
 CIRCUITPY_BITBANG_APA102 = 1
 
 QSPI_FLASH_FILESYSTEM = 1

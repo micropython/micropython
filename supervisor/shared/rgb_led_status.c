@@ -46,10 +46,18 @@ static uint8_t status_apa102_color[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, 0,
 #if CIRCUITPY_BITBANG_APA102
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-module/bitbangio/types.h"
-static bitbangio_spi_obj_t status_apa102;
+static bitbangio_spi_obj_t status_apa102 = {
+    .base = {
+        .type = &bitbangio_spi_type,
+    },
+};
 #else
 #include "shared-bindings/busio/SPI.h"
-busio_spi_obj_t status_apa102;
+busio_spi_obj_t status_apa102 = {
+    .base = {
+        .type = &busio_spi_type,
+    },
+};
 #endif
 #endif
 
@@ -59,9 +67,21 @@ busio_spi_obj_t status_apa102;
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-pulseio_pwmout_obj_t rgb_status_r;
-pulseio_pwmout_obj_t rgb_status_g;
-pulseio_pwmout_obj_t rgb_status_b;
+pulseio_pwmout_obj_t rgb_status_r = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
+pulseio_pwmout_obj_t rgb_status_g = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
+pulseio_pwmout_obj_t rgb_status_b = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
 
 uint8_t rgb_status_brightness = 0xFF;
 
@@ -105,6 +125,7 @@ void rgb_led_status_init() {
                                       MICROPY_HW_APA102_SCK,
                                       MICROPY_HW_APA102_MOSI,
                                       mp_const_none);
+        common_hal_busio_spi_never_reset(&status_apa102);
         #endif
         // Pretend we aren't using the pins. bitbangio.SPI will
         // mark them as used.
