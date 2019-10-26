@@ -1476,7 +1476,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         } else if (socket->state == ERR_RST) {
             // Socket was reset by peer, a write will return an error
-            ret |= (flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) | MP_STREAM_POLL_HUP;
+            ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
+            ret |= MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP;
         } else if (socket->state == _ERR_BADF) {
             ret |= MP_STREAM_POLL_NVAL;
         } else if (socket->state < 0) {
