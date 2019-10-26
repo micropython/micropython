@@ -477,7 +477,7 @@ void gc_collect(void) {
 
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
 
 typedef struct {
     mp_obj_base_t base;
+#if HAS_DAC
+    DAC_ChannelConfTypeDef ch_handle;
+#endif
+    const mcu_pin_obj_t * pin;
     uint8_t channel;
     bool deinited;
 } analogio_analogout_obj_t;
 
 void analogout_reset(void);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGOUT_H

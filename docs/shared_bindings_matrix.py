@@ -87,7 +87,8 @@ def read_mpconfig():
 def build_module_map():
     """ Establish the base of the JSON file, based on the contents from
         `configs`. Base will contain module names, if they're part of
-        the `FULL_BUILD`, or their default value (0 | 1).
+        the `FULL_BUILD`, or their default value (0, 1, or a list of
+        modules that determine default [see audiocore, audiomixer, etc.]).
 
     """
     base = dict()
@@ -98,16 +99,17 @@ def build_module_map():
         full_name = module
         search_name = module.lstrip("_")
         re_pattern = "CIRCUITPY_{}\s=\s(.+)".format(search_name.upper())
-        find_config = re.search(re_pattern, configs)
-        #print(module, "|", find_config)
+        find_config = re.findall(re_pattern, configs)
         if not find_config:
             continue
-        full_build = int("FULL_BUILD" in find_config.group(0))
-        #print(find_config[1])
+        find_config = ", ".join([x.strip("$()") for x in find_config])
+
+        full_build = int("CIRCUITPY_FULL_BUILD" in find_config)
         if not full_build:
-            default_val = find_config.group(1)
+            default_val = find_config
         else:
             default_val = "None"
+
         base[search_name] = {
             "name": full_name,
             "full_build": str(full_build),
@@ -115,6 +117,7 @@ def build_module_map():
             "excluded": {}
         }
 
+    #print(base)
     return base
 
 
@@ -166,6 +169,7 @@ def get_excluded_boards(base):
             if board_chip in port_config:
                 contents += "\n" + "\n".join(port_config[board_chip])
 
+            check_dependent_modules = dict()
             for module in modules:
                 board_is_excluded = False
                 # check if board uses `SMALL_BUILD`. if yes, and current
@@ -173,14 +177,32 @@ def get_excluded_boards(base):
                 small_build = re.search("CIRCUITPY_SMALL_BUILD = 1", contents)
                 if small_build and base[module]["full_build"] == "1":
                     board_is_excluded = True
+
+                # check if board uses `MINIMAL_BUILD`. if yes, and current
+                # module is marked as `DEFAULT_BUILD`, board is excluded
+                min_build = re.search("CIRCUITPY_MINIMAL_BUILD = 1", contents)
+                if min_build and base[module]["default_value"] == "CIRCUITPY_DEFAULT_BUILD":
+                    board_is_excluded = True
+
                 # check if module is specifically disabled for this board
                 re_pattern = "CIRCUITPY_{}\s=\s(\w)".format(module.upper())
                 find_module = re.search(re_pattern, contents)
                 if not find_module:
-                    # check if default inclusion is off ('0'). if the board doesn't
-                    # have it explicitly enabled, its excluded.
-                    if base[module]["default_value"] == "0":
-                        board_is_excluded = True
+                    if base[module]["default_value"].isdigit():
+                        # check if default inclusion is off ('0'). if the board doesn't
+                        # have it explicitly enabled, its excluded.
+                        if base[module]["default_value"] == "0":
+                            board_is_excluded = True
+                    else:
+                        # this module is dependent on another module. add it
+                        # to the list to check after processing all other modules.
+                        # only need to check exclusion if it isn't already excluded.
+                        if (not board_is_excluded and
+                            base[module]["default_value"] not in [
+                                "None",
+                                "CIRCUITPY_DEFAULT_BUILD"
+                            ]):
+                                check_dependent_modules[module] = base[module]["default_value"]
                 else:
                     if (find_module.group(1) == "0" and
                         find_module.group(1) != base[module]["default_value"]):
@@ -191,6 +213,29 @@ def get_excluded_boards(base):
                         base[module]["excluded"][board_chip].append(entry.name)
                     else:
                         base[module]["excluded"][board_chip] = [entry.name]
+
+            for module in check_dependent_modules:
+                depend_results = set()
+
+                parents = check_dependent_modules[module].split("CIRCUITPY_")
+                parents = [item.strip(", ").lower() for item in parents if item]
+
+                for parent in parents:
+                    if parent in base:
+                        if (board_chip in base[parent]["excluded"] and
+                            entry.name in base[parent]["excluded"][board_chip]):
+                                depend_results.add(False)
+                        else:
+                            depend_results.add(True)
+
+                # only exclude the module if there were zero parents enabled
+                # as determined by the 'depend_results' set.
+                if not any(depend_results):
+                    if board_chip in base[module]["excluded"]:
+                        base[module]["excluded"][board_chip].append(entry.name)
+                    else:
+                        base[module]["excluded"][board_chip] = [entry.name]
+
     #print(json.dumps(base, indent=2))
     return base
 

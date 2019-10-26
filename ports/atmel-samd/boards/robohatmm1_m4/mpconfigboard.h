@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Robo HAT MM1"
+#define MICROPY_HW_BOARD_NAME "Robo HAT MM1 M4"
 #define MICROPY_HW_MCU_NAME "samd51g19"
 
 #define CIRCUITPY_MCU_FAMILY samd51
@@ -32,12 +32,12 @@
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 
-#define DEFAULT_SPI_BUS_SCK (&pin_PB10)
+#define DEFAULT_SPI_BUS_SCK (&pin_PB09)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PB08)
 #define DEFAULT_SPI_BUS_MISO (&pin_PB11)
 
-#define DEFAULT_UART_BUS_RX (&pin_PB03)
-#define DEFAULT_UART_BUS_TX (&pin_PB02)
+//#define DEFAULT_UART_BUS_RX (&pin_PB03)
+//#define DEFAULT_UART_BUS_TX (&pin_PB02)
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

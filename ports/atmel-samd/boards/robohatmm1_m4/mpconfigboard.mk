@@ -1,7 +1,7 @@
 LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x1209
 USB_PID = 0x4D43
-USB_PRODUCT = "Robo HAT MM1"
+USB_PRODUCT = "Robo HAT MM1 M4"
 USB_MANUFACTURER = "Robotics Masters"
 
 CHIP_VARIANT = SAMD51G19A
@@ -22,7 +22,7 @@ CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_FREQUENCYIO = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
+#FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 #FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_INA219
 #FROZEN_MPY_DIRS += $(TOP)/frozen/RoboticsMasters_CircuitPython_MPU9250

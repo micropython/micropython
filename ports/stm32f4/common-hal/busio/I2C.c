@@ -221,11 +221,11 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 2);
+    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 500);
     return result == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 2) == HAL_OK ? 0 : MP_EIO;
+    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500) == HAL_OK ? 0 : MP_EIO;
 }
