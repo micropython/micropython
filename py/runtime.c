@@ -57,6 +57,8 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
+    MP_STATE_THREAD(active_exception) = NULL;
+
     qstr_init();
 
     // no pending exceptions to start with
@@ -109,8 +111,6 @@ void mp_init(void) {
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     mp_locals_set(&MP_STATE_VM(dict_main));
     mp_globals_set(&MP_STATE_VM(dict_main));
-
-    MP_STATE_THREAD(active_exception) = NULL;
 
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
