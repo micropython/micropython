@@ -68,7 +68,7 @@
 //|
 //| For compatibility with CircuitPython 4.x, some builds allow the items in
 //| `audiocore` to be imported from `audioio`.  This will be removed for all
-//| boards in a future build of CicuitPython.
+//| boards in a future build of CircuitPython.
 //|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
