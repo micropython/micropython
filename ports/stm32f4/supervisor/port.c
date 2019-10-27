@@ -33,6 +33,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
@@ -57,6 +58,7 @@ void reset_port(void) {
 	reset_all_pins();
     i2c_reset();
     spi_reset();
+    pwmout_reset();
 }
 
 void reset_to_bootloader(void) {

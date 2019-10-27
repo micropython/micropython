@@ -31,13 +31,17 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "supervisor/shared/translate.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
 #include "stm32f4xx_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #define PWM_MAX_FREQ 6000000
 #define ALL_CLOCKS 0xFFFF
 
 STATIC uint8_t reserved_tim[TIM_BANK_ARRAY_LEN];
 STATIC uint32_t tim_frequencies[TIM_BANK_ARRAY_LEN];
+STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
 
 STATIC void tim_clock_enable(uint16_t mask);
 STATIC void tim_clock_disable(uint16_t mask);
@@ -62,13 +66,37 @@ static uint32_t timer_get_source_freq(uint32_t tim_id) {
 }
 
 void pwmout_reset(void) {
-    tim_clock_disable(ALL_CLOCKS);
+    uint16_t never_reset_mask = 0x00;
+    for(int i=0;i<TIM_BANK_ARRAY_LEN;i++) {
+        if(!never_reset_tim[i]) {
+            reserved_tim[i] = 0x00;
+            tim_frequencies[i] = 0x00;
+        } else {
+            never_reset_mask |= 1<<i;
+        }
+    }
+    tim_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
 void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
+        if (mcu_tim_banks[i] == self->handle.Instance) {
+            never_reset_tim[i] = true;
+            never_reset_pin_number(self->tim->pin->port, self->tim->pin->number);
+            break;
+        }
+    }
 }
 
 void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    //TODO: doesn't this need an equivalent release pin in microcontroller.c? 
+    //I don't see that implemented in any port. 
+    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
+        if (mcu_tim_banks[i] == self->handle.Instance) {
+            never_reset_tim[i] = false;
+            break;
+        }
+    }
 }
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -77,7 +105,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     uint32_t frequency,
                                                     bool variable_frequency) {
     if (frequency == 0 || frequency > 6000000) {
-        return PWMOUT_INVALID_FREQUENCY;
+        mp_raise_ValueError(translate("Invalid frequency supplied"));
+        //return PWMOUT_INVALID_FREQUENCY;
     }
 
     TIM_TypeDef * TIMx;
@@ -92,9 +121,9 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     for(uint i = 0; i < tim_num; i++) {
         //if pin is same
-        if(mcu_tim_pin_list[i].pin = pin) {
+        if(mcu_tim_pin_list[i].pin == pin) {
             //check if the timer has a channel active
-            if (reserved_tim[mcu_tim_pin_list[i].tim_index] != 0) {
+            if (reserved_tim[mcu_tim_pin_list[i].tim_index-1] != 0) {
                 //is it the same channel? (or all channels reserved by a var-freq)
                 if(reserved_tim[mcu_tim_pin_list[i].tim_index-1] & 1<<(mcu_tim_pin_list[i].channel_index-1)) {
                     tim_chan_taken = true;
@@ -128,8 +157,9 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         if (variable_frequency) {
             reserved_tim[self->tim->tim_index-1] = 0x0F;
         } else {
-            reserved_tim[self->tim->tim_index-1] |= 1<<self->tim->channel_index-1;
+            reserved_tim[self->tim->tim_index-1] |= 1<<(self->tim->channel_index-1);
         }
+        tim_frequencies[self->tim->tim_index-1] = frequency;
     } else { //no match found
         if (tim_chan_taken) {
             mp_raise_ValueError(translate("Timer hardware is reserved"));
@@ -167,11 +197,13 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
     uint32_t period = PWM_MAX_FREQ/frequency;
-    mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
-    mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
-    mp_printf(&mp_plat_print, "Timer Freq: %d\n", source_freq/(source_freq / PWM_MAX_FREQ));
-    mp_printf(&mp_plat_print, "Actual Freq: %d\n", (source_freq/(source_freq / PWM_MAX_FREQ))/period);
-    mp_printf(&mp_plat_print, "Period: %d\n", (PWM_MAX_FREQ/frequency));
+    //TODO: remove before merging. 
+    // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
+    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
+    // mp_printf(&mp_plat_print, "Timer Freq: %d\n", source_freq/(source_freq / PWM_MAX_FREQ));
+    // mp_printf(&mp_plat_print, "Actual Freq: %d\n", (source_freq/(source_freq / PWM_MAX_FREQ))/period);
+    // mp_printf(&mp_plat_print, "Duty: %d\n", duty);
+    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
 
     //Timer init
     self->handle.Instance = TIMx;
@@ -222,7 +254,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     if(self->variable_frequency) {
         reserved_tim[self->tim->tim_index-1] = 0x00;
     } else {
-        reserved_tim[self->tim->tim_index-1] &= !(1<<self->tim->channel_index);
+        reserved_tim[self->tim->tim_index-1] &= ~(1<<self->tim->channel_index);
         HAL_TIM_PWM_Stop(&self->handle, self->channel);
     }
     reset_pin_number(self->tim->pin->port,self->tim->pin->number);
@@ -236,15 +268,14 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
-    HAL_TIM_PWM_Stop(&self->handle, self->channel);
+    uint16_t duty = duty_cycle/655;
+    uint32_t period = PWM_MAX_FREQ/self->frequency;
+    uint32_t input = (period*duty)/100;
+    //TODO: remove before merging
+    //mp_printf(&mp_plat_print, "duty_cycle %d, Duty: %d, Input %d\n", duty_cycle, duty, input);
+    __HAL_TIM_SET_COMPARE(&self->handle, self->channel, input);
 
-    self->chan_handle.Pulse = ((PWM_MAX_FREQ/self->frequency)*duty_cycle)/100 - 1;
-    if(HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Channel Re-Init Error"));
-    }
-    if(HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Error restarting PWM"));
-    }
+    self->duty_cycle = duty;
 }
 
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
@@ -252,10 +283,39 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
+    if (frequency == 0 || frequency > 6000000) {
+        mp_raise_ValueError(translate("Invalid PWM frequency"));
+    }
+    if (frequency == self->frequency) return;
+
+    uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
+    uint32_t period = PWM_MAX_FREQ/frequency;
+
+    //shut down
+    HAL_TIM_PWM_Stop(&self->handle, self->channel);
+    tim_clock_disable(1<<(self->tim->tim_index-1));
+
+    //Only change altered values
+    self->handle.Init.Period = period - 1;
+    self->handle.Init.Prescaler = (source_freq / PWM_MAX_FREQ) - 1; // TIM runs at ~6MHz
+
+    //restart everything
+    if(HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
+        mp_raise_ValueError(translate("Timer Re-Init Error"));
+    }
+    if(HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
+        mp_raise_ValueError(translate("Channel Re-Init Error"));
+    }
+    if(HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
+        mp_raise_ValueError(translate("Error restarting PWM"));
+    }
+
+    tim_frequencies[self->tim->tim_index-1] = frequency;
+    self->frequency = frequency;
 }
 
 uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
-    return 0;
+    return self->frequency;
 }
 
 bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {

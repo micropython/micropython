@@ -27,6 +27,11 @@
 #ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PWMOUT_H
 #define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PWMOUT_H
 
+#include "common-hal/microcontroller/Pin.h"
+
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
+
 #include "py/obj.h"
 
 typedef struct {

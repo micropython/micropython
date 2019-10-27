@@ -42,10 +42,9 @@ extern const mcu_spi_miso_obj_t mcu_spi_miso_list[6];
 extern const mcu_spi_nss_obj_t mcu_spi_nss_list[6];
 
 #define TIM_BANK_ARRAY_LEN 14
-TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
-                                    TIM11, TIM12, TIM13, TIM14};
+TIM_TypeDef * mcu_tim_banks[14];
 #define TIM_PIN_ARRAY_LEN 66
-const mcu_tim_pin_obj_t mcu_tim_pin_list[66] = {
+const mcu_tim_pin_obj_t mcu_tim_pin_list[66];
 
 
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
