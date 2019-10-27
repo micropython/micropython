@@ -55,7 +55,7 @@
 
 //| .. class:: ByteOrder()
 //|
-//|   Classes representing byteorders for circuitpython
+//|   Classes representing byteorders for CircuitPython
 
 
 //|   .. attribute:: bpp
@@ -284,7 +284,7 @@ PIXELBUF_BYTEORDER(LBRG, 4, 3, 1, 2, 0, false, true)
 //|    * **bpp** 4
 //|    * **has_luminosity** True
 //|
-//|    Actual format commonly used by DotStar (5 bit luninance value)
+//|    Actual format commonly used by DotStar (5 bit luminance value)
 PIXELBUF_BYTEORDER(LBGR, 4, 3, 2, 1, 0, false, true)
 
 STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
