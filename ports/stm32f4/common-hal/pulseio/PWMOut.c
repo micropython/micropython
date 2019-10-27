@@ -293,16 +293,16 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
 
     //shut down
     HAL_TIM_PWM_Stop(&self->handle, self->channel);
-    tim_clock_disable(1<<(self->tim->tim_index-1));
 
     //Only change altered values
     self->handle.Init.Period = period - 1;
     self->handle.Init.Prescaler = (source_freq / PWM_MAX_FREQ) - 1; // TIM runs at ~6MHz
 
-    //restart everything
+    //restart everything, adjusting for new speed
     if(HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
         mp_raise_ValueError(translate("Timer Re-Init Error"));
     }
+    self->chan_handle.Pulse = (period*self->duty_cycle)/100 - 1;
     if(HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Channel Re-Init Error"));
     }
