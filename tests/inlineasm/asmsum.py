@@ -46,7 +46,7 @@ def asm_sum_bytes(r0, r1):
 
     mov(r0, r2)
 
-import array
+import uarray as array
 
 b = array.array('l', (100, 200, 300, 400))
 n = asm_sum_words(len(b), b)

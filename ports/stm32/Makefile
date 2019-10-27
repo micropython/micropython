@@ -18,11 +18,13 @@ include $(BOARD_DIR)/mpconfigboard.mk
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h
 
-# directory containing scripts to be frozen as bytecode
-FROZEN_MPY_DIR ?= modules
+# File containing description of content to be frozen into firmware.
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+
+GIT_SUBMODULES = lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -173,12 +175,16 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	scalbn.c \
 	sin.c \
 	sinh.c \
-	sqrt.c \
 	tan.c \
 	tanh.c \
 	tgamma.c \
 	trunc.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f7 h7))
+SRC_LIBM += lib/libm_dbl/thumb_vfp_sqrt.c
+else
+SRC_LIBM += lib/libm_dbl/sqrt.c
+endif
 else
 SRC_LIBM = $(addprefix lib/libm/,\
 	math.c \
@@ -256,11 +262,14 @@ SRC_C = \
 	qspi.c \
 	uart.c \
 	can.c \
+	fdcan.c \
+	pyb_can.c \
 	usb.c \
 	wdt.c \
 	eth.c \
 	gccollect.c \
 	help.c \
+	machine_adc.c \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_uart.c \
@@ -376,6 +385,12 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_scsi.c \
 	)
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+endif
+
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
 SRC_C += sdio.c
@@ -425,6 +440,16 @@ CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+include $(TOP)/extmod/nimble/nimble.mk
+SRC_C += nimble.c
+SRC_C += nimble_hci_uart.c
+EXTMOD_SRC_C += extmod/modbluetooth_nimble.c
+ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
+DRIVERS_SRC_C += drivers/cyw43/cywbt.c
+endif
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
@@ -460,13 +485,13 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-ifneq ($(FROZEN_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool

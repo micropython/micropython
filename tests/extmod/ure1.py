@@ -88,3 +88,23 @@ except:
 
 # bytes objects
 m = re.match(rb'a+?', b'ab');  print(m.group(0))
+print("===")
+
+# escaping
+m = re.match(r'a\.c', 'a.c'); print(m.group(0) if m else '')
+m = re.match(r'a\.b', 'abc'); print(m is None)
+m = re.match(r'a\.b', 'a\\bc'); print(m is None)
+m = re.match(r'[a\-z]', 'abc'); print(m.group(0))
+m = re.match(r'[.\]]*', '.].]a'); print(m.group(0))
+m = re.match(r'[.\]+]*', '.]+.]a'); print(m.group(0))
+m = re.match(r'[a-f0-9x\-yz]*', 'abxcd1-23'); print(m.group(0))
+m = re.match(r'[a\\b]*', 'a\\aa\\bb\\bbab'); print(m.group(0))
+m = re.search(r'[a\-z]', '-'); print(m.group(0))
+m = re.search(r'[a\-z]', 'f'); print(m is None)
+m = re.search(r'[a\]z]', 'a'); print(m.group(0))
+print(re.compile(r'[-a]').split('foo-bar'))
+print(re.compile(r'[a-]').split('foo-bar'))
+print(re.compile(r'[ax\-]').split('foo-bar'))
+print(re.compile(r'[a\-x]').split('foo-bar'))
+print(re.compile(r'[\-ax]').split('foo-bar'))
+print("===")

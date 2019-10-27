@@ -83,6 +83,10 @@ exclude_tests = (
     'micropython/meminfo.py',
     # needs sys stdfiles
     'misc/print_exception.py',
+    # settrace .exp files are too large
+    'misc/sys_settrace_loop.py',
+    'misc/sys_settrace_generator.py',
+    'misc/sys_settrace_features.py',
 )
 
 output = []

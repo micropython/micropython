@@ -254,6 +254,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART4_TX;
             pins[1] = MICROPY_HW_UART4_RX;
+            #if defined(MICROPY_HW_UART4_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART4_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART4_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART4_CTS;
+            }
+            #endif
             break;
         #endif
 

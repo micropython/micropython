@@ -91,10 +91,19 @@ void adc_init0(void) {
 }
 
 STATIC int adc_find(mp_obj_t id) {
-    // given an integer id
-    int adc_id = mp_obj_get_int(id);
-
-    int adc_idx = adc_id;
+    int adc_idx;
+    if (mp_obj_is_int(id)) {
+        // Given an integer id
+        adc_idx = mp_obj_get_int(id);
+    } else {
+        // Assume it's a pin-compatible object and convert it to an ADC channel number
+        mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(id);
+        if (pin->adc_num & PIN_ADC1) {
+            adc_idx = pin->adc_channel;
+        } else {
+            mp_raise_ValueError("invalid Pin for ADC");
+        }
+    }
 
     if (adc_idx >= 0 && adc_idx < MP_ARRAY_SIZE(machine_adc_obj)
         && machine_adc_obj[adc_idx].id != (uint8_t)-1) {
@@ -137,7 +146,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         .acq_time   = NRF_SAADC_ACQTIME_3US,
         .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
         .burst      = NRF_SAADC_BURST_DISABLED,
-        .pin_p      = self->id, // 0 - 7
+        .pin_p      = 1 + self->id, // pin_p=0 is AIN0, pin_p=8 is AIN7
         .pin_n      = NRF_SAADC_INPUT_DISABLED
     };
 
@@ -169,6 +178,20 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
     return value;
 }
 
+// read_u16()
+STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+    machine_adc_obj_t *self = self_in;
+    int16_t raw = machine_adc_value_read(self);
+    #if defined(NRF52_SERIES)
+    // raw is signed but the channel is in single-ended mode and this method cannot return negative values
+    if (raw < 0) {
+        raw = 0;
+    }
+    #endif
+    // raw is an 8-bit value
+    return MP_OBJ_NEW_SMALL_INT(raw << 8 | raw);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_read_u16_obj, machine_adc_read_u16);
 
 /// \method value()
 /// Read adc level.
@@ -263,6 +286,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_b
 
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     // instance methods
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&mp_machine_adc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) },
 
     // class methods

@@ -12,8 +12,10 @@
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV7)
 #define MICROPY_HW_CLK_PLLR (RCC_PLLR_DIV2)
 #define MICROPY_HW_CLK_PLLQ (RCC_PLLQ_DIV4)
-
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
+
+// The board has an external 32kHz crystal
+#define MICROPY_HW_RTC_USE_LSE      (1)
 
 // USART1 config connected to ST-Link
 #define MICROPY_HW_UART1_TX     (pin_B6)

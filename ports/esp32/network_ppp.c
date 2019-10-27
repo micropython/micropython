@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+#if !MICROPY_ESP_IDF_4
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/objtype.h"
@@ -282,3 +283,5 @@ const mp_obj_type_t ppp_if_type = {
     .name = MP_QSTR_PPP,
     .locals_dict = (mp_obj_dict_t*)&ppp_if_locals_dict,
 };
+
+#endif // !MICROPY_ESP_IDF_4

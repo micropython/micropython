@@ -165,7 +165,7 @@ by caching the object in a local variable:
 
     class foo(object):
         def __init__(self):
-            ba = bytearray(100)
+            self.ba = bytearray(100)
         def bar(self, obj_display):
             ba_ref = self.ba
             fb = obj_display.framebuffer
@@ -214,7 +214,7 @@ There are certain limitations in the current implementation of the native code e
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
 
-The trade-off for the improved performance (roughly twices as fast as bytecode) is an
+The trade-off for the improved performance (roughly twice as fast as bytecode) is an
 increase in compiled code size.
 
 The Viper code emitter

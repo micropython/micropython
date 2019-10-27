@@ -1,10 +1,17 @@
 # test memoryview accessing maximum values for signed/unsigned elements
 try:
-    from array import array
     memoryview
 except:
     print("SKIP")
     raise SystemExit
+try:
+    from uarray import array
+except ImportError:
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 print(list(memoryview(b'\x7f\x80\x81\xff')))
 print(list(memoryview(array('b', [0x7f, -0x80]))))

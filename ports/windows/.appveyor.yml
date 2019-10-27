@@ -14,15 +14,27 @@ platform:
 - x86
 - x64
 
+before_build:
+- ps: |
+    @"
+    <?xml version="1.0" encoding="utf-8"?>
+    <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+      <Target Name="Build">
+        <MsBuild BuildInParallel="True" Projects="mpy-cross\mpy-cross.vcxproj;ports\windows\micropython.vcxproj"/>
+      </Target>
+    </Project>
+    "@ | Set-Content build.proj
+
 build:
-  project: ports/windows/micropython.vcxproj
+  project: build.proj
+  parallel: true
   verbosity: normal
 
 test_script:
-- cmd: >-
-    cd tests
-
-    %MICROPY_CPYTHON3% run-tests
+- ps: |
+    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
+    & $env:MICROPY_CPYTHON3 run-tests
+    & $env:MICROPY_CPYTHON3 run-tests --via-mpy -d basics float micropython
 
 # After the build/test phase for the MSVC build completes,
 # build and test with mingw-w64, release versions only.
@@ -38,10 +50,26 @@ after_test:
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
     }
+    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'mpy-cross')
+    # Building of mpy-cross hasn't been fixed across all possible windows/WSL/...
+    # variations and the STRIP step tries to strip mpy-cross whereas that should be
+    # mpy-cross.exe. Workaround for now by skipping actual strip and size commands.
+    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 STRIP=echo SIZE=echo"
+    if ($LASTEXITCODE -ne 0) {
+      throw "$env:MSYSTEM mpy_cross build exited with code $LASTEXITCODE"
+    }
     cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
-    & $env:MICROPY_CPYTHON3 run-tests -e math_fun -e float2int_double -e float_parse -e math_domain_special
+    $testArgs = @('run-tests')
+    foreach ($skipTest in @('math_fun', 'float2int_double', 'float_parse', 'math_domain_special')) {
+      $testArgs = $testArgs + '-e' + $skipTest
+    }
+    & $env:MICROPY_CPYTHON3 $testArgs
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM tests exited with code $LASTEXITCODE"
+    }
+    & $env:MICROPY_CPYTHON3 ($testArgs + @('--via-mpy', '-d', 'basics', 'float', 'micropython'))
+    if ($LASTEXITCODE -ne 0) {
+      throw "$env:MSYSTEM mpy-cross tests exited with code $LASTEXITCODE"
     }
 
 skip_tags: true

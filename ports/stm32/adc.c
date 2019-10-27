@@ -63,7 +63,6 @@
 #endif
 
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
-#define ADC_NUM_CHANNELS        (19)
 
 #if defined(STM32F0)
 
@@ -165,6 +164,13 @@
 #define ADC_SCALE (ADC_SCALE_V / ((1 << ADC_CAL_BITS) - 1))
 #define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
+#ifndef __HAL_ADC_IS_CHANNEL_INTERNAL
+#define __HAL_ADC_IS_CHANNEL_INTERNAL(channel) \
+    (channel == ADC_CHANNEL_VBAT \
+     || channel == ADC_CHANNEL_VREFINT \
+     || channel == ADC_CHANNEL_TEMPSENSOR)
+#endif
+
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
     mp_obj_t pin_name;
@@ -188,8 +194,11 @@ STATIC bool is_adcx_channel(int channel) {
 #if defined(STM32F411xE)
     // The HAL has an incorrect IS_ADC_CHANNEL macro for the F411 so we check for temp
     return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
-#elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
+#elif defined(STM32H7)
+    return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
+        || IS_ADC_CHANNEL(__HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel));
 #elif defined(STM32L4)
     ADC_HandleTypeDef handle;
     handle.Instance = ADCx;
@@ -241,7 +250,13 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
     adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
     adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F0)
+    adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV4; // 12MHz
+    adch->Init.ScanConvMode          = DISABLE;
+    adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+    adch->Init.DMAContinuousRequests = DISABLE;
+    adch->Init.SamplingTimeCommon    = ADC_SAMPLETIME_55CYCLES_5; // ~4uS
+    #elif defined(STM32F4) || defined(STM32F7)
     adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adch->Init.ScanConvMode          = DISABLE;
     adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
@@ -266,10 +281,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     #error Unsupported processor
     #endif
 
-    #if defined(STM32F0)
-    adch->Init.SamplingTimeCommon = ADC_SAMPLETIME_71CYCLES_5;
-    #endif
-
     HAL_ADC_Init(adch);
 
     #if defined(STM32H7)
@@ -281,9 +292,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
 }
 
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-    if (!is_adcx_channel(adc_obj->channel)) {
-        return;
-    }
 
     if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
         // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
@@ -306,17 +314,23 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    sConfig.Channel = channel;
+    #if defined (STM32H7)
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
+        channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
+    }
+    #else
     sConfig.Rank = 1;
+    #endif
+    sConfig.Channel = channel;
+
 #if defined(STM32F0)
-    sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
 #elif defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(STM32H7)
-    if (channel == ADC_CHANNEL_VREFINT
-        || channel == ADC_CHANNEL_TEMPSENSOR
-        || channel == ADC_CHANNEL_VBAT) {
-        sConfig.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
     } else {
         sConfig.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
     }
@@ -325,9 +339,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     sConfig.OffsetRightShift = DISABLE;
     sConfig.OffsetSignedSaturation = DISABLE;
 #elif defined(STM32L4)
-    if (channel == ADC_CHANNEL_VREFINT
-        || channel == ADC_CHANNEL_TEMPSENSOR
-        || channel == ADC_CHANNEL_VBAT) {
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
     } else {
         sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
@@ -711,7 +723,7 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     uint32_t res_reg = ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
-       #if !defined(STM32H7)
+        #if !defined(STM32H7)
         case ADC_RESOLUTION_6B:  return 6;
         #endif
         case ADC_RESOLUTION_8B:  return 8;

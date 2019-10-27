@@ -1,9 +1,16 @@
 try:
     memoryview(b'a').itemsize
-    from array import array
 except:
     print("SKIP")
     raise SystemExit
+try:
+    from uarray import array
+except ImportError:
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 for code in ['b', 'h', 'i', 'l', 'q', 'f', 'd']:
     print(memoryview(array(code)).itemsize)

@@ -55,9 +55,9 @@
 static inline void qspi_mpu_disable_all(void) {
     // Configure MPU to disable access to entire QSPI region, to prevent CPU
     // speculative execution from accessing this region and modifying QSPI registers.
-    mpu_config_start();
+    uint32_t irq_state = mpu_config_start();
     mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x00, MPU_REGION_SIZE_256MB));
-    mpu_config_end();
+    mpu_config_end(irq_state);
 }
 
 static inline void qspi_mpu_enable_mapped(void) {
@@ -67,11 +67,11 @@ static inline void qspi_mpu_enable_mapped(void) {
     // to everything except the valid address space, using holes in the bottom
     // of the regions and nesting them.
     // At the moment this is hard-coded to 2MiB of QSPI address space.
-    mpu_config_start();
+    uint32_t irq_state = mpu_config_start();
     mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
     mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0f, MPU_REGION_SIZE_32MB));
     mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
-    mpu_config_end();
+    mpu_config_end(irq_state);
 }
 
 void qspi_init(void) {

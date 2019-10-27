@@ -97,7 +97,7 @@ struct _dma_descr_t {
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel             = 0,
-    #elif defined(STM32H7) || defined(STM32L4)
+    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
     .Request             = 0,
     #endif
     .Direction           = 0,
@@ -120,7 +120,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel             = 0,
-    #elif defined(STM32L4)
+    #elif defined(STM32L0) || defined(STM32L4)
     .Request             = 0,
     #endif
     .Direction           = 0,
@@ -130,7 +130,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
     .MemDataAlignment    = DMA_MDATAALIGN_WORD,
     #if defined(STM32F4) || defined(STM32F7)
     .Mode                = DMA_PFCTRL,
-    #elif defined(STM32L4)
+    #elif defined(STM32L0) || defined(STM32L4)
     .Mode                = DMA_NORMAL,
     #endif
     .Priority            = DMA_PRIORITY_VERY_HIGH,
@@ -148,7 +148,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel             = 0,
-    #elif defined(STM32H7) || defined(STM32L4)
+    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
     .Request             = 0,
     #endif
     .Direction           = 0,
@@ -336,31 +336,31 @@ static const uint8_t dma_irqn[NSTREAM] = {
 // number. The duplicate streams are ok as long as they aren't used at the same time.
 
 // DMA1 streams
-const dma_descr_t dma_SPI_1_RX = { DMA1_Channel2, DMA_REQUEST_1, dma_id_1,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_3_TX = { DMA1_Channel2, DMA_REQUEST_3, dma_id_1,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_SPI_1_TX = { DMA1_Channel3, DMA_REQUEST_1, dma_id_2,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_3_RX = { DMA1_Channel3, DMA_REQUEST_3, dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_RX = { DMA1_Channel2, DMA_REQUEST_1,  dma_id_1,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_3_TX = { DMA1_Channel2, DMA_REQUEST_14, dma_id_1,   &dma_init_struct_spi_i2c };
 #if MICROPY_HW_ENABLE_DAC
-const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, DMA_REQUEST_6, dma_id_2,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_1_TX = { DMA1_Channel2, DMA_REQUEST_9,  dma_id_1,   &dma_init_struct_dac };
 #endif
-const dma_descr_t dma_SPI_2_RX = { DMA1_Channel4, DMA_REQUEST_1, dma_id_3,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_2_TX = { DMA1_Channel4, DMA_REQUEST_3, dma_id_3,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_TX = { DMA1_Channel3, DMA_REQUEST_1,  dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_3_RX = { DMA1_Channel3, DMA_REQUEST_14, dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel4, DMA_REQUEST_2,  dma_id_3,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_TX = { DMA1_Channel4, DMA_REQUEST_7,  dma_id_3,   &dma_init_struct_spi_i2c };
 #if MICROPY_HW_ENABLE_DAC
-const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, DMA_REQUEST_5, dma_id_3,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, DMA_REQUEST_15, dma_id_3,   &dma_init_struct_dac };
 #endif
-const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, DMA_REQUEST_1, dma_id_4,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_2_RX = { DMA1_Channel5, DMA_REQUEST_3, dma_id_4,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_3, dma_id_5,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_3, dma_id_6,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, DMA_REQUEST_2,  dma_id_4,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_RX = { DMA1_Channel5, DMA_REQUEST_7,  dma_id_4,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_6,  dma_id_5,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_6,  dma_id_6,   &dma_init_struct_spi_i2c };
 
 static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Channel1_IRQn,
     DMA1_Channel2_3_IRQn,
+    DMA1_Channel2_3_IRQn,
     DMA1_Channel4_5_6_7_IRQn,
-    0,
-    0,
-    0,
-    0,
+    DMA1_Channel4_5_6_7_IRQn,
+    DMA1_Channel4_5_6_7_IRQn,
+    DMA1_Channel4_5_6_7_IRQn,
 };
 
 #elif defined(STM32L4)
@@ -724,10 +724,10 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
 
         dma_enable_clock(dma_id);
 
-        #if defined(STM32H7) || defined(STM32L4)
-        // Always reset and configure the H7 and L4 DMA peripheral
+        #if defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
+        // Always reset and configure the H7 and L0/L4 DMA peripheral
         // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
-        // TODO: understand how L4 DMA works so this is not needed
+        // TODO: understand how L0/L4 DMA works so this is not needed
         HAL_DMA_DeInit(dma);
         HAL_DMA_Init(dma);
         NVIC_SetPriority(IRQn_NONNEG(dma_irqn[dma_id]), IRQ_PRI_DMA);

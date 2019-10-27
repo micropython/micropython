@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_EMITGLUE_H
 
 #include "py/obj.h"
+#include "py/bc.h"
 
 // These variables and functions glue the code emitters to the runtime.
 
@@ -63,6 +64,14 @@ typedef struct _mp_raw_code_t {
     size_t fun_data_len;
     uint16_t n_obj;
     uint16_t n_raw_code;
+    #if MICROPY_PY_SYS_SETTRACE
+    mp_bytecode_prelude_t prelude;
+    // line_of_definition is a Python source line where the raw_code was
+    // created e.g. MP_BC_MAKE_FUNCTION. This is different from lineno info
+    // stored in prelude, which provides line number for first statement of
+    // a function. Required to properly implement "call" trace event.
+    mp_uint_t line_of_definition;
+    #endif
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
     uint16_t n_qstr;

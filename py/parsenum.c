@@ -41,7 +41,7 @@ STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {
         ((mp_obj_base_t*)MP_OBJ_TO_PTR(exc))->type = &mp_type_SyntaxError;
-        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
     }
     nlr_raise(exc);
 }

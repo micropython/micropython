@@ -27,6 +27,13 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 
+static inline void powerctrl_config_systick(void) {
+    // Configure SYSTICK to run at 1kHz (1ms interval)
+    SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
+    SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
+    NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
+}
+
 #if defined(STM32F0)
 
 void SystemClock_Config(void) {
@@ -38,13 +45,17 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_CLK_USE_HSI48
     // Use the 48MHz internal oscillator
+    // HAL does not support RCC CFGR SW=3 (HSI48 direct to SYSCLK)
+    // so use HSI48 -> PREDIV(divide by 2) -> PLL (mult by 2) -> SYSCLK.
 
     RCC->CR2 |= RCC_CR2_HSI48ON;
     while ((RCC->CR2 & RCC_CR2_HSI48RDY) == 0) {
+        // Wait for HSI48 to be ready
     }
-    const uint32_t sysclk_src = 3;
+    RCC->CFGR = 0 << RCC_CFGR_PLLMUL_Pos | 3 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 2, src = HSI48/PREDIV
+    RCC->CFGR2 = 1; // Input clock divided by 2
 
-    #else
+    #elif MICROPY_HW_CLK_USE_HSE
     // Use HSE and the PLL to get a 48MHz SYSCLK
 
     #if MICROPY_HW_CLK_USE_BYPASS
@@ -56,13 +67,26 @@ void SystemClock_Config(void) {
     }
     RCC->CFGR = ((48000000 / HSE_VALUE) - 2) << RCC_CFGR_PLLMUL_Pos | 2 << RCC_CFGR_PLLSRC_Pos;
     RCC->CFGR2 = 0; // Input clock not divided
+
+    #elif MICROPY_HW_CLK_USE_HSI
+    // Use the 8MHz internal oscillator and the PLL to get a 48MHz SYSCLK
+
+    RCC->CR |= RCC_CR_HSION;
+    while ((RCC->CR & RCC_CR_HSIRDY) == 0) {
+        // Wait for HSI to be ready
+    }
+    RCC->CFGR = 4 << RCC_CFGR_PLLMUL_Pos | 1 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 6, src = HSI
+    RCC->CFGR2 = 0; // Input clock not divided
+
+    #else
+    #error System clock not specified
+    #endif
+
     RCC->CR |= RCC_CR_PLLON; // Turn PLL on
     while ((RCC->CR & RCC_CR_PLLRDY) == 0) {
         // Wait for PLL to lock
     }
     const uint32_t sysclk_src = 2;
-
-    #endif
 
     // Select SYSCLK source
     RCC->CFGR |= sysclk_src << RCC_CFGR_SW_Pos;
@@ -71,9 +95,7 @@ void SystemClock_Config(void) {
     }
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 }
 
 #elif defined(STM32L0)
@@ -105,9 +127,7 @@ void SystemClock_Config(void) {
     }
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 
     #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
@@ -172,9 +192,7 @@ void SystemClock_Config(void) {
     RCC->CCIPR = 2 << RCC_CCIPR_CLK48SEL_Pos;
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 }
 
 #endif

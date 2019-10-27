@@ -57,6 +57,19 @@
 #endif
 #endif
 
+// Maximum number of endpoints (excluding EP0)
+#if defined(STM32L0) || defined(STM32WB)
+#define MAX_ENDPOINT(dev_id) (7)
+#elif defined(STM32L4)
+#define MAX_ENDPOINT(dev_id) (5)
+#elif defined(STM32F4)
+#define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 3 : 5)
+#elif defined(STM32F7)
+#define MAX_ENDPOINT(dev_id) ((dev_id) == USB_PHY_FS_ID ? 5 : 8)
+#elif defined(STM32H7)
+#define MAX_ENDPOINT(dev_id) (8)
+#endif
+
 STATIC void pyb_usb_vcp_init0(void);
 
 // this will be persistent across a soft-reset
@@ -97,12 +110,28 @@ STATIC const uint8_t usbd_fifo_size_cdc1[] = {
     #endif
 };
 
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, HID
+STATIC const uint8_t usbd_fifo_size_cdc1_msc_hid[] = {
+    32, 8, 16, 4, 12, 8, 0,
+    #if MICROPY_HW_USB_HS
+    116, 8, 64, 4, 56, 8, 0, 0, 0, 0,
+    #endif
+};
+
 #if MICROPY_HW_USB_CDC_NUM >= 2
 // RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD, CDC2_DATA
 STATIC const uint8_t usbd_fifo_size_cdc2[] = {
     32, 8, 16, 4, 8, 4, 8,
     #if MICROPY_HW_USB_HS
     116, 8, 64, 2, 32, 2, 32, 0, 0, 0,
+    #endif
+};
+
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD/HID, CDC2_DATA, HID
+STATIC const uint8_t usbd_fifo_size_cdc2_msc_hid[] = {
+    0, 0, 0, 0, 0, 0, 0, // FS: can't support 2xVCP+MSC+HID
+    #if MICROPY_HW_USB_HS
+    102, 8, 64, 2, 32, 8, 32, 8, 0, 0,
     #endif
 };
 #endif
@@ -113,6 +142,14 @@ STATIC const uint8_t usbd_fifo_size_cdc3[] = {
     0, 0, 0, 0, 0, 0, 0, // FS: can't support 3x VCP mode
     #if MICROPY_HW_USB_HS
     82, 8, 64, 2, 32, 2, 32, 2, 32, 0,
+    #endif
+};
+
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD/HID, CDC2_DATA, CDC3_CMD/HID, CDC3_DATA, HID
+STATIC const uint8_t usbd_fifo_size_cdc3_msc_hid[] = {
+    0, 0, 0, 0, 0, 0, 0, // FS: can't support 3x VCP mode
+    #if MICROPY_HW_USB_HS
+    82, 8, 64, 2, 25, 8, 25, 8, 25, 8,
     #endif
 };
 #endif
@@ -216,7 +253,7 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
         // configure the VID, PID and the USBD mode (interfaces it will expose)
         int cdc_only = (mode & USBD_MODE_IFACE_MASK) == USBD_MODE_CDC;
         USBD_SetVIDPIDRelease(&usb_dev->usbd_cdc_msc_hid_state, vid, pid, 0x0200, cdc_only);
-        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
+        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info, MAX_ENDPOINT(dev_id)) != 0) {
             return false;
         }
 
@@ -242,14 +279,27 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
         #endif
 
         const uint8_t *fifo_size = usbd_fifo_size_cdc1;
+        #if MICROPY_HW_USB_IS_MULTI_OTG
+        if ((mode & USBD_MODE_MSC_HID) == USBD_MODE_MSC_HID) {
+            fifo_size = usbd_fifo_size_cdc1_msc_hid;
+        }
+        #endif
         #if MICROPY_HW_USB_CDC_NUM >= 3
         if (mode & USBD_MODE_IFACE_CDC(2)) {
-            fifo_size = usbd_fifo_size_cdc3;
+            if ((mode & USBD_MODE_MSC_HID) == USBD_MODE_MSC_HID) {
+                fifo_size = usbd_fifo_size_cdc3_msc_hid;
+            } else {
+                fifo_size = usbd_fifo_size_cdc3;
+            }
         } else
         #endif
         #if MICROPY_HW_USB_CDC_NUM >= 2
         if (mode & USBD_MODE_IFACE_CDC(1)) {
-            fifo_size = usbd_fifo_size_cdc2;
+            if ((mode & USBD_MODE_MSC_HID) == USBD_MODE_MSC_HID) {
+                fifo_size = usbd_fifo_size_cdc2_msc_hid;
+            } else {
+                fifo_size = usbd_fifo_size_cdc2;
+            }
         }
         #endif
 
@@ -414,6 +464,11 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             pid = USBD_PID_CDC_MSC;
         }
         mode = USBD_MODE_CDC_MSC;
+    } else if (strcmp(mode_str, "VCP+MSC+HID") == 0) {
+        if (pid == -1) {
+            pid = USBD_PID_CDC_MSC_HID;
+        }
+        mode = USBD_MODE_CDC_MSC_HID;
     #if MICROPY_HW_USB_CDC_NUM >= 2
     } else if (strcmp(mode_str, "VCP+VCP") == 0) {
         if (pid == -1) {
@@ -425,6 +480,11 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             pid = USBD_PID_CDC2_MSC;
         }
         mode = USBD_MODE_CDC2_MSC;
+    } else if (strcmp(mode_str, "2xVCP+MSC+HID") == 0) {
+        if (pid == -1) {
+            pid = USBD_PID_CDC2_MSC_HID;
+        }
+        mode = USBD_MODE_CDC2_MSC_HID;
     #endif
     #if MICROPY_HW_USB_CDC_NUM >= 3
     } else if (strcmp(mode_str, "3xVCP") == 0) {
@@ -437,6 +497,11 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             pid = USBD_PID_CDC3_MSC;
         }
         mode = USBD_MODE_CDC3_MSC;
+    } else if (strcmp(mode_str, "3xVCP+MSC+HID") == 0) {
+        if (pid == -1) {
+            pid = USBD_PID_CDC3_MSC_HID;
+        }
+        mode = USBD_MODE_CDC3_MSC_HID;
     #endif
     } else if (strcmp(mode_str, "CDC+HID") == 0 || strcmp(mode_str, "VCP+HID") == 0) {
         if (pid == -1) {
@@ -569,6 +634,12 @@ STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 void usb_vcp_attach_to_repl(const pyb_usb_vcp_obj_t *self, bool attached) {
     self->cdc_itf->attached_to_repl = attached;
+    if (attached) {
+        // Default behavior is non-blocking when attached to repl
+        self->cdc_itf->flow &= ~USBD_CDC_FLOWCONTROL_CTS;
+    } else {
+        self->cdc_itf->flow |= USBD_CDC_FLOWCONTROL_CTS;
+    }
 }
 
 /// \classmethod \constructor()
@@ -726,6 +797,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_CTS) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
@@ -743,18 +815,13 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 
 STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->cdc_itf->attached_to_repl) {
-        usbd_cdc_tx_always(self->cdc_itf, (const byte*)buf, size);
-        return size;
-    } else {
-        int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
-        if (ret == 0) {
-            // return EAGAIN error to indicate non-blocking
-            *errcode = MP_EAGAIN;
-            return MP_STREAM_ERROR;
-        }
-        return ret;
+    int ret = usbd_cdc_tx_flow(self->cdc_itf, (const byte*)buf, size);
+    if (ret == 0) {
+        // return EAGAIN error to indicate non-blocking
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
     }
+    return ret;
 }
 
 STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {

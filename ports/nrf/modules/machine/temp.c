@@ -30,6 +30,9 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_MACHINE_TEMP
+
 #include "temp.h"
 #include "nrf_temp.h"
 
@@ -39,8 +42,6 @@
 #include "nrf_soc.h"
 #define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
 #endif // BLUETOOTH_SD
-
-#if MICROPY_PY_MACHINE_TEMP
 
 typedef struct _machine_temp_obj_t {
     mp_obj_base_t base;
@@ -67,9 +68,9 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
     machine_temp_obj_t *self = m_new_obj(machine_temp_obj_t);
-    
+
     self->base.type = &machine_temp_type;
 
     return MP_OBJ_FROM_PTR(self);

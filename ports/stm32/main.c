@@ -43,6 +43,10 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
+#if MICROPY_BLUETOOTH_NIMBLE
+#include "extmod/modbluetooth.h"
+#endif
+
 #include "mpu.h"
 #include "systick.h"
 #include "pendsv.h"
@@ -144,7 +148,9 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
         mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        #if MICROPY_ENABLE_COMPILER
         MP_STATE_VM(mp_optimise_value) = args[0].u_int;
+        #endif
     }
     return mp_const_none;
 }
@@ -498,6 +504,10 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
+    #if MICROPY_BLUETOOTH_NIMBLE
+    extern void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms);
+    systick_enable_dispatch(SYSTICK_DISPATCH_NIMBLE, mod_bluetooth_nimble_poll_wrapper);
+    #endif
 
     #if MICROPY_PY_NETWORK_CYW43
     {
@@ -701,6 +711,7 @@ soft_reset:
         }
     }
 
+    #if MICROPY_ENABLE_COMPILER
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
@@ -714,6 +725,7 @@ soft_reset:
             }
         }
     }
+    #endif
 
 soft_reset_exit:
 
@@ -725,13 +737,16 @@ soft_reset_exit:
     #endif
 
     printf("MPY: soft reboot\n");
+    #if MICROPY_BLUETOOTH_NIMBLE
+    mp_bluetooth_deinit();
+    #endif
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif
     timer_deinit();
     uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
-    can_deinit();
+    can_deinit_all();
     #endif
     machine_deinit();
 

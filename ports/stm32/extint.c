@@ -163,7 +163,12 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
     EXTI15_10_IRQn,
-    #if defined(STM32WB)
+    #if defined(STM32H7)
+    PVD_AVD_IRQn,
+    RTC_Alarm_IRQn,
+    TAMP_STAMP_IRQn,
+    RTC_WKUP_IRQn,
+    #elif defined(STM32WB)
     PVD_PVM_IRQn,
     RTC_Alarm_IRQn,
     TAMP_STAMP_LSECSS_IRQn,
@@ -667,7 +672,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     // Uncaught exception; disable the callback so it doesn't run again.
                     *cb = mp_const_none;
                     extint_disable(line);
-                    printf("Uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
+                    mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
                     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
                 gc_unlock();

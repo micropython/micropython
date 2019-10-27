@@ -26,13 +26,16 @@ There are two main components that are needed to build the firmware:
   different to the compiler used by the ESP8266)
 - the Espressif IDF (IoT development framework, aka SDK)
 
-The ESP-IDF changes quickly and MicroPython only supports a certain version. The
-git hash of this version can be found by running `make` without a configured
-`ESPIDF`. Then you can fetch only the given esp-idf using the following command:
+The ESP-IDF changes quickly and MicroPython only supports certain versions. The
+git hash of these versions (one for 3.x, one for 4.x) can be found by running
+`make` without a configured `ESPIDF`. Then you can fetch only the given esp-idf
+using the following command:
 
     $ git clone https://github.com/espressif/esp-idf.git
     $ git checkout <Current supported ESP-IDF commit hash>
     $ git submodule update --init --recursive
+
+Note: The ESP IDF v4.x support is currently experimental.
 
 The binary toolchain (binutils, gcc, etc.) can be installed using the following
 guides:
@@ -53,8 +56,12 @@ You will also need either Python 2 or Python 3, along with the `pyserial` and
 (when building you can use, eg, `make PYTHON=python2` to specify the version
 used).  To install the required packages do:
 ```bash
-$ pip install pyserial pyparsing
+$ pip install pyserial 'pyparsing<2.4'
 ```
+
+It is recommended to use a Python virtual environment if your system package
+manager already provides these libraries, especially as the IDF v4.x is
+currently incompatible with pyparsing 2.4 and higher.
 
 Once everything is set up you should have a functioning toolchain with
 prefix xtensa-esp32-elf- (or otherwise if you configured it differently)
@@ -115,17 +122,10 @@ this repository):
 $ make -C mpy-cross
 ```
 
-The ESP32 port has a dependency on Berkeley DB, which is an external
-dependency (git submodule). You'll need to have git initialize that
-module using the commands:
-```bash
-$ git submodule init lib/berkeley-db-1.xx
-$ git submodule update
-```
-
 Then to build MicroPython for the ESP32 run:
 ```bash
 $ cd ports/esp32
+$ make submodules
 $ make
 ```
 This will produce binary firmware images in the `build/` subdirectory

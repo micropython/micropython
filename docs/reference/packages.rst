@@ -39,7 +39,7 @@ The MicroPython distribution package format is a well-known tar.gz
 format, with some adaptations however. The Gzip compressor, used as
 an external wrapper for TAR archives, by default uses 32KB dictionary
 size, which means that to uncompress a compressed stream, 32KB of
-contguous memory needs to be allocated. This requirement may be not
+contiguous memory needs to be allocated. This requirement may be not
 satisfiable on low-memory devices, which may have total memory available
 less than that amount, and even if not, a contiguous block like that
 may be hard to allocate due to memory fragmentation. To accommodate
@@ -132,7 +132,7 @@ Installing to a directory image involves using ``-p`` switch to `upip`::
 
     micropython -m upip install -p install_dir micropython-pystone_lowmem
 
-After this command, the package content (and contents of every depenency
+After this command, the package content (and contents of every dependency
 packages) will be available in the ``install_dir/`` subdirectory. You
 would need to transfer contents of this directory (without the
 ``install_dir/`` prefix) to the device, at the suitable location, where
