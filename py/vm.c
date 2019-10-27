@@ -1539,7 +1539,7 @@ exception_handler:
 
             #if MICROPY_PY_SYS_SETTRACE
             // Exceptions are traced here
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_Exception))) {
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)the_exc)->type), MP_OBJ_FROM_PTR(&mp_type_Exception))) {
                 TRACE_TICK(code_state->ip, code_state->sp, true /* yes, it's an exception */);
             }
             #endif
