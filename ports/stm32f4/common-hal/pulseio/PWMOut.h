@@ -31,7 +31,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t pin_number;
+    TIM_HandleTypeDef handle;
+    TIM_OC_InitTypeDef chan_handle;
+    const mcu_tim_pin_obj_t *tim;
     uint8_t channel: 7;
     bool variable_frequency: 1;
     uint16_t duty_cycle;

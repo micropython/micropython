@@ -103,7 +103,7 @@ typedef struct {
 typedef struct {
     uint8_t tim_index:4; 
     uint8_t altfn_index:4; 
-    uint8_t tim_channel:4;
+    uint8_t channel_index:4;
     const mcu_pin_obj_t * pin;
 } mcu_tim_pin_obj_t;
 
@@ -111,7 +111,7 @@ typedef struct {
 { \
     .tim_index = index, \
     .altfn_index = alt, \
-    .tim_channel = channel, \
+    .channel_index = channel, \
     .pin = tim_pin, \
 }
 
