@@ -183,6 +183,10 @@ int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, 
 // Indicate the central.
 int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle);
 
+// Resize and enable/disable append-mode on a value.
+// Append-mode means that remote writes will append and local reads will clear after reading.
+int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append);
+
 // Disconnect from a central or peripheral.
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 

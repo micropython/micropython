@@ -557,6 +557,14 @@ STATIC mp_obj_t bluetooth_ble_gatts_notify(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_notify_obj, 3, 4, bluetooth_ble_gatts_notify);
 
+STATIC mp_obj_t bluetooth_ble_gatts_set_buffer(size_t n_args, const mp_obj_t *args) {
+    mp_int_t value_handle = mp_obj_get_int(args[1]);
+    mp_int_t len = mp_obj_get_int(args[2]);
+    bool append = n_args >= 4 && mp_obj_is_true(args[3]);
+    return bluetooth_handle_errno(mp_bluetooth_gatts_set_buffer(value_handle, len, append));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3, 4, bluetooth_ble_gatts_set_buffer);
+
 // ----------------------------------------------------------------------------
 // Bluetooth object: GATTC (Central/Scanner role)
 // ----------------------------------------------------------------------------
@@ -626,6 +634,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gatts_read), MP_ROM_PTR(&bluetooth_ble_gatts_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_write), MP_ROM_PTR(&bluetooth_ble_gatts_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_notify), MP_ROM_PTR(&bluetooth_ble_gatts_notify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gatts_set_buffer), MP_ROM_PTR(&bluetooth_ble_gatts_set_buffer_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // GATT Client (i.e. central/scanner role)
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_services), MP_ROM_PTR(&bluetooth_ble_gattc_discover_services_obj) },

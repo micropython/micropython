@@ -154,9 +154,14 @@ STATIC ble_addr_t create_nimble_addr(uint8_t addr_type, const uint8_t *addr) {
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 typedef struct {
+    // Pointer to heap-allocated data.
     uint8_t *data;
+    // Allocated size of data.
     size_t data_alloc;
+    // Current bytes in use.
     size_t data_len;
+    // Whether new writes append or replace existing data (default false).
+    bool append;
 } gatts_db_entry_t;
 
 volatile int mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
@@ -206,6 +211,7 @@ STATIC void create_gatts_db_entry(uint16_t handle) {
     entry->data = m_new(uint8_t, MP_BLUETOOTH_MAX_ATTR_SIZE);
     entry->data_alloc = MP_BLUETOOTH_MAX_ATTR_SIZE;
     entry->data_len = 0;
+    entry->append = false;
     elem->value = MP_OBJ_FROM_PTR(entry);
 }
 
@@ -430,8 +436,13 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
             }
             entry = MP_OBJ_TO_PTR(elem->value);
-            entry->data_len = MIN(entry->data_alloc, OS_MBUF_PKTLEN(ctxt->om));
-            os_mbuf_copydata(ctxt->om, 0, entry->data_len, entry->data);
+
+            size_t offset = 0;
+            if (entry->append) {
+                offset = entry->data_len;
+            }
+            entry->data_len = MIN(entry->data_alloc, OS_MBUF_PKTLEN(ctxt->om) + offset);
+            os_mbuf_copydata(ctxt->om, 0, entry->data_len - offset, entry->data + offset);
 
             mp_bluetooth_gatts_on_write(conn_handle, value_handle);
 
@@ -547,6 +558,9 @@ int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *valu
     gatts_db_entry_t *entry = MP_OBJ_TO_PTR(elem->value);
     *value = entry->data;
     *value_len = entry->data_len;
+    if (entry->append) {
+        entry->data_len = 0;
+    }
     return 0;
 }
 
@@ -585,6 +599,19 @@ int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, 
 
 int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
     return ble_hs_err_to_errno(ble_gattc_indicate(conn_handle, value_handle));
+}
+
+int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append) {
+    mp_map_elem_t *elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
+    if (!elem) {
+        return MP_EINVAL;
+    }
+    gatts_db_entry_t *entry = MP_OBJ_TO_PTR(elem->value);
+    entry->data = m_renew(uint8_t, entry->data, entry->data_alloc, len);
+    entry->data_alloc = len;
+    entry->data_len = 0;
+    entry->append = append;
+    return 0;
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
