@@ -43,8 +43,8 @@ extern const mcu_spi_nss_obj_t mcu_spi_nss_list[6];
 
 #define TIM_BANK_ARRAY_LEN 14
 TIM_TypeDef * mcu_tim_banks[14];
-#define TIM_PIN_ARRAY_LEN 66
-const mcu_tim_pin_obj_t mcu_tim_pin_list[66];
+#define TIM_PIN_ARRAY_LEN 56
+const mcu_tim_pin_obj_t mcu_tim_pin_list[56];
 
 
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H

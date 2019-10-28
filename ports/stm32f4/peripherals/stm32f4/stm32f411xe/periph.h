@@ -41,4 +41,9 @@ extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
 extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
 extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
 
+#define TIM_BANK_ARRAY_LEN 14
+TIM_TypeDef * mcu_tim_banks[14];
+#define TIM_PIN_ARRAY_LEN 44
+const mcu_tim_pin_obj_t mcu_tim_pin_list[44];
+
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H

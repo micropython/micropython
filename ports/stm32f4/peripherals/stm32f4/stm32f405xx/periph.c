@@ -91,7 +91,7 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[6] = {
 TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
                                     TIM11, TIM12, TIM13, TIM14};
 
-const mcu_tim_pin_obj_t mcu_tim_pin_list[66] = {
+const mcu_tim_pin_obj_t mcu_tim_pin_list[56] = {
     TIM(2,1,1,&pin_PA00),
     TIM(5,2,1,&pin_PA00),
     TIM(2,1,2,&pin_PA01),
