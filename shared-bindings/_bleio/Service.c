@@ -49,7 +49,7 @@
 //|
 //|   .. classmethod:: add_to_peripheral(peripheral, uuid, *, secondary=False)
 //|
-//|     Create a new Service object, identitied by the specified UUID, and add it
+//|     Create a new Service object, identified by the specified UUID, and add it
 //|     to the given Peripheral.
 //|
 //|     To mark the service as secondary, pass `True` as :py:data:`secondary`.
