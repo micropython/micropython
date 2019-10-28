@@ -57,7 +57,23 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const
 
 //|   .. attribute:: datetime
 //|
-//|       The date and time of the RTC.
+//|       The current date and time of the RTC as a `time.struct_time`.
+//|
+//|       This must be set to the current date and time whenever the board loses power::
+//|
+//|         import rtc
+//|         import time
+//|
+//|         r = rtc.RTC()
+//|         r.datetime = rtctime.struct_time((2019, 5, 29, 15, 14, 15, 0, -1, -1))
+//|
+//|
+//|       Once set, the RTC will automatically update this value as time passes. You can read this
+//|       property to get a snapshot of the current time::
+//|
+//|         current_time = r.datetime
+//|         print(current_time)
+//|         # struct_time(tm_year=2019, tm_month=5, ...)
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
     timeutils_struct_time_t tm;
@@ -83,9 +99,10 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
 
 //|   .. attribute:: calibration
 //|
-//|     The RTC calibration value.
+//|     The RTC calibration value as an `int`.
+//|
 //|     A positive value speeds up the clock and a negative value slows it down.
-//|     Range and value is hardware specific, but one step is often approx. 1 ppm.
+//|     Range and value is hardware specific, but one step is often approximately 1 ppm.
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();
