@@ -40,7 +40,11 @@ see [here](https://launchpad.net/gcc-arm-embedded) for the main GCC ARM
 Embedded page.  The compiler can be changed using the `CROSS_COMPILE` variable
 when invoking `make`.
 
-To build for a given board, run:
+First the submodules must be obtained using:
+
+    $ make submodules
+
+Then to build for a given board, run:
 
     $ make BOARD=PYBV11
 

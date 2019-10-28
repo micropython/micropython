@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
@@ -17,6 +18,16 @@ const byte mp_hal_status_to_errno_table[4] = {
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
+}
+
+MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+        int errcode;
+        const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_PORT(pyb_stdio_uart));
+        ret = stream_p->ioctl(MP_STATE_PORT(pyb_stdio_uart), MP_STREAM_POLL, poll_flags, &errcode);
+    }
+    return ret | mp_uos_dupterm_poll(poll_flags);
 }
 
 MP_WEAK int mp_hal_stdin_rx_chr(void) {

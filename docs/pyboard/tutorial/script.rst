@@ -31,7 +31,7 @@ have as to what happens next:
     We will get the serial device working in the next tutorial.
 
   - **Mac**: Your pyboard will appear on the desktop as a removable disc.
-    It will probably be called "NONAME".  Click on it to open the pyboard folder.
+    It will probably be called ``PYBFLASH``.  Click on it to open the pyboard folder.
 
   - **Linux**: Your pyboard will appear as a removable medium.  On Ubuntu
     it will mount automatically and pop-up a window with the pyboard folder.
@@ -46,17 +46,17 @@ a window (or command line) should be showing the files on the pyboard drive.
 The drive you are looking at is known as ``/flash`` by the pyboard, and should contain
 the following 4 files:
 
-* `boot.py <http://micropython.org/resources/fresh-pyboard/boot.py>`_ -- this script is executed when the pyboard boots up.  It sets
-    up various configuration options for the pyboard.
+* `boot.py <http://micropython.org/resources/fresh-pyboard/boot.py>`_ -- the various configuration options for the pyboard.
+    It is executed when the pyboard boots up.
 
-* `main.py <http://micropython.org/resources/fresh-pyboard/main.py>`_ -- this is the main script that will contain your Python program.
+* `main.py <http://micropython.org/resources/fresh-pyboard/main.py>`_ -- the Python program to be run.
     It is executed after ``boot.py``.
 
-* `README.txt <http://micropython.org/resources/fresh-pyboard/README.txt>`_ -- this contains some very basic information about getting
-    started with the pyboard.
+* `README.txt <http://micropython.org/resources/fresh-pyboard/README.txt>`_ -- basic information about getting started with the pyboard.
+    This provides pointers for new users and can be safely deleted.
 
-* `pybcdc.inf <http://micropython.org/resources/fresh-pyboard/pybcdc.inf>`_ -- this is a Windows driver file to configure the serial USB
-    device.  More about this in the next tutorial.
+* `pybcdc.inf <http://micropython.org/resources/fresh-pyboard/pybcdc.inf>`_ -- the Windows driver file to configure the serial USB device.
+    More about this in the next tutorial.
 
 Editing ``main.py``
 -------------------

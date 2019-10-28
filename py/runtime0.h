@@ -28,9 +28,9 @@
 
 // The first four must fit in 8 bits, see emitbc.c
 // The remaining must fit in 16 bits, see scope.h
-#define MP_SCOPE_FLAG_VARARGS      (0x01)
+#define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
-#define MP_SCOPE_FLAG_GENERATOR    (0x04)
+#define MP_SCOPE_FLAG_VARARGS      (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
 #define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
 #define MP_SCOPE_FLAG_HASCONSTS    (0x20) // used only if native emitter enabled
@@ -70,7 +70,7 @@ typedef enum {
 // Note: the first 9+12+12 of these are used in bytecode and changing
 // them requires changing the bytecode version.
 typedef enum {
-    // 9 relational operations, should return a bool
+    // 9 relational operations, should return a bool; order of first 6 matches corresponding mp_token_kind_t
     MP_BINARY_OP_LESS,
     MP_BINARY_OP_MORE,
     MP_BINARY_OP_EQUAL,
@@ -81,7 +81,7 @@ typedef enum {
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
 
-    // 12 inplace arithmetic operations
+    // 13 inplace arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
     MP_BINARY_OP_INPLACE_AND,
@@ -90,12 +90,13 @@ typedef enum {
     MP_BINARY_OP_INPLACE_ADD,
     MP_BINARY_OP_INPLACE_SUBTRACT,
     MP_BINARY_OP_INPLACE_MULTIPLY,
+    MP_BINARY_OP_INPLACE_MAT_MULTIPLY,
     MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,
 
-    // 12 normal arithmetic operations
+    // 13 normal arithmetic operations; order matches corresponding mp_token_kind_t
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -104,6 +105,7 @@ typedef enum {
     MP_BINARY_OP_ADD,
     MP_BINARY_OP_SUBTRACT,
     MP_BINARY_OP_MULTIPLY,
+    MP_BINARY_OP_MAT_MULTIPLY,
     MP_BINARY_OP_FLOOR_DIVIDE,
     MP_BINARY_OP_TRUE_DIVIDE,
     MP_BINARY_OP_MODULO,
@@ -123,6 +125,7 @@ typedef enum {
     MP_BINARY_OP_REVERSE_ADD,
     MP_BINARY_OP_REVERSE_SUBTRACT,
     MP_BINARY_OP_REVERSE_MULTIPLY,
+    MP_BINARY_OP_REVERSE_MAT_MULTIPLY,
     MP_BINARY_OP_REVERSE_FLOOR_DIVIDE,
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
@@ -169,13 +172,11 @@ typedef enum {
     MP_F_BINARY_OP,
     MP_F_BUILD_TUPLE,
     MP_F_BUILD_LIST,
-    MP_F_LIST_APPEND,
     MP_F_BUILD_MAP,
-    MP_F_STORE_MAP,
-#if MICROPY_PY_BUILTINS_SET
-    MP_F_STORE_SET,
     MP_F_BUILD_SET,
-#endif
+    MP_F_STORE_SET,
+    MP_F_LIST_APPEND,
+    MP_F_STORE_MAP,
     MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
@@ -188,9 +189,7 @@ typedef enum {
     MP_F_IMPORT_NAME,
     MP_F_IMPORT_FROM,
     MP_F_IMPORT_ALL,
-#if MICROPY_PY_BUILTINS_SLICE
     MP_F_NEW_SLICE,
-#endif
     MP_F_UNPACK_SEQUENCE,
     MP_F_UNPACK_EX,
     MP_F_DELETE_NAME,
@@ -202,6 +201,7 @@ typedef enum {
     MP_F_SMALL_INT_FLOOR_DIVIDE,
     MP_F_SMALL_INT_MODULO,
     MP_F_NATIVE_YIELD_FROM,
+    MP_F_SETJMP,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 

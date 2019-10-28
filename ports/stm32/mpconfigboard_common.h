@@ -102,6 +102,11 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
+// SD/MMC interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
+#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+#endif
+
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
@@ -184,6 +189,15 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
+// Configuration for STM32L0 series
+#elif defined(STM32L0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1FF80050)
+#define PYB_EXTI_NUM_VECTORS (30) // TODO (22 configurable, 7 direct)
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (22)
+#define MICROPY_HW_MAX_UART (4)
+
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 
@@ -192,6 +206,15 @@
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (6)
+
+// Configuration for STM32WB series
+#elif defined(STM32WB)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (20)
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (1)
 
 #else
 #error Unsupported MCU series
@@ -252,6 +275,9 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
+#if defined(STM32H7)
+#define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
+#endif
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
 #define MICROPY_HW_MAX_CAN (0)
@@ -264,9 +290,22 @@
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
-// Configure maximum number of CDC VCP interfaces
+// Whether the USB peripheral is device-only, or multiple OTG
+#if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+#define MICROPY_HW_USB_IS_MULTI_OTG (0)
+#else
+#define MICROPY_HW_USB_IS_MULTI_OTG (1)
+#endif
+
+// Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
 #ifndef MICROPY_HW_USB_CDC_NUM
 #define MICROPY_HW_USB_CDC_NUM (1)
+#endif
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
+#endif
+#ifndef MICROPY_HW_USB_HID
+#define MICROPY_HW_USB_HID (MICROPY_HW_ENABLE_USB)
 #endif
 
 // Pin definition header file

@@ -1,9 +1,12 @@
 # test construction of bytearray from different objects
 try:
-    from array import array
+    from uarray import array
 except ImportError:
-    print("SKIP")
-    raise SystemExit
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 # arrays
 print(bytearray(array('h', [1, 2])))

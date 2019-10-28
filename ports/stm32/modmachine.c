@@ -56,7 +56,12 @@
 #include "uart.h"
 #include "wdt.h"
 
-#if defined(STM32L4)
+#if defined(STM32L0)
+// L0 does not have a BOR, so use POR instead
+#define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
+#endif
+
+#if defined(STM32L4) || defined(STM32WB)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif
@@ -257,6 +262,8 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     storage_flush();
     #endif
 
+    __disable_irq();
+
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {
         // By default, with no args given, we enter the custom bootloader (mboot)
@@ -298,7 +305,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
         mp_raise_NotImplementedError("machine.freq set not supported yet");
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -384,10 +391,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
 
-#if 0
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },
-    { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&pyb_adc_type) },
-#endif
+    { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
 #if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
 #endif

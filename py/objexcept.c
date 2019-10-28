@@ -100,11 +100,6 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 #endif
 #endif  // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 
-// Instance of GeneratorExit exception - needed by generator.close()
-// This would belong to objgenerator.c, but to keep mp_obj_exception_t
-// definition module-private so far, have it here.
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
-
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
@@ -126,7 +121,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             // try to provide a nice OSError error message
             if (o->base.type == &mp_type_OSError && mp_obj_is_small_int(o->args->items[0])) {
                 qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTR_NULL) {
+                if (qst != MP_QSTRnull) {
                     mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
                     return;
                 }

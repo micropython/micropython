@@ -10,6 +10,7 @@
 #include "py/builtin.h"
 #include "py/emit.h"
 #include "py/formatfloat.h"
+#include "py/ringbuf.h"
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
@@ -384,7 +385,7 @@ STATIC mp_obj_t extra_coverage(void) {
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
-        code_state->exc_sp = NULL;
+        code_state->exc_sp_idx = 0;
         code_state->old_globals = NULL;
         mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
         mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
@@ -417,6 +418,77 @@ STATIC mp_obj_t extra_coverage(void) {
         while (mp_sched_num_pending()) {
             mp_handle_pending();
         }
+    }
+
+    // ringbuf
+    {
+        byte buf[100];
+        ringbuf_t ringbuf = {buf, sizeof(buf), 0, 0};
+
+        mp_printf(&mp_plat_print, "# ringbuf\n");
+
+        // Single-byte put/get with empty ringbuf.
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put(&ringbuf, 22);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put/get with empty ringbuf.
+        ringbuf_put16(&ringbuf, 0xaa55);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put with full ringbuf.
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+        }
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
+        // Two-byte put with one byte free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x3377));
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
+        for (int i = 0; i < 97; ++i) {
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put with wrap around on first byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+
+        // Two-byte put with wrap around on second byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 98; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x22ff));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+
+        // Two-byte get from empty ringbuf.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+        
+        // Two-byte get from ringbuf with one byte available.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        ringbuf_put(&ringbuf, 0xaa);
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
     }
 
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);

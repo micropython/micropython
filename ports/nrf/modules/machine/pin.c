@@ -37,8 +37,8 @@
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 
-extern const pin_obj_t machine_pin_obj[];
-extern const uint8_t machine_pin_num_of_pins;
+extern const pin_obj_t machine_board_pin_obj[];
+extern const uint8_t machine_pin_num_of_board_pins;
 
 /// \moduleref machine
 /// \class Pin - control I/O pins
@@ -127,12 +127,12 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     const pin_obj_t *pin_obj;
     // If pin is SMALL_INT
     if (mp_obj_is_small_int(user_obj)) {
-	uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
-        for (uint8_t i = 0; i < machine_pin_num_of_pins; i++) {
-            if (machine_pin_obj[i].pin == value) {
-                return &machine_pin_obj[i];
-	    }
-	}
+        uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
+        for (uint8_t i = 0; i < machine_pin_num_of_board_pins; i++) {
+            if (machine_board_pin_obj[i].pin == value) {
+                return &machine_board_pin_obj[i];
+            }
+        }
     }
 
     // If a pin was provided, then use it
@@ -364,8 +364,8 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     nrf_gpio_pin_dir_t mode = (nrf_gpio_pin_dir_t)args[0].u_int;
 
     // Connect input or not
-    nrf_gpio_pin_input_t input = (mode == NRF_GPIO_PIN_DIR_INPUT) ? NRF_GPIO_PIN_INPUT_CONNECT 
-	                                                          : NRF_GPIO_PIN_INPUT_DISCONNECT;
+    nrf_gpio_pin_input_t input = (mode == NRF_GPIO_PIN_DIR_INPUT) ? NRF_GPIO_PIN_INPUT_CONNECT
+                                                                  : NRF_GPIO_PIN_INPUT_DISCONNECT;
 
     if (mode == NRF_GPIO_PIN_DIR_OUTPUT || mode == NRF_GPIO_PIN_DIR_INPUT) {
         nrf_gpio_cfg(self->pin,
@@ -496,7 +496,7 @@ STATIC void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t 
 }
 
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-	enum {ARG_handler, ARG_trigger, ARG_wake};
+    enum {ARG_handler, ARG_trigger, ARG_wake};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ | MP_ARG_REQUIRED,  {.u_obj = mp_const_none} },
         { MP_QSTR_trigger, MP_ARG_INT,  {.u_int = NRF_GPIOTE_POLARITY_LOTOHI | NRF_GPIOTE_POLARITY_HITOLO} },

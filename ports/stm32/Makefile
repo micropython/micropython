@@ -18,15 +18,19 @@ include $(BOARD_DIR)/mpconfigboard.mk
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h
 
-# directory containing scripts to be frozen as bytecode
-FROZEN_MPY_DIR ?= modules
+# File containing description of content to be frozen into firmware.
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+GIT_SUBMODULES = lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
+
+MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
+CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
+
 LD_DIR=boards
 CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
@@ -40,7 +44,8 @@ DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
-STARTUP_FILE ?= boards/startup_stm32$(MCU_SERIES).o
+STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
 
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
@@ -62,7 +67,7 @@ CFLAGS_CORTEX_M = -mthumb
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 else
-ifeq ($(MCU_SERIES),f0)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
 CFLAGS_CORTEX_M += -msoft-float
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
@@ -73,8 +78,10 @@ endif
 CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_l0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
@@ -87,8 +94,12 @@ CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
 else
+ifeq ($(MICROPY_FLOAT_IMPL),none)
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
+else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
+endif
 endif
 
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
@@ -164,12 +175,16 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	scalbn.c \
 	sin.c \
 	sinh.c \
-	sqrt.c \
 	tan.c \
 	tanh.c \
 	tgamma.c \
 	trunc.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f7 h7))
+SRC_LIBM += lib/libm_dbl/thumb_vfp_sqrt.c
+else
+SRC_LIBM += lib/libm_dbl/sqrt.c
+endif
 else
 SRC_LIBM = $(addprefix lib/libm/,\
 	math.c \
@@ -198,7 +213,7 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
-ifeq ($(MCU_SERIES),f0)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
 SRC_LIBM += lib/libm/ef_sqrt.c
 else
 SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
@@ -230,6 +245,7 @@ SRC_C = \
 	pendsv.c \
 	systick.c  \
 	powerctrl.c \
+	powerctrlboot.c \
 	pybthread.c \
 	factoryreset.c \
 	timer.c \
@@ -246,11 +262,14 @@ SRC_C = \
 	qspi.c \
 	uart.c \
 	can.c \
+	fdcan.c \
+	pyb_can.c \
 	usb.c \
 	wdt.c \
 	eth.c \
 	gccollect.c \
 	help.c \
+	machine_adc.c \
 	machine_i2c.c \
 	machine_spi.c \
 	machine_uart.c \
@@ -280,18 +299,26 @@ SRC_C = \
 	adc.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
-ifeq ($(MCU_SERIES),f0)
 SRC_O = \
 	$(STARTUP_FILE) \
-	system_stm32f0.o \
+	$(SYSTEM_FILE)
+
+ifeq ($(MCU_SERIES),f0)
+SRC_O += \
 	resethandler_m0.o \
 	lib/utils/gchelper_m0.o
 else
-SRC_O = \
-	$(STARTUP_FILE) \
+ifeq ($(MCU_SERIES),l0)
+CSUPEROPT = -Os # save some code space
+SRC_O += \
+	resethandler_m0.o \
+	lib/utils/gchelper_m0.o
+else
+SRC_O += \
 	system_stm32.o \
 	resethandler.o \
 	lib/utils/gchelper_m3.o
+endif
 endif
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
@@ -318,13 +345,17 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_uart.c \
 	)
 
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l0 l4 wb))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	ll_usb.c \
+	)
+endif
+
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
-$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
 	ll_fmc.c \
-	ll_usb.c \
 	)
 endif
 
@@ -340,7 +371,9 @@ endif
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
     SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))
     SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+endif
 endif
 
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
@@ -351,6 +384,12 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_bot.c \
 	class/src/usbd_msc_scsi.c \
 	)
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+endif
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
@@ -401,6 +440,16 @@ CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+include $(TOP)/extmod/nimble/nimble.mk
+SRC_C += nimble.c
+SRC_C += nimble_hci_uart.c
+EXTMOD_SRC_C += extmod/modbluetooth_nimble.c
+ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
+DRIVERS_SRC_C += drivers/cyw43/cywbt.c
+endif
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
@@ -436,13 +485,13 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-ifneq ($(FROZEN_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
@@ -577,7 +626,6 @@ GEN_PLLFREQTABLE_HDR = $(HEADER_BUILD)/pllfreqtable.h
 GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
 GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
-CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)

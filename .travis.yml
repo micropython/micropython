@@ -32,13 +32,16 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - git submodule update --init lib/lwip lib/mbedtls lib/stm32lib
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/stm32
+        - make ${MAKEOPTS} -C ports/stm32 submodules
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=B_L072Z_LRWAN1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
+        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
 
     # qemu-arm port
     - stage: test
@@ -63,8 +66,8 @@ jobs:
         - gcc --version
         - python3 --version
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
         # run the main test suite
@@ -84,33 +87,46 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
         - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 
-    # unix nanbox
+    # unix nanbox (and using Python 2 to check it can run the build scripts)
     - stage: test
       env: NAME="unix nanbox port build and tests"
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
-        - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix nanbox
+        - make ${MAKEOPTS} -C mpy-cross PYTHON=python2
+        - make ${MAKEOPTS} -C ports/unix submodules
+        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
+        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 nanbox
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_nanbox ./run-tests)
 
     # unix stackless
     - stage: test
-      env: NAME="unix stackless port build and tests"
+      env: NAME="unix stackless port build and tests with clang"
+      install:
+        - sudo apt-get install clang
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx lib/libffi
+        - make ${MAKEOPTS} -C mpy-cross CC=clang
+        - make ${MAKEOPTS} -C ports/unix submodules
+        - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix CC=clang test
+
+    # unix with sys.settrace
+    - stage: test
+      env: NAME="unix port with sys.settrace build and tests"
+      script:
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix deplibs
-        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
-        - make ${MAKEOPTS} -C ports/unix test
+        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test
+        - make ${MAKEOPTS} -C ports/unix clean
+        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
+      after_failure:
+        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
     # windows port via mingw
     - stage: test
@@ -126,17 +142,27 @@ jobs:
       env: NAME="esp32 port build"
       install:
         - sudo apt-get install python3-pip
-        - sudo pip3 install pyparsing
+        - sudo pip3 install 'pyparsing<2.4'
         - wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
         - zcat xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar x
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
-        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH :=" ports/esp32/Makefile | cut -d " " -f 3)
-        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - export IDF_PATH=$(pwd)/esp-idf
       script:
-        - git submodule update --init lib/berkeley-db-1.xx
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/esp32 ESPIDF=$(pwd)/esp-idf
+        # IDF v3 build
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - make ${MAKEOPTS} -C ports/esp32 submodules
+        - make ${MAKEOPTS} -C ports/esp32
+        # clean
+        - git -C esp-idf clean -f -f -d components/json/cJSON components/esp32/lib components/expat/expat components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - make ${MAKEOPTS} -C ports/esp32 clean
+        # IDF v4 build
+        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V4 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf submodule update --init components/bt/controller/lib components/bt/host/nimble/nimble components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
+        - make ${MAKEOPTS} -C ports/esp32 submodules
+        - make ${MAKEOPTS} -C ports/esp32
 
     # esp8266 port
     - stage: test
@@ -146,9 +172,10 @@ jobs:
         - zcat xtensa-lx106-elf-standalone.tar.gz | tar x
         - export PATH=$(pwd)/xtensa-lx106-elf/bin:$PATH
       script:
-        - git submodule update --init lib/axtls lib/berkeley-db-1.xx
         - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/esp8266 submodules
         - make ${MAKEOPTS} -C ports/esp8266
+        - make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_512K
 
     # nrf port
     - stage: test
@@ -158,7 +185,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - git submodule update --init lib/nrfx
+        - make ${MAKEOPTS} -C ports/nrf submodules
         - make ${MAKEOPTS} -C ports/nrf
 
     # bare-arm and minimal ports
@@ -187,6 +214,16 @@ jobs:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
 
+    # samd port
+    - stage: test
+      env: NAME="samd port build"
+      install:
+        - sudo apt-get install gcc-arm-none-eabi
+        - sudo apt-get install libnewlib-arm-none-eabi
+      script:
+        - make ${MAKEOPTS} -C ports/samd submodules
+        - make ${MAKEOPTS} -C ports/samd
+
     # teensy port
     - stage: test
       env: NAME="teensy port build"
@@ -195,3 +232,12 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
+
+    # powerpc port
+    - stage: test
+      env: NAME="powerpc port build"
+      install:
+        - sudo apt-get install gcc-powerpc64le-linux-gnu
+        - sudo apt-get install libc6-dev-ppc64el-cross
+      script:
+        - make ${MAKEOPTS} -C ports/powerpc CROSS_COMPILE=powerpc64le-linux-gnu-

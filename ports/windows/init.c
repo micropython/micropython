@@ -31,6 +31,7 @@
 #include <crtdbg.h>
 #endif
 #include "sleep.h"
+#include "fmode.h"
 
 extern BOOL WINAPI console_sighandler(DWORD evt);
 
@@ -61,6 +62,7 @@ void init() {
     // https://msdn.microsoft.com/en-us/library/bb531344(v=vs.140).aspx
     _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
+    set_fmode_binary();
 }
 
 void deinit() {

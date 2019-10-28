@@ -323,11 +323,22 @@
 #define MICROPY_EMIT_INLINE_XTENSA (0)
 #endif
 
+// Whether to emit Xtensa-Windowed native code
+#ifndef MICROPY_EMIT_XTENSAWIN
+#define MICROPY_EMIT_XTENSAWIN (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+
+// Select prelude-as-bytes-object for certain emitters
+#define MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ (MICROPY_EMIT_XTENSAWIN)
 
 // Convenience definition for whether any inline assembler emitter is enabled
 #define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
+
+// Convenience definition for whether any native or inline assembler emitter is enabled
+#define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
@@ -1076,6 +1087,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_FACTORIAL (0)
 #endif
 
+// Whether to provide math.isclose function
+#ifndef MICROPY_PY_MATH_ISCLOSE
+#define MICROPY_PY_MATH_ISCLOSE (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
@@ -1156,6 +1172,16 @@ typedef double mp_float_t;
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (1)
+#endif
+
+// Whether to provide "sys.atexit" function (MicroPython extension)
+#ifndef MICROPY_PY_SYS_ATEXIT
+#define MICROPY_PY_SYS_ATEXIT (0)
+#endif
+
+// Whether to provide "sys.settrace" function
+#ifndef MICROPY_PY_SYS_SETTRACE
+#define MICROPY_PY_SYS_SETTRACE (0)
 #endif
 
 // Whether to provide "sys.getsizeof" function
@@ -1244,6 +1270,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
+#endif
+
+#ifndef MICROPY_PY_URE_DEBUG
+#define MICROPY_PY_URE_DEBUG (0)
 #endif
 
 #ifndef MICROPY_PY_URE_MATCH_GROUPS
@@ -1360,11 +1390,6 @@ typedef double mp_float_t;
 // Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
 #ifndef MICROPY_PORT_BUILTIN_MODULES
 #define MICROPY_PORT_BUILTIN_MODULES
-#endif
-
-// Any module weak links - see objmodule.c:mp_builtin_module_weak_links_table.
-#ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #endif
 
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.
@@ -1514,6 +1539,15 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
+// To annotate that code is unreachable
+#ifndef MP_UNREACHABLE
+#if defined(__GNUC__)
+#define MP_UNREACHABLE __builtin_unreachable();
+#else
+#define MP_UNREACHABLE for (;;);
+#endif
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
 # define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
@@ -1543,6 +1577,16 @@ typedef double mp_float_t;
 #else
 # undef MP_WARN_CAT
 # define MP_WARN_CAT(x) (NULL)
+#endif
+
+// Feature dependency check.
+#if MICROPY_PY_SYS_SETTRACE
+#if !MICROPY_PERSISTENT_CODE_SAVE
+#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_PERSISTENT_CODE_SAVE to be enabled"
+#endif
+#if MICROPY_COMP_CONST
+#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_COMP_CONST to be disabled"
+#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

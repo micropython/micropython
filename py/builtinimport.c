@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -145,11 +145,11 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
+    (void)source_name;
+
     #if MICROPY_PY___FILE__
-    // TODO
-    //qstr source_name = lex->source_name;
-    //mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
     #endif
 
     // execute the module in its context
@@ -206,7 +206,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // its data) in the list of frozen files, execute it.
     #if MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
-        do_execute_raw_code(module_obj, modref);
+        do_execute_raw_code(module_obj, modref, file_str);
         return;
     }
     #endif
@@ -216,7 +216,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
-        do_execute_raw_code(module_obj, raw_code);
+        do_execute_raw_code(module_obj, raw_code, file_str);
         return;
     }
     #endif
@@ -381,21 +381,18 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             DEBUG_printf("Current path: %.*s\n", vstr_len(&path), vstr_str(&path));
 
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
+                module_obj = MP_OBJ_NULL;
                 #if MICROPY_MODULE_WEAK_LINKS
                 // check if there is a weak link to this module
                 if (i == mod_len) {
-                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
-                    if (el == NULL) {
-                        goto no_exist;
+                    module_obj = mp_module_search_umodule(mod_str);
+                    if (module_obj != MP_OBJ_NULL) {
+                        // found weak linked module
+                        mp_module_call_init(mod_name, module_obj);
                     }
-                    // found weak linked module
-                    module_obj = el->value;
-                    mp_module_call_init(mod_name, module_obj);
-                } else {
-                    no_exist:
-                #else
-                {
+                }
                 #endif
+                if (module_obj == MP_OBJ_NULL) {
                     // couldn't find the file, so fail
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_raise_msg(&mp_type_ImportError, "module not found");
@@ -492,11 +489,11 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
-    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
-    if (el != NULL) {
+    module_obj = mp_module_search_umodule(qstr_str(module_name_qstr));
+    if (module_obj != MP_OBJ_NULL) {
         // Found weak-linked module
-        mp_module_call_init(module_name_qstr, el->value);
-        return el->value;
+        mp_module_call_init(module_name_qstr, module_obj);
+        return module_obj;
     }
     #endif
 

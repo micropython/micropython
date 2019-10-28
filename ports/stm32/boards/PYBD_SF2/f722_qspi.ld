@@ -47,6 +47,9 @@ SECTIONS
 {
     .text_ext :
     {
+        . = ALIGN(4);
+        *lib/mbedtls/*(.text* .rodata*)
+        *lib/mynewt-nimble/*(.text* .rodata*)
         . = ALIGN(512);
         *(.big_const*)
         . = ALIGN(4);

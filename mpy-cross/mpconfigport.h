@@ -39,6 +39,7 @@
 #define MICROPY_EMIT_ARM            (1)
 #define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
+#define MICROPY_EMIT_XTENSAWIN      (1)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
@@ -96,6 +97,9 @@ typedef unsigned long mp_uint_t; // must be pointer size
 #include <stdint.h>
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
+#elif defined ( _MSC_VER ) && defined( _WIN64 )
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
 // regardless for actual size.
@@ -122,3 +126,37 @@ typedef long mp_off_t;
 #endif
 
 #include <stdint.h>
+
+// MSVC specifics - see windows/mpconfigport.h for explanation
+#ifdef _MSC_VER
+
+#define MP_ENDIANNESS_LITTLE        (1)
+#define NORETURN                    __declspec(noreturn)
+#define MP_NOINLINE                 __declspec(noinline)
+#define MP_LIKELY(x)                (x)
+#define MP_UNLIKELY(x)              (x)
+#define MICROPY_PORT_CONSTANTS      { "dummy", 0 }
+#ifdef _WIN64
+#define MP_SSIZE_MAX                _I64_MAX
+#else
+#define MP_SSIZE_MAX                _I32_MAX
+#endif
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)(p)) //Avoid compiler warning about different const qualifiers
+#define restrict
+#define inline                      __inline
+#define alignof(t)                  __alignof(t)
+#undef MICROPY_ALLOC_PATH_MAX
+#define MICROPY_ALLOC_PATH_MAX      260
+#define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
+#define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
+#ifdef _WIN64
+#define SSIZE_MAX                   _I64_MAX
+typedef __int64                     ssize_t;
+#else
+#define SSIZE_MAX                   _I32_MAX
+typedef int                         ssize_t;
+#endif
+typedef mp_off_t                    off_t;
+
+#endif

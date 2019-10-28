@@ -43,6 +43,11 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
+#if MICROPY_BLUETOOTH_NIMBLE
+#include "extmod/modbluetooth.h"
+#endif
+
+#include "mpu.h"
 #include "systick.h"
 #include "pendsv.h"
 #include "powerctrl.h"
@@ -69,8 +74,6 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
-
-void SystemClock_Config(void);
 
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
@@ -145,7 +148,9 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
         mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        #if MICROPY_ENABLE_COMPILER
         MP_STATE_VM(mp_optimise_value) = args[0].u_int;
+        #endif
     }
     return mp_const_none;
 }
@@ -369,6 +374,14 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
+    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
+    // Change IRQ vector table if configured differently
+    SCB->VTOR = MICROPY_HW_VTOR;
+    #endif
+
+    // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
+    SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+
     // Check if bootloader should be entered instead of main application
     powerctrl_check_enter_bootloader();
 
@@ -408,6 +421,8 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     #endif
+
+    mpu_init();
 
     #if __CORTEX_M >= 0x03
     // Set the priority grouping
@@ -488,6 +503,10 @@ void stm32_main(uint32_t reset_mode) {
     mdns_resp_init();
     #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
+    #if MICROPY_BLUETOOTH_NIMBLE
+    extern void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms);
+    systick_enable_dispatch(SYSTICK_DISPATCH_NIMBLE, mod_bluetooth_nimble_poll_wrapper);
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -649,7 +668,14 @@ soft_reset:
     #if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, 0, NULL, NULL);
+        #if MICROPY_HW_USB_MSC
+        const uint16_t pid = USBD_PID_CDC_MSC;
+        const uint8_t mode = USBD_MODE_CDC_MSC;
+        #else
+        const uint16_t pid = USBD_PID_CDC;
+        const uint8_t mode = USBD_MODE_CDC;
+        #endif
+        pyb_usb_dev_init(pyb_usb_dev_detect(), USBD_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
 
@@ -685,6 +711,7 @@ soft_reset:
         }
     }
 
+    #if MICROPY_ENABLE_COMPILER
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
@@ -698,6 +725,7 @@ soft_reset:
             }
         }
     }
+    #endif
 
 soft_reset_exit:
 
@@ -709,13 +737,16 @@ soft_reset_exit:
     #endif
 
     printf("MPY: soft reboot\n");
+    #if MICROPY_BLUETOOTH_NIMBLE
+    mp_bluetooth_deinit();
+    #endif
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif
     timer_deinit();
     uart_deinit_all();
     #if MICROPY_HW_ENABLE_CAN
-    can_deinit();
+    can_deinit_all();
     #endif
     machine_deinit();
 

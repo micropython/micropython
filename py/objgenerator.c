@@ -30,9 +30,13 @@
 
 #include "py/runtime.h"
 #include "py/bc.h"
+#include "py/objstr.h"
 #include "py/objgenerator.h"
 #include "py/objfun.h"
 #include "py/stackctrl.h"
+
+// Instance of GeneratorExit exception - needed by generator.close()
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -48,8 +52,8 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode);
-    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self_fun->bytecode));
+    const uint8_t *ip = self_fun->bytecode;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
@@ -59,6 +63,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
 }
@@ -84,7 +89,14 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Determine start of prelude, and extract n_state from it
     uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
+    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    // Prelude is in bytes object in const_table, at index prelude_offset
+    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->const_table[prelude_offset]);
+    prelude_offset = (const byte*)prelude_bytes->data - self_fun->bytecode;
+    #endif
+    const uint8_t *ip = self_fun->bytecode + prelude_offset;
+    size_t n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args);
     size_t n_exc_stack = 0;
 
     // Allocate the generator object, with room for local stack and exception stack
@@ -96,10 +108,11 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte*)prelude_offset;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
 
     // Indicate we are a native function, which doesn't use this variable
-    o->code_state.exc_sp = NULL;
+    o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
     uintptr_t start_offset = ((uintptr_t*)self_fun->bytecode)[1];
@@ -169,7 +182,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     mp_vm_return_kind_t ret_kind;
 
     #if MICROPY_EMIT_NATIVE
-    if (self->code_state.exc_sp == NULL) {
+    if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator, with entry point 2 words into the "bytecode" pointer
         typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);
         mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void*)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
@@ -297,6 +310,7 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
+#if MICROPY_PY_GENERATOR_PEND_THROW
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.sp == self->code_state.state - 1) {
@@ -307,6 +321,7 @@ STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     return prev;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
+#endif
 
 STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },

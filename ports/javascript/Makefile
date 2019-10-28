@@ -25,6 +25,13 @@ LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 CFLAGS += -O0 -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 
+ifneq ($(FROZEN_MPY_DIR),)
+# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
+# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+endif
+
 SRC_LIB = $(addprefix lib/,\
 	utils/interrupt_char.c \
 	utils/stdout_helpers.c \

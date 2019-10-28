@@ -148,8 +148,10 @@ STATIC void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) 
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
+    #if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
+    #endif
     }
     *(volatile uint32_t*)(base + align) = value;
 }
@@ -169,8 +171,10 @@ STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
+    #if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
+    #endif
     }
 
     dma_nohal_deinit(dma_descr);
@@ -185,7 +189,7 @@ STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
 
 typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
-    uint8_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
+    uint8_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2. STM32L452 only has CHANNEL_1.
     uint8_t bits; // 8 or 12
     uint8_t outbuf_single;
     uint8_t outbuf_waveform;
@@ -200,8 +204,10 @@ STATIC void pyb_dac_reconfigure(pyb_dac_obj_t *self, uint32_t cr, uint32_t outbu
         const dma_descr_t *tx_dma_descr;
         if (self->dac_channel == DAC_CHANNEL_1) {
             tx_dma_descr = &dma_DAC_1_TX;
+        #if !defined(STM32L452xx)
         } else {
             tx_dma_descr = &dma_DAC_2_TX;
+        #endif
         }
         dma_nohal_deinit(tx_dma_descr);
         dac_config_channel(self->dac_channel, cr, outbuf);
@@ -234,8 +240,10 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_hal_pin_obj_t pin;
     if (self->dac_channel == DAC_CHANNEL_1) {
         pin = pin_A4;
+    #if !defined(STM32L452xx)
     } else {
         pin = pin_A5;
+    #endif
     }
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
@@ -306,8 +314,10 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     uint32_t dac_channel;
     if (dac_id == 1) {
         dac_channel = DAC_CHANNEL_1;
+    #if !defined(STM32L452xx)
     } else if (dac_id == 2) {
         dac_channel = DAC_CHANNEL_2;
+    #endif
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id));
     }
@@ -363,15 +373,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 #if defined(TIM6)
 /// \method triangle(freq)
 /// Generate a triangle wave.  The value on the DAC output changes at
-/// the given frequency, and the frequence of the repeating triangle wave
-/// itself is 256 (or 1024, need to check) times smaller.
+/// the given frequency, and the frequency of the repeating triangle wave
+/// itself is 8192 times smaller.
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // set TIM6 to trigger the DAC at the given frequency
     TIM6_Config(mp_obj_get_int(freq));
 
-    // Configure DAC in triangle mode with trigger via TIM6
+    // Configure DAC in full-scale triangle mode with trigger via TIM6
     uint32_t cr = DAC_TRIANGLEAMPLITUDE_4095 | DAC_CR_WAVE1_1 | DAC_TRIGGER_T6_TRGO;
     pyb_dac_reconfigure(self, cr, self->outbuf_waveform, 0);
 
@@ -446,8 +456,10 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     const dma_descr_t *tx_dma_descr;
     if (self->dac_channel == DAC_CHANNEL_1) {
         tx_dma_descr = &dma_DAC_1_TX;
+    #if !defined(STM32L452xx)
     } else {
         tx_dma_descr = &dma_DAC_2_TX;
+    #endif
     }
 
     uint32_t align;

@@ -34,6 +34,14 @@
 
 #include "py/mpconfig.h"
 
+#define MICROPY_NLR_NUM_REGS_X86            (6)
+#define MICROPY_NLR_NUM_REGS_X64            (8)
+#define MICROPY_NLR_NUM_REGS_X64_WIN        (10)
+#define MICROPY_NLR_NUM_REGS_ARM_THUMB      (10)
+#define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP   (10 + 6)
+#define MICROPY_NLR_NUM_REGS_XTENSA         (10)
+#define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
+
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
 #if !MICROPY_NLR_SETJMP
 // A lot of nlr-related things need different treatment on Windows
@@ -44,27 +52,31 @@
 #endif
 #if defined(__i386__)
     #define MICROPY_NLR_X86 (1)
-    #define MICROPY_NLR_NUM_REGS (6)
+    #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X86)
 #elif defined(__x86_64__)
     #define MICROPY_NLR_X64 (1)
     #if MICROPY_NLR_OS_WINDOWS
-        #define MICROPY_NLR_NUM_REGS (10)
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X64_WIN)
     #else
-        #define MICROPY_NLR_NUM_REGS (8)
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X64)
     #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
     #define MICROPY_NLR_THUMB (1)
     #if defined(__SOFTFP__)
-        #define MICROPY_NLR_NUM_REGS (10)
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_ARM_THUMB)
     #else
         // With hardware FP registers s16-s31 are callee save so in principle
         // should be saved and restored by the NLR code.  gcc only uses s16-s21
         // so only save/restore those as an optimisation.
-        #define MICROPY_NLR_NUM_REGS (10 + 6)
+        #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_ARM_THUMB_FP)
     #endif
 #elif defined(__xtensa__)
     #define MICROPY_NLR_XTENSA (1)
-    #define MICROPY_NLR_NUM_REGS (10)
+    #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_XTENSA)
+#elif defined(__powerpc__)
+    #define MICROPY_NLR_POWERPC (1)
+    // this could be less but using 128 for safety
+    #define MICROPY_NLR_NUM_REGS (128)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"

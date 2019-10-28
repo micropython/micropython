@@ -77,7 +77,7 @@ The :mod:`network` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.config('mac')      # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
@@ -203,7 +203,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     adc = ADC(Pin(32))          # create ADC object on ADC pin
     adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attentuation (voltage range roughly 0.0v - 3.6v)
+    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
     adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
     adc.read()                  # read value using the newly configured attenuation and width
 
@@ -257,7 +257,7 @@ class::
     spi.init(baudrate=200000) # set the baudrate
 
     spi.read(10)            # read 10 bytes on MISO
-    spi.read(10, 0xff)      # read 10 bytes while outputing 0xff on MOSI
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
 
     buf = bytearray(50)     # create a buffer
     spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
@@ -303,13 +303,21 @@ Hardware SPI has the same methods as Software SPI above::
 I2C bus
 -------
 
-The I2C driver is implemented in software and works on all pins,
-and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
+The I2C driver has both software and hardware implementations, and the two
+hardware peripherals have identifiers 0 and 1.  Any available output-capable
+pins can be used for SCL and SDA.  The driver is accessed via the
+:ref:`machine.I2C <machine.I2C>` class::
 
     from machine import Pin, I2C
 
-    # construct an I2C bus
+    # construct a software I2C bus
     i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
+
+    # construct a hardware I2C bus
+    i2c = I2C(0)
+    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
+
+    i2c.scan()              # scan for slave devices
 
     i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
     i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a

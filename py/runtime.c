@@ -88,6 +88,9 @@ void mp_init(void) {
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
+    #if MICROPY_EMIT_NATIVE
+    MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
+    #endif
     #endif
 
     // init global module dict
@@ -116,6 +119,20 @@ void mp_init(void) {
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
     MP_STATE_VM(vfs_mount_table) = NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    MP_STATE_VM(sys_exitfunc) = mp_const_none;
+    #endif
+
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    MP_STATE_THREAD(prof_callback_is_executing) = false;
+    MP_STATE_THREAD(current_code_state) = NULL;
+    #endif
+
+    #if MICROPY_PY_BLUETOOTH
+    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_THREAD_GIL
@@ -1302,7 +1319,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         // will be propagated up. This behavior is approved by test_pep380.py
         // test_delegation_of_close_to_non_generator(),
         //  test_delegating_throw_to_non_generator()
-        *ret_val = mp_make_raise_obj(throw_value);
+        if (mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
+            *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
+        } else {
+            *ret_val = mp_make_raise_obj(throw_value);
+        }
         return MP_VM_RETURN_EXCEPTION;
     }
 }
@@ -1335,7 +1357,17 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     args[3] = fromlist;
     args[4] = level;
 
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    // Lookup __import__ and call that if it exists
+    mp_obj_dict_t *bo_dict = MP_STATE_VM(mp_module_builtins_override_dict);
+    if (bo_dict != NULL) {
+        mp_map_elem_t *import = mp_map_lookup(&bo_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
+        if (import != NULL) {
+            return mp_call_function_n_kw(import->value, 5, 0, args);
+        }
+    }
+    #endif
+
     return mp_builtin___import__(5, args);
 }
 
@@ -1407,7 +1439,6 @@ void mp_import_all(mp_obj_t module) {
 
 #if MICROPY_ENABLE_COMPILER
 
-// this is implemented in this file so it can optimise access to locals/globals
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
     mp_obj_dict_t *volatile old_globals = mp_globals_get();
@@ -1421,7 +1452,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
 
         mp_obj_t ret;
         if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {

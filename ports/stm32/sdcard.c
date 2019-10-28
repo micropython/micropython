@@ -156,22 +156,28 @@ void sdcard_init(void) {
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CK);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_CMD);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D0);
+    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D1);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D2);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC2_D3);
+    #endif
     #else
     // Default SDIO/SDMMC1 config
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CK);
+    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CMD);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D0);
+    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D1);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D2);
     mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_D3);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CK);
-    mp_hal_pin_config_alt_static(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_SDMMC_CMD);
+    #endif
     #endif
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
+    #if defined(MICROPY_HW_SDCARD_DETECT_PIN)
     mp_hal_pin_config(MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
+    #endif
 }
 
 STATIC void sdmmc_msp_init(void) {
@@ -227,7 +233,11 @@ bool sdcard_is_present(void) {
         return false;
     }
     #endif
+    #if defined(MICROPY_HW_SDCARD_DETECT_PIN)
     return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN->gpio, MICROPY_HW_SDCARD_DETECT_PIN->pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    #else
+    return true;
+    #endif
 }
 
 #if MICROPY_HW_ENABLE_SDCARD
@@ -252,12 +262,14 @@ STATIC HAL_StatusTypeDef sdmmc_init_sd(void) {
         mp_hal_delay_ms(50);
     }
 
-    // configure the SD bus width for wide operation
+    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
+    // configure the SD bus width for 4-bit wide operation
     status = HAL_SD_ConfigWideBusOperation(&sdmmc_handle.sd, SDIO_BUS_WIDE_4B);
     if (status != HAL_OK) {
         HAL_SD_DeInit(&sdmmc_handle.sd);
         return status;
     }
+    #endif
 
     return HAL_OK;
 }
@@ -285,7 +297,8 @@ STATIC HAL_StatusTypeDef sdmmc_init_mmc(void) {
     // As this is an eMMC card, overwrite LogBlockNbr with actual value
     sdmmc_handle.mmc.MmcCard.LogBlockNbr = 7469056 + 2048;
 
-    // Configure the SDIO bus width for wide operation
+    #if MICROPY_HW_SDMMC_BUS_WIDTH == 4
+    // Configure the SDIO bus width for 4-bit wide operation
     #ifdef STM32F7
     sdmmc_handle.mmc.Init.ClockBypass = SDIO_CLOCK_BYPASS_ENABLE;
     #endif
@@ -294,6 +307,7 @@ STATIC HAL_StatusTypeDef sdmmc_init_mmc(void) {
         HAL_MMC_DeInit(&sdmmc_handle.mmc);
         return status;
     }
+    #endif
 
     return HAL_OK;
 }
@@ -303,6 +317,10 @@ bool sdcard_power_on(void) {
     if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_ACTIVE) {
         return true;
     }
+
+    #ifdef MICROPY_BOARD_SDCARD_POWER
+    MICROPY_BOARD_SDCARD_POWER
+    #endif
 
     HAL_StatusTypeDef status = HAL_ERROR;
     switch (pyb_sdmmc_flags) {

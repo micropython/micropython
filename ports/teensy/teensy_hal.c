@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
@@ -19,6 +20,19 @@ void mp_hal_set_interrupt_char(int c) {
   // The teensy 3.1 usb stack doesn't currently have the notion of generating
   // an exception when a certain character is received. That just means that
   // you can't press Control-C and get your python script to stop.
+}
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (poll_flags & MP_STREAM_POLL_RD) {
+        if (usb_vcp_rx_num()) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+    }
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {

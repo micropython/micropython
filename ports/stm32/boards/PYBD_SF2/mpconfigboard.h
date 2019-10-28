@@ -41,7 +41,12 @@
 #define MICROPY_HW_ENABLE_MMCARD    (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
+#define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
+#define MICROPY_BOARD_LEAVE_STOP    board_sleep(0);
+#define MICROPY_BOARD_ENTER_STANDBY board_sleep(1);
+#define MICROPY_BOARD_SDCARD_POWER  mp_hal_pin_high(pyb_pin_EN_3V3);
 void board_early_init(void);
+void board_sleep(int value);
 
 // HSE is 25MHz, run SYS at 120MHz
 #define MICROPY_HW_CLK_PLLM         (20)
@@ -171,6 +176,10 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_USB_HS           (1)
 #define MICROPY_HW_USB_HS_IN_FS     (1)
 #define MICROPY_HW_USB_MAIN_DEV     (USB_PHY_HS_ID)
+
+// Bluetooth config
+#define MICROPY_HW_BLE_UART_ID       (PYB_UART_6)
+#define MICROPY_HW_BLE_UART_BAUDRATE (115200)
 
 /******************************************************************************/
 // Bootloader configuration

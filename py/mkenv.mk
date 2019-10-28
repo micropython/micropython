@@ -49,6 +49,7 @@ PYTHON = python3
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
 CXX = $(CROSS_COMPILE)g++
+GDB = $(CROSS_COMPILE)gdb
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
@@ -60,9 +61,12 @@ CXX += -m32
 LD += -m32
 endif
 
+MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
+
+MPY_LIB_DIR = $(TOP)/../micropython-lib
 
 all:
 .PHONY: all
