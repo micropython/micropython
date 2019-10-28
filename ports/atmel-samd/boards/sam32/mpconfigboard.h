@@ -9,7 +9,7 @@
 #define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
-#define MICROPY_PORT_D 		  (0)
+#define MICROPY_PORT_D 	      (0)
 
 // No microcontroller.nvm
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0

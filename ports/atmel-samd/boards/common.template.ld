@@ -3,15 +3,7 @@
 /* Specify the memory areas */
 MEMORY
 {
-    /* CIRCUITPY_BOOTLOADER_SIZE is size of bootloader, if any.
-     * SAMD21 Arduino and UF2 bootloaders are 8KiB. SAMD51 UF2 is 6KiB.
-     * FLASH_SIZE is defined in ASF4.
-     * RAM_SIZE is defined in mpconfigport.h, from constants from ASF4.
-     * CIRCUITPY_INTERNAL_CONFIG_SIZE is size of an optional hidden config area, used currently
-     * for crystalless USB timing calibration.
-     * CIRCUITPY_INTERNAL_NVM_SIZE is the size of microntroller.nvm.
-     */
-    FLASH (rx) : ORIGIN = 0x00000000 + ${BOOTLOADER_SIZE}, LENGTH = ${FLASH_SIZE} - ${BOOTLOADER_SIZE} - ${CIRCUITPY_INTERNAL_CONFIG_SIZE} - ${CIRCUITPY_INTERNAL_NVM_SIZE}
+    FLASH (rx) : ORIGIN = 0x00000000 + ${BOOTLOADER_SIZE}, LENGTH = ${CIRCUITPY_FIRMWARE_SIZE}
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = ${RAM_SIZE}
 }
 

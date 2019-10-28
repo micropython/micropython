@@ -86,7 +86,7 @@ void flash_flush(void) {
 static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (0 <= block && block < INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
-        return INTERNAL_FLASH_MEM_SEG1_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
+        return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
     return -1;

@@ -167,6 +167,7 @@ typedef long mp_off_t;
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 
+
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
@@ -667,11 +668,6 @@ void run_background_tasks(void);
 
 #ifndef CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
-#endif
-
-// Default is no internal flash filesystem.
-#ifndef INTERNAL_FLASH_FILESYSTEM_SIZE
-#define INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"

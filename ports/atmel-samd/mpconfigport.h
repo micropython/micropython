@@ -32,10 +32,10 @@
 
 #ifdef SAMD21
 
-// Default is 0, set by py/circuitpy_mpconfig.h
 #if INTERNAL_FLASH_FILESYSTEM
-// 64kB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
+#else
+#define CIRCUITPYINTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
@@ -86,6 +86,15 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
 #endif
 
+// If CIRCUITPY is internal, use half of flash for it.
+#ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
+  #if INTERNAL_FLASH_FILESYSTEM
+  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (FLASH_SIZE/2)
+  #else
+  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
+  #endif
+#endif
+
 // HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
 #define RAM_SIZE                                    HSRAM_SIZE
 #define BOOTLOADER_SIZE                             (16*1024)
@@ -103,6 +112,27 @@
 //      MICROPY_PY_UERRNO_LIST - Use the default
 
 #endif // SAMD51
+
+// Flash layout, starting at 0x00000000
+//
+// bootloader (8 or 16kB)
+// firmware
+// internal config, used to store crystalless clock calibration info (optional)
+// microntroller.nvm (optional)
+// internal CIRCUITPY flash filesystem (optional)
+
+// Bootloader starts at 0x00000000.
+#define CIRCUITPY_FIRMWARE_START_ADDR        BOOTLOADER_SIZE
+
+// Total space available for code, after subtracting size of other regions used for non-code.
+#define CIRCUITPY_FIRMWARE_SIZE \
+    (FLASH_SIZE - BOOTLOADER_SIZE - CIRCUITPY_INTERNAL_CONFIG_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE - \
+     CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
+
+#define CIRCUITPY_INTERNAL_CONFIG_START_ADDR (CIRCUITPY_FIRMWARE_START_ADDR + CIRCUITPY_FIRMWARE_SIZE)
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR    (CIRCUITPY_INTERNAL_CONFIG_START_ADDR + CIRCUITPY_INTERNAL_CONFIG_SIZE)
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR \
+    (CIRCUITPY_INTERNAL_NVM_START_ADDR + CIRCUITPY_INTERNAL_NVM_SIZE)
 
 // Turning off audioio, audiobusio, and touchio as necessary
 // due to limitations of chips is handled in mpconfigboard.mk
