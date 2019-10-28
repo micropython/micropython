@@ -91,8 +91,8 @@ void reset_pin_number(uint8_t pin_number) {
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI->number ||
-        pin == MICROPY_HW_APA102_SCK->number) {
+    if (pin_number == MICROPY_HW_APA102_MOSI->number ||
+        pin_number == MICROPY_HW_APA102_SCK->number) {
         apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
         apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
         if (!apa102_sck_in_use && !apa102_mosi_in_use) {

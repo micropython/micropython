@@ -43,6 +43,8 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
     if (result != DIGITALINOUT_OK) {
         mp_raise_ValueError(translate("Clock pin init failed."));
     }
+    common_hal_digitalio_digitalinout_switch_to_output(&self->clock, self->polarity == 1, DRIVE_MODE_PUSH_PULL);
+
     if (mosi != mp_const_none) {
         result = common_hal_digitalio_digitalinout_construct(&self->mosi, mosi);
         if (result != DIGITALINOUT_OK) {
@@ -50,8 +52,11 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
             mp_raise_ValueError(translate("MOSI pin init failed."));
         }
         self->has_mosi = true;
+        common_hal_digitalio_digitalinout_switch_to_output(&self->mosi, false, DRIVE_MODE_PUSH_PULL);
     }
+
     if (miso != mp_const_none) {
+        // Starts out as input by default, no need to change.
         result = common_hal_digitalio_digitalinout_construct(&self->miso, miso);
         if (result != DIGITALINOUT_OK) {
             common_hal_digitalio_digitalinout_deinit(&self->clock);

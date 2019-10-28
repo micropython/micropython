@@ -52,9 +52,6 @@ jobs:
         done
       working-directory: tests
       if: failure()
-    - name: Test threads
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread
-      working-directory: tests
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
@@ -78,6 +75,7 @@ jobs:
         board:
         - "arduino_mkr1300"
         - "arduino_mkrzero"
+        - "arduino_nano_33_ble"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
@@ -95,7 +93,6 @@ jobs:
         - "electronut_labs_blip"
         - "electronut_labs_papyr"
         - "escornabot_makech"
-        - "feather_f405"
         - "feather_m0_adalogger"
         - "feather_m0_basic"
         - "feather_m0_express"
@@ -106,12 +103,14 @@ jobs:
         - "feather_m4_express"
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
+        - "feather_stm32f405_express"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
+        - "itsybitsy_nrf52840_express"
         - "kicksat-sprite"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
@@ -145,6 +144,8 @@ jobs:
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_qwiic_micro_no_flash"
+        - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"

@@ -90,6 +90,7 @@ INC += \
 	-I$(SPRESENSE_SDK)/nuttx/include \
 	-I$(SPRESENSE_SDK)/nuttx/arch \
 	-I$(SPRESENSE_SDK)/nuttx/arch/chip \
+	-I$(SPRESENSE_SDK)/nuttx/arch/os \
 	-I$(SPRESENSE_SDK)/sdk/bsp/include \
 	-I$(SPRESENSE_SDK)/sdk/bsp/include/sdk \
 
@@ -124,7 +125,6 @@ LDFLAGS = \
 	--entry=__start \
 	-nostartfiles \
 	-nodefaultlibs \
-	--defsym __stack=_vectors+786432 \
 	-T$(SPRESENSE_SDK)/nuttx/build/ramconfig.ld \
 	--gc-sections \
 	-Map=$(BUILD)/output.map \

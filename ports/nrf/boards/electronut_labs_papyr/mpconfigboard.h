@@ -31,7 +31,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "Electronut Labs Papyr"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "ElectronutLabsPapyr"
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 

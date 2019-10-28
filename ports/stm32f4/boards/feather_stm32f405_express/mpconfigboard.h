@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +25,19 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME "SPRESENSE"
-#define MICROPY_HW_MCU_NAME "CXD5602"
+//Micropython setup
 
-#define DEFAULT_I2C_BUS_SCL (&pin_I2C0_BCK)
-#define DEFAULT_I2C_BUS_SDA (&pin_I2C0_BDT)
+#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
+#define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
-#define DEFAULT_SPI_BUS_SCK (&pin_SPI4_SCK)
-#define DEFAULT_SPI_BUS_MISO (&pin_SPI4_MISO)
-#define DEFAULT_SPI_BUS_MOSI (&pin_SPI4_MOSI)
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-#define DEFAULT_UART_BUS_RX (&pin_UART2_RXD)
-#define DEFAULT_UART_BUS_TX (&pin_UART2_TXD)
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
+
+// On-board flash
+#define SPI_FLASH_MOSI_PIN          &pin_PB05
+#define SPI_FLASH_MISO_PIN          &pin_PB04
+#define SPI_FLASH_SCK_PIN           &pin_PB03
+#define SPI_FLASH_CS_PIN            &pin_PA15

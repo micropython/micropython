@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,40 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME "SPRESENSE"
-#define MICROPY_HW_MCU_NAME "CXD5602"
+#include "boards/board.h"
+#include "nrf.h"
+#include "nrf_rtc.h"
 
-#define DEFAULT_I2C_BUS_SCL (&pin_I2C0_BCK)
-#define DEFAULT_I2C_BUS_SDA (&pin_I2C0_BDT)
+void board_init(void) {
+    // Initializations below from Arduino variant.cpp.
 
-#define DEFAULT_SPI_BUS_SCK (&pin_SPI4_SCK)
-#define DEFAULT_SPI_BUS_MISO (&pin_SPI4_MISO)
-#define DEFAULT_SPI_BUS_MOSI (&pin_SPI4_MOSI)
+    // // turn power LED on
+    // pinMode(LED_PWR, OUTPUT);
+    // digitalWrite(LED_PWR, HIGH);
 
-#define DEFAULT_UART_BUS_RX (&pin_UART2_RXD)
-#define DEFAULT_UART_BUS_TX (&pin_UART2_TXD)
+    // Errata Nano33BLE - I2C pullup is on SWO line, need to disable TRACE
+    // was being enabled by nrfx_clock_anomaly_132
+    CoreDebug->DEMCR = 0;
+    NRF_CLOCK->TRACECONFIG = 0;
+
+    // FIXME: bootloader enables interrupt on COMPARE[0], which we don't handle
+    // Disable it here to avoid getting stuck when OVERFLOW irq is triggered
+    nrf_rtc_event_disable(NRF_RTC1, NRF_RTC_INT_COMPARE0_MASK);
+    nrf_rtc_int_disable(NRF_RTC1, NRF_RTC_INT_COMPARE0_MASK);
+
+    // // FIXME: always enable I2C pullup and power @startup
+    // // Change for maximum powersave
+    // pinMode(PIN_ENABLE_SENSORS_3V3, OUTPUT);
+    // pinMode(PIN_ENABLE_I2C_PULLUP, OUTPUT);
+
+    // digitalWrite(PIN_ENABLE_SENSORS_3V3, HIGH);
+    // digitalWrite(PIN_ENABLE_I2C_PULLUP, HIGH);
+}
+
+bool board_requests_safe_mode(void) {
+  return false;
+}
+
+void reset_board(void) {
+
+}
