@@ -246,6 +246,17 @@ writes from a central to a given characteristic, use
     of the notification, avoiding the need for a separate read request. Note
     that this will not update the local value stored.
 
+.. method:: BLE.gatts_set_buffer(value_handle, len, append=False)
+
+    Sets the internal buffer size for a value in bytes. This will limit the
+    largest possible write that can be received. The default is 20.
+
+    Setting *append* to ``True`` will make all remote writes append to, rather
+    than replace, the current value. At most *len* bytes can be buffered in
+    this way. When you use :meth:`gatts_read <BLE.gatts_read>`, the value will
+    be cleared after reading. This feature is useful when implementing something
+    like the Nordic UART Service.
+
 
 Central Role (GATT Client)
 --------------------------
