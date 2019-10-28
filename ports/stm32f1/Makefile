@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
 # then default to QiMing_F103RC.
-BOARD ?= QiMingF103RC
+BOARD ?= MPY_ST103
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)

@@ -381,7 +381,16 @@ void stm32_main(uint32_t reset_mode) {
     #if defined(GPIOD)
     __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
-
+    #if defined(GPIOE)
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    #endif
+    #if defined(GPIOF)
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    #endif
+    #if defined(GPIOG)
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    #endif
+    
     // enable AFIO and config debug
     pin_remap_init0();
 
@@ -498,7 +507,7 @@ soft_reset:
 	{// USB detect reset
 		mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_OUT, MP_HAL_PIN_PULL_DOWN, 0);
 		mp_hal_pin_low(pin_A12);
-		mp_hal_delay_ms(500); // pin's state keep low with 500ms
+		mp_hal_delay_ms(200); // pin's state keep low with 200ms
 	}
     pyb_usb_init0();
     #endif

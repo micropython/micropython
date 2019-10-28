@@ -54,9 +54,12 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "sdcard.h"
 #include "uart.h"
 #include "wdt.h"
 #include "can.h"
+#include "adc.h"
+#include "dac.h"
 
 // 复位来源定义
 #define PYB_RESET_SOFT      (0) // 软件复位
