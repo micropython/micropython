@@ -64,13 +64,18 @@ INC += -Ilwip_inc
 CFLAGS_CORTEX_M = -mthumb
 
 # Select hardware floating-point support
+SUPPORTS_HARDWARE_FP_SINGLE = 0
+SUPPORTS_HARDWARE_FP_DOUBLE = 0
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
+SUPPORTS_HARDWARE_FP_SINGLE = 1
+SUPPORTS_HARDWARE_FP_DOUBLE = 1
 else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
 CFLAGS_CORTEX_M += -msoft-float
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 endif
 
@@ -180,7 +185,7 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	tgamma.c \
 	trunc.c \
 	)
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f7 h7))
+ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
 SRC_LIBM += lib/libm_dbl/thumb_vfp_sqrt.c
 else
 SRC_LIBM += lib/libm_dbl/sqrt.c
@@ -213,10 +218,10 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
-SRC_LIBM += lib/libm/ef_sqrt.c
-else
+ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
 SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
+else
+SRC_LIBM += lib/libm/ef_sqrt.c
 endif
 endif
 
