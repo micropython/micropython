@@ -1,4 +1,5 @@
 micropython
+micropython_dev
 micropython_fast
 micropython_minimal
 micropython_coverage
