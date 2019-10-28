@@ -46,10 +46,18 @@ static uint8_t status_apa102_color[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, 0,
 #if CIRCUITPY_BITBANG_APA102
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-module/bitbangio/types.h"
-static bitbangio_spi_obj_t status_apa102;
+static bitbangio_spi_obj_t status_apa102 = {
+    .base = {
+        .type = &bitbangio_spi_type,
+    },
+};
 #else
 #include "shared-bindings/busio/SPI.h"
-busio_spi_obj_t status_apa102;
+busio_spi_obj_t status_apa102 = {
+    .base = {
+        .type = &busio_spi_type,
+    },
+};
 #endif
 #endif
 
@@ -59,9 +67,21 @@ busio_spi_obj_t status_apa102;
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-pulseio_pwmout_obj_t rgb_status_r;
-pulseio_pwmout_obj_t rgb_status_g;
-pulseio_pwmout_obj_t rgb_status_b;
+pulseio_pwmout_obj_t rgb_status_r = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
+pulseio_pwmout_obj_t rgb_status_g = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
+pulseio_pwmout_obj_t rgb_status_b = {
+    .base = {
+        .type = &pulseio_pwmout_type,
+    },
+};
 
 uint8_t rgb_status_brightness = 0xFF;
 
@@ -74,8 +94,14 @@ uint16_t status_rgb_color[3] = {
 static uint32_t current_status_color = 0;
 #endif
 
-
+static bool rgb_led_status_init_in_progress = false;
 void rgb_led_status_init() {
+    if (rgb_led_status_init_in_progress) {
+        // Avoid recursion.
+        return;
+    }
+    rgb_led_status_init_in_progress = true;
+
     #ifdef MICROPY_HW_NEOPIXEL
         common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
         // Pretend we aren't using the pins. digitalio.DigitalInOut
@@ -91,15 +117,15 @@ void rgb_led_status_init() {
                                               mp_const_none);
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
-            // Don't use spi_deinit because that leads to infinite
-            // recursion because reset_pin_number may call
-            // rgb_led_status_init.
-            spi_m_sync_disable(&status_apa102.spi_desc);
+            // This may call us recursively if reset_pin_number() is called,
+            // The rgb_led_status_init_in_progress guard will prevent further recursion.
+            common_hal_busio_spi_deinit(&status_apa102);
         }
         common_hal_busio_spi_construct(&status_apa102,
                                       MICROPY_HW_APA102_SCK,
                                       MICROPY_HW_APA102_MOSI,
                                       mp_const_none);
+        common_hal_busio_spi_never_reset(&status_apa102);
         #endif
         // Pretend we aren't using the pins. bitbangio.SPI will
         // mark them as used.
@@ -149,6 +175,8 @@ void rgb_led_status_init() {
     current_status_color = 0x1000000; // Not a valid color
     new_status_color(rgb);
     #endif
+
+    rgb_led_status_init_in_progress = false;
 }
 
 void reset_status_led() {

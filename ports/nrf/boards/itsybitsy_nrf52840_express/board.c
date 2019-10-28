@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,15 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME "SPRESENSE"
-#define MICROPY_HW_MCU_NAME "CXD5602"
+#include "boards/board.h"
 
-#define DEFAULT_I2C_BUS_SCL (&pin_I2C0_BCK)
-#define DEFAULT_I2C_BUS_SDA (&pin_I2C0_BDT)
+void board_init(void) {
+}
 
-#define DEFAULT_SPI_BUS_SCK (&pin_SPI4_SCK)
-#define DEFAULT_SPI_BUS_MISO (&pin_SPI4_MISO)
-#define DEFAULT_SPI_BUS_MOSI (&pin_SPI4_MOSI)
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#define DEFAULT_UART_BUS_RX (&pin_UART2_RXD)
-#define DEFAULT_UART_BUS_TX (&pin_UART2_TXD)
+void reset_board(void) {
+
+}

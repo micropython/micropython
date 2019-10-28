@@ -75,6 +75,7 @@ jobs:
         board:
         - "arduino_mkr1300"
         - "arduino_mkrzero"
+        - "arduino_nano_33_ble"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
@@ -109,6 +110,7 @@ jobs:
         - "hallowing_m4_express"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
+        - "itsybitsy_nrf52840_express"
         - "kicksat-sprite"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
