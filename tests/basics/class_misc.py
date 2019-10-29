@@ -4,6 +4,6 @@ class C:
 
 c = C()
 try:
-    d = bytearray(c)
+    d = bytes(c)
 except TypeError:
     print('TypeError')
