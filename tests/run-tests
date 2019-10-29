@@ -288,6 +288,22 @@ def run_tests(pyb, tests, args, base_path="."):
         cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
         skip_endian = (upy_byteorder != cpy_byteorder)
 
+    # These tests don't test slice explicitly but rather use it to perform the test
+    misc_slice_tests = (
+        'builtin_range',
+        'class_super',
+        'containment',
+        'errno1',
+        'fun_str',
+        'generator1',
+        'globals_del',
+        'memoryview1',
+        'memoryview_gc',
+        'object1',
+        'python34',
+        'struct_endian',
+    )
+
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
@@ -411,7 +427,7 @@ def run_tests(pyb, tests, args, base_path="."):
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
-        is_slice = test_name.find("slice") != -1
+        is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith("async_")
         is_const = test_name.startswith("const")
 
