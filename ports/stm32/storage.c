@@ -263,11 +263,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_writeblocks_obj, pyb_flash_writeblock
 STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT: storage_init(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_DEINIT: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case BP_IOCTL_SYNC: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(storage_get_block_count());
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(storage_get_block_size());
+        case MP_BLOCKDEV_IOCTL_INIT: storage_init(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
+        case MP_BLOCKDEV_IOCTL_SYNC: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: return MP_OBJ_NEW_SMALL_INT(storage_get_block_count());
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE: return MP_OBJ_NEW_SMALL_INT(storage_get_block_size());
         default: return mp_const_none;
     }
 }

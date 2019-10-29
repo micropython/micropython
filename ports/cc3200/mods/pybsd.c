@@ -184,16 +184,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_sd_writeblocks_obj, pyb_sd_writeblocks);
 STATIC mp_obj_t pyb_sd_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT:
-        case BP_IOCTL_DEINIT:
-        case BP_IOCTL_SYNC:
+        case MP_BLOCKDEV_IOCTL_INIT:
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+        case MP_BLOCKDEV_IOCTL_SYNC:
             // nothing to do
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case BP_IOCTL_SEC_COUNT:
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
             return MP_OBJ_NEW_SMALL_INT(sd_disk_info.ulNofBlock * (sd_disk_info.ulBlockSize / 512));
 
-        case BP_IOCTL_SEC_SIZE:
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             return MP_OBJ_NEW_SMALL_INT(SD_SECTOR_SIZE);
 
         default: // unknown command

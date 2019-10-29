@@ -113,10 +113,10 @@ DRESULT disk_ioctl (
 
     // First part: call the relevant method of the underlying block device
     static const uint8_t op_map[8] = {
-        [CTRL_SYNC] = BP_IOCTL_SYNC,
-        [GET_SECTOR_COUNT] = BP_IOCTL_SEC_COUNT,
-        [GET_SECTOR_SIZE] = BP_IOCTL_SEC_SIZE,
-        [IOCTL_INIT] = BP_IOCTL_INIT,
+        [CTRL_SYNC] = MP_BLOCKDEV_IOCTL_SYNC,
+        [GET_SECTOR_COUNT] = MP_BLOCKDEV_IOCTL_BLOCK_COUNT,
+        [GET_SECTOR_SIZE] = MP_BLOCKDEV_IOCTL_BLOCK_SIZE,
+        [IOCTL_INIT] = MP_BLOCKDEV_IOCTL_INIT,
     };
     uint8_t bp_op = op_map[cmd & 7];
     mp_obj_t ret = mp_const_none;

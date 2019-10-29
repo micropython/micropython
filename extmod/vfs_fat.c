@@ -72,7 +72,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // Initialise underlying block device
     vfs->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
-    vfs->blockdev.block_size = FF_MIN_SS; // default, will be populated by call to BP_IOCTL_SEC_SIZE
+    vfs->blockdev.block_size = FF_MIN_SS; // default, will be populated by call to MP_BLOCKDEV_IOCTL_BLOCK_SIZE
     mp_vfs_blockdev_init(&vfs->blockdev, args[0]);
 
     // mount the block device so the VFS methods can be used

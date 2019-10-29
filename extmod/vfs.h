@@ -45,11 +45,11 @@
 #define MP_BLOCKDEV_FLAG_NO_FILESYSTEM  (0x0008) // the block device has no filesystem on it
 
 // constants for block protocol ioctl
-#define BP_IOCTL_INIT           (1)
-#define BP_IOCTL_DEINIT         (2)
-#define BP_IOCTL_SYNC           (3)
-#define BP_IOCTL_SEC_COUNT      (4)
-#define BP_IOCTL_SEC_SIZE       (5)
+#define MP_BLOCKDEV_IOCTL_INIT          (1)
+#define MP_BLOCKDEV_IOCTL_DEINIT        (2)
+#define MP_BLOCKDEV_IOCTL_SYNC          (3)
+#define MP_BLOCKDEV_IOCTL_BLOCK_COUNT   (4)
+#define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
 
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
