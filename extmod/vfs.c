@@ -38,6 +38,10 @@
 #include "extmod/vfs_fat.h"
 #endif
 
+#if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+#include "extmod/vfs_lfs.h"
+#endif
+
 #if MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
 #endif
@@ -156,6 +160,44 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 }
 
+STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
+    #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t vfs = MP_OBJ_NULL;
+        mp_vfs_blockdev_t blockdev;
+        mp_vfs_blockdev_init(&blockdev, bdev_obj);
+        uint8_t buf[44];
+        mp_vfs_blockdev_read_ext(&blockdev, 0, 8, sizeof(buf), buf);
+        #if MICROPY_VFS_LFS1
+        if (memcmp(&buf[32], "littlefs", 8) == 0) {
+            // LFS1
+            vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
+            nlr_pop();
+            return vfs;
+        }
+        #endif
+        #if MICROPY_VFS_LFS2
+        if (memcmp(&buf[0], "littlefs", 8) == 0) {
+            // LFS2
+            vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
+            nlr_pop();
+            return vfs;
+        }
+        #endif
+        nlr_pop();
+    } else {
+        // Ignore exception (eg block device doesn't support extended readblocks)
+    }
+    #endif
+
+    #if MICROPY_VFS_FAT
+    return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
+    #endif
+
+    return bdev_obj;
+}
+
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_readonly, ARG_mkfs };
     static const mp_arg_t allowed_args[] = {
@@ -178,10 +220,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     if (dest[0] == MP_OBJ_NULL) {
         // Input object has no mount method, assume it's a block device and try to
         // auto-detect the filesystem and create the corresponding VFS entity.
-        // (At the moment we only support FAT filesystems.)
-        #if MICROPY_VFS_FAT
-        vfs_obj = mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &vfs_obj);
-        #endif
+        vfs_obj = mp_vfs_autodetect(vfs_obj);
     }
 
     // create new object
