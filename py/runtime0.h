@@ -46,6 +46,18 @@
 #define MP_NATIVE_TYPE_PTR16 (0x06)
 #define MP_NATIVE_TYPE_PTR32 (0x07)
 
+// Bytecode and runtime boundaries for unary ops
+#define MP_UNARY_OP_NUM_BYTECODE    (MP_UNARY_OP_NOT + 1)
+#define MP_UNARY_OP_NUM_RUNTIME     (MP_UNARY_OP_SIZEOF + 1)
+
+// Bytecode and runtime boundaries for binary ops
+#define MP_BINARY_OP_NUM_BYTECODE   (MP_BINARY_OP_POWER + 1)
+#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+#define MP_BINARY_OP_NUM_RUNTIME    (MP_BINARY_OP_REVERSE_POWER + 1)
+#else
+#define MP_BINARY_OP_NUM_RUNTIME    (MP_BINARY_OP_CONTAINS + 1)
+#endif
+
 typedef enum {
     // These ops may appear in the bytecode. Changing this group
     // in any way requires changing the bytecode version.
@@ -55,21 +67,18 @@ typedef enum {
     MP_UNARY_OP_NOT,
 
     // Following ops cannot appear in the bytecode
-    MP_UNARY_OP_NUM_BYTECODE,
-
-    MP_UNARY_OP_BOOL = MP_UNARY_OP_NUM_BYTECODE, // __bool__
+    MP_UNARY_OP_BOOL, // __bool__
     MP_UNARY_OP_LEN, // __len__
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_INT, // __int__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
-
-    MP_UNARY_OP_NUM_RUNTIME,
 } mp_unary_op_t;
 
-// Note: the first 9+12+12 of these are used in bytecode and changing
-// them requires changing the bytecode version.
 typedef enum {
+    // The following 9+13+13 ops are used in bytecode and changing
+    // them requires changing the bytecode version.
+
     // 9 relational operations, should return a bool; order of first 6 matches corresponding mp_token_kind_t
     MP_BINARY_OP_LESS,
     MP_BINARY_OP_MORE,
@@ -113,11 +122,18 @@ typedef enum {
 
     // Operations below this line don't appear in bytecode, they
     // just identify special methods.
-    MP_BINARY_OP_NUM_BYTECODE,
 
-    // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
-#if MICROPY_PY_REVERSE_SPECIAL_METHODS
-    MP_BINARY_OP_REVERSE_OR = MP_BINARY_OP_NUM_BYTECODE,
+    // This is not emitted by the compiler but is supported by the runtime.
+    // It must follow immediately after MP_BINARY_OP_POWER.
+    MP_BINARY_OP_DIVMOD,
+
+    // The runtime will convert MP_BINARY_OP_IN to this operator with swapped args.
+    // A type should implement this containment operator instead of MP_BINARY_OP_IN.
+    MP_BINARY_OP_CONTAINS,
+
+    // 13 MP_BINARY_OP_REVERSE_* operations must be in the same order as MP_BINARY_OP_*,
+    // and be the last ones supported by the runtime.
+    MP_BINARY_OP_REVERSE_OR,
     MP_BINARY_OP_REVERSE_XOR,
     MP_BINARY_OP_REVERSE_AND,
     MP_BINARY_OP_REVERSE_LSHIFT,
@@ -130,20 +146,6 @@ typedef enum {
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
     MP_BINARY_OP_REVERSE_POWER,
-#endif
-
-    // This is not emitted by the compiler but is supported by the runtime
-    MP_BINARY_OP_DIVMOD
-        #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
-        = MP_BINARY_OP_NUM_BYTECODE
-        #endif
-    ,
-
-    // The runtime will convert MP_BINARY_OP_IN to this operator with swapped args.
-    // A type should implement this containment operator instead of MP_BINARY_OP_IN.
-    MP_BINARY_OP_CONTAINS,
-
-    MP_BINARY_OP_NUM_RUNTIME,
 
     // These 2 are not supported by the runtime and must be synthesised by the emitter
     MP_BINARY_OP_NOT_IN,
