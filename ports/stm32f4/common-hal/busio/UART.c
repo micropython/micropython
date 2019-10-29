@@ -100,6 +100,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef USART1
     if(USARTx==USART1) { 
         reserved_uart[0] = true;
+        __HAL_RCC_USART1_FORCE_RESET();
+        __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_ENABLE();
         self->irq = USART1_IRQn;
         //HAL_NVIC_SetPriority(USART1_IRQn, 2,1);
@@ -111,6 +113,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef USART2
     if(USARTx==USART2) { 
         reserved_uart[1] = true;
+        __HAL_RCC_USART2_FORCE_RESET();
+        __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_ENABLE();
         self->irq = USART2_IRQn;
         //HAL_NVIC_SetPriority(USART2_IRQn, 2,1);
@@ -122,6 +126,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef USART3
     if(USARTx==USART3) { 
         reserved_uart[2] = true;
+        __HAL_RCC_USART3_FORCE_RESET();
+        __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_ENABLE();
         self->irq = USART3_IRQn;
         //HAL_NVIC_SetPriority(USART3_IRQn, 2,1);
@@ -133,6 +139,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef UART4
     if(USARTx==UART4) { 
         reserved_uart[3] = true;
+        __HAL_RCC_UART4_FORCE_RESET();
+        __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_ENABLE();
         self->irq = UART4_IRQn;
         //HAL_NVIC_SetPriority(UART4_IRQn, 2,1);
@@ -144,6 +152,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef UART5
     if(USARTx==UART5) { 
         reserved_uart[4] = true;
+        __HAL_RCC_UART5_FORCE_RESET();
+        __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_ENABLE();
         self->irq = UART5_IRQn;
         //NVIC_SetPriority(UART5_IRQn, 7);
@@ -155,6 +165,8 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
     #ifdef USART6
     if(USARTx==USART6) { 
         reserved_uart[5] = true;
+        __HAL_RCC_USART6_FORCE_RESET();
+        __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_ENABLE();
         self->irq = USART6_IRQn;
         //NVIC_SetPriority(USART6_IRQn, 7);
