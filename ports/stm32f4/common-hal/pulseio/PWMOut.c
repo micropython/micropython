@@ -35,7 +35,7 @@
 #include "stm32f4xx_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#define PWM_MAX_FREQ 6000000
+#define PULSE_RESOLUTION 256 //8 bit
 #define ALL_CLOCKS 0xFFFF
 
 STATIC uint8_t reserved_tim[TIM_BANK_ARRAY_LEN];
@@ -44,8 +44,6 @@ STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
 
 STATIC void tim_clock_enable(uint16_t mask);
 STATIC void tim_clock_disable(uint16_t mask);
-
-RCC->CFGR & RCC_CFGR_PPRE1
 
 // Get the frequency (in Hz) of the source clock for the given timer.
 // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
@@ -107,10 +105,6 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     uint16_t duty,
                                                     uint32_t frequency,
                                                     bool variable_frequency) {
-    if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError(translate("Invalid frequency supplied"));
-    }
-
     TIM_TypeDef * TIMx;
     uint8_t tim_num = sizeof(mcu_tim_pin_list)/sizeof(*mcu_tim_pin_list);
     bool tim_chan_taken = false;
@@ -189,19 +183,25 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     }
 
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
-    uint32_t period = PWM_MAX_FREQ/frequency;
+    if (frequency == 0 || frequency * PULSE_RESOLUTION > (source_freq)) {
+        mp_raise_ValueError(translate("Invalid frequency supplied"));
+    }
+    uint32_t prescaler = source_freq/(frequency*PULSE_RESOLUTION);
+    uint32_t period = PULSE_RESOLUTION;
+    uint32_t input = (duty*PULSE_RESOLUTION)/65535;
     //Used for Debugging 
-    // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
-    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
-    // mp_printf(&mp_plat_print, "Timer Freq: %d\n", source_freq/(source_freq / PWM_MAX_FREQ));
-    // mp_printf(&mp_plat_print, "Actual Freq: %d\n", (source_freq/(source_freq / PWM_MAX_FREQ))/period);
-    // mp_printf(&mp_plat_print, "Duty: %d\n", duty);
-    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
+    mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", duty,input);
+    mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
+    mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
+    mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
+    mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
+    mp_printf(&mp_plat_print, "Duty: %d\n", duty);
+    mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
 
     //Timer init
     self->handle.Instance = TIMx;
     self->handle.Init.Period = period - 1;
-    self->handle.Init.Prescaler = (source_freq / PWM_MAX_FREQ) - 1; // TIM runs at ~6MHz
+    self->handle.Init.Prescaler = prescaler - 1;
     self->handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     self->handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     self->handle.Init.RepetitionCounter = 0;
@@ -209,23 +209,23 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     //only run init if this is the first instance of this timer
     if (first_time_setup) {
         if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
-            mp_raise_ValueError(translate("Timer Init Error"));
+            mp_raise_ValueError(translate("Could not initialize timer"));
         }
     }
 
     //Channel/PWM init
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
-    self->chan_handle.Pulse = (period*duty)/100 - 1;
+    self->chan_handle.Pulse = input; //-1?
     self->chan_handle.OCPolarity = TIM_OCPOLARITY_LOW;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
     self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
     self->chan_handle.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
     self->chan_handle.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Channel Init Error"));
+        mp_raise_ValueError(translate("Could not initialize channel"));
     }
     if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Error starting PWM"));
+        mp_raise_ValueError(translate("Could not start PWM"));
     }
 
     self->variable_frequency = variable_frequency;
@@ -261,14 +261,12 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
-    uint16_t duty = duty_cycle/655;
-    uint32_t period = PWM_MAX_FREQ/self->frequency;
-    uint32_t input = (period*duty)/100;
+    uint32_t input = (duty_cycle*PULSE_RESOLUTION)/65535;
     //Used for debugging
     //mp_printf(&mp_plat_print, "duty_cycle %d, Duty: %d, Input %d\n", duty_cycle, duty, input);
     __HAL_TIM_SET_COMPARE(&self->handle, self->channel, input);
 
-    self->duty_cycle = duty;
+    self->duty_cycle = duty_cycle;
 }
 
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
@@ -276,31 +274,38 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
-    if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
-    }
+    //don't halt setup for the same frequency
     if (frequency == self->frequency) return;
 
+    //calculate new values
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
-    uint32_t period = PWM_MAX_FREQ/frequency;
+    if (frequency == 0 || frequency*PULSE_RESOLUTION > (source_freq)) {
+        mp_raise_ValueError(translate("Invalid frequency supplied"));
+    }
+    uint32_t prescaler = source_freq/(frequency*PULSE_RESOLUTION);
+    uint32_t period = PULSE_RESOLUTION;
+    //this shouldn't ever exceed 0xffff*0xffff = 0xfffe0001, so it won't integer overflow.
+    uint32_t input = (self->duty_cycle*PULSE_RESOLUTION)/65535;
 
     //shut down
     HAL_TIM_PWM_Stop(&self->handle, self->channel);
 
     //Only change altered values
     self->handle.Init.Period = period - 1;
-    self->handle.Init.Prescaler = (source_freq / PWM_MAX_FREQ) - 1; // TIM runs at ~6MHz
+    self->handle.Init.Prescaler = prescaler - 1; 
 
     //restart everything, adjusting for new speed
     if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("Timer Re-Init Error"));
+        mp_raise_ValueError(translate("Could not re-init timer"));
     }
-    self->chan_handle.Pulse = (period*self->duty_cycle)/100 - 1;
+
+    self->chan_handle.Pulse = input;
+
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Channel Re-Init Error"));
+        mp_raise_ValueError(translate("Could not re-init channel"));
     }
     if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Error restarting PWM"));
+        mp_raise_ValueError(translate("Could not restart PWM"));
     }
 
     tim_frequencies[self->tim->tim_index-1] = frequency;
