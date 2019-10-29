@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  * Uses code from Micropython, Copyright (c) 2013-2016 Damien P. George
  *
@@ -46,7 +45,13 @@ STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
 STATIC void tim_clock_enable(uint16_t mask);
 STATIC void tim_clock_disable(uint16_t mask);
 
-// Get the frequency (in Hz)
+RCC->CFGR & RCC_CFGR_PPRE1
+
+// Get the frequency (in Hz) of the source clock for the given timer.
+// On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
+// If the APB prescaler is 1, then the timer clock is equal to its respective
+// APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
+// respective APB clock.  See DM00031020 Rev 4, page 115.
 static uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
@@ -68,7 +73,7 @@ static uint32_t timer_get_source_freq(uint32_t tim_id) {
 void pwmout_reset(void) {
     uint16_t never_reset_mask = 0x00;
     for(int i=0;i<TIM_BANK_ARRAY_LEN;i++) {
-        if(!never_reset_tim[i]) {
+        if (!never_reset_tim[i]) {
             reserved_tim[i] = 0x00;
             tim_frequencies[i] = 0x00;
         } else {
@@ -89,8 +94,6 @@ void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
 }
 
 void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
-    //TODO: doesn't this need an equivalent release pin in microcontroller.c? 
-    //I don't see that implemented in any port. 
     for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
         if (mcu_tim_banks[i] == self->handle.Instance) {
             never_reset_tim[i] = false;
@@ -106,14 +109,10 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     bool variable_frequency) {
     if (frequency == 0 || frequency > 6000000) {
         mp_raise_ValueError(translate("Invalid frequency supplied"));
-        //return PWMOUT_INVALID_FREQUENCY;
     }
 
     TIM_TypeDef * TIMx;
-    //TODO: style/safety question, use this instead?
-    //uint8_t tim_num_pins = TIM_PIN_ARRAY_LEN;
     uint8_t tim_num = sizeof(mcu_tim_pin_list)/sizeof(*mcu_tim_pin_list);
-    //TODO: use an enum to make this prettier?
     bool tim_chan_taken = false;
     bool tim_taken_f_mismatch = false;
     bool var_freq_mismatch = false;
@@ -121,21 +120,21 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     for(uint i = 0; i < tim_num; i++) {
         //if pin is same
-        if(mcu_tim_pin_list[i].pin == pin) {
+        if (mcu_tim_pin_list[i].pin == pin) {
             //check if the timer has a channel active
             if (reserved_tim[mcu_tim_pin_list[i].tim_index-1] != 0) {
                 //is it the same channel? (or all channels reserved by a var-freq)
-                if(reserved_tim[mcu_tim_pin_list[i].tim_index-1] & 1<<(mcu_tim_pin_list[i].channel_index-1)) {
+                if (reserved_tim[mcu_tim_pin_list[i].tim_index-1] & 1<<(mcu_tim_pin_list[i].channel_index-1)) {
                     tim_chan_taken = true;
                     continue; //keep looking, might be another viable option
                 }
                 //If the frequencies are the same it's ok
-                if(tim_frequencies[mcu_tim_pin_list[i].tim_index-1] != frequency) {
+                if (tim_frequencies[mcu_tim_pin_list[i].tim_index-1] != frequency) {
                     tim_taken_f_mismatch = true;
                     continue; //keep looking
                 }
                 //you can't put a variable frequency on a partially reserved timer
-                if(variable_frequency) {
+                if (variable_frequency) {
                     var_freq_mismatch = true;
                     continue; //keep looking
                 }
@@ -148,9 +147,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     }
 
     //handle valid/invalid timer instance
-    //TODO: why doesn't PWM handle its own value errors like every other module?
-    //The samd value errors don't really fit for STM32.
-    if(self->tim!=NULL) {
+    if (self->tim!=NULL) {
         //create instance
         TIMx = mcu_tim_banks[self->tim->tim_index-1];
         //reserve timer/channel
@@ -162,17 +159,13 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         tim_frequencies[self->tim->tim_index-1] = frequency;
     } else { //no match found
         if (tim_chan_taken) {
-            mp_raise_ValueError(translate("Timer hardware is reserved"));
-            //return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            mp_raise_ValueError(translate("No more timers available on this pin."));
         } else if (tim_taken_f_mismatch) {
-            mp_raise_ValueError(translate("Frequency mismatch with existing reserved channel"));
-            //return PWMOUT_INVALID_FREQUENCY;
+            mp_raise_ValueError(translate("Frequency must be the same as as the existing PWMOut using this timer"));
         } else if (var_freq_mismatch) {
-            mp_raise_ValueError(translate("Cannot vary frequency of a partially reserved timer"));
-            //return PWMOUT_INVALID_FREQUENCY; //I guess?
+            mp_raise_ValueError(translate("Cannot vary frequency on a timer that is already in use"));
         } else {
             mp_raise_ValueError(translate("Invalid pins"));
-            //return PWMOUT_INVALID_PIN;
         }
     }
 
@@ -197,7 +190,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
     uint32_t period = PWM_MAX_FREQ/frequency;
-    //TODO: remove before merging. 
+    //Used for Debugging 
     // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
     // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
     // mp_printf(&mp_plat_print, "Timer Freq: %d\n", source_freq/(source_freq / PWM_MAX_FREQ));
@@ -214,8 +207,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->handle.Init.RepetitionCounter = 0;
 
     //only run init if this is the first instance of this timer
-    if(first_time_setup) {
-        if(HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
+    if (first_time_setup) {
+        if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
             mp_raise_ValueError(translate("Timer Init Error"));
         }
     }
@@ -228,10 +221,10 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
     self->chan_handle.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
     self->chan_handle.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
-    if(HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
+    if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Channel Init Error"));
     }
-    if(HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
+    if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Error starting PWM"));
     }
 
@@ -251,7 +244,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         return;
     }
     //var freq shuts down entire timer, others just their channel
-    if(self->variable_frequency) {
+    if (self->variable_frequency) {
         reserved_tim[self->tim->tim_index-1] = 0x00;
     } else {
         reserved_tim[self->tim->tim_index-1] &= ~(1<<self->tim->channel_index);
@@ -271,7 +264,7 @@ void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16
     uint16_t duty = duty_cycle/655;
     uint32_t period = PWM_MAX_FREQ/self->frequency;
     uint32_t input = (period*duty)/100;
-    //TODO: remove before merging
+    //Used for debugging
     //mp_printf(&mp_plat_print, "duty_cycle %d, Duty: %d, Input %d\n", duty_cycle, duty, input);
     __HAL_TIM_SET_COMPARE(&self->handle, self->channel, input);
 
@@ -299,14 +292,14 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
     self->handle.Init.Prescaler = (source_freq / PWM_MAX_FREQ) - 1; // TIM runs at ~6MHz
 
     //restart everything, adjusting for new speed
-    if(HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
+    if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
         mp_raise_ValueError(translate("Timer Re-Init Error"));
     }
     self->chan_handle.Pulse = (period*self->duty_cycle)/100 - 1;
-    if(HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
+    if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Channel Re-Init Error"));
     }
-    if(HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
+    if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Error restarting PWM"));
     }
 
@@ -324,80 +317,80 @@ bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self
 
 STATIC void tim_clock_enable(uint16_t mask) {
     #ifdef TIM1
-    if(mask & 1<<0) __HAL_RCC_TIM1_CLK_ENABLE();
+    if (mask & 1<<0) __HAL_RCC_TIM1_CLK_ENABLE();
     #endif
     #ifdef TIM2
-    if(mask & 1<<1) __HAL_RCC_TIM2_CLK_ENABLE();
+    if (mask & 1<<1) __HAL_RCC_TIM2_CLK_ENABLE();
     #endif
     #ifdef TIM3
-    if(mask & 1<<2) __HAL_RCC_TIM3_CLK_ENABLE();
+    if (mask & 1<<2) __HAL_RCC_TIM3_CLK_ENABLE();
     #endif
     #ifdef TIM4
-    if(mask & 1<<3) __HAL_RCC_TIM4_CLK_ENABLE();
+    if (mask & 1<<3) __HAL_RCC_TIM4_CLK_ENABLE();
     #endif
     #ifdef TIM5
-    if(mask & 1<<4) __HAL_RCC_TIM5_CLK_ENABLE();
+    if (mask & 1<<4) __HAL_RCC_TIM5_CLK_ENABLE();
     #endif
     //6 and 7 are reserved ADC timers
     #ifdef TIM8
-    if(mask & 1<<7) __HAL_RCC_TIM8_CLK_ENABLE();
+    if (mask & 1<<7) __HAL_RCC_TIM8_CLK_ENABLE();
     #endif
     #ifdef TIM9
-    if(mask & 1<<8) __HAL_RCC_TIM9_CLK_ENABLE();
+    if (mask & 1<<8) __HAL_RCC_TIM9_CLK_ENABLE();
     #endif
     #ifdef TIM10
-    if(mask & 1<<9) __HAL_RCC_TIM10_CLK_ENABLE();
+    if (mask & 1<<9) __HAL_RCC_TIM10_CLK_ENABLE();
     #endif
     #ifdef TIM11
-    if(mask & 1<<10) __HAL_RCC_TIM11_CLK_ENABLE();
+    if (mask & 1<<10) __HAL_RCC_TIM11_CLK_ENABLE();
     #endif
     #ifdef TIM12
-    if(mask & 1<<11) __HAL_RCC_TIM12_CLK_ENABLE();
+    if (mask & 1<<11) __HAL_RCC_TIM12_CLK_ENABLE();
     #endif
     #ifdef TIM13
-    if(mask & 1<<12) __HAL_RCC_TIM13_CLK_ENABLE();
+    if (mask & 1<<12) __HAL_RCC_TIM13_CLK_ENABLE();
     #endif
     #ifdef TIM14
-    if(mask & 1<<13) __HAL_RCC_TIM14_CLK_ENABLE();
+    if (mask & 1<<13) __HAL_RCC_TIM14_CLK_ENABLE();
     #endif
 }
 
 STATIC void tim_clock_disable(uint16_t mask) {
     #ifdef TIM1
-    if(mask & 1<<0) __HAL_RCC_TIM1_CLK_DISABLE();
+    if (mask & 1<<0) __HAL_RCC_TIM1_CLK_DISABLE();
     #endif
     #ifdef TIM2
-    if(mask & 1<<1) __HAL_RCC_TIM2_CLK_DISABLE();
+    if (mask & 1<<1) __HAL_RCC_TIM2_CLK_DISABLE();
     #endif
     #ifdef TIM3
-    if(mask & 1<<2) __HAL_RCC_TIM3_CLK_DISABLE();
+    if (mask & 1<<2) __HAL_RCC_TIM3_CLK_DISABLE();
     #endif
     #ifdef TIM4
-    if(mask & 1<<3) __HAL_RCC_TIM4_CLK_DISABLE();
+    if (mask & 1<<3) __HAL_RCC_TIM4_CLK_DISABLE();
     #endif
     #ifdef TIM5
-    if(mask & 1<<4) __HAL_RCC_TIM5_CLK_DISABLE();
+    if (mask & 1<<4) __HAL_RCC_TIM5_CLK_DISABLE();
     #endif
     //6 and 7 are reserved ADC timers
     #ifdef TIM8
-    if(mask & 1<<7) __HAL_RCC_TIM8_CLK_DISABLE();
+    if (mask & 1<<7) __HAL_RCC_TIM8_CLK_DISABLE();
     #endif
     #ifdef TIM9
-    if(mask & 1<<8) __HAL_RCC_TIM9_CLK_DISABLE();
+    if (mask & 1<<8) __HAL_RCC_TIM9_CLK_DISABLE();
     #endif
     #ifdef TIM10
-    if(mask & 1<<9) __HAL_RCC_TIM10_CLK_DISABLE();
+    if (mask & 1<<9) __HAL_RCC_TIM10_CLK_DISABLE();
     #endif
     #ifdef TIM11
-    if(mask & 1<<10) __HAL_RCC_TIM11_CLK_DISABLE();
+    if (mask & 1<<10) __HAL_RCC_TIM11_CLK_DISABLE();
     #endif
     #ifdef TIM12
-    if(mask & 1<<11) __HAL_RCC_TIM12_CLK_DISABLE();
+    if (mask & 1<<11) __HAL_RCC_TIM12_CLK_DISABLE();
     #endif
     #ifdef TIM13
-    if(mask & 1<<12) __HAL_RCC_TIM13_CLK_DISABLE();
+    if (mask & 1<<12) __HAL_RCC_TIM13_CLK_DISABLE();
     #endif
     #ifdef TIM14
-    if(mask & 1<<13) __HAL_RCC_TIM14_CLK_DISABLE();
+    if (mask & 1<<13) __HAL_RCC_TIM14_CLK_DISABLE();
     #endif
 }

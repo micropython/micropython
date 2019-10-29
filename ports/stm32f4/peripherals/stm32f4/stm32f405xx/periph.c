@@ -148,7 +148,7 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[56] = {
     TIM(11,3,1,&pin_PF07),
     TIM(13,9,1,&pin_PF08),
     TIM(14,9,1,&pin_PF09),
-    // TIM(12,9,1,&pin_PH06),
+    // TIM(12,9,1,&pin_PH06), //TODO: include these when pin map is expanded
     // TIM(12,9,2,&pin_PH09),
     // TIM(5,2,1,&pin_PH10),
     // TIM(5,2,2,&pin_PH11),
