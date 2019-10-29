@@ -43,7 +43,7 @@ const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit},
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
-    mp_obj_dict_t *globals;
+    bool is_running;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
@@ -60,7 +60,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
 
-    o->globals = self_fun->globals;
+    o->is_running = false;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
     o->code_state.n_state = n_state;
@@ -105,7 +105,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->base.type = &mp_type_gen_instance;
 
     // Parse the input arguments and set up the code state
-    o->globals = self_fun->globals;
+    o->is_running = false;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte*)prelude_offset;
     o->code_state.n_state = n_state;
@@ -168,16 +168,15 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         }
     }
 
-    // We set self->globals=NULL while executing, for a sentinel to ensure the generator
-    // cannot be reentered during execution
-    if (self->globals == NULL) {
+    // Ensure the generator cannot be reentered during execution
+    if (self->is_running) {
         mp_raise_ValueError("generator already executing");
     }
+    self->is_running = true;
 
     // Set up the correct globals context for the generator and execute it
     self->code_state.old_globals = mp_globals_get();
-    mp_globals_set(self->globals);
-    self->globals = NULL;
+    mp_globals_set(self->code_state.fun_bc->globals);
 
     mp_vm_return_kind_t ret_kind;
 
@@ -194,8 +193,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
     }
 
-    self->globals = mp_globals_get();
     mp_globals_set(self->code_state.old_globals);
+
+    self->is_running = false;
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
