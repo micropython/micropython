@@ -187,24 +187,50 @@ implementation of this class will usually allow access to the memory-like
 functionality a piece of hardware (like flash memory).  A block device can be
 used by a particular filesystem driver to store the data for its filesystem.
 
+There are two compatible signatures for the ``readblocks`` and ``writeblocks``
+methods (see below), in order to support a variety of use cases.  A given block
+device may implement one form or the other, or both at the same time.
+
 .. class:: AbstractBlockDev(...)
 
     Construct a block device object.  The parameters to the constructor are
     dependent on the specific block device.
 
     .. method:: readblocks(block_num, buf)
+    .. method:: readblocks(block_num, buf, offset)
 
+        The first form reads aligned, multiples of blocks.
         Starting at the block given by the index *block_num*, read blocks from
         the device into *buf* (an array of bytes).
         The number of blocks to read is given by the length of *buf*,
         which will be a multiple of the block size.
 
-    .. method:: writeblocks(block_num, buf)
+        The second form allows reading at arbitrary locations within a block,
+        and arbitrary lengths.
+        Starting at block index *block_num*, and byte offset within that block
+        of *offset*, read bytes from the device into *buf* (an array of bytes).
+        The number of bytes to read is given by the length of *buf*.
 
+    .. method:: writeblocks(block_num, buf)
+    .. method:: writeblocks(block_num, buf, offset)
+
+        The first form writes aligned, multiples of blocks, and requires that the
+        blocks that are written to be first erased (if necessary) by this method.
         Starting at the block given by the index *block_num*, write blocks from
         *buf* (an array of bytes) to the device.
         The number of blocks to write is given by the length of *buf*,
         which will be a multiple of the block size.
+
+        The second form allows writing at arbitrary locations within a block,
+        and arbitrary lengths.  Only the bytes being written should be changed,
+        and the caller of this method must ensure that the relevant blocks are
+        erased via a prior ``ioctl`` call.
+        Starting at block index *block_num*, and byte offset within that block
+        of *offset*, write bytes from *buf* (an array of bytes) to the device.
+        The number of bytes to write is given by the length of *buf*.
+
+        Note that implementations must never implicitly erase blocks if the offset
+        argument is specified, even if it is zero.
 
     .. method:: ioctl(op, arg)
 
@@ -219,6 +245,7 @@ used by a particular filesystem driver to store the data for its filesystem.
           - 5 -- get the number of bytes in a block, should return an integer,
             or ``None`` in which case the default value of 512 is used
             (*arg* is unused)
+          - 6 -- erase a block, *arg* is the block number to erase
 
 By way of example, the following class will implement a block device that stores
 its data in RAM using a ``bytearray``::
@@ -250,3 +277,34 @@ It can be used as follows::
     uos.VfsFat.mkfs(bdev)
     vfs = uos.VfsFat(bdev)
     uos.mount(vfs, '/ramdisk')
+
+An example of a block device that supports both signatures and behaviours of
+the :meth:`readblocks` and :meth:`writeblocks` methods is::
+
+    class RAMBlockDev:
+        def __init__(self, block_size, num_blocks):
+            self.block_size = block_size
+            self.data = bytearray(block_size * num_blocks)
+
+        def readblocks(self, block, buf, offset=0):
+            addr = block_num * self.block_size + offset
+            for i in range(len(buf)):
+                buf[i] = self.data[addr + i]
+
+        def writeblocks(self, block_num, buf, offset=None):
+            if offset is None:
+                # do erase, then write
+                for i in range(len(buf) // self.block_size):
+                    self.ioctl(6, block_num + i)
+                offset = 0
+            addr = block_num * self.block_size + offset
+            for i in range(len(buf)):
+                self.data[addr + i] = buf[i]
+
+        def ioctl(self, op, arg):
+            if op == 4: # block count
+                return len(self.data) // self.block_size
+            if op == 5: # block size
+                return self.block_size
+            if op == 6: # block erase
+                return 0
