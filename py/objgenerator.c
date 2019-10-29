@@ -43,7 +43,10 @@ const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit},
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
-    bool is_running;
+    // mp_const_none: Not-running, no exception.
+    // MP_OBJ_NULL: Running, no exception.
+    // other: Not running, pending exception.
+    mp_obj_t pend_exc;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
@@ -60,7 +63,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
 
-    o->is_running = false;
+    o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
     o->code_state.n_state = n_state;
@@ -105,7 +108,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->base.type = &mp_type_gen_instance;
 
     // Parse the input arguments and set up the code state
-    o->is_running = false;
+    o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = (const byte*)prelude_offset;
     o->code_state.n_state = n_state;
@@ -151,28 +154,30 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         *ret_val = MP_OBJ_STOP_ITERATION;
         return MP_VM_RETURN_NORMAL;
     }
+
+    // Ensure the generator cannot be reentered during execution
+    if (self->pend_exc == MP_OBJ_NULL) {
+        mp_raise_ValueError("generator already executing");
+    }
+
+    #if MICROPY_PY_GENERATOR_PEND_THROW
+    // If exception is pending (set using .pend_throw()), process it now.
+    if (self->pend_exc != mp_const_none) {
+        throw_value = self->pend_exc;
+    }
+    #endif
+
+    // If the generator is started, allow sending a value.
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
             mp_raise_TypeError("can't send non-None value to a just-started generator");
         }
     } else {
-        #if MICROPY_PY_GENERATOR_PEND_THROW
-        // If exception is pending (set using .pend_throw()), process it now.
-        if (*self->code_state.sp != mp_const_none) {
-            throw_value = *self->code_state.sp;
-            *self->code_state.sp = MP_OBJ_NULL;
-        } else
-        #endif
-        {
-            *self->code_state.sp = send_value;
-        }
+        *self->code_state.sp = send_value;
     }
 
-    // Ensure the generator cannot be reentered during execution
-    if (self->is_running) {
-        mp_raise_ValueError("generator already executing");
-    }
-    self->is_running = true;
+    // Mark as running
+    self->pend_exc = MP_OBJ_NULL;
 
     // Set up the correct globals context for the generator and execute it
     self->code_state.old_globals = mp_globals_get();
@@ -195,7 +200,8 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     mp_globals_set(self->code_state.old_globals);
 
-    self->is_running = false;
+    // Mark as not running
+    self->pend_exc = mp_const_none;
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
@@ -313,11 +319,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 #if MICROPY_PY_GENERATOR_PEND_THROW
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->code_state.sp == self->code_state.state - 1) {
-        mp_raise_TypeError("can't pend throw to just-started generator");
+    if (self->pend_exc == MP_OBJ_NULL) {
+        mp_raise_ValueError("generator already executing");
     }
-    mp_obj_t prev = *self->code_state.sp;
-    *self->code_state.sp = exc_in;
+    mp_obj_t prev = self->pend_exc;
+    self->pend_exc = exc_in;
     return prev;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
