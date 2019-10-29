@@ -158,6 +158,7 @@ jobs:
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
+        - "winterbloom_sol"
 
     steps:
     - name: Set up Python 3.5
