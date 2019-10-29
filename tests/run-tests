@@ -223,6 +223,7 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_int_big = False
     skip_bytearray = False
     skip_set_type = False
+    skip_slice = False
     skip_async = False
     skip_const = False
     skip_revops = False
@@ -254,6 +255,11 @@ def run_tests(pyb, tests, args, base_path="."):
         output = run_feature_check(pyb, args, base_path, 'set_check.py')
         if output == b'CRASH':
             skip_set_type = True
+
+        # Check if slice is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'slice.py')
+        if output != b'slice\n':
+            skip_slice = True
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'async_check.py')
@@ -405,6 +411,7 @@ def run_tests(pyb, tests, args, base_path="."):
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_slice = test_name.find("slice") != -1
         is_async = test_name.startswith("async_")
         is_const = test_name.startswith("const")
 
@@ -414,6 +421,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
+        skip_it |= skip_slice and is_slice
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and test_name.startswith("class_reverse_op")
