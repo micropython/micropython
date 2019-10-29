@@ -128,6 +128,13 @@ jobs:
       after_failure:
         - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
+    # minimal unix port with tests
+    - stage: test
+      env: NAME="minimal unix port build and tests"
+      script:
+        - make ${MAKEOPTS} -C ports/unix minimal
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+
     # windows port via mingw
     - stage: test
       env: NAME="windows port build via mingw"
