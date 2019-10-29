@@ -52,7 +52,7 @@ STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API(config) *c, LFSx_API(bloc
 }
 
 STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API(config) *c, LFSx_API(block_t) block) {
-    return MP_VFS_LFSx(dev_ioctl)(c, 6, block, true); // erase
+    return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_BLOCK_ERASE, block, true);
 }
 
 STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API(config) *c) {
