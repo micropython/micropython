@@ -217,3 +217,19 @@ char *strstr(const char *haystack, const char *needle)
             return (char *) haystack;
     return 0;
 }
+
+size_t strspn(const char *s, const char *accept) {
+    const char *ss = s;
+    while (*s && strchr(accept, *s) != NULL) {
+        ++s;
+    }
+    return s - ss;
+}
+
+size_t strcspn(const char *s, const char *reject) {
+    const char *ss = s;
+    while (*s && strchr(reject, *s) == NULL) {
+        ++s;
+    }
+    return s - ss;
+}
