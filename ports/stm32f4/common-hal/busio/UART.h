@@ -34,6 +34,13 @@
 #include "py/obj.h"
 #include "py/ringbuf.h"
 
+#ifndef UART_IRQPRI
+#define UART_IRQPRI       1
+#endif
+#ifndef UART_IRQSUB_PRI
+#define UART_IRQSUB_PRI    0
+#endif
+
 typedef struct {
     mp_obj_base_t base;
     UART_HandleTypeDef handle;

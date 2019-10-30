@@ -38,6 +38,11 @@
 #include "tick.h"
 #include "stm32f4xx_hal.h" 
 
+bool iflag;
+int errflag;
+bool rxflag;
+bool bsyflag;
+
 STATIC bool reserved_uart[MAX_UART];
 
 void uart_reset(void) {
@@ -45,37 +50,31 @@ void uart_reset(void) {
         reserved_uart[0] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[0] = NULL;
         __HAL_RCC_USART1_CLK_DISABLE(); 
-        //HAL_NVIC_DisableIRQ(USART1_IRQn);
     #endif
     #ifdef USART2
         reserved_uart[1] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[1] = NULL;
         __HAL_RCC_USART2_CLK_DISABLE(); 
-        //HAL_NVIC_DisableIRQ(USART2_IRQn);
     #endif
     #ifdef USART3
         reserved_uart[2] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[2] = NULL;
         __HAL_RCC_USART3_CLK_DISABLE(); 
-        //HAL_NVIC_DisableIRQ(USART3_IRQn);
     #endif
     #ifdef UART4
         reserved_uart[3] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[3] = NULL;
         __HAL_RCC_UART4_CLK_DISABLE();
-        //HAL_NVIC_DisableIRQ(UART4_IRQn);
     #endif
     #ifdef UART5
         reserved_uart[4] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[4] = NULL;
         __HAL_RCC_UART5_CLK_DISABLE();
-        //HAL_NVIC_DisableIRQ(UART5_IRQn);
     #endif
     #ifdef USART6
         reserved_uart[5] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[5] = NULL;
         __HAL_RCC_USART6_CLK_DISABLE(); 
-        //HAL_NVIC_DisableIRQ(USART6_IRQn);
     #endif
     //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
@@ -104,10 +103,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_ENABLE();
         self->irq = USART1_IRQn;
-        //HAL_NVIC_SetPriority(USART1_IRQn, 2,1);
-        NVIC_SetPriority(USART1_IRQn, 7);
-        NVIC_ClearPendingIRQ(USART1_IRQn);
-        HAL_NVIC_EnableIRQ(USART1_IRQn);
     } 
     #endif
     #ifdef USART2
@@ -117,10 +112,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_ENABLE();
         self->irq = USART2_IRQn;
-        //HAL_NVIC_SetPriority(USART2_IRQn, 2,1);
-        NVIC_SetPriority(USART2_IRQn, 7);
-        NVIC_ClearPendingIRQ(USART2_IRQn);
-        HAL_NVIC_EnableIRQ(USART2_IRQn);
     } 
     #endif
     #ifdef USART3
@@ -130,10 +121,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_ENABLE();
         self->irq = USART3_IRQn;
-        //HAL_NVIC_SetPriority(USART3_IRQn, 2,1);
-        NVIC_SetPriority(USART3_IRQn, 7);
-        NVIC_ClearPendingIRQ(USART3_IRQn);
-        HAL_NVIC_EnableIRQ(USART3_IRQn);
     } 
     #endif
     #ifdef UART4
@@ -143,10 +130,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_ENABLE();
         self->irq = UART4_IRQn;
-        //HAL_NVIC_SetPriority(UART4_IRQn, 2,1);
-        NVIC_SetPriority(UART4_IRQn, 7);
-        NVIC_ClearPendingIRQ(UART4_IRQn);
-        HAL_NVIC_EnableIRQ(UART4_IRQn);
     } 
     #endif
     #ifdef UART5
@@ -156,10 +139,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_ENABLE();
         self->irq = UART5_IRQn;
-        //NVIC_SetPriority(UART5_IRQn, 7);
-        NVIC_SetPriority(UART5_IRQn, 7);
-        NVIC_ClearPendingIRQ(UART5_IRQn);
-        HAL_NVIC_EnableIRQ(UART5_IRQn);
     } 
     #endif
     #ifdef USART6
@@ -169,10 +148,6 @@ STATIC void uart_clk_irq_enable(busio_uart_obj_t *self, USART_TypeDef * USARTx) 
         __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_ENABLE();
         self->irq = USART6_IRQn;
-        //NVIC_SetPriority(USART6_IRQn, 7);
-        NVIC_SetPriority(USART6_IRQn, 7);
-        NVIC_ClearPendingIRQ(USART6_IRQn);
-        HAL_NVIC_EnableIRQ(USART6_IRQn);
     } 
     #endif
 }
@@ -308,13 +283,25 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (self->tx != NULL) {
         claim_pin(tx);
     }
-
     self->baudrate = baudrate;
     self->timeout_ms = timeout * 1000;
 
-    if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
-        mp_raise_ValueError(translate("HAL recieve IT start error"));
+    //start the interrupt series
+    if ((HAL_UART_GetState(&self->handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
+        mp_raise_ValueError(translate("Could not start interrupt, RX busy"));
     }
+    HAL_NVIC_DisableIRQ(self->irq); //prevent handle lock contention
+
+    HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+
+    HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
+    HAL_NVIC_EnableIRQ(self->irq);
+
+    mp_printf(&mp_plat_print, "Started and inited\n");
+    iflag = 0;
+    errflag = 0;
+    rxflag = 0;
+    bsyflag = 0;
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -322,6 +309,7 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    mp_printf(&mp_plat_print, "De-init UART\n");
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
@@ -343,6 +331,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     // Wait for all bytes received or timeout, same as nrf
     while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
+        //restart if it failed in the callback
+        if(errflag != HAL_OK) {
+            errflag = HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+        }
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
             return 0;
@@ -350,21 +342,23 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     // Halt reception
-    //HAL_UART_AbortReceive_IT(&self->handle);
-    NVIC_DisableIRQ(self->irq);
+    HAL_NVIC_DisableIRQ(self->irq);
 
     // copy received data
     rx_bytes = ringbuf_count(&self->rbuf);
+    //Used for debuggings
+    //mp_printf(&mp_plat_print, "Read: count:%d, buffer location%p, if:%der:%drx:%dbsy:%d\n", rx_bytes, &self->rbuf,iflag,errflag,rxflag,bsyflag);
+    iflag = 0; 
+    errflag = 0;
+    rxflag = 0;
+    bsyflag = 0;
     rx_bytes = MIN(rx_bytes, len);
     for ( uint16_t i = 0; i < rx_bytes; i++ ) {
         data[i] = ringbuf_get(&self->rbuf);
     }
 
-    NVIC_EnableIRQ(self->irq);
-    // if (HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1) != HAL_OK) {
-    //     mp_raise_ValueError(translate("HAL recieve IT re-start error"));
-    // }
-    
+    HAL_NVIC_EnableIRQ(self->irq);
+
     if (rx_bytes == 0) {
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
@@ -383,28 +377,50 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     } else {
         mp_raise_ValueError(translate("UART write error"));
     }
+    mp_printf(&mp_plat_print, "Send\n");
     return 0;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
 {
+    rxflag = 1;
     for(int i=0; i<7; i++) {
         //get context pointer and cast it as struct pointer
         busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[i];
         if(handle == &context->handle) {
-            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
-            HAL_StatusTypeDef result = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
-            if(result!=HAL_OK) {
-                mp_raise_RuntimeError(translate("UART rx restart error"));
+            //check if transaction is ongoing
+            if((HAL_UART_GetState(handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
+                bsyflag = 1;
+                return;
             }
-            break;
+            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
+            errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
+            
+            return;
         }
     }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 {
-    mp_raise_RuntimeError(translate("UART Error Callback hit"));
+    if (__HAL_UART_GET_FLAG(UartHandle, UART_FLAG_PE) != RESET) {
+        __HAL_UART_CLEAR_PEFLAG(UartHandle);
+    } else if (__HAL_UART_GET_FLAG(UartHandle, UART_FLAG_FE) != RESET) {
+        __HAL_UART_CLEAR_FEFLAG(UartHandle);
+    } else if (__HAL_UART_GET_FLAG(UartHandle, UART_FLAG_NE) != RESET) {
+        __HAL_UART_CLEAR_NEFLAG(UartHandle);
+    } else if (__HAL_UART_GET_FLAG(UartHandle, UART_FLAG_ORE) != RESET) {
+        __HAL_UART_CLEAR_OREFLAG(UartHandle);
+    }
+    //restart serial read after an error
+    for(int i=0; i<7; i++) {
+        busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[i];
+        if(UartHandle == &context->handle) {
+            HAL_UART_Receive_IT(UartHandle, &context->rx_char, 1);
+            return;
+        }
+    }
+
 }
 
 uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
@@ -432,12 +448,11 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
+    mp_printf(&mp_plat_print, "Clear RX Buffer\n");
     // Halt reception
-    //HAL_UART_AbortReceive_IT(&self->handle);
-    NVIC_DisableIRQ(self->irq);
+    HAL_NVIC_DisableIRQ(self->irq);
     ringbuf_clear(&self->rbuf);
-    NVIC_EnableIRQ(self->irq);
-    //HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+    HAL_NVIC_EnableIRQ(self->irq);
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
@@ -445,12 +460,12 @@ bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
 }
 
 STATIC void call_hal_irq(int uart_num) {
+    iflag = 1;
     //Create casted context pointer
     busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[uart_num-1];
     if(context != NULL) {
+        HAL_NVIC_ClearPendingIRQ(context->irq);
         HAL_UART_IRQHandler(&context->handle);
-    } else {
-        mp_raise_ValueError(translate("UART IRQ bad handle supplied"));
     }
 }
 
