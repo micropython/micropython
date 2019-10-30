@@ -257,7 +257,7 @@ coverage:
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
-	    MICROPY_VFS_LFS=1 \
+	    MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
 	    FROZEN_MANIFEST=manifest_coverage.py \
 	    BUILD=build-coverage PROG=micropython_coverage
 

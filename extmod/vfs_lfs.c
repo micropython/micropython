@@ -28,7 +28,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
 
-#if MICROPY_VFS && MICROPY_VFS_LFS
+#if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
 enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead };
 
@@ -38,6 +38,8 @@ static const mp_arg_t lfs_make_allowed_args[] = {
     { MP_QSTR_progsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
     { MP_QSTR_lookahead, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
 };
+
+#if MICROPY_VFS_LFS1
 
 #include "lib/littlefs/lfs1.h"
 
@@ -81,6 +83,10 @@ mp_obj_t mp_vfs_lfs1_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
 #undef MP_TYPE_VFS_LFSx
 #undef MP_TYPE_VFS_LFSx_
 
+#endif // MICROPY_VFS_LFS1
+
+#if MICROPY_VFS_LFS2
+
 #include "lib/littlefs/lfs2.h"
 
 #define LFS_BUILD_VERSION (2)
@@ -114,4 +120,6 @@ mp_obj_t mp_vfs_lfs2_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
 #include "extmod/vfs_lfsx.c"
 #include "extmod/vfs_lfsx_file.c"
 
-#endif // MICROPY_VFS && MICROPY_VFS_LFS
+#endif // MICROPY_VFS_LFS2
+
+#endif // MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
