@@ -10,7 +10,7 @@ CFLAGS_EXTRA = \
 	-DMICROPY_EMIT_X86=0 \
 	-DMICROPY_NO_ALLOCA=1 \
 
-PROG = micropython_freedos
+PROG = micropython-freedos
 
 MICROPY_PY_SOCKET = 0
 MICROPY_PY_FFI = 0
