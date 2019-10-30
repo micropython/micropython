@@ -1,7 +1,7 @@
 # build a minimal interpreter
 COPT = -Os -DNDEBUG
 
-PROG = micropython_minimal
+PROG = micropython-minimal
 
 FROZEN_MANIFEST =
 

@@ -1,4 +1,4 @@
-PROG ?= micropython_coverage
+PROG ?= micropython-coverage
 
 COPT = -O0
 

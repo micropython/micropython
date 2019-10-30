@@ -1,1 +1,1 @@
-PROG ?= micropython_dev
+PROG ?= micropython-dev
