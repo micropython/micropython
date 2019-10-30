@@ -190,13 +190,13 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     uint32_t period = PULSE_RESOLUTION;
     uint32_t input = (duty*PULSE_RESOLUTION)/65535;
     //Used for Debugging 
-    mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", duty,input);
-    mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
-    mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
-    mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
-    mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
-    mp_printf(&mp_plat_print, "Duty: %d\n", duty);
-    mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
+    // mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", duty,input);
+    // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
+    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
+    // mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
+    // mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
+    // mp_printf(&mp_plat_print, "Duty: %d\n", duty);
+    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
 
     //Timer init
     self->handle.Instance = TIMx;
