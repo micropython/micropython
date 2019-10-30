@@ -297,7 +297,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
     HAL_NVIC_EnableIRQ(self->irq);
 
-    mp_printf(&mp_plat_print, "Started and inited\n");
+    //mp_printf(&mp_plat_print, "Started and inited\n");
     iflag = 0;
     errflag = 0;
     rxflag = 0;
@@ -309,7 +309,7 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
-    mp_printf(&mp_plat_print, "De-init UART\n");
+    //mp_printf(&mp_plat_print, "De-init UART\n");
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
@@ -377,7 +377,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     } else {
         mp_raise_ValueError(translate("UART write error"));
     }
-    mp_printf(&mp_plat_print, "Send\n");
+    //mp_printf(&mp_plat_print, "Send\n");
     return 0;
 }
 
@@ -448,7 +448,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
-    mp_printf(&mp_plat_print, "Clear RX Buffer\n");
+    //mp_printf(&mp_plat_print, "Clear RX Buffer\n");
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
     ringbuf_clear(&self->rbuf);
