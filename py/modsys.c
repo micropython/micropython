@@ -34,6 +34,7 @@
 #include "py/stream.h"
 #include "py/smallint.h"
 #include "py/runtime.h"
+#include "py/persistentcode.h"
 
 #if MICROPY_PY_SYS_SETTRACE
 #include "py/objmodule.h"
@@ -66,22 +67,36 @@ STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
     3,
     { I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO) }
 };
+#if MICROPY_PERSISTENT_CODE_LOAD
+#define SYS_IMPLEMENTATION_ELEMS \
+    MP_ROM_QSTR(MP_QSTR_micropython), \
+    MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
+    MP_ROM_INT(MPY_FILE_HEADER_INT)
+#else
+#define SYS_IMPLEMENTATION_ELEMS \
+    MP_ROM_QSTR(MP_QSTR_micropython), \
+    MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
+#endif
 #if MICROPY_PY_ATTRTUPLE
-STATIC const qstr impl_fields[] = { MP_QSTR_name, MP_QSTR_version };
+STATIC const qstr impl_fields[] = {
+    MP_QSTR_name,
+    MP_QSTR_version,
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    MP_QSTR_mpy,
+    #endif
+};
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    2,
-        MP_ROM_QSTR(MP_QSTR_micropython),
-        MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
+    2 + MICROPY_PERSISTENT_CODE_LOAD,
+        SYS_IMPLEMENTATION_ELEMS
 );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
-    2,
+    2 + MICROPY_PERSISTENT_CODE_LOAD,
     {
-        MP_ROM_QSTR(MP_QSTR_micropython),
-        MP_ROM_PTR(&mp_sys_implementation_version_info_obj),
+        SYS_IMPLEMENTATION_ELEMS
     }
 };
 #endif

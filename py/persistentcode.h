@@ -70,6 +70,10 @@
 #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
 
+// 16-bit little-endian integer with the second and third bytes of supported .mpy files
+#define MPY_FILE_HEADER_INT (MPY_VERSION \
+    | (MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
+
 enum {
     MP_NATIVE_ARCH_NONE = 0,
     MP_NATIVE_ARCH_X86,

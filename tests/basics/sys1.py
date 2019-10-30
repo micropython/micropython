@@ -18,3 +18,9 @@ try:
 except AttributeError:
     # Effectively skip subtests
     print(True)
+
+if hasattr(sys.implementation, 'mpy'):
+    print(type(sys.implementation.mpy))
+else:
+    # Effectively skip subtests
+    print(int)
