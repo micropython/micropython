@@ -74,7 +74,7 @@ uint8_t display_init_sequence[] = {
       0x11, 0x1d, 0x23, 0x35, 0x41, 0x4b, 0x4b, 0x42, 0x3A,
       0x27, 0x1B, 0x08, 0x09, 0x03, 0x00, 0x01,
     0x3a, 1, 0x55,
-    0x36, 1, 0x00,
+    0x36, 1, 0xA8,
     0x11, DELAY, 150/5, // Exit Sleep, then delay 150 ms
     0x29, DELAY, 50/5
 };
@@ -98,7 +98,7 @@ void board_init(void) {
         320, // Height
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // grayscale
         false, // pixels_in_byte_share_row (unused for depths > 8)
