@@ -43,6 +43,7 @@ typedef struct {
     bool variable_frequency: 1;
     uint16_t duty_cycle;
     uint32_t frequency;
+    uint32_t period;
 } pulseio_pwmout_obj_t;
 
 void pwmout_reset(void);

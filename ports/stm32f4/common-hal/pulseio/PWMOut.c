@@ -35,7 +35,6 @@
 #include "stm32f4xx_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#define PULSE_RESOLUTION 256 //8 bit
 #define ALL_CLOCKS 0xFFFF
 
 STATIC uint8_t reserved_tim[TIM_BANK_ARRAY_LEN];
@@ -183,12 +182,21 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     }
 
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
-    if (frequency == 0 || frequency * PULSE_RESOLUTION > (source_freq)) {
+    uint32_t prescaler = 0;
+    uint32_t period = 0;
+    
+    for (int i=0; i<32767;i++) {
+        period = source_freq/(i*frequency);
+        if (period <= 65535 && period>=2) {
+            prescaler = i;
+            break;
+        }
+    }
+    if (prescaler == 0) {
         mp_raise_ValueError(translate("Invalid frequency supplied"));
     }
-    uint32_t prescaler = source_freq/(frequency*PULSE_RESOLUTION);
-    uint32_t period = PULSE_RESOLUTION;
-    uint32_t input = (duty*PULSE_RESOLUTION)/65535;
+    uint32_t input = (duty*period)/65535;
+
     //Used for Debugging 
     // mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", duty,input);
     // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
@@ -231,6 +239,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->variable_frequency = variable_frequency;
     self->frequency = frequency;
     self->duty_cycle = duty;
+    self->period = period;
 
     return PWMOUT_OK;
 }
@@ -261,7 +270,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
-    uint32_t input = (duty_cycle*PULSE_RESOLUTION)/65535;
+    uint32_t input = (duty_cycle*self->period)/65535;
     //Used for debugging
     //mp_printf(&mp_plat_print, "duty_cycle %d, Duty: %d, Input %d\n", duty_cycle, duty, input);
     __HAL_TIM_SET_COMPARE(&self->handle, self->channel, input);
@@ -277,15 +286,30 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
     //don't halt setup for the same frequency
     if (frequency == self->frequency) return;
 
-    //calculate new values
     uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
-    if (frequency == 0 || frequency*PULSE_RESOLUTION > (source_freq)) {
+    uint32_t prescaler = 0;
+    uint32_t period = 0;
+    
+    for (int i=0; i<32767;i++) {
+        period = source_freq/(i*frequency);
+        if (period <= 65535 && period>=2) {
+            prescaler = i;
+            break;
+        }
+    }
+    if (prescaler == 0) {
         mp_raise_ValueError(translate("Invalid frequency supplied"));
     }
-    uint32_t prescaler = source_freq/(frequency*PULSE_RESOLUTION);
-    uint32_t period = PULSE_RESOLUTION;
-    //this shouldn't ever exceed 0xffff*0xffff = 0xfffe0001, so it won't integer overflow.
-    uint32_t input = (self->duty_cycle*PULSE_RESOLUTION)/65535;
+
+    uint32_t input = (self->duty_cycle*period)/65535;
+
+    //debugging output
+    // mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", self->duty_cycle,input);
+    // mp_printf(&mp_plat_print, "Period: %d\n", period);
+    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
+    // mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
+    // mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
+    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
 
     //shut down
     HAL_TIM_PWM_Stop(&self->handle, self->channel);
@@ -310,6 +334,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
 
     tim_frequencies[self->tim->tim_index-1] = frequency;
     self->frequency = frequency;
+    self->period = period;
 }
 
 uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
