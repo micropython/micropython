@@ -219,6 +219,9 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
         mp_raise_NotImplementedError(NULL);
     }
     const mbedtls_x509_crt* peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    if (peer_cert == NULL) {
+        return mp_const_none;
+    }
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
