@@ -51,7 +51,7 @@ SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # the git hash of the currently supported ESP IDF version
-ESPIDF_SUPHASH_V3 := 6ccb4cf5b7d1fdddb8c2492f9cbc926abaf230df
+ESPIDF_SUPHASH_V3 := 0a0f2caa1d30e0f8cbfe31475093492e09995763
 ESPIDF_SUPHASH_V4 := 310beae373446ceb9a4ad9b36b5428d7fdf2705f
 
 define print_supported_git_hash
@@ -157,6 +157,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/tcpip_adapter/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/lwip/src/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/port/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps
+INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps/sntp
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/mdns/include
@@ -770,6 +771,7 @@ BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOM
 	bootloader_support/src/bootloader_clock.o \
 	bootloader_support/src/bootloader_common.o \
 	bootloader_support/src/bootloader_flash.o \
+	bootloader_support/src/bootloader_flash_config.o \
 	bootloader_support/src/bootloader_init.o \
 	bootloader_support/src/bootloader_random.o \
 	bootloader_support/src/bootloader_utility.o \

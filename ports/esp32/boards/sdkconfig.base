@@ -2,6 +2,7 @@
 # The following options override the defaults
 
 CONFIG_IDF_TARGET="esp32"
+CONFIG_IDF_FIRMWARE_CHIP_ID=0x0000
 
 # Application manager
 CONFIG_APP_EXCLUDE_PROJECT_VER_VAR=y
