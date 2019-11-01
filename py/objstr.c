@@ -256,7 +256,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
     mp_obj_t item;
-    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+    while ((item = mp_iternext2(iterable)) != MP_OBJ_NULL) {
         mp_int_t val = mp_obj_get_int(item);
         #if MICROPY_FULL_CHECKS
         if (val < 0 || val > 255) {
@@ -264,6 +264,9 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         }
         #endif
         vstr_add_byte(&vstr, val);
+    }
+    if (mp_iternext_had_exc()) {
+        return MP_OBJ_NULL;
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
