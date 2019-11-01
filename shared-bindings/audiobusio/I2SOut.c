@@ -62,7 +62,7 @@
 //|     import time
 //|     import math
 //|
-//|     # Generate one period of sine wav.
+//|     # Generate one period of sine wave.
 //|     length = 8000 // 440
 //|     sine_wave = array.array("H", [0] * length)
 //|     for i in range(length):

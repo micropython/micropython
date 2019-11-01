@@ -38,7 +38,7 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     struct pwm_info_s info;
     bool variable_frequency;
-    uint8_t number;
+    int8_t number;
 } pulseio_pwmout_obj_t;
 
 void pwmout_reset(void);

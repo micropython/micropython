@@ -1,6 +1,6 @@
 USB_VID = 0x239A
 USB_PID = 0x805A
-USB_PRODUCT = "Feather F405"
+USB_PRODUCT = "Feather STM32F405 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 USB_DEVICES = "CDC,MSC"
 

@@ -41,7 +41,7 @@
 //|
 //| .. class:: Service(uuid, *, secondary=False)
 //|
-//|   Create a new Service identitied by the specified UUID. It can be accessed by all
+//|   Create a new Service identified by the specified UUID. It can be accessed by all
 //|   connections. This is known as a Service server. Client Service objects are created via
 //|   `Connection.discover_remote_services`.
 //|
