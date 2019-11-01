@@ -5,7 +5,7 @@ print('__name__' in dir())
 
 # dir of module
 import sys
-print('exit' in dir(sys))
+print('version' in dir(sys))
 
 # dir of type
 print('append' in dir(list))

@@ -56,12 +56,12 @@ user_files = {
     '/mod1.mpy': (
         b'M\x05\x0b\x1f\x20' # header
 
-        b'\x38' # n bytes, bytecode
-            b'\x01\x00\x00\x00\x00\x00\x05\x00\x00\x00\x00\xff' # prelude
+        b'\x20' # n bytes, bytecode
+            b'\x00\x08\x02m\x02m' # prelude
             b'\x51' # LOAD_CONST_NONE
             b'\x63' # RETURN_VALUE
 
-            b'\x02m\x02m\x00\x02' # simple_name, source_file, n_obj, n_raw_code
+            b'\x00\x02' # n_obj, n_raw_code
 
         b'\x22' # n bytes, viper code
             b'\x00\x00\x00\x00\x00\x00' # dummy machine code

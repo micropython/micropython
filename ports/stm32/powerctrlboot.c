@@ -27,6 +27,13 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 
+static inline void powerctrl_config_systick(void) {
+    // Configure SYSTICK to run at 1kHz (1ms interval)
+    SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
+    SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
+    NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
+}
+
 #if defined(STM32F0)
 
 void SystemClock_Config(void) {
@@ -88,9 +95,7 @@ void SystemClock_Config(void) {
     }
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 }
 
 #elif defined(STM32L0)
@@ -122,9 +127,7 @@ void SystemClock_Config(void) {
     }
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 
     #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
@@ -189,9 +192,7 @@ void SystemClock_Config(void) {
     RCC->CCIPR = 2 << RCC_CCIPR_CLK48SEL_Pos;
 
     SystemCoreClockUpdate();
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    powerctrl_config_systick();
 }
 
 #endif

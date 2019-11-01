@@ -140,7 +140,7 @@ The above may also happen after an application terminates and quits to the REPL
 for any reason including an exception. Subsequent arrival of data provokes the
 failure with the above error message repeatedly issued. So, sockets should be
 closed in any case, regardless whether an application terminates successfully
-or by an exeption, for example using try/finally::
+or by an exception, for example using try/finally::
 
     sock = socket(...)
     try:

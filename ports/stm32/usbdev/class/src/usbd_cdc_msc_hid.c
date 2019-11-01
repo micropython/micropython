@@ -556,7 +556,6 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
             n += make_hid_desc_ep(d + n, hid_info, HID_IFACE_NUM_WITH_CDC2_MSC, HID_IN_EP_WITH_CDC2_MSC, HID_OUT_EP_WITH_CDC2_MSC);
             usbd->cdc[0]->iface_num = CDC_IFACE_NUM_WITH_MSC;
             usbd->cdc[1]->iface_num = CDC2_IFACE_NUM_WITH_MSC;
-            usbd->cdc[2]->iface_num = CDC3_IFACE_NUM_WITH_MSC;
             usbd->hid->in_ep = HID_IN_EP_WITH_CDC2_MSC;
             usbd->hid->out_ep = HID_OUT_EP_WITH_CDC2_MSC;
             usbd->hid->iface_num = HID_IFACE_NUM_WITH_CDC2_MSC;

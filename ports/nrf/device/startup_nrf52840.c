@@ -176,7 +176,9 @@ const func __Vectors[] __attribute__ ((section(".isr_vector"),used)) = {
     UARTE1_IRQHandler,
     QSPI_IRQHandler,
     CRYPTOCELL_IRQHandler,
-    SPIM3_IRQHandler,
+    0,
     0,
     PWM3_IRQHandler,
+    0,
+    SPIM3_IRQHandler,
 };

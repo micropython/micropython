@@ -1,8 +1,11 @@
 try:
-    from array import array
+    from uarray import array
 except ImportError:
-    print("SKIP")
-    raise SystemExit
+    try:
+        from array import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 def test(a):
     print(a)

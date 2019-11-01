@@ -78,8 +78,10 @@ void machine_init(void) {
         reset_cause = PYB_RESET_LOCKUP;
     } else if (state & POWER_RESETREAS_OFF_Msk) {
         reset_cause = PYB_RESET_POWER_ON;
+#if !defined(NRF9160_XXAA)
     } else if (state & POWER_RESETREAS_LPCOMP_Msk) {
         reset_cause = PYB_RESET_LPCOMP;
+#endif
     } else if (state & POWER_RESETREAS_DIF_Msk) {
         reset_cause = PYB_RESET_DIF;
 #if defined(NRF52_SERIES)

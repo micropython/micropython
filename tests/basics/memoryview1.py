@@ -4,6 +4,14 @@ try:
 except:
     print("SKIP")
     raise SystemExit
+try:
+    import uarray as array
+except ImportError:
+    try:
+        import array
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 # test reading from bytes
 b = b'1234'
@@ -39,7 +47,6 @@ m = memoryview(bytearray(2))
 print(bytearray(m))
 print(list(memoryview(memoryview(b'1234')))) # read-only memoryview
 
-import array
 a = array.array('i', [1, 2, 3, 4])
 m = memoryview(a)
 print(list(m))

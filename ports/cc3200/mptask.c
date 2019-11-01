@@ -300,7 +300,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
     // Initialise the local flash filesystem.
     // init the vfs object
     fs_user_mount_t *vfs_fat = sflash_vfs_fat;
-    vfs_fat->flags = 0;
+    vfs_fat->blockdev.flags = 0;
     pyb_flash_init_vfs(vfs_fat);
 
     // Create it if needed, and mount in on /flash.

@@ -320,7 +320,7 @@ STATIC const mp_obj_type_t btree_type = {
     .locals_dict = (void*)&btree_locals_dict,
 };
 
-STATIC FILEVTABLE btree_stream_fvtable = {
+STATIC const FILEVTABLE btree_stream_fvtable = {
     mp_stream_posix_read,
     mp_stream_posix_write,
     mp_stream_posix_lseek,

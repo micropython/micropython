@@ -169,21 +169,29 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
-    if (args->key.u_obj != MP_OBJ_NULL) {
+    if (args->key.u_obj != mp_const_none) {
         size_t key_len;
         const byte *key = (const byte*)mp_obj_str_get_data(args->key.u_obj, &key_len);
         // len should include terminating null
         ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
-        assert(ret == 0);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA; // use general error for all key errors
+            goto cleanup;
+        }
 
         size_t cert_len;
         const byte *cert = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
         // len should include terminating null
         ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);
-        assert(ret == 0);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
+            goto cleanup;
+        }
 
         ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
-        assert(ret == 0);
+        if (ret != 0) {
+            goto cleanup;
+        }
     }
 
     if (args->do_handshake.u_bool) {
@@ -208,6 +216,10 @@ cleanup:
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_OSError(MP_ENOMEM);
+    } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
+        mp_raise_ValueError("invalid key");
+    } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
+        mp_raise_ValueError("invalid cert");
     } else {
         mp_raise_OSError(MP_EIO);
     }
@@ -219,6 +231,9 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
         mp_raise_NotImplementedError(NULL);
     }
     const mbedtls_x509_crt* peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    if (peer_cert == NULL) {
+        return mp_const_none;
+    }
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
@@ -331,8 +346,8 @@ STATIC const mp_obj_type_t ussl_socket_type = {
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },

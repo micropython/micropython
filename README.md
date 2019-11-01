@@ -9,8 +9,9 @@ See also [Micropython + LittlevGL](https://blog.littlevgl.com/2019-02-20/micropy
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python`
 2. `git clone --recurse-submodules https://github.com/littlevgl/lv_micropython.git`
 3. `cd lv_micropython`
-4. `make -C ports/unix/`
-5. `./ports/unix/micropython`
+4. `make -C mpy-cross`
+5. `make -C ports/unix/`
+6. `./ports/unix/micropython`
 
 ### For ESP32 port
 
@@ -29,7 +30,7 @@ make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" BOARD=G
 Explanation about the paramters:
 - `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.  
   - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
-  - `LV_COLOR_16_SWAP=1` is **only** needed if you plan to use the [Pure Micropython Display Driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver). Otherwise, remove it.
+  - `LV_COLOR_16_SWAP=1` is needed if you plan to use the [Pure Micropython Display Driver](https://blog.littlevgl.com/2019-08-05/micropython-pure-display-driver).
 - `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
 - `PYTHON=python2` - depending on your installed `pyparsing` version, you might or might not need this.
 - `deploy` - make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
@@ -55,8 +56,6 @@ Now you can build the JavaScript port.
 6. `make`
 7. Run an HTTP server that serves files from the current directory.
 8. Browse to `/lvgl_editor.html` on the HTTP Server.
-
-
 
 ## Super Simple Example
 
@@ -101,32 +100,28 @@ Here is an alternative example, for registering ILI9341 drivers on Micropython E
 
 ```python
 import lvgl as lv
-
-# Import ESP32 and ILI9341 drivers (advnaces tick count and schedules tasks)
-
-import ILI9341 as ili
 import lvesp32
 
-# Initialize the driver and register it to LittlevGL
+# Import ILI9341 driver and initialized it
 
-disp = ili.display(miso=5, mosi=18, clk=19, cs=13, dc=12, rst=4, backlight=2)
-disp.init()
+from ili9341 import ili9341
+disp = ili9341()
 
-# Register display driver 
+# Import XPT2046 driver and initalize it
 
-disp_buf1 = lv.disp_buf_t()
-buf1_1 = bytearray(480*10)
-lv.disp_buf_init(disp_buf1,buf1_1, None, len(buf1_1)//4)
-disp_drv = lv.disp_drv_t()
-lv.disp_drv_init(disp_drv)
-disp_drv.buffer = disp_buf1
-disp_drv.flush_cb = disp.flush
-disp_drv.hor_res = 240
-disp_drv.ver_res = 320
-lv.disp_drv_register(disp_drv)
+from xpt2046 import xpt2046
+touch = xpt2046()
 ```
 
-Now you can create the GUI itself
+By default, both ILI9341 and XPT2046 are initialized on the same SPI bus with the following parameters:
+
+- ILI9341: `miso=5, mosi=18, clk=19, cs=13, dc=12, rst=4, power=14, backlight=15, spihost=esp.HSPI_HOST, mhz=40, factor=4, hybrid=True`
+- XPT2046: `cs=25, spihost=esp.HSPI_HOST, mhz=5, max_cmds=16, cal_x0 = 3783, cal_y0 = 3948, cal_x1 = 242, cal_y1 = 423, transpose = True, samples = 3`
+
+You can change any of these parameters on ili9341/xpt2046 constructor.
+You can also initalize them on different SPI buses if you want, by providing miso/mosi/clk parameters. Set them to -1 to use existing (initialized) spihost bus.
+
+Now you can create the GUI itself:
 
 ```python
 

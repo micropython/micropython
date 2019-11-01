@@ -36,7 +36,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 5)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
   bc=0 line=4
   bc=9 line=5
   bc=12 line=6

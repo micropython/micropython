@@ -65,8 +65,8 @@ static const board_led_obj_t board_led_obj[] = {
 #if MICROPY_HW_LED_TRICOLOR
 
     {{&board_led_type}, BOARD_LED_RED, MICROPY_HW_LED_RED, 0, MICROPY_HW_LED_PULLUP},
-    {{&board_led_type}, BOARD_LED_GREEN, MICROPY_HW_LED_GREEN,0, MICROPY_HW_LED_PULLUP},
-    {{&board_led_type}, BOARD_LED_BLUE, MICROPY_HW_LED_BLUE,0, MICROPY_HW_LED_PULLUP},
+    {{&board_led_type}, BOARD_LED_GREEN, MICROPY_HW_LED_GREEN, 0, MICROPY_HW_LED_PULLUP},
+    {{&board_led_type}, BOARD_LED_BLUE, MICROPY_HW_LED_BLUE, 0, MICROPY_HW_LED_PULLUP},
 #endif
 #if (MICROPY_HW_LED_COUNT >= 1)
     {{&board_led_type}, BOARD_LED1, MICROPY_HW_LED1, 0,
@@ -115,17 +115,17 @@ void led_init(void) {
     }
 }
 
-void led_state(board_led_obj_t * led_obj, int state) {
+void led_state(board_led_t led, int state) {
     if (state == 1) {
-        led_on(led_obj);
+        led_on((board_led_obj_t*)&board_led_obj[led-1]);
 
     } else {
-        led_off(led_obj);
+        led_off((board_led_obj_t*)&board_led_obj[led-1]);
     }
 }
 
-void led_toggle(board_led_obj_t * led_obj) {
-    nrf_gpio_pin_toggle(led_obj->hw_pin);
+void led_toggle(board_led_t led) {
+    nrf_gpio_pin_toggle(board_led_obj[led-1].hw_pin);
 }
 
 
@@ -162,7 +162,7 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 /// Turn the LED on.
 mp_obj_t led_obj_on(mp_obj_t self_in) {
     board_led_obj_t *self = self_in;
-    led_state(self, 1);
+    led_state(self->led_id, 1);
     return mp_const_none;
 }
 
@@ -170,7 +170,7 @@ mp_obj_t led_obj_on(mp_obj_t self_in) {
 /// Turn the LED off.
 mp_obj_t led_obj_off(mp_obj_t self_in) {
     board_led_obj_t *self = self_in;
-    led_state(self, 0);
+    led_state(self->led_id, 0);
     return mp_const_none;
 }
 
@@ -178,7 +178,7 @@ mp_obj_t led_obj_off(mp_obj_t self_in) {
 /// Toggle the LED between on and off.
 mp_obj_t led_obj_toggle(mp_obj_t self_in) {
     board_led_obj_t *self = self_in;
-    led_toggle(self);
+    led_toggle(self->led_id);
     return mp_const_none;
 }
 
@@ -202,4 +202,13 @@ const mp_obj_type_t board_led_type = {
     .locals_dict = (mp_obj_dict_t*)&led_locals_dict,
 };
 
+#else
+// For boards with no LEDs, we leave an empty function here so that we don't
+// have to put conditionals everywhere.
+void led_init(void) {
+}
+void led_state(board_led_t led, int state) {
+}
+void led_toggle(board_led_t led) {
+}
 #endif // MICROPY_HW_HAS_LED

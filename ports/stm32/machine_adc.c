@@ -49,7 +49,7 @@
 #endif
 
 #if defined(STM32F0)
-#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_71CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_13CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_239CYCLES_5
 #elif defined(STM32F4) || defined(STM32F7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_15CYCLES
@@ -126,7 +126,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
 
     // Configure clock mode
     #if defined(STM32F0)
-    adc->CFGR2 = 1 << ADC_CFGR2_CKMODE_Pos; // PCLK/2 (synchronous clock mode)
+    adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
     #elif defined(STM32H7)

@@ -63,6 +63,11 @@ STATIC void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if MICROPY_BLUETOOTH_NIMBLE
+    extern void nimble_poll(void);
+    nimble_poll();
+    #endif
 }
 
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {

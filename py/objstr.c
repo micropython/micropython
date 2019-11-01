@@ -1913,9 +1913,6 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
         return 0;
     } else {
         // can't write to a string
-        bufinfo->buf = NULL;
-        bufinfo->len = 0;
-        bufinfo->typecode = -1;
         return 1;
     }
 }

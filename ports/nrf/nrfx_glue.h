@@ -138,4 +138,6 @@
 
 #endif // !BLUETOOTH_SD
 
+#define NRFX_IRQ_IS_ENABLED(irq_number) (0 != (NVIC->ISER[irq_number / 32] & (1UL << (irq_number % 32))))
+
 #endif // NRFX_GLUE_H

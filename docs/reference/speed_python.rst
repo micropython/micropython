@@ -214,7 +214,7 @@ There are certain limitations in the current implementation of the native code e
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
 
-The trade-off for the improved performance (roughly twices as fast as bytecode) is an
+The trade-off for the improved performance (roughly twice as fast as bytecode) is an
 increase in compiled code size.
 
 The Viper code emitter

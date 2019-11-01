@@ -18,10 +18,10 @@ be implemented:
 * SHA1 - A previous generation algorithm. Not recommended for new usages,
   but SHA1 is a part of number of Internet standards and existing
   applications, so boards targeting network connectivity and
-  interoperatiability will try to provide this.
+  interoperability will try to provide this.
 
 * MD5 - A legacy algorithm, not considered cryptographically secure. Only
-  selected boards, targeting interoperatibility with legacy applications,
+  selected boards, targeting interoperability with legacy applications,
   will offer this.
 
 Constructors

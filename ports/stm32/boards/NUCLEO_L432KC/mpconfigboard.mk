@@ -5,4 +5,4 @@ LD_FILES = boards/stm32l432.ld boards/common_basic.ld
 OPENOCD_CONFIG = boards/openocd_stm32l4.cfg
 
 # Don't include default frozen modules because MCU is tight on flash space
-FROZEN_MPY_DIR ?=
+FROZEN_MANIFEST ?=

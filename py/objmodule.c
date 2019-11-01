@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/objmodule.h"
@@ -223,6 +224,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_BTREE
     { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
 #endif
+#if MICROPY_PY_BLUETOOTH
+    { MP_ROM_QSTR(MP_QSTR_ubluetooth), MP_ROM_PTR(&mp_module_ubluetooth) },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
@@ -234,14 +238,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
-
-#if MICROPY_MODULE_WEAK_LINKS
-STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
-    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-};
-
-MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
-#endif
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {
@@ -266,6 +262,21 @@ void mp_module_register(qstr qst, mp_obj_t module) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }
+
+#if MICROPY_MODULE_WEAK_LINKS
+// Search for u"foo" in built-in modules, return MP_OBJ_NULL if not found
+mp_obj_t mp_module_search_umodule(const char *module_str) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mp_builtin_module_table); ++i) {
+        const mp_map_elem_t *entry = (const mp_map_elem_t*)&mp_builtin_module_table[i];
+        const char *key = qstr_str(MP_OBJ_QSTR_VALUE(entry->key));
+        if (key[0] == 'u' && strcmp(&key[1], module_str) == 0) {
+            return (mp_obj_t)entry->value;
+        }
+
+    }
+    return MP_OBJ_NULL;
+}
+#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {

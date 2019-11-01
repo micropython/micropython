@@ -102,6 +102,7 @@ MP_NATIVE_ARCH_ARMV7EM = 6
 MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
+MP_NATIVE_ARCH_XTENSAWIN = 10
 
 MP_BC_MASK_EXTRA_BYTE = 0x9e
 
@@ -142,31 +143,58 @@ def mp_opcode_format(bytecode, ip, count_var_uint):
         ip += extra_byte
     return f, ip - ip_start
 
-def decode_uint(bytecode, ip):
-    unum = 0
+def read_prelude_sig(read_byte):
+    z = read_byte()
+    # xSSSSEAA
+    S = (z >> 3) & 0xf
+    E = (z >> 2) & 0x1
+    F = 0
+    A = z & 0x3
+    K = 0
+    D = 0
+    n = 0
+    while z & 0x80:
+        z = read_byte()
+        # xFSSKAED
+        S |= (z & 0x30) << (2 * n)
+        E |= (z & 0x02) << n
+        F |= ((z & 0x40) >> 6) << n
+        A |= (z & 0x4) << n
+        K |= ((z & 0x08) >> 3) << n
+        D |= (z & 0x1) << n
+        n += 1
+    S += 1
+    return S, E, F, A, K, D
+
+def read_prelude_size(read_byte):
+    I = 0
+    C = 0
+    n = 0
     while True:
-        val = bytecode[ip]
-        ip += 1
-        unum = (unum << 7) | (val & 0x7f)
-        if not (val & 0x80):
+        z = read_byte()
+        # xIIIIIIC
+        I |= ((z & 0x7e) >> 1) << (6 * n)
+        C |= (z & 1) << n
+        if not (z & 0x80):
             break
-    return ip, unum
+        n += 1
+    return I, C
 
 def extract_prelude(bytecode, ip):
-    ip, n_state = decode_uint(bytecode, ip)
-    ip, n_exc_stack = decode_uint(bytecode, ip)
-    scope_flags = bytecode[ip]; ip += 1
-    n_pos_args = bytecode[ip]; ip += 1
-    n_kwonly_args = bytecode[ip]; ip += 1
-    n_def_pos_args = bytecode[ip]; ip += 1
-    ip2, code_info_size = decode_uint(bytecode, ip)
-    ip += code_info_size
-    while bytecode[ip] != 0xff:
-        ip += 1
-    ip += 1
+    def local_read_byte():
+        b = bytecode[ip_ref[0]]
+        ip_ref[0] += 1
+        return b
+    ip_ref = [ip] # to close over ip in Python 2 and 3
+    n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(local_read_byte)
+    n_info, n_cell = read_prelude_size(local_read_byte)
+    ip = ip_ref[0]
+
+    ip2 = ip
+    ip = ip2 + n_info + n_cell
     # ip now points to first opcode
     # ip2 points to simple_name qstr
-    return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
+    return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
 
 class MPFunTable:
     pass
@@ -334,7 +362,6 @@ class RawCode(object):
             print('        .qstr_block_name = %s,' % self.simple_name.qstr_id)
             print('        .qstr_source_file = %s,' % self.source_file.qstr_id)
             print('        .line_info = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
-            print('        .locals = fun_data_%s + %u,' % (self.escaped_name, 0)) # TODO
             print('        .opcodes = fun_data_%s + %u,' % (self.escaped_name, self.ip))
             print('    },')
             print('    .line_of_definition = %u,' % 0) # TODO
@@ -556,21 +583,14 @@ def read_obj(f):
         else:
             assert 0
 
-def read_prelude(f, bytecode):
-    n_state = read_uint(f, bytecode)
-    n_exc_stack = read_uint(f, bytecode)
-    scope_flags = read_byte(f, bytecode)
-    n_pos_args = read_byte(f, bytecode)
-    n_kwonly_args = read_byte(f, bytecode)
-    n_def_pos_args = read_byte(f, bytecode)
-    l1 = bytecode.idx
-    code_info_size = read_uint(f, bytecode)
-    l2 = bytecode.idx
-    for _ in range(code_info_size - (l2 - l1)):
+def read_prelude(f, bytecode, qstr_win):
+    n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args = read_prelude_sig(lambda: read_byte(f, bytecode))
+    n_info, n_cell = read_prelude_size(lambda: read_byte(f, bytecode))
+    read_qstr_and_pack(f, bytecode, qstr_win) # simple_name
+    read_qstr_and_pack(f, bytecode, qstr_win) # source_file
+    for _ in range(n_info - 4 + n_cell):
         read_byte(f, bytecode)
-    while read_byte(f, bytecode) != 255:
-        pass
-    return l2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
+    return n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args
 
 def read_qstr_and_pack(f, bytecode, qstr_win):
     qst = read_qstr(f, qstr_win)
@@ -598,7 +618,7 @@ def read_raw_code(f, qstr_win):
     fun_data = BytecodeBuffer(fun_data_len)
 
     if kind == MP_CODE_BYTECODE:
-        name_idx, prelude = read_prelude(f, fun_data)
+        prelude = read_prelude(f, fun_data, qstr_win)
         read_bytecode(f, fun_data, qstr_win)
     else:
         fun_data.buf[:] = f.read(fun_data_len)
@@ -616,6 +636,9 @@ def read_raw_code(f, qstr_win):
         if kind == MP_CODE_NATIVE_PY:
             prelude_offset = read_uint(f)
             _, name_idx, prelude = extract_prelude(fun_data.buf, prelude_offset)
+            fun_data.idx = name_idx # rewind to where qstrs are in prelude
+            read_qstr_and_pack(f, fun_data, qstr_win) # simple_name
+            read_qstr_and_pack(f, fun_data, qstr_win) # source_file
         else:
             prelude_offset = None
             scope_flags = read_uint(f)
@@ -624,11 +647,6 @@ def read_raw_code(f, qstr_win):
                 n_pos_args = read_uint(f)
                 type_sig = read_uint(f)
             prelude = (None, None, scope_flags, n_pos_args, 0)
-
-    if kind in (MP_CODE_BYTECODE, MP_CODE_NATIVE_PY):
-        fun_data.idx = name_idx # rewind to where qstrs are in prelude
-        read_qstr_and_pack(f, fun_data, qstr_win) # simple_name
-        read_qstr_and_pack(f, fun_data, qstr_win) # source_file
 
     qstrs = []
     objs = []

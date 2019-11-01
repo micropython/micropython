@@ -1,6 +1,6 @@
 LIB_SRC_C = lib/upytesthelper/upytesthelper.c
 
-FROZEN_MPY_DIR ?= test-frzmpy
+FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 
 include Makefile
 

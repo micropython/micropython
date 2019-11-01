@@ -33,11 +33,12 @@ MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
 MICROPY_PY_ESPIFD = 1
 
-#FROZEN_DIR = scripts
-FROZEN_MPY_DIR = modules
+FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+
+GIT_SUBMODULES = lib/berkeley-db-1.xx
 
 PORT ?= /dev/ttyUSB0
 BAUD ?= 460800
@@ -111,6 +112,16 @@ $(info Add the xtensa toolchain to your PATH. See README.md)
 $(error C compiler missing)
 endif
 
+# Support BLE by default when building with IDF 4.x.
+# Can be explicitly disabled on the command line or board config.
+ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
+MICROPY_PY_BLUETOOTH ?= 1
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SDKCONFIG += boards/sdkconfig.ble
+MICROPY_BLUETOOTH_NIMBLE = 1
+endif
+endif
+
 # include sdkconfig to get needed configuration values
 include $(SDKCONFIG)
 
@@ -175,6 +186,29 @@ INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include/esp_supplicant
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa/include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa/esp32/include
+ifeq ($(CONFIG_BT_NIMBLE_ENABLED),y)
+INC_ESPCOMP += -I$(ESPCOMP)/bt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/common/osi/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/common/btc/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/common/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/porting/nimble/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/port/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/ans/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/bas/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/gap/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/gatt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/ias/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/lls/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/tps/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/util/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/store/ram/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/nimble/host/store/config/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/porting/npl/freertos/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/nimble/ext/tinycrypt/include
+INC_ESPCOMP += -I$(ESPCOMP)/bt/host/nimble/esp-hci/include
+endif
 else
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
 INC_ESPCOMP += -I$(ESPCOMP)/expat/expat/expat/lib
@@ -184,6 +218,17 @@ INC_ESPCOMP += -I$(ESPCOMP)/json/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/micro-ecc/micro-ecc
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
+endif
+
+ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
+endif
+endif
 endif
 
 # these flags are common to C and C++ compilation
@@ -271,6 +316,7 @@ SRC_C = \
 	modnetwork.c \
 	network_lan.c \
 	network_ppp.c \
+	nimble.c \
 	modsocket.c \
 	modesp.c \
 	esp32_partition.c \
@@ -287,6 +333,7 @@ SRC_C = \
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
 	modonewire.c \
+	modbluetooth_nimble.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -321,12 +368,11 @@ $(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 
 LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modlvesp32.c \
-	lib/lv_bindings/driver/esp32/modILI9341.c \
-	lib/lv_bindings/driver/esp32/modxpt2046.c \
 	lib/lv_bindings/driver/esp32/modrtch.c \
+	lib/lv_bindings/driver/esp32/espidf.c \
 	$(ESPIDFMOD_MODULE) \
-	lib/lv_bindings/driver/esp32/espidf.c
-	#TODO lib/lv_bindings/driver/esp32/modxpt2046.c \
+	# lib/lv_bindings/driver/esp32/modxpt2046.c \
+	# lib/lv_bindings/driver/esp32/modILI9341.c \
 
 endif
 
@@ -488,6 +534,31 @@ ESPIDF_ESP_EVENT_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp_event/*.c))
 
 ESPIDF_ESP_WIFI_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp_wifi/src/*.c))
 
+ifeq ($(CONFIG_BT_NIMBLE_ENABLED),y)
+ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\
+	$(wildcard $(ESPCOMP)/bt/controller/*.c) \
+	$(wildcard $(ESPCOMP)/bt/common/btc/core/*.c) \
+	$(wildcard $(ESPCOMP)/bt/common/osi/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/esp-hci/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/ext/tinycrypt/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/ans/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/bas/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/gap/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/gatt/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/ias/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/lls/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/services/tps/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/store/config/src/ble_store_config.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/store/config/src/ble_store_nvs.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/store/ram/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/host/util/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/porting/nimble/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/porting/npl/freertos/src/*.c) \
+	)
+endif
+
 $(BUILD)/$(ESPCOMP)/esp_eth/src/esp_eth_mac_dm9051.o: CFLAGS += -fno-strict-aliasing
 ESPIDF_ESP_ETH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp_eth/src/*.c))
 
@@ -548,6 +619,9 @@ ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 $(eval $(call gen_espidf_lib_rule,esp_common,$(ESPIDF_ESP_COMMON_O)))
 $(eval $(call gen_espidf_lib_rule,esp_event,$(ESPIDF_ESP_EVENT_O)))
 $(eval $(call gen_espidf_lib_rule,esp_wifi,$(ESPIDF_ESP_WIFI_O)))
+ifeq ($(CONFIG_BT_NIMBLE_ENABLED),y)
+$(eval $(call gen_espidf_lib_rule,bt_nimble,$(ESPIDF_BT_NIMBLE_O)))
+endif
 $(eval $(call gen_espidf_lib_rule,esp_eth,$(ESPIDF_ESP_ETH_O)))
 $(eval $(call gen_espidf_lib_rule,xtensa,$(ESPIDF_XTENSA_O)))
 else
@@ -663,6 +737,7 @@ APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
 APP_LD_ARGS += $(LIBC_LIBM)
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 APP_LD_ARGS += -L$(ESPCOMP)/xtensa/esp32 -lhal
+APP_LD_ARGS += -L$(ESPCOMP)/bt/controller/lib -lbtdm_app
 APP_LD_ARGS += -L$(ESPCOMP)/esp_wifi/lib_esp32 -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lsmartconfig -lcoexist
 else
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a

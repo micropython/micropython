@@ -19,6 +19,8 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 # Include py core make definitions
 include $(TOP)/py/py.mk
 
+GIT_SUBMODULES = lib/asf4 lib/tinyusb
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)

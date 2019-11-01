@@ -78,8 +78,8 @@ static inline void mpu_init(void) {
     __ISB();
 }
 
-static inline void mpu_config_start(void) {
-    __disable_irq();
+static inline uint32_t mpu_config_start(void) {
+    return disable_irq();
 }
 
 static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t attr_size) {
@@ -88,11 +88,11 @@ static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32
     MPU->RASR = attr_size;
 }
 
-static inline void mpu_config_end(void) {
+static inline void mpu_config_end(uint32_t irq_state) {
     __ISB();
     __DSB();
     __DMB();
-    __enable_irq();
+    enable_irq(irq_state);
 }
 
 #else

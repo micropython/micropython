@@ -244,7 +244,11 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_call_method_n_kw_var,
     mp_native_getiter,
     mp_native_iternext,
+    #if MICROPY_NLR_SETJMP
+    nlr_push_tail,
+    #else
     nlr_push,
+    #endif
     nlr_pop,
     mp_native_raise,
     mp_import_name,
@@ -255,13 +259,17 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_unpack_ex,
     mp_delete_name,
     mp_delete_global,
-    mp_obj_new_cell,
     mp_make_closure_from_raw_code,
     mp_arg_check_num_sig,
     mp_setup_code_state,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
     mp_native_yield_from,
+    #if MICROPY_NLR_SETJMP
+    setjmp,
+    #else
+    NULL,
+    #endif
 };
 
 #endif // MICROPY_EMIT_NATIVE
