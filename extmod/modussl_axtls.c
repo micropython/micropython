@@ -86,6 +86,9 @@ STATIC mp_obj_t ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
 
         data = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &len);
+        if (data == NULL) {
+            return MP_OBJ_NULL;
+        }
         res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
         if (res != SSL_OK) {
             return mp_raise_ValueError_o("invalid cert");
