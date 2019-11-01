@@ -123,7 +123,7 @@ STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t *type, size_t n_args, 
         args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(mount)(&self->lfs, &self->config);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return MP_OBJ_FROM_PTR(self);
 }
@@ -137,7 +137,7 @@ STATIC mp_obj_t MP_VFS_LFSx(mkfs)(size_t n_args, const mp_obj_t *pos_args, mp_ma
         args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(format)(&self.lfs, &self.config);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return mp_const_none;
 }
@@ -205,7 +205,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
     iter->vfs = self;
     int ret = LFSx_API(dir_open)(&self->lfs, &iter->dir, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return MP_OBJ_FROM_PTR(iter);
 }
@@ -216,7 +216,7 @@ STATIC mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return mp_const_none;
 }
@@ -227,7 +227,7 @@ STATIC mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return mp_const_none;
 }
@@ -243,7 +243,7 @@ STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_o
     int ret = LFSx_API(rename)(&self->lfs, path_old, vstr_null_terminated_str(&path_new));
     vstr_clear(&path_new);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return mp_const_none;
 }
@@ -254,7 +254,7 @@ STATIC mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
     const char *path = MP_VFS_LFSx(make_path)(self, path_o);
     int ret = LFSx_API(mkdir)(&self->lfs, path);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
     return mp_const_none;
 }
@@ -270,7 +270,7 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
         struct LFSx_API(info) info;
         int ret = LFSx_API(stat)(&self->lfs, path, &info);
         if (ret < 0 || info.type != LFSx_MACRO(_TYPE_DIR)) {
-            mp_raise_OSError(-MP_ENOENT);
+            return mp_raise_OSError_o(-MP_ENOENT);
         }
     }
 
@@ -308,7 +308,7 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     struct LFSx_API(info) info;
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
@@ -344,7 +344,7 @@ STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
     int ret = LFSx_API(fs_traverse)(&self->lfs, LFSx_API(traverse_cb), &n_used_blocks);
     #endif
     if (ret < 0) {
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));

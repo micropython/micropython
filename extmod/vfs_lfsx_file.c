@@ -105,7 +105,7 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
     int ret = LFSx_API(file_opencfg)(&self->lfs, &o->file, path, flags, &o->cfg);
     if (ret < 0) {
         o->vfs = NULL;
-        mp_raise_OSError(-ret);
+        return mp_raise_OSError_o(-ret);
     }
 
     return MP_OBJ_FROM_PTR(o);
