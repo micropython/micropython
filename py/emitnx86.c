@@ -60,7 +60,6 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_UNPACK_EX] = 3,
     [MP_F_DELETE_NAME] = 1,
     [MP_F_DELETE_GLOBAL] = 1,
-    [MP_F_NEW_CELL] = 1,
     [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
     [MP_F_ARG_CHECK_NUM_SIG] = 3,
     [MP_F_SETUP_CODE_STATE] = 4,
