@@ -40,43 +40,6 @@
 
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
-// Macros to encode/decode flags to/from the feature byte
-#define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
-#define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
-
-// Macros to encode/decode native architecture to/from the feature byte
-#define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
-#define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
-
-// The feature flag bits encode the compile-time config options that
-// affect the generate bytecode.
-#define MPY_FEATURE_FLAGS ( \
-    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
-    )
-// This is a version of the flags that can be configured at runtime.
-#define MPY_FEATURE_FLAGS_DYNAMIC ( \
-    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
-    )
-
-// Define the host architecture
-#if MICROPY_EMIT_X86
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
-#elif MICROPY_EMIT_X64
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
-#elif MICROPY_EMIT_THUMB
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
-#elif MICROPY_EMIT_ARM
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
-#elif MICROPY_EMIT_XTENSA
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
-#elif MICROPY_EMIT_XTENSAWIN
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
-#else
-#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
-#endif
-
 #if MICROPY_DYNAMIC_COMPILER
 #define MPY_FEATURE_ARCH_DYNAMIC mp_dynamic_compiler.native_arch
 #else
