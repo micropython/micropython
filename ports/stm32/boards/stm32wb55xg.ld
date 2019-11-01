@@ -8,6 +8,7 @@ MEMORY
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* sectors 0-127 */
     FLASH_FS (r)    : ORIGIN = 0x08080000, LENGTH = 256K /* sectors 128-191 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 192K /* SRAM1 */
+    RAM2A (xrw)     : ORIGIN = 0x20030020, LENGTH = 8K /* SRAM2A */
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
@@ -31,3 +32,13 @@ _heap_end = _sstack;
 
 _flash_fs_start = ORIGIN(FLASH_FS);
 _flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+
+SECTIONS
+{
+    .ram2a_bss :
+    {
+        . = ALIGN(4);
+        *rfcore.o(.bss.ipcc_mem_*)
+        . = ALIGN(4);
+    } >RAM2A
+}

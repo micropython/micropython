@@ -252,6 +252,7 @@ SRC_C = \
 	softtimer.c  \
 	powerctrl.c \
 	powerctrlboot.c \
+	rfcore.c \
 	pybthread.c \
 	factoryreset.c \
 	timer.c \

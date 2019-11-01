@@ -26,15 +26,54 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "uart.h"
-#include "pendsv.h"
 #include "extmod/nimble/nimble/hci_uart.h"
-#include "drivers/cyw43/cywbt.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 
+#if defined(STM32WB)
+
 /******************************************************************************/
-// UART
+// HCI over IPCC
+
+#include "rfcore.h"
+
+int nimble_hci_uart_configure(uint32_t port) {
+    (void)port;
+    return 0;
+}
+
+int nimble_hci_uart_set_baudrate(uint32_t baudrate) {
+    (void)baudrate;
+    return 0;
+}
+
+int nimble_hci_uart_activate(void) {
+    rfcore_ble_init();
+    return 0;
+}
+
+void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
+    // Protect in case it's called from ble_npl_sem_pend at thread-level
+    MICROPY_PY_LWIP_ENTER
+    rfcore_ble_check_msg(rx_cb, rx_arg);
+    MICROPY_PY_LWIP_EXIT
+}
+
+void nimble_hci_uart_tx_strn(const char *str, uint len) {
+    MICROPY_PY_LWIP_ENTER
+    rfcore_ble_hci_cmd(len, (const uint8_t*)str);
+    MICROPY_PY_LWIP_EXIT
+}
+
+#else
+
+/******************************************************************************/
+// HCI over UART
+
+#include "pendsv.h"
+#include "uart.h"
+#include "drivers/cyw43/cywbt.h"
+
 pyb_uart_obj_t bt_hci_uart_obj;
 static uint8_t hci_uart_rxbuf[512];
 
@@ -129,5 +168,7 @@ void nimble_hci_uart_tx_strn(const char *str, uint len) {
 
     uart_tx_strn(&bt_hci_uart_obj, str, len);
 }
+
+#endif // defined(STM32WB)
 
 #endif // MICROPY_BLUETOOTH_NIMBLE
