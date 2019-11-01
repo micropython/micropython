@@ -38,12 +38,8 @@
 #include "tick.h"
 #include "stm32f4xx_hal.h" 
 
-bool iflag;
-int errflag;
-bool rxflag;
-bool bsyflag;
-
 STATIC bool reserved_uart[MAX_UART];
+int errflag; //Used to restart read halts
 
 void uart_reset(void) {
     #ifdef USART1
@@ -88,7 +84,6 @@ void uart_reset(void) {
         __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_DISABLE(); 
     #endif
-    //TODO: this technically needs to go to 10 to support F413. Any way to condense?
 }
 
 STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval, 
@@ -302,26 +297,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if ((HAL_UART_GetState(&self->handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
         mp_raise_ValueError(translate("Could not start interrupt, RX busy"));
     }
+
+    //start the recieve interrupt chain
     HAL_NVIC_DisableIRQ(self->irq); //prevent handle lock contention
-
     HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
-
     HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
     HAL_NVIC_EnableIRQ(self->irq);
 
-    //mp_printf(&mp_plat_print, "Started and inited\n");
-    iflag = 0;
-    errflag = 0;
-    rxflag = 0;
-    bsyflag = 0;
-
-    //interrupt debuggery
-    GPIO_InitStruct.Pin = pin_mask(7);
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(pin_port(2), &GPIO_InitStruct);
-    HAL_GPIO_WritePin(pin_port(2),pin_mask(7),0);
+    errflag = HAL_OK;
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -329,7 +312,6 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
-    //mp_printf(&mp_plat_print, "De-init UART\n");
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
@@ -339,7 +321,6 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     self->rbuf.iput = self->rbuf.iget = 0;
 }
 
-// Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx == NULL) {
         mp_raise_ValueError(translate("No RX pin"));
@@ -363,20 +344,14 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
-
     // copy received data
     rx_bytes = ringbuf_count(&self->rbuf);
-    //Used for debuggings
-    //mp_printf(&mp_plat_print, "Read: count:%d, buffer location%p, if:%der:%drx:%dbsy:%d\n", rx_bytes, &self->rbuf,iflag,errflag,rxflag,bsyflag);
-    iflag = 0; 
-    errflag = 0;
-    rxflag = 0;
-    bsyflag = 0;
+    //Used for debugging
+    //mp_printf(&mp_plat_print, "Read: count:%d, buffer location%p, er:%d\n", rx_bytes, &self->rbuf,errflag);
     rx_bytes = MIN(rx_bytes, len);
     for ( uint16_t i = 0; i < rx_bytes; i++ ) {
         data[i] = ringbuf_get(&self->rbuf);
     }
-
     HAL_NVIC_EnableIRQ(self->irq);
 
     if (rx_bytes == 0) {
@@ -392,25 +367,27 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         mp_raise_ValueError(translate("No TX pin"));
     }
 
-    if (HAL_UART_Transmit(&self->handle, (uint8_t *)data, len, 500) == HAL_OK) {
-        return len;
-    } else {
+    HAL_NVIC_DisableIRQ(self->irq);
+
+    if (HAL_UART_Transmit(&self->handle, (uint8_t *)data, len, self->timeout_ms) != HAL_OK) {
         mp_raise_ValueError(translate("UART write error"));
     }
-    //mp_printf(&mp_plat_print, "Send\n");
-    return 0;
+
+    HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+    HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
+    HAL_NVIC_EnableIRQ(self->irq);
+
+    return len;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
 {
-    rxflag = 1;
     for(int i=0; i<7; i++) {
         //get context pointer and cast it as struct pointer
         busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[i];
         if(handle == &context->handle) {
             //check if transaction is ongoing
             if((HAL_UART_GetState(handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
-                bsyflag = 1;
                 return;
             }
             ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
@@ -468,7 +445,6 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
-    //mp_printf(&mp_plat_print, "Clear RX Buffer\n");
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
     ringbuf_clear(&self->rbuf);
@@ -476,17 +452,15 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-    return true;
+    return __HAL_UART_GET_FLAG(&self->handle,UART_FLAG_TXE);
 }
 
 STATIC void call_hal_irq(int uart_num) {
-    iflag = 1;
     //Create casted context pointer
     busio_uart_obj_t * context = (busio_uart_obj_t *)MP_STATE_PORT(cpy_uart_obj_all)[uart_num-1];
     if(context != NULL) {
         HAL_NVIC_ClearPendingIRQ(context->irq);
         HAL_UART_IRQHandler(&context->handle);
-        HAL_GPIO_TogglePin(pin_port(2),pin_mask(7));
     }
 }
 
