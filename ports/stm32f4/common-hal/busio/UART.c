@@ -49,31 +49,43 @@ void uart_reset(void) {
     #ifdef USART1
         reserved_uart[0] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[0] = NULL;
+        __HAL_RCC_USART1_FORCE_RESET();
+        __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_DISABLE(); 
     #endif
     #ifdef USART2
         reserved_uart[1] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[1] = NULL;
+        __HAL_RCC_USART2_FORCE_RESET();
+        __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_DISABLE(); 
     #endif
     #ifdef USART3
         reserved_uart[2] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[2] = NULL;
+        __HAL_RCC_USART3_FORCE_RESET();
+        __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE(); 
     #endif
     #ifdef UART4
         reserved_uart[3] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[3] = NULL;
+        __HAL_RCC_UART4_FORCE_RESET();
+        __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_DISABLE();
     #endif
     #ifdef UART5
         reserved_uart[4] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[4] = NULL;
+        __HAL_RCC_UART5_FORCE_RESET();
+        __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_DISABLE();
     #endif
     #ifdef USART6
         reserved_uart[5] = false;
         MP_STATE_PORT(cpy_uart_obj_all)[5] = NULL;
+        __HAL_RCC_USART6_FORCE_RESET();
+        __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_DISABLE(); 
     #endif
     //TODO: this technically needs to go to 10 to support F413. Any way to condense?
@@ -302,6 +314,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     errflag = 0;
     rxflag = 0;
     bsyflag = 0;
+
+    //interrupt debuggery
+    GPIO_InitStruct.Pin = pin_mask(7);
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(pin_port(2), &GPIO_InitStruct);
+    HAL_GPIO_WritePin(pin_port(2),pin_mask(7),0);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -466,6 +486,7 @@ STATIC void call_hal_irq(int uart_num) {
     if(context != NULL) {
         HAL_NVIC_ClearPendingIRQ(context->irq);
         HAL_UART_IRQHandler(&context->handle);
+        HAL_GPIO_TogglePin(pin_port(2),pin_mask(7));
     }
 }
 
