@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
 #define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
 
+#include "extmod/nimble/hal/hal_uart.h"
+
 // To be implemented by the port.
 
 int nimble_hci_uart_configure(uint32_t port);
@@ -35,8 +37,7 @@ int nimble_hci_uart_set_baudrate(uint32_t baudrate);
 
 int nimble_hci_uart_activate(void);
 
-mp_uint_t nimble_hci_uart_rx_any();
-int nimble_hci_uart_rx_char();
+void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
 void nimble_hci_uart_tx_strn(const char *str, uint len);
 
 #endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H

@@ -42,8 +42,6 @@ static void *hal_uart_tx_arg;
 static hal_uart_rx_cb_t hal_uart_rx_cb;
 static void *hal_uart_rx_arg;
 
-static uint32_t bt_sleep_ticks;
-
 int hal_uart_init_cbs(uint32_t port, hal_uart_tx_cb_t tx_cb, void *tx_arg, hal_uart_rx_cb_t rx_cb, void *rx_arg) {
     hal_uart_tx_cb = tx_cb;
     hal_uart_tx_arg = tx_arg;
@@ -76,16 +74,6 @@ void hal_uart_start_tx(uint32_t port) {
     printf("\n");
     #endif
 
-    bt_sleep_ticks = mp_hal_ticks_ms();
-
-    #ifdef pyb_pin_BT_DEV_WAKE
-        if (mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 1) {
-            //printf("BT WAKE for TX\n");
-            mp_hal_pin_low(pyb_pin_BT_DEV_WAKE); // wake up
-            mp_hal_delay_ms(5); // can't go lower than this
-        }
-    #endif
-
     nimble_hci_uart_tx_strn((void*)bt_hci_cmd_buf, len);
 }
 
@@ -94,29 +82,7 @@ int hal_uart_close(uint32_t port) {
 }
 
 void nimble_uart_process(void) {
-    int host_wake = 0;
-    #ifdef pyb_pin_BT_HOST_WAKE
-        host_wake = mp_hal_pin_read(pyb_pin_BT_HOST_WAKE);
-    #endif
-    /*
-    // this is just for info/tracing purposes
-    static int last_host_wake = 0;
-    if (host_wake != last_host_wake) {
-        printf("HOST_WAKE change %d -> %d\n", last_host_wake, host_wake);
-        last_host_wake = host_wake;
-    }
-    */
-    while (nimble_hci_uart_rx_any()) {
-        uint8_t data = nimble_hci_uart_rx_char();
-        //printf("UART RX: %02x\n", data);
-        hal_uart_rx_cb(hal_uart_rx_arg, data);
-    }
-    if (host_wake == 1 && mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 0) {
-        if (mp_hal_ticks_ms() - bt_sleep_ticks > 500) {
-            //printf("BT SLEEP\n");
-            mp_hal_pin_high(pyb_pin_BT_DEV_WAKE); // let sleep
-        }
-    }
+    nimble_hci_uart_rx(hal_uart_rx_cb, hal_uart_rx_arg);
 }
 
 #endif // MICROPY_BLUETOOTH_NIMBLE
