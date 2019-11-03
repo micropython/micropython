@@ -33,6 +33,8 @@
 #include <net/net_context.h>
 #endif
 
+#include "zfs.h"
+
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
@@ -77,6 +79,19 @@ void init_zephyr(void) {
 #endif
 }
 
+mp_obj_t init_zfs(const mp_obj_type_t *zfs_type, const char *mount_point) {
+    mp_obj_t new_args[] = {};
+    mp_obj_t zfs = zfs_type->make_new(zfs_type, MP_ARRAY_SIZE(new_args), 0, new_args);
+
+    mp_obj_t mount_args[] = {zfs, mp_obj_new_str(mount_point, strlen(mount_point))};
+    mp_map_t kw_args[1];
+    mp_map_init(kw_args, 0);
+
+    zfs_mount(MP_ARRAY_SIZE(mount_args), mount_args, kw_args);
+
+    return zfs;
+}
+
 int real_main(void) {
     mp_stack_ctrl_init();
     // Make MicroPython's stack limit somewhat smaller than full stack available
@@ -103,6 +118,11 @@ soft_reset:
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
     #endif
+
+#if defined(CONFIG_DISK_ACCESS_SDHC) && defined(CONFIG_FAT_FILESYSTEM_ELM)
+    MP_STATE_PORT(fs) = init_zfs(&zfs_fat_type, "/SD:");
+    pyexec_file_if_exists("/SD:/main.py");
+#endif
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
