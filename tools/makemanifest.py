@@ -147,7 +147,7 @@ def get_timestamp(path, default=None):
 
 def get_timestamp_newest(path):
     ts_newest = 0
-    for dirpath, dirnames, filenames in os.walk(path):
+    for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
         for f in filenames:
             ts_newest = max(ts_newest, get_timestamp(os.path.join(dirpath, f)))
     return ts_newest
@@ -171,7 +171,7 @@ def freeze_internal(kind, path, script, opt):
             raise FreezeError('can only freeze one str directory')
         manifest_list.append((KIND_AS_STR, path, script, opt))
     elif script is None:
-        for dirpath, dirnames, filenames in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
             for f in filenames:
                 freeze_internal(kind, path, (dirpath + '/' + f)[len(path) + 1:], opt)
     elif not isinstance(script, str):
