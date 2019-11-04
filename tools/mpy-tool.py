@@ -422,7 +422,8 @@ class RawCodeNative(RawCode):
         self.prelude = prelude
         self.qstr_links = qstr_links
         self.type_sig = type_sig
-        if config.native_arch in (MP_NATIVE_ARCH_X86, MP_NATIVE_ARCH_X64):
+        if config.native_arch in (MP_NATIVE_ARCH_X86, MP_NATIVE_ARCH_X64,
+            MP_NATIVE_ARCH_XTENSA, MP_NATIVE_ARCH_XTENSAWIN):
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",@progbits # ")))'
         else:
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",%progbits @ ")))'
