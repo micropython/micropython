@@ -49,7 +49,7 @@ STATIC void tim_clock_disable(uint16_t mask);
 // If the APB prescaler is 1, then the timer clock is equal to its respective
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
-static uint32_t timer_get_source_freq(uint32_t tim_id) {
+STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
@@ -65,6 +65,26 @@ static uint32_t timer_get_source_freq(uint32_t tim_id) {
         source *= 2;
     }
     return source;
+}
+
+STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
+    //duty cycle is duty/0xFFFF fraction x (number of pulses per period)
+    return (duty*period)/((1<<16)-1);
+}
+
+STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler, 
+                                       uint32_t frequency, uint32_t source_freq) {
+    //Find the largest possible period supported by this frequency
+    for (int i=0; i<(1 << 16);i++) {
+        *period = source_freq/(i*frequency);
+        if (*period < (1 << 16) && *period>=2) {
+            *prescaler = i;
+            break;
+        }
+    }
+    if (*prescaler == 0) {
+        mp_raise_ValueError(translate("Invalid frequency supplied"));
+    }
 }
 
 void pwmout_reset(void) {
@@ -112,17 +132,21 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     bool first_time_setup = true;
 
     for(uint i = 0; i < tim_num; i++) {
+        mcu_tim_pin_obj_t l_tim = mcu_tim_pin_list[i];
+        uint8_t l_tim_index = l_tim.tim_index-1;
+        uint8_t l_tim_channel = l_tim.channel_index-1;
+
         //if pin is same
-        if (mcu_tim_pin_list[i].pin == pin) {
+        if (l_tim.pin == pin) {
             //check if the timer has a channel active
-            if (reserved_tim[mcu_tim_pin_list[i].tim_index-1] != 0) {
+            if (reserved_tim[l_tim_index] != 0) {
                 //is it the same channel? (or all channels reserved by a var-freq)
-                if (reserved_tim[mcu_tim_pin_list[i].tim_index-1] & 1<<(mcu_tim_pin_list[i].channel_index-1)) {
+                if (reserved_tim[l_tim_index] & 1<<(l_tim_channel)) {
                     tim_chan_taken = true;
                     continue; //keep looking, might be another viable option
                 }
                 //If the frequencies are the same it's ok
-                if (tim_frequencies[mcu_tim_pin_list[i].tim_index-1] != frequency) {
+                if (tim_frequencies[l_tim_index] != frequency) {
                     tim_taken_f_mismatch = true;
                     continue; //keep looking
                 }
@@ -134,7 +158,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 first_time_setup = false; //skip setting up the timer
             }
             //No problems taken, so set it up
-            self->tim = &mcu_tim_pin_list[i];
+            self->tim = &l_tim;
             break;
         }
     }
@@ -170,41 +194,14 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     GPIO_InitStruct.Alternate = self->tim->altfn_index;
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
 
-    //TODO: factor all of these into periph.c?
     tim_clock_enable(1<<(self->tim->tim_index - 1));
 
     //translate channel into handle value
-    switch (self->tim->channel_index) {
-        case 1: self->channel = TIM_CHANNEL_1; break;
-        case 2: self->channel = TIM_CHANNEL_2; break;
-        case 3: self->channel = TIM_CHANNEL_3; break;
-        case 4: self->channel = TIM_CHANNEL_4; break;
-    }
+    self->channel = 4 * (self->tim->channel_index - 1);
 
-    uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
-    uint32_t prescaler = 0;
-    uint32_t period = 0;
-    
-    for (int i=0; i<32767;i++) {
-        period = source_freq/(i*frequency);
-        if (period <= 65535 && period>=2) {
-            prescaler = i;
-            break;
-        }
-    }
-    if (prescaler == 0) {
-        mp_raise_ValueError(translate("Invalid frequency supplied"));
-    }
-    uint32_t input = (duty*period)/65535;
-
-    //Used for Debugging 
-    // mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", duty,input);
-    // mp_printf(&mp_plat_print, "SysCoreClock: %d\n", SystemCoreClock);
-    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
-    // mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
-    // mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
-    // mp_printf(&mp_plat_print, "Duty: %d\n", duty);
-    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
+    uint32_t prescaler = 0; //prescaler is 15 bit
+    uint32_t period = 0; //period is 16 bit
+    timer_get_optimal_divisors(&period, &prescaler,frequency,timer_get_source_freq(self->tim->tim_index));
 
     //Timer init
     self->handle.Instance = TIMx;
@@ -223,7 +220,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     //Channel/PWM init
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
-    self->chan_handle.Pulse = input; //-1?
+    self->chan_handle.Pulse = timer_get_internal_duty(duty, period);
     self->chan_handle.OCPolarity = TIM_OCPOLARITY_LOW;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
     self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
@@ -269,13 +266,10 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     }
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
-    uint32_t input = (duty_cycle*self->period)/65535;
-    //Used for debugging
-    //mp_printf(&mp_plat_print, "duty_cycle %d, Duty: %d, Input %d\n", duty_cycle, duty, input);
-    __HAL_TIM_SET_COMPARE(&self->handle, self->channel, input);
-
-    self->duty_cycle = duty_cycle;
+void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+    uint32_t internal_duty_cycle = timer_get_internal_duty(duty, self->period);
+    __HAL_TIM_SET_COMPARE(&self->handle, self->channel, internal_duty_cycle);
+    self->duty_cycle = duty;
 }
 
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
@@ -286,30 +280,9 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
     //don't halt setup for the same frequency
     if (frequency == self->frequency) return;
 
-    uint32_t source_freq = timer_get_source_freq(self->tim->tim_index);
     uint32_t prescaler = 0;
     uint32_t period = 0;
-    
-    for (int i=0; i<32767;i++) {
-        period = source_freq/(i*frequency);
-        if (period <= 65535 && period>=2) {
-            prescaler = i;
-            break;
-        }
-    }
-    if (prescaler == 0) {
-        mp_raise_ValueError(translate("Invalid frequency supplied"));
-    }
-
-    uint32_t input = (self->duty_cycle*period)/65535;
-
-    //debugging output
-    // mp_printf(&mp_plat_print, "Duty:%d, Pulses:%d\n", self->duty_cycle,input);
-    // mp_printf(&mp_plat_print, "Period: %d\n", period);
-    // mp_printf(&mp_plat_print, "Source Freq: %d\n", source_freq);
-    // mp_printf(&mp_plat_print, "Prescaler %d, Timer Freq: %d\n", prescaler, source_freq/prescaler);
-    // mp_printf(&mp_plat_print, "Output Freq: %d\n", (source_freq/prescaler)/period);
-    // mp_printf(&mp_plat_print, "TIM#:%d CH:%d ALTF:%d\n", self->tim->tim_index, self->tim->channel_index, self->tim->altfn_index);
+    timer_get_optimal_divisors(&period, &prescaler,frequency,timer_get_source_freq(self->tim->tim_index));
 
     //shut down
     HAL_TIM_PWM_Stop(&self->handle, self->channel);
@@ -323,7 +296,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
         mp_raise_ValueError(translate("Could not re-init timer"));
     }
 
-    self->chan_handle.Pulse = input;
+    self->chan_handle.Pulse = timer_get_internal_duty(self->duty_cycle, period);
 
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Could not re-init channel"));
