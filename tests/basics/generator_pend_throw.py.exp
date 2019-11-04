@@ -2,13 +2,12 @@
 1
 raised ValueError()
 ret was: None
-raised OSError()
 raised ValueError('generator already executing',)
-raised ValueError('generator already executing',)
+raised TypeError("can't pend throw to just-started generator",)
 0
 ignore CancelledError
 1
-raised CancelledError()
+TypeError
 None
 CancelledError()
 CancelledError()

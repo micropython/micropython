@@ -26,16 +26,6 @@ except Exception as e:
 
 print("ret was:", v)
 
-
-# Verify that pend_throw works on an unstarted coroutine.
-g = gen()
-g.pend_throw(OSError())
-try:
-    next(g)
-except Exception as e:
-    print("raised", repr(e))
-
-
 # Verify that you can't resume the coroutine from within the running coroutine.
 def gen_next():
     next(g)
@@ -77,14 +67,12 @@ g = gen_cancelled()
 print(next(g))
 g.pend_throw(CancelledError())
 print(next(g))
-# ...but not if the generator hasn't started.
+# pend_throw() is not allowed on generators that have not started yet
 g = gen_cancelled()
-g.pend_throw(CancelledError())
 try:
-    next(g)
-except Exception as e:
-    print("raised", repr(e))
-
+     g.pend_throw(CancelledError())
+except TypeError:
+     print("TypeError")
 
 # Verify that calling pend_throw returns the previous exception.
 g = gen()

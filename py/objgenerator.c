@@ -319,6 +319,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 #if MICROPY_PY_GENERATOR_PEND_THROW
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    // Do not allow .pend_throw() if the generator hasn't started.
+    // This is needed to guarantee that:
+    // 1- Execution with or without a pending exception always proceeds up to the first yield statement
+    // 2- Always give the generator a chance to catch and process the exception passed to .pend_throw()
+    if (self->code_state.sp == self->code_state.state - 1) {
+         mp_raise_TypeError("can't pend throw to just-started generator");
+    }
     if (self->pend_exc == MP_OBJ_NULL) {
         mp_raise_ValueError("generator already executing");
     }
