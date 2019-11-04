@@ -40,8 +40,6 @@
 #include "stm32f4xx_hal.h"
 
 //DAC is shared between both channels. 
-//TODO: store as struct with channel info, automatically turn it off if unused 
-//on both channels for power save?
 #if HAS_DAC
 DAC_HandleTypeDef handle;
 #endif
