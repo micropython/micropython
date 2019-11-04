@@ -45,13 +45,13 @@
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
     mp_hal_pin_write(pin, 0);
-    mp_hal_delay_us(TIMING_RESET1);
+    mp_hal_delay_us_fast(TIMING_RESET1);
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_write(pin, 1);
     mp_hal_delay_us_fast(TIMING_RESET2);
     int status = !mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
-    mp_hal_delay_us(TIMING_RESET3);
+    mp_hal_delay_us_fast(TIMING_RESET3);
     return status;
 }
 
