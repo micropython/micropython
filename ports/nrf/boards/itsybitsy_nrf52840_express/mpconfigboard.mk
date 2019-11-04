@@ -1,6 +1,6 @@
 USB_VID = 0x239A
-USB_PID = 0x8046
-USB_PRODUCT = "Circuit Playground Bluefruit"
+USB_PID = 0x8052
+USB_PRODUCT = "ItsyBitsy nRF52840 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
 MCU_SERIES = m4
@@ -21,13 +21,9 @@ endif
 
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 
+# Don't use up a hardware SPI peripheral for the status DotStar: we only have one or two.
+CIRCUITPY_BITBANG_APA102 = 1
+
 QSPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICE_COUNT = 1
 EXTERNAL_FLASH_DEVICES = "GD25Q16C"
-
-# Allocate two, not just one I2C peripheral for CPB, so that we have both
-# on-board and off-board I2C available.
-# When SPIM3 becomes available we'll be able to have two I2C and two SPI peripherals.
-# We use a CFLAGS define here because there are include order issues
-# if we try to include "mpconfigport.h" into nrfx_config.h .
-CFLAGS += -DCIRCUITPY_NRF_NUM_I2C=2

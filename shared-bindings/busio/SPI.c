@@ -154,11 +154,12 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|      within spec for the SAMD21.
 //|
 //|   .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
-//|      and 8MHz. 16MHz and 32MHz are also available, but only on the first
-//|      `busio.SPI` object you create. Two more ``busio.SPI`` objects can be created, but they are restricted
-//|      to 8MHz maximum. This is a hardware restriction: there is only one high-speed SPI peripheral.
+//|      and 8MHz.
 //|      If you pick a a baudrate other than one of these, the nearest lower
 //|      baudrate will be chosen, with a minimum of 125kHz.
+//|      Two SPI objects may be created, except on the Circuit Playground Bluefruit,
+//|      which allows only one (to allow for an additional I2C object).
+//|
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {

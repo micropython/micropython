@@ -1,7 +1,7 @@
-USB_VID = 0x239A
-USB_PID = 0x8046
-USB_PRODUCT = "Circuit Playground Bluefruit"
-USB_MANUFACTURER = "Adafruit Industries LLC"
+USB_VID = 0x2341
+USB_PID = 0x805A
+USB_PRODUCT = "Arduino_Nano_33_BLE"
+USB_MANUFACTURER = "Arduino"
 
 MCU_SERIES = m4
 MCU_VARIANT = nrf52
@@ -21,11 +21,9 @@ endif
 
 NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 
-QSPI_FLASH_FILESYSTEM = 1
-EXTERNAL_FLASH_DEVICE_COUNT = 1
-EXTERNAL_FLASH_DEVICES = "GD25Q16C"
+INTERNAL_FLASH_FILESYSTEM = 1
 
-# Allocate two, not just one I2C peripheral for CPB, so that we have both
+# Allocate two, not just one I2C peripheral, so that we have both
 # on-board and off-board I2C available.
 # When SPIM3 becomes available we'll be able to have two I2C and two SPI peripherals.
 # We use a CFLAGS define here because there are include order issues

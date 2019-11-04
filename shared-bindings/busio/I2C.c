@@ -60,6 +60,10 @@
 //|   :param int frequency: The clock frequency in Hertz
 //|   :param int timeout: The maximum clock stretching timeut - (used only for bitbangio.I2C; ignored for busio.I2C)
 //|
+//|   .. note:: On the nRF52840, only one I2C object may be created,
+//|      except on the Circuit Playground Bluefruit, which allows two,
+//|      one for the onboard accelerometer, and one for offboard use.
+//|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
     self->base.type = &busio_i2c_type;
