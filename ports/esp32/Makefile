@@ -275,6 +275,9 @@ COPT += -Os -DNDEBUG
 #LDFLAGS += --gc-sections
 endif
 
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=xtensawin
+
 # Enable SPIRAM support if CONFIG_ESP32_SPIRAM_SUPPORT=y in sdkconfig
 ifeq ($(CONFIG_ESP32_SPIRAM_SUPPORT),y)
 CFLAGS_COMMON += -mfix-esp32-psram-cache-issue
