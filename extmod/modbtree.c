@@ -60,7 +60,7 @@ STATIC const mp_obj_type_t btree_type;
         }
 
 void __dbpanic(DB *db) {
-    printf("__dbpanic(%p)\n", db);
+    mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
 STATIC mp_obj_btree_t *btree_new(DB *db) {
