@@ -38,11 +38,11 @@ using the following command:
 Note: The ESP IDF v4.x support is currently experimental.
 
 The binary toolchain (binutils, gcc, etc.) can be installed using the following
-guides. Currently this project uses the v3.3 toolchain:
+guides:
 
-  * [Linux installation](https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started/linux-setup.html)
-  * [MacOS installation](https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started/macos-setup.html)
-  * [Windows installation](https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started/windows-setup.html)
+  * [Linux installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/linux-setup.html)
+  * [MacOS installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/macos-setup.html)
+  * [Windows installation](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/windows-setup.html)
 
 If you are on a Windows machine then the
 [Windows Subsystem for Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide)
@@ -69,16 +69,9 @@ as well as a copy of the ESP-IDF repository. You will need to update your `PATH`
 environment variable to include the ESP32 toolchain. For example, you can issue
 the following commands on (at least) Linux:
 
-    $ export PATH="$HOME/esp/xtensa-esp32-elf/bin:$PATH"
+    $ export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
 
-You can put this command in your `.bash_profile` (OSX) or `.bashrc` (Linux).
-
-Once you have that properly set up, you should try running the following command to check the version:
-
-```bash
-$ xtensa-esp32-elf-c++ --version
-# Expect crosstool-ng-1.22.0-80-g6c4433a) 5.2.0
-```
+You can put this command in your `.profile` or `.bash_login`.
 
 You then need to set the `ESPIDF` environment/makefile variable to point to
 the root of the ESP-IDF repository.  You can set the variable in your PATH,
@@ -185,8 +178,8 @@ point when booting up.  But for the most part the documentation and tutorials
 for the ESP8266 should apply to the ESP32 (at least for the components that
 are implemented).
 
-See http://docs.micropython.org/en/latest/esp32/quickref.html for
-a quick reference, and http://docs.micropython.org/en/latest/esp32/tutorial/intro.html
+See http://docs.micropython.org/en/latest/esp8266/esp8266/quickref.html for
+a quick reference, and http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
 for a tutorial.
 
 The following function can be used to connect to a WiFi access point (you can
