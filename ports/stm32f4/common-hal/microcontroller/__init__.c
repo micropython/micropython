@@ -42,14 +42,30 @@
 // This routine should work even when interrupts are disabled. Used by OneWire
 // for precise timing.
 void common_hal_mcu_delay_us(uint32_t delay) {
-  //TODO: implement equivalent of mp_hal_delay_us(delay);
-  //this is fairly annoying in the STM32 HAL
+    // sys freq is always a multiple of 2MHz, so division here won't lose precision
+    const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 2000000 * delay / 2;
+    for (uint32_t count = 0; ++count <= ucount;) {
 }
 
-void common_hal_mcu_disable_interrupts() {
+volatile uint32_t nesting_count = 0;
+void common_hal_mcu_disable_interrupts(void) {
+    __disable_irq();
+    __DMB();
+    nesting_count++;
 }
 
-void common_hal_mcu_enable_interrupts() {
+void common_hal_mcu_enable_interrupts(void) {
+    if (nesting_count == 0) {
+        // This is very very bad because it means there was mismatched disable/enables so we
+        // "HardFault".
+        HardFault_Handler();
+    }
+    nesting_count--;
+    if (nesting_count > 0) {
+        return;
+    }
+    __DMB();
+    __enable_irq();
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
@@ -58,7 +74,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 }
 
 void common_hal_mcu_reset(void) {
-    filesystem_flush();
+    filesystem_flush(); //TODO: implement as part of flash improvements
     NVIC_SystemReset();
 }
 
