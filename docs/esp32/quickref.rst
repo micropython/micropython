@@ -443,6 +443,19 @@ the 1 and then stream the same bits, but send the opposite colors.::
     neopixel_write_timings(pin23, pixel_grb_data, t0high_ticks, t1high_ticks, t0low_ticks, t1low_ticks, latch_ticks)
 
 
+Alternatively, for nanosecond based timing::
+
+    from machine import Pin
+    from neopixel import pixelbitstream
+
+    p23 = Pin(23, Pin.OUT)
+    timing_ns = (350, 900, 900, 350)
+    buf = bytearray([0,0,0,51,1,1,2,52,52])
+    pixelbitstream(p23, timing_ns, buf)
+
+    
+
+
 Capacitive Touch
 ----------------
 

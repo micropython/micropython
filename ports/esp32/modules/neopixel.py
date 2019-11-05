@@ -2,6 +2,8 @@
 # MIT license; Copyright (c) 2016 Damien P. George
 
 from esp import neopixel_write, neopixel_write_timings
+from machine import freq
+
 
 def pixelbitstream(pin, timing_ns, buf):
     if len(timing_ns) == 4:
@@ -11,6 +13,13 @@ def pixelbitstream(pin, timing_ns, buf):
         t0high, t0low, t1high, t1low, t_latch = timing_ns
     else:
         raise Exception("pixelbitstream expected 4-tuple or 5-tuple of timing_ns")
+
+    ticks_per_ns = freq() / 1_000_000_000.0
+    t0high = int(t0high * ticks_per_ns)
+    t0low = int(t0low * ticks_per_ns)
+    t1high = int(t1high * ticks_per_ns)
+    t1low = int(t1low * ticks_per_ns)
+    t_latch = int(t_latch * ticks_per_ns)
 
     neopixel_write_timings(pin, buf, t0high, t0low, t1high, t1low, t_latch)
 
