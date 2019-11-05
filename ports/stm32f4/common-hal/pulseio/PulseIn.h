@@ -24,26 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
-#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H
 
-//I2C
-extern I2C_TypeDef * mcu_i2c_banks[3];
+#include "common-hal/microcontroller/Pin.h"
 
-extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7];
-extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
+#include "py/obj.h"
 
-//SPI
-extern SPI_TypeDef * mcu_spi_banks[5];
+typedef struct {
+    mp_obj_base_t base;
 
-extern const mcu_spi_sck_obj_t mcu_spi_sck_list[15];
-extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
-extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
-extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
+    uint8_t pin;
+    bool idle_state;
+    bool paused;
+    volatile bool first_edge;
 
-#define TIM_BANK_ARRAY_LEN 14
-TIM_TypeDef * mcu_tim_banks[14];
-#define TIM_PIN_ARRAY_LEN 44
-const mcu_tim_pin_obj_t mcu_tim_pin_list[44];
+    uint16_t* buffer;
+    uint16_t maxlen;
 
-#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+    volatile uint16_t start;
+    volatile uint16_t len;
+    volatile uint16_t last_us;
+    volatile uint64_t last_ms;
+} pulseio_pulsein_obj_t;
+
+void pulsein_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEIN_H

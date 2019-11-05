@@ -24,26 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
-#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PWMOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PWMOUT_H
 
-//I2C
-extern I2C_TypeDef * mcu_i2c_banks[3];
+#include "common-hal/microcontroller/Pin.h"
 
-extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[7];
-extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
 
-//SPI
-extern SPI_TypeDef * mcu_spi_banks[5];
+#include "py/obj.h"
 
-extern const mcu_spi_sck_obj_t mcu_spi_sck_list[15];
-extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
-extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
-extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
+typedef struct {
+    mp_obj_base_t base;
+    TIM_HandleTypeDef handle;
+    TIM_OC_InitTypeDef chan_handle;
+    const mcu_tim_pin_obj_t *tim;
+    uint8_t channel: 7;
+    bool variable_frequency: 1;
+    uint16_t duty_cycle;
+    uint32_t frequency;
+    uint32_t period;
+} pulseio_pwmout_obj_t;
 
-#define TIM_BANK_ARRAY_LEN 14
-TIM_TypeDef * mcu_tim_banks[14];
-#define TIM_PIN_ARRAY_LEN 44
-const mcu_tim_pin_obj_t mcu_tim_pin_list[44];
+void pwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PWMOUT_H
