@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-21 19:50-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -261,6 +261,10 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 msgid "All timers in use"
 msgstr "Semua timer sedang digunakan"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr ""
+
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "fungsionalitas AnalogOut tidak didukung"
@@ -327,6 +331,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
+msgstr ""
+
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
@@ -465,6 +474,12 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr ""
 
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr ""
@@ -507,7 +522,7 @@ msgstr ""
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
 msgstr "Tidak bisa menyesuaikan data ke dalam paket advertisment"
@@ -554,10 +569,6 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a Peripheral"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -567,13 +578,18 @@ msgstr ""
 msgid "Expected a UUID"
 msgstr ""
 
-#: shared-bindings/_bleio/Central.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
 msgstr ""
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Failed initiate attribute read, err 0x%04x"
 msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
@@ -586,19 +602,13 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
 
 #: ports/nrf/common-hal/_bleio/Service.c
-#, fuzzy, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Gagal untuk menambahkan karakteristik, status: 0x%08lX"
+msgid "Failed to add characteristic, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to add descriptor, err 0x%04x"
 msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -611,25 +621,22 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Gagal untuk megalokasikan buffer RX dari %d byte"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
-msgid "Failed to change softdevice state"
-msgstr "Gagal untuk merubah status softdevice, error: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to configure advertising, err 0x%04x"
+msgid "Failed to change softdevice state, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
-#, fuzzy, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Service.c
+msgid "Failed to create service, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Gagal untuk menemukan layanan, status: 0x%08lX"
@@ -649,7 +656,7 @@ msgstr "Gagal untuk mendapatkan status softdevice, error: 0x%08lX"
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "Failed to pair"
 msgstr ""
 
@@ -658,8 +665,7 @@ msgstr ""
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Gagal untuk membaca nilai atribut, status: 0x%08lX"
 
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
@@ -679,35 +685,27 @@ msgstr "Gagal untuk menambahkan Vendor Spesific UUID, status: 0x%08lX"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Gagal untuk melepaskan mutex, status: 0x%08lX"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to set device name, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to start advertising, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to start pairing, error 0x%04x"
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "Failed to start pairing, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Gagal untuk melakukan scanning, status: 0x%08lX"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to stop advertising, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -1004,9 +1002,8 @@ msgstr ""
 msgid "No such file/directory"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c shared-bindings/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Peripheral.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Tidak dapat menyambungkan ke AP"
@@ -1081,6 +1078,10 @@ msgstr "Tambahkan module apapun pada filesystem\n"
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
@@ -1151,6 +1152,10 @@ msgstr ""
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
@@ -1164,11 +1169,6 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1984,7 +1984,7 @@ msgstr ""
 msgid "integer required"
 msgstr ""
 
-#: shared-bindings/_bleio/Peripheral.c shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr ""
@@ -2161,11 +2161,6 @@ msgstr ""
 msgid "name '%q' is not defined"
 msgstr ""
 
-#: shared-bindings/_bleio/Peripheral.c
-#, fuzzy
-msgid "name must be a string"
-msgstr "keyword harus berupa string"
-
 #: py/runtime.c
 msgid "name not defined"
 msgstr ""
@@ -2216,7 +2211,7 @@ msgstr ""
 msgid "no such attribute"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
@@ -2700,7 +2695,7 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
 
@@ -2770,9 +2765,21 @@ msgstr ""
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
 
+#, fuzzy, c-format
+#~ msgid "Failed to add characteristic, err 0x%04x"
+#~ msgstr "Gagal untuk menambahkan karakteristik, status: 0x%08lX"
+
 #, fuzzy
 #~ msgid "Failed to add service"
 #~ msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to change softdevice state"
+#~ msgstr "Gagal untuk merubah status softdevice, error: 0x%08lX"
 
 #, fuzzy
 #~ msgid "Failed to connect:"
@@ -2780,6 +2787,10 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "Failed to continue scanning"
+#~ msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
 
 #, fuzzy
@@ -2802,12 +2813,20 @@ msgstr ""
 #~ msgid "Failed to start advertising"
 #~ msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
+#, fuzzy, c-format
+#~ msgid "Failed to start advertising, err 0x%04x"
+#~ msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
+
 #, fuzzy
 #~ msgid "Failed to start scanning"
 #~ msgstr "Gagal untuk melakukan scanning, status: 0x%08lX"
 
 #, fuzzy
 #~ msgid "Failed to stop advertising"
+#~ msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 
 #~ msgid "GPIO16 does not support pull up."
@@ -2858,6 +2877,10 @@ msgstr ""
 
 #~ msgid "STA required"
 #~ msgstr "STA dibutuhkan"
+
+#, fuzzy, c-format
+#~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+#~ msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) tidak ada"
@@ -2935,6 +2958,10 @@ msgstr ""
 
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
+
+#, fuzzy
+#~ msgid "name must be a string"
+#~ msgstr "keyword harus berupa string"
 
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "tidak valid channel ADC: %d"

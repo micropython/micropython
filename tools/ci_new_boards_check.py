@@ -42,6 +42,7 @@ ci_boards.sort()
 missing_boards = set(info_boards) - set(ci_boards)
 
 if missing_boards:
+    ok = False
     print('Boards missing in {}:'.format(workflow_file))
     for board in missing_boards:
         print(board)

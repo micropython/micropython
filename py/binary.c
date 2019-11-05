@@ -184,7 +184,7 @@ long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, con
         val = -1;
     }
     for (uint i = 0; i < size; i++) {
-        val <<= 8;
+        val *= 256;
         val |= *src;
         src += delta;
     }

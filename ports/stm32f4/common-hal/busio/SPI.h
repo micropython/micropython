@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +30,26 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
+    SPI_HandleTypeDef handle;
     bool has_lock;
-    uint8_t clock_pin;
-    uint8_t MOSI_pin;
-    uint8_t MISO_pin;
+    const mcu_spi_sck_obj_t *sck;
+    const mcu_spi_mosi_obj_t *mosi;
+    const mcu_spi_miso_obj_t *miso;
+    const mcu_spi_nss_obj_t *nss;
+    uint32_t baudrate;
+    uint16_t prescaler;
+    uint8_t polarity;
+    uint8_t phase;
+    uint8_t bits;
 } busio_spi_obj_t;
+
+void spi_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H

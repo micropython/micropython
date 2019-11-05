@@ -1,6 +1,12 @@
 name: Build CI
 
-on: [push, pull_request, release]
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  check_suite:
+    types: [rerequested]
 
 jobs:
   test:
@@ -10,9 +16,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
-      run: exit 1
-      if: github.event_name == 'release' && (github.event.action != 'published' && github.event.action != 'rerequested')
     - name: Set up Python 3.5
       uses: actions/setup-python@v1
       with:
@@ -49,9 +52,6 @@ jobs:
         done
       working-directory: tests
       if: failure()
-    - name: Test threads
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread
-      working-directory: tests
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
@@ -75,6 +75,7 @@ jobs:
         board:
         - "arduino_mkr1300"
         - "arduino_mkrzero"
+        - "arduino_nano_33_ble"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
@@ -102,12 +103,14 @@ jobs:
         - "feather_m4_express"
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
+        - "feather_stm32f405_express"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
+        - "itsybitsy_nrf52840_express"
         - "kicksat-sprite"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
@@ -128,6 +131,7 @@ jobs:
         - "pirkey_m0"
         - "pybadge"
         - "pybadge_airlift"
+        - "pyboard_v11"
         - "pygamer"
         - "pygamer_advance"
         - "pyportal"
@@ -140,16 +144,21 @@ jobs:
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_qwiic_micro_no_flash"
+        - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "spresense"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
+        - "stringcar_m0_express"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
+        - "winterbloom_sol"
 
     steps:
     - name: Set up Python 3.5

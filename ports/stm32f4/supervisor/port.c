@@ -32,6 +32,8 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
@@ -55,6 +57,8 @@ safe_mode_t port_init(void) {
 void reset_port(void) {
 	reset_all_pins();
     i2c_reset();
+    spi_reset();
+    pwmout_reset();
 }
 
 void reset_to_bootloader(void) {
@@ -63,6 +67,14 @@ void reset_to_bootloader(void) {
 
 void reset_cpu(void) {
 	NVIC_SystemReset();
+}
+
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
 }
 
 extern uint32_t _ebss;

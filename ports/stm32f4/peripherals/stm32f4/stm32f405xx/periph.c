@@ -46,4 +46,117 @@ const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
     I2C_SCL(2, 4, &pin_PB10),
     I2C_SCL(3, 4, &pin_PA08)
 };
-//SPI, UART, Etc
+
+SPI_TypeDef * mcu_spi_banks[3] = {SPI1, SPI2, SPI3};
+
+const mcu_spi_sck_obj_t mcu_spi_sck_list[7] = {
+    SPI(1, 5, &pin_PA05),
+    SPI(1, 5, &pin_PB03),
+    SPI(2, 5, &pin_PB10),
+    SPI(2, 5, &pin_PB13),
+    SPI(2, 5, &pin_PC07),
+    SPI(3, 6, &pin_PB03),
+    SPI(3, 6, &pin_PC10),
+};
+
+const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6] = {
+    SPI(1, 5, &pin_PA07),
+    SPI(1, 5, &pin_PB05),
+    SPI(2, 5, &pin_PB15),
+    SPI(2, 5, &pin_PC03),
+    SPI(3, 6, &pin_PB05),
+    SPI(3, 6, &pin_PC12),
+};
+
+const mcu_spi_miso_obj_t mcu_spi_miso_list[6] = {
+    SPI(1, 5, &pin_PA06),
+    SPI(1, 5, &pin_PB04),
+    SPI(2, 5, &pin_PB14),
+    SPI(2, 5, &pin_PC02),
+    SPI(3, 6, &pin_PB04),
+    SPI(3, 6, &pin_PC11),
+};
+
+const mcu_spi_nss_obj_t mcu_spi_nss_list[6] = {
+    SPI(1, 5, &pin_PA04),
+    SPI(1, 5, &pin_PA15),
+    SPI(2, 5, &pin_PB09),
+    SPI(2, 5, &pin_PB12),
+    SPI(3, 6, &pin_PA04),
+    SPI(3, 6, &pin_PA15),
+};
+
+//Timers
+//TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
+TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, TIM9, TIM10,
+                                    TIM11, TIM12, TIM13, TIM14};
+
+const mcu_tim_pin_obj_t mcu_tim_pin_list[56] = {
+    TIM(2,1,1,&pin_PA00),
+    TIM(5,2,1,&pin_PA00),
+    TIM(2,1,2,&pin_PA01),
+    TIM(5,2,2,&pin_PA01),
+    TIM(2,1,3,&pin_PA02),
+    TIM(5,2,3,&pin_PA02),
+    TIM(2,1,4,&pin_PA03),
+    TIM(5,2,4,&pin_PA03),
+    TIM(9,3,1,&pin_PA02),
+    TIM(9,3,2,&pin_PA03),
+    TIM(3,2,1,&pin_PA06),
+    TIM(13,9,1,&pin_PA06),
+    TIM(3,2,2,&pin_PA07),
+    TIM(14,9,1,&pin_PA07),
+    TIM(1,1,1,&pin_PA08),
+    TIM(1,1,2,&pin_PA09),
+    TIM(1,1,3,&pin_PA10),
+    TIM(1,1,4,&pin_PA11),
+    TIM(2,1,1,&pin_PA15),
+    TIM(3,2,3,&pin_PB00),
+    TIM(3,2,4,&pin_PB01),
+    TIM(2,1,2,&pin_PB03),
+    TIM(3,2,1,&pin_PB04),
+    TIM(3,2,2,&pin_PB05),
+    TIM(4,2,1,&pin_PB06),
+    TIM(4,2,2,&pin_PB07),
+    TIM(4,2,3,&pin_PB08),
+    TIM(10,2,1,&pin_PB08),
+    TIM(4,2,4,&pin_PB09),
+    TIM(11,2,1,&pin_PB09),
+    TIM(2,1,3,&pin_PB10),
+    TIM(2,1,4,&pin_PB11),
+    TIM(12,9,1,&pin_PB14),
+    TIM(12,9,2,&pin_PB15),
+    TIM(3,2,1,&pin_PC06),
+    TIM(3,2,2,&pin_PC07),
+    TIM(3,2,3,&pin_PC08),
+    TIM(3,2,4,&pin_PC09),
+    TIM(8,3,1,&pin_PC06),
+    TIM(8,3,2,&pin_PC07),
+    TIM(8,3,3,&pin_PC08),
+    TIM(8,3,4,&pin_PC09),
+    TIM(4,2,1,&pin_PD12),
+    TIM(4,2,2,&pin_PD13),
+    TIM(4,2,3,&pin_PD14),
+    TIM(4,2,4,&pin_PD15),
+    TIM(9,3,1,&pin_PE05),
+    TIM(9,3,2,&pin_PE06),
+    TIM(1,1,1,&pin_PE09),
+    TIM(1,1,2,&pin_PE11),
+    TIM(1,1,3,&pin_PE13),
+    TIM(1,1,4,&pin_PE14),
+    TIM(10,3,1,&pin_PF06),
+    TIM(11,3,1,&pin_PF07),
+    TIM(13,9,1,&pin_PF08),
+    TIM(14,9,1,&pin_PF09),
+    // TIM(12,9,1,&pin_PH06), //TODO: include these when pin map is expanded
+    // TIM(12,9,2,&pin_PH09),
+    // TIM(5,2,1,&pin_PH10),
+    // TIM(5,2,2,&pin_PH11),
+    // TIM(5,2,3,&pin_PH12),
+    // TIM(5,2,4,&pin_PI00),
+    // TIM(8,3,4,&pin_PI02),
+    // TIM(8,3,1,&pin_PI05),
+    // TIM(8,3,2,&pin_PI06),
+    // TIM(8,3,3,&pin_PI07),
+};
+

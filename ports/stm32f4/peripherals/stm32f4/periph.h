@@ -33,17 +33,19 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-// Address Version
+// I2C 
+//TODO: these objects should be condensed into a single 'periph_pin' unless we
+//find a compelling reason to store more unique data in them. 
+
 typedef struct {
     uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
     uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
     const mcu_pin_obj_t * pin;
 } mcu_i2c_sda_obj_t;
 
-// Address Version
 typedef struct {
-    uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
-    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
+    uint8_t i2c_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_i2c_scl_obj_t;
 
@@ -62,16 +64,74 @@ typedef struct {
     .pin = scl_pin, \
 }
 
-// TODO: SPI, UART, etc
+// SPI 
+//TODO: these objects should be condensed into a single 'periph_pin' unless we
+//find a compelling reason to store more unique data in them. 
 
-// Choose based on chip
-#ifdef STM32F412Zx
-#include "stm32f412zx/periph.h"
-#endif
+typedef struct {
+    uint8_t spi_index:4; //Up to 6 SPI units
+    uint8_t altfn_index:4; //Up to 15 alt channels
+    const mcu_pin_obj_t * pin;
+} mcu_spi_sck_obj_t;
+
+typedef struct {
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
+    const mcu_pin_obj_t * pin;
+} mcu_spi_mosi_obj_t;
+
+typedef struct {
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
+    const mcu_pin_obj_t * pin;
+} mcu_spi_miso_obj_t;
+
+typedef struct {
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
+    const mcu_pin_obj_t * pin;
+} mcu_spi_nss_obj_t;
+
+#define SPI(index, alt, spi_pin)       \
+{ \
+    .spi_index = index, \
+    .altfn_index = alt, \
+    .pin = spi_pin, \
+}
+
+//Timers
+typedef struct {
+    uint8_t tim_index:4; 
+    uint8_t altfn_index:4; 
+    uint8_t channel_index:4;
+    const mcu_pin_obj_t * pin;
+} mcu_tim_pin_obj_t;
+
+#define TIM(index, alt, channel, tim_pin)       \
+{ \
+    .tim_index = index, \
+    .altfn_index = alt, \
+    .channel_index = channel, \
+    .pin = tim_pin, \
+}
+
+//Starter Lines
+
 #ifdef STM32F411xE
+#define HAS_DAC 0
 #include "stm32f411xe/periph.h"
 #endif
+
+#ifdef STM32F412Zx
+#define HAS_DAC 0
+#include "stm32f412zx/periph.h"
+#endif
+
+//Foundation Lines
+
 #ifdef STM32F405xx
+#define HAS_DAC 1
 #include "stm32f405xx/periph.h"
 #endif
+
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__

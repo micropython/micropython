@@ -16,6 +16,7 @@
     0x00000000..0x00000FFF   (4KB) Master Boot Record
 */
 
+
 /* Specify the memory areas (S140 6.x.x) */
 MEMORY
 {
@@ -26,7 +27,10 @@ MEMORY
     FLASH_FATFS (r) : ORIGIN = 0x000AD000, LENGTH = 0x040000
 
     /* 0x2000000 - RAM:ORIGIN is reserved for Softdevice */
-    RAM (xrw)       : ORIGIN = 0x20004000, LENGTH = 0x20040000 - 0x20004000
+    /* SoftDevice 6.1.0 takes 0x1628 bytes (5.54 kb) minimum. */
+    /* To measure the minimum required amount of memory for given configuration, set this number
+       high enough to work and then check the mutation of the value done by sd_ble_enable. */
+    RAM (xrw)       : ORIGIN = 0x20000000 + 16K, LENGTH = 256K - 16K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
@@ -38,7 +42,8 @@ _minimum_heap_size = 0;
 /*_stack_end = ORIGIN(RAM) + LENGTH(RAM);*/
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
-/* RAM extents for the garbage collector */
+/* RAM extents for the garbage collector and soft device init */
+_ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_end = 0x20020000; /* tunable */
 

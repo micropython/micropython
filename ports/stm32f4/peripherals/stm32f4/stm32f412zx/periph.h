@@ -34,4 +34,17 @@ extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[8];
 extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
 
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[5];
+
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[15];
+extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[14];
+extern const mcu_spi_miso_obj_t mcu_spi_miso_list[12];
+extern const mcu_spi_nss_obj_t mcu_spi_nss_list[12];
+
+#define TIM_BANK_ARRAY_LEN 14
+TIM_TypeDef * mcu_tim_banks[14];
+#define TIM_PIN_ARRAY_LEN 60
+const mcu_tim_pin_obj_t mcu_tim_pin_list[60];
+
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F411VE_PERIPH_H

@@ -69,6 +69,11 @@
 #include "shared-module/board/__init__.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -439,6 +444,10 @@ int __attribute__((used)) main(void) {
     // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();
 
+    #if CIRCUITPY_BLEIO
+    supervisor_start_bluetooth();
+    #endif
+
     // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
@@ -475,9 +484,13 @@ void gc_collect(void) {
     displayio_gc_collect();
     #endif
 
+    #if CIRCUITPY_BLEIO
+    common_hal_bleio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 
