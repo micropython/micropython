@@ -233,7 +233,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 
 /*void error_check(bool status, const char *msg) {
     if (!status) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
+        mp_raise_msg(&mp_type_OSError, msg);
     }
 }
 */
@@ -441,7 +441,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     wifi_mode_t mode;
     ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
     if ((mode & WIFI_MODE_STA) == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "STA must be active"));
+        mp_raise_msg(&mp_type_OSError, "STA must be active");
     }
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
