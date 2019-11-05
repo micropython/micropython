@@ -31,20 +31,22 @@
 #include "py/objlist.h"
 #include "common-hal/_bleio/UUID.h"
 
-typedef struct {
+typedef struct bleio_service_obj {
     mp_obj_base_t base;
-    // Handle for this service.
+    // Handle for the local service.
     uint16_t handle;
     // True if created during discovery.
     bool is_remote;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
-    // May be a Peripheral, Central, etc.
-    mp_obj_t device;
+    mp_obj_t connection;
     mp_obj_list_t *characteristic_list;
-    // Range of attribute handles of this service.
+    // Range of attribute handles of this remote service.
     uint16_t start_handle;
     uint16_t end_handle;
+    struct bleio_service_obj* next;
 } bleio_service_obj_t;
+
+void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SERVICE_H

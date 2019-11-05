@@ -28,13 +28,12 @@
  */
 
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
 #include "nrfx_twim.h"
-#include "nrf_gpio.h"
-
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
@@ -107,7 +106,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
         if (!twim_peripherals[i].in_use) {
             self->twim_peripheral = &twim_peripherals[i];
-            self->twim_peripheral->in_use = true;
+            // Mark it as in_use later after other validation is finished.
             break;
         }
     }
@@ -116,10 +115,27 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
 
+    // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
+    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_PULLDOWN);
+
+    common_hal_mcu_delay_us(10);
+
+    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_NOPULL);
+
+    // We must pull up within 3us to achieve 400khz.
+    common_hal_mcu_delay_us(3);
+
+    if (!nrf_gpio_pin_read(sda->number) || !nrf_gpio_pin_read(scl->number)) {
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
+        mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
+    }
+
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
     config.scl = scl->number;
     config.sda = sda->number;
-
     // change freq. only if it's less than the default 400K
     if (frequency < 100000) {
         config.frequency = NRF_TWIM_FREQ_100K;
@@ -132,6 +148,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     claim_pin(sda);
     claim_pin(scl);
 
+    // About to init. If we fail after this point, common_hal_busio_i2c_deinit() will set in_use to false.
+    self->twim_peripheral->in_use = true;
     nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
 
     // A soft reset doesn't uninit the driver so we might end up with a invalid state
@@ -152,8 +170,9 @@ bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
-    if (common_hal_busio_i2c_deinited(self))
+    if (common_hal_busio_i2c_deinited(self)) {
         return;
+    }
 
     nrfx_twim_uninit(&self->twim_peripheral->twim);
 

@@ -34,6 +34,7 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
@@ -59,6 +60,7 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+    pwmout_reset();
 }
 
 void reset_to_bootloader(void) {

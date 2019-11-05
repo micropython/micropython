@@ -74,24 +74,21 @@ uint8_t display_init_sequence[] = {
       0x11, 0x1d, 0x23, 0x35, 0x41, 0x4b, 0x4b, 0x42, 0x3A,
       0x27, 0x1B, 0x08, 0x09, 0x03, 0x00, 0x01,
     0x3a, 1, 0x55,
-    0x36, 1, 0x00,
+    0x36, 1, 0x60,
     0x11, DELAY, 150/5, // Exit Sleep, then delay 150 ms
     0x29, DELAY, 50/5
 };
 
 void board_init(void) {
-    busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PA13, &pin_PA12, &pin_PA14);
-    common_hal_busio_spi_never_reset(spi);
-    
-    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
-        spi,
-        &pin_PB05, // TFT_DC Command or data
-        &pin_PB06, // TFT_CS Chip select
-        &pin_PA00, // TFT_RST Reset
-        24000000);
+    displayio_parallelbus_obj_t* bus = &displays[0].parallel_bus;
+    bus->base.type = &displayio_parallelbus_type;
+    common_hal_displayio_parallelbus_construct(bus,
+        &pin_PA16, // Data0
+        &pin_PB05, // Command or data
+        &pin_PB06, // Chip select
+        &pin_PB09, // Write
+        &pin_PB04, // Read
+        &pin_PA00); // Reset
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -101,7 +98,7 @@ void board_init(void) {
         320, // Height
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // grayscale
         false, // pixels_in_byte_share_row (unused for depths > 8)

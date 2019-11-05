@@ -48,5 +48,10 @@ bool mcu_uart_has_usart[MAX_UART];
 extern const mcu_uart_tx_obj_t mcu_uart_tx_list[12];
 extern const mcu_uart_rx_obj_t mcu_uart_rx_list[12];
 
+//Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 56
+TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
 
 #endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H

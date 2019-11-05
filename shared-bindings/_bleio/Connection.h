@@ -25,16 +25,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H
 
-#include "py/objtype.h"
-#include "common-hal/_bleio/Scanner.h"
+#include "py/objtuple.h"
+#include "common-hal/_bleio/Connection.h"
+#include "common-hal/_bleio/Service.h"
 
-extern const mp_obj_type_t bleio_scanner_type;
+extern const mp_obj_type_t bleio_connection_type;
 
-extern void common_hal_bleio_scanner_construct(bleio_scanner_obj_t *self);
-extern mp_obj_t common_hal_bleio_scanner_scan(bleio_scanner_obj_t *self, mp_float_t timeout, mp_float_t interval, mp_float_t window);
-extern void common_hal_bleio_scanner_stop(bleio_scanner_obj_t *self);
+extern void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self);
+extern bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self);
+extern mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANNER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H

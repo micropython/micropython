@@ -38,7 +38,7 @@ static digitalio_digitalinout_obj_t status_neopixel;
 
 
 #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-uint8_t rgb_status_brightness = 255;
+uint8_t rgb_status_brightness = 50;
 
 #define APA102_BUFFER_LENGTH 12
 static uint8_t status_apa102_color[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};

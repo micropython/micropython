@@ -69,3 +69,5 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_P0_30)
 #define DEFAULT_UART_BUS_TX         (&pin_P0_14)
+
+#define SPEAKER_ENABLE_PIN          (&pin_P1_04)
