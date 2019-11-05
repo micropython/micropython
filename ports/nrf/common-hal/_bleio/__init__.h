@@ -39,4 +39,9 @@ typedef struct {
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
+const mp_obj_t base_error_messages[20];
+
+// Track if the user code modified the BLE state to know if we need to undo it on reload.
+bool vm_used_ble;
+
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_INIT_H

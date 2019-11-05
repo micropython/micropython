@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H
 
 #include <stdbool.h>
 
@@ -37,6 +37,7 @@
 
 #include "common-hal/_bleio/__init__.h"
 #include "shared-module/_bleio/Address.h"
+#include "common-hal/_bleio/Service.h"
 
 typedef enum {
     PAIR_NOT_PAIRED,
@@ -44,24 +45,35 @@ typedef enum {
     PAIR_PAIRED,
 } pair_status_t;
 
+// We split the Connection object into two so that the internal mechanics can live outside of the
+// VM. If it were one object, then we'd risk user code seeing a connection object of theirs be
+// reused.
 typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t name;
-    volatile uint16_t conn_handle;
-    // Services provided by this peripheral.
-    mp_obj_list_t *service_list;
+    uint16_t conn_handle;
+    bool is_central;
     // Remote services discovered when this peripheral is acting as a client.
-    mp_obj_list_t *remote_service_list;
+    bleio_service_obj_t *remote_service_list;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
     // EDIV: Encrypted Diversifier: Identifies LTK during legacy pairing.
     bonding_keys_t bonding_keys;
     uint16_t ediv;
-    uint8_t* advertising_data;
-    uint8_t* scan_response_data;
-    uint8_t adv_handle;
     pair_status_t pair_status;
-} bleio_peripheral_obj_t;
+    mp_obj_t connection_obj;
+    ble_drv_evt_handler_entry_t handler_entry;
+} bleio_connection_internal_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PERIPHERAL_H
+typedef struct {
+    mp_obj_base_t base;
+    bleio_connection_internal_t* connection;
+    // The HCI disconnect reason.
+    uint8_t disconnect_reason;
+} bleio_connection_obj_t;
+
+bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in);
+
+uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self);
+mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* connection);
+
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H

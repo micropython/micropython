@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
+
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t scan_entries;
-    uint16_t interval;
-    uint16_t window;
-} bleio_scanner_obj_t;
+    const pulseio_pwmout_obj_t *pwmout;
+} pulseio_pulseout_obj_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_SCANNER_H
+void pulseout_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H

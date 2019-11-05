@@ -758,7 +758,7 @@ unwind_jump:;
                     } else {
                         PUSH(value); // push the next iteration value
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
                 // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH
