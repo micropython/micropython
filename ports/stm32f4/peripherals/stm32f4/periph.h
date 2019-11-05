@@ -101,7 +101,6 @@ typedef struct {
     .pin = spi_pin, \
 }
 
-<<<<<<< HEAD
 // UART
 // TODO: these objects should be condensed into a single 'periph_pin' unless we
 // find a compelling reason to store more unique data in them. 
@@ -123,7 +122,8 @@ typedef struct {
     .uart_index = index, \
     .altfn_index = alt, \
     .pin = uart_pin, \
-=======
+}
+
 //Timers
 typedef struct {
     uint8_t tim_index:4; 
@@ -138,7 +138,6 @@ typedef struct {
     .altfn_index = alt, \
     .channel_index = channel, \
     .pin = tim_pin, \
->>>>>>> upstream/master
 }
 
 //Starter Lines
