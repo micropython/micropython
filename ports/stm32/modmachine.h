@@ -41,5 +41,6 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
+MP_DECLARE_CONST_FUN_OBJ_3(machine_pixelbitstream_obj);
 
 #endif // MICROPY_INCLUDED_STM32_MODMACHINE_H
