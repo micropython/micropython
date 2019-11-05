@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "gccollect.h"
