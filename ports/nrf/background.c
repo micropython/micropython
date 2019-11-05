@@ -41,6 +41,10 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "supervisor/shared/bluetooth.h"
+#endif
+
 static bool running_background_tasks = false;
 
 void background_tasks_reset(void) {
@@ -62,6 +66,9 @@ void run_background_tasks(void) {
     i2s_background();
 #endif
 
+#if CIRCUITPY_BLEIO
+    supervisor_bluetooth_background();
+#endif
 
     #if CIRCUITPY_DISPLAYIO
     displayio_background();

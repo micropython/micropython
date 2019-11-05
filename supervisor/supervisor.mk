@@ -28,6 +28,11 @@ ifneq ($(SPI_FLASH_FILESYSTEM),)
 	CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
 endif
 
+
+ifeq ($(CIRCUITPY_BLEIO),1)
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
+endif
+
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)

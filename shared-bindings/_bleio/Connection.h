@@ -25,20 +25,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
-#define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H
 
-#include <stdbool.h>
+#include "py/objtuple.h"
+#include "common-hal/_bleio/Connection.h"
+#include "common-hal/_bleio/Service.h"
 
-#include "py/objlist.h"
-#include "shared-module/_bleio/Address.h"
+extern const mp_obj_type_t bleio_connection_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    volatile bool waiting_to_connect;
-    volatile uint16_t conn_handle;
-    // Services discovered after connecting to a remote peripheral.
-    mp_obj_list_t *remote_service_list;
-} bleio_central_obj_t;
+extern void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self);
+extern bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self);
+extern mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist);
 
-#endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CENTRAL_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H
