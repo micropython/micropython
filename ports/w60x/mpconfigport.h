@@ -146,9 +146,15 @@
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hard_spi_make_new
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (mp_hal_get_cpu_freq() * 1000000 / 200) // roughly
+#ifdef W60X_USE_MBEDTLS_SSL
+#define MICROPY_PY_USSL                     (1)
+#define MICROPY_SSL_MBEDTLS                 (1)
+#define MICROPY_PY_USSL_FINALISER           (1)
+#else
 #define MICROPY_PY_USSL                     (0)
 #define MICROPY_SSL_MBEDTLS                 (0)
 #define MICROPY_PY_USSL_FINALISER           (0)
+#endif
 #define MICROPY_PY_WEBSOCKET                (1)
 #define MICROPY_PY_WEBREPL                  (0)
 #define MICROPY_PY_FRAMEBUF                 (1)
@@ -193,6 +199,27 @@ extern const struct _mp_obj_module_t w600_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_w600), (mp_obj_t)&w600_module }, \
 
+#ifdef W60X_USE_MBEDTLS_SSL
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_collections), (mp_obj_t)&mp_module_collections }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib), (mp_obj_t)&mp_module_uhashlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_heapq), (mp_obj_t)&mp_module_uheapq }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_io), (mp_obj_t)&mp_module_io }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&mp_module_urandom }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_uselect }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_ustruct }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_zlib), (mp_obj_t)&mp_module_uzlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&mp_module_ussl }, \
+
+
+#else /* W60X_USE_MBEDTLS_SSL */
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_collections), (mp_obj_t)&mp_module_collections }, \
@@ -211,7 +238,7 @@ extern const struct _mp_obj_module_t w600_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
 
 
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&mp_module_ussl }, \
+#endif /* W60X_USE_MBEDTLS_SSL */
 
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -261,7 +288,7 @@ typedef long mp_off_t;
 #include <sys/types.h>
 
 // board specifics
-#define MICROPY_W600_VERSION    "B1.3"
+#define MICROPY_W600_VERSION    "B1.5"
 
 #define MICROPY_HW_BOARD_NAME "WinnerMicro module"
 #define MICROPY_HW_MCU_NAME "W600"

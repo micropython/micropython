@@ -22,6 +22,7 @@ Supported features
   well as many of the internal modules.
 - The machine module with GPIO, UART, SPI, I2C, PWM, WDT and Timer.
 - The network module with WLAN (WiFi) support.
+- Support SSL using hardware encryption and decryption (2M Flash devices).
 - Internal filesystem using the flash (27Kb available).
 - Support built-in FTP server transfer script files.
 
@@ -46,6 +47,8 @@ the following commands on (at least) Linux:
 
 You can put this command in your `.profile` or `.bash_login`.
 
+WM_SDK only supports the 4.x version of the GCC compiler for compiling.
+
 WM_SDK download address is [W60X_SDK](http://www.winnermicro.com/en/html/1/).
 WM_SDK must be G3.1 and newer versions.
 
@@ -69,7 +72,7 @@ The recommended components that can be turned off are:
     #define TLS_CONFIG_RMMS        CFG_OFF
     #define TLS_CONFIG_HTTP_CLIENT CFG_OFF
     #define TLS_CONFIG_NTP         CFG_OFF
-    
+
 Building the firmware
 ---------------------
 
@@ -78,8 +81,14 @@ Build MicroPython for the W60X:
 $ cd ports/w60x
 $ make V=s
 ```
-This will produce binary firmware images in the `build/` subdirectory
-(Recommended use of W600_GZ.img, and the size cannot exceed 352kb).
+The options that can be modified in the Makefile are:
+
+    MICROPY_USE_2M_FLASH
+    MICROPY_SSL_MBEDTLS
+
+This will produce binary firmware images in the `build` subdirectory.
+
+(Recommended use of W600_GZ.img, 1M Flash device firmware size cannot exceed 352kb, 2M Flash device firmware size cannot exceed 736kb).
 
 Flashing the Firmware
 -----------------------
@@ -92,7 +101,7 @@ make flash V=s
 It is recommended to use the command 
 ```bash
 make image V=s
-``` 
+```
 to complete the firmware programming faster.
 
 

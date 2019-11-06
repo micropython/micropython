@@ -11,13 +11,13 @@ OS=`uname -o`
 if [ "${OS}" = "Msys" -o "${OS}" = "Cygwin" ]; then
 {
 	MKIMG=tools/wm_tool.exe
-    SECBOOT=`cygpath.exe -w "${WMSDK_PATH}/Bin/secboot.img"`
+	SECBOOT=`cygpath.exe -w "${WMSDK_PATH}/Bin/secboot.img"`
 	LOGGER=echo
 }
 else
 {
 	gcc ./tools/wm_tool.c -lpthread -Wall -O2 -o ${BUILD}/wm_tool
-    SECBOOT=${WMSDK_PATH}/Bin/secboot.img
+	SECBOOT=${WMSDK_PATH}/Bin/secboot.img
 }
 fi
 

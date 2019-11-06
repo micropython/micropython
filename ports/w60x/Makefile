@@ -12,13 +12,15 @@ include ../../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
-MICROPY_PY_USSL = 0
-MICROPY_SSL_AXTLS = 0
-MICROPY_SSL_MBEDTLS = 0
-#AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096 -Wno-implicit-function-declaration
 MICROPY_FATFS = 1
 
 MICROPY_USE_2M_FLASH = 0
+
+ifeq ($(MICROPY_USE_2M_FLASH),1)
+MICROPY_SSL_MBEDTLS = 1
+else
+MICROPY_SSL_MBEDTLS = 0
+endif
 
 FROZEN_MPY_DIR = scripts
 
@@ -27,6 +29,10 @@ include $(TOP)/py/py.mk
 
 INC += -I.
 INC += -I./include
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+INC += -I./mbedtls/include
+INC += -I./mbedtls/ports
+endif
 INC += -I$(TOP)
 INC += -I$(TOP)/lib/mp-readline
 INC += -I$(TOP)/lib/netutils
@@ -127,32 +133,32 @@ endif
 #---------------------------------------------------------------------------
 # mpy Source section
 #---------------------------------------------------------------------------
-MPY_SRC = main.c \
-        hal/help.c \
-        hal/mpthreadport.c \
-        hal/mphalport.c \
-        hal/gccollect.c \
-        hal/uart.c \
-        hal/fatfs_port.c \
-        hal/math_port.c \
-        hal/modflash.c \
-        machine/machine_timer.c \
-        machine/machine_wdt.c \
-        machine/machine_pin.c \
-        machine/machine_rtc.c \
-        machine/machine_uart.c \
-        machine/machine_pwm.c \
-        machine/machine_i2c.c \
-        machine/machine_spi.c \
-        modules/modnetwork.c \
-        modules/modmachine.c \
-        modules/modutime.c \
-        modules/moduos.c \
-        modules/modusocket.c \
-        modules/modw600.c \
-        modules/moduhashlib.c \
-        tools/ftpserver.c \
-        $(SRC_MOD)
+MPY_SRC_C = main.c \
+    hal/help.c \
+    hal/mpthreadport.c \
+    hal/mphalport.c \
+    hal/gccollect.c \
+    hal/uart.c \
+    hal/fatfs_port.c \
+    hal/math_port.c \
+    hal/modflash.c \
+    machine/machine_timer.c \
+    machine/machine_wdt.c \
+    machine/machine_pin.c \
+    machine/machine_rtc.c \
+    machine/machine_uart.c \
+    machine/machine_pwm.c \
+    machine/machine_i2c.c \
+    machine/machine_spi.c \
+    modules/modnetwork.c \
+    modules/modmachine.c \
+    modules/modutime.c \
+    modules/moduos.c \
+    modules/modusocket.c \
+    modules/modw600.c \
+    modules/moduhashlib.c \
+    tools/ftpserver.c \
+    $(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
 	modonewire.c \
@@ -205,13 +211,99 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+MBEDTLS_SRC_C = mbedtls/library/aes.c \
+    mbedtls/library/aesni.c \
+    mbedtls/library/arc4.c \
+    mbedtls/library/asn1parse.c \
+    mbedtls/library/asn1write.c \
+    mbedtls/library/base64.c \
+    mbedtls/library/bignum.c \
+    mbedtls/library/blowfish.c \
+    mbedtls/library/camellia.c \
+    mbedtls/library/ccm.c \
+    mbedtls/library/certs.c \
+    mbedtls/library/cipher.c \
+    mbedtls/library/cipher_wrap.c \
+    mbedtls/library/cmac.c \
+    mbedtls/library/ctr_drbg.c \
+    mbedtls/library/debug.c \
+    mbedtls/library/des.c \
+    mbedtls/library/dhm.c \
+    mbedtls/library/ecdh.c \
+    mbedtls/library/ecdsa.c \
+    mbedtls/library/ecjpake.c \
+    mbedtls/library/ecp.c \
+    mbedtls/library/ecp_curves.c \
+    mbedtls/library/entropy.c \
+    mbedtls/library/entropy_poll.c \
+    mbedtls/library/error.c \
+    mbedtls/library/gcm.c \
+    mbedtls/library/havege.c \
+    mbedtls/library/hmac_drbg.c \
+    mbedtls/library/md.c \
+    mbedtls/library/md_wrap.c \
+    mbedtls/library/md2.c \
+    mbedtls/library/md4.c \
+    mbedtls/library/md5.c \
+    mbedtls/library/memory_buffer_alloc.c \
+    mbedtls/library/net_sockets.c \
+    mbedtls/library/oid.c \
+    mbedtls/library/padlock.c \
+    mbedtls/library/pem.c \
+    mbedtls/library/pk.c \
+    mbedtls/library/pk_wrap.c \
+    mbedtls/library/pkcs11.c \
+    mbedtls/library/pkcs12.c \
+    mbedtls/library/pkcs5.c \
+    mbedtls/library/pkparse.c \
+    mbedtls/library/pkwrite.c \
+    mbedtls/library/platform.c \
+    mbedtls/library/ripemd160.c \
+    mbedtls/library/rsa.c \
+    mbedtls/library/rsa_internal.c \
+    mbedtls/library/sha1.c \
+    mbedtls/library/sha256.c \
+    mbedtls/library/sha512.c \
+    mbedtls/library/ssl_cache.c \
+    mbedtls/library/ssl_ciphersuites.c \
+    mbedtls/library/ssl_cli.c \
+    mbedtls/library/ssl_cookie.c \
+    mbedtls/library/ssl_srv.c \
+    mbedtls/library/ssl_ticket.c \
+    mbedtls/library/ssl_tls.c \
+    mbedtls/library/threading.c \
+    mbedtls/library/timing.c \
+    mbedtls/library/version.c \
+    mbedtls/library/version_features.c \
+    mbedtls/library/x509.c \
+    mbedtls/library/x509_create.c \
+    mbedtls/library/x509_crl.c \
+    mbedtls/library/x509_crt.c \
+    mbedtls/library/x509_csr.c \
+    mbedtls/library/x509write_crt.c \
+    mbedtls/library/x509write_csr.c \
+    mbedtls/library/xtea.c \
+    mbedtls/ports/aes_alt.c \
+    mbedtls/ports/arc4_alt.c \
+    mbedtls/ports/des_alt.c \
+    mbedtls/ports/md5_alt.c \
+    mbedtls/ports/sha1_alt.c \
+    mbedtls/ports/timing_alt.c \
+    mbedtls/ports/tls_hardware.c \
+    mbedtls/ports/tls_net.c
+endif
+
 OBJ_MP =
 OBJ_MP += $(PY_O)
 #OBJ_MP += $(PY_CORE_O)
-OBJ_MP += $(addprefix $(BUILD)/, $(MPY_SRC:.c=.o))
+OBJ_MP += $(addprefix $(BUILD)/, $(MPY_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+OBJ_MP += $(addprefix $(BUILD)/, $(MBEDTLS_SRC_C:.c=.o))
+endif
 
 OBJ_WM =
 OBJ_WM += $(C_SRC:.c=.o)
@@ -221,11 +313,20 @@ OBJ_FILES	= $(OBJ_MP) $(OBJ_WM)
 OBJ = $(OBJ_FILES)
 
 # List of sources for qstr extraction
-SRC_QSTR += $(MPY_SRC) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(MPY_SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+SRC_QSTR += $(MBEDTLS_SRC_C) 
+endif
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
 CFLAGS += $(INCLUDES) $(INC) $(CFLAGS_MOD)
+ifeq ($(MICROPY_USE_2M_FLASH), 1)
+CFLAGS += -DW60X_USE_2M_FLASH=1
+endif
+ifeq ($(MICROPY_SSL_MBEDTLS), 1)
+CFLAGS += -DW60X_USE_MBEDTLS_SSL=1
+endif
 
 _ENV_OS=$(subst /,-,$(COMPILER_OS))
 ENV_OS=$(shell echo $(_ENV_OS) | tr '[A-Z]' '[a-z]')

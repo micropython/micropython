@@ -120,7 +120,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(w600_run_ftpserver_obj, 0, w600_run_ftpserver)
 
 STATIC mp_obj_t w600_get_version(void) {
     char buf[128];
-    int len = sprintf(buf, "%s,%c%x.%02x.%02x.%02x%02x,%c%x.%02x.%02x@ %s %s", MICROPY_W600_VERSION,
+    int len = sprintf(buf, "%s,%s,%c%x.%02x.%02x.%02x%02x,%c%x.%02x.%02x@ %s %s",
+                      MICROPY_W600_VERSION,
+#ifdef W60X_USE_2M_FLASH
+                      "2M Flash",
+#else
+                      "1M Flash",
+#endif
                       HwVer[0], HwVer[1], HwVer[2], HwVer[3], HwVer[4], HwVer[5],
                       FirmWareVer[0], FirmWareVer[1], FirmWareVer[2], FirmWareVer[3],
                       SysCreatedTime, SysCreatedDate);
