@@ -234,7 +234,7 @@ mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t 
 // Expose the flash as an object with the block protocol.
 
 // there is a singleton Flash object
-STATIC const mp_obj_base_t pyb_flash_obj = {&pyb_flash_type};
+const mp_obj_base_t pyb_flash_obj = {&pyb_flash_type};
 
 STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
