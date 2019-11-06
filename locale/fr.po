@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-08 17:30-0500\n"
+"POT-Creation-Date: 2019-10-21 19:50-0700\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -266,6 +266,10 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr ""
+
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Fonctionnalité AnalogOut non supportée"
@@ -335,6 +339,11 @@ msgstr "La luminosité doit être entre 0 et 255"
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
 msgstr "Luminosité non-ajustable"
+
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -470,6 +479,12 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "La commande doit être un entier entre 0 et 255"
 
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr ""
@@ -513,7 +528,7 @@ msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Un bloc de données doit suivre un bloc de format"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Données trop volumineuses pour un paquet de diffusion"
 
@@ -560,10 +575,6 @@ msgstr "Attendu un %q"
 msgid "Expected a Characteristic"
 msgstr "Une 'Characteristic' est attendue"
 
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a Peripheral"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -574,7 +585,7 @@ msgstr ""
 msgid "Expected a UUID"
 msgstr "Un UUID est attendu"
 
-#: shared-bindings/_bleio/Central.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
 msgstr ""
 
@@ -582,6 +593,11 @@ msgstr ""
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Tuple de longueur %d attendu, obtenu %d"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Failed initiate attribute read, err 0x%04x"
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -593,19 +609,13 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Echec de l'obtention de mutex, err 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/Service.c
-#, fuzzy, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
+msgid "Failed to add characteristic, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to add descriptor, err 0x%04x"
 msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr "Echec de l'ajout de service, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -618,25 +628,22 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
-msgid "Failed to change softdevice state"
-msgstr "Echec de la modification de l'état du périphérique"
-
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to configure advertising, err 0x%04x"
+msgid "Failed to change softdevice state, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
-#, fuzzy, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Impossible de poursuivre le scan, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Service.c
+msgid "Failed to create service, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Echec de la découverte de services"
@@ -657,7 +664,7 @@ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 "Impossible de notifier ou d'indiquer la valeur de l'attribut, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "Failed to pair"
 msgstr ""
 
@@ -666,8 +673,7 @@ msgstr ""
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Impossible de lire la valeur 'CCCD', err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr "Impossible de lire la valeur de l'attribut, err 0x%04x"
@@ -687,35 +693,27 @@ msgstr "Echec de l'ajout de l'UUID du fournisseur, err 0x%04x"
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Impossible de libérer mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to set device name, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to start advertising, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr "Impossible de commencer à diffuser, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Failed to start connecting, error 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, c-format
-msgid "Failed to start pairing, error 0x%04x"
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "Failed to start pairing, NRF_ERROR_%q"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Impossible de commencer à scanner, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to stop advertising, NRF_ERROR_%q"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -1022,9 +1020,8 @@ msgstr "Il n'y a plus d'espace libre sur le périphérique"
 msgid "No such file/directory"
 msgstr "Fichier/dossier introuvable"
 
-#: ports/nrf/common-hal/_bleio/__init__.c shared-bindings/_bleio/Central.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Peripheral.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Non connecté"
@@ -1111,6 +1108,10 @@ msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
@@ -1180,6 +1181,10 @@ msgstr "Le taux d'échantillonage doit être positif"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
@@ -1193,11 +1198,6 @@ msgstr "Tranche et valeur de tailles différentes"
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Tranches non supportées"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Assertion en mode 'soft-device', id: 0x%08lX, pc: 0x%08lX"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2048,7 +2048,7 @@ msgstr "l'argument 2 de int() doit être >=2 et <=36"
 msgid "integer required"
 msgstr "entier requis"
 
-#: shared-bindings/_bleio/Peripheral.c shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr ""
@@ -2229,11 +2229,6 @@ msgstr "doit utiliser un argument nommé pour une fonction key"
 msgid "name '%q' is not defined"
 msgstr "nom '%q' non défini"
 
-#: shared-bindings/_bleio/Peripheral.c
-#, fuzzy
-msgid "name must be a string"
-msgstr "les noms doivent être des chaînes de caractère"
-
 #: py/runtime.c
 msgid "name not defined"
 msgstr "nom non défini"
@@ -2285,7 +2280,7 @@ msgstr ""
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
@@ -2783,7 +2778,7 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: shared-bindings/_bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
 
@@ -2873,9 +2868,21 @@ msgstr "'step' nul"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Echec de l'obtention de mutex"
 
+#, fuzzy, c-format
+#~ msgid "Failed to add characteristic, err 0x%04x"
+#~ msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
+
 #, fuzzy
 #~ msgid "Failed to add service"
 #~ msgstr "Echec de l'ajout de service"
+
+#, fuzzy, c-format
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "Echec de l'ajout de service, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to change softdevice state"
+#~ msgstr "Echec de la modification de l'état du périphérique"
 
 #, fuzzy
 #~ msgid "Failed to connect:"
@@ -2884,6 +2891,10 @@ msgstr "'step' nul"
 #, fuzzy
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Impossible de poursuivre le scan"
+
+#, fuzzy, c-format
+#~ msgid "Failed to continue scanning, err 0x%04x"
+#~ msgstr "Impossible de poursuivre le scan, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to create mutex"
@@ -2905,6 +2916,10 @@ msgstr "'step' nul"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Echec du démarrage de la diffusion"
 
+#, fuzzy, c-format
+#~ msgid "Failed to start advertising, err 0x%04x"
+#~ msgstr "Impossible de commencer à diffuser, err 0x%04x"
+
 #, fuzzy
 #~ msgid "Failed to start scanning"
 #~ msgstr "Impossible de commencer à scanner"
@@ -2912,6 +2927,10 @@ msgstr "'step' nul"
 #, fuzzy
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Echec de l'arrêt de diffusion"
+
+#, fuzzy, c-format
+#~ msgid "Failed to stop advertising, err 0x%04x"
+#~ msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
 
 #~ msgid "Function requires lock."
 #~ msgstr "La fonction nécessite un verrou."
@@ -2983,6 +3002,10 @@ msgstr "'step' nul"
 
 #~ msgid "STA required"
 #~ msgstr "'STA' requis"
+
+#, c-format
+#~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+#~ msgstr "Assertion en mode 'soft-device', id: 0x%08lX, pc: 0x%08lX"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
@@ -3076,6 +3099,10 @@ msgstr "'step' nul"
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr ""
 #~ "l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
+
+#, fuzzy
+#~ msgid "name must be a string"
+#~ msgstr "les noms doivent être des chaînes de caractère"
 
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "canal ADC non valide : %d"
