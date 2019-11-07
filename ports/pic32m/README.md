@@ -64,7 +64,7 @@ $ picocom -b 9600 /dev/ttyUSB0
 Some brief test result
 ----------------------
 
-```python
+```
 MicroPython v1.11 on 2019-11-07; EXPERIMENT with PIC32MX170F256B
 >>> a,b=1,2
 >>> c=a+b
@@ -87,7 +87,7 @@ False
 [4, 2, 1, 9, 7, 6, 14, 12, 11, 19, 17, 16, 24, 22, 21, 29, 27, 26, 34, 32, 31, 39, 37, 36, 44, 42, 41, 49, 47, 46]
 >>> import gc
 >>> gc.mem_free()
-13392
+13792
 >>> gc.collect()
 >>> gc.mem_free()
 15392
