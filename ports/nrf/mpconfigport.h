@@ -33,7 +33,6 @@
 #ifndef MICROPY_VFS
 #define MICROPY_VFS                 (0)
 #endif
-#define MICROPY_VFS_FAT             (MICROPY_VFS)
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_EMIT_THUMB          (0)

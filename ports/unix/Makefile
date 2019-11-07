@@ -163,12 +163,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	)
 
-# FatFS VFS support
-LIB_SRC_C += $(addprefix lib/,\
-	oofatfs/ff.c \
-	oofatfs/ffunicode.c \
-	)
-
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
@@ -257,7 +251,7 @@ coverage:
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
-	    MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
+	    MICROPY_VFS_FAT=1 MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
 	    FROZEN_MANIFEST=manifest_coverage.py \
 	    BUILD=build-coverage PROG=micropython_coverage
 

@@ -61,7 +61,6 @@ void *esp_native_code_commit(void*, size_t);
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
-#define MICROPY_VFS_FAT                     (1)
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)

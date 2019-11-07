@@ -29,8 +29,8 @@ QSTR_GLOBAL_REQUIREMENTS = $(SDKCONFIG_H)
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
-MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
+MICROPY_VFS_FAT = 1
 MICROPY_VFS_LFS2 = 1
 
 FROZEN_MANIFEST ?= boards/manifest.py
@@ -347,12 +347,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
 	)
-
-ifeq ($(MICROPY_FATFS), 1)
-LIB_SRC_C += \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/ffunicode.c
-endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \

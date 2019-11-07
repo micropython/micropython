@@ -84,9 +84,6 @@
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
-#ifndef MICROPY_VFS_FAT
-#define MICROPY_VFS_FAT             (1)
-#endif
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
