@@ -137,8 +137,16 @@ void *esp_native_code_commit(void*, size_t);
 // printer for debugging output, goes to UART only
 extern const struct _mp_print_t mp_debug_print;
 
+#if MICROPY_VFS_FAT
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS1
+#define mp_type_fileio mp_type_vfs_lfs1_fileio
+#define mp_type_textio mp_type_vfs_lfs1_textio
+#elif MICROPY_VFS_LFS2
+#define mp_type_fileio mp_type_vfs_lfs2_fileio
+#define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
