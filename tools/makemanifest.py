@@ -185,7 +185,8 @@ def freeze_internal(kind, path, script, opt):
                     kind = k
                     break
             else:
-                raise FreezeError('unsupported file type {}'.format(script))
+                print('warn: unsupported file type, skipped freeze: {}'.format(script))
+                return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
             raise FreezeError('expecting a {} file, got {}'.format(wanted_extension, script))
