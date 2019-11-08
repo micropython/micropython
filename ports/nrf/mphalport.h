@@ -42,7 +42,7 @@ typedef enum
 } HAL_StatusTypeDef;
 
 static inline uint32_t hal_tick_fake(void) {
-	return 0;
+    return 0;
 }
 
 #define mp_hal_ticks_ms hal_tick_fake // TODO: implement. Right now, return 0 always

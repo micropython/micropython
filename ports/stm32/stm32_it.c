@@ -72,13 +72,13 @@
 #include "stm32_it.h"
 #include "pendsv.h"
 #include "irq.h"
+#include "powerctrl.h"
 #include "pybthread.h"
 #include "gccollect.h"
 #include "extint.h"
 #include "timer.h"
 #include "uart.h"
 #include "storage.h"
-#include "can.h"
 #include "dma.h"
 #include "i2c.h"
 #include "usb.h"
@@ -144,7 +144,7 @@ int pyb_hard_fault_debug = 0;
 
 void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (!pyb_hard_fault_debug) {
-        NVIC_SystemReset();
+        powerctrl_mcu_reset();
     }
 
     #if MICROPY_HW_ENABLE_USB
@@ -181,7 +181,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if ((void*)&_ram_start <= (void*)regs && (void*)regs < (void*)&_ram_end) {
         mp_hal_stdout_tx_str("Stack:\r\n");
         uint32_t *stack_top = &_estack;
-        if ((void*)regs < (void*)&_heap_end) {
+        if ((void*)regs < (void*)&_sstack) {
             // stack not in static stack area so limit the amount we print
             stack_top = (uint32_t*)regs + 32;
         }
@@ -297,6 +297,24 @@ void DebugMon_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
+#if defined(STM32L0) || defined(STM32L432xx)
+
+#if MICROPY_HW_USB_FS
+void USB_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#elif defined(STM32WB)
+
+#if MICROPY_HW_USB_FS
+void USB_LP_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#else
+
 /**
   * @brief  This function handles USB-On-The-Go FS global interrupt request.
   * @param  None
@@ -377,8 +395,10 @@ void OTG_FS_WKUP_IRQHandler(void) {
 
   OTG_CMD_WKUP_Handler(&pcd_fs_handle);
 
+  #if !defined(STM32H7)
   /* Clear EXTI pending Bit*/
   __HAL_USB_FS_EXTI_CLEAR_FLAG();
+  #endif
 
     IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
@@ -401,6 +421,8 @@ void OTG_HS_WKUP_IRQHandler(void) {
     IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }
 #endif
+
+#endif // !defined(STM32L0)
 
 /**
   * @brief  This function handles PPP interrupt request.
@@ -508,7 +530,7 @@ void RTC_WKUP_IRQHandler(void) {
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
-#if defined(STM32F0)
+#if defined(STM32F0) || defined(STM32L0)
 
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);
@@ -751,46 +773,22 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
-#endif
-
-#if defined(MICROPY_HW_CAN1_TX)
-void CAN1_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
-    IRQ_EXIT(CAN1_RX0_IRQn);
-}
-
-void CAN1_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
-    IRQ_EXIT(CAN1_RX1_IRQn);
-}
-
-void CAN1_SCE_IRQHandler(void) {
-    IRQ_ENTER(CAN1_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_1);
-    IRQ_EXIT(CAN1_SCE_IRQn);
+#if defined(UART9)
+void UART9_IRQHandler(void) {
+    IRQ_ENTER(UART9_IRQn);
+    uart_irq_handler(9);
+    IRQ_EXIT(UART9_IRQn);
 }
 #endif
 
-#if defined(MICROPY_HW_CAN2_TX)
-void CAN2_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
-    IRQ_EXIT(CAN2_RX0_IRQn);
+#if defined(UART10)
+void UART10_IRQHandler(void) {
+    IRQ_ENTER(UART10_IRQn);
+    uart_irq_handler(10);
+    IRQ_EXIT(UART10_IRQn);
 }
+#endif
 
-void CAN2_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
-    IRQ_EXIT(CAN2_RX1_IRQn);
-}
-
-void CAN2_SCE_IRQHandler(void) {
-    IRQ_ENTER(CAN2_SCE_IRQn);
-    can_sce_irq_handler(PYB_CAN_2);
-    IRQ_EXIT(CAN2_SCE_IRQn);
-}
 #endif
 
 #if MICROPY_PY_PYB_LEGACY

@@ -96,6 +96,7 @@ class SSD1306_I2C(SSD1306):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
+        self.write_list = [b'\x40', None] # Co=0, D/C#=1
         super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
@@ -104,12 +105,8 @@ class SSD1306_I2C(SSD1306):
         self.i2c.writeto(self.addr, self.temp)
 
     def write_data(self, buf):
-        self.temp[0] = self.addr << 1
-        self.temp[1] = 0x40 # Co=0, D/C#=1
-        self.i2c.start()
-        self.i2c.write(self.temp)
-        self.i2c.write(buf)
-        self.i2c.stop()
+        self.write_list[1] = buf
+        self.i2c.writevto(self.addr, self.write_list)
 
 
 class SSD1306_SPI(SSD1306):

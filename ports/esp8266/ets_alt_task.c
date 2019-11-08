@@ -112,22 +112,27 @@ int ets_loop_iter_disable = 0;
 int ets_loop_dont_feed_sw_wdt = 0;
 
 // to implement a 64-bit wide microsecond counter
-static uint32_t system_time_prev = 0;
+uint32_t system_time_low_word = 0;
 uint32_t system_time_high_word = 0;
+
+void system_time_update(void) {
+    // Handle overflow of system microsecond counter
+    ets_intr_lock();
+    uint32_t system_time_cur = system_get_time();
+    if (system_time_cur < system_time_low_word) {
+        system_time_high_word += 1; // record overflow of low 32-bits
+    }
+    system_time_low_word = system_time_cur;
+    ets_intr_unlock();
+}
 
 bool ets_loop_iter(void) {
     if (ets_loop_iter_disable) {
         return false;
     }
 
-    // handle overflow of system microsecond counter
-    ets_intr_lock();
-    uint32_t system_time_cur = system_get_time();
-    if (system_time_cur < system_time_prev) {
-        system_time_high_word += 1; // record overflow of low 32-bits
-    }
-    system_time_prev = system_time_cur;
-    ets_intr_unlock();
+    // Update 64-bit microsecond counter
+    system_time_update();
 
     // 6 words before pend_flag_noise_check is a variable that is used by
     // the software WDT.  A 1.6 second period timer will increment this

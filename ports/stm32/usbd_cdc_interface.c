@@ -64,16 +64,22 @@ static uint8_t usbd_cdc_connect_tx_timer;
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
-    // Reset all the CDC state
-    // Note: we don't reset tx_buf_ptr_in in order to allow the output buffer to
-    // be filled (by usbd_cdc_tx_always) before the USB device is connected.
+    // Reset the CDC state due to a new USB host connection
+    // Note: we don't reset tx_buf_ptr_* in order to allow the output buffer to
+    // be filled (by usbd_cdc_tx_always) before the USB device is connected, and
+    // to retain transmit buffer state across multiple USB connections (they will
+    // be 0 at MCU reset since the variables live in the BSS).
     cdc->rx_buf_put = 0;
     cdc->rx_buf_get = 0;
     cdc->rx_buf_full = false;
-    cdc->tx_buf_ptr_out = 0;
-    cdc->tx_buf_ptr_out_shadow = 0;
     cdc->tx_need_empty_packet = 0;
     cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
+    if (cdc->attached_to_repl) {
+        // Default behavior is non-blocking when attached to repl
+        cdc->flow &= ~USBD_CDC_FLOWCONTROL_CTS;
+    } else {
+        cdc->flow |= USBD_CDC_FLOWCONTROL_CTS;
+    }
 
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;
@@ -140,11 +146,14 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
             if (length & 1) {
                 // The actual connection state is delayed to give the host a chance to
                 // configure its serial port (in most cases to disable local echo)
-                PCD_HandleTypeDef *hpcd = cdc->base.usbd->pdev->pData;
-                USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTING;
                 usbd_cdc_connect_tx_timer = 8; // wait for 8 SOF IRQs
-                USBx->GINTMSK |= USB_OTG_GINTMSK_SOFM;
+                #if !MICROPY_HW_USB_IS_MULTI_OTG
+                USB->CNTR |= USB_CNTR_SOFM;
+                #else
+                PCD_HandleTypeDef *hpcd = cdc->base.usbd->pdev->pData;
+                hpcd->Instance->GINTMSK |= USB_OTG_GINTMSK_SOFM;
+                #endif
             } else {
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
             }
@@ -216,19 +225,18 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         --usbd_cdc_connect_tx_timer;
     } else {
         usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
+        USB->CNTR &= ~USB_CNTR_SOFM;
+        #else
         hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;
-        usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc;
-        if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
-            cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
-            usbd_cdc_try_tx(cdc);
-        }
-        #if MICROPY_HW_USB_ENABLE_CDC2
-        cdc = (usbd_cdc_itf_t*)usbd->cdc2;
-        if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
-            cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
-            usbd_cdc_try_tx(cdc);
-        }
         #endif
+        for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
+            usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc[i];
+            if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
+                cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
+                usbd_cdc_try_tx(cdc);
+            }
+        }
     }
 }
 
@@ -288,6 +296,19 @@ int usbd_cdc_tx_half_empty(usbd_cdc_itf_t *cdc) {
         tx_waiting += USBD_CDC_TX_DATA_SIZE;
     }
     return tx_waiting <= USBD_CDC_TX_DATA_SIZE / 2;
+}
+
+// Writes only the data that fits if flow & CTS, else writes all data
+// Returns number of bytes actually written to the device
+int usbd_cdc_tx_flow(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len) {
+    if (cdc->flow & USBD_CDC_FLOWCONTROL_CTS) {
+        // Only write as much as can fit in tx buffer
+        return usbd_cdc_tx(cdc, buf, len, 0);
+    } else {
+        // Never block, keep most recent data in rolling buffer
+        usbd_cdc_tx_always(cdc, buf, len);
+        return len;
+    }
 }
 
 // timout in milliseconds.

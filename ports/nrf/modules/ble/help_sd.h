@@ -39,7 +39,7 @@
 "  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
 "  ble.address()   -- return device address as text string\n" \
 "\n"
- 
+
 #else
 #define HELP_TEXT_SD
 #endif // MICROPY_PY_BLE

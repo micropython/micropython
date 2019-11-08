@@ -40,6 +40,10 @@
 #include "mphalport.h"
 
 
+#if MICROPY_HW_USB_CDC
+#include "usb_cdc.h"
+#endif
+
 #define BLE_DRIVER_VERBOSE 0
 
 #if BLE_DRIVER_VERBOSE
@@ -418,7 +422,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                                        p_adv_params->p_device_name,
                                        p_adv_params->device_name_len) != 0) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-	              "Can not apply device name in the stack."));
+                "Can not apply device name in the stack."));
         }
 
         BLE_DRIVER_LOG("Device name applied\n");
@@ -952,6 +956,10 @@ static void sd_evt_handler(uint32_t evt_id) {
             // unhandled event!
             break;
     }
+#if MICROPY_HW_USB_CDC
+    // Farward SOC events to USB CDC driver.
+    usb_cdc_sd_event_handler(evt_id);
+#endif
 }
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {

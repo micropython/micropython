@@ -269,7 +269,7 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
     } else {
         self->p_config->mode = MODE_HIGH_LOW;
     }
- 
+
     return MP_OBJ_FROM_PTR(self);
 }
 

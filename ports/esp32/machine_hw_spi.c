@@ -205,7 +205,7 @@ STATIC void machine_hw_spi_init_internal(
             return;
 
         case ESP_ERR_INVALID_STATE:
-            mp_raise_msg(&mp_type_OSError, "SPI device already in use");
+            mp_raise_msg(&mp_type_OSError, "SPI host already in use");
             return;
     }
 

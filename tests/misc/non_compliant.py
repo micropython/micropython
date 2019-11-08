@@ -1,7 +1,7 @@
 # tests for things that are not implemented, or have non-compliant behaviour
 
 try:
-    import array
+    import uarray as array
     import ustruct
 except ImportError:
     print("SKIP")

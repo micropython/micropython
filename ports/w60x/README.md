@@ -16,14 +16,14 @@ Supported features
 ------------------------------------
 
 - REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and 45k Python heap.
+- 16k stack for the MicroPython task and 40k Python heap.
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
-- The machine module with GPIO, UART, SPI, I2C, PWM, WDT and Timer.
-- The network module with WLAN (WiFi) support.
+- The machine module with GPIO, UART, SPI, I2C, PWM, WDT, ADC, RTC and Timer.
+- The network module with WLAN (WiFi) support (including OneShot).
 - Support SSL using hardware encryption and decryption (2M Flash devices).
-- Internal filesystem using the flash (27Kb available).
+- Internal filesystem using the flash (32KB available).
 - Support built-in FTP server transfer script files.
 
 Setting up the cross toolchain and WM_SDK
@@ -78,17 +78,19 @@ Building the firmware
 
 Build MicroPython for the W60X:
 ```bash
+$ cd mpy-cross
+$ make
+
 $ cd ports/w60x
 $ make V=s
 ```
 The options that can be modified in the Makefile are:
 
     MICROPY_USE_2M_FLASH
-    MICROPY_SSL_MBEDTLS
 
-This will produce binary firmware images in the `build` subdirectory.
+This will produce binary firmware images in the `build` subdirectory,
 
-(Recommended use of W600_GZ.img, 1M Flash device firmware size cannot exceed 352kb, 2M Flash device firmware size cannot exceed 736kb).
+recommended use of w600_gz.img.
 
 Flashing the Firmware
 -----------------------
@@ -98,12 +100,10 @@ The first time you burn the firmware, please use the command
 make flash V=s
 ```
 
-It is recommended to use the command 
+It is recommended to use the command to complete the firmware programming faster
 ```bash
 make image V=s
 ```
-to complete the firmware programming faster.
-
 
 Reference document
 -----------------------

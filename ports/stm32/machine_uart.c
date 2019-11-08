@@ -224,7 +224,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
@@ -385,6 +385,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
             uart_id = PYB_UART_8;
         #endif
+        #ifdef MICROPY_HW_UART9_NAME
+        } else if (strcmp(port, MICROPY_HW_UART9_NAME) == 0) {
+            uart_id = PYB_UART_9;
+        #endif
+        #ifdef MICROPY_HW_UART10_NAME
+        } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
+            uart_id = PYB_UART_10;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
         }
@@ -481,7 +489,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
     self->uartx->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uartx->CR1 |= USART_CR1_SBK;

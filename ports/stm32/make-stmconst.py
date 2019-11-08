@@ -40,9 +40,9 @@ class Lexer:
     re_comment = r'(?P<comment>[A-Za-z0-9 \-/_()&]+)'
     re_addr_offset = r'Address offset: (?P<offset>0x[0-9A-Z]{2,3})'
     regexs = (
-        ('#define hex', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +(?:\(\(uint32_t\))?(?P<hex>0x[0-9A-F]+)U?(?:\))?($| +/\*)')),
+        ('#define hex', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +\(?(\(uint32_t\))?(?P<hex>0x[0-9A-F]+)U?L?\)?($| */\*)')),
         ('#define X', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +(?P<id2>[A-Z0-9_]+)($| +/\*)')),
-        ('#define X+hex', re.compile(r'#define +(?P<id>[A-Za-z0-9_]+) +\((?P<id2>[A-Z0-9_]+) \+ (?P<hex>0x[0-9A-F]+)U?\)($| +/\*)')),
+        ('#define X+hex', re.compile(r'#define +(?P<id>[A-Za-z0-9_]+) +\(?(?P<id2>[A-Z0-9_]+) \+ (?P<hex>0x[0-9A-F]+)U?L?\)?($| +/\*)')),
         ('#define typedef', re.compile(r'#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)')),
         ('typedef struct', re.compile(r'typedef struct$')),
         ('{', re.compile(r'{$')),

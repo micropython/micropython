@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objtype.h"
+#include "py/objstr.h"
 
 #define mp_obj_is_dict_type(o) (mp_obj_is_obj(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->make_new == dict_make_new)
 
@@ -69,7 +71,14 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, ", ");
         }
         first = false;
+        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        if (add_quote) {
+            mp_print_str(print, "\"");
+        }
         mp_obj_print_helper(print, next->key, kind);
+        if (add_quote) {
+            mp_print_str(print, "\"");
+        }
         mp_print_str(print, ": ");
         mp_obj_print_helper(print, next->value, kind);
     }

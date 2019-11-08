@@ -31,7 +31,7 @@
 #include "py/misc.h"
 #include "py/asmbase.h"
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_MACHINE_CODE
 
 void mp_asm_base_init(mp_asm_base_t *as, size_t max_num_labels) {
     as->max_num_labels = max_num_labels;
@@ -99,4 +99,4 @@ void mp_asm_base_data(mp_asm_base_t* as, unsigned int bytesize, uintptr_t val) {
     }
 }
 
-#endif // MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#endif // MICROPY_EMIT_MACHINE_CODE

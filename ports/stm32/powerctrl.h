@@ -28,6 +28,12 @@
 
 #include <stdint.h>
 
+void SystemClock_Config(void);
+
+NORETURN void powerctrl_mcu_reset(void);
+NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);
+void powerctrl_check_enter_bootloader(void);
+
 int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai);
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2);
 void powerctrl_enter_stop_mode(void);

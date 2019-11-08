@@ -106,12 +106,23 @@ void mp_hal_set_interrupt_char(char c) {
 }
 
 void mp_hal_move_cursor_back(uint pos) {
+    if (!pos) {
+        return;
+    }
     assure_conout_handle();
     CONSOLE_SCREEN_BUFFER_INFO info;
     GetConsoleScreenBufferInfo(con_out, &info);
     info.dwCursorPosition.X -= (short)pos;
-    if (info.dwCursorPosition.X < 0) {
+    // Move up a line if needed.
+    while (info.dwCursorPosition.X < 0) {
+        info.dwCursorPosition.X = info.dwSize.X + info.dwCursorPosition.X;
+        info.dwCursorPosition.Y -= 1;
+    }
+    // Caller requested to move out of the screen. That's not possible so just clip,
+    // it's the caller's responsibility to not let this happen.
+    if (info.dwCursorPosition.Y < 0) {
         info.dwCursorPosition.X = 0;
+        info.dwCursorPosition.Y = 0;
     }
     SetConsoleCursorPosition(con_out, info.dwCursorPosition);
 }

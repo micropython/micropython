@@ -92,7 +92,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, uint8_t *buf, size_t len, bool stop, bool read) {
+STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)self_in;
     struct i2c_msg msg;
     int ret;
@@ -101,7 +101,7 @@ STATIC int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, uint
     msg.len = len;
     msg.flags = 0;
 
-    if (read) {
+    if (flags & MP_MACHINE_I2C_FLAG_READ) {
         msg.flags |= I2C_MSG_READ;
     } else {
         msg.flags |= I2C_MSG_WRITE;
@@ -111,7 +111,7 @@ STATIC int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, uint
         msg.flags |= I2C_MSG_RESTART;
     }
 
-    if (stop) {
+    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
         msg.flags |= I2C_MSG_STOP;
         self->restart = false;
     } else {
@@ -122,17 +122,9 @@ STATIC int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, uint
     return (ret < 0) ? -MP_EIO : len;
 }
 
-STATIC int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
-    return machine_hard_i2c_transfer(self_in, addr, dest, len, stop, true);
-}
-
-STATIC int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
-    return machine_hard_i2c_transfer(self_in, addr, (uint8_t*)src, len, stop, false);
-}
-
 STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
-    .readfrom = machine_hard_i2c_readfrom,
-    .writeto = machine_hard_i2c_writeto,
+    .transfer = mp_machine_i2c_transfer_adaptor,
+    .transfer_single = machine_hard_i2c_transfer_single,
 };
 
 STATIC const mp_obj_type_t machine_hard_i2c_type = {

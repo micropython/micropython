@@ -34,11 +34,20 @@
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
+#include "py/stream.h"
 
 extern int sendchar(int ch);
 
 STATIC uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
+}
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {

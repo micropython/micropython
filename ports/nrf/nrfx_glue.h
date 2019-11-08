@@ -29,6 +29,8 @@
 
 #include <soc/nrfx_irqs.h>
 
+#define NRFX_STATIC_ASSERT(expression)
+
 #define NRFX_ASSERT(expression)  do { bool res = expression; (void)res; } while (0)
 #define NRFX_DELAY_US            mp_hal_delay_us
 
@@ -135,5 +137,7 @@
 #define NRFX_CRITICAL_SECTION_EXIT() __set_PRIMASK(_old_primask); }
 
 #endif // !BLUETOOTH_SD
+
+#define NRFX_IRQ_IS_ENABLED(irq_number) (0 != (NVIC->ISER[irq_number / 32] & (1UL << (irq_number % 32))))
 
 #endif // NRFX_GLUE_H

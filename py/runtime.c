@@ -88,6 +88,9 @@ void mp_init(void) {
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
+    #if MICROPY_EMIT_NATIVE
+    MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
+    #endif
     #endif
 
     // init global module dict
@@ -116,6 +119,20 @@ void mp_init(void) {
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
     MP_STATE_VM(vfs_mount_table) = NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    MP_STATE_VM(sys_exitfunc) = mp_const_none;
+    #endif
+
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    MP_STATE_THREAD(prof_callback_is_executing) = false;
+    MP_STATE_THREAD(current_code_state) = NULL;
+    #endif
+
+    #if MICROPY_PY_BLUETOOTH
+    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_THREAD_GIL
@@ -456,8 +473,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 case MP_BINARY_OP_INPLACE_POWER:
                     if (rhs_val < 0) {
                         #if MICROPY_PY_BUILTINS_FLOAT
-                        lhs = mp_obj_new_float(lhs_val);
-                        goto generic_binary_op;
+                        return mp_obj_float_binary_op(op, lhs_val, rhs);
                         #else
                         mp_raise_ValueError("negative power with no float support");
                         #endif
@@ -554,16 +570,17 @@ generic_binary_op:
     }
 
 #if MICROPY_PY_REVERSE_SPECIAL_METHODS
-    if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_REVERSE_POWER) {
+    if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_POWER) {
         mp_obj_t t = rhs;
         rhs = lhs;
         lhs = t;
-        if (op <= MP_BINARY_OP_POWER) {
-            op += MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
-            goto generic_binary_op;
-        }
-
+        op += MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
+        goto generic_binary_op;
+    } else if (op >= MP_BINARY_OP_REVERSE_OR) {
         // Convert __rop__ back to __op__ for error message
+        mp_obj_t t = rhs;
+        rhs = lhs;
+        lhs = t;
         op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
     }
 #endif
@@ -876,8 +893,12 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
+        // Make the seq variable volatile so the compiler keeps a reference to it,
+        // since if it's a tuple then seq_items points to the interior of the GC cell
+        // and mp_obj_new_list may trigger a GC which doesn't trace this and reclaims seq.
+        volatile mp_obj_t seq = seq_in;
         mp_obj_t *seq_items;
-        mp_obj_get_array(seq_in, &seq_len, &seq_items);
+        mp_obj_get_array(seq, &seq_len, &seq_items);
         if (seq_len < num_left + num_right) {
             goto too_short;
         }
@@ -888,6 +909,7 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         for (size_t i = 0; i < num_left; i++) {
             items[num_right + 1 + i] = seq_items[num_left - 1 - i];
         }
+        seq = MP_OBJ_NULL;
     } else {
         // Generic iterable; this gets a bit messy: we unpack known left length to the
         // items destination array, then the rest to a dynamically created list.  Once the
@@ -1045,14 +1067,13 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // look for built-in names
-    if (0) {
 #if MICROPY_CPYTHON_COMPAT
-    } else if (attr == MP_QSTR___class__) {
+    if (attr == MP_QSTR___class__) {
         // a.__class__ is equivalent to type(a)
         dest[0] = MP_OBJ_FROM_PTR(type);
+    } else
 #endif
-
-    } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+    if (attr == MP_QSTR___next__ && type->iternext != NULL) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
 
@@ -1299,7 +1320,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         // will be propagated up. This behavior is approved by test_pep380.py
         // test_delegation_of_close_to_non_generator(),
         //  test_delegating_throw_to_non_generator()
-        *ret_val = mp_make_raise_obj(throw_value);
+        if (mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
+            *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
+        } else {
+            *ret_val = mp_make_raise_obj(throw_value);
+        }
         return MP_VM_RETURN_EXCEPTION;
     }
 }
@@ -1332,7 +1358,17 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     args[3] = fromlist;
     args[4] = level;
 
-    // TODO lookup __import__ and call that instead of going straight to builtin implementation
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    // Lookup __import__ and call that if it exists
+    mp_obj_dict_t *bo_dict = MP_STATE_VM(mp_module_builtins_override_dict);
+    if (bo_dict != NULL) {
+        mp_map_elem_t *import = mp_map_lookup(&bo_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___import__), MP_MAP_LOOKUP);
+        if (import != NULL) {
+            return mp_call_function_n_kw(import->value, 5, 0, args);
+        }
+    }
+    #endif
+
     return mp_builtin___import__(5, args);
 }
 
@@ -1404,7 +1440,6 @@ void mp_import_all(mp_obj_t module) {
 
 #if MICROPY_ENABLE_COMPILER
 
-// this is implemented in this file so it can optimise access to locals/globals
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context
     mp_obj_dict_t *volatile old_globals = mp_globals_get();
@@ -1418,7 +1453,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
 
         mp_obj_t ret;
         if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {

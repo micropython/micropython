@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
+#include "genhdr/mpversion.h"
 #ifdef _WIN32
 #include "ports/windows/fmode.h"
 #endif
@@ -71,7 +72,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
+        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, false);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);
@@ -98,6 +99,7 @@ STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
 "Options:\n"
+"--version : show version information\n"
 "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
 "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
 "-v : verbose (trace various operations); can be multiple\n"
@@ -107,13 +109,17 @@ STATIC int usage(char **argv) {
 "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
 "-mno-unicode : don't support unicode in compiled strings\n"
 "-mcache-lookup-bc : cache map lookups in the bytecode\n"
-"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa\n"
+"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa, xtensawin\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
     int impl_opts_cnt = 0;
     printf(
+#if MICROPY_EMIT_NATIVE
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
+#else
+"  emit=bytecode -- set the default code emitter\n"
+#endif
 );
     impl_opts_cnt++;
     printf(
@@ -138,10 +144,12 @@ STATIC void pre_process_options(int argc, char **argv) {
                 }
                 if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
+                #endif
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
@@ -188,16 +196,29 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
+
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
     mp_dynamic_compiler.opt_cache_map_lookup_in_bytecode = 0;
     mp_dynamic_compiler.py_builtins_str_unicode = 1;
     #if defined(__i386__)
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
     #elif defined(__x86_64__)
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+    #elif defined(__arm__) && !defined(__thumb2__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
     #else
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
+    mp_dynamic_compiler.nlr_buf_num_regs = 0;
     #endif
 
     const char *input_file = NULL;
@@ -209,6 +230,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
+            } else if (strcmp(argv[a], "--version") == 0) {
+                printf("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "\n");
+                return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
@@ -250,14 +275,22 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 const char *arch = argv[a] + sizeof("-march=") - 1;
                 if (strcmp(arch, "x86") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
                 } else if (strcmp(arch, "x64") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
                 } else if (strcmp(arch, "armv6") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv7m") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7M;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "xtensa") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSA;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSA;
+                } else if (strcmp(arch, "xtensawin") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
                 } else {
                     return usage(argv);
                 }

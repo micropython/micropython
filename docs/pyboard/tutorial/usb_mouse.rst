@@ -39,14 +39,15 @@ Sending mouse events by hand
 
 To get the py-mouse to do anything we need to send mouse events to the PC.
 We will first do this manually using the REPL prompt.  Connect to your
-pyboard using your serial program and type the following::
+pyboard using your serial program and type the following (no need to type
+the ``#`` and text following it)::
 
     >>> hid = pyb.USB_HID()
-    >>> hid.send((0, 10, 0, 0))
+    >>> hid.send((0, 100, 0, 0)) # (button status, x-direction, y-direction, scroll)
 
-Your mouse should move 10 pixels to the right!  In the command above you
-are sending 4 pieces of information: button status, x, y and scroll.  The
-number 10 is telling the PC that the mouse moved 10 pixels in the x direction.
+Your mouse should move 100 pixels to the right!  In the command above you
+are sending 4 pieces of information: **button status**, **x-direction**, **y-direction**, and **scroll**.  The
+number 100 is telling the PC that the mouse moved 100 pixels in the x direction.
 
 Let's make the mouse oscillate left and right::
 

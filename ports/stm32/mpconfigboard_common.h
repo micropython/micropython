@@ -102,6 +102,11 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
+// SD/MMC interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
+#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+#endif
+
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
@@ -138,6 +143,7 @@
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7ac)
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (2)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
@@ -146,9 +152,16 @@
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (14)
-#ifdef UART8
+#if defined(UART10)
+#define MICROPY_HW_MAX_UART (10)
+#elif defined(UART9)
+#define MICROPY_HW_MAX_UART (9)
+#elif defined(UART8)
 #define MICROPY_HW_MAX_UART (8)
+#elif defined(UART7)
+#define MICROPY_HW_MAX_UART (7)
 #else
 #define MICROPY_HW_MAX_UART (6)
 #endif
@@ -163,6 +176,7 @@
 #endif
 
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
@@ -171,16 +185,36 @@
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff1e800)
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+
+// Configuration for STM32L0 series
+#elif defined(STM32L0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1FF80050)
+#define PYB_EXTI_NUM_VECTORS (30) // TODO (22 configurable, 7 direct)
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (22)
+#define MICROPY_HW_MAX_UART (4)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (6)
+
+// Configuration for STM32WB series
+#elif defined(STM32WB)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (20)
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (1)
 
 #else
 #error Unsupported MCU series
@@ -210,6 +244,12 @@
 #endif
 #endif
 
+// If disabled then try normal (non-bypass) LSE first, with fallback to LSI.
+// If enabled first try LSE in bypass mode.  If that fails to start, try non-bypass mode, with fallback to LSI.
+#ifndef MICROPY_HW_RTC_USE_BYPASS
+#define MICROPY_HW_RTC_USE_BYPASS (0)
+#endif
+
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Provide block device macros if internal flash storage is enabled
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
@@ -233,10 +273,39 @@
 #endif
 
 // Enable CAN if there are any peripherals defined
-#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
+#if defined(STM32H7)
+#define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
+#endif
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
+#define MICROPY_HW_MAX_CAN (0)
+#endif
+#if defined(MICROPY_HW_CAN3_TX)
+#define MICROPY_HW_MAX_CAN (3)
+#elif defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_MAX_CAN (2)
+#elif defined(MICROPY_HW_CAN1_TX)
+#define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Whether the USB peripheral is device-only, or multiple OTG
+#if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+#define MICROPY_HW_USB_IS_MULTI_OTG (0)
+#else
+#define MICROPY_HW_USB_IS_MULTI_OTG (1)
+#endif
+
+// Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
+#ifndef MICROPY_HW_USB_CDC_NUM
+#define MICROPY_HW_USB_CDC_NUM (1)
+#endif
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC (MICROPY_HW_ENABLE_USB)
+#endif
+#ifndef MICROPY_HW_USB_HID
+#define MICROPY_HW_USB_HID (MICROPY_HW_ENABLE_USB)
 #endif
 
 // Pin definition header file

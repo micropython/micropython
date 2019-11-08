@@ -48,8 +48,8 @@ void Reset_Handler(void) {
     // RAM on in on-mode
     *ram_on_addr   = 3; // block 0 and 1
     *ram_on_b_addr = 3; // block 2 and 3
-#if 0 
-    // RAM on in off-mode 
+#if 0
+    // RAM on in off-mode
     ram_on_addr   = 1 << 16;
     ram_on_b_addr = 1 << 17;
 #endif

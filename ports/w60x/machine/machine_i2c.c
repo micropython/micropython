@@ -114,7 +114,7 @@ STATIC int w600_i2c_send_address(uint16_t addr, bool bit10, bool read) {
 }
 
 
-STATIC int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+STATIC int machine_hard_i2c_read(uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     int ret;
 
     ret = w600_i2c_send_address(addr, false, true);
@@ -137,7 +137,7 @@ STATIC int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint
     return len;
 }
 
-STATIC int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+STATIC int machine_hard_i2c_write(uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     int ret;
     int txl = 0;
     uint8_t *buf;
@@ -170,9 +170,39 @@ STATIC int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const
     return ret;
 }
 
+int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+    int err = 0;
+    int data_len = 0;
+    for (; n--; ++bufs) {
+        if (flags & MP_MACHINE_I2C_FLAG_READ) {
+            err = machine_hard_i2c_read(addr, bufs->buf, bufs->len, n == 0);
+            if (err < 0) {
+                break;
+            }
+        } else {
+            if (bufs->len != 0) {
+                err = machine_hard_i2c_write(addr, bufs->buf, bufs->len, true);
+                if (err < 0) {
+                    break;
+                }
+            }
+        }
+        data_len += bufs->len;
+    }
+
+    if (flags & MP_MACHINE_I2C_FLAG_STOP) {
+        tls_i2c_stop();
+    }
+
+    if (0 == err) {
+        return data_len;
+    } else {
+        return err;
+    }
+}
+
 STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
-    .readfrom = machine_hard_i2c_readfrom,
-    .writeto = machine_hard_i2c_writeto,
+    .transfer = machine_hard_i2c_transfer,
 };
 
 STATIC const mp_obj_type_t machine_hard_i2c_type = {

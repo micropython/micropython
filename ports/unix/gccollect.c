@@ -149,9 +149,14 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 #endif // MICROPY_GCREGS_SETJMP
 
 // this function is used by mpthreadport.c
-void gc_collect_regs_and_stack(void);
+MP_NOINLINE void gc_collect_regs_and_stack(void);
 
-void gc_collect_regs_and_stack(void) {
+// Explicitly mark this as noinline to make sure the regs variable
+// is effectively at the top of the stack: otherwise, in builds where
+// LTO is enabled and a lot of inlining takes place we risk a stack
+// layout where regs is lower on the stack than pointers which have
+// just been allocated but not yet marked, and get incorrectly sweeped.
+MP_NOINLINE void gc_collect_regs_and_stack(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)

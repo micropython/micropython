@@ -125,6 +125,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    if (self->nic == MP_OBJ_NULL) {
+        // not bound
+        mp_raise_OSError(MP_EINVAL);
+    }
+
     // create new socket object
     // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
     mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
@@ -420,7 +425,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     }
 
     if (!have_ip) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+        mp_raise_msg(&mp_type_OSError, "no available NIC");
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));

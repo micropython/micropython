@@ -10,7 +10,7 @@ class A:
         return A(self.v + o.v)
 
     def __repr__(self):
-        return "A(%s)" % self.v
+        return "A({})".format(self.v)
 
 a = A(5)
 b = a
@@ -37,7 +37,7 @@ class L:
         return self
 
     def __repr__(self):
-        return "L(%s)" % self.v
+        return "L({})".format(self.v)
 
 c = L([1, 2])
 d = c

@@ -8,6 +8,7 @@
     <OutDir>$(PyOutDir)</OutDir>
     <IntDir>$(PyIntDir)</IntDir>
     <PyFileCopyCookie>$(PyBuildDir)copycookie$(Configuration)$(Platform)</PyFileCopyCookie>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -18,6 +19,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -26,7 +28,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <PyOutputFiles Include="$(TargetPath)">
-      <Destination>$(PyWinDir)%(FileName)%(Extension)</Destination>
+      <Destination>$(PyTargetDir)%(FileName)%(Extension)</Destination>
     </PyOutputFiles>
     <PyCookieFiles Include="$(PyBuildDir)copycookie*" Exclude="$(PyFileCopyCookie)"/>
   </ItemGroup>

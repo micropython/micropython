@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
+ * Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +42,7 @@
 #define alignof(type) offsetof(struct { char c; type t; }, t)
 #endif
 
-size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
+size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
     size_t size = 0;
     int align = 1;
     switch (struct_type) {
@@ -112,7 +113,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     return size;
 }
 
-mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
+mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
     mp_int_t val = 0;
     switch (typecode) {
         case 'b':
@@ -161,7 +162,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
 // The long long type is guaranteed to hold at least 64 bits, and size is at
 // most 8 (for q and Q), so we will always be able to parse the given data
 // and fit it into a long long.
-long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, const byte *src) {
+long long mp_binary_get_int(size_t size, bool is_signed, bool big_endian, const byte *src) {
     int delta;
     if (!big_endian) {
         delta = -1;
@@ -184,14 +185,14 @@ long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, con
 }
 
 #define is_signed(typecode) (typecode > 'Z')
-mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
+mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte **ptr) {
     byte *p = *ptr;
-    mp_uint_t align;
+    size_t align;
 
     size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
-        // Make pointer aligned
-        p = (byte*)MP_ALIGN(p, (size_t)align);
+        // Align p relative to p_base
+        p = p_base + (uintptr_t)MP_ALIGN(p - p_base, align);
         #if MP_ENDIANNESS_LITTLE
         struct_type = '<';
         #else
@@ -230,7 +231,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     }
 }
 
-void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *dest, mp_uint_t val) {
+void mp_binary_set_int(size_t val_sz, bool big_endian, byte *dest, mp_uint_t val) {
     if (MP_ENDIANNESS_LITTLE && !big_endian) {
         memcpy(dest, &val, val_sz);
     } else if (MP_ENDIANNESS_BIG && big_endian) {
@@ -249,14 +250,14 @@ void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *dest, mp_uint_t 
     }
 }
 
-void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **ptr) {
+void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p_base, byte **ptr) {
     byte *p = *ptr;
-    mp_uint_t align;
+    size_t align;
 
     size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
-        // Make pointer aligned
-        p = (byte*)MP_ALIGN(p, (size_t)align);
+        // Align p relative to p_base
+        p = p_base + (uintptr_t)MP_ALIGN(p - p_base, align);
         if (MP_ENDIANNESS_LITTLE) {
             struct_type = '<';
         } else {
@@ -314,7 +315,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
     mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
 }
 
-void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t val_in) {
+void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_in) {
     switch (typecode) {
 #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
@@ -341,7 +342,7 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
     }
 }
 
-void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, mp_int_t val) {
+void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_int_t val) {
     switch (typecode) {
         case 'b':
             ((signed char*)p)[index] = val;

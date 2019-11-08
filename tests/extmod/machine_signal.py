@@ -1,13 +1,13 @@
 # test machine.Signal class
 
 try:
-    import umachine as machine
-except ImportError:
-    import machine
-try:
+    try:
+        import umachine as machine
+    except ImportError:
+        import machine
     machine.PinBase
     machine.Signal
-except AttributeError:
+except:
     print("SKIP")
     raise SystemExit
 

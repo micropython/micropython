@@ -27,10 +27,12 @@
 mergeInto(LibraryManager.library, {
     mp_js_write: function(ptr, len) {
         for (var i = 0; i < len; ++i) {
-            c = String.fromCharCode(getValue(ptr + i, 'i8'));
             if (typeof window === 'undefined') {
-                process.stdout.write(c);
+                var b = Buffer.alloc(1);
+                b.writeInt8(getValue(ptr + i, 'i8'));
+                process.stdout.write(b);
             } else {
+                var c = String.fromCharCode(getValue(ptr + i, 'i8'));
                 var mp_js_stdout = document.getElementById('mp_js_stdout');
                 var print = new Event('print');
                 print.data = c;
@@ -48,7 +50,7 @@ mergeInto(LibraryManager.library, {
             var mp_interrupt_char = Module.ccall('mp_hal_get_interrupt_char', 'number', ['number'], ['null']);
             var fs = require('fs');
 
-            var buf = new Buffer(1);
+            var buf = Buffer.alloc(1);
             try {
                 var n = fs.readSync(process.stdin.fd, buf, 0, 1);
                 if (n > 0) {

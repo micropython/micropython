@@ -44,6 +44,11 @@ PCD_HandleTypeDef pcd_fs_handle;
 PCD_HandleTypeDef pcd_hs_handle;
 #endif
 
+#if !MICROPY_HW_USB_IS_MULTI_OTG
+// The MCU has a single USB device-only instance
+#define USB_OTG_FS USB
+#endif
+
 /*******************************************************************************
                        PCD BSP Routines
 *******************************************************************************/
@@ -57,6 +62,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_FS) {
         #if defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
+        #elif defined(STM32L0)
+        const uint32_t otg_alt = GPIO_AF0_USB;
+        #elif defined(STM32L432xx)
+        const uint32_t otg_alt = GPIO_AF10_USB_FS;
+        #elif defined(STM32WB)
+        const uint32_t otg_alt = GPIO_AF10_USB;
         #else
         const uint32_t otg_alt = GPIO_AF10_OTG_FS;
         #endif
@@ -83,7 +94,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         // Enable USB FS Clocks
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
+        __HAL_RCC_USB_CLK_ENABLE();
+        #else
         __USB_OTG_FS_CLK_ENABLE();
+        #endif
 
         #if defined(STM32L4)
         // Enable VDDUSB
@@ -97,8 +112,19 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         #endif
 
         // Configure and enable USB FS interrupt
+        #if defined(STM32L0)
+        NVIC_SetPriority(USB_IRQn, IRQ_PRI_OTG_FS);
+        HAL_NVIC_EnableIRQ(USB_IRQn);
+        #elif defined(STM32L432xx)
+        NVIC_SetPriority(USB_FS_IRQn, IRQ_PRI_OTG_FS);
+        HAL_NVIC_EnableIRQ(USB_FS_IRQn);
+        #elif defined(STM32WB)
+        NVIC_SetPriority(USB_LP_IRQn, IRQ_PRI_OTG_FS);
+        HAL_NVIC_EnableIRQ(USB_LP_IRQn);
+        #else
         NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+        #endif
     }
     #if MICROPY_HW_USB_HS
     else if (hpcd->Instance == USB_OTG_HS) {
@@ -174,6 +200,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
+    #if !MICROPY_HW_USB_IS_MULTI_OTG
+    __HAL_RCC_USB_CLK_DISABLE();
+    #else
+
     if (hpcd->Instance == USB_OTG_FS) {
         /* Disable USB FS Clocks */
         __USB_OTG_FS_CLK_DISABLE();
@@ -185,6 +215,8 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
         __USB_OTG_HS_CLK_DISABLE();
         __SYSCFG_CLK_DISABLE();
     }
+    #endif
+
     #endif
 }
 
@@ -329,19 +361,21 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
+USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const uint8_t *fifo_size) {
     #if MICROPY_HW_USB_FS
     if (pdev->id ==  USB_PHY_FS_ID) {
+        #if defined(STM32WB)
+        PWR->CR2 |= PWR_CR2_USV; // USB supply is valid
+        #endif
+
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB_OTG_FS;
-        #if MICROPY_HW_USB_ENABLE_CDC2
+        #if MICROPY_HW_USB_CDC_NUM == 2
         pcd_fs_handle.Init.dev_endpoints = 6;
         #else
         pcd_fs_handle.Init.dev_endpoints = 4;
         #endif
-        pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.ep0_mps = 0x40;
-        pcd_fs_handle.Init.dma_enable = 0;
         pcd_fs_handle.Init.low_power_enable = 0;
         pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
         pcd_fs_handle.Init.Sof_enable = 0;
@@ -350,10 +384,14 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
         #endif
+        #if MICROPY_HW_USB_IS_MULTI_OTG
+        pcd_fs_handle.Init.use_dedicated_ep1 = 0;
+        pcd_fs_handle.Init.dma_enable = 0;
         #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         pcd_fs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
         #else
         pcd_fs_handle.Init.vbus_sensing_enable = 1;
+        #endif
         #endif
 
         // Link The driver to the stack
@@ -363,21 +401,19 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
-        // We have 320 32-bit words in total to use here
-        #if MICROPY_HW_USB_ENABLE_CDC2
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 16); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 32); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 4, 16); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 5, 32); // CDC2 DATA
+        // Set FIFO buffer sizes
+        #if !MICROPY_HW_USB_IS_MULTI_OTG
+        uint32_t fifo_offset = USBD_PMA_RESERVE; // need to reserve some data at start of FIFO
+        for (size_t i = 0; i < USBD_PMA_NUM_FIFO; ++i) {
+            uint16_t ep_addr = ((i & 1) * 0x80) | (i >> 1);
+            HAL_PCDEx_PMAConfig(&pcd_fs_handle, ep_addr, PCD_SNG_BUF, fifo_offset);
+            fifo_offset += fifo_size[i] * 4;
+        }
         #else
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 32); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 64); // CDC DATA
+        HAL_PCD_SetRxFiFo(&pcd_fs_handle, fifo_size[0] * 4);
+        for (size_t i = 0; i < USBD_FS_NUM_TX_FIFO; ++i) {
+            HAL_PCD_SetTxFiFo(&pcd_fs_handle, i, fifo_size[1 + i] * 4);
+        }
         #endif
     }
     #endif
@@ -385,7 +421,11 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
     if (pdev->id == USB_PHY_HS_ID) {
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
+        #if MICROPY_HW_USB_CDC_NUM == 3
+        pcd_hs_handle.Init.dev_endpoints = 8;
+        #else
         pcd_hs_handle.Init.dev_endpoints = 6;
+        #endif
         pcd_hs_handle.Init.use_dedicated_ep1 = 0;
         pcd_hs_handle.Init.ep0_mps = 0x40;
         pcd_hs_handle.Init.dma_enable = 0;
@@ -430,14 +470,12 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_hs_handle);
 
-        // We have 1024 32-bit words in total to use here
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 464);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 256); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 8); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 128); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 8); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 128); // CDC2 DATA
+        // Set FIFO buffer sizes
+        fifo_size += USBD_FS_NUM_FIFO; // skip over FS FIFO size values
+        HAL_PCD_SetRxFiFo(&pcd_hs_handle, fifo_size[0] * 4);
+        for (size_t i = 0; i < USBD_HS_NUM_TX_FIFO; ++i) {
+            HAL_PCD_SetTxFiFo(&pcd_hs_handle, i, fifo_size[1 + i] * 4);
+        }
     }
     #endif  // MICROPY_HW_USB_HS
 

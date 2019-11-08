@@ -38,6 +38,10 @@ typedef enum {
 #elif (MICROPY_HW_LED_COUNT == 2)
     BOARD_LED1 = 1,
     BOARD_LED2 = 2,
+#elif (MICROPY_HW_LED_COUNT == 3)
+    BOARD_LED1 = 1,
+    BOARD_LED2 = 2,
+    BOARD_LED3 = 3,
 #else
     BOARD_LED1 = 1,
     BOARD_LED2 = 2,
@@ -47,6 +51,8 @@ typedef enum {
 } board_led_t;
 
 void led_init(void);
+void led_state(board_led_t, int);
+void led_toggle(board_led_t);
 
 extern const mp_obj_type_t board_led_type;
 

@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2018 Paul Sokolovsky
+ * Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -160,7 +160,12 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
-    RAISE_ERRNO(r, errno);
+    int err = errno;
+    if (r == -1 && self->blocking && err == EINPROGRESS) {
+        // EINPROGRESS on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(r, err);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
@@ -190,7 +195,12 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
     int fd = accept(self->fd, (struct sockaddr*)&addr, &addr_len);
-    RAISE_ERRNO(fd, errno);
+    int err = errno;
+    if (fd == -1 && self->blocking && err == EAGAIN) {
+        // EAGAIN on a blocking socket means the operation timed out
+        err = MP_ETIMEDOUT;
+    }
+    RAISE_ERRNO(fd, err);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = MP_OBJ_FROM_PTR(socket_new(fd));
@@ -337,10 +347,9 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     struct timeval tv = {0,};
     bool new_blocking = true;
 
-    if (timeout_in == mp_const_none) {
-        setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, NULL, 0);
-        setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, NULL, 0);
-    } else {
+    // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
+    // and that's how 'tv' is initialized above
+    if (timeout_in != mp_const_none) {
         #if MICROPY_PY_BUILTINS_FLOAT
         mp_float_t val = mp_obj_get_float(timeout_in);
         double ipart;
@@ -354,12 +363,15 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         // for Python API it means non-blocking.
         if (tv.tv_sec == 0 && tv.tv_usec == 0) {
             new_blocking = false;
-        } else {
-            setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO,
-                       &tv, sizeof(struct timeval));
-            setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO,
-                       &tv, sizeof(struct timeval));
         }
+    }
+
+    if (new_blocking) {
+        int r;
+        r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
+        r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+        RAISE_ERRNO(r, errno);
     }
 
     if (self->blocking != new_blocking) {

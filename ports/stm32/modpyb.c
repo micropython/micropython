@@ -56,6 +56,8 @@
 #include "extmod/vfs.h"
 #include "extmod/utime_mphal.h"
 
+char pyb_country_code[2];
+
 STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
     pyb_hard_fault_debug = mp_obj_is_true(value);
     return mp_const_none;
@@ -112,6 +114,22 @@ STATIC mp_obj_t pyb_repl_uart(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
 
+STATIC mp_obj_t pyb_country(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_obj_new_str(pyb_country_code, 2);
+    } else {
+        size_t len;
+        const char *str = mp_obj_str_get_data(args[0], &len);
+        if (len != 2) {
+            mp_raise_ValueError(NULL);
+        }
+        pyb_country_code[0] = str[0];
+        pyb_country_code[1] = str[1];
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_country_obj, 0, 1, pyb_country);
+
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
 
@@ -139,17 +157,22 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_repl_uart), MP_ROM_PTR(&pyb_repl_uart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&pyb_country_obj) },
 
     #if MICROPY_HW_ENABLE_USB
     { MP_ROM_QSTR(MP_QSTR_usb_mode), MP_ROM_PTR(&pyb_usb_mode_obj) },
+    #if MICROPY_HW_USB_HID
     { MP_ROM_QSTR(MP_QSTR_hid_mouse), MP_ROM_PTR(&pyb_usb_hid_mouse_obj) },
     { MP_ROM_QSTR(MP_QSTR_hid_keyboard), MP_ROM_PTR(&pyb_usb_hid_keyboard_obj) },
-    { MP_ROM_QSTR(MP_QSTR_USB_VCP), MP_ROM_PTR(&pyb_usb_vcp_type) },
     { MP_ROM_QSTR(MP_QSTR_USB_HID), MP_ROM_PTR(&pyb_usb_hid_type) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_USB_VCP), MP_ROM_PTR(&pyb_usb_vcp_type) },
     #if MICROPY_PY_PYB_LEGACY
     // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
     { MP_ROM_QSTR(MP_QSTR_have_cdc), MP_ROM_PTR(&pyb_have_cdc_obj) },
+    #if MICROPY_HW_USB_HID
     { MP_ROM_QSTR(MP_QSTR_hid), MP_ROM_PTR(&pyb_hid_send_report_obj) },
+    #endif
     #endif
     #endif
 
@@ -225,7 +248,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
 #endif
 
-#if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
     { MP_ROM_QSTR(MP_QSTR_Accel), MP_ROM_PTR(&pyb_accel_type) },
 #endif
 

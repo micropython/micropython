@@ -131,6 +131,20 @@ operations that target a given slave device.
    generated at the end of the transfer, even if a NACK is received.
    The function returns the number of ACKs that were received.
 
+.. method:: I2C.writevto(addr, vector, stop=True)
+
+   Write the bytes contained in *vector* to the slave specified by *addr*.
+   *vector* should be a tuple or list of objects with the buffer protocol.
+   The *addr* is sent once and then the bytes from each object in *vector*
+   are written out sequentially.  The objects in *vector* may be zero bytes
+   in length in which case they don't contribute to the output.
+
+   If a NACK is received following the write of a byte from one of the
+   objects in *vector* then the remaining bytes, and any remaining objects,
+   are not sent.  If *stop* is true then a STOP condition is generated at
+   the end of the transfer, even if a NACK is received.  The function
+   returns the number of ACKs that were received.
+
 Memory operations
 -----------------
 

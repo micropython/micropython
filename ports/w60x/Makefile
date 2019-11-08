@@ -12,7 +12,8 @@ include ../../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
-MICROPY_FATFS = 1
+MICROPY_USE_FATFS = 0
+MICROPY_USE_LITTLEFS = 1
 
 MICROPY_USE_2M_FLASH = 0
 
@@ -150,6 +151,7 @@ MPY_SRC_C = main.c \
     machine/machine_pwm.c \
     machine/machine_i2c.c \
     machine/machine_spi.c \
+    machine/machine_adc.c \
     modules/modnetwork.c \
     modules/modmachine.c \
     modules/modutime.c \
@@ -200,10 +202,16 @@ LIB_SRC_C = $(addprefix lib/,\
     utils/sys_stdio_mphal.c \
 	)
 
-ifeq ($(MICROPY_FATFS), 1)
+ifeq ($(MICROPY_USE_FATFS), 1)
 LIB_SRC_C += \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/ffunicode.c
+endif
+
+ifeq ($(MICROPY_USE_LITTLEFS), 1)
+LIB_SRC_C += \
+	lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
@@ -326,6 +334,12 @@ CFLAGS += -DW60X_USE_2M_FLASH=1
 endif
 ifeq ($(MICROPY_SSL_MBEDTLS), 1)
 CFLAGS += -DW60X_USE_MBEDTLS_SSL=1
+endif
+ifeq ($(MICROPY_USE_FATFS), 1)
+CFLAGS += -DW60X_USE_FATFS=1
+endif
+ifeq ($(MICROPY_USE_LITTLEFS), 1)
+CFLAGS += -DW60X_USE_LITTLEFS=1
 endif
 
 _ENV_OS=$(subst /,-,$(COMPILER_OS))

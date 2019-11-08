@@ -82,7 +82,7 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
 ADC (analog to digital conversion)
 ----------------------------------
 
-See :ref:`machine.ADC <machine.ADC>`. ::
+See :ref:`machine.ADCWiPy <machine.ADCWiPy>`. ::
 
     from machine import ADC
 

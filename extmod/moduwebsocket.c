@@ -194,7 +194,7 @@ no_payload:
                     if (last_state == CONTROL) {
                         byte frame_type = self->last_flags & FRAME_OPCODE_MASK;
                         if (frame_type == FRAME_CLOSE) {
-                            static char close_resp[2] = {0x88, 0};
+                            static const char close_resp[2] = {0x88, 0};
                             int err;
                             websocket_write(self_in, close_resp, sizeof(close_resp), &err);
                             return 0;

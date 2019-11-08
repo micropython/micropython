@@ -13,10 +13,6 @@ try:
     ~[]
 except TypeError:
     print('TypeError')
-try:
-    ~bytearray()
-except TypeError:
-    print('TypeError')
 
 # unsupported binary operators
 try:
@@ -29,16 +25,6 @@ except TypeError:
     print('TypeError')
 try:
     1 in 1
-except TypeError:
-    print('TypeError')
-try:
-    bytearray() // 2
-except TypeError:
-    print('TypeError')
-
-# object with buffer protocol needed on rhs
-try:
-    bytearray(1) + 1
 except TypeError:
     print('TypeError')
 

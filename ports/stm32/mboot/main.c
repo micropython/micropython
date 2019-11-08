@@ -408,7 +408,9 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 
 #define LED0 MICROPY_HW_LED1
 #define LED1 MICROPY_HW_LED2
+#ifdef MICROPY_HW_LED3
 #define LED2 MICROPY_HW_LED3
+#endif
 #ifdef MICROPY_HW_LED4
 #define LED3 MICROPY_HW_LED4
 #endif
@@ -416,7 +418,9 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 void led_init(void) {
     mp_hal_pin_output(LED0);
     mp_hal_pin_output(LED1);
+    #ifdef LED2
     mp_hal_pin_output(LED2);
+    #endif
     #ifdef LED3
     mp_hal_pin_output(LED3);
     #endif
@@ -436,7 +440,9 @@ void led_state(int led, int val) {
 void led_state_all(unsigned int mask) {
     led_state(LED0, mask & 1);
     led_state(LED1, mask & 2);
+    #ifdef LED2
     led_state(LED2, mask & 4);
+    #endif
     #ifdef LED3
     led_state(LED3, mask & 8);
     #endif
@@ -1088,6 +1094,13 @@ typedef struct _pyb_usbdd_obj_t {
 #define MBOOT_USB_PID 0xDF11
 #endif
 
+static const uint8_t usbd_fifo_size[] = {
+    32, 8, 16, 8, 16, 0, 0, // FS: RX, EP0(in), 5x IN endpoints
+    #if MICROPY_HW_USB_HS
+    116, 8, 64, 4, 64, 0, 0, 0, 0, 0, // HS: RX, EP0(in), 8x IN endpoints
+    #endif
+};
+
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
     USB_DESC_TYPE_STRING,
@@ -1315,7 +1328,7 @@ static void pyb_usbdd_start(pyb_usbdd_obj_t *self) {
         while (!(PWR->CR3 & PWR_CR3_USB33RDY)) {
         }
         #endif
-        USBD_LL_Init(&self->hUSBDDevice, 0);
+        USBD_LL_Init(&self->hUSBDDevice, 0, usbd_fifo_size);
         USBD_LL_Start(&self->hUSBDDevice);
         self->started = true;
     }
@@ -1338,10 +1351,14 @@ static int pyb_usbdd_shutdown(void) {
 
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
+#ifdef LED2
 #ifdef LED3
 #define RESET_MODE_LED_STATES 0x8421
 #else
 #define RESET_MODE_LED_STATES 0x7421
+#endif
+#else
+#define RESET_MODE_LED_STATES 0x3210
 #endif
 
 static int get_reset_mode(void) {
@@ -1509,6 +1526,9 @@ enter_bootloader:
     uint32_t ss = systick_ms;
     int ss2 = -1;
     #endif
+    #if MBOOT_USB_RESET_ON_DISCONNECT
+    bool has_connected = false;
+    #endif
     for (;;) {
         #if USE_USB_POLLING
         #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
@@ -1541,6 +1561,15 @@ enter_bootloader:
         mp_hal_delay_ms(50);
         led_state(LED0, 0);
         mp_hal_delay_ms(950);
+        #endif
+
+        #if MBOOT_USB_RESET_ON_DISCONNECT
+        if (pyb_usbdd.hUSBDDevice.dev_state == USBD_STATE_CONFIGURED) {
+            has_connected = true;
+        }
+        if (has_connected && pyb_usbdd.hUSBDDevice.dev_state == USBD_STATE_SUSPENDED) {
+            do_reset();
+        }
         #endif
     }
 }

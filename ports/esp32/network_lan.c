@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+#if !MICROPY_ESP_IDF_4
 #include "py/runtime.h"
 #include "py/mphal.h"
 
@@ -205,6 +206,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&lan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
@@ -215,3 +217,5 @@ const mp_obj_type_t lan_if_type = {
     .name = MP_QSTR_LAN,
     .locals_dict = (mp_obj_dict_t*)&lan_if_locals_dict,
 };
+
+#endif // !MICROPY_ESP_IDF_4

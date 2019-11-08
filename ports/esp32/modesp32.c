@@ -48,7 +48,7 @@ STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError("no resources");
     }
-     //nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF"));
+    //mp_raise_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF");
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
@@ -74,7 +74,7 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
         gpio_num_t pin_id = machine_pin_get_id(args[ARG_pin].u_obj);
         if (pin_id != machine_rtc_config.ext0_pin) {
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid pin"));
+                mp_raise_msg(&mp_type_ValueError, "invalid pin");
             }
             machine_rtc_config.ext0_pin = pin_id;
         }
@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
             gpio_num_t pin_id = machine_pin_get_id(elem[i]);
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid pin"));
+                mp_raise_msg(&mp_type_ValueError, "invalid pin");
                 break;
             }
             ext1_pins |= (1ll << pin_id);
@@ -154,6 +154,7 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_PTR(&mp_const_false_obj) },

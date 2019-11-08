@@ -44,7 +44,7 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    r6, [r0, #20]       \n" // store r6 into nlr_buf
     "str    r7, [r0, #24]       \n" // store r7 into nlr_buf
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "mov    r1, r8              \n"
     "str    r1, [r0, #28]       \n" // store r8 into nlr_buf
     "mov    r1, r9              \n"
@@ -63,10 +63,15 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    r10, [r0, #36]      \n" // store r10 into nlr_buf
     "str    r11, [r0, #40]      \n" // store r11 into nlr_buf
     "str    r13, [r0, #44]      \n" // store r13=sp into nlr_buf
+    #if MICROPY_NLR_NUM_REGS == 16
+    "vstr   d8, [r0, #48]       \n" // store s16-s17 into nlr_buf
+    "vstr   d9, [r0, #56]       \n" // store s18-s19 into nlr_buf
+    "vstr   d10, [r0, #64]      \n" // store s20-s21 into nlr_buf
+    #endif
     "str    lr, [r0, #8]        \n" // store lr into nlr_buf
 #endif
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "ldr    r1, nlr_push_tail_var \n"
     "bx     r1                  \n" // do the rest in C
     ".align 2                   \n"
@@ -97,7 +102,7 @@ NORETURN void nlr_jump(void *val) {
     "ldr    r6, [r0, #20]       \n" // load r6 from nlr_buf
     "ldr    r7, [r0, #24]       \n" // load r7 from nlr_buf
 
-#if defined(__ARM_ARCH_6M__)
+#if !defined(__thumb2__)
     "ldr    r1, [r0, #28]       \n" // load r8 from nlr_buf
     "mov    r8, r1              \n"
     "ldr    r1, [r0, #32]       \n" // load r9 from nlr_buf
@@ -116,6 +121,11 @@ NORETURN void nlr_jump(void *val) {
     "ldr    r10, [r0, #36]      \n" // load r10 from nlr_buf
     "ldr    r11, [r0, #40]      \n" // load r11 from nlr_buf
     "ldr    r13, [r0, #44]      \n" // load r13=sp from nlr_buf
+    #if MICROPY_NLR_NUM_REGS == 16
+    "vldr   d8, [r0, #48]       \n" // load s16-s17 from nlr_buf
+    "vldr   d9, [r0, #56]       \n" // load s18-s19 from nlr_buf
+    "vldr   d10, [r0, #64]      \n" // load s20-s21 from nlr_buf
+    #endif
     "ldr    lr, [r0, #8]        \n" // load lr from nlr_buf
 #endif
     "movs   r0, #1              \n" // return 1, non-local return
@@ -125,11 +135,7 @@ NORETURN void nlr_jump(void *val) {
     :                               // clobbered registers
     );
 
-    #if defined(__GNUC__)
-    __builtin_unreachable();
-    #else
-    for (;;); // needed to silence compiler warning
-    #endif
+    MP_UNREACHABLE
 }
 
 #endif // MICROPY_NLR_THUMB

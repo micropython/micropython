@@ -70,8 +70,8 @@ void pyb_thread_init(pyb_thread_t *thread) {
     thread->sp = NULL; // will be set when this thread switches out
     thread->local_state = 0; // will be set by mp_thread_init
     thread->arg = NULL;
-    thread->stack = &_heap_end;
-    thread->stack_len = ((uint32_t)&_estack - (uint32_t)&_heap_end) / sizeof(uint32_t);
+    thread->stack = &_sstack;
+    thread->stack_len = ((uint32_t)&_estack - (uint32_t)&_sstack) / sizeof(uint32_t);
     thread->all_next = NULL;
     thread->run_prev = thread;
     thread->run_next = thread;

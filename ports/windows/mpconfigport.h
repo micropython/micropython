@@ -60,6 +60,7 @@
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
@@ -86,6 +87,7 @@
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
+#define MICROPY_PY_MATH_ISCLOSE     (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
@@ -214,6 +216,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 // CL specific overrides from mpconfig
 
 #define NORETURN                    __declspec(noreturn)
+#define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
@@ -227,9 +230,11 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 // CL specific definitions
 
+#ifndef __cplusplus
 #define restrict
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)
+#endif
 #define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
 #define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)

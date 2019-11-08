@@ -10,3 +10,4 @@ See the `getting started guide
    :maxdepth: 1
 
    cmodules.rst
+   qstr.rst

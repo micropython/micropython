@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import re
+import io
 import os
 import argparse
 
@@ -49,7 +50,7 @@ def find_module_registrations(c_file):
         # No c file to match the object file, skip
         return set()
 
-    with open(c_file) as c_file_obj:
+    with io.open(c_file, encoding='utf-8') as c_file_obj:
         return set(re.findall(pattern, c_file_obj.read()))
 
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +85,16 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
     }
 }
 
+STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)self_in;
+    if (request == MP_STREAM_POLL) {
+        return mp_hal_stdio_poll(arg);
+    } else {
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
+}
+
 STATIC mp_obj_t stdio_obj___exit__(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
@@ -112,6 +122,7 @@ STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 STATIC const mp_stream_p_t stdio_obj_stream_p = {
     .read = stdio_read,
     .write = stdio_write,
+    .ioctl = stdio_ioctl,
     .is_text = true,
 };
 
@@ -146,6 +157,7 @@ STATIC mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t
 STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
+    .ioctl = stdio_ioctl,
     .is_text = false,
 };
 

@@ -180,7 +180,7 @@ soft_reset:
 
     if (!safeboot) {
         // run boot.py
-        int ret = pyexec_file("boot.py");
+        int ret = pyexec_file_if_exists("boot.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -205,7 +205,7 @@ soft_reset:
             } else {
                 main_py = mp_obj_str_get_str(MP_STATE_PORT(machine_config_main));
             }
-            int ret = pyexec_file(main_py);
+            int ret = pyexec_file_if_exists(main_py);
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
             }
@@ -300,7 +300,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
     // Initialise the local flash filesystem.
     // init the vfs object
     fs_user_mount_t *vfs_fat = sflash_vfs_fat;
-    vfs_fat->flags = 0;
+    vfs_fat->blockdev.flags = 0;
     pyb_flash_init_vfs(vfs_fat);
 
     // Create it if needed, and mount in on /flash.

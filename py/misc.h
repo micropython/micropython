@@ -47,8 +47,8 @@ typedef unsigned int uint;
 #endif
 
 // Classical double-indirection stringification of preprocessor macro's value
-#define _MP_STRINGIFY(x) #x
-#define MP_STRINGIFY(x) _MP_STRINGIFY(x)
+#define MP_STRINGIFY_HELPER(x) #x
+#define MP_STRINGIFY(x) MP_STRINGIFY_HELPER(x)
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))

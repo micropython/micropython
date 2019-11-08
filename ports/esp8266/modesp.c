@@ -43,7 +43,7 @@
 
 void error_check(bool status, const char *msg) {
     if (!status) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
+        mp_raise_msg(&mp_type_OSError, msg);
     }
 }
 

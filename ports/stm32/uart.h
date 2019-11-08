@@ -38,6 +38,8 @@ typedef enum {
     PYB_UART_6 = 6,
     PYB_UART_7 = 7,
     PYB_UART_8 = 8,
+    PYB_UART_9 = 9,
+    PYB_UART_10 = 10,
 } pyb_uart_t;
 
 #define CHAR_WIDTH_8BIT (0)
@@ -86,6 +88,8 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
     #if defined(STM32F4)
     return self->uartx->SR & USART_SR_TXE;
+    #elif defined(STM32H7)
+    return self->uartx->ISR & USART_ISR_TXE_TXFNF;
     #else
     return self->uartx->ISR & USART_ISR_TXE;
     #endif

@@ -89,7 +89,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-            module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+            module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
             #endif
@@ -539,6 +539,18 @@ friendly_repl_reset:
 
 int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
+}
+
+int pyexec_file_if_exists(const char *filename) {
+    #if MICROPY_MODULE_FROZEN
+    if (mp_frozen_stat(filename) == MP_IMPORT_STAT_FILE) {
+        return pyexec_frozen_module(filename);
+    }
+    #endif
+    if (mp_import_stat(filename) != MP_IMPORT_STAT_FILE) {
+        return 1; // success (no file is the same as an empty file executing without fail)
+    }
+    return pyexec_file(filename);
 }
 
 #if MICROPY_MODULE_FROZEN

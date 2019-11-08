@@ -40,6 +40,7 @@
 #define MICROPY_MODULE_GETATTR         (1)
 #define MICROPY_PY_DELATTR_SETATTR     (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE (1)
 #define MICROPY_PY_BUILTINS_NEXT2      (1)
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (1)
 #define MICROPY_PY_BUILTINS_HELP       (1)
@@ -49,6 +50,7 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
 #define MICROPY_PY_IO_RESOURCE_STREAM (1)
+#define MICROPY_PY_URE_DEBUG           (1)
 #define MICROPY_PY_URE_MATCH_GROUPS    (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_URE_SUB             (1)
@@ -58,6 +60,7 @@
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_UCRYPTOLIB          (1)
+#define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio mp_type_vfs_posix_fileio

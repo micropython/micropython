@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +45,11 @@
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
 // These poll ioctl values are compatible with Linux
-#define MP_STREAM_POLL_RD  (0x0001)
-#define MP_STREAM_POLL_WR  (0x0004)
-#define MP_STREAM_POLL_ERR (0x0008)
-#define MP_STREAM_POLL_HUP (0x0010)
+#define MP_STREAM_POLL_RD       (0x0001)
+#define MP_STREAM_POLL_WR       (0x0004)
+#define MP_STREAM_POLL_ERR      (0x0008)
+#define MP_STREAM_POLL_HUP      (0x0010)
+#define MP_STREAM_POLL_NVAL     (0x0020)
 
 // Argument structure for MP_STREAM_SEEK
 struct mp_stream_seek_t {

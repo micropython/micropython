@@ -47,7 +47,7 @@
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
-#define MICROPY_KBD_EXCEPTION       (0)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #if NRF51
@@ -280,10 +280,6 @@ extern const struct _mp_obj_module_t ble_module;
 
 
 #endif // BLUETOOTH_SD
-
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

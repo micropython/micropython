@@ -32,9 +32,15 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#if MICROPY_ESP_IDF_4
+#include "esp32/rom/rtc.h"
+#include "esp32/clk.h"
+#include "esp_sleep.h"
+#else
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
 #include "esp_clk.h"
+#endif
 #include "esp_pm.h"
 #include "driver/touch_pad.h"
 
@@ -113,7 +119,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed"));
+            mp_raise_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed");
         }
     }
 
@@ -235,6 +241,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
+    #if MICROPY_HW_ENABLE_SDCARD
+    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
+    #endif
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_SLEEP), MP_ROM_INT(MACHINE_WAKE_SLEEP) },

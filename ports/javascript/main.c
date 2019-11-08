@@ -39,30 +39,41 @@
 #include "library.h"
 
 #if MICROPY_ENABLE_COMPILER
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
+int do_str(const char *src, mp_parse_input_kind_t input_kind) {
+    int ret = 0;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
         // uncaught exception
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
-            // at the moment, the value of SystemExit is unused
+            mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+            if (exit_val != mp_const_none) {
+                mp_int_t int_val;
+                if (mp_obj_get_int_maybe(exit_val, &int_val)) {
+                    ret = int_val & 255;
+                } else {
+                    ret = 1;
+                }
+            }
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            ret = 1;
         }
     }
+    return ret;
 }
 #endif
 
 static char *stack_top;
 
-void mp_js_do_str(const char *code) {
-    do_str(code, MP_PARSE_FILE_INPUT);
+int mp_js_do_str(const char *code) {
+    return do_str(code, MP_PARSE_FILE_INPUT);
 }
 
 int mp_js_process_char(int c) {

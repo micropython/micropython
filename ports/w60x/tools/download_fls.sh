@@ -56,10 +56,8 @@ main()
     }
     fi
 
-	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo secboot -ws 115200 -rs at
-#	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo secboot -ws 115200 -rs at -sl str
-#	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo secboot -rs rts
-#	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo secboot -rs rts -sl str -ws 115200
+#	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo all -ws 115200 -rs at
+	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo all -rs rts
 }
 
 usage()

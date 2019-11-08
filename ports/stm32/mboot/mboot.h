@@ -30,8 +30,9 @@
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
 #define SECTION_NOZERO_BSS __attribute__((section(".nozero_bss")))
 
-#define ELEM_DATA_START (&_estack)
-#define ELEM_DATA_MAX (ELEM_DATA_START + 1024)
+#define ELEM_DATA_SIZE (1024)
+#define ELEM_DATA_START (&_estack[0])
+#define ELEM_DATA_MAX (&_estack[ELEM_DATA_SIZE])
 
 enum {
     ELEM_TYPE_END = 1,
@@ -48,7 +49,7 @@ typedef struct _fsload_bdev_t {
     uint32_t byte_len;
 } fsload_bdev_t;
 
-extern uint8_t _estack;
+extern uint8_t _estack[ELEM_DATA_SIZE];
 
 uint32_t get_le32(const uint8_t *b);
 void led_state_all(unsigned int mask);

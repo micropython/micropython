@@ -126,7 +126,7 @@ void microbit_music_tick(void) {
             music_data->async_state = ASYNC_MUSIC_STATE_NEXT_NOTE;
         } else {
             // a note
-            mp_uint_t note_len;
+            size_t note_len;
             const char *note_str = mp_obj_str_get_data(note, &note_len);
             uint32_t delay_on = start_note(note_str, note_len, music_data->async_pin);
             music_data->async_wait_ticks = ticks + delay_on;

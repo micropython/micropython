@@ -54,11 +54,17 @@
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
+#ifdef W60X_USE_FATFS
 #define MICROPY_VFS_FAT                     (1)
+#endif
+#ifdef W60X_USE_LITTLEFS
+#define MICROPY_VFS_LFS2                    (1)
+#endif
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
 #define MICROPY_PY_DESCRIPTORS              (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -72,7 +78,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET       (1)
 #define MICROPY_PY_BUILTINS_PROPERTY        (1)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
-//#define MICROPY_PY_BUILTINS_ROUND_INT       (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT       (1)
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR    (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
@@ -100,7 +106,7 @@
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
-//#define MICROPY_PY_IO_IOBASE                (1)
+#define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
@@ -123,13 +129,12 @@
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UJSON                    (1)
 #define MICROPY_PY_URE                      (1)
-//#define MICROPY_PY_URE_SUB                  (1)
+#define MICROPY_PY_URE_SUB                  (1)
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UTIMEQ                   (1)
 #define MICROPY_PY_UHASHLIB                 (0)
 #define MICROPY_PY_UHASHLIB_SHA1            (0)
-//#define MICROPY_PY_UHASHLIB_SHA256          (1)
-//#define MICROPY_PY_UCRYPTOLIB               (0)
+#define MICROPY_PY_UHASHLIB_SHA256          (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
@@ -147,16 +152,18 @@
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (mp_hal_get_cpu_freq() * 1000000 / 200) // roughly
 #ifdef W60X_USE_MBEDTLS_SSL
+#define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
 #else
+#define MICROPY_PY_UCRYPTOLIB               (0)
 #define MICROPY_PY_USSL                     (0)
 #define MICROPY_SSL_MBEDTLS                 (0)
 #define MICROPY_PY_USSL_FINALISER           (0)
 #endif
-#define MICROPY_PY_WEBSOCKET                (1)
 #define MICROPY_PY_WEBREPL                  (0)
+#define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 
 // fatfs configuration
@@ -164,10 +171,17 @@
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (512)
 #define MICROPY_FATFS_LFN_CODE_PAGE          437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#if MICROPY_VFS_FAT
 #define mp_type_fileio                      mp_type_vfs_fat_fileio
 #define mp_type_textio                      mp_type_vfs_fat_textio
+#endif
+#if MICROPY_VFS_LFS2
+#define mp_type_fileio                      mp_type_vfs_lfs2_fileio
+#define mp_type_textio                      mp_type_vfs_lfs2_textio
+#endif
 
 #define MICROPY_USE_INTERVAL_FLS_FS         (1)
+#define MICROPY_USE_FROZEN_SCRIPT           (1)
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

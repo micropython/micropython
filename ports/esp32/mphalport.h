@@ -35,6 +35,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+// The core that the MicroPython task(s) are pinned to
+#define MP_TASK_COREID (1)
+
 extern TaskHandle_t mp_main_task_handle;
 
 extern ringbuf_t stdin_ringbuf;

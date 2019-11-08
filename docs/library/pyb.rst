@@ -259,33 +259,44 @@ Miscellaneous functions
 
    Returns a string of 12 bytes (96 bits), which is the unique ID of the MCU.
 
-.. function:: usb_mode([modestr], vid=0xf055, pid=0x9801, hid=pyb.hid_mouse)
+.. function:: usb_mode([modestr], port=-1, vid=0xf055, pid=-1, msc=(), hid=pyb.hid_mouse, high_speed=False)
 
    If called with no arguments, return the current USB mode as a string.
 
-   If called with ``modestr`` provided, attempts to set USB mode.
-   This can only be done when called from ``boot.py`` before
-   :meth:`pyb.main()` has been called.  The following values of
-   ``modestr`` are understood:
+   If called with *modestr* provided, attempts to configure the USB mode.
+   The following values of *modestr* are understood:
 
    - ``None``: disables USB
    - ``'VCP'``: enable with VCP (Virtual COM Port) interface
    - ``'MSC'``: enable with MSC (mass storage device class) interface
    - ``'VCP+MSC'``: enable with VCP and MSC
    - ``'VCP+HID'``: enable with VCP and HID (human interface device)
+   - ``'VCP+MSC+HID'``: enabled with VCP, MSC and HID (only available on PYBD boards)
 
    For backwards compatibility, ``'CDC'`` is understood to mean
    ``'VCP'`` (and similarly for ``'CDC+MSC'`` and ``'CDC+HID'``).
 
-   The ``vid`` and ``pid`` parameters allow you to specify the VID
-   (vendor id) and PID (product id).
+   The *port* parameter should be an integer (0, 1, ...) and selects which
+   USB port to use if the board supports multiple ports.  A value of -1 uses
+   the default or automatically selected port.
+
+   The *vid* and *pid* parameters allow you to specify the VID (vendor id)
+   and PID (product id).  A *pid* value of -1 will select a PID based on the
+   value of *modestr*.
+
+   If enabling MSC mode, the *msc* parameter can be used to specify a list
+   of SCSI LUNs to expose on the mass storage interface.  For example
+   ``msc=(pyb.Flash(), pyb.SDCard())``.
 
    If enabling HID mode, you may also specify the HID details by
-   passing the ``hid`` keyword parameter.  It takes a tuple of
+   passing the *hid* keyword parameter.  It takes a tuple of
    (subclass, protocol, max packet length, polling interval, report
    descriptor).  By default it will set appropriate values for a USB
    mouse.  There is also a ``pyb.hid_keyboard`` constant, which is an
    appropriate tuple for a USB keyboard.
+
+   The *high_speed* parameter, when set to ``True``, enables USB HS mode if
+   it is supported by the hardware.
 
 Classes
 -------
