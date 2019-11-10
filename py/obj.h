@@ -605,6 +605,7 @@ extern const mp_obj_type_t mp_type_ZeroDivisionError;
 // Constant objects, globally accessible
 // The macros are for convenience only
 #define mp_const_none (MP_OBJ_FROM_PTR(&mp_const_none_obj))
+mp_obj_t mp_get_none(void);
 #define mp_const_false (MP_OBJ_FROM_PTR(&mp_const_false_obj))
 #define mp_const_true (MP_OBJ_FROM_PTR(&mp_const_true_obj))
 #define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))

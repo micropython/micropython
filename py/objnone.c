@@ -49,3 +49,8 @@ const mp_obj_type_t mp_type_NoneType = {
 };
 
 const mp_obj_none_t mp_const_none_obj = {{&mp_type_NoneType}};
+
+mp_obj_t __attribute__((noinline)) mp_get_none(void)
+{
+    return mp_const_none;
+}
