@@ -64,7 +64,6 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     } else {
         //when SysTick is disabled, approximate with busy loop
         const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 1000000 * delay / LOOP_TICKS;
-        (void)start;
         for (uint32_t count = 0; ++count <= ucount;) {
         }
     }
