@@ -39,15 +39,39 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/safe_mode.h"
 
-// This routine should work even when interrupts are disabled. Used by OneWire
-// for precise timing.
+#include "stm32f4xx_hal.h"
+
+//tested divisor value for busy loop in us delay
+#define LOOP_TICKS 12
+
+STATIC uint32_t get_us(void) {
+    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
+    uint32_t micros, sys_cycles;
+    do {
+        micros = ticks_ms;
+        sys_cycles = SysTick->VAL; //counts backwards
+    } while (micros != ticks_ms); //try again if ticks_ms rolled over
+    return (micros * 1000) + (ticks_per_us * 1000 - sys_cycles) / ticks_per_us;
+}
+
 void common_hal_mcu_delay_us(uint32_t delay) {
-    // sys freq is always a multiple of 2MHz, so division here won't lose precision
-    const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 2000000 * delay / 2;
-    for (uint32_t count = 0; ++count <= ucount;) {
+    if (__get_PRIMASK() == 0x00000000) {
+        //by default use ticks_ms
+        uint32_t start = get_us();
+        while (get_us()-start < delay) {
+            __asm__ __volatile__("nop");
+        }
+    } else {
+        //when SysTick is disabled, approximate with busy loop
+        const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 1000000 * delay / LOOP_TICKS;
+        (void)start;
+        for (uint32_t count = 0; ++count <= ucount;) {
+        }
+    }
 }
 
 volatile uint32_t nesting_count = 0;
+
 void common_hal_mcu_disable_interrupts(void) {
     __disable_irq();
     __DMB();
@@ -58,7 +82,7 @@ void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables so we
         // "HardFault".
-        HardFault_Handler();
+        asm("bkpt");
     }
     nesting_count--;
     if (nesting_count > 0) {
