@@ -312,6 +312,8 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    if(common_hal_busio_uart_deinited(self)) return;
+    
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
