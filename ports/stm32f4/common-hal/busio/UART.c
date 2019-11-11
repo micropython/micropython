@@ -94,7 +94,7 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eva
         return mcu_uart_banks[uart_index];
     } else {
         if (uart_taken) {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
             mp_raise_ValueError(translate("Invalid UART pin selection"));
         }
@@ -229,7 +229,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             (self->tx->uart_index-1), uart_taken);
     } else {
         //both pins cannot be empty
-        mp_raise_ValueError(translate("You must supply at least one UART pin"));
+        mp_raise_ValueError(translate("Supply at least one UART pin"));
     }
 
     //Other errors
@@ -298,7 +298,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Could not start interrupt, RX busy"));
     }
 
-    //start the recieve interrupt chain
+    //start the receive interrupt chain
     HAL_NVIC_DisableIRQ(self->irq); //prevent handle lock contention
     HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
     HAL_NVIC_SetPriority(self->irq, UART_IRQPRI, UART_IRQSUB_PRI);
