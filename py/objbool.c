@@ -83,5 +83,5 @@ const mp_obj_type_t mp_type_bool = {
     .binary_op = bool_binary_op,
 };
 
-const mp_obj_bool_t mp_const_false_obj = {{&mp_type_bool}, false};
-const mp_obj_bool_t mp_const_true_obj = {{&mp_type_bool}, true};
+const mp_obj_bool_t MP_SMALL_DATA_SECTION(".rodata.mp_const_false_obj") mp_const_false_obj = {{&mp_type_bool}, false};
+const mp_obj_bool_t MP_SMALL_DATA_SECTION(".rodata.mp_const_true_obj") mp_const_true_obj = {{&mp_type_bool}, true};

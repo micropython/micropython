@@ -1413,6 +1413,21 @@ typedef double mp_float_t;
 #define MICROPY_OBJ_BASE_ALIGNMENT
 #endif
 
+// Place certain objects that are very often accessed in specific sections,
+// then lay out the sections in a way that'll allow using smaller / faster instructions when accessing
+// then (similar to an sbss).
+// The port later has to define how should the objects be placed, and provide the absolute
+// addresses for these objects.
+#ifndef MICROPY_SMALL_DATA_SECTION
+#define MICROPY_SMALL_DATA_SECTION (0)
+#endif
+
+#if MICROPY_SMALL_DATA_SECTION
+#define MP_SMALL_DATA_SECTION(name) __attribute__((section(name)))
+#else
+#define MP_SMALL_DATA_SECTION(name)
+#endif
+
 // On embedded platforms, these will typically enable/disable irqs.
 #ifndef MICROPY_BEGIN_ATOMIC_SECTION
 #define MICROPY_BEGIN_ATOMIC_SECTION() (0)
