@@ -13,6 +13,7 @@ ifeq ($(BOARD),netduino2)
 CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
 CFLAGS += -DQEMU_SOC_STM32
 LDSCRIPT = stm32.ld
+MICROPY_SMALL_DATA_SECTION = 1
 SRC_BOARD_O = lib/utils/gchelper_m3.o
 endif
 
@@ -49,6 +50,15 @@ CFLAGS += -g -DPENDSV_DEBUG
 COPT = -O0
 else
 COPT += -Os -DNDEBUG
+endif
+
+LD_VAR_FILE = $(BUILD)/ld_vars.ld
+
+ifeq ($(MICROPY_SMALL_DATA_SECTION), 1)
+CFLAGS += -DMICROPY_SMALL_DATA_SECTION=1
+CFLAGS += -DMP_SMALL_DATA_CONST_NONE=$(MP_SMALL_DATA_CONST_NONE)
+CFLAGS += -DMP_SMALL_DATA_CONST_FALSE=$(MP_SMALL_DATA_CONST_FALSE)
+CFLAGS += -DMP_SMALL_DATA_CONST_TRUE=$(MP_SMALL_DATA_CONST_TRUE)
 endif
 
 ## With CoudeSourcery it's actually a little different, you just need `-T generic-m-hosted.ld`.
@@ -134,5 +144,13 @@ run: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(LDSCRIPT) $(ALL_OBJ_RUN)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_RUN) $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(LDSCRIPT): $(LD_VAR_FILE)
+
+$(LD_VAR_FILE): mpconfigport.mk
+	mkdir -p $(BUILD)
+	echo "MP_SMALL_DATA_CONST_NONE = $(MP_SMALL_DATA_CONST_NONE);" > $(LD_VAR_FILE)
+	echo "MP_SMALL_DATA_CONST_FALSE = $(MP_SMALL_DATA_CONST_FALSE);" >> $(LD_VAR_FILE)
+	echo "MP_SMALL_DATA_CONST_TRUE = $(MP_SMALL_DATA_CONST_TRUE);" >> $(LD_VAR_FILE)
 
 include $(TOP)/py/mkrules.mk
