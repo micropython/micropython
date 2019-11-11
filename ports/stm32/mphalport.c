@@ -5,6 +5,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "drivers/neopixel/neopixel.h"
 #include "usb.h"
 #include "uart.h"
 
@@ -99,6 +100,24 @@ void mp_hal_ticks_cpu_enable(void) {
     }
 }
 #endif
+
+#if defined(STM32F0)
+// Tested on STM32F091 @ 48MHz
+#define NS_PRESCALE (6)
+#define NS_OVERHEAD_HIGH (1)
+#define NS_OVERHEAD_LOW (3)
+#else
+// Tested on PYBv1.0 @ 168MHz
+#define NS_PRESCALE (6)
+#define NS_OVERHEAD_HIGH (0)
+#define NS_OVERHEAD_LOW (0)
+#endif
+
+uint32_t mp_hal_delay_ns_calc_neopixel(uint32_t ns, bool is_low_cycle) {
+    uint32_t nclk = (SystemCoreClock / 1000000) * ns / (1000 * NS_PRESCALE);
+    uint32_t overhead = is_low_cycle ? NS_OVERHEAD_LOW : NS_OVERHEAD_HIGH;
+    return nclk <= overhead ? 1 : nclk - overhead;
+}
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #if defined(STM32L476xx) || defined(STM32L496xx)

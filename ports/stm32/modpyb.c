@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 #include "drivers/dht/dht.h"
+#include "drivers/neopixel/neopixel.h"
 #include "stm32_it.h"
 #include "irq.h"
 #include "led.h"
@@ -187,8 +188,9 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
 
-    // This function is not intended to be public and may be moved elsewhere
+    // These functions are not intended to be public and may be moved elsewhere
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&neopixel_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
