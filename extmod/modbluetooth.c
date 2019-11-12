@@ -79,37 +79,6 @@ STATIC mp_obj_t bluetooth_handle_errno(int err) {
 // UUID object
 // ----------------------------------------------------------------------------
 
-// Parse string UUIDs, which are expected to be 128-bit UUIDs.
-STATIC void mp_bluetooth_parse_uuid_128bit_str(mp_obj_t obj, uint8_t *uuid) {
-    size_t str_len;
-    const char *str_data = mp_obj_str_get_data(obj, &str_len);
-    int uuid_i = 32;
-    for (int i = 0; i < str_len; i++) {
-        char c = str_data[i];
-        if (c == '-') {
-            continue;
-        }
-        if (!unichar_isxdigit(c)) {
-            mp_raise_ValueError("invalid char in UUID");
-        }
-        c = unichar_xdigit_value(c);
-        uuid_i--;
-        if (uuid_i < 0) {
-            mp_raise_ValueError("UUID too long");
-        }
-        if (uuid_i % 2 == 0) {
-            // lower nibble
-            uuid[uuid_i/2] |= c;
-        } else {
-            // upper nibble
-            uuid[uuid_i/2] = c << 4;
-        }
-    }
-    if (uuid_i > 0) {
-        mp_raise_ValueError("UUID too short");
-    }
-}
-
 STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -125,8 +94,41 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
         self->data[0] = value & 0xff;
         self->data[1] = (value >> 8) & 0xff;
     } else {
-        self->type = MP_BLUETOOTH_UUID_TYPE_128;
-        mp_bluetooth_parse_uuid_128bit_str(all_args[0], self->data);
+        mp_buffer_info_t uuid_bufinfo = {0};
+        mp_get_buffer_raise(all_args[0], &uuid_bufinfo, MP_BUFFER_READ);
+        if (uuid_bufinfo.len == 2 || uuid_bufinfo.len == 4 || uuid_bufinfo.len == 16) {
+            // Bytes data -- infer UUID type from length and copy data.
+            self->type = uuid_bufinfo.len;
+            memcpy(self->data, uuid_bufinfo.buf, self->type);
+        } else {
+            // Assume UUID string (e.g. '6E400001-B5A3-F393-E0A9-E50E24DCCA9E')
+            self->type = MP_BLUETOOTH_UUID_TYPE_128;
+            int uuid_i = 32;
+            for (int i = 0; i < uuid_bufinfo.len; i++) {
+                char c = ((char*)uuid_bufinfo.buf)[i];
+                if (c == '-') {
+                    continue;
+                }
+                if (!unichar_isxdigit(c)) {
+                    mp_raise_ValueError("invalid char in UUID");
+                }
+                c = unichar_xdigit_value(c);
+                uuid_i--;
+                if (uuid_i < 0) {
+                    mp_raise_ValueError("UUID too long");
+                }
+                if (uuid_i % 2 == 0) {
+                    // lower nibble
+                    self->data[uuid_i/2] |= c;
+                } else {
+                    // upper nibble
+                    self->data[uuid_i/2] = c << 4;
+                }
+            }
+            if (uuid_i > 0) {
+                mp_raise_ValueError("UUID too short");
+            }
+        }
     }
 
     return self;
@@ -140,6 +142,30 @@ STATIC mp_obj_t bluetooth_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             return MP_OBJ_NEW_SMALL_INT(qstr_compute_hash(self->data, self->type));
         }
         default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
+STATIC mp_obj_t bluetooth_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    if (!mp_obj_is_type(rhs_in, &bluetooth_uuid_type)) {
+        return MP_OBJ_NULL;
+    }
+
+    mp_obj_bluetooth_uuid_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+    mp_obj_bluetooth_uuid_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+        case MP_BINARY_OP_LESS:
+        case MP_BINARY_OP_LESS_EQUAL:
+        case MP_BINARY_OP_MORE:
+        case MP_BINARY_OP_MORE_EQUAL:
+            if (lhs->type == rhs->type) {
+                return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs->data, lhs->type, rhs->data, rhs->type));
+            } else {
+                return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(lhs->type), MP_OBJ_NEW_SMALL_INT(rhs->type));
+            }
+
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -196,6 +222,7 @@ STATIC const mp_obj_type_t bluetooth_uuid_type = {
     .name = MP_QSTR_UUID,
     .make_new = bluetooth_uuid_make_new,
     .unary_op = bluetooth_uuid_unary_op,
+    .binary_op = bluetooth_uuid_binary_op,
     .locals_dict = NULL,
     .print = bluetooth_uuid_print,
     .buffer_p = { .get_buffer = bluetooth_uuid_get_buffer },
