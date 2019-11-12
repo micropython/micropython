@@ -41,7 +41,7 @@ typedef struct {
 #endif
     const mcu_pin_obj_t * pin;
     uint8_t channel;
-    bool deinited;
+    uint8_t dac_index:1;
 } analogio_analogout_obj_t;
 
 void analogout_reset(void);
