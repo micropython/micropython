@@ -34,8 +34,8 @@
 #include "stm32f4/pins.h"
 
 // I2C 
-//TODO: these objects should be condensed into a single 'periph_pin' unless we
-//find a compelling reason to store more unique data in them. 
+// TODO: these objects should be condensed into a single 'periph_pin' unless we
+// find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
@@ -65,8 +65,8 @@ typedef struct {
 }
 
 // SPI 
-//TODO: these objects should be condensed into a single 'periph_pin' unless we
-//find a compelling reason to store more unique data in them. 
+// TODO: these objects should be condensed into a single 'periph_pin' unless we
+// find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t spi_index:4; //Up to 6 SPI units
@@ -97,6 +97,29 @@ typedef struct {
     .spi_index = index, \
     .altfn_index = alt, \
     .pin = spi_pin, \
+}
+
+// UART
+// TODO: these objects should be condensed into a single 'periph_pin' unless we
+// find a compelling reason to store more unique data in them. 
+
+typedef struct {
+    uint8_t uart_index:4; 
+    uint8_t altfn_index:4; 
+    const mcu_pin_obj_t * pin;
+} mcu_uart_tx_obj_t;
+
+typedef struct {
+    uint8_t uart_index:4; 
+    uint8_t altfn_index:4; 
+    const mcu_pin_obj_t * pin;
+} mcu_uart_rx_obj_t;
+
+#define UART(index, alt, uart_pin)       \
+{ \
+    .uart_index = index, \
+    .altfn_index = alt, \
+    .pin = uart_pin, \
 }
 
 //Timers
