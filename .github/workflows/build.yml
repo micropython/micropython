@@ -159,6 +159,8 @@ jobs:
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
+        - "CC03"
+        - "CS11"
 
     steps:
     - name: Set up Python 3.5
