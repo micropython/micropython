@@ -64,10 +64,6 @@ void tick_init() {
     SysTick_Config(ticks_per_ms); // interrupt is enabled
 
     NVIC_EnableIRQ(SysTick_IRQn);
-    // Set all peripheral interrupt priorities to the lowest priority by default.
-    // for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
-    //     NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
-    // }
     // Bump up the systick interrupt so nothing else interferes with timekeeping.
     NVIC_SetPriority(SysTick_IRQn, 0);
     NVIC_SetPriority(OTG_FS_IRQn, 1);

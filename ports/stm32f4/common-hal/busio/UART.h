@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,11 +57,4 @@ typedef struct {
 
 void uart_reset(void);
 
-void USART1_IRQHandler(void);
-void USART2_IRQHandler(void);
-void USART3_IRQHandler(void);
-void UART4_IRQHandler(void);
-void UART5_IRQHandler(void);
-void USART6_IRQHandler(void);
-// void UART_IRQHandler(void);
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H

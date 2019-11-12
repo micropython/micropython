@@ -33,8 +33,6 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-#define MAX_UART 6 //how many UART are implemented
-
 // I2C 
 // TODO: these objects should be condensed into a single 'periph_pin' unless we
 // find a compelling reason to store more unique data in them. 
