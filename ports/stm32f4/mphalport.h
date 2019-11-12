@@ -33,8 +33,6 @@
 #include "lib/utils/interrupt_char.h"
 #include "py/mpconfig.h"
 
-//extern nrfx_uarte_t serial_instance;
-
 extern volatile uint64_t ticks_ms;
 
 #define mp_hal_ticks_ms()       ((mp_uint_t) ticks_ms)

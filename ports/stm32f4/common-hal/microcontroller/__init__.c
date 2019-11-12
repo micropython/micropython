@@ -39,17 +39,56 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/safe_mode.h"
 
-// This routine should work even when interrupts are disabled. Used by OneWire
-// for precise timing.
+#include "stm32f4xx_hal.h"
+
+//tested divisor value for busy loop in us delay
+#define LOOP_TICKS 12
+
+STATIC uint32_t get_us(void) {
+    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
+    uint32_t micros, sys_cycles;
+    do {
+        micros = ticks_ms;
+        sys_cycles = SysTick->VAL; //counts backwards
+    } while (micros != ticks_ms); //try again if ticks_ms rolled over
+    return (micros * 1000) + (ticks_per_us * 1000 - sys_cycles) / ticks_per_us;
+}
+
 void common_hal_mcu_delay_us(uint32_t delay) {
-  //TODO: implement equivalent of mp_hal_delay_us(delay);
-  //this is fairly annoying in the STM32 HAL
+    if (__get_PRIMASK() == 0x00000000) {
+        //by default use ticks_ms
+        uint32_t start = get_us();
+        while (get_us()-start < delay) {
+            __asm__ __volatile__("nop");
+        }
+    } else {
+        //when SysTick is disabled, approximate with busy loop
+        const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 1000000 * delay / LOOP_TICKS;
+        for (uint32_t count = 0; ++count <= ucount;) {
+        }
+    }
 }
 
-void common_hal_mcu_disable_interrupts() {
+volatile uint32_t nesting_count = 0;
+
+void common_hal_mcu_disable_interrupts(void) {
+    __disable_irq();
+    __DMB();
+    nesting_count++;
 }
 
-void common_hal_mcu_enable_interrupts() {
+void common_hal_mcu_enable_interrupts(void) {
+    if (nesting_count == 0) {
+        // This is very very bad because it means there was mismatched disable/enables so we
+        // "HardFault".
+        asm("bkpt");
+    }
+    nesting_count--;
+    if (nesting_count > 0) {
+        return;
+    }
+    __DMB();
+    __enable_irq();
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
@@ -58,7 +97,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 }
 
 void common_hal_mcu_reset(void) {
-    filesystem_flush();
+    filesystem_flush(); //TODO: implement as part of flash improvements
     NVIC_SystemReset();
 }
 
