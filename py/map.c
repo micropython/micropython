@@ -87,7 +87,9 @@ void mp_map_init(mp_map_t *map, size_t n) {
     map->used = 0;
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 0;
+    #if !MICROPY_PY_MAP_ORDERED
     map->is_ordered = 0;
+    #endif
 }
 
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
@@ -95,7 +97,9 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->used = n;
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 1;
+    #if !MICROPY_PY_MAP_ORDERED
     map->is_ordered = 1;
+    #endif
     map->table = (mp_map_elem_t *)table;
 }
 
@@ -118,6 +122,7 @@ void mp_map_clear(mp_map_t *map) {
     map->table = NULL;
 }
 
+#if !MICROPY_PY_MAP_ORDERED
 STATIC void mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
@@ -136,6 +141,7 @@ STATIC void mp_map_rehash(mp_map_t *map) {
     }
     m_del(mp_map_elem_t, old_table, old_alloc);
 }
+#endif
 
 // MP_MAP_LOOKUP behaviour:
 //  - returns NULL if not found, else the slot it was found in with key,value non-null
@@ -167,7 +173,10 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     }
 
     // if the map is an ordered array then we must do a brute force linear search
-    if (map->is_ordered) {
+    #if !MICROPY_PY_MAP_ORDERED
+    if (map->is_ordered)
+    #endif
+    {
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
@@ -206,6 +215,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         return NULL;
         #endif
     }
+    #if !MICROPY_PY_MAP_ORDERED
 
     // map is a hash table (not an ordered array), so do a hash lookup
 
@@ -294,6 +304,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             }
         }
     }
+    #endif // !MICROPY_PY_MAP_ORDERED
 }
 
 /******************************************************************************/
