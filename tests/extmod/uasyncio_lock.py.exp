@@ -1,0 +1,41 @@
+False
+True
+False
+have lock
+----
+task start 1
+task start 2
+task start 3
+task have 1 0
+task have 2 0
+task have 3 0
+task have 1 1
+task have 2 1
+task have 3 1
+task have 1 2
+task end 1
+task have 2 2
+task end 2
+task have 3 2
+task end 3
+----
+task have True
+task release False
+task have True
+task release False
+task have again
+task have again
+----
+task got 0
+task release 0
+task cancel 1
+task got 2
+task release 2
+False
+----
+task got 0
+task cancel 1
+task release 0
+task got 2
+task cancel 2
+False
