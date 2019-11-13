@@ -242,7 +242,7 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
             __WFI();
         }
         if (sem->count == 0) {
-            printf("timeout\n");
+            printf("[NimBLE] timeout\n");
             return BLE_NPL_TIMEOUT;
         }
         DEBUG_SEM_printf("got response in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
