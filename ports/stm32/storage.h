@@ -29,6 +29,7 @@
 #include "drivers/memory/spiflash.h"
 
 #define FLASH_BLOCK_SIZE (512)
+#define FLASH_PART1_START_BLOCK (0x100)
 
 // Try to match Python-level VFS block protocol where possible for these constants
 enum {

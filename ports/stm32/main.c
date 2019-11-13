@@ -35,8 +35,13 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
+#include "lib/littlefs/lfs1.h"
+#include "lib/littlefs/lfs1_util.h"
+#include "lib/littlefs/lfs2.h"
+#include "lib/littlefs/lfs2_util.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_lfs.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -183,13 +188,53 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         factory_reset_create_filesystem();
     }
 
-    // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
+    // Default block device to entire flash storage
     mp_obj_t bdev = MP_OBJ_FROM_PTR(&pyb_flash_obj);
+
+    #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+
+    // Try to detect the block device used for the main filesystem, based on the first block
+
+    uint8_t buf[FLASH_BLOCK_SIZE];
+    storage_read_blocks(buf, FLASH_PART1_START_BLOCK, 1);
+
+    mp_int_t len = -1;
+
+    #if MICROPY_VFS_LFS1
+    if (memcmp(&buf[40], "littlefs", 8) == 0) {
+        // LFS1
+        lfs1_superblock_t *superblock = (void*)&buf[12];
+        uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
+        uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
+        len = block_count * block_size;
+    }
+    #endif
+
+    #if MICROPY_VFS_LFS2
+    if (memcmp(&buf[8], "littlefs", 8) == 0) {
+        // LFS2
+        lfs2_superblock_t *superblock = (void*)&buf[20];
+        uint32_t block_size = lfs2_fromle32(superblock->block_size);
+        uint32_t block_count = lfs2_fromle32(superblock->block_count);
+        len = block_count * block_size;
+    }
+    #endif
+
+    if (len != -1) {
+        // Detected a littlefs filesystem so create correct block device for it
+        mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_NEW_SMALL_INT(len) };
+        bdev = pyb_flash_type.make_new(&pyb_flash_type, 2, 0, args);
+    }
+
+    #endif
+
+    // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
     int ret = vfs_mount_and_chdir(bdev, mount_point);
 
-    if (ret == -MP_ENODEV && reset_mode != 3) {
-        // No filesystem (and didn't already create one), try to create a fresh one
+    if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj) && reset_mode != 3) {
+        // No filesystem, bdev is still the default (so didn't detect a possibly corrupt littlefs),
+        // and didn't already create a filesystem, so try to create a fresh one now.
         ret = factory_reset_create_filesystem();
         if (ret == 0) {
             ret = vfs_mount_and_chdir(bdev, mount_point);
