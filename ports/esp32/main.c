@@ -57,6 +57,7 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 
+
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
@@ -66,6 +67,9 @@ int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
 }
+
+// Forward-declare RMT deinit function (could be defined in a header).
+void esp32_rmt_deinit_all(void);
 
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
@@ -146,6 +150,7 @@ soft_reset:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
+    esp32_rmt_deinit_all();
     machine_pins_deinit();
     usocket_events_deinit();
 

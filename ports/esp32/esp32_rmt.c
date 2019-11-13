@@ -62,6 +62,8 @@ typedef struct _esp32_rmt_obj_t {
 
 
 // Defined in machine_time.c; simply added the error message
+// Fixme: Should use this updated error hadline more widely in the ESP32 port.
+//        At least update the method in machine_time.c.
 STATIC esp_err_t check_esp_err(esp_err_t code) {
     if (code) {
         mp_raise_msg(&mp_type_OSError, esp_err_to_name(code));
@@ -112,7 +114,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "RMT(channel=%u, pin=%u, clock_divider=%u)", self->channel_id, self->pin, self->clock_divider);
+    if (self->pin != -1) {
+        mp_printf(print, "RMT(channel=%u, pin=%u, clock_divider=%u)", self->channel_id, self->pin, self->clock_divider);
+    } else {
+        mp_printf(print, "RMT(channel=%u, inactive)", self->channel_id);
+    }
 }
 
 
@@ -121,13 +127,14 @@ STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     rmt_driver_uninstall(self->channel_id);
 
+    self->pin = -1; // -1 to indicate RMT is unused
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 
 // Helper function to return the resolution for the specified clock divider
-static float resolution_for_divider(uint8_t clock_divider)
-{
+static float resolution_for_divider(uint8_t clock_divider) {
     return 1.0 / (APB_CLK_FREQ / clock_divider);
 }
 
@@ -204,6 +211,16 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_send_pulses_obj, 2, esp32_rmt_send_pulses);
 
+void esp32_rmt_deinit_all(void) {
+    rmt_channel_status_result_t status[RMT_CHANNEL_MAX];
+    rmt_get_channel_status(status);
+
+    for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
+        if (status[i].status != RMT_CHANNEL_UNINIT) {
+            rmt_driver_uninstall(i);
+        }
+    }
+}
 
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
