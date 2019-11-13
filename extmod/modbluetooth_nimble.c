@@ -659,6 +659,9 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
 }
 
 int mp_bluetooth_gap_scan_stop(void) {
+    if (!ble_gap_disc_active()) {
+        return 0;
+    }
     int err = ble_gap_disc_cancel();
     if (err == 0) {
         mp_bluetooth_gap_on_scan_complete();
