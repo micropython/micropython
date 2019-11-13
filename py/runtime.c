@@ -34,6 +34,7 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
+#include "py/objtype.h"
 #include "py/objmodule.h"
 #include "py/objgenerator.h"
 #include "py/smallint.h"
@@ -1165,13 +1166,13 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
         return o_in;
     }
 
-    // if caller did not provide a buffer then allocate one on the heap
-    if (iter_buf == NULL) {
-        iter_buf = m_new_obj(mp_obj_iter_buf_t);
-    }
-
     // check for native getiter (corresponds to __iter__)
     if (type->getiter != NULL) {
+        if (iter_buf == NULL && type->getiter != mp_obj_instance_getiter) {
+            // if caller did not provide a buffer then allocate one on the heap
+            // mp_obj_instance_getiter is special, it will allocate only if needed
+            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        }
         mp_obj_t iter = type->getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
             return iter;
@@ -1183,6 +1184,10 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     mp_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
     if (dest[0] != MP_OBJ_NULL) {
         // __getitem__ exists, create and return an iterator
+        if (iter_buf == NULL) {
+            // if caller did not provide a buffer then allocate one on the heap
+            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        }
         return mp_obj_new_getitem_iter(dest, iter_buf);
     }
 
