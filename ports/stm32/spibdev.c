@@ -55,6 +55,13 @@ int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
                 restore_irq_pri(basepri);
             }
             return 0;
+
+        case BDEV_IOCTL_BLOCK_ERASE: {
+            uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+            mp_spiflash_erase_block(&bdev->spiflash, arg * MP_SPIFLASH_ERASE_BLOCK_SIZE);
+            restore_irq_pri(basepri);
+            return 0;
+        }
     }
     return -MP_EINVAL;
 }
@@ -74,6 +81,22 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
         led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
         bdev->flash_tick_counter_last_write = HAL_GetTick();
     }
+    restore_irq_pri(basepri);
+
+    return ret;
+}
+
+int spi_bdev_readblocks_raw(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes) {
+    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+    mp_spiflash_read(&bdev->spiflash, block_num * MP_SPIFLASH_ERASE_BLOCK_SIZE + block_offset, num_bytes, dest);
+    restore_irq_pri(basepri);
+
+    return 0;
+}
+
+int spi_bdev_writeblocks_raw(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes) {
+    uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+    int ret = mp_spiflash_write(&bdev->spiflash, block_num * MP_SPIFLASH_ERASE_BLOCK_SIZE + block_offset, num_bytes, src);
     restore_irq_pri(basepri);
 
     return ret;
