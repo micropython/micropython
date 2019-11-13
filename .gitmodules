@@ -103,4 +103,4 @@
 	url = https://github.com/sonydevworld/spresense-exported-sdk.git
 [submodule "frozen/Adafruit_CircuitPython_SD"]
 	path = frozen/Adafruit_CircuitPython_SD
-	url = ../../adafruit/Adafruit_CircuitPython_SD.git
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SD.git
