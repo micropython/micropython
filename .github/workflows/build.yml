@@ -73,8 +73,6 @@ jobs:
       fail-fast: false
       matrix:
         board:
-        - "CC03"
-        - "CS11"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
@@ -161,6 +159,8 @@ jobs:
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
+        - "xinabox_cc03"
+        - "xinabox_cs11"
 
     steps:
     - name: Set up Python 3.5
