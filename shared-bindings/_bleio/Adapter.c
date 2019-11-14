@@ -201,7 +201,7 @@ STATIC mp_obj_t bleio_adapter_stop_advertising(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapter_stop_advertising);
 
-//|   .. method:: start_scan(prefixes=b"", \*, buffer_size=512, extended=False, timeout=None, interval=0.1, window=0.1, minimum_rssi=-80)
+//|   .. method:: start_scan(prefixes=b"", \*, buffer_size=512, extended=False, timeout=None, interval=0.1, window=0.1, minimum_rssi=-80, active=True)
 //|
 //|     Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|     filtered and returned separately.
@@ -227,7 +227,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
         { MP_QSTR_prefixes,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_buffer_size,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 512} },
         { MP_QSTR_extended,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_window,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_minimum_rssi,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -80} },
@@ -239,7 +239,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_float_t timeout = 0;
-    if (args[ARG_timeout].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_timeout].u_obj != mp_const_none) {
         timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     }
 
@@ -306,7 +306,7 @@ const mp_obj_property_t bleio_adapter_connected_obj = {
 
 //|   .. attribute:: connections
 //|
-//|     Tuple of active connections including those initiated through 
+//|     Tuple of active connections including those initiated through
 //|     :py:meth:`_bleio.Adapter.connect`. (read-only)
 //|
 STATIC mp_obj_t bleio_adapter_get_connections(mp_obj_t self) {
