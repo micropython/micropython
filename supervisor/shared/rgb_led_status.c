@@ -25,7 +25,7 @@
  */
 
 #include "mphalport.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "rgb_led_status.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
