@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
@@ -48,7 +49,7 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
         self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
-        never_reset_pin_number(reset->number);
+        common_hal_never_reset_pin(reset);
         common_hal_displayio_i2cdisplay_reset(self);
     }
 
@@ -72,7 +73,7 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
         common_hal_busio_i2c_deinit(self->bus);
     }
 
-    reset_pin_number(self->reset.pin->number);
+    common_hal_reset_pin(self->reset.pin);
 }
 
 bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {

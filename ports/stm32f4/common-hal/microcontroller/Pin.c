@@ -72,6 +72,14 @@ void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     never_reset_pins[pin_port] |= 1<<pin_number;
 }
 
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+    never_reset_pin_number(pin->port, pin->number);
+}
+
+void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    reset_pin_number(pin->port, pin->number);
+}
+
 void claim_pin(const mcu_pin_obj_t* pin) {
     // Set bit in claimed_pins bitmask.
     claimed_pins[pin->port] |= 1<<pin->number;
