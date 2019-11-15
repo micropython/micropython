@@ -91,6 +91,10 @@ else
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
+ifndef USB_INTERFACE_NAME
+USB_INTERFACE_NAME = "CircuitPython"
+endif
+
 ifndef USB_DEVICES
 USB_DEVICES = "CDC,MSC,AUDIO,HID"
 endif
@@ -145,6 +149,7 @@ USB_DESCRIPTOR_ARGS = \
 	--vid $(USB_VID)\
 	--pid $(USB_PID)\
 	--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
+	--interface_name $(USB_INTERFACE_NAME)\
 	--devices $(USB_DEVICES)\
 	--hid_devices $(USB_HID_DEVICES)\
   --msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\

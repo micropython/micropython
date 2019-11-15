@@ -8,6 +8,7 @@ sys.path.append("../../tools/usb_descriptor")
 from adafruit_usb_descriptor import audio, audio10, cdc, hid, midi, msc, standard, util
 import hid_report_descriptors
 
+DEFAULT_INTERFACE_NAME = 'CircuitPython'
 ALL_DEVICES='CDC,MSC,AUDIO,HID'
 ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
 DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
@@ -32,6 +33,9 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
+parser.add_argument('--interface_name', type=str,
+                    help='The name/prefix to use in the interface descriptions',
+                    default=DEFAULT_INTERFACE_NAME)
 parser.add_argument('--msc_max_packet_size', type=int, default=64,
                     help='Max packet size for MSC')
 parser.add_argument('--no-renumber_endpoints', dest='renumber_endpoints', action='store_false',
@@ -151,7 +155,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
     bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
     bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
     bInterfaceProtocol=cdc.CDC_PROTOCOL_NONE,
-    iInterface=StringIndex.index("CircuitPython CDC control"),
+    iInterface=StringIndex.index("{} CDC control".format(args.interface_name)),
     subdescriptors=[
         cdc.Header(
             description="CDC comm",
@@ -172,7 +176,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
 cdc_data_interface = standard.InterfaceDescriptor(
     description="CDC data",
     bInterfaceClass=cdc.CDC_CLASS_DATA,
-    iInterface=StringIndex.index("CircuitPython CDC data"),
+    iInterface=StringIndex.index("{} CDC data".format(args.interface_name)),
     subdescriptors=[
         standard.EndpointDescriptor(
             description="CDC data out",
@@ -192,7 +196,7 @@ msc_interfaces = [
         bInterfaceClass=msc.MSC_CLASS,
         bInterfaceSubClass=msc.MSC_SUBCLASS_TRANSPARENT,
         bInterfaceProtocol=msc.MSC_PROTOCOL_BULK,
-        iInterface=StringIndex.index("CircuitPython Mass Storage"),
+        iInterface=StringIndex.index("{} Mass Storage".format(args.interface_name)),
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="MSC in",
@@ -256,7 +260,7 @@ hid_interfaces = [
         bInterfaceClass=hid.HID_CLASS,
         bInterfaceSubClass=hid.HID_SUBCLASS_NOBOOT,
         bInterfaceProtocol=hid.HID_PROTOCOL_NONE,
-        iInterface=StringIndex.index("CircuitPython HID"),
+        iInterface=StringIndex.index("{} HID".format(args.interface_name)),
         subdescriptors=[
             hid.HIDDescriptor(
                 description="HID",
@@ -272,9 +276,9 @@ hid_interfaces = [
 
 # USB OUT -> midi_in_jack_emb -> midi_out_jack_ext -> CircuitPython
 midi_in_jack_emb = midi.InJackDescriptor(
-    description="MIDI PC -> CircuitPython",
+    description="MIDI PC -> {}".format(args.interface_name),
     bJackType=midi.JACK_TYPE_EMBEDDED,
-    iJack=StringIndex.index("CircuitPython usb_midi.ports[0]"))
+    iJack=StringIndex.index("{} usb_midi.ports[0]".format(args.interface_name)))
 midi_out_jack_ext = midi.OutJackDescriptor(
                     description="MIDI data out to user code.",
                     bJackType=midi.JACK_TYPE_EXTERNAL,
@@ -287,10 +291,10 @@ midi_in_jack_ext = midi.InJackDescriptor(
                     bJackType=midi.JACK_TYPE_EXTERNAL,
                     iJack=0)
 midi_out_jack_emb = midi.OutJackDescriptor(
-    description="MIDI PC <- CircuitPython",
+    description="MIDI PC <- {}".format(args.interface_name),
     bJackType=midi.JACK_TYPE_EMBEDDED,
     input_pins=[(midi_in_jack_ext, 1)],
-    iJack=StringIndex.index("CircuitPython usb_midi.ports[1]"))
+    iJack=StringIndex.index("{} usb_midi.ports[1]".format(args.interface_name)))
 
 
 audio_midi_interface = standard.InterfaceDescriptor(
@@ -298,7 +302,7 @@ audio_midi_interface = standard.InterfaceDescriptor(
     bInterfaceClass=audio.AUDIO_CLASS_DEVICE,
     bInterfaceSubClass=audio.AUDIO_SUBCLASS_MIDI_STREAMING,
     bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
-    iInterface=StringIndex.index("CircuitPython MIDI"),
+    iInterface=StringIndex.index("{} MIDI".format(args.interface_name)),
     subdescriptors=[
         midi.Header(
             jacks_and_elements=[
@@ -309,12 +313,12 @@ audio_midi_interface = standard.InterfaceDescriptor(
             ],
         ),
         standard.EndpointDescriptor(
-            description="MIDI data out to CircuitPython",
+            description="MIDI data out to {}".format(args.interface_name),
             bEndpointAddress=args.midi_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
         midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
         standard.EndpointDescriptor(
-            description="MIDI data in from CircuitPython",
+            description="MIDI data in from {}".format(args.interface_name),
             bEndpointAddress=args.midi_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
             bInterval = 0x0),
@@ -334,7 +338,7 @@ audio_control_interface = standard.InterfaceDescriptor(
         bInterfaceClass=audio.AUDIO_CLASS_DEVICE,
         bInterfaceSubClass=audio.AUDIO_SUBCLASS_CONTROL,
         bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
-        iInterface=StringIndex.index("CircuitPython Audio"),
+        iInterface=StringIndex.index("{} Audio".format(args.interface_name)),
         subdescriptors=[
             cs_ac_interface,
         ])
