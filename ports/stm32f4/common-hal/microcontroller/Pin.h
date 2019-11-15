@@ -31,6 +31,10 @@
 
 #include "peripherals/stm32f4/pins.h"
 
+#ifdef MICROPY_HW_NEOPIXEL
+extern bool neopixel_in_use;
+#endif
+
 void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.

@@ -35,6 +35,8 @@
 #define AUTORESET_DELAY_MS 500
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
+#define MICROPY_HW_NEOPIXEL &pin_PC00
+
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          &pin_PB05
 #define SPI_FLASH_MISO_PIN          &pin_PB04
