@@ -30,10 +30,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
 
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t mcu_pin_type;
 
