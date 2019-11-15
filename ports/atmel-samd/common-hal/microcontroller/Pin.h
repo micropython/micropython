@@ -31,9 +31,6 @@
 
 #include "peripherals/samd/pins.h"
 
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
 #ifdef MICROPY_HW_APA102_MOSI
 extern bool apa102_sck_in_use;
 extern bool apa102_mosi_in_use;
