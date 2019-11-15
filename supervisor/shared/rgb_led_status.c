@@ -25,7 +25,7 @@
  */
 
 #include "mphalport.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "rgb_led_status.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
@@ -117,7 +117,7 @@ void rgb_led_status_init() {
                                               mp_const_none);
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
-            // This may call us recursively if reset_pin_number() is called,
+            // This may call us recursively if common_hal_reset_pin() is called,
             // The rgb_led_status_init_in_progress guard will prevent further recursion.
             common_hal_busio_spi_deinit(&status_apa102);
         }
@@ -181,11 +181,11 @@ void rgb_led_status_init() {
 
 void reset_status_led() {
     #ifdef MICROPY_HW_NEOPIXEL
-        reset_pin_number(MICROPY_HW_NEOPIXEL->number);
+        common_hal_reset_pin(MICROPY_HW_NEOPIXEL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        reset_pin_number(MICROPY_HW_APA102_MOSI->number);
-        reset_pin_number(MICROPY_HW_APA102_SCK->number);
+        common_hal_reset_pin(MICROPY_HW_APA102_MOSI);
+        common_hal_reset_pin(MICROPY_HW_APA102_SCK);
     #endif
     #if defined(CP_RGB_STATUS_LED)
         // TODO: Support sharing status LED with user.

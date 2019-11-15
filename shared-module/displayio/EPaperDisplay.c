@@ -82,7 +82,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     if (busy_pin != NULL) {
         self->busy.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->busy, busy_pin);
-        never_reset_pin_number(busy_pin->number);
+        common_hal_never_reset_pin(busy_pin);
     }
 
     // Clear the color memory if it isn't in use.

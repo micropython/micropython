@@ -113,7 +113,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
-            never_reset_pin_number(backlight_pin->number);
+            common_hal_never_reset_pin(backlight_pin);
         } else {
             self->backlight_pwm.base.type = &pulseio_pwmout_type;
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
