@@ -31,6 +31,17 @@
 #include "stm32f4/pins.h"
 #include "stm32f4xx_hal.h"
 
+#ifdef MICROPY_HW_NEOPIXEL
+bool neopixel_in_use;
+#endif
+#ifdef MICROPY_HW_APA102_MOSI
+bool apa102_sck_in_use;
+bool apa102_mosi_in_use;
+#endif
+#ifdef SPEAKER_ENABLE_PIN
+bool speaker_enable_in_use;
+#endif
+
 #if MCU_PACKAGE == 144
     #define GPIO_PORT_COUNT 7
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG};
