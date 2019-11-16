@@ -508,21 +508,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             mp_raise_TypeError(translate("object does not support item deletion"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(base));
+                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(instance));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object is not subscriptable"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(base));
+                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(instance));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object does not support item assignment"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(base));
+                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(instance));
         }
     }
 }
