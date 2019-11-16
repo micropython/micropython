@@ -658,8 +658,8 @@ void run_background_tasks(void);
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()
 
-#define MICROPY_VM_HOOK_LOOP run_background_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_tasks();
+#define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
+#define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
