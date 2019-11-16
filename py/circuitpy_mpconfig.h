@@ -28,10 +28,10 @@
 // sure that the same feature set and settings are used, such as in atmel-samd
 // and nrf.
 
-#include <stdint.h>
-
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
+
+#include <stdint.h>
 
 // This is CircuitPython.
 #define CIRCUITPY 1
