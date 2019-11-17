@@ -45,6 +45,9 @@ class DS18X20:
                 t = buf[0] >> 1
             return t - 0.25 + (buf[7] - buf[6]) / buf[7]
         else:
+            # Mask power-on reset value 0550h (85°C)
+            if buf[1] == 0x05 and buf[0] == 0x50:
+                raise Exception('Power-on reset value')
             t = buf[1] << 8 | buf[0]
             if t & 0x8000: # sign bit set
                 t = -((t ^ 0xffff) + 1)
