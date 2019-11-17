@@ -778,8 +778,16 @@ static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
+// slice indexes resolved to particular sequence
+typedef struct {
+    mp_int_t start;
+    mp_int_t stop;
+    mp_int_t step;
+} mp_bound_slice_t;
+
 // slice
 void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
 
 // functions
 
@@ -835,13 +843,6 @@ typedef struct _mp_rom_obj_static_class_method_t {
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // sequence helpers
-
-// slice indexes resolved to particular sequence
-typedef struct {
-    mp_uint_t start;
-    mp_uint_t stop;
-    mp_int_t step;
-} mp_bound_slice_t;
 
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);
 #if MICROPY_PY_BUILTINS_SLICE

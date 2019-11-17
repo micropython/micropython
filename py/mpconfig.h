@@ -894,6 +894,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #endif
 
+// Whether to support the .indices(len) method on slice objects
+#ifndef MICROPY_PY_BUILTINS_SLICE_INDICES
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (0)
+#endif
+
 // Whether to support frozenset object
 #ifndef MICROPY_PY_BUILTINS_FROZENSET
 #define MICROPY_PY_BUILTINS_FROZENSET (0)
