@@ -101,7 +101,7 @@ STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
             if (start < 0) {
                 start += length;
             }
-            start = MIN(length, MAX(start, 0));
+            start = MIN(length-1, MAX(start, -1));
         }
 
         if (self->stop == mp_const_none) {
