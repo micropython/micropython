@@ -653,8 +653,8 @@ extern const struct _mp_obj_module_t ustack_module;
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
-void run_background_tasks(void);
-#define RUN_BACKGROUND_TASKS (run_background_tasks())
+void supervisor_run_background_tasks_if_tick(void);
+#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()
