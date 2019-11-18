@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-17 20:11-0600\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -431,6 +431,10 @@ msgstr "Nie można dziedziczyć ze slice"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Nie można przesyłać bez nóżek MOSI i MISO."
 
+#: extmod/moductypes.c
+msgid "Cannot unambiguously get sizeof scalar"
+msgstr "Wielkość skalara jest niejednoznaczna"
+
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr "Nie można pisać bez nóżki MOSI."
@@ -541,6 +545,10 @@ msgstr "Tryb sterowania nieużywany w trybie wejścia."
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Kanał EXTINT w użyciu"
+
+#: extmod/modure.c
+msgid "Error in regex"
+msgstr "Błąd w regex"
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
@@ -743,9 +751,13 @@ msgstr ""
 msgid "Group full"
 msgstr "Grupa pełna"
 
-#: py/objstringio.c
+#: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Operacja I/O na zamkniętym pliku"
+
+#: extmod/machine_i2c.c
+msgid "I2C operation not supported"
+msgstr "Operacja I2C nieobsługiwana"
 
 #: py/persistentcode.c
 msgid ""
@@ -1089,7 +1101,7 @@ msgstr "Zakres poza granicami"
 msgid "Read-only"
 msgstr "Tylko do odczytu"
 
-#: py/moduerrno.c
+#: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "System plików tylko do odczytu"
 
@@ -1148,6 +1160,10 @@ msgstr "Fragment i wartość są różnych długości."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Fragmenty nieobsługiwane"
+
+#: extmod/modure.c
+msgid "Splitting with sub-captures"
+msgstr "Podział z podgrupami"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
@@ -1384,6 +1400,19 @@ msgstr "__init__() powinien zwracać None, nie '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "Argument __new__ musi być typu użytkownika"
 
+#: extmod/modubinascii.c extmod/moduhashlib.c
+msgid "a bytes-like object is required"
+msgstr "wymagany obiekt typu bytes"
+
+#: lib/embed/abort_.c
+msgid "abort() called"
+msgstr "Wywołano abort()"
+
+#: extmod/machine_mem.c
+#, c-format
+msgid "address %08x is not aligned to %d bytes"
+msgstr "adres %08x nie jest wyrównany do %d bajtów"
+
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
 msgstr "adres poza zakresem"
@@ -1441,6 +1470,10 @@ msgstr "brak dwu-argumentowego operatora %q"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits musi być 7, 8 lub 9"
 
+#: extmod/machine_spi.c
+msgid "bits must be 8"
+msgstr "bits musi być 8"
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample musi być 8 lub 16"
@@ -1470,6 +1503,10 @@ msgstr "fragmenty bufora muszą mieć tę samą długość"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "zbyt mały bufor"
+
+#: extmod/machine_spi.c
+msgid "buffers must be the same length"
+msgstr "bufory muszą mieć tę samą długość"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1701,6 +1738,10 @@ msgstr "zespolone dzielenie przez zero"
 msgid "complex values not supported"
 msgstr "wartości zespolone nieobsługiwane"
 
+#: extmod/moduzlib.c
+msgid "compression header"
+msgstr "nagłówek kompresji"
+
 #: py/parse.c
 msgid "constant must be an integer"
 msgstr "stała musi być liczbą całkowitą"
@@ -1743,6 +1784,10 @@ msgstr "dzielenie przez zero"
 #: py/objdeque.c
 msgid "empty"
 msgstr "puste"
+
+#: extmod/moduheapq.c extmod/modutimeq.c
+msgid "empty heap"
+msgstr "pusta sterta"
 
 #: py/objstr.c
 msgid "empty separator"
@@ -1814,6 +1859,10 @@ msgstr "system plików musi mieć metodę mount"
 msgid "first argument to super() must be type"
 msgstr "pierwszy argument super() musi być typem"
 
+#: extmod/machine_spi.c
+msgid "firstbit must be MSB"
+msgstr "firstbit musi być MSB"
+
 #: py/objint.c
 msgid "float too big"
 msgstr "float zbyt wielki"
@@ -1882,6 +1931,10 @@ msgstr "generator zignorował GeneratorExit"
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic musi mieć 2048 bajtów długości"
 
+#: extmod/moduheapq.c
+msgid "heap must be a list"
+msgstr "heap musi być listą"
+
 #: py/compile.c
 msgid "identifier redefined as global"
 msgstr "nazwa przedefiniowana jako globalna"
@@ -1897,6 +1950,10 @@ msgstr "niepełny format"
 #: py/objstr.c
 msgid "incomplete format key"
 msgstr "niepełny klucz formatu"
+
+#: extmod/modubinascii.c
+msgid "incorrect padding"
+msgstr "złe wypełnienie"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
@@ -1924,9 +1981,37 @@ msgstr "wymagana liczba całkowita"
 msgid "interval must be in range %s-%s"
 msgstr ""
 
+#: extmod/machine_i2c.c
+msgid "invalid I2C peripheral"
+msgstr "złe I2C"
+
+#: extmod/machine_spi.c
+msgid "invalid SPI peripheral"
+msgstr "złe SPI"
+
+#: lib/netutils/netutils.c
+msgid "invalid arguments"
+msgstr "złe arguemnty"
+
+#: extmod/modussl_axtls.c
+msgid "invalid cert"
+msgstr "zły ceryfikat"
+
+#: extmod/uos_dupterm.c
+msgid "invalid dupterm index"
+msgstr "zły indeks dupterm"
+
+#: extmod/modframebuf.c
+msgid "invalid format"
+msgstr "zły format"
+
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "zła specyfikacja formatu"
+
+#: extmod/modussl_axtls.c
+msgid "invalid key"
+msgstr "zły klucz"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -2056,6 +2141,10 @@ msgstr "wielokrotne dziedzicznie niewspierane"
 msgid "must raise an object"
 msgstr "wyjątek musi być obiektem"
 
+#: extmod/machine_spi.c
+msgid "must specify all of sck/mosi/miso"
+msgstr "sck/mosi/miso muszą być podane"
+
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "funkcja key musi być podana jako argument nazwany"
@@ -2122,6 +2211,10 @@ msgstr ""
 msgid "non-default argument follows default argument"
 msgstr "argument z wartością domyślną przed argumentem bez"
 
+#: extmod/modubinascii.c
+msgid "non-hex digit found"
+msgstr "cyfra nieszesnastkowa"
+
 #: py/compile.c
 msgid "non-keyword arg after */**"
 msgstr "argument nienazwany po */**"
@@ -2187,6 +2280,10 @@ msgstr "obiekt typu '%s' nie ma len()"
 #: py/obj.c
 msgid "object with buffer protocol required"
 msgstr "wymagany obiekt z protokołem buforu"
+
+#: extmod/modubinascii.c
+msgid "odd-length string"
+msgstr "łańcuch o nieparzystej długości"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -2275,6 +2372,10 @@ msgstr "trzeci argument pow() nie może być 0"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
+
+#: extmod/modutimeq.c
+msgid "queue overflow"
+msgstr "przepełnienie kolejki"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
@@ -2389,6 +2490,18 @@ msgstr "indeksy łańcucha muszą być całkowite, nie %s"
 msgid "string not supported; use bytes or bytearray"
 msgstr "łańcuchy nieobsługiwane; użyj bytes lub bytearray"
 
+#: extmod/moductypes.c
+msgid "struct: cannot index"
+msgstr "struct: nie można indeksować"
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct: indeks poza zakresem"
+
+#: extmod/moductypes.c
+msgid "struct: no fields"
+msgstr "struct: brak pól"
+
 #: py/objstr.c
 msgid "substring not found"
 msgstr "brak pod-łańcucha"
@@ -2396,6 +2509,14 @@ msgstr "brak pod-łańcucha"
 #: py/compile.c
 msgid "super() can't find self"
 msgstr "super() nie może znaleźć self"
+
+#: extmod/modujson.c
+msgid "syntax error in JSON"
+msgstr "błąd składni w JSON"
+
+#: extmod/moductypes.c
+msgid "syntax error in uctypes descriptor"
+msgstr "błąd składni w deskryptorze uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
@@ -2613,9 +2734,6 @@ msgstr "zerowy krok"
 #~ msgid "Can't connect in Peripheral mode"
 #~ msgstr "Nie można się łączyć w trybie Peripheral"
 
-#~ msgid "Cannot unambiguously get sizeof scalar"
-#~ msgstr "Wielkość skalara jest niejednoznaczna"
-
 #~ msgid "Characteristic UUID doesn't match Service UUID"
 #~ msgstr "UUID charakterystyki inny niż UUID serwisu"
 
@@ -2624,9 +2742,6 @@ msgstr "zerowy krok"
 
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
-
-#~ msgid "Error in regex"
-#~ msgstr "Błąd w regex"
 
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Nie udało się uzyskać blokady"
@@ -2674,9 +2789,6 @@ msgstr "zerowy krok"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
 
-#~ msgid "I2C operation not supported"
-#~ msgstr "Operacja I2C nieobsługiwana"
-
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Zła nóżka zegara"
 
@@ -2697,9 +2809,6 @@ msgstr "zerowy krok"
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Podział z podgrupami"
-
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Indeks kafelka musi być pomiędzy 0 a 255 włącznie"
 
@@ -2709,99 +2818,21 @@ msgstr "zerowy krok"
 #~ msgid "Voice index too high"
 #~ msgstr "Zbyt wysoki indeks głosu"
 
-#~ msgid "a bytes-like object is required"
-#~ msgstr "wymagany obiekt typu bytes"
-
-#~ msgid "abort() called"
-#~ msgstr "Wywołano abort()"
-
-#~ msgid "address %08x is not aligned to %d bytes"
-#~ msgstr "adres %08x nie jest wyrównany do %d bajtów"
-
 #~ msgid "bad GATT role"
 #~ msgstr "zła rola GATT"
-
-#~ msgid "bits must be 8"
-#~ msgstr "bits musi być 8"
-
-#~ msgid "buffers must be the same length"
-#~ msgstr "bufory muszą mieć tę samą długość"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr ""
 #~ "charakterystyki zawierają obiekt, który nie jest typu Characteristic"
 
-#~ msgid "compression header"
-#~ msgstr "nagłówek kompresji"
-
-#~ msgid "empty heap"
-#~ msgstr "pusta sterta"
-
-#~ msgid "firstbit must be MSB"
-#~ msgstr "firstbit musi być MSB"
-
-#~ msgid "heap must be a list"
-#~ msgstr "heap musi być listą"
-
-#~ msgid "incorrect padding"
-#~ msgstr "złe wypełnienie"
-
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "przedział poza zakresem 0.0020 do 10.24"
-
-#~ msgid "invalid I2C peripheral"
-#~ msgstr "złe I2C"
-
-#~ msgid "invalid SPI peripheral"
-#~ msgstr "złe SPI"
-
-#~ msgid "invalid arguments"
-#~ msgstr "złe arguemnty"
-
-#~ msgid "invalid cert"
-#~ msgstr "zły ceryfikat"
-
-#~ msgid "invalid dupterm index"
-#~ msgstr "zły indeks dupterm"
-
-#~ msgid "invalid format"
-#~ msgstr "zły format"
-
-#~ msgid "invalid key"
-#~ msgstr "zły klucz"
-
-#~ msgid "must specify all of sck/mosi/miso"
-#~ msgstr "sck/mosi/miso muszą być podane"
 
 #~ msgid "name must be a string"
 #~ msgstr "nazwa musi być łańcuchem"
 
-#~ msgid "non-hex digit found"
-#~ msgstr "cyfra nieszesnastkowa"
-
-#~ msgid "odd-length string"
-#~ msgstr "łańcuch o nieparzystej długości"
-
-#~ msgid "queue overflow"
-#~ msgstr "przepełnienie kolejki"
-
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "obiekt typu innego niż Service w services"
-
-#~ msgid "struct: cannot index"
-#~ msgstr "struct: nie można indeksować"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct: indeks poza zakresem"
-
-#~ msgid "struct: no fields"
-#~ msgstr "struct: brak pól"
-
-#~ msgid "syntax error in JSON"
-#~ msgstr "błąd składni w JSON"
-
-#~ msgid "syntax error in uctypes descriptor"
-#~ msgstr "błąd składni w deskryptorze uctypes"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "indeks kafelka poza zakresem"

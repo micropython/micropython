@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-17 20:11-0600\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -438,6 +438,10 @@ msgstr ""
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
+#: extmod/moductypes.c
+msgid "Cannot unambiguously get sizeof scalar"
+msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
+
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr ""
@@ -549,6 +553,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Channel EXTINT sedang digunakan"
+
+#: extmod/modure.c
+msgid "Error in regex"
+msgstr "Error pada regex"
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
@@ -754,9 +762,13 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
-#: py/objstringio.c
+#: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "operasi I/O pada file tertutup"
+
+#: extmod/machine_i2c.c
+msgid "I2C operation not supported"
+msgstr "operasi I2C tidak didukung"
 
 #: py/persistentcode.c
 msgid ""
@@ -1096,7 +1108,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: py/moduerrno.c
+#: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "sistem file (filesystem) bersifat Read-only"
 
@@ -1157,6 +1169,10 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
+
+#: extmod/modure.c
+msgid "Splitting with sub-captures"
+msgstr "Memisahkan dengan menggunakan sub-captures"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
@@ -1392,6 +1408,19 @@ msgstr ""
 msgid "__new__ arg must be a user-type"
 msgstr ""
 
+#: extmod/modubinascii.c extmod/moduhashlib.c
+msgid "a bytes-like object is required"
+msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
+
+#: lib/embed/abort_.c
+msgid "abort() called"
+msgstr "abort() dipanggil"
+
+#: extmod/machine_mem.c
+#, c-format
+msgid "address %08x is not aligned to %d bytes"
+msgstr "alamat %08x tidak selaras dengan %d bytes"
+
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
 msgstr ""
@@ -1449,6 +1478,10 @@ msgstr ""
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
+#: extmod/machine_spi.c
+msgid "bits must be 8"
+msgstr "bits harus memilki nilai 8"
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
@@ -1479,6 +1512,10 @@ msgstr ""
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
+
+#: extmod/machine_spi.c
+msgid "buffers must be the same length"
+msgstr "buffers harus mempunyai panjang yang sama"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1710,6 +1747,10 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
+#: extmod/moduzlib.c
+msgid "compression header"
+msgstr "kompresi header"
+
 #: py/parse.c
 msgid "constant must be an integer"
 msgstr ""
@@ -1751,6 +1792,10 @@ msgstr ""
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
+
+#: extmod/moduheapq.c extmod/modutimeq.c
+msgid "empty heap"
+msgstr "heap kosong"
 
 #: py/objstr.c
 msgid "empty separator"
@@ -1822,6 +1867,10 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr ""
 
+#: extmod/machine_spi.c
+msgid "firstbit must be MSB"
+msgstr "bit pertama(firstbit) harus berupa MSB"
+
 #: py/objint.c
 msgid "float too big"
 msgstr ""
@@ -1890,6 +1939,10 @@ msgstr ""
 msgid "graphic must be 2048 bytes long"
 msgstr ""
 
+#: extmod/moduheapq.c
+msgid "heap must be a list"
+msgstr "heap harus berupa sebuah list"
+
 #: py/compile.c
 msgid "identifier redefined as global"
 msgstr "identifier didefinisi ulang sebagai global"
@@ -1905,6 +1958,10 @@ msgstr ""
 #: py/objstr.c
 msgid "incomplete format key"
 msgstr ""
+
+#: extmod/modubinascii.c
+msgid "incorrect padding"
+msgstr "lapisan (padding) tidak benar"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
@@ -1932,9 +1989,37 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
+#: extmod/machine_i2c.c
+msgid "invalid I2C peripheral"
+msgstr "perangkat I2C tidak valid"
+
+#: extmod/machine_spi.c
+msgid "invalid SPI peripheral"
+msgstr "perangkat SPI tidak valid"
+
+#: lib/netutils/netutils.c
+msgid "invalid arguments"
+msgstr "argumen-argumen tidak valid"
+
+#: extmod/modussl_axtls.c
+msgid "invalid cert"
+msgstr "cert tidak valid"
+
+#: extmod/uos_dupterm.c
+msgid "invalid dupterm index"
+msgstr "indeks dupterm tidak valid"
+
+#: extmod/modframebuf.c
+msgid "invalid format"
+msgstr "format tidak valid"
+
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr ""
+
+#: extmod/modussl_axtls.c
+msgid "invalid key"
+msgstr "key tidak valid"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -2064,6 +2149,10 @@ msgstr ""
 msgid "must raise an object"
 msgstr ""
 
+#: extmod/machine_spi.c
+msgid "must specify all of sck/mosi/miso"
+msgstr "harus menentukan semua pin sck/mosi/miso"
+
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr ""
@@ -2130,6 +2219,10 @@ msgstr ""
 msgid "non-default argument follows default argument"
 msgstr "argumen non-default mengikuti argumen standar(default)"
 
+#: extmod/modubinascii.c
+msgid "non-hex digit found"
+msgstr "digit non-hex ditemukan"
+
 #: py/compile.c
 msgid "non-keyword arg after */**"
 msgstr "non-keyword arg setelah */**"
@@ -2195,6 +2288,10 @@ msgstr ""
 #: py/obj.c
 msgid "object with buffer protocol required"
 msgstr ""
+
+#: extmod/modubinascii.c
+msgid "odd-length string"
+msgstr "panjang data string memiliki keganjilan (odd-length)"
 
 #: py/objstr.c py/objstrunicode.c
 #, fuzzy
@@ -2283,6 +2380,10 @@ msgstr ""
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr ""
+
+#: extmod/modutimeq.c
+msgid "queue overflow"
+msgstr "antrian meluap (overflow)"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
@@ -2396,6 +2497,18 @@ msgstr ""
 msgid "string not supported; use bytes or bytearray"
 msgstr ""
 
+#: extmod/moductypes.c
+msgid "struct: cannot index"
+msgstr "struct: tidak bisa melakukan index"
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct: index keluar dari jangkauan"
+
+#: extmod/moductypes.c
+msgid "struct: no fields"
+msgstr "struct: tidak ada fields"
+
 #: py/objstr.c
 msgid "substring not found"
 msgstr ""
@@ -2403,6 +2516,14 @@ msgstr ""
 #: py/compile.c
 msgid "super() can't find self"
 msgstr "super() tidak dapat menemukan dirinya sendiri"
+
+#: extmod/modujson.c
+msgid "syntax error in JSON"
+msgstr "sintaksis error pada JSON"
+
+#: extmod/moductypes.c
+msgid "syntax error in uctypes descriptor"
+msgstr "sintaksis error pada pendeskripsi uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
@@ -2621,9 +2742,6 @@ msgstr ""
 #~ msgid "Cannot set STA config"
 #~ msgstr "Tidak dapat mengatur konfigurasi STA"
 
-#~ msgid "Cannot unambiguously get sizeof scalar"
-#~ msgstr "tidak dapat mendapatkan ukuran scalar secara tidak ambigu"
-
 #~ msgid "Cannot update i/f status"
 #~ msgstr "Tidak dapat memperbarui status i/f"
 
@@ -2642,9 +2760,6 @@ msgstr ""
 
 #~ msgid "Error in ffi_prep_cif"
 #~ msgstr "Errod pada ffi_prep_cif"
-
-#~ msgid "Error in regex"
-#~ msgstr "Error pada regex"
 
 #, fuzzy
 #~ msgid "Failed to acquire mutex"
@@ -2717,9 +2832,6 @@ msgstr ""
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "GPIO16 tidak mendukung pull up"
 
-#~ msgid "I2C operation not supported"
-#~ msgstr "operasi I2C tidak didukung"
-
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Bit clock pada pin tidak valid"
 
@@ -2770,9 +2882,6 @@ msgstr ""
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Memisahkan dengan menggunakan sub-captures"
-
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) tidak ada"
 
@@ -2793,23 +2902,8 @@ msgstr ""
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
-#~ msgid "a bytes-like object is required"
-#~ msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
-
-#~ msgid "abort() called"
-#~ msgstr "abort() dipanggil"
-
-#~ msgid "address %08x is not aligned to %d bytes"
-#~ msgstr "alamat %08x tidak selaras dengan %d bytes"
-
-#~ msgid "bits must be 8"
-#~ msgstr "bits harus memilki nilai 8"
-
 #~ msgid "buffer too long"
 #~ msgstr "buffer terlalu panjang"
-
-#~ msgid "buffers must be the same length"
-#~ msgstr "buffers harus mempunyai panjang yang sama"
 
 #~ msgid "can query only one param"
 #~ msgstr "hanya bisa melakukan query satu param"
@@ -2826,14 +2920,8 @@ msgstr ""
 #~ msgid "can't set STA config"
 #~ msgstr "tidak bisa mendapatkan konfigurasi STA"
 
-#~ msgid "compression header"
-#~ msgstr "kompresi header"
-
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "hanya antar pos atau kw args yang diperbolehkan"
-
-#~ msgid "empty heap"
-#~ msgstr "heap kosong"
 
 #~ msgid "expecting a pin"
 #~ msgstr "mengharapkan sebuah pin"
@@ -2841,53 +2929,23 @@ msgstr ""
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
-#~ msgid "firstbit must be MSB"
-#~ msgstr "bit pertama(firstbit) harus berupa MSB"
-
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "alokasi flash harus dibawah 1MByte"
 
 #~ msgid "frequency can only be either 80Mhz or 160MHz"
 #~ msgstr "frekuensi hanya bisa didefinisikan 80Mhz atau 160Mhz"
 
-#~ msgid "heap must be a list"
-#~ msgstr "heap harus berupa sebuah list"
-
 #~ msgid "impossible baudrate"
 #~ msgstr "baudrate tidak memungkinkan"
-
-#~ msgid "incorrect padding"
-#~ msgstr "lapisan (padding) tidak benar"
-
-#~ msgid "invalid I2C peripheral"
-#~ msgstr "perangkat I2C tidak valid"
-
-#~ msgid "invalid SPI peripheral"
-#~ msgstr "perangkat SPI tidak valid"
 
 #~ msgid "invalid alarm"
 #~ msgstr "alarm tidak valid"
 
-#~ msgid "invalid arguments"
-#~ msgstr "argumen-argumen tidak valid"
-
 #~ msgid "invalid buffer length"
 #~ msgstr "panjang buffer tidak valid"
 
-#~ msgid "invalid cert"
-#~ msgstr "cert tidak valid"
-
 #~ msgid "invalid data bits"
 #~ msgstr "bit data tidak valid"
-
-#~ msgid "invalid dupterm index"
-#~ msgstr "indeks dupterm tidak valid"
-
-#~ msgid "invalid format"
-#~ msgstr "format tidak valid"
-
-#~ msgid "invalid key"
-#~ msgstr "key tidak valid"
 
 #~ msgid "invalid pin"
 #~ msgstr "pin tidak valid"
@@ -2901,45 +2959,18 @@ msgstr ""
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
 
-#~ msgid "must specify all of sck/mosi/miso"
-#~ msgstr "harus menentukan semua pin sck/mosi/miso"
-
 #, fuzzy
 #~ msgid "name must be a string"
 #~ msgstr "keyword harus berupa string"
 
-#~ msgid "non-hex digit found"
-#~ msgstr "digit non-hex ditemukan"
-
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "tidak valid channel ADC: %d"
-
-#~ msgid "odd-length string"
-#~ msgstr "panjang data string memiliki keganjilan (odd-length)"
 
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "pin tidak memiliki kemampuan IRQ"
 
-#~ msgid "queue overflow"
-#~ msgstr "antrian meluap (overflow)"
-
 #~ msgid "scan failed"
 #~ msgstr "scan gagal"
-
-#~ msgid "struct: cannot index"
-#~ msgstr "struct: tidak bisa melakukan index"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct: index keluar dari jangkauan"
-
-#~ msgid "struct: no fields"
-#~ msgstr "struct: tidak ada fields"
-
-#~ msgid "syntax error in JSON"
-#~ msgstr "sintaksis error pada JSON"
-
-#~ msgid "syntax error in uctypes descriptor"
-#~ msgstr "sintaksis error pada pendeskripsi uctypes"
 
 #~ msgid "unknown config param"
 #~ msgstr "konfigurasi param tidak diketahui"
