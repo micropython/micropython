@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:11-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -428,10 +428,6 @@ msgstr ""
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr ""
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr ""
-
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr ""
@@ -541,10 +537,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
-msgstr ""
-
-#: extmod/modure.c
-msgid "Error in regex"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
@@ -748,12 +740,8 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
-#: extmod/vfs_posix_file.c py/objstringio.c
+#: py/objstringio.c
 msgid "I/O operation on closed file"
-msgstr ""
-
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
 msgstr ""
 
 #: py/persistentcode.c
@@ -1091,7 +1079,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr ""
 
@@ -1119,7 +1107,7 @@ msgstr ""
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 
@@ -1149,10 +1137,6 @@ msgstr ""
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
-msgstr ""
-
-#: extmod/modure.c
-msgid "Splitting with sub-captures"
 msgstr ""
 
 #: shared-bindings/supervisor/__init__.c
@@ -1376,19 +1360,6 @@ msgstr ""
 msgid "__new__ arg must be a user-type"
 msgstr ""
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
-msgid "a bytes-like object is required"
-msgstr ""
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr ""
-
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr ""
-
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
 msgstr ""
@@ -1446,10 +1417,6 @@ msgstr ""
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr ""
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
@@ -1478,10 +1445,6 @@ msgstr ""
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
-msgstr ""
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
 msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
@@ -1714,10 +1677,6 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c
-msgid "compression header"
-msgstr ""
-
 #: py/parse.c
 msgid "constant must be an integer"
 msgstr ""
@@ -1758,10 +1717,6 @@ msgstr ""
 
 #: py/objdeque.c
 msgid "empty"
-msgstr ""
-
-#: extmod/moduheapq.c extmod/modutimeq.c
-msgid "empty heap"
 msgstr ""
 
 #: py/objstr.c
@@ -1834,10 +1789,6 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr ""
-
 #: py/objint.c
 msgid "float too big"
 msgstr ""
@@ -1906,10 +1857,6 @@ msgstr ""
 msgid "graphic must be 2048 bytes long"
 msgstr ""
 
-#: extmod/moduheapq.c
-msgid "heap must be a list"
-msgstr ""
-
 #: py/compile.c
 msgid "identifier redefined as global"
 msgstr ""
@@ -1924,10 +1871,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format key"
-msgstr ""
-
-#: extmod/modubinascii.c
-msgid "incorrect padding"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1956,36 +1899,8 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr ""
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr ""
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr ""
-
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr ""
-
 #: py/objstr.c
 msgid "invalid format specifier"
-msgstr ""
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
 msgstr ""
 
 #: py/compile.c
@@ -2116,10 +2031,6 @@ msgstr ""
 msgid "must raise an object"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr ""
-
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr ""
@@ -2186,10 +2097,6 @@ msgstr ""
 msgid "non-default argument follows default argument"
 msgstr ""
 
-#: extmod/modubinascii.c
-msgid "non-hex digit found"
-msgstr ""
-
 #: py/compile.c
 msgid "non-keyword arg after */**"
 msgstr ""
@@ -2254,10 +2161,6 @@ msgstr ""
 
 #: py/obj.c
 msgid "object with buffer protocol required"
-msgstr ""
-
-#: extmod/modubinascii.c
-msgid "odd-length string"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -2345,10 +2248,6 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
-
-#: extmod/modutimeq.c
-msgid "queue overflow"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -2463,32 +2362,12 @@ msgstr ""
 msgid "string not supported; use bytes or bytearray"
 msgstr ""
 
-#: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr ""
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr ""
-
-#: extmod/moductypes.c
-msgid "struct: no fields"
-msgstr ""
-
 #: py/objstr.c
 msgid "substring not found"
 msgstr ""
 
 #: py/compile.c
 msgid "super() can't find self"
-msgstr ""
-
-#: extmod/modujson.c
-msgid "syntax error in JSON"
-msgstr ""
-
-#: extmod/moductypes.c
-msgid "syntax error in uctypes descriptor"
 msgstr ""
 
 #: shared-bindings/touchio/TouchIn.c

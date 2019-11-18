@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:11-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -436,10 +436,6 @@ msgstr "Hindi magawa ang sublcass slice"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
-
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr "Hindi maaring isulat kapag walang MOSI pin."
@@ -554,10 +550,6 @@ msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Ginagamit na ang EXTINT channel"
-
-#: extmod/modure.c
-msgid "Error in regex"
-msgstr "May pagkakamali sa REGEX"
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
@@ -765,13 +757,9 @@ msgstr ""
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: extmod/vfs_posix_file.c py/objstringio.c
+#: py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "I/O operasyon sa saradong file"
-
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "Hindi supportado ang operasyong I2C"
 
 #: py/persistentcode.c
 msgid ""
@@ -1122,7 +1110,7 @@ msgstr "wala sa sakop ang address"
 msgid "Read-only"
 msgstr "Basahin-lamang"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Basahin-lamang mode"
 
@@ -1151,7 +1139,7 @@ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
@@ -1182,10 +1170,6 @@ msgstr "Slice at value iba't ibang haba."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
-
-#: extmod/modure.c
-msgid "Splitting with sub-captures"
-msgstr "Binibiyak gamit ang sub-captures"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
@@ -1428,19 +1412,6 @@ msgstr "__init__() dapat magbalink na None, hindi '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg ay dapat na user-type"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
-msgid "a bytes-like object is required"
-msgstr "a bytes-like object ay kailangan"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() tinawag"
-
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "address %08x ay hindi pantay sa %d bytes"
-
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
 msgstr "wala sa sakop ang address"
@@ -1498,10 +1469,6 @@ msgstr "binary op %q hindi implemented"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits ay dapat walo (8)"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
@@ -1532,10 +1499,6 @@ msgstr "aarehas na haba dapat ang buffer slices"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "masyadong maliit ang buffer"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "ang buffers ay dapat parehas sa haba"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1773,10 +1736,6 @@ msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
 msgid "complex values not supported"
 msgstr "kumplikadong values hindi sinusuportahan"
 
-#: extmod/moduzlib.c
-msgid "compression header"
-msgstr "compression header"
-
 #: py/parse.c
 msgid "constant must be an integer"
 msgstr "constant ay dapat na integer"
@@ -1822,10 +1781,6 @@ msgstr "dibisyon ng zero"
 #: py/objdeque.c
 msgid "empty"
 msgstr "walang laman"
-
-#: extmod/moduheapq.c extmod/modutimeq.c
-msgid "empty heap"
-msgstr "walang laman ang heap"
 
 #: py/objstr.c
 msgid "empty separator"
@@ -1898,10 +1853,6 @@ msgstr "ang filesystem dapat mag bigay ng mount method"
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit ay dapat MSB"
-
 #: py/objint.c
 msgid "float too big"
 msgstr "masyadong malaki ang float"
@@ -1971,10 +1922,6 @@ msgstr "hindi pinansin ng generator ang GeneratorExit"
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic ay dapat 2048 bytes ang haba"
 
-#: extmod/moduheapq.c
-msgid "heap must be a list"
-msgstr "list dapat ang heap"
-
 #: py/compile.c
 msgid "identifier redefined as global"
 msgstr "identifier ginawang global"
@@ -1990,10 +1937,6 @@ msgstr "hindi kumpleto ang format"
 #: py/objstr.c
 msgid "incomplete format key"
 msgstr "hindi kumpleto ang format key"
-
-#: extmod/modubinascii.c
-msgid "incorrect padding"
-msgstr "mali ang padding"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
@@ -2021,37 +1964,9 @@ msgstr "kailangan ng int"
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "maling I2C peripheral"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "hindi wastong SPI peripheral"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "mali ang mga argumento"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "mali ang cert"
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "mali ang dupterm index"
-
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "hindi wastong pag-format"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "mali ang key"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -2185,10 +2100,6 @@ msgstr "maraming inhertance hindi sinusuportahan"
 msgid "must raise an object"
 msgstr "dapat itaas ang isang object"
 
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
-
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "dapat gumamit ng keyword argument para sa key function"
@@ -2255,10 +2166,6 @@ msgstr ""
 msgid "non-default argument follows default argument"
 msgstr "non-default argument sumusunod sa default argument"
 
-#: extmod/modubinascii.c
-msgid "non-hex digit found"
-msgstr "non-hex digit nahanap"
-
 #: py/compile.c
 msgid "non-keyword arg after */**"
 msgstr "non-keyword arg sa huli ng */**"
@@ -2324,10 +2231,6 @@ msgstr "object na type '%s' walang len()"
 #: py/obj.c
 msgid "object with buffer protocol required"
 msgstr "object na may buffer protocol kinakailangan"
-
-#: extmod/modubinascii.c
-msgid "odd-length string"
-msgstr "odd-length string"
 
 #: py/objstr.c py/objstrunicode.c
 #, fuzzy
@@ -2417,10 +2320,6 @@ msgstr "pow() 3rd argument ay hindi maaring 0"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() na may 3 argumento kailangan ng integers"
-
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "puno na ang pila (overflow)"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
@@ -2538,18 +2437,6 @@ msgstr "ang indeks ng string ay dapat na integer, hindi %s"
 msgid "string not supported; use bytes or bytearray"
 msgstr "string hindi supportado; gumamit ng bytes o kaya bytearray"
 
-#: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "struct: hindi ma-index"
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "struct: index hindi maabot"
-
-#: extmod/moductypes.c
-msgid "struct: no fields"
-msgstr "struct: walang fields"
-
 #: py/objstr.c
 msgid "substring not found"
 msgstr "substring hindi nahanap"
@@ -2557,14 +2444,6 @@ msgstr "substring hindi nahanap"
 #: py/compile.c
 msgid "super() can't find self"
 msgstr "super() hindi mahanap ang sarili"
-
-#: extmod/modujson.c
-msgid "syntax error in JSON"
-msgstr "sintaks error sa JSON"
-
-#: extmod/moductypes.c
-msgid "syntax error in uctypes descriptor"
-msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
@@ -2797,6 +2676,9 @@ msgstr "zero step"
 #~ msgid "Cannot set STA config"
 #~ msgstr "Hindi ma-set ang STA Config"
 
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
+
 #~ msgid "Cannot update i/f status"
 #~ msgstr "Hindi ma-update i/f status"
 
@@ -2816,11 +2698,14 @@ msgstr "zero step"
 #~ msgid "Error in ffi_prep_cif"
 #~ msgstr "Pagkakamali sa ffi_prep_cif"
 
+#~ msgid "Error in regex"
+#~ msgstr "May pagkakamali sa REGEX"
+
 #, fuzzy
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
 
@@ -2828,7 +2713,7 @@ msgstr "zero step"
 #~ msgid "Failed to add service"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
@@ -2844,7 +2729,7 @@ msgstr "zero step"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
@@ -2868,7 +2753,7 @@ msgstr "zero step"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
@@ -2880,7 +2765,7 @@ msgstr "zero step"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
@@ -2889,6 +2774,9 @@ msgstr "zero step"
 
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "Walang pull down support ang GPI016."
+
+#~ msgid "I2C operation not supported"
+#~ msgstr "Hindi supportado ang operasyong I2C"
 
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Mali ang bit clock pin"
@@ -2946,6 +2834,9 @@ msgstr "zero step"
 #~ msgid "STA required"
 #~ msgstr "STA kailangan"
 
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Binibiyak gamit ang sub-captures"
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "Walang UART(%d)"
 
@@ -2968,8 +2859,23 @@ msgstr "zero step"
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
+#~ msgid "a bytes-like object is required"
+#~ msgstr "a bytes-like object ay kailangan"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() tinawag"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "address %08x ay hindi pantay sa %d bytes"
+
+#~ msgid "bits must be 8"
+#~ msgstr "bits ay dapat walo (8)"
+
 #~ msgid "buffer too long"
 #~ msgstr "masyadong mahaba ng buffer"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "ang buffers ay dapat parehas sa haba"
 
 #~ msgid "can query only one param"
 #~ msgstr "maaaring i-query lamang ang isang param"
@@ -2986,8 +2892,14 @@ msgstr "zero step"
 #~ msgid "can't set STA config"
 #~ msgstr "hindi makuha ang STA config"
 
+#~ msgid "compression header"
+#~ msgstr "compression header"
+
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "pos o kw args ang pinahihintulutan"
+
+#~ msgid "empty heap"
+#~ msgstr "walang laman ang heap"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "umasa ng DigitalInOut"
@@ -2998,23 +2910,53 @@ msgstr "zero step"
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit ay dapat MSB"
+
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
 
 #~ msgid "frequency can only be either 80Mhz or 160MHz"
 #~ msgstr "ang frequency ay dapat 80Mhz or 160MHz lamang"
 
+#~ msgid "heap must be a list"
+#~ msgstr "list dapat ang heap"
+
 #~ msgid "impossible baudrate"
 #~ msgstr "impossibleng baudrate"
+
+#~ msgid "incorrect padding"
+#~ msgstr "mali ang padding"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "maling I2C peripheral"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "hindi wastong SPI peripheral"
 
 #~ msgid "invalid alarm"
 #~ msgstr "mali ang alarm"
 
+#~ msgid "invalid arguments"
+#~ msgstr "mali ang mga argumento"
+
 #~ msgid "invalid buffer length"
 #~ msgstr "mali ang buffer length"
 
+#~ msgid "invalid cert"
+#~ msgstr "mali ang cert"
+
 #~ msgid "invalid data bits"
 #~ msgstr "mali ang data bits"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "mali ang dupterm index"
+
+#~ msgid "invalid format"
+#~ msgstr "hindi wastong pag-format"
+
+#~ msgid "invalid key"
+#~ msgstr "mali ang key"
 
 #~ msgid "invalid pin"
 #~ msgstr "mali ang pin"
@@ -3029,12 +2971,21 @@ msgstr "zero step"
 #~ msgstr ""
 #~ "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
 
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
+
 #, fuzzy
 #~ msgid "name must be a string"
 #~ msgstr "ang keywords dapat strings"
 
+#~ msgid "non-hex digit found"
+#~ msgstr "non-hex digit nahanap"
+
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "hindi tamang ADC Channel: %d"
+
+#~ msgid "odd-length string"
+#~ msgstr "odd-length string"
 
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "walang IRQ capabilities ang pin"
@@ -3042,11 +2993,29 @@ msgstr "zero step"
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position ay dapat 2-tuple"
 
+#~ msgid "queue overflow"
+#~ msgstr "puno na ang pila (overflow)"
+
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "row ay dapat packed at ang word nakahanay"
 
 #~ msgid "scan failed"
 #~ msgstr "nabigo ang pag-scan"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct: hindi ma-index"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "struct: index hindi maabot"
+
+#~ msgid "struct: no fields"
+#~ msgstr "struct: walang fields"
+
+#~ msgid "syntax error in JSON"
+#~ msgstr "sintaks error sa JSON"
+
+#~ msgid "syntax error in uctypes descriptor"
+#~ msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 
 #~ msgid "too many arguments"
 #~ msgstr "masyadong maraming argumento"

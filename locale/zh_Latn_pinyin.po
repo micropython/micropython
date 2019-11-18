@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:11-0600\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -432,10 +432,6 @@ msgstr "Wúfǎ zi fēnlèi"
 msgid "Cannot transfer without MOSI and MISO pins."
 msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
 
-#: extmod/moductypes.c
-msgid "Cannot unambiguously get sizeof scalar"
-msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
-
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
@@ -546,10 +542,6 @@ msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
-
-#: extmod/modure.c
-msgid "Error in regex"
-msgstr "Zhèngzé biǎodá shì cuòwù"
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
@@ -752,13 +744,9 @@ msgstr "Jítuán yǐjīng shǐyòngguò"
 msgid "Group full"
 msgstr "Fēnzǔ yǐ mǎn"
 
-#: extmod/vfs_posix_file.c py/objstringio.c
+#: py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Wénjiàn shàng de I/ O cāozuò"
-
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "I2C cāozuò bù zhīchí"
 
 #: py/persistentcode.c
 msgid ""
@@ -1105,7 +1093,7 @@ msgstr "Fànwéi chāochū biānjiè"
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: py/moduerrno.c
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
 
@@ -1133,7 +1121,7 @@ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ g
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA huò SCL xūyào lādòng"
 
@@ -1164,10 +1152,6 @@ msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
-
-#: extmod/modure.c
-msgid "Splitting with sub-captures"
-msgstr "Yǔ zi bǔhuò fēnliè"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
@@ -1409,19 +1393,6 @@ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ cānshù bìxū shì yònghù lèixíng"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
-msgid "a bytes-like object is required"
-msgstr "xūyào yīgè zì jié lèi duìxiàng"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "zhōngzhǐ () diàoyòng"
-
-#: extmod/machine_mem.c
-#, c-format
-msgid "address %08x is not aligned to %d bytes"
-msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
-
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
 msgstr "dìzhǐ chāochū biānjiè"
@@ -1479,10 +1450,6 @@ msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 msgid "bits must be 7, 8 or 9"
 msgstr "bǐtè bìxū shì 7,8 huò 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bǐtè bìxū shì 8"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
@@ -1512,10 +1479,6 @@ msgstr "huǎnchōng qū qiēpiàn bìxū chángdù xiāngděng"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "huǎnchōng qū tài xiǎo"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "huǎnchōng qū bìxū shì chángdù xiāngtóng"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1749,10 +1712,6 @@ msgstr "fùzá de fēngé wèi 0"
 msgid "complex values not supported"
 msgstr "bù zhīchí fùzá de zhí"
 
-#: extmod/moduzlib.c
-msgid "compression header"
-msgstr "yāsuō tóu bù"
-
 #: py/parse.c
 msgid "constant must be an integer"
 msgstr "chángshù bìxū shì yīgè zhěngshù"
@@ -1795,10 +1754,6 @@ msgstr "bèi líng chú"
 #: py/objdeque.c
 msgid "empty"
 msgstr "kòngxián"
-
-#: extmod/moduheapq.c extmod/modutimeq.c
-msgid "empty heap"
-msgstr "kōng yīn yīnxiào"
 
 #: py/objstr.c
 msgid "empty separator"
@@ -1870,10 +1825,6 @@ msgstr "wénjiàn xìtǒng bìxū tígōng guà zài fāngfǎ"
 msgid "first argument to super() must be type"
 msgstr "chāojí () de dì yī gè cānshù bìxū shì lèixíng"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "dì yī wèi bìxū shì MSB"
-
 #: py/objint.c
 msgid "float too big"
 msgstr "fú diǎn tài dà"
@@ -1942,10 +1893,6 @@ msgstr "shēngchéng qì hūlüè shēngchéng qì tuìchū"
 msgid "graphic must be 2048 bytes long"
 msgstr "túxíng bìxū wèi 2048 zì jié"
 
-#: extmod/moduheapq.c
-msgid "heap must be a list"
-msgstr "duī bìxū shì yīgè lièbiǎo"
-
 #: py/compile.c
 msgid "identifier redefined as global"
 msgstr "biāozhì fú chóngxīn dìngyì wèi quánjú"
@@ -1961,10 +1908,6 @@ msgstr "géshì bù wánzhěng"
 #: py/objstr.c
 msgid "incomplete format key"
 msgstr "géshì bù wánzhěng de mì yào"
-
-#: extmod/modubinascii.c
-msgid "incorrect padding"
-msgstr "bù zhèngquè de tiánchōng"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
@@ -1992,37 +1935,9 @@ msgstr "xūyào zhěngshù"
 msgid "interval must be in range %s-%s"
 msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "wúxiào de I2C wàiwéi qì"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "wúxiào de SPI wàiwéi qì"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "wúxiào de cānshù"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "zhèngshū wúxiào"
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "dupterm suǒyǐn wúxiào"
-
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "wúxiào géshì"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "wúxiào de géshì biāozhù"
-
-#: extmod/modussl_axtls.c
-msgid "invalid key"
-msgstr "wúxiào de mì yào"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -2153,10 +2068,6 @@ msgstr "bù zhīchí duō gè jìchéng"
 msgid "must raise an object"
 msgstr "bìxū tíchū duìxiàng"
 
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "bìxū zhǐdìng suǒyǒu sck/mosi/misco"
-
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "bìxū shǐyòng guānjiàn cí cānshù"
@@ -2224,10 +2135,6 @@ msgstr "Zài service_uuids bái míngdān zhōng zhǎodào fēi UUID"
 msgid "non-default argument follows default argument"
 msgstr "bùshì mòrèn cānshù zūnxún mòrèn cānshù"
 
-#: extmod/modubinascii.c
-msgid "non-hex digit found"
-msgstr "zhǎodào fēi shíliù jìn zhì shùzì"
-
 #: py/compile.c
 msgid "non-keyword arg after */**"
 msgstr "zài */** zhīhòu fēi guānjiàn cí cānshù"
@@ -2293,10 +2200,6 @@ msgstr "lèixíng '%s' de duìxiàng méiyǒu chángdù"
 #: py/obj.c
 msgid "object with buffer protocol required"
 msgstr "xūyào huǎnchōng qū xiéyì de duìxiàng"
-
-#: extmod/modubinascii.c
-msgid "odd-length string"
-msgstr "jīshù zìfú chuàn"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -2384,10 +2287,6 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
-
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "duìliè yìchū"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
@@ -2503,18 +2402,6 @@ msgstr "zìfú chuàn zhǐshù bìxū shì zhěngshù, ér bùshì %s"
 msgid "string not supported; use bytes or bytearray"
 msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
 
-#: extmod/moductypes.c
-msgid "struct: cannot index"
-msgstr "jiégòu: bùnéng suǒyǐn"
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "jiégòu: suǒyǐn chāochū fànwéi"
-
-#: extmod/moductypes.c
-msgid "struct: no fields"
-msgstr "jiégòu: méiyǒu zìduàn"
-
 #: py/objstr.c
 msgid "substring not found"
 msgstr "wèi zhǎodào zi zìfú chuàn"
@@ -2522,14 +2409,6 @@ msgstr "wèi zhǎodào zi zìfú chuàn"
 #: py/compile.c
 msgid "super() can't find self"
 msgstr "chāojí() zhǎo bù dào zìjǐ"
-
-#: extmod/modujson.c
-msgid "syntax error in JSON"
-msgstr "JSON yǔfǎ cuòwù"
-
-#: extmod/moductypes.c
-msgid "syntax error in uctypes descriptor"
-msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
@@ -2750,6 +2629,9 @@ msgstr "líng bù"
 #~ msgid "Can't set CCCD for local Characteristic"
 #~ msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
 
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
+
 #~ msgid "Characteristic UUID doesn't match Service UUID"
 #~ msgstr "Zìfú UUID bù fúhé fúwù UUID"
 
@@ -2759,27 +2641,27 @@ msgstr "líng bù"
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
+#~ msgid "Error in regex"
+#~ msgstr "Zhèngzé biǎodá shì cuòwù"
+
 #~ msgid "Expected a Peripheral"
 #~ msgstr "Qídài yīgè wàiwéi shèbèi"
 
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Wúfǎ huòdé mutex"
 
-#, c-format
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Tiānjiā fúwù shībài"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Tiānjiā fúwù shībài, err 0x%04x"
 
 #~ msgid "Failed to change softdevice state"
 #~ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
 
-#, c-format
 #~ msgid "Failed to configure advertising, err 0x%04x"
 #~ msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
 
@@ -2789,7 +2671,6 @@ msgstr "líng bù"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Jìxù sǎomiáo shībài"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
 
@@ -2799,18 +2680,15 @@ msgstr "líng bù"
 #~ msgid "Failed to release mutex"
 #~ msgstr "Wúfǎ shìfàng mutex"
 
-#, c-format
 #~ msgid "Failed to set device name, err 0x%04x"
 #~ msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
 
 #~ msgid "Failed to start advertising"
 #~ msgstr "Qǐdòng guǎnggào shībài"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to start pairing, error 0x%04x"
 #~ msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
 
@@ -2820,9 +2698,11 @@ msgstr "líng bù"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
+
+#~ msgid "I2C operation not supported"
+#~ msgstr "I2C cāozuò bù zhīchí"
 
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
@@ -2854,9 +2734,11 @@ msgstr "líng bù"
 #~ msgstr ""
 #~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
-#, c-format
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
+
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Yǔ zi bǔhuò fēnliè"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
@@ -2867,26 +2749,104 @@ msgstr "líng bù"
 #~ msgid "Voice index too high"
 #~ msgstr "Yǔyīn suǒyǐn tài gāo"
 
+#~ msgid "a bytes-like object is required"
+#~ msgstr "xūyào yīgè zì jié lèi duìxiàng"
+
+#~ msgid "abort() called"
+#~ msgstr "zhōngzhǐ () diàoyòng"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
+
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
+
+#~ msgid "bits must be 8"
+#~ msgstr "bǐtè bìxū shì 8"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "huǎnchōng qū bìxū shì chángdù xiāngtóng"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
 
+#~ msgid "compression header"
+#~ msgstr "yāsuō tóu bù"
+
+#~ msgid "empty heap"
+#~ msgstr "kōng yīn yīnxiào"
+
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
+
+#~ msgid "firstbit must be MSB"
+#~ msgstr "dì yī wèi bìxū shì MSB"
+
+#~ msgid "heap must be a list"
+#~ msgstr "duī bìxū shì yīgè lièbiǎo"
+
+#~ msgid "incorrect padding"
+#~ msgstr "bù zhèngquè de tiánchōng"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
 
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "wúxiào de I2C wàiwéi qì"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "wúxiào de SPI wàiwéi qì"
+
+#~ msgid "invalid arguments"
+#~ msgstr "wúxiào de cānshù"
+
+#~ msgid "invalid cert"
+#~ msgstr "zhèngshū wúxiào"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "dupterm suǒyǐn wúxiào"
+
+#~ msgid "invalid format"
+#~ msgstr "wúxiào géshì"
+
+#~ msgid "invalid key"
+#~ msgstr "wúxiào de mì yào"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "bìxū zhǐdìng suǒyǒu sck/mosi/misco"
+
 #~ msgid "name must be a string"
 #~ msgstr "míngchēng bìxū shì yīgè zìfú chuàn"
+
+#~ msgid "non-hex digit found"
+#~ msgstr "zhǎodào fēi shíliù jìn zhì shùzì"
+
+#~ msgid "odd-length string"
+#~ msgstr "jīshù zìfú chuàn"
+
+#~ msgid "queue overflow"
+#~ msgstr "duìliè yìchū"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
 
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "fúwù bāokuò yīgè bùshì fúwù de wùjiàn"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "jiégòu: bùnéng suǒyǐn"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "jiégòu: suǒyǐn chāochū fànwéi"
+
+#~ msgid "struct: no fields"
+#~ msgstr "jiégòu: méiyǒu zìduàn"
+
+#~ msgid "syntax error in JSON"
+#~ msgstr "JSON yǔfǎ cuòwù"
+
+#~ msgid "syntax error in uctypes descriptor"
+#~ msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "kuài suǒyǐn chāochū fànwéi"
