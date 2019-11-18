@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rotaryio/IncrementalEncoder.h"
 #include "shared-bindings/microcontroller/__init__.h"
 //#include "samd/external_interrupts.h"
@@ -43,6 +44,12 @@ void shared_eic_handler(uint8_t channel) {
 #if CIRCUITPY_PULSEIO
     case EIC_HANDLER_PULSEIN:
         pulsein_interrupt_handler(channel);
+        break;
+#endif
+
+#if CIRCUITPY_PS2IO
+    case EIC_HANDLER_PS2:
+        ps2_interrupt_handler(channel);
         break;
 #endif
 

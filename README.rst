@@ -63,7 +63,7 @@ Contributors who follow the `Code of
 Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__
 are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
-`Discord <https://discord.gg/nBQh6qu>`__ too.
+`Discord <https://adafru.it/discord>`__ too.
 
 Branding
 ------------
@@ -78,7 +78,7 @@ If you'd like to use the term "CircuitPython" and Blinka for your product here i
 * Your product is supported by the primary
   `"adafruit/circuitpython" <https://github.com/adafruit/circuitpython>`_ repo. This way we can
   update any custom code as we update the CircuitPython internals.
-* Your product is listed on `circuitpython.org <https:/circuitpython.org>`__ (source
+* Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
   `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
   product can always download the latest version of CircuitPython from the standard place.
 * Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.
@@ -115,8 +115,8 @@ Behavior
    output is written to ``boot_out.txt``.
 -  ``code.py`` (or ``main.py``) is run after every reload until it
    finishes or is interrupted. After it is done running, the vm and
-   hardware is reinitialized. **This means you cannot read state from
-   ``code.py`` in the REPL anymore.** CircuitPython's goal for this
+   hardware is reinitialized. **This means you cannot read state from**
+   ``code.py`` **in the REPL anymore.** CircuitPython's goal for this
    change includes reduce confusion about pins and memory being used.
 -  After ``code.py`` the REPL can be entered by pressing any key. It no
    longer shares state with ``code.py`` so it is a fresh vm.
@@ -131,9 +131,9 @@ Behavior
    ``samd.disable_autoreload()``)
 -  Entering the REPL after the main code is finished requires a key press which enters the REPL and
    disables autoreload.
--  Main is one of these: ``code.txt``, **``code.py``**, ``main.py``,
+-  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, **``boot.py``**,
+-  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
    ``boot.txt``
 
 API

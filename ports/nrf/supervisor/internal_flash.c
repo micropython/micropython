@@ -97,7 +97,9 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         count = MIN(num_blocks, count);
 
         if (page_addr != _flash_page_addr) {
-            nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
+            // Write out anything in cache before overwriting it.
+            supervisor_flash_flush();
+
             _flash_page_addr = page_addr;
 
             // Copy the current contents of the entire page into the cache.

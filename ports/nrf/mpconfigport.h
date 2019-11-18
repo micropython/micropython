@@ -30,6 +30,10 @@
 
 #include "ble_drv.h"
 
+#ifdef NRF52840
+#define MICROPY_PY_SYS_PLATFORM "nRF52840"
+#endif
+
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
@@ -52,6 +56,11 @@
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
 #include "py/circuitpy_mpconfig.h"
+
+#ifndef BOARD_HAS_32KHZ_XTAL
+// Assume crystal is present, which is the most common case.
+#define BOARD_HAS_32KHZ_XTAL (1)
+#endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \

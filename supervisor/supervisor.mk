@@ -13,7 +13,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/translate.c
 
 ifndef $(NO_USB)
-NO_USB = $(wildcard supervisor/usb.c)
+	NO_USB = $(wildcard supervisor/usb.c)
 endif
 
 ifneq ($(INTERNAL_FLASH_FILESYSTEM),)
@@ -26,6 +26,11 @@ endif
 ifneq ($(SPI_FLASH_FILESYSTEM),)
 # EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
 	CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+endif
+
+
+ifeq ($(CIRCUITPY_BLEIO),1)
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
 endif
 
 # Choose which flash filesystem impl to use.
@@ -44,7 +49,11 @@ ifdef EXTERNAL_FLASH_DEVICES
 		SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
 	endif
 else
-	SRC_SUPERVISOR += supervisor/internal_flash.c
+	ifeq ($(DISABLE_FILESYSTEM),1)
+		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
+	else 
+		SRC_SUPERVISOR += supervisor/internal_flash.c
+	endif
 endif
 
 ifeq ($(USB),FALSE)
@@ -78,7 +87,86 @@ else
 					  shared-module/usb_midi/PortIn.c \
 					  shared-module/usb_midi/PortOut.c \
 					  $(BUILD)/autogen_usb_descriptor.c
+
 	CFLAGS += -DUSB_AVAILABLE
+endif
+
+ifndef USB_INTERFACE_NAME
+USB_INTERFACE_NAME = "CircuitPython"
+endif
+
+ifndef USB_DEVICES
+USB_DEVICES = "CDC,MSC,AUDIO,HID"
+endif
+
+ifndef USB_HID_DEVICES
+USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
+endif
+
+ifndef USB_MSC_MAX_PACKET_SIZE
+USB_MSC_MAX_PACKET_SIZE = 64
+endif
+
+ifndef USB_CDC_EP_NUM_NOTIFICATION
+USB_CDC_EP_NUM_NOTIFICATION = 0
+endif
+
+ifndef USB_CDC_EP_NUM_DATA_OUT
+USB_CDC_EP_NUM_DATA_OUT = 0
+endif
+
+ifndef USB_CDC_EP_NUM_DATA_IN
+USB_CDC_EP_NUM_DATA_IN = 0
+endif
+
+ifndef USB_MSC_EP_NUM_OUT
+USB_MSC_EP_NUM_OUT = 0
+endif
+
+ifndef USB_MSC_EP_NUM_IN
+USB_MSC_EP_NUM_IN = 0
+endif
+
+ifndef USB_HID_EP_NUM_OUT
+USB_HID_EP_NUM_OUT = 0
+endif
+
+ifndef USB_HID_EP_NUM_IN
+USB_HID_EP_NUM_IN = 0
+endif
+
+ifndef USB_MIDI_EP_NUM_OUT
+USB_MIDI_EP_NUM_OUT = 0
+endif
+
+ifndef USB_MIDI_EP_NUM_IN
+USB_MIDI_EP_NUM_IN = 0
+endif
+
+USB_DESCRIPTOR_ARGS = \
+	--manufacturer $(USB_MANUFACTURER)\
+	--product $(USB_PRODUCT)\
+	--vid $(USB_VID)\
+	--pid $(USB_PID)\
+	--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
+	--interface_name $(USB_INTERFACE_NAME)\
+	--devices $(USB_DEVICES)\
+	--hid_devices $(USB_HID_DEVICES)\
+  --msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\
+	--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
+	--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
+	--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
+	--msc_ep_num_out $(USB_MSC_EP_NUM_OUT)\
+	--msc_ep_num_in $(USB_MSC_EP_NUM_IN)\
+	--hid_ep_num_out $(USB_HID_EP_NUM_OUT)\
+	--hid_ep_num_in $(USB_HID_EP_NUM_IN)\
+	--midi_ep_num_out $(USB_MIDI_EP_NUM_OUT)\
+	--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
+	--output_c_file $(BUILD)/autogen_usb_descriptor.c\
+	--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+
+ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
+USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
 endif
 
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
@@ -92,14 +180,7 @@ $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: auto
 autogen_usb_descriptor.intermediate: ../../tools/gen_usb_descriptor.py Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
-	$(Q)$(PYTHON3) ../../tools/gen_usb_descriptor.py \
-		--manufacturer $(USB_MANUFACTURER)\
-		--product $(USB_PRODUCT)\
-		--vid $(USB_VID)\
-		--pid $(USB_PID)\
-		--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
-		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
-		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+	$(Q)$(PYTHON3) ../../tools/gen_usb_descriptor.py $(USB_DESCRIPTOR_ARGS)
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

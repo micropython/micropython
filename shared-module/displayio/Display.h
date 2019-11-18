@@ -31,42 +31,36 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
-typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
-typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
-typedef void (*display_bus_end_transaction)(mp_obj_t bus);
+#include "shared-module/displayio/area.h"
+#include "shared-module/displayio/display_core.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t bus;
-    uint16_t width;
-    uint16_t height;
-    uint16_t color_depth;
-    uint8_t set_column_command;
-    uint8_t set_row_command;
-    uint8_t write_ram_command;
-    displayio_group_t *current_group;
-    bool refresh;
-    uint64_t last_refresh;
-    int16_t colstart;
-    int16_t rowstart;
-    bool single_byte_bounds;
-    bool data_as_commands;
-    display_bus_begin_transaction begin_transaction;
-    display_bus_send send;
-    display_bus_end_transaction end_transaction;
+    displayio_display_core_t core;
     union {
         digitalio_digitalinout_obj_t backlight_inout;
         pulseio_pwmout_obj_t backlight_pwm;
     };
     uint64_t last_backlight_refresh;
-    bool auto_brightness:1;
-    bool updating_backlight:1;
-    bool mirror_x;
-    bool mirror_y;
-    bool transpose_xy;
+    uint64_t last_refresh_call;
+    mp_float_t current_brightness;
+    uint16_t brightness_command;
+    uint16_t native_frames_per_second;
+    uint16_t native_ms_per_frame;
+    uint8_t set_column_command;
+    uint8_t set_row_command;
+    uint8_t write_ram_command;
+    bool auto_refresh;
+    bool first_manual_refresh;
+    bool data_as_commands;
+    bool auto_brightness;
+    bool updating_backlight;
 } displayio_display_obj_t;
 
-void displayio_display_update_backlight(displayio_display_obj_t* self);
+void displayio_display_background(displayio_display_obj_t* self);
 void release_display(displayio_display_obj_t* self);
+void reset_display(displayio_display_obj_t* self);
+
+void displayio_display_collect_ptrs(displayio_display_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

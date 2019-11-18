@@ -37,6 +37,7 @@
 #include "shared-bindings/microcontroller/Processor.h"
 
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/safe_mode.h"
 #include "nrfx_glue.h"
 
 // This routine should work even when interrupts are disabled. Used by OneWire
@@ -52,7 +53,13 @@ void common_hal_mcu_enable_interrupts() {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    // TODO: see atmel-samd for functionality
+    enum { DFU_MAGIC_UF2_RESET = 0x57 };
+    if(runmode == RUNMODE_BOOTLOADER)
+        NRF_POWER->GPREGRET = DFU_MAGIC_UF2_RESET;
+    else
+        NRF_POWER->GPREGRET = 0;
+    if(runmode == RUNMODE_SAFE_MODE)
+        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
 }
 
 void common_hal_mcu_reset(void) {

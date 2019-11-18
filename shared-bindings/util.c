@@ -32,11 +32,9 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-// Check if pin is None. If so, deinit() has already been called on the object, so complain.
-void raise_error_if_deinited(bool deinited) {
-    if (deinited) {
-        mp_raise_ValueError(translate("Object has been deinitialized and can no longer be used. Create a new object."));
-    }
+// If so, deinit() has already been called on the object, so complain.
+void raise_deinited_error(void) {
+    mp_raise_ValueError(translate("Object has been deinitialized and can no longer be used. Create a new object."));
 }
 
 

@@ -68,10 +68,11 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     // 1st argument is the pin
     mp_obj_t pin_obj = args[0];
     assert_pin(pin_obj, false);
+    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
+    assert_pin_free(pin);
 
     touchio_touchin_obj_t *self = m_new_obj(touchio_touchin_obj_t);
     self->base.type = &touchio_touchin_type;
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
     common_hal_touchio_touchin_construct(self, pin);
 
     return (mp_obj_t) self;
@@ -87,6 +88,12 @@ STATIC mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_deinit_obj, touchio_touchin_deinit);
+
+STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
+    if (common_hal_touchio_touchin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
 
 //|   .. method:: __enter__()
 //|
@@ -114,7 +121,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, t
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_touchio_touchin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get_value);
@@ -133,7 +140,7 @@ const mp_obj_property_t touchio_touchin_value_obj = {
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_raw_value(self));
 }
 
@@ -158,7 +165,7 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_threshold(self));
 }
 
@@ -166,7 +173,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_threshold_obj, touchio_touchin_obj
 
 STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t threshold_obj) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     uint32_t new_threshold = mp_obj_get_int(threshold_obj);
     if (new_threshold < 0 || new_threshold > UINT16_MAX) {
         // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.

@@ -107,9 +107,9 @@ endif
 
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
-# pre-define USERMOD variables as expanded so that variables are immediate 
+# pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-SRC_USERMOD := 
+SRC_USERMOD :=
 CFLAGS_USERMOD :=
 LDFLAGS_USERMOD :=
 $(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
@@ -343,10 +343,23 @@ $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
+ifndef SUPEROPT_GC
+  SUPEROPT_GC = 1
+endif
+
+ifeq ($(SUPEROPT_GC),1)
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
+endif
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
+ifndef SUPEROPT_VM
+  SUPEROPT_VM = 1
+endif
+
+ifeq ($(SUPEROPT_VM),1)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
+endif
+
 # Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch

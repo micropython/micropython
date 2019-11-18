@@ -27,11 +27,8 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define FEATHER52840
-
 #define MICROPY_HW_BOARD_NAME       "Particle Boron"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "Particle Boron"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P1_12)
 

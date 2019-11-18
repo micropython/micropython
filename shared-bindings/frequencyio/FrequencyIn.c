@@ -109,6 +109,12 @@ STATIC mp_obj_t frequencyio_frequencyin_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_deinit_obj, frequencyio_frequencyin_deinit);
 
+STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
+    if (common_hal_frequencyio_frequencyin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -133,7 +139,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj,
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     common_hal_frequencyio_frequencyin_pause(self);
     return mp_const_none;
@@ -146,7 +152,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequen
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     common_hal_frequencyio_frequencyin_resume(self);
     return mp_const_none;
@@ -160,7 +166,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_freque
 
 STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     common_hal_frequencyio_frequencyin_clear(self);
     return mp_const_none;
@@ -178,7 +184,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequen
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_frequencyio_frequencyin_get_capture_period(self));
 }
@@ -186,7 +192,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequency_get_capture_period_obj, frequenc
 
 STATIC mp_obj_t frequencyio_frequencyin_obj_set_capture_period(mp_obj_t self_in, mp_obj_t capture_period) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     common_hal_frequencyio_frequencyin_set_capture_period(self, mp_obj_get_int(capture_period));
     return mp_const_none;
@@ -206,7 +212,7 @@ const mp_obj_property_t frequencyio_frequencyin_capture_period_obj = {
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_frequencyio_frequencyin_deinited(self));
+    check_for_deinit(self);
 
     //return MP_OBJ_NEW_SMALL_INT(common_hal_frequencyio_frequencyin_get_item(self));
     return mp_obj_new_int_from_float(common_hal_frequencyio_frequencyin_get_item(self));

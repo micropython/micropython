@@ -29,8 +29,20 @@
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
+#endif
+
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
+
+#if CIRCUITPY_AUDIOPWMIO
+#include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#include "supervisor/shared/bluetooth.h"
 #endif
 
 static bool running_background_tasks = false;
@@ -47,9 +59,19 @@ void run_background_tasks(void) {
     running_background_tasks = true;
     filesystem_background();
     usb_background();
+#if CIRCUITPY_AUDIOPWMIO
+    audiopwmout_background();
+#endif
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_background();
+#endif
 
-    #ifdef CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+#if CIRCUITPY_BLEIO
+    supervisor_bluetooth_background();
+#endif
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_background();
     #endif
     running_background_tasks = false;
 

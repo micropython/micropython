@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import os
 import sys
 import subprocess
@@ -6,23 +8,16 @@ import build_board_info as build_info
 import time
 
 for port in build_info.SUPPORTED_PORTS:
-    result = subprocess.run("rm -rf ../ports/{}/build*".format(port), shell=True)
-
-ROSIE_SETUPS = ["rosie-ci"]
-rosie_ok = {}
-for rosie in ROSIE_SETUPS:
-    rosie_ok[rosie] = True
+    result = subprocess.run("rm -rf ../ports/{port}/build*".format(port=port), shell=True)
 
 PARALLEL = "-j 5"
-travis = False
-if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
+if "GITHUB_ACTION" in os.environ:
     PARALLEL="-j 2"
-    travis = True
 
 all_boards = build_info.get_board_mapping()
 build_boards = list(all_boards.keys())
-if "TRAVIS_BOARDS" in os.environ:
-    build_boards = os.environ["TRAVIS_BOARDS"].split()
+if "BOARDS" in os.environ:
+    build_boards = os.environ["BOARDS"].split()
 
 sha, version = build_info.get_version_info()
 
@@ -37,7 +32,25 @@ for board in build_boards:
         bin_directory = "../bin/{board}/{language}".format(board=board, language=language)
         os.makedirs(bin_directory, exist_ok=True)
         start_time = time.monotonic()
-        make_result = subprocess.run("make -C ../ports/" + board_info["port"] + " TRANSLATION=" + language + " BOARD=" + board, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        # Normally different language builds are all done based on the same set of compiled sources.
+        # But sometimes a particular language needs to be built from scratch, if, for instance,
+        # CFLAGS_INLINE_LIMIT is set for a particular language to make it fit.
+        clean_build_check_result = subprocess.run(
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} check-release-needs-clean-build | fgrep 'RELEASE_NEEDS_CLEAN_BUILD = 1'".format(
+                port = board_info["port"], language=language, board=board),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        clean_build = clean_build_check_result.returncode == 0
+
+        build_dir = "build-{board}".format(board=board)
+        if clean_build:
+            build_dir += "-{language}".format(language=language)
+
+        make_result = subprocess.run(
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build}".format(
+                port = board_info["port"], language=language, board=board, build=build_dir),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
         build_duration = time.monotonic() - start_time
         success = "\033[32msucceeded\033[0m"
         if make_result.returncode != 0:
@@ -47,11 +60,14 @@ for board in build_boards:
         other_output = ""
 
         for extension in board_info["extensions"]:
-            temp_filename = "../ports/{port}/build-{board}/firmware.{extension}".format(port=board_info["port"], board=board, extension=extension)
+            temp_filename = "../ports/{port}/{build}/firmware.{extension}".format(
+                port=board_info["port"], build=build_dir, extension=extension)
             for alias in board_info["aliases"] + [board]:
-                bin_directory = "../bin/{alias}/{language}".format(alias=alias, language=language)
+                bin_directory = "../bin/{alias}/{language}".format(
+                    alias=alias, language=language)
                 os.makedirs(bin_directory, exist_ok=True)
-                final_filename = "adafruit-circuitpython-{alias}-{language}-{version}.{extension}".format(alias=alias, language=language, version=version, extension=extension)
+                final_filename = "adafruit-circuitpython-{alias}-{language}-{version}.{extension}".format(
+                    alias=alias, language=language, version=version, extension=extension)
                 final_filename = os.path.join(bin_directory, final_filename)
                 try:
                     shutil.copyfile(temp_filename, final_filename)
@@ -60,23 +76,14 @@ for board in build_boards:
                     if exit_status == 0:
                         exit_status = 1
 
-        if travis:
-            print('travis_fold:start:adafruit-bins-{}-{}\\r'.format(language, board))
-        print("Build {} for {} took {:.2f}s and {}".format(board, language, build_duration, success))
-        if make_result.returncode != 0:
-            print(make_result.stdout.decode("utf-8"))
-            print(other_output)
-        # Only upload to Rosie if its a pull request.
-        if travis:
-            for rosie in ROSIE_SETUPS:
-                if not rosie_ok[rosie]:
-                    break
-                print("Uploading to https://{rosie}.ngrok.io/upload/{sha}".format(rosie=rosie, sha=sha))
-                #curl -F "file=@$final_filename" https://$rosie.ngrok.io/upload/$sha
-        if travis:
-            print('travis_fold:end:adafruit-bins-{}-{}\\r'.format(language, board))
+        print("Build {board} for {language}{clean_build} took {build_duration:.2f}s and {success}".format(
+            board=board, language=language, clean_build=(" (clean_build)" if clean_build else ""),
+            build_duration=build_duration, success=success))
 
-        # Flush so travis will see something before 10 minutes has passed.
+        print(make_result.stdout.decode("utf-8"))
+        print(other_output)
+
+        # Flush so we will see something before 10 minutes has passed.
         print(flush=True)
 
 sys.exit(exit_status)

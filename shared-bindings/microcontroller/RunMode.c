@@ -31,23 +31,29 @@
 //| :class:`RunMode` -- run state of the microcontroller
 //| =============================================================
 //|
-//| .. class:: microcontroller.RunMode
+//| .. class:: RunMode()
 //|
 //|     Enum-like class to define the run mode of the microcontroller and
 //|     CircuitPython.
 //|
-//|     .. data:: NORMAL
+//|     .. attribute:: NORMAL
 //|
 //|       Run CircuitPython as normal.
 //|
-//|     .. data:: SAFE_MODE
+//|       :type microcontroller.RunMode:
+//|
+//|     .. attribute:: SAFE_MODE
 //|
 //|       Run CircuitPython in safe mode. User code will not be run and the
 //|       file system will be writeable over USB.
 //|
-//|     .. data:: BOOTLOADER
+//|       :type microcontroller.RunMode:
+//|
+//|     .. attribute:: BOOTLOADER
 //|
 //|       Run the bootloader.
+//|
+//|       :type microcontroller.RunMode:
 //|
 const mp_obj_type_t mcu_runmode_type;
 

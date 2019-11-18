@@ -3,7 +3,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
-#define CIRCUITPY_BITBANG_APA102
 #define MICROPY_HW_APA102_MOSI   (&pin_PA01)
 #define MICROPY_HW_APA102_SCK    (&pin_PA00)
 

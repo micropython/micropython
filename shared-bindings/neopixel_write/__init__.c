@@ -55,11 +55,11 @@
 //|   pixel_off = bytearray([0, 0, 0])
 //|   neopixel_write.neopixel_write(pin, pixel_off)
 //|
-//| .. method:: neopixel_write.neopixel_write(digitalinout, buf)
+//| .. function:: neopixel_write(digitalinout, buf)
 //|
 //|   Write buf out on the given DigitalInOut.
 //|
-//|   :param ~digitalio.DigitalInOut gpio: the DigitalInOut to output with
+//|   :param ~digitalio.DigitalInOut digitalinout: the DigitalInOut to output with
 //|   :param bytearray buf: The bytes to clock out. No assumption is made about color order
 //|
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {

@@ -46,7 +46,7 @@
 //| =================================================
 //|
 //|
-//| .. class:: UART(tx, rx, \*, baudrate=9600, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
+//| .. class:: UART(tx, rx, *, baudrate=9600, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
 //|
 //|   A common bidirectional serial protocol that uses an an agreed upon speed
 //|   rather than a shared clock line.
@@ -137,6 +137,12 @@ STATIC mp_obj_t busio_uart_obj_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_deinit_obj, busio_uart_obj_deinit);
 
+STATIC void check_for_deinit(busio_uart_obj_t *self) {
+    if (common_hal_busio_uart_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -196,7 +202,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     byte *buf = buf_in;
 
     // make sure we want at least 1 char
@@ -209,7 +215,7 @@ STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size,
 
 STATIC mp_uint_t busio_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     const byte *buf = buf_in;
 
     return common_hal_busio_uart_write(self, buf, size, errcode);
@@ -217,7 +223,7 @@ STATIC mp_uint_t busio_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_
 
 STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
         mp_uint_t flags = arg;
@@ -241,14 +247,14 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
 //|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_get_baudrate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_baudrate_obj, busio_uart_obj_get_baudrate);
 
 STATIC mp_obj_t busio_uart_obj_set_baudrate(mp_obj_t self_in, mp_obj_t baudrate) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     common_hal_busio_uart_set_baudrate(self, mp_obj_get_int(baudrate));
     return mp_const_none;
 }
@@ -268,7 +274,7 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
 //|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_rx_characters_available(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_in_waiting_obj, busio_uart_obj_get_in_waiting);
@@ -286,13 +292,13 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
 //|
 STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    check_for_deinit(self);
     common_hal_busio_uart_clear_rx_buffer(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_obj_reset_input_buffer);
 
-//| .. class:: busio.UART.Parity
+//| .. class:: busio.UART.Parity()
 //|
 //|     Enum-like class to define the parity used to verify correct data transfer.
 //|

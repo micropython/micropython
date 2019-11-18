@@ -68,6 +68,11 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
+mp_obj_t mp_obj_new_list_from_iter(mp_obj_t iterable) {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    return list_extend_from_iter(list, iterable);
+}
+
 STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
     mp_arg_check_num(n_args, kw_args, 0, 1, false);
@@ -340,7 +345,7 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     return mp_const_none;
 }
 
-STATIC mp_obj_t list_clear(mp_obj_t self_in) {
+mp_obj_t mp_obj_list_clear(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     self->len = 0;
@@ -418,7 +423,7 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_extend_obj, list_extend);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, mp_obj_list_clear);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);

@@ -142,11 +142,12 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
             break;
         #endif
-        default:
-            // rc->kind should always be set and BYTECODE is the only remaining case
-            assert(rc->kind == MP_CODE_BYTECODE);
+        case MP_CODE_BYTECODE:
             fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.bytecode, rc->data.u_byte.const_table);
             break;
+        default:
+            // All other kinds are invalid.
+            mp_raise_RuntimeError(translate("Corrupt raw code"));
     }
 
     // check for generator functions and if so wrap in generator object

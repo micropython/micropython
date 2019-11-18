@@ -37,9 +37,7 @@ void sd_mutex_acquire_check(nrf_mutex_t* p_mutex) {
 
 void sd_mutex_acquire_wait(nrf_mutex_t* p_mutex) {
     while (sd_mutex_acquire(p_mutex) == NRF_ERROR_SOC_MUTEX_ALREADY_TAKEN) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 

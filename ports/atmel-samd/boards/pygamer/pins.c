@@ -43,6 +43,9 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_MISO),  MP_ROM_PTR(&pin_PB22) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI),  MP_ROM_PTR(&pin_PB23) },
 
+    // SDCS, dup of D4
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PA14) },    
+
     // Special named pins
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL),  MP_ROM_PTR(&pin_PA15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT),  MP_ROM_PTR(&pin_PB04) },
@@ -60,8 +63,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_RST),  MP_ROM_PTR(&pin_PA00) },
     { MP_ROM_QSTR(MP_QSTR_TFT_CS), MP_ROM_PTR(&pin_PB12) },
     { MP_ROM_QSTR(MP_QSTR_TFT_DC), MP_ROM_PTR(&pin_PB05) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOYSTICK_X),  MP_ROM_PTR(&pin_PB06) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOYSTICK_Y),  MP_ROM_PTR(&pin_PB07) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOYSTICK_X),  MP_ROM_PTR(&pin_PB07) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOYSTICK_Y),  MP_ROM_PTR(&pin_PB06) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },

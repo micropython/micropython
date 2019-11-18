@@ -599,6 +599,7 @@ extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
+extern const mp_obj_type_t mp_type_MpyError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
@@ -646,6 +647,7 @@ mp_obj_t mp_obj_new_str(const char* data, size_t len);
 mp_obj_t mp_obj_new_str_via_qstr(const char* data, size_t len);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len);
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, void *items);
 mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
@@ -667,6 +669,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
+mp_obj_t mp_obj_new_list_from_iter(mp_obj_t iterable);
 mp_obj_t mp_obj_new_dict(size_t n_args);
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
@@ -762,6 +765,7 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
+mp_obj_t mp_obj_list_clear(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
@@ -817,6 +821,10 @@ qstr mp_obj_code_get_name(const byte *code_info);
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
+
+// Generic iterator that uses unary op and subscr to iterate over a native type. It will be slower
+// than a custom iterator but applies broadly.
+mp_obj_t mp_obj_new_generic_iterator(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // module
 typedef struct _mp_obj_module_t {

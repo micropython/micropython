@@ -43,7 +43,7 @@
 //| :class:`Direction` -- defines the direction of a digital pin
 //| =============================================================
 //|
-//| .. class:: digitalio.DigitalInOut.Direction
+//| .. class:: Direction
 //|
 //|     Enum-like class to define which direction the digital values are
 //|     going.

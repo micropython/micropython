@@ -106,6 +106,21 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     return self;
 }
 
+//|   .. method:: reset()
+//|
+//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|     is available.
+//|
+STATIC mp_obj_t displayio_parallelbus_obj_reset(mp_obj_t self_in) {
+    displayio_parallelbus_obj_t *self = self_in;
+
+    if (!common_hal_displayio_parallelbus_reset(self)) {
+        mp_raise_RuntimeError(translate("no reset pin available"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_parallelbus_reset_obj, displayio_parallelbus_obj_reset);
+
 //|   .. method:: send(command, data)
 //|
 //|     Sends the given command value followed by the full set of data. Display state, such as
@@ -122,12 +137,10 @@ STATIC mp_obj_t displayio_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_o
 
     // Wait for display bus to be available.
     while (!common_hal_displayio_parallelbus_begin_transaction(self)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
-    common_hal_displayio_parallelbus_send(self, true, &command, 1);
-    common_hal_displayio_parallelbus_send(self, false, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    common_hal_displayio_parallelbus_send(self, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, &command, 1);
+    common_hal_displayio_parallelbus_send(self, DISPLAY_DATA, CHIP_SELECT_UNTOUCHED, ((uint8_t*) bufinfo.buf), bufinfo.len);
     common_hal_displayio_parallelbus_end_transaction(self);
 
     return mp_const_none;
@@ -135,6 +148,7 @@ STATIC mp_obj_t displayio_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_o
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_parallelbus_send_obj, displayio_parallelbus_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_parallelbus_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_parallelbus_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_parallelbus_send_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_parallelbus_locals_dict, displayio_parallelbus_locals_dict_table);

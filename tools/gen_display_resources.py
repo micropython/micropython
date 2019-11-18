@@ -29,7 +29,6 @@ class BitmapStub:
         self.rows[y] = bytes(row)
 
 f = bitmap_font.load_font(args.font, BitmapStub)
-real_bb = [0, 0]
 
 # Load extra characters from the sample file.
 sample_characters = set()
@@ -61,13 +60,11 @@ for c in all_characters:
         print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
         continue
-    x, y, dx, dy = g["bounds"]
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
-    real_bb[0] = max(real_bb[0], x - dx)
-    real_bb[1] = max(real_bb[1], y - dy)
 
-tile_x, tile_y = real_bb
+x, y, dx, dy = f.get_bounding_box()
+tile_x, tile_y = x - dx, y - dy
 total_bits = tile_x * len(all_characters)
 total_bits += 32 - total_bits % 32
 bytes_per_row = total_bits // 8
@@ -101,14 +98,23 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-uint32_t terminal_transparency[1] = {0x00000000};
-
-// These colors are RGB 565 with the bytes swapped.
-uint32_t terminal_colors[1] = {0xffff0000};
+_displayio_color_t terminal_colors[2] = {
+    {
+        .rgb888 = 0x000000,
+        .rgb565 = 0x0000,
+        .luma = 0x00,
+        .chroma = 0
+    },
+    {
+        .rgb888 = 0xffffff,
+        .rgb565 = 0xffff,
+        .luma = 0xff,
+        .chroma = 0
+    },
+};
 
 displayio_palette_t supervisor_terminal_color = {
     .base = {.type = &displayio_palette_type },
-    .opaque = terminal_transparency,
     .colors = terminal_colors,
     .color_count = 2,
     .needs_refresh = false
@@ -122,16 +128,22 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .pixel_shader = &supervisor_terminal_color,
     .x = 16,
     .y = 0,
+    .pixel_width = {1},
+    .pixel_height = {2},
     .bitmap_width_in_tiles = {0},
+    .tiles_in_bitmap = {0},
     .width_in_tiles = 1,
     .height_in_tiles = 1,
-    .total_width = {1},
-    .total_height = {2},
     .tile_width = {1},
     .tile_height = {2},
     .tiles = NULL,
-    .needs_refresh = false,
-    .inline_tiles = false
+    .partial_change = false,
+    .full_change = false,
+    .hidden = false,
+    .hidden_by_parent = false,
+    .moved = false,
+    .inline_tiles = false,
+    .in_group = true
 }};
 """.format(len(all_characters), tile_x, tile_y))
 
@@ -149,7 +161,7 @@ c_file.write("""\
 """)
 
 c_file.write("""\
-const displayio_bitmap_t supervisor_terminal_font_bitmap = {{
+displayio_bitmap_t supervisor_terminal_font_bitmap = {{
     .base = {{.type = &displayio_bitmap_type }},
     .width = {},
     .height = {},

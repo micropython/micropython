@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-17 11:17-0700\n"
+"POT-Creation-Date: 2019-10-21 19:50-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -52,7 +52,7 @@ msgstr "%q indeks wala sa sakop"
 msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
@@ -220,15 +220,14 @@ msgstr "3-arg pow() hindi suportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 
-#: shared-bindings/bleio/Address.c
-#, c-format
-msgid "Address is not %d bytes long or is in wrong format"
-msgstr ""
-
-#: shared-bindings/bleio/Address.c
+#: shared-bindings/_bleio/Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
+
+#: shared-bindings/_bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -258,10 +257,15 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr ""
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
@@ -303,6 +307,10 @@ msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
 
+#: shared-module/displayio/Display.c
+msgid "Below minimum frame rate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Ang bit clock at word select dapat makibahagi sa isang clock unit"
@@ -315,6 +323,10 @@ msgstr "Bit depth ay dapat multiple ng 8."
 msgid "Both pins must support hardware interrupts"
 msgstr "Ang parehong mga pin ay dapat na sumusuporta sa hardware interrupts"
 
+#: shared-bindings/displayio/Display.c
+msgid "Brightness must be 0-1.0"
+msgstr ""
+
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
 msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
@@ -323,10 +335,28 @@ msgstr "Ang liwanag ay dapat sa gitna ng 0 o 255"
 msgid "Brightness not adjustable"
 msgstr ""
 
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
+msgstr ""
+
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Mali ang size ng buffer. Dapat %d bytes."
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is not a bytearray."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is too small"
+msgstr ""
+
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -338,7 +368,7 @@ msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 msgid "Bus pin %d is already in use"
 msgstr "Ginagamit na ang DAC"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 #, fuzzy
 msgid "Byte buffer must be 16 bytes."
 msgstr "buffer ay dapat bytes-like object"
@@ -347,26 +377,18 @@ msgstr "buffer ay dapat bytes-like object"
 msgid "Bytes must be between 0 and 255."
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
+#: py/objtype.c
+msgid "Call super().__init__() before accessing native object."
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Can not use dotstar with %s"
 msgstr ""
 
-#: shared-bindings/bleio/Device.c
-msgid "Can't add services in Central mode"
-msgstr "Hindi maarang maglagay ng service sa Central mode"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't advertise in Central mode"
-msgstr "Hindi ma advertise habang nasa Central mode"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't change the name in Central mode"
-msgstr "Hindi mapalitan ang pangalan sa Central mode"
-
-#: shared-bindings/bleio/Device.c
-msgid "Can't connect in Peripheral mode"
-msgstr "Hindi maconnect sa Peripheral mode"
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+msgid "Can't set CCCD on local Characteristic"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -422,15 +444,7 @@ msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
 msgid "Cannot write without MOSI pin."
 msgstr "Hindi maaring isulat kapag walang MOSI pin."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr ""
-
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr ""
 
@@ -450,12 +464,30 @@ msgstr "Clock unit ginagamit"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
+#: shared-bindings/displayio/I2CDisplay.c
+msgid "Command must be 0-255"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr ""
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr ""
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, c-format
 msgid "Could not decode ble_uuid, err 0x%04x"
 msgstr ""
@@ -464,11 +496,11 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
 msgstr "Hindi ma-iallocate ang first buffer"
 
-#: shared-module/audioio/Mixer.c shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
 msgstr "Hindi ma-iallocate ang second buffer"
 
@@ -486,19 +518,13 @@ msgstr "Ginagamit na ang DAC"
 msgid "Data 0 pin must be byte aligned"
 msgstr "graphic ay dapat 2048 bytes ang haba"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Hindi makasya ang data sa loob ng advertisement packet"
-
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Data too large for the advertisement packet"
 msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -506,7 +532,16 @@ msgid "Destination capacity is smaller than destination_length."
 msgstr ""
 "Ang kapasidad ng destinasyon ay mas maliit kaysa sa destination_length."
 
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
+msgid "Display must have a 16 bit colorspace."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
@@ -515,6 +550,7 @@ msgid "Drive mode not used when direction is input."
 msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Ginagamit na ang EXTINT channel"
@@ -529,46 +565,53 @@ msgstr "May pagkakamali sa REGEX"
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/Descriptor.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Umasa ng %q"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected an Address"
+msgstr ""
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to acquire mutex"
-msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Failed initiate attribute read, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "Failed sending command."
+msgstr ""
+
+#: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Service.c
-#, fuzzy, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Service.c
+msgid "Failed to add characteristic, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to add service"
-msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#, c-format
+msgid "Failed to add descriptor, err 0x%04x"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -580,119 +623,104 @@ msgstr "Nabigong ilaan ang RX buffer"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, fuzzy
-msgid "Failed to change softdevice state"
-msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to change softdevice state, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to connect:"
-msgstr "Hindi makaconnect, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to continue scanning"
-msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: timeout"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Scanner.c
-#, fuzzy, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
+#: ports/nrf/common-hal/_bleio/Service.c
+msgid "Failed to create service, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to create mutex"
-msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
-
-#: ports/nrf/common-hal/bleio/Device.c
+#: ports/nrf/common-hal/_bleio/Connection.c
 #, fuzzy
 msgid "Failed to discover services"
 msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy
 msgid "Failed to get local address"
 msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy
 msgid "Failed to get softdevice state"
 msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
 msgid "Failed to notify or indicate attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "Failed to pair"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 #, fuzzy, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
 msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to read gatts value, err 0x%04x"
 msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, fuzzy, c-format
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 msgstr "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to release mutex"
-msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c ports/nrf/sd_mutex.c
+#: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to start advertising"
-msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to start advertising, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+#, c-format
+msgid "Failed to start connecting, error 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to start scanning"
-msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "Failed to start pairing, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Scanner.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 #, fuzzy, c-format
 msgid "Failed to start scanning, err 0x%04x"
 msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
-#: ports/nrf/common-hal/bleio/Device.c
-#, fuzzy
-msgid "Failed to stop advertising"
-msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to stop advertising, NRF_ERROR_%q"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#, c-format
+msgid "Failed to write CCCD, err 0x%04x"
+msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write attribute value, err 0x%04x"
 msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/__init__.c
 #, fuzzy, c-format
 msgid "Failed to write gatts value, err 0x%04x"
 msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
@@ -727,6 +755,11 @@ msgstr ""
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Function nangangailangan ng lock"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Group already used"
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
@@ -786,7 +819,7 @@ msgstr "Mali ang buffer size"
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid channel count"
 msgstr "Maling bilang ng channel"
 
@@ -794,11 +827,11 @@ msgstr "Maling bilang ng channel"
 msgid "Invalid direction."
 msgstr "Mali ang direksyon."
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
 msgstr "Mali ang file"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Mali ang format ng chunk size"
 
@@ -836,21 +869,37 @@ msgstr "Mali ang pins"
 msgid "Invalid polarity"
 msgstr "Mali ang polarity"
 
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Mali ang run mode."
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-module/_bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
 msgstr "Maling bilang ng voice"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS ng keyword arg ay dapat na id"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -900,8 +949,12 @@ msgstr "CircuitPython fatal na pagkakamali.\n"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 
-#: shared-bindings/displayio/Display.c
-msgid "Must be a Group subclass."
+#: shared-bindings/displayio/Group.c
+msgid "Must be a %q subclass."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
@@ -937,10 +990,18 @@ msgstr "Walang libreng GCLKs"
 msgid "No hardware random available"
 msgstr "Walang magagamit na hardware random"
 
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+msgid "No hardware support on clk pin"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Walang support sa hardware ang pin"
+
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "No space left on device"
@@ -950,12 +1011,14 @@ msgstr ""
 msgid "No such file/directory"
 msgstr "Walang file/directory"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: ports/nrf/common-hal/_bleio/__init__.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Hindi maka connect sa AP"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Hindi playing"
 
@@ -983,8 +1046,8 @@ msgstr ""
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
-"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
-"given"
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -1024,6 +1087,14 @@ msgstr ""
 msgid "Plus any modules on the filesystem\n"
 msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
 
+#: shared-bindings/ps2io/Ps2.c
+msgid "Pop from an empty Ps2 buffer"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
@@ -1060,6 +1131,10 @@ msgstr "Basahin-lamang mode"
 msgid "Read-only object"
 msgstr "Basahin-lamang"
 
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Hindi supportado ang kanang channel"
@@ -1080,14 +1155,19 @@ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1102,11 +1182,6 @@ msgstr "Slice at value iba't ibang haba."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
-
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr ""
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1136,6 +1211,12 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
+"The `microcontroller` module was used to boot into safe mode. Press reset to "
+"exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
 "The microcontroller's power dipped. Please make sure your power supply "
 "provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
@@ -1153,19 +1234,19 @@ msgstr ""
 "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 "ulit para lumabas sa safe mode.\n"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr "Ang bits_per_sample ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Ang channel count ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "Ang sample rate ng sample ay hindi tugma sa mixer"
 
-#: shared-module/audioio/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Ang signedness ng sample hindi tugma sa mixer"
 
@@ -1173,8 +1254,12 @@ msgstr "Ang signedness ng sample hindi tugma sa mixer"
 msgid "Tile height must exactly divide bitmap height"
 msgstr ""
 
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile index out of bounds"
+msgstr ""
+
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile indices must be 0 - 255"
+msgid "Tile value out of bounds"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
@@ -1189,11 +1274,13 @@ msgstr "Para lumabas, paki-reset ang board na wala ang "
 msgid "Too many channels in sample."
 msgstr "Sobra ang channels sa sample."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Too many display busses"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Too many displays"
 msgstr ""
 
@@ -1213,15 +1300,15 @@ msgstr "Busy ang USB"
 msgid "USB Error"
 msgstr "May pagkakamali ang USB"
 
-#: shared-bindings/bleio/UUID.c
-msgid "UUID integer value not in range 0 to 0xffff"
+#: shared-bindings/_bleio/UUID.c
+msgid "UUID integer value must be 0-0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 
@@ -1229,6 +1316,11 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
+
+#: shared-module/displayio/I2CDisplay.c
+#, c-format
+msgid "Unable to find I2C Display at %x"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1247,7 +1339,7 @@ msgstr ""
 msgid "Unable to write to nvm."
 msgstr "Hindi ma i-sulat sa NVM."
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
 msgstr "hindi inaasahang indent"
@@ -1261,12 +1353,12 @@ msgstr ""
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
-#: shared-module/displayio/Display.c
+#: shared-module/displayio/display_core.c
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Hindi supportadong tipo ng bitmap"
 
-#: shared-module/audioio/WaveFile.c
+#: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
@@ -1278,15 +1370,21 @@ msgstr "Hindi sinusuportahang operasyon"
 msgid "Unsupported pull value."
 msgstr "Hindi suportado ang pull value."
 
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
-
-#: shared-module/audioio/Mixer.c
-msgid "Voice index too high"
-msgstr "Index ng Voice ay masyadong mataas"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -1376,10 +1474,6 @@ msgstr "array/bytes kinakailangan sa kanang bahagi"
 msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr ""
-
 #: py/builtinevex.c
 msgid "bad compile mode"
 msgstr "masamang mode ng compile"
@@ -1408,7 +1502,7 @@ msgstr "bits ay dapat 7, 8 o 9"
 msgid "bits must be 8"
 msgstr "bits ay dapat walo (8)"
 
-#: shared-bindings/audioio/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
 
@@ -1421,7 +1515,7 @@ msgstr "branch wala sa range"
 msgid "buf is too small. need %d bytes"
 msgstr ""
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer ay dapat bytes-like object"
 
@@ -1639,10 +1733,6 @@ msgstr "hindi maaring isagawa ang relative import"
 msgid "casting"
 msgstr "casting"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr ""
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "masyadong maliit ang buffer"
@@ -1795,7 +1885,8 @@ msgstr "dagdag na keyword argument na ibinigay"
 msgid "extra positional arguments given"
 msgstr "dagdag na positional argument na ibinigay"
 
-#: shared-bindings/audioio/WaveFile.c shared-bindings/displayio/OnDiskBitmap.c
+#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file ay dapat buksan sa byte mode"
 
@@ -1925,8 +2016,9 @@ msgstr "int() arg 2 ay dapat >=2 at <= 36"
 msgid "integer required"
 msgstr "kailangan ng int"
 
-#: ports/nrf/common-hal/bleio/Broadcaster.c
-msgid "interval not in range 0.0020 to 10.24"
+#: shared-bindings/_bleio/Adapter.c
+#, c-format
+msgid "interval must be in range %s-%s"
 msgstr ""
 
 #: extmod/machine_i2c.c
@@ -2022,6 +2114,10 @@ msgstr "ang label ay na-define ulit"
 msgid "length argument not allowed for this type"
 msgstr "length argument ay walang pahintulot sa ganitong type"
 
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
+
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "lhs at rhs ay dapat magkasundo"
@@ -2049,6 +2145,12 @@ msgstr "masyadong maliit ang buffer map"
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2095,11 +2197,6 @@ msgstr "dapat gumamit ng keyword argument para sa key function"
 msgid "name '%q' is not defined"
 msgstr "name '%q' ay hindi defined"
 
-#: shared-bindings/bleio/Peripheral.c
-#, fuzzy
-msgid "name must be a string"
-msgstr "ang keywords dapat strings"
-
 #: py/runtime.c
 msgid "name not defined"
 msgstr "name hindi na define"
@@ -2141,9 +2238,18 @@ msgstr "no binding para sa nonlocal, nahanap"
 msgid "no module named '%q'"
 msgstr "walang module na '%q'"
 
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
+msgstr ""
+
 #: py/runtime.c shared-bindings/_pixelbuf/__init__.c
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
+
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "non-UUID found in service_uuids_whitelist"
+msgstr ""
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
@@ -2161,7 +2267,7 @@ msgstr "non-keyword arg sa huli ng */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "non-keyword arg sa huli ng keyword arg"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr ""
 
@@ -2202,7 +2308,7 @@ msgstr "object ay hindi iterator"
 msgid "object not callable"
 msgstr "hindi matatawag ang object"
 
-#: py/sequence.c
+#: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
 msgstr "object wala sa sequence"
 
@@ -2227,6 +2333,14 @@ msgstr "odd-length string"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "wala sa sakop ang address"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2338,7 +2452,7 @@ msgstr "return umasa ng '%q' pero ang nakuha ay ‘%q’"
 msgid "rsplit(None,n)"
 msgstr "rsplit(None,n)"
 
-#: shared-bindings/audioio/RawSample.c
+#: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
@@ -2357,10 +2471,6 @@ msgstr "puno na ang schedule stack"
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "script kompilasyon hindi supportado"
-
-#: shared-bindings/bleio/Peripheral.c
-msgid "services includes an object that is not a Service"
-msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2460,10 +2570,6 @@ msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 msgid "threshold must be in the range 0-65536"
 msgstr "ang threshold ay dapat sa range 0-65536"
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "tile index out of bounds"
-msgstr ""
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
@@ -2476,7 +2582,7 @@ msgstr "time.struct_time() kumukuha ng 1 argument"
 msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr "timeout >100 (units ay seconds, hindi na msecs)"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "timeout must be >= 0.0"
 msgstr "bits ay dapat walo (8)"
@@ -2621,8 +2727,17 @@ msgstr "hindi sinusuportahang type para sa operator"
 msgid "unsupported types for %q: '%s', '%s'"
 msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
 
+#: py/objint.c
+#, c-format
+msgid "value must fit in %d byte(s)"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "window must be <= interval"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -2661,6 +2776,18 @@ msgstr "zero step"
 #~ msgid "C-level assert"
 #~ msgstr "C-level assert"
 
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "Hindi maarang maglagay ng service sa Central mode"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "Hindi ma advertise habang nasa Central mode"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "Hindi mapalitan ang pangalan sa Central mode"
+
+#~ msgid "Can't connect in Peripheral mode"
+#~ msgstr "Hindi maconnect sa Peripheral mode"
+
 #~ msgid "Cannot connect to AP"
 #~ msgstr "Hindi maka connect sa AP"
 
@@ -2672,6 +2799,10 @@ msgstr "zero step"
 
 #~ msgid "Cannot update i/f status"
 #~ msgstr "Hindi ma-update i/f status"
+
+#, fuzzy
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #~ msgid "Don't know how to pass object to native function"
 #~ msgstr "Hindi alam ipasa ang object sa native function"
@@ -2686,12 +2817,72 @@ msgstr "zero step"
 #~ msgstr "Pagkakamali sa ffi_prep_cif"
 
 #, fuzzy
+#~ msgid "Failed to acquire mutex"
+#~ msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to add characteristic, err 0x%04x"
+#~ msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to add service"
+#~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to change softdevice state"
+#~ msgstr "Nabigo sa pagbago ng softdevice state, error: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to connect:"
+#~ msgstr "Hindi makaconnect, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to continue scanning"
+#~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to continue scanning, err 0x%04x"
+#~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
+
+#, fuzzy
+#~ msgid "Failed to create mutex"
+#~ msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
+
+#, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
 
 #, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to release mutex"
+#~ msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to start advertising"
+#~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to start advertising, err 0x%04x"
+#~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to start scanning"
+#~ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
+
+#, fuzzy
+#~ msgid "Failed to stop advertising"
+#~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
+
+#, fuzzy, c-format
+#~ msgid "Failed to stop advertising, err 0x%04x"
+#~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
 #~ msgid "Function requires lock."
 #~ msgstr "Kailangan ng lock ang function."
@@ -2771,6 +2962,9 @@ msgstr "zero step"
 #~ msgstr ""
 #~ "Gamitin ang esptool upang burahin ang flash at muling i-upload ang Python"
 
+#~ msgid "Voice index too high"
+#~ msgstr "Index ng Voice ay masyadong mataas"
+
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
@@ -2834,6 +3028,10 @@ msgstr "zero step"
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr ""
 #~ "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+
+#, fuzzy
+#~ msgid "name must be a string"
+#~ msgstr "ang keywords dapat strings"
 
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "hindi tamang ADC Channel: %d"

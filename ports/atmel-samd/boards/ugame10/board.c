@@ -74,12 +74,12 @@ void board_init(void) {
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     busio_spi_obj_t *spi = common_hal_board_create_spi();
-    common_hal_busio_spi_configure(spi, 24000000, 0, 0, 8);
     common_hal_displayio_fourwire_construct(bus,
         spi,
         &pin_PA09, // Command or data
         &pin_PA08, // Chip select
-        NULL); // Reset
+        NULL, // Reset
+        24000000);
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -91,6 +91,10 @@ void board_init(void) {
         2, // row start
         0, // rotation
         16, // Color depth
+        false, // grayscale
+        false, // pixels in byte share row. Only used with depth < 8
+        1, // bytes per cell. Only valid for depths < 8
+        false, // reverse_pixels_in_byte. Only valid for depths < 8
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -98,10 +102,13 @@ void board_init(void) {
         display_init_sequence,
         sizeof(display_init_sequence),
         NULL,
+        NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness
         false, // auto_brightness
         false, // single_byte_bounds
-        false); // data as commands
+        false, // data as commands
+        true, // auto_refresh
+        60); // native_frames_per_second
 }
 
 bool board_requests_safe_mode(void) {

@@ -31,6 +31,11 @@ class AdafruitBBCodeRenderer:
     def link(self, link, title, text):
         return "[url={}]{}[/url]".format(link, text)
 
+    def autolink(self, link, is_email):
+        if not is_email:
+            return "[url={}]{}[/url]".format(link, link)
+        return link
+
     def header(self, text, level, raw):
         return "[b][size=150]{}[/size][/b]\n".format(text)
 

@@ -546,7 +546,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, self->n_args, self->n_args, false);
 
     void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
 

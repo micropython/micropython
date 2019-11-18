@@ -51,7 +51,7 @@ STATIC const mp_obj_type_t socket_type;
 
 //| .. currentmodule:: socket
 //|
-//| .. class:: socket(family, type, proto, ...)
+//| .. class:: socket(family, type, proto)
 //|
 //|   Create a new socket
 //|
@@ -248,7 +248,7 @@ STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_
     if (ret == -1) {
         mp_raise_OSError(_errno);
     }
-    return len;
+    return ret;
 }
 
 
@@ -257,7 +257,7 @@ STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_
 //|   Reads some bytes from the connected remote address, writing
 //|   into the provided buffer. If bufsize <= len(buffer) is given,
 //|   a maximum of bufsize bytes will be read into the buffer. If no
-//|   valid value is given for bufsize, the default is the length of 
+//|   valid value is given for bufsize, the default is the length of
 //|   the given buffer.
 //|
 //|   Suits sockets of type SOCK_STREAM
@@ -274,13 +274,14 @@ STATIC mp_obj_t socket_recv_into(size_t n_args, const mp_obj_t *args) {
     }
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    mp_int_t len;
+    mp_int_t len = bufinfo.len;
     if (n_args == 3) {
-        len = mp_obj_get_int(args[2]);
+        mp_int_t given_len = mp_obj_get_int(args[2]);
+        if (given_len < len) {
+            len = given_len;
+        }
     }
-    if (n_args == 2 || (size_t) len > bufinfo.len) {
-        len = bufinfo.len;
-    }
+
     mp_int_t ret = _socket_recv_into(self, (byte*)bufinfo.buf, len);
     return mp_obj_new_int_from_uint(ret);
 }

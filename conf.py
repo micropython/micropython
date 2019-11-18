@@ -13,6 +13,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import json
 import sys
 import os
 
@@ -24,7 +25,19 @@ from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
+import shared_bindings_matrix
+
 master_doc = 'docs/index'
+
+# Grab the JSON values to use while building the module support matrix
+# in 'shared-bindings/index.rst'
+
+#modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
+modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
+
+html_context = {
+    'support_matrix': modules_support_matrix
+}
 
 # -- General configuration ------------------------------------------------
 
@@ -40,7 +53,9 @@ extensions = [
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage'
+    'sphinx.ext.coverage',
+    'rstjinja',
+    'c2rst'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,8 +64,7 @@ templates_path = ['templates']
 # The suffix of source filenames.
 source_suffix = ['.rst', '.md', '.c', '.h']
 
-source_parsers = {'.md': CommonMarkParser,
-                  '.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
+source_parsers = {'.md': CommonMarkParser}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -84,6 +98,7 @@ version = release = '0.0.0'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
+                    ".git",
                     ".venv",
                     ".direnv",
                     "docs/README.md",
@@ -110,6 +125,7 @@ exclude_patterns = ["**/build*",
                     "ports/cc3200",
                     "ports/cc3200/FreeRTOS",
                     "ports/cc3200/hal",
+                    "ports/cxd56/spresense-exported-sdk",
                     "ports/esp32",
                     "ports/esp8266/boards",
                     "ports/esp8266/common-hal",
@@ -121,6 +137,9 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
+                    "ports/stm32f4/stm32f4",
+                    "ports/stm32f4/peripherals",
+                    "ports/stm32f4/ref",
                     "ports/pic16bit",
                     "ports/qemu-arm",
                     "ports/stm32",
@@ -350,3 +369,6 @@ texinfo_documents = [
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
+
+def setup(app):
+    app.add_stylesheet("customstyle.css")

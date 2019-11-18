@@ -36,12 +36,13 @@
 //|
 //| .. module:: rtc
 //|   :synopsis: Real Time Clock
-//|   :platform: SAMD21
+//|   :platform: SAMD21, SAMD51, nRF52
 //|
-//| The `rtc` module provides support for a Real Time Clock.
-//| It also backs the `time.time()` and `time.localtime()` functions using the onboard RTC if present.
+//| The `rtc` module provides support for a Real Time Clock. You can access and manage the
+//| RTC using :class:`rtc.RTC`. It also backs the :func:`time.time` and :func:`time.localtime`
+//| functions using the onboard RTC if present.
 //|
-//| Libraries
+//| Classes
 //|
 //| .. toctree::
 //|     :maxdepth: 3
@@ -63,10 +64,9 @@ mp_obj_t rtc_get_time_source_time(void) {
 
 //| .. function:: set_time_source(rtc)
 //|
-//|   Sets the rtc time source used by time.localtime().
-//|   The default is `rtc.RTC()`.
-//|
-//|   Example usage::
+//|   Sets the RTC time source used by :func:`time.localtime`.
+//|   The default is :class:`rtc.RTC`, but it's useful to use this to override the
+//|   time source for testing purposes. For example::
 //|
 //|     import rtc
 //|     import time

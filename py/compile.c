@@ -3207,7 +3207,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
-                for (uint j = 1; j < n_args; j++) {
+                for (int j = 1; j < n_args; j++) {
                     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
                         compile_syntax_error(comp, nodes[i], translate("'data' requires integer arguments"));
                         return;

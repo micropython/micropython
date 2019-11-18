@@ -48,7 +48,7 @@
 //| directly.
 //|
 
-//| .. function:: mount(filesystem, mount_path, \*, readonly=False)
+//| .. function:: mount(filesystem, mount_path, *, readonly=False)
 //|
 //|   Mounts the given filesystem object at the given path.
 //|
@@ -183,7 +183,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     //|     this property can only be set when the device is writable by the
     //|     microcontroller.
     //|
-    //|   .. method:: mkfs
+    //|   .. method:: mkfs()
     //|
     //|     Format the block device, deleting any data that may have been there
     //|
@@ -216,7 +216,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     //|
     //|     Don't call this directly, call `storage.mount`.
     //|
-    //|   .. method:: umount
+    //|   .. method:: umount()
     //|
     //|     Don't call this directly, call `storage.umount`.
     //|

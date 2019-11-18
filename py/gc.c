@@ -383,6 +383,10 @@ void gc_collect_start(void) {
     #endif
 }
 
+void gc_collect_ptr(void *ptr) {
+    gc_mark(ptr);
+}
+
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
@@ -505,7 +509,6 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
         gc_collect();
         collected = 1;
         GC_ENTER();
-        collected = true;
     }
     #endif
 

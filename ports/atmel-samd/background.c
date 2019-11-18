@@ -56,11 +56,11 @@ void run_background_tasks(void) {
     assert_heap_ok();
     running_background_tasks = true;
 
-    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
+    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
     audio_dma_background();
     #endif
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
 
     #if CIRCUITPY_NETWORK

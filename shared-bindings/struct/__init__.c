@@ -67,9 +67,9 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 
-//| .. function:: pack(fmt, v1, v2, ...)
+//| .. function:: pack(fmt, *values)
 //|
-//|   Pack the values v1, v2, ... according to the format string fmt.
+//|   Pack the values according to the format string fmt.
 //|   The return value is a bytes object encoding the values.
 //|
 
@@ -85,9 +85,9 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
-//| .. function:: pack_into(fmt, buffer, offset, v1, v2, ...)
+//| .. function:: pack_into(fmt, buffer, offset, *values)
 //|
-//|   Pack the values v1, v2, ... according to the format string fmt into a buffer
+//|   Pack the values according to the format string fmt into a buffer
 //|   starting at offset. offset may be negative to count from the end of buffer.
 //|
 
