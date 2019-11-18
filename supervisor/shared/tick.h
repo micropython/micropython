@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
+#ifndef __INCLUDED_SUPERVISOR_TICK_H
+#define __INCLUDED_SUPERVISOR_TICK_H
 
-#include "shared-bindings/time/__init__.h"
+#include <stdint.h>
+#include <stdatomic.h>
 
-#include "supervisor/shared/tick.h"
+extern void supervisor_tick(void);
+extern uint32_t supervisor_ticks_ms32(void);
+extern uint64_t supervisor_ticks_ms64(void);
 
-inline uint64_t common_hal_time_monotonic() {
-    return supervisor_ticks_ms64();
-}
-
-void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
-}
+#endif

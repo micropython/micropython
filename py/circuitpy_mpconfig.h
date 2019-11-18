@@ -32,6 +32,7 @@
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
 
 #include <stdint.h>
+#include <stdatomic.h>
 
 // This is CircuitPython.
 #define CIRCUITPY 1

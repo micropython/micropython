@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,53 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
-
-#include "shared-bindings/time/__init__.h"
-
 #include "supervisor/shared/tick.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/shared/autoreload.h"
 
-inline uint64_t common_hal_time_monotonic() {
-    return supervisor_ticks_ms64();
+static volatile uint64_t ticks_ms;
+
+#if CIRCUITPY_GAMEPAD
+#include "shared-module/gamepad/__init__.h"
+#endif
+
+#if CIRCUITPY_GAMEPADSHIFT
+#include "shared-module/gamepadshift/__init__.h"
+#endif
+
+#include "shared-bindings/microcontroller/__init__.h"
+
+void supervisor_tick(void) {
+
+    ticks_ms ++;
+
+
+#if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
+    filesystem_tick();
+#endif
+#ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    autoreload_tick();
+#endif
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+    if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
+        #if CIRCUITPY_GAMEPAD
+        gamepad_tick();
+        #endif
+        #if CIRCUITPY_GAMEPADSHIFT
+        gamepadshift_tick();
+        #endif
+    }
+#endif
 }
 
-void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
+uint64_t supervisor_ticks_ms64() {
+    uint64_t result;
+    common_hal_mcu_disable_interrupts();
+    result = ticks_ms;
+    common_hal_mcu_enable_interrupts();
+    return result;
+}
+
+uint32_t supervisor_ticks_ms32() {
+    return ticks_ms;
 }

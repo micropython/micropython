@@ -28,6 +28,7 @@
 #include "audio_dma.h"
 #include "tick.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include "py/runtime.h"
@@ -71,9 +72,9 @@ void run_background_tasks(void) {
     running_background_tasks = false;
     assert_heap_ok();
 
-    last_finished_tick = ticks_ms;
+    last_finished_tick = supervisor_ticks_ms64();
 }
 
 bool background_tasks_ok(void) {
-    return ticks_ms - last_finished_tick < 1000;
+    return supervisor_ticks_ms64() - last_finished_tick < 1000;
 }

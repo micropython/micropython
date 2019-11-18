@@ -31,6 +31,4 @@
 
 #include "lib/utils/interrupt_char.h"
 
-extern volatile uint64_t ticks_ms;
-
 #endif // MICROPY_INCLUDED_CXD56_MPHALPORT_H

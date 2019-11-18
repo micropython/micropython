@@ -231,10 +231,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     size_t rx_bytes = 0;
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_count(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
@@ -265,15 +265,15 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
 
     if ( len == 0 ) return 0;
 
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for on-going transfer to complete
-    while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( nrfx_uarte_tx_in_progress(self->uarte) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
     }
 
     // Time up
-    if ( !(ticks_ms - start_ticks < self->timeout_ms) ) {
+    if ( !(supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -290,7 +290,7 @@ size_t common_hal_busio_uart_write (busio_uart_obj_t *self, const uint8_t *data,
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 
-    while ( nrfx_uarte_tx_in_progress(self->uarte) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( nrfx_uarte_tx_in_progress(self->uarte) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
     }
 

@@ -35,6 +35,7 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include <stdint.h>
@@ -175,7 +176,7 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
         return 0;
     }
     // Refresh at seconds per frame rate.
-    uint32_t elapsed_time = ticks_ms - self->core.last_refresh;
+    uint32_t elapsed_time = supervisor_ticks_ms64() - self->core.last_refresh;
     if (elapsed_time > self->milliseconds_per_frame) {
         return 0;
     }
@@ -339,7 +340,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
             bool busy = common_hal_digitalio_digitalinout_get_value(&self->busy);
             refresh_done = busy != self->busy_state;
         } else {
-            refresh_done = ticks_ms - self->core.last_refresh > self->refresh_time;
+            refresh_done = supervisor_ticks_ms64() - self->core.last_refresh > self->refresh_time;
         }
         if (refresh_done) {
             self->refreshing = false;
