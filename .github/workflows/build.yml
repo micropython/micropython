@@ -190,7 +190,7 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
-      run: aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -199,7 +199,7 @@ jobs:
       run: |
         pip install uritemplate
     - name: Upload to Release
-      run: python3 -u upload_release_files.py
+      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
       working-directory: tools
       env:
         UPLOAD_URL: ${{ github.event.release.upload_url }}
