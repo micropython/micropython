@@ -6,3 +6,5 @@ MP_SMALL_DATA_CONST_FALSE = 0x44
 
 # address of mp_const_true_obj
 MP_SMALL_DATA_CONST_TRUE = 0x4c
+
+MP_SMALL_DATA_TYPE_TYPE = 0x54

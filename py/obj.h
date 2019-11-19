@@ -527,7 +527,12 @@ struct _mp_obj_type_t {
 };
 
 // Constant types, globally accessible
+#if MICROPY_SMALL_DATA_SECTION
+#define mp_type_type (*(const mp_obj_type_t*)MP_SMALL_DATA_TYPE_TYPE)
+#else
 extern const mp_obj_type_t mp_type_type;
+#define _mp_type_type mp_type_type
+#endif
 extern const mp_obj_type_t mp_type_object;
 extern const mp_obj_type_t mp_type_NoneType;
 extern const mp_obj_type_t mp_type_bool;
