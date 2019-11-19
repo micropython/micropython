@@ -59,11 +59,13 @@ STATIC const mp_obj_type_t bluetooth_uuid_type;
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t irq_handler;
-    mp_obj_t irq_data_tuple;
-    uint8_t irq_addr_bytes[6];
-    uint8_t irq_data_bytes[MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN];
-    mp_obj_t irq_data_uuid;
     uint16_t irq_trigger;
+    mp_obj_t irq_data_tuple;
+    uint8_t irq_data_addr_bytes[6];
+    uint8_t irq_data_data_bytes[MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN];
+    mp_obj_str_t irq_data_addr;
+    mp_obj_str_t irq_data_data;
+    mp_obj_bluetooth_uuid_t irq_data_uuid;
     ringbuf_t ringbuf;
 } mp_obj_bluetooth_ble_t;
 
@@ -234,16 +236,25 @@ STATIC const mp_obj_type_t bluetooth_uuid_type = {
 
 STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     if (MP_STATE_VM(bluetooth) == MP_OBJ_NULL) {
-        mp_obj_bluetooth_ble_t *o = m_new_obj(mp_obj_bluetooth_ble_t);
+        mp_obj_bluetooth_ble_t *o = m_new0(mp_obj_bluetooth_ble_t, 1);
         o->base.type = &bluetooth_ble_type;
+
         o->irq_handler = mp_const_none;
+        o->irq_trigger = 0;
+
         // Pre-allocate the event data tuple to prevent needing to allocate in the IRQ handler.
         o->irq_data_tuple = mp_obj_new_tuple(MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN, NULL);
-        mp_obj_bluetooth_uuid_t *uuid = m_new_obj(mp_obj_bluetooth_uuid_t);
-        uuid->base.type = &bluetooth_uuid_type;
-        o->irq_data_uuid = MP_OBJ_FROM_PTR(uuid);
-        o->irq_trigger = 0;
+
+        // Pre-allocated buffers for address, payload and uuid.
+        o->irq_data_addr.base.type = &mp_type_bytes;
+        o->irq_data_addr.data = o->irq_data_addr_bytes;
+        o->irq_data_data.base.type = &mp_type_bytes;
+        o->irq_data_data.data = o->irq_data_data_bytes;
+        o->irq_data_uuid.base.type = &bluetooth_uuid_type;
+
+        // Allocate the ringbuf. TODO: Consider making the size user-specified.
         ringbuf_alloc(&o->ringbuf, MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
+
         MP_STATE_VM(bluetooth) = MP_OBJ_FROM_PTR(o);
     }
     return MP_STATE_VM(bluetooth);
@@ -764,36 +775,31 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         mp_obj_t handler = handler = o->irq_handler;
         mp_obj_tuple_t *data_tuple = MP_OBJ_TO_PTR(o->irq_data_tuple);
 
-        // Some events need to pass bytes objects to their handler, using the
-        // pre-allocated bytes array.
-        mp_obj_str_t irq_data_bytes_addr = {{&mp_type_bytes}, 0, 6, o->irq_addr_bytes};
-        mp_obj_str_t irq_data_bytes_data = {{&mp_type_bytes}, 0, 0, o->irq_data_bytes};
-
         if (event == MP_BLUETOOTH_IRQ_CENTRAL_CONNECT || event == MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT || event == MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT || event == MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT) {
             // conn_handle, addr_type, addr
-            ringbuf_extract(&o->ringbuf, data_tuple, 1, 1, &irq_data_bytes_addr, 0, 0, NULL, NULL);
+            ringbuf_extract(&o->ringbuf, data_tuple, 1, 1, &o->irq_data_addr, 0, 0, NULL, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTS_WRITE) {
             // conn_handle, value_handle
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, NULL, NULL);
         #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT) {
             // addr_type, addr, connectable, rssi, adv_data
-            ringbuf_extract(&o->ringbuf, data_tuple, 0, 1, &irq_data_bytes_addr, 1, 1, NULL, &irq_data_bytes_data);
+            ringbuf_extract(&o->ringbuf, data_tuple, 0, 1, &o->irq_data_addr, 1, 1, NULL, &o->irq_data_data);
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_COMPLETE) {
             // No params required.
             data_tuple->len = 0;
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT) {
             // conn_handle, start_handle, end_handle, uuid
-            ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, 0, MP_OBJ_TO_PTR(o->irq_data_uuid), NULL);
+            ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, 0, &o->irq_data_uuid, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT) {
             // conn_handle, def_handle, value_handle, properties, uuid
-            ringbuf_extract(&o->ringbuf, data_tuple, 3, 1, NULL, 0, 0, MP_OBJ_TO_PTR(o->irq_data_uuid), NULL);
+            ringbuf_extract(&o->ringbuf, data_tuple, 3, 1, NULL, 0, 0, &o->irq_data_uuid, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT) {
             // conn_handle, handle, uuid
-            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, MP_OBJ_TO_PTR(o->irq_data_uuid), NULL);
+            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, &o->irq_data_uuid, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT || event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE) {
             // conn_handle, value_handle, data
-            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, NULL, &irq_data_bytes_data);
+            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, NULL, &o->irq_data_data);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS) {
             // conn_handle, value_handle, status
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, 0, NULL, NULL);
