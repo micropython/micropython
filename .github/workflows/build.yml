@@ -137,7 +137,6 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
-        - "robohatmm1_m0"
         - "robohatmm1_m4"
         - "sam32"
         - "serpente"
