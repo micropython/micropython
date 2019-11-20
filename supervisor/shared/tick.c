@@ -24,14 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdatomic.h>
-
 #include "supervisor/shared/tick.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
 
-static atomic_bool tick_up;
 static volatile uint64_t ticks_ms;
+static volatile uint32_t background_ticks_ms32;
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
@@ -46,8 +44,6 @@ static volatile uint64_t ticks_ms;
 void supervisor_tick(void) {
 
     ticks_ms ++;
-
-    atomic_store(&tick_up, true);
 
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
@@ -82,7 +78,14 @@ uint32_t supervisor_ticks_ms32() {
 extern void run_background_tasks(void);
 
 void supervisor_run_background_tasks_if_tick() {
-    if (atomic_exchange(&tick_up, false)) {
-        run_background_tasks();
+    uint32_t now32 = ticks_ms;
+
+    if (now32 == background_ticks_ms32) {
+        return;
     }
+    background_ticks_ms32 = now32;
+
+    run_background_tasks();
+}
+
 }

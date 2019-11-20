@@ -28,7 +28,6 @@
 #define __INCLUDED_SUPERVISOR_TICK_H
 
 #include <stdint.h>
-#include <stdatomic.h>
 
 extern void supervisor_tick(void);
 extern uint32_t supervisor_ticks_ms32(void);
