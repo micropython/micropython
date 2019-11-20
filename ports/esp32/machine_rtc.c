@@ -50,6 +50,9 @@ typedef struct _machine_rtc_obj_t {
         region `rtc_slow_seg' overflowed by N bytes
     The current system software allows almost 4096 to be used.
     To avoid running into issues if the system software uses more, 2048 was picked as a max length
+
+    You can also change this max length at compile time by defining MICROPY_HW_RTC_USER_MEM_MAX
+    either on your make line, or in your board config.
 */
 #ifndef MICROPY_HW_RTC_USER_MEM_MAX
 #define MICROPY_HW_RTC_USER_MEM_MAX     2048
