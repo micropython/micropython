@@ -36,8 +36,13 @@
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
-STATIC bool reserved_spi[6];
-STATIC bool never_reset_spi[6];
+#define MAX_SPI 6 //TODO; replace this as part of periph cleanup
+#define ALL_CLOCKS 0xFF
+STATIC bool reserved_spi[MAX_SPI];
+STATIC bool never_reset_spi[MAX_SPI];
+
+STATIC void spi_clock_enable(uint8_t mask);
+STATIC void spi_clock_disable(uint8_t mask);
 
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     //SPI2 and 3 are on PCLK1, if they exist. 
@@ -51,42 +56,15 @@ STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
 }
 
 void spi_reset(void) {
-    #ifdef SPI1
-    if(!never_reset_spi[0]) {
-        reserved_spi[0] = false;
-        __HAL_RCC_SPI1_CLK_DISABLE(); 
+    uint16_t never_reset_mask = 0x00;
+    for(int i=0;i<MAX_SPI;i++) {
+        if (!never_reset_spi[i]) {
+            reserved_spi[i] = 0x00;
+        } else {
+            never_reset_mask |= 1<<i;
+        }
     }
-    #endif
-    #ifdef SPI2
-    if(!never_reset_spi[1]) {
-        reserved_spi[1] = false;
-        __HAL_RCC_SPI2_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI3
-    if(!never_reset_spi[2]) {
-        reserved_spi[2] = false;
-        __HAL_RCC_SPI3_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI4
-    if(!never_reset_spi[3]) {
-        reserved_spi[3] = false;
-        __HAL_RCC_SPI4_CLK_DISABLE();
-    } 
-    #endif
-    #ifdef SPI5
-    if(!never_reset_spi[4]) {
-        reserved_spi[4] = false;
-        __HAL_RCC_SPI5_CLK_DISABLE();
-    } 
-    #endif
-    #ifdef SPI6
-    if(!never_reset_spi[5]) {
-        reserved_spi[5] = false;
-        __HAL_RCC_SPI6_CLK_DISABLE(); 
-    }
-    #endif
+    spi_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
@@ -163,42 +141,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     GPIO_InitStruct.Alternate = self->miso->altfn_index; 
     HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
 
-    #ifdef SPI1
-    if(SPIx==SPI1) { 
-        reserved_spi[0] = true;
-        __HAL_RCC_SPI1_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef SPI2
-    if(SPIx==SPI2) { 
-        reserved_spi[1] = true;
-        __HAL_RCC_SPI2_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef SPI3
-    if(SPIx==SPI3) { 
-        reserved_spi[2] = true;
-        __HAL_RCC_SPI3_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef SPI4
-    if(SPIx==SPI4) { 
-        reserved_spi[3] = true;
-        __HAL_RCC_SPI4_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef SPI5
-    if(SPIx==SPI5) { 
-        reserved_spi[4] = true;
-        __HAL_RCC_SPI5_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef SPI6
-    if(SPIx==SPI6) { 
-        reserved_spi[5] = true;
-        __HAL_RCC_SPI6_CLK_ENABLE();
-    } 
-    #endif
+    spi_clock_enable(1<<(self->sck->spi_index - 1));
+    reserved_spi[self->sck->spi_index - 1] = true;
     
     self->handle.Instance = SPIx; 
     self->handle.Init.Mode = SPI_MODE_MASTER;
@@ -244,42 +188,9 @@ bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
-    #ifdef SPI1
-    if(self->handle.Instance==SPI1) {
-        reserved_spi[0] = false;
-        __HAL_RCC_SPI1_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI2
-    if(self->handle.Instance==SPI2) {
-        reserved_spi[1] = false;
-        __HAL_RCC_SPI2_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI3
-    if(self->handle.Instance==SPI3) {
-        reserved_spi[2] = false;
-        __HAL_RCC_SPI3_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI4
-    if(self->handle.Instance==SPI4) {
-        reserved_spi[3] = false;
-        __HAL_RCC_SPI4_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI5
-    if(self->handle.Instance==SPI5) {
-        reserved_spi[4] = false;
-        __HAL_RCC_SPI5_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef SPI6
-    if(self->handle.Instance==SPI6) {
-        reserved_spi[5] = false;
-        __HAL_RCC_SPI6_CLK_DISABLE(); 
-    }
-    #endif
+    spi_clock_disable(1<<(self->sck->spi_index - 1));
+    reserved_spi[self->sck->spi_index - 1] = true;
+
     reset_pin_number(self->sck->pin->port,self->sck->pin->number);
     reset_pin_number(self->mosi->pin->port,self->mosi->pin->number);
     reset_pin_number(self->miso->pin->port,self->miso->pin->number);
@@ -323,26 +234,10 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     //Deinit SPI
     HAL_SPI_DeInit(&self->handle);
 
-    if (bits == 8) {
-        self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
-    } else if (bits == 16) {
-        self->handle.Init.DataSize = SPI_DATASIZE_16BIT;
-    } else {
-        return false;
-    }
+    self->handle.Init.DataSize = (bits == 16) ? SPI_DATASIZE_16BIT : SPI_DATASIZE_8BIT;
+    self->handle.Init.CLKPolarity = (polarity) ? SPI_POLARITY_HIGH : SPI_POLARITY_LOW;
+    self->handle.Init.CLKPhase = (phase) ? SPI_PHASE_2EDGE : SPI_PHASE_1EDGE;
 
-    if (polarity) {
-        self->handle.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    } else {
-        self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
-    }
-
-    if (phase) {
-        self->handle.Init.CLKPhase = SPI_PHASE_2EDGE;
-    } else {
-        self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
-    }
-    
     self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler, 
                                             get_busclock(self->handle.Instance));
     self->handle.Init.Mode = SPI_MODE_MASTER;
@@ -373,10 +268,10 @@ bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
     // __disable_irq();
     // __DMB();
 
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
+    if (!self->has_lock) {
+        grabbed_lock = true;
+        self->has_lock = true;
+    }
 
     // __DMB();
     // __set_PRIMASK(store_primask);
@@ -423,4 +318,46 @@ uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
 
 uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
     return self->polarity;
+}
+
+STATIC void spi_clock_enable(uint8_t mask) {
+    #ifdef SPI1
+    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_ENABLE();
+    #endif
+    #ifdef SPI2
+    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_ENABLE();
+    #endif
+    #ifdef SPI3
+    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_ENABLE();
+    #endif
+    #ifdef SPI4
+    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_ENABLE();
+    #endif
+    #ifdef SPI5
+    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_ENABLE();
+    #endif
+    #ifdef SPI6
+    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_ENABLE();
+    #endif
+}
+
+STATIC void spi_clock_disable(uint8_t mask) {
+    #ifdef SPI1
+    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_DISABLE();
+    #endif
+    #ifdef SPI2
+    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_DISABLE();
+    #endif
+    #ifdef SPI3
+    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_DISABLE();
+    #endif
+    #ifdef SPI4
+    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_DISABLE();
+    #endif
+    #ifdef SPI5
+    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_DISABLE();
+    #endif
+    #ifdef SPI6
+    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_DISABLE();
+    #endif
 }
