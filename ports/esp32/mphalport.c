@@ -122,13 +122,13 @@ void mp_hal_delay_ms(uint32_t ms) {
     uint64_t dt;
     uint64_t t0 = esp_timer_get_time();
     for (;;) {
+        MICROPY_EVENT_POLL_HOOK
         uint64_t t1 = esp_timer_get_time();
         dt = t1 - t0;
         if (dt + portTICK_PERIOD_MS * 1000 >= us) {
             // doing a vTaskDelay would take us beyond requested delay time
             break;
         }
-        MICROPY_EVENT_POLL_HOOK
         ulTaskNotifyTake(pdFALSE, 1);
     }
     if (dt < us) {
