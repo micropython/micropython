@@ -39,6 +39,17 @@
 STATIC bool reserved_spi[6];
 STATIC bool never_reset_spi[6];
 
+STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
+    //SPI2 and 3 are on PCLK1, if they exist. 
+    #ifdef SPI2
+        if(instance == SPI2) return HAL_RCC_GetPCLK1Freq();
+    #endif
+    #ifdef SPI3
+        if(instance == SPI2) return HAL_RCC_GetPCLK1Freq();
+    #endif
+    return HAL_RCC_GetPCLK2Freq();
+}
+
 void spi_reset(void) {
     #ifdef SPI1
     if(!never_reset_spi[0]) {
@@ -205,7 +216,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     {
         mp_raise_ValueError(translate("SPI Init Error"));
     }
-    self->baudrate = (HAL_RCC_GetPCLK2Freq()/16);
+    self->baudrate = (get_busclock(SPIx)/16);
     self->prescaler = 16;
     self->polarity = 0;
     self->phase = 1;
@@ -277,7 +288,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     self->miso = mp_const_none;
 }
 
-static uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler) {
+STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
     static const uint32_t baud_map[8][2] = {
         {2,SPI_BAUDRATEPRESCALER_2},
         {4,SPI_BAUDRATEPRESCALER_4},
@@ -292,7 +303,7 @@ static uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler) {
     uint16_t divisor;
     do {
         divisor = baud_map[i][0];
-        if (baudrate >= (HAL_RCC_GetPCLK2Freq()/divisor)) {
+        if (baudrate >= (busclock/divisor)) {
             *prescaler = divisor;
             return baud_map[i][1];
         }
@@ -331,9 +342,9 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     } else {
         self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     }
-
-    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler);
-
+    
+    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler, 
+                                            get_busclock(self->handle.Instance));
     self->handle.Init.Mode = SPI_MODE_MASTER;
     self->handle.Init.Direction = SPI_DIRECTION_2LINES;
     self->handle.Init.NSS = SPI_NSS_SOFT;
