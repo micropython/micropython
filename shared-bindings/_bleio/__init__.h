@@ -38,6 +38,16 @@
 
 extern bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
+extern const mp_obj_type_t mp_type_BluetoothError;
+extern const mp_obj_type_t mp_type_ConnectionError;
+extern const mp_obj_type_t mp_type_RoleError;
+extern const mp_obj_type_t mp_type_SecurityError;
+
+NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* msg, ...);
+NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* msg, ...);
+NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg);
+NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* msg, ...);
+
 void common_hal_bleio_check_connected(uint16_t conn_handle);
 
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);

@@ -342,7 +342,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (!MP_OBJ_IS_TYPE(args[ARG_address].u_obj, &bleio_address_type)) {
-        mp_raise_ValueError(translate("Expected an Address"));
+        mp_raise_TypeError(translate("Expected an Address"));
     }
 
     bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);

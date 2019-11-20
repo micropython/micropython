@@ -56,10 +56,8 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 }
 
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
-    const uint32_t err_code = _common_hal_bleio_service_construct(self, uuid, is_secondary, mp_obj_new_list(0, NULL));
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to create service, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
+    check_nrf_error(_common_hal_bleio_service_construct(self, uuid, is_secondary,
+                                                        mp_obj_new_list(0, NULL)));
 }
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
@@ -133,11 +131,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
 
     ble_gatts_char_handles_t char_handles;
 
-    uint32_t err_code;
-    err_code = sd_ble_gatts_characteristic_add(self->handle, &char_md, &char_attr, &char_handles);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to add characteristic, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
+    check_nrf_error(sd_ble_gatts_characteristic_add(self->handle, &char_md, &char_attr, &char_handles));
 
     characteristic->user_desc_handle = char_handles.user_desc_handle;
     characteristic->cccd_handle = char_handles.cccd_handle;

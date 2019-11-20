@@ -162,7 +162,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
             // Pairing process completed
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
-            if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
+            self->sec_status = status->auth_status;
+            if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
                 // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
             } else {
@@ -242,19 +243,13 @@ void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
 void common_hal_bleio_connection_pair(bleio_connection_internal_t *self) {
     self->pair_status = PAIR_WAITING;
 
-    uint32_t err_code = sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to start pairing, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
+    check_nrf_error(sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params));
 
     while (self->pair_status == PAIR_WAITING) {
         RUN_BACKGROUND_TASKS;
     }
 
-    if (self->pair_status == PAIR_NOT_PAIRED) {
-        mp_raise_OSError_msg(translate("Failed to pair"));
-    }
+    check_sec_status(self->sec_status);
 }
 
 
@@ -263,11 +258,8 @@ STATIC bool discover_next_services(bleio_connection_internal_t* connection, uint
     m_discovery_successful = false;
     m_discovery_in_process = true;
 
-    uint32_t err_code = sd_ble_gattc_primary_services_discover(connection->conn_handle, start_handle, service_uuid);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to discover services"));
-    }
+    check_nrf_error(sd_ble_gattc_primary_services_discover(connection->conn_handle,
+                                                           start_handle, service_uuid));
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
@@ -516,7 +508,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
         mp_obj_t uuid_obj;
         while ((uuid_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-                mp_raise_ValueError(translate("non-UUID found in service_uuids_whitelist"));
+                mp_raise_TypeError(translate("non-UUID found in service_uuids_whitelist"));
             }
             bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
 

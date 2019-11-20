@@ -26,6 +26,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/objexcept.h"
+#include "py/runtime.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Attribute.h"
@@ -78,6 +80,56 @@
 //|   This object is the sole instance of `_bleio.Adapter`.
 //|
 
+//| .. class:: BluetoothError(Exception)
+//|
+//|   Catch all exception for Bluetooth related errors.
+//|
+MP_DEFINE_EXCEPTION(BluetoothError, Exception)
+
+NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_BluetoothError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
+//| .. class:: ConnectionError(BluetoothError)
+//|
+//|   Raised when a connection is unavailable.
+//|
+MP_DEFINE_EXCEPTION(ConnectionError, BluetoothError)
+NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ConnectionError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
+//| .. class:: RoleError(BluetoothError)
+//|
+//|   Raised when a resource is used as the mismatched role. For example, if a local CCCD is
+//|   attempted to be set but they can only be set when remote.
+//|
+MP_DEFINE_EXCEPTION(RoleError, BluetoothError)
+NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
+    mp_raise_msg(&mp_type_RoleError, msg);
+}
+
+//| .. class:: SecurityError(BluetoothError)
+//|
+//|   Raised when a security related error occurs.
+//|
+MP_DEFINE_EXCEPTION(SecurityError, BluetoothError)
+NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_SecurityError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
     { MP_ROM_QSTR(MP_QSTR_Adapter),              MP_ROM_PTR(&bleio_adapter_type) },
@@ -94,6 +146,12 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
+
+    // Errors
+    { MP_ROM_QSTR(MP_QSTR_BluetoothError),      MP_ROM_PTR(&mp_type_BluetoothError) },
+    { MP_ROM_QSTR(MP_QSTR_ConnectionError),     MP_ROM_PTR(&mp_type_ConnectionError) },
+    { MP_ROM_QSTR(MP_QSTR_RoleError),           MP_ROM_PTR(&mp_type_RoleError) },
+    { MP_ROM_QSTR(MP_QSTR_SecurityError),       MP_ROM_PTR(&mp_type_SecurityError) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

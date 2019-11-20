@@ -39,7 +39,10 @@ typedef struct {
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
-const mp_obj_t base_error_messages[20];
+// These helpers raise the appropriate exceptions if the code doesn't equal success.
+void check_nrf_error(uint32_t err_code);
+void check_gatt_status(uint16_t gatt_status);
+void check_sec_status(uint8_t sec_status);
 
 // Track if the user code modified the BLE state to know if we need to undo it on reload.
 bool vm_used_ble;
