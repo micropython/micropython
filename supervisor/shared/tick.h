@@ -29,9 +29,32 @@
 
 #include <stdint.h>
 
+/** @brief To be called once every ms
+ *
+ * The port must call supervisor_tick once per millisecond to perform regular tasks.
+ * This is called from the SysTick interrupt or similar, and is safe to call in an
+ * interrupt context.
+ */
 extern void supervisor_tick(void);
+/** @brief Get the lower 32 bits of the time in milliseconds
+ *
+ * This can be more efficient than supervisor_ticks_ms64, for sites where a wraparound
+ * of ~49.5 days is not harmful.
+ */
 extern uint32_t supervisor_ticks_ms32(void);
+/** @brief Get the full time in milliseconds
+ *
+ * Because common ARM mcus cannot atomically work with 64-bit quantities, this
+ * function must briefly disable interrupts in order to return the value.  If
+ * only relative durations of less than about ~49.5 days need to be considered,
+ * then it may be possible to use supervisor_ticks_ms64 instead.
+ */
 extern uint64_t supervisor_ticks_ms64(void);
+/** @brief Run background ticks, but only about every millisecond.
+ *
+ * Normally, this is not called directly.  Instead use the RUN_BACKGROUND_TASKS
+ * macro.
+ */
 extern void supervisor_run_background_if_tick(void);
 
 #endif
