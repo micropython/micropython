@@ -88,4 +88,7 @@ void supervisor_run_background_tasks_if_tick() {
     run_background_tasks();
 }
 
+void supervisor_fake_tick() {
+    uint32_t now32 = ticks_ms;
+    background_ticks_ms32 = (now32 - 1);
 }

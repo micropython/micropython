@@ -36,6 +36,13 @@
  * interrupt context.
  */
 extern void supervisor_tick(void);
+/** @brief Cause background tasks to be called soon
+ *
+ * Normally, background tasks are only run once per tick.  For other cases where
+ * an event noticed from an interrupt context needs to be completed by a background
+ * task activity, the interrupt can call supervisor_fake_tick.
+ */
+extern void supervisor_fake_tick(void);
 /** @brief Get the lower 32 bits of the time in milliseconds
  *
  * This can be more efficient than supervisor_ticks_ms64, for sites where a wraparound
