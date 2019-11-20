@@ -31,6 +31,7 @@
 #include <stdio.h>
 
 #include "periph/pm.h"
+#include "periph/cpuid.h"
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -50,10 +51,22 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
+#ifdef MODULE_PERIPH_CPUID
+STATIC mp_obj_t machine_unique_id(void) {
+    uint8_t chipid[CPUID_LEN];
+    cpuid_get(chipid);
+    return mp_obj_new_bytes(chipid, CPUID_LEN);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+#endif
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
+#ifdef MODULE_PERIPH_CPUID
+    { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
+#endif
 
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
 
