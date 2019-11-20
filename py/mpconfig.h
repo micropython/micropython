@@ -1221,6 +1221,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to provide all math module constants (Python 3.5+), or just pi and e.
+#ifndef MICROPY_PY_MATH_CONSTANTS
+#define MICROPY_PY_MATH_CONSTANTS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide special math functions: math.{erf,erfc,gamma,lgamma}
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
