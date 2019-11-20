@@ -48,7 +48,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_obj, time_sleep);
 
 STATIC mp_obj_t time_sleep_ms(mp_obj_t arg) {
     mp_int_t ms = mp_obj_get_int(arg);
-    if (ms > 0) {
+    if (ms >= 0) {
         mp_hal_delay_ms(ms);
     }
     return mp_const_none;
