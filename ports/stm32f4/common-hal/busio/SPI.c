@@ -50,7 +50,7 @@ STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
         if(instance == SPI2) return HAL_RCC_GetPCLK1Freq();
     #endif
     #ifdef SPI3
-        if(instance == SPI2) return HAL_RCC_GetPCLK1Freq();
+        if(instance == SPI3) return HAL_RCC_GetPCLK1Freq();
     #endif
     return HAL_RCC_GetPCLK2Freq();
 }
