@@ -26,8 +26,8 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
-#define MICROPY_HW_MCU_NAME         "STM32F405RG"
+#define MICROPY_HW_BOARD_NAME       "MEOWBIT"
+#define MICROPY_HW_MCU_NAME         "STM32F401xE"
 
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (0x4000)
