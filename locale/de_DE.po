@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -736,7 +736,9 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Die aufgezeichnete Frequenz liegt über der Leistungsgrenze. Aufnahme angehalten."
+msgstr ""
+"Die aufgezeichnete Frequenz liegt über der Leistungsgrenze. Aufnahme "
+"angehalten."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -1140,7 +1142,7 @@ msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA oder SCL brauchen pull up"
 
@@ -2816,14 +2818,12 @@ msgstr ""
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Akquirieren des Mutex gescheitert"
 
-#, c-format
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Dienst konnte nicht hinzugefügt werden"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
 
@@ -2836,7 +2836,6 @@ msgstr ""
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Der Scanvorgang kann nicht fortgesetzt werden"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Der Scanvorgang kann nicht fortgesetzt werden. Status: 0x%04x"
 
@@ -2852,18 +2851,15 @@ msgstr ""
 #~ msgid "Failed to release mutex"
 #~ msgstr "Loslassen des Mutex gescheitert"
 
-#, c-format
 #~ msgid "Failed to set device name, err 0x%04x"
 #~ msgstr "Gerätename konnte nicht gesetzt werden, Status: 0x%04x"
 
 #~ msgid "Failed to start advertising"
 #~ msgstr "Kann advertisement nicht starten"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to start pairing, error 0x%04x"
 #~ msgstr "Starten des Koppelns fehlgeschlagen, Status: 0x%04x"
 
@@ -2873,7 +2869,6 @@ msgstr ""
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Kann advertisement nicht stoppen"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: @sommersoft, @MrCertainly\n"
@@ -1123,7 +1123,7 @@ msgstr "Runnin' in safe mode! Auto-reload be off.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Runnin' in safe mode! Nay runnin' saved code.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 

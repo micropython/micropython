@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1155,7 +1155,7 @@ msgstr "Modalità sicura in esecuzione! Auto-reload disattivato.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necessitano un pull-up"
 
@@ -2824,7 +2824,7 @@ msgstr "zero step"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Impossibile allocare buffer RX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
@@ -2832,7 +2832,7 @@ msgstr "zero step"
 #~ msgid "Failed to add service"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
@@ -2848,7 +2848,7 @@ msgstr "zero step"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
@@ -2872,7 +2872,7 @@ msgstr "zero step"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Impossibile avviare advertisement. status: 0x%02x"
 
@@ -2884,7 +2884,7 @@ msgstr "zero step"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 

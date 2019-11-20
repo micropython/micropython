@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1129,7 +1129,7 @@ msgstr "Uruchomiony tryb bezpieczeństwa! Samo-przeładowanie wyłączone.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA lub SCL wymagają podciągnięcia"
 
@@ -2746,14 +2746,13 @@ msgstr "zerowy krok"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Nie udało się uzyskać blokady"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Nie udało się dodać charakterystyki, błąd 0x$04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Nie udało się dodać serwisu"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Nie udało się dodać serwisu, błąd 0x%04x"
 
@@ -2766,7 +2765,6 @@ msgstr "zerowy krok"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Nie udała się kontynuacja skanowania"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Nie udała się kontynuacja skanowania, błąd 0x%04x"
 
@@ -2779,7 +2777,6 @@ msgstr "zerowy krok"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Nie udało się rozpocząć rozgłaszania"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Nie udało się rozpocząć rozgłaszania, błąd 0x%04x"
 
@@ -2789,7 +2786,6 @@ msgstr "zerowy krok"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
 
@@ -2810,7 +2806,6 @@ msgstr "zerowy krok"
 #~ "bpp given"
 #~ msgstr "Wspierane są tylko pliki BMP czarno-białe, 8bpp i 16bpp: %d bpp "
 
-#, c-format
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 

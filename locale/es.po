@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1145,7 +1145,7 @@ msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necesitan una pull up"
 
@@ -2815,7 +2815,7 @@ msgstr "paso cero"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "No se puede adquirir el mutex, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Fallo al añadir caracteristica, err: 0x%08lX"
 
@@ -2823,7 +2823,6 @@ msgstr "paso cero"
 #~ msgid "Failed to add service"
 #~ msgstr "No se puede detener el anuncio. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Fallo al agregar servicio. err: 0x%02x"
 
@@ -2838,7 +2837,6 @@ msgstr "paso cero"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "No se puede iniciar el escaneo. err: 0x%02x"
 
@@ -2862,7 +2860,6 @@ msgstr "paso cero"
 #~ msgid "Failed to start advertising"
 #~ msgstr "No se puede inicar el anuncio. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "No se puede inicar el anuncio. err: 0x%04x"
 
@@ -2874,7 +2871,6 @@ msgstr "paso cero"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "No se puede detener el anuncio. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "No se puede detener el anuncio. err: 0x%04x"
 
@@ -2952,7 +2948,6 @@ msgstr "paso cero"
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
 
-#, c-format
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 

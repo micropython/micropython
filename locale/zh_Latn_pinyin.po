@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -1133,7 +1133,7 @@ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ g
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA huò SCL xūyào lādòng"
 
@@ -2765,21 +2765,18 @@ msgstr "líng bù"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Wúfǎ huòdé mutex"
 
-#, c-format
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Tiānjiā fúwù shībài"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Tiānjiā fúwù shībài, err 0x%04x"
 
 #~ msgid "Failed to change softdevice state"
 #~ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
 
-#, c-format
 #~ msgid "Failed to configure advertising, err 0x%04x"
 #~ msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
 
@@ -2789,7 +2786,6 @@ msgstr "líng bù"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Jìxù sǎomiáo shībài"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
 
@@ -2799,18 +2795,15 @@ msgstr "líng bù"
 #~ msgid "Failed to release mutex"
 #~ msgstr "Wúfǎ shìfàng mutex"
 
-#, c-format
 #~ msgid "Failed to set device name, err 0x%04x"
 #~ msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
 
 #~ msgid "Failed to start advertising"
 #~ msgstr "Qǐdòng guǎnggào shībài"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to start pairing, error 0x%04x"
 #~ msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
 
@@ -2820,7 +2813,6 @@ msgstr "líng bù"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
 
@@ -2854,7 +2846,6 @@ msgstr "líng bù"
 #~ msgstr ""
 #~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
-#, c-format
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1138,7 +1138,7 @@ msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 "Berjalan di mode aman(safe mode)! tidak menjalankan kode yang tersimpan.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA atau SCL membutuhkan pull up"
 
@@ -2765,7 +2765,7 @@ msgstr ""
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Gagal untuk mendapatkan mutex, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Gagal untuk menambahkan karakteristik, status: 0x%08lX"
 
@@ -2773,7 +2773,7 @@ msgstr ""
 #~ msgid "Failed to add service"
 #~ msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Gagal untuk menambahkan layanan, status: 0x%08lX"
 
@@ -2789,7 +2789,7 @@ msgstr ""
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Gagal untuk melanjutkan scanning, status: 0x%08lX"
 
@@ -2813,7 +2813,7 @@ msgstr ""
 #~ msgid "Failed to start advertising"
 #~ msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Gagal untuk memulai advertisement, status: 0x%08lX"
 
@@ -2825,7 +2825,7 @@ msgstr ""
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Gagal untuk memberhentikan advertisement, status: 0x%08lX"
 
@@ -2878,7 +2878,7 @@ msgstr ""
 #~ msgid "STA required"
 #~ msgstr "STA dibutuhkan"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Dukungan soft device, id: 0x%08lX, pc: 0x%08l"
 

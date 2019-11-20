@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 글라파, 2019.
 #
 #, fuzzy
 msgid ""
@@ -9,10 +9,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-17 20:54-0600\n"
-"PO-Revision-Date: 2018-10-02 21:14-0000\n"
+"PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
-"Language-Team: \n"
-"Language: pt_BR\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,46 +22,46 @@ msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
+"\n"
+"실행 완료 코드. 재장전 을 기다리는 중입니다\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr "  Arquivo \"%q\""
+msgstr " 파일 \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr "  Arquivo \"%q\", linha %d"
+msgstr "  파일 \"%q\", 라인 %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " saída:\n"
+msgstr " 산출:\n"
 
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c requer int ou char"
+msgstr "%%c 전수(int)또는 캐릭터(char)필요합니다"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr "%q em uso"
+msgstr "%q 사용 중입니다"
 
 #: py/obj.c
 msgid "%q index out of range"
-msgstr ""
+msgstr "%q 인덱스 범위를 벗어났습니다"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "%q must be >= 1"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "%q 는 >=1이어야합니다"
 
 #: shared-bindings/fontio/BuiltinFont.c
-#, fuzzy
 msgid "%q should be an int"
-msgstr "y deve ser um int"
+msgstr "%q 는 정수(int) 여야합니다"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -69,27 +69,27 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr "'%q' argumento(s) requerido(s)"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr ""
+msgstr "'%s' 에는 라벨이 필요합니다"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s%' 에는 레지스터가 필요합니다"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s' 에는 특별한 레지스터가 필요합니다"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' 에는 FPU레지스터가 필요합니다"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -99,7 +99,7 @@ msgstr ""
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' 는 정수 여야합니다"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -109,7 +109,7 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' {r0, r1, ...}은 을 기대합니다"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -124,12 +124,12 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr ""
+msgstr "'%s' 을 지정할 수 없습니다"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr ""
+msgstr "'%s' 은 삭제할 수 없습니다"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -138,17 +138,17 @@ msgstr ""
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not an iterator"
-msgstr ""
+msgstr "'%s' 은 수정할 수 없습니다"
 
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr ""
+msgstr "'%s' 을 검색 할 수 없습니다"
 
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr ""
+msgstr "'%s' 은 변경할 수 없습니다"
 
 #: py/obj.c
 #, c-format
@@ -161,27 +161,27 @@ msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr "'S' e 'O' não são tipos de formato suportados"
+msgstr ""
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr ""
+msgstr "'align' 에는 1 개의 독립변수가 필요합니다"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr ""
+msgstr "'await' 는 펑크션 외부에 있습니다"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr ""
+msgstr "'break' 는 루프 외부에 있습니다"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr ""
+msgstr "'continue' 는 루프 외부에 있습니다"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr ""
+msgstr "'data' 에는 >=2 개의 독립변수가 필요합니다"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
@@ -189,15 +189,15 @@ msgstr ""
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label' 에는 1 개의 독립변수가 필요합니다"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr ""
+msgstr "'return' 는 함수 외부에 존재합니다"
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr ""
+msgstr "'yield' 는 함수 외부에 존재합니다"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -205,7 +205,7 @@ msgstr ""
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr ", 에서 %q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -217,12 +217,12 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr "Um canal de interrupção de hardware já está em uso"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c
-#, fuzzy, c-format
+#, c-format
 msgid "Address must be %d bytes long"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
@@ -230,20 +230,19 @@ msgstr ""
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr "Todos os periféricos I2C estão em uso"
+msgstr "사용중인 모든 I2C주변 기기"
 
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr "Todos os periféricos SPI estão em uso"
+msgstr "사용중인 모든 SPI주변 기기"
 
 #: ports/nrf/common-hal/busio/UART.c
-#, fuzzy
 msgid "All UART peripherals are in use"
-msgstr "Todos os periféricos I2C estão em uso"
+msgstr "사용중인 모든 UART주변 기기"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr "Todos os canais de eventos em uso"
+msgstr ""
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -251,7 +250,7 @@ msgstr ""
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Todos os temporizadores para este pino estão em uso"
+msgstr "핀의 모든 타이머가 사용 중입니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -260,7 +259,7 @@ msgstr "Todos os temporizadores para este pino estão em uso"
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
-msgstr "Todos os temporizadores em uso"
+msgstr "모든 타이머가 사용 중입니다"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
@@ -268,7 +267,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
-msgstr "Funcionalidade AnalogOut não suportada"
+msgstr ""
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
@@ -276,15 +275,15 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "Saída analógica não suportada no pino fornecido"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr "Outro envio já está ativo"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Array deve conter meias palavras (tipo 'H')"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
@@ -296,13 +295,15 @@ msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr "A atualização automática está desligada.\n"
+msgstr "자동 재 장전이 꺼져 있습니다\n"
 
 #: main.c
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
+"자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. 비활"
+"성화하려면 REPL을 입력하십시오.\n"
 
 #: shared-module/displayio/Display.c
 msgid "Below minimum frame rate"
@@ -318,7 +319,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr "Ambos os pinos devem suportar interrupções de hardware"
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness must be 0-1.0"
@@ -326,11 +327,11 @@ msgstr ""
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "O brilho deve estar entre 0 e 255"
+msgstr "밝기는 0에서 255 사이 여야합니다"
 
 #: shared-bindings/displayio/Display.c
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "밝기를 조절할 수 없습니다"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
@@ -340,7 +341,7 @@ msgstr ""
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Buffer de tamanho incorreto. Deve ser %d bytes."
+msgstr "잘못된 크기의 버퍼. %d 바이트 여야합니다."
 
 #: shared-bindings/displayio/Display.c
 msgid "Buffer is not a bytearray."
@@ -357,22 +358,21 @@ msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr ""
+msgstr "잘못된 크기의 버퍼. >1 여야합니다"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
-#, fuzzy, c-format
+#, c-format
 msgid "Bus pin %d is already in use"
-msgstr "DAC em uso"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
-#, fuzzy
 msgid "Byte buffer must be 16 bytes."
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "잘못된 크기의 버퍼. 16 바이트 여야합니다."
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
-msgstr "Os bytes devem estar entre 0 e 255."
+msgstr "바이트는 0에서 255 사이 여야합니다."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -389,7 +389,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
-msgstr "Não é possível excluir valores"
+msgstr "값을 삭제할 수 없습니다"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
@@ -397,9 +397,8 @@ msgid "Cannot get pull while in output mode"
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
-#, fuzzy
 msgid "Cannot get temperature"
-msgstr "Não pode obter a temperatura. status: 0x%02x"
+msgstr "온도 데이터를 수신 할 수 없습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
@@ -407,15 +406,15 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
-msgstr "Não é possível ler sem o pino MISO."
+msgstr "MISO핀이 없으면 읽을 수 없습니다"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
-msgstr "Não é possível gravar em um arquivo"
+msgstr "파일에 녹음 할 수 없습니다"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when USB is active."
-msgstr "Não é possível remontar '/' enquanto o USB estiver ativo."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
@@ -431,7 +430,7 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr "Não é possível transferir sem os pinos MOSI e MISO."
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "Cannot unambiguously get sizeof scalar"
@@ -439,7 +438,7 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
-msgstr "Não é possível ler sem um pino MOSI"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -447,15 +446,15 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
-msgstr "Inicialização do pino de Clock falhou."
+msgstr ""
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
-msgstr "Clock se estendeu por tempo demais"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
-msgstr "Unidade de Clock em uso"
+msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Column entry must be digitalio.DigitalInOut"
@@ -466,9 +465,8 @@ msgid "Command must be 0-255"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
-#, fuzzy
 msgid "Command must be an int between 0 and 255"
-msgstr "Os bytes devem estar entre 0 e 255."
+msgstr "명령은 0에서 255 사이의 정수(int) 여야합니다"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -491,15 +489,15 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
-msgstr "Não foi possível inicializar o UART"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate first buffer"
-msgstr "Não pôde alocar primeiro buffer"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 msgid "Couldn't allocate second buffer"
-msgstr "Não pôde alocar segundo buffer"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler.\n"
@@ -507,7 +505,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
-msgstr "DAC em uso"
+msgstr "DAC가 현재 사용 중입니다"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -516,12 +514,11 @@ msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
-msgstr "Pedaço de dados deve seguir o pedaço de cortes"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Não é possível ajustar dados no pacote de anúncios."
+msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -548,23 +545,22 @@ msgstr ""
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
-msgstr "Canal EXTINT em uso"
+msgstr ""
 
 #: extmod/modure.c
 msgid "Error in regex"
-msgstr "Erro no regex"
+msgstr "Regex에 오류가 있습니다."
 
 #: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
-msgstr "Esperado um"
+msgstr "%q 이 예상되었습니다."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/Descriptor.c
-#, fuzzy
 msgid "Expected a Characteristic"
-msgstr "Não é possível adicionar Característica."
+msgstr "특성(Characteristic)이 예상되었습니다."
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -572,9 +568,8 @@ msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
-#, fuzzy
 msgid "Expected a UUID"
-msgstr "Esperado um"
+msgstr "UUID이 예상되었습니다."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
@@ -592,12 +587,12 @@ msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
-msgstr "Falha ao enviar comando."
+msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Service.c
 msgid "Failed to add characteristic, NRF_ERROR_%q"
@@ -610,13 +605,13 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
-msgstr "Falha ao alocar buffer RX"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
-msgstr "Falha ao alocar buffer RX de %d bytes"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to change softdevice state, NRF_ERROR_%q"
@@ -635,18 +630,16 @@ msgid "Failed to create service, NRF_ERROR_%q"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c
-#, fuzzy
 msgid "Failed to discover services"
-msgstr "Não pode parar propaganda. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to get local address"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Failed to get softdevice state"
-msgstr "Não pode parar propaganda. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #, c-format
@@ -658,9 +651,9 @@ msgid "Failed to pair"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -668,19 +661,19 @@ msgid "Failed to read attribute value, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Não é possível adicionar o UUID de 128 bits específico do fornecedor."
+msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to start advertising, NRF_ERROR_%q"
@@ -696,9 +689,9 @@ msgid "Failed to start pairing, NRF_ERROR_%q"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to start scanning, err 0x%04x"
-msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to stop advertising, NRF_ERROR_%q"
@@ -710,18 +703,18 @@ msgid "Failed to write CCCD, err 0x%04x"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "File exists"
-msgstr "Arquivo já existe"
+msgstr ""
 
 #: ports/nrf/peripherals/nrf/nvm.c
 msgid "Flash erase failed"
@@ -757,15 +750,15 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
-msgstr "Grupo cheio"
+msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
-msgstr "Operação I/O no arquivo fechado"
+msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
-msgstr "I2C operação não suportada"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -784,72 +777,70 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
-msgstr "Pino do %q inválido"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
-msgstr "Arquivo BMP inválido"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c
 #: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
 msgid "Invalid PWM frequency"
-msgstr "Frequência PWM inválida"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Invalid argument"
-msgstr "Argumento inválido"
+msgstr ""
 
 #: shared-module/displayio/Bitmap.c
 msgid "Invalid bits per value"
 msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
-#, fuzzy
 msgid "Invalid buffer size"
-msgstr "Arquivo inválido"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "certificado inválido"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
-msgstr "Direção inválida"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
-msgstr "Arquivo inválido"
+msgstr "파일이 유효하지 않습니다"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
-msgstr "Tamanho do pedaço de formato inválido"
+msgstr "형식 청크 크기가 잘못되었습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
-msgstr "Número inválido de bits"
+msgstr "비트 수가 유효하지 않습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid phase"
-msgstr "Fase Inválida"
+msgstr "단계가 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 #: shared-bindings/pulseio/PWMOut.c
 msgid "Invalid pin"
-msgstr "Pino inválido"
+msgstr "핀이 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for left channel"
-msgstr "Pino inválido para canal esquerdo"
+msgstr "왼쪽 채널 핀이 유효하지 않습니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for right channel"
-msgstr "Pino inválido para canal direito"
+msgstr "오른쪽 채널 핀이 잘못되었습니다"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
@@ -857,7 +848,7 @@ msgstr "Pino inválido para canal direito"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
-msgstr "Pinos inválidos"
+msgstr "핀이 유효하지 않습니다"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -880,13 +871,12 @@ msgid "Invalid voice"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "certificado inválido"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
-msgstr "Aqruivo de ondas inválido"
+msgstr ""
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -902,7 +892,7 @@ msgstr ""
 
 #: py/objslice.c
 msgid "Length must be an int"
-msgstr "Tamanho deve ser um int"
+msgstr "길이는 정수(int) 여야합니다"
 
 #: py/objslice.c
 msgid "Length must be non-negative"
@@ -917,11 +907,11 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "Inicialização do pino MISO falhou"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
-msgstr "Inicialização do pino MOSI falhou."
+msgstr ""
 
 #: shared-module/displayio/Shape.c
 #, c-format
@@ -950,20 +940,20 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
-msgstr "Nenhum DAC no chip"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
-msgstr "Nenhum canal DMA encontrado"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "No RX pin"
-msgstr "Nenhum pino RX"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "No TX pin"
-msgstr "Nenhum pino TX"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -971,11 +961,11 @@ msgstr ""
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
-msgstr "Nenhum barramento %q padrão"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
-msgstr "Não há GCLKs livre"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -983,12 +973,12 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr "Sem suporte de hardware no pino de clock"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
-msgstr "Nenhum suporte de hardware no pino"
+msgstr ""
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1004,9 +994,8 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "Not connected"
-msgstr "Não é possível conectar-se ao AP"
+msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
@@ -1017,12 +1006,10 @@ msgstr ""
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
 #: ports/nrf/common-hal/busio/UART.c
-#, fuzzy
 msgid "Odd parity is not supported"
-msgstr "I2C operação não suportada"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1061,25 +1048,24 @@ msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
-msgstr "Permissão negada"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
-msgstr "O pino não tem recursos de ADC"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Pixel beyond bounds of buffer"
 msgstr ""
 
 #: py/builtinhelp.c
-#, fuzzy
 msgid "Plus any modules on the filesystem\n"
-msgstr "Não é possível remontar o sistema de arquivos"
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
-msgstr "Buffer Ps2 vazio"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1095,11 +1081,11 @@ msgstr ""
 
 #: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
-msgstr "A calibração RTC não é suportada nesta placa"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr "O RTC não é suportado nesta placa"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Range out of bounds"
@@ -1107,16 +1093,15 @@ msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
-msgstr "Somente leitura"
+msgstr ""
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
-msgstr "Sistema de arquivos somente leitura"
+msgstr ""
 
 #: shared-module/displayio/Bitmap.c
-#, fuzzy
 msgid "Read-only object"
-msgstr "Somente leitura"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1124,7 +1109,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
-msgstr "Canal direito não suportado"
+msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Row entry must be digitalio.DigitalInOut"
@@ -1132,15 +1117,15 @@ msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
+msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
-msgstr "SDA ou SCL precisa de um pull up"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1150,7 +1135,7 @@ msgstr ""
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
-msgstr "Taxa de amostragem muito alta. Deve ser menor que %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
@@ -1159,7 +1144,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
-msgstr "Serializer em uso"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1176,7 +1161,7 @@ msgstr ""
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
-msgstr "O tamanho da pilha deve ser pelo menos 256"
+msgstr ""
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -1245,11 +1230,11 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
-msgstr "Para sair, por favor, reinicie a placa sem "
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
-msgstr "Muitos canais na amostra."
+msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
@@ -1271,11 +1256,11 @@ msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
-msgstr "USB ocupada"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Error"
-msgstr "Erro na USB"
+msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -1283,16 +1268,17 @@ msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "UUID문자열이 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'형식이 아닙니다"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
+"UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Unable to allocate buffers for signed conversion"
-msgstr "Não é possível alocar buffers para conversão assinada"
+msgstr ""
 
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
@@ -1302,11 +1288,11 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Unable to find free GCLK"
-msgstr "Não é possível encontrar GCLK livre"
+msgstr ""
 
 #: py/parse.c
 msgid "Unable to init parser"
-msgstr ""
+msgstr "파서를 초기화(init) 할 수 없습니다"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
@@ -1314,7 +1300,7 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
-msgstr "Não é possível gravar no nvm."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -1327,16 +1313,15 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
-msgstr "Taxa de transmissão não suportada"
+msgstr ""
 
 #: shared-module/displayio/display_core.c
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "Taxa de transmissão não suportada"
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr "Formato não suportado"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Unsupported operation"
@@ -1362,7 +1347,7 @@ msgstr ""
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr "AVISO: Seu arquivo de código tem duas extensões\n"
+msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -1381,7 +1366,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
-msgstr "Você solicitou o início do modo de segurança"
+msgstr ""
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -1402,12 +1387,12 @@ msgstr ""
 
 #: lib/embed/abort_.c
 msgid "abort() called"
-msgstr "abort() chamado"
+msgstr ""
 
 #: extmod/machine_mem.c
 #, c-format
 msgid "address %08x is not aligned to %d bytes"
-msgstr "endereço %08x não está alinhado com %d bytes"
+msgstr ""
 
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "address out of bounds"
@@ -1423,7 +1408,7 @@ msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
-msgstr "argumento tem tipo errado"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1440,7 +1425,7 @@ msgstr ""
 
 #: py/objstr.c
 msgid "attributes not supported yet"
-msgstr "atributos ainda não suportados"
+msgstr ""
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1464,21 +1449,19 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
-msgstr ""
+msgstr "비트(bits)는 7, 8 또는 9 여야합니다"
 
 #: extmod/machine_spi.c
 msgid "bits must be 8"
-msgstr "bits devem ser 8"
+msgstr "비트(bits)는 8이어야합니다"
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits devem ser 8"
+msgstr "bits_per_sample은 8 또는 16이어야합니다."
 
 #: py/emitinlinethumb.c
-#, fuzzy
 msgid "branch not in range"
-msgstr "Calibração está fora do intervalo"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1490,9 +1473,8 @@ msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-module/struct/__init__.c
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
@@ -1505,7 +1487,7 @@ msgstr ""
 
 #: extmod/machine_spi.c
 msgid "buffers must be the same length"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1522,7 +1504,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
-msgstr "bytes > 8 bits não suportado"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -1530,15 +1512,15 @@ msgstr ""
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
-msgstr "Calibração está fora do intervalo"
+msgstr ""
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is read only"
-msgstr "Calibração é somente leitura"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration value out of range +/-127"
-msgstr "Valor de calibração fora do intervalo +/- 127"
+msgstr ""
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -1683,11 +1665,11 @@ msgstr ""
 
 #: py/objtype.c
 msgid "cannot create instance"
-msgstr "não é possível criar instância"
+msgstr ""
 
 #: py/runtime.c
 msgid "cannot import name %q"
-msgstr "não pode importar nome %q"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "cannot perform relative import"
@@ -1723,11 +1705,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr "cor deve estar entre 0x000000 e 0xffffff"
+msgstr ""
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
-msgstr "cor deve ser um int"
+msgstr ""
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -1743,7 +1725,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "constant must be an integer"
-msgstr "constante deve ser um inteiro"
+msgstr ""
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -1768,7 +1750,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
-msgstr "destination_length deve ser um int >= 0"
+msgstr ""
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
@@ -1777,15 +1759,15 @@ msgstr ""
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
-msgstr "divisão por zero"
+msgstr ""
 
 #: py/objdeque.c
 msgid "empty"
-msgstr "vazio"
+msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
-msgstr "heap vazia"
+msgstr ""
 
 #: py/objstr.c
 msgid "empty separator"
@@ -1793,21 +1775,20 @@ msgstr ""
 
 #: shared-bindings/random/__init__.c
 msgid "empty sequence"
-msgstr "seqüência vazia"
+msgstr ""
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "end_x should be an int"
-msgstr "y deve ser um int"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
-msgstr "erro = 0x%08lX"
+msgstr ""
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -1815,15 +1796,15 @@ msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
-msgstr ""
+msgstr "':'이 예상되었습니다"
 
 #: py/obj.c
 msgid "expected tuple/list"
-msgstr ""
+msgstr "튜플(tuple) 또는 리스트(list)이 예상되었습니다"
 
 #: py/modthread.c
 msgid "expecting a dict for keyword args"
-msgstr ""
+msgstr "사전(dict)이 예상되었습니다"
 
 #: py/compile.c
 msgid "expecting an assembler instruction"
@@ -1839,11 +1820,11 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
-msgstr "argumentos extras de palavras-chave passados"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra positional arguments given"
-msgstr "argumentos extra posicionais passados"
+msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c
 #: shared-bindings/displayio/OnDiskBitmap.c
@@ -1852,7 +1833,7 @@ msgstr ""
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
-msgstr "sistema de arquivos deve fornecer método de montagem"
+msgstr ""
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -1860,11 +1841,11 @@ msgstr ""
 
 #: extmod/machine_spi.c
 msgid "firstbit must be MSB"
-msgstr "firstbit devem ser MSB"
+msgstr ""
 
 #: py/objint.c
 msgid "float too big"
-msgstr "float muito grande"
+msgstr "float이 너무 큽니다"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -1876,16 +1857,16 @@ msgstr ""
 
 #: py/objdeque.c
 msgid "full"
-msgstr "cheio"
+msgstr "완전한(full)"
 
 #: py/argcheck.c
 msgid "function does not take keyword arguments"
-msgstr "função não aceita argumentos de palavras-chave"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr "função esperada na maioria dos %d argumentos, obteve %d"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
@@ -1894,7 +1875,7 @@ msgstr ""
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr "função ausente %d requer argumentos posicionais"
+msgstr ""
 
 #: py/bc.c
 msgid "function missing keyword-only argument"
@@ -1912,11 +1893,11 @@ msgstr ""
 #: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr "função leva %d argumentos posicionais, mas apenas %d foram passadas"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "function takes exactly 9 arguments"
-msgstr "função leva exatamente 9 argumentos"
+msgstr ""
 
 #: py/objgenerator.c
 msgid "generator already executing"
@@ -1932,7 +1913,7 @@ msgstr ""
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
-msgstr "heap deve ser uma lista"
+msgstr ""
 
 #: py/compile.c
 msgid "identifier redefined as global"
@@ -1944,7 +1925,7 @@ msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format"
-msgstr "formato incompleto"
+msgstr ""
 
 #: py/objstr.c
 msgid "incomplete format key"
@@ -1952,12 +1933,12 @@ msgstr ""
 
 #: extmod/modubinascii.c
 msgid "incorrect padding"
-msgstr "preenchimento incorreto"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
-msgstr "Índice fora do intervalo"
+msgstr ""
 
 #: py/obj.c
 msgid "indices must be integers"
@@ -1973,7 +1954,7 @@ msgstr ""
 
 #: py/objstr.c
 msgid "integer required"
-msgstr "inteiro requerido"
+msgstr "정수가 필요합니다"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -1982,35 +1963,35 @@ msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
-msgstr "periférico I2C inválido"
+msgstr "ICT주변 기기가 유효하지 않습니다"
 
 #: extmod/machine_spi.c
 msgid "invalid SPI peripheral"
-msgstr "periférico SPI inválido"
+msgstr "SPI주변 기기가 유효하지 않습니다"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
-msgstr "argumentos inválidos"
-
-#: extmod/modussl_axtls.c
-msgid "invalid cert"
-msgstr "certificado inválido"
-
-#: extmod/uos_dupterm.c
-msgid "invalid dupterm index"
-msgstr "Índice de dupterm inválido"
-
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "formato inválido"
-
-#: py/objstr.c
-msgid "invalid format specifier"
 msgstr ""
 
 #: extmod/modussl_axtls.c
+msgid "invalid cert"
+msgstr "cert가 유효하지 않습니다"
+
+#: extmod/uos_dupterm.c
+msgid "invalid dupterm index"
+msgstr "Dupterm index가 유효하지 않습니다"
+
+#: extmod/modframebuf.c
+msgid "invalid format"
+msgstr "형식가 유효하지 않습니다"
+
+#: py/objstr.c
+msgid "invalid format specifier"
+msgstr "형식 지정자(format specifier)가 유효하지 않습니다"
+
+#: extmod/modussl_axtls.c
 msgid "invalid key"
-msgstr "chave inválida"
+msgstr "키가 유효하지 않습니다"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -2018,24 +1999,24 @@ msgstr ""
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
-msgstr "passo inválido"
+msgstr "단계(step)가 유효하지 않습니다"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
-msgstr ""
+msgstr "구문(syntax)가 유효하지 않습니다"
 
 #: py/parsenum.c
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 
 #: py/parsenum.c
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr ""
+msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 
 #: py/parsenum.c
 msgid "invalid syntax for number"
-msgstr ""
+msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -2142,7 +2123,7 @@ msgstr ""
 
 #: extmod/machine_spi.c
 msgid "must specify all of sck/mosi/miso"
-msgstr "deve especificar todos sck/mosi/miso"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -2154,7 +2135,7 @@ msgstr ""
 
 #: py/runtime.c
 msgid "name not defined"
-msgstr "nome não definido"
+msgstr ""
 
 #: py/compile.c
 msgid "name reused for argument"
@@ -2167,7 +2148,7 @@ msgstr ""
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
-msgstr "precisa de mais de %d valores para desempacotar"
+msgstr ""
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -2265,11 +2246,11 @@ msgstr ""
 
 #: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
-msgstr "objeto não em seqüência"
+msgstr ""
 
 #: py/runtime.c
 msgid "object not iterable"
-msgstr "objeto não iterável"
+msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -2373,16 +2354,15 @@ msgstr ""
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
-msgstr "estouro de fila"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
 msgid "readonly attribute"
-msgstr "atributo ilegível"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2413,7 +2393,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
-msgstr "Taxa de amostragem fora do intervalo"
+msgstr ""
 
 #: py/modmicropython.c
 msgid "schedule stack full"
@@ -2421,7 +2401,7 @@ msgstr ""
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
-msgstr "compilação de script não suportada"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -2456,13 +2436,12 @@ msgid "start/end indices"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "start_x should be an int"
-msgstr "y deve ser um int"
+msgstr ""
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
-msgstr "o passo deve ser diferente de zero"
+msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
@@ -2491,15 +2470,15 @@ msgstr ""
 
 #: extmod/moductypes.c
 msgid "struct: cannot index"
-msgstr "struct: não pode indexar"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
-msgstr "struct: índice fora do intervalo"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
-msgstr "struct: sem campos"
+msgstr ""
 
 #: py/objstr.c
 msgid "substring not found"
@@ -2511,7 +2490,7 @@ msgstr ""
 
 #: extmod/modujson.c
 msgid "syntax error in JSON"
-msgstr "erro de sintaxe no JSON"
+msgstr ""
 
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
@@ -2519,7 +2498,7 @@ msgstr ""
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr "Limite deve estar no alcance de 0-65536"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -2534,17 +2513,16 @@ msgid "timeout >100 (units are now seconds, not msecs)"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "bits devem ser 8"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr "timestamp fora do intervalo para a plataforma time_t"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
-msgstr "Muitos argumentos fornecidos com o formato dado"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -2565,7 +2543,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "tx and rx cannot both be None"
-msgstr "TX e RX não podem ser ambos"
+msgstr ""
 
 #: py/objtype.c
 msgid "type '%q' is not an acceptable base type"
@@ -2645,7 +2623,7 @@ msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
-msgstr "atributo ilegível"
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "unsupported %q type"
@@ -2709,7 +2687,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
-msgstr "y deve ser um int"
+msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
@@ -2717,253 +2695,31 @@ msgstr ""
 
 #: py/objrange.c
 msgid "zero step"
-msgstr "passo zero"
+msgstr ""
 
-#~ msgid "AP required"
-#~ msgstr "AP requerido"
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "센트랄(중앙) 모드에서는 서비스를 추가 할 수 없습니다"
 
-#~ msgid "Cannot connect to AP"
-#~ msgstr "Não é possível conectar-se ao AP"
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "센트랄(중앙) 모드로 광고 (브로드 캐스트) 할 수 없습니다"
 
-#~ msgid "Cannot disconnect from AP"
-#~ msgstr "Não é possível desconectar do AP"
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "센트랄(중앙) 모드에서는 이름을 변경할 수 없습니다"
 
-#~ msgid "Cannot set STA config"
-#~ msgstr "Não é possível definir a configuração STA"
-
-#~ msgid "Cannot update i/f status"
-#~ msgstr "Não é possível atualizar o status i/f"
-
-#, fuzzy
 #~ msgid "Data too large for the advertisement packet"
-#~ msgstr "Não é possível ajustar dados no pacote de anúncios."
+#~ msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
 
-#~ msgid "Don't know how to pass object to native function"
-#~ msgstr "Não sabe como passar o objeto para a função nativa"
-
-#~ msgid "ESP8226 does not support safe mode."
-#~ msgstr "O ESP8226 não suporta o modo de segurança."
-
-#~ msgid "ESP8266 does not support pull down."
-#~ msgstr "ESP8266 não suporta pull down."
-
-#~ msgid "Error in ffi_prep_cif"
-#~ msgstr "Erro no ffi_prep_cif"
-
-#, fuzzy
-#~ msgid "Failed to acquire mutex"
-#~ msgstr "Falha ao alocar buffer RX"
-
-#, fuzzy
-#~ msgid "Failed to add characteristic, err 0x%04x"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
-
-#, fuzzy
 #~ msgid "Failed to add service"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
+#~ msgstr "서비스를 추가하지 못했습니다"
 
-#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
+#~ msgstr "서비스를 추가하지 못했습니다., 오류 0x%04x"
 
-#, fuzzy
-#~ msgid "Failed to change softdevice state"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
+#~ msgid "Failed to connect:"
+#~ msgstr "연결할 수 없다"
 
-#, fuzzy
+#~ msgid "Failed to continue scanning"
+#~ msgstr "스캔을 계속할 수 없습니다"
+
 #~ msgid "Failed to continue scanning, err 0x%04x"
-#~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to create mutex"
-#~ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to notify or indicate attribute value, err %0x04x"
-#~ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to read attribute value, err %0x04x"
-#~ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to release mutex"
-#~ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to start advertising"
-#~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to start advertising, err 0x%04x"
-#~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to start scanning"
-#~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to stop advertising"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
-
-#, fuzzy
-#~ msgid "Failed to stop advertising, err 0x%04x"
-#~ msgstr "Não pode parar propaganda. status: 0x%02x"
-
-#~ msgid "GPIO16 does not support pull up."
-#~ msgstr "GPIO16 não suporta pull up."
-
-#~ msgid "Invalid bit clock pin"
-#~ msgstr "Pino de bit clock inválido"
-
-#~ msgid "Invalid clock pin"
-#~ msgstr "Pino do Clock inválido"
-
-#~ msgid "Invalid data pin"
-#~ msgstr "Pino de dados inválido"
-
-#~ msgid "Maximum PWM frequency is %dhz."
-#~ msgstr "A frequência máxima PWM é de %dhz."
-
-#~ msgid "Minimum PWM frequency is 1hz."
-#~ msgstr "A frequência mínima PWM é de 1hz"
-
-#~ msgid "Multiple PWM frequencies not supported. PWM already set to %dhz."
-#~ msgstr ""
-#~ "Múltiplas frequências PWM não suportadas. PWM já definido para %dhz."
-
-#~ msgid "No PulseIn support for %q"
-#~ msgstr "Não há suporte para PulseIn no pino %q"
-
-#~ msgid "No hardware support for analog out."
-#~ msgstr "Nenhum suporte de hardware para saída analógica."
-
-#~ msgid "Only Windows format, uncompressed BMP supported %d"
-#~ msgstr "Apenas formato Windows, BMP descomprimido suportado"
-
-#~ msgid "Only bit maps of 8 bit color or less are supported"
-#~ msgstr "Apenas bit maps de cores de 8 bit ou menos são suportados"
-
-#~ msgid "Only true color (24 bpp or higher) BMP supported %x"
-#~ msgstr "Apenas cores verdadeiras (24 bpp ou maior) BMP suportadas"
-
-#~ msgid "Only tx supported on UART1 (GPIO2)."
-#~ msgstr "Apenas TX suportado no UART1 (GPIO2)."
-
-#~ msgid "PWM not supported on pin %d"
-#~ msgstr "PWM não suportado no pino %d"
-
-#~ msgid "Pin %q does not have ADC capabilities"
-#~ msgstr "Pino %q não tem recursos de ADC"
-
-#~ msgid "Pin(16) doesn't support pull"
-#~ msgstr "Pino (16) não suporta pull"
-
-#~ msgid "Pins not valid for SPI"
-#~ msgstr "Pinos não válidos para SPI"
-
-#~ msgid "STA must be active"
-#~ msgstr "STA deve estar ativo"
-
-#~ msgid "STA required"
-#~ msgstr "STA requerido"
-
-#~ msgid "UART(%d) does not exist"
-#~ msgstr "UART(%d) não existe"
-
-#~ msgid "UART(1) can't read"
-#~ msgstr "UART(1) não pode ler"
-
-#~ msgid "Unable to remount filesystem"
-#~ msgstr "Não é possível remontar o sistema de arquivos"
-
-#~ msgid "Unknown type"
-#~ msgstr "Tipo desconhecido"
-
-#~ msgid "Use esptool to erase flash and re-upload Python instead"
-#~ msgstr "Use o esptool para apagar o flash e recarregar o Python"
-
-#~ msgid "buffer too long"
-#~ msgstr "buffer muito longo"
-
-#~ msgid "can query only one param"
-#~ msgstr "pode consultar apenas um parâmetro"
-
-#~ msgid "can't get AP config"
-#~ msgstr "não pode obter configuração de AP"
-
-#~ msgid "can't get STA config"
-#~ msgstr "não pode obter a configuração STA"
-
-#~ msgid "can't set AP config"
-#~ msgstr "não é possível definir a configuração do AP"
-
-#~ msgid "can't set STA config"
-#~ msgstr "não é possível definir a configuração STA"
-
-#~ msgid "either pos or kw args are allowed"
-#~ msgstr "pos ou kw args são permitidos"
-
-#~ msgid "expecting a pin"
-#~ msgstr "esperando um pino"
-
-#~ msgid "ffi_prep_closure_loc"
-#~ msgstr "ffi_prep_closure_loc"
-
-#~ msgid "flash location must be below 1MByte"
-#~ msgstr "o local do flash deve estar abaixo de 1 MByte"
-
-#~ msgid "frequency can only be either 80Mhz or 160MHz"
-#~ msgstr "A frequência só pode ser 80Mhz ou 160MHz"
-
-#~ msgid "impossible baudrate"
-#~ msgstr "taxa de transmissão impossível"
-
-#~ msgid "invalid alarm"
-#~ msgstr "Alarme inválido"
-
-#~ msgid "invalid buffer length"
-#~ msgstr "comprimento de buffer inválido"
-
-#~ msgid "invalid data bits"
-#~ msgstr "Bits de dados inválidos"
-
-#~ msgid "invalid pin"
-#~ msgstr "Pino inválido"
-
-#~ msgid "invalid stop bits"
-#~ msgstr "Bits de parada inválidos"
-
-#~ msgid "len must be multiple of 4"
-#~ msgstr "len deve ser múltiplo de 4"
-
-#~ msgid "memory allocation failed, allocating %u bytes for native code"
-#~ msgstr "alocação de memória falhou, alocando %u bytes para código nativo"
-
-#, fuzzy
-#~ msgid "name must be a string"
-#~ msgstr "heap deve ser uma lista"
-
-#~ msgid "not a valid ADC Channel: %d"
-#~ msgstr "não é um canal ADC válido: %d"
-
-#~ msgid "pin does not have IRQ capabilities"
-#~ msgstr "Pino não tem recursos de IRQ"
-
-#~ msgid "row must be packed and word aligned"
-#~ msgstr "Linha deve ser comprimida e com as palavras alinhadas"
-
-#~ msgid "scan failed"
-#~ msgstr "varredura falhou"
-
-#~ msgid "too many arguments"
-#~ msgstr "muitos argumentos"
-
-#~ msgid "unknown config param"
-#~ msgstr "parâmetro configuração desconhecido"
-
-#~ msgid "unknown status param"
-#~ msgstr "parâmetro de status desconhecido"
-
-#~ msgid "wifi_set_ip_info() failed"
-#~ msgstr "wifi_set_ip_info() falhou"
+#~ msgstr "스캔을 계속할 수 없습니다, 오류 0x%04x"

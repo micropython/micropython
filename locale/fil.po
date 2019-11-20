@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-17 20:54-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1151,7 +1151,7 @@ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
@@ -2820,7 +2820,7 @@ msgstr "zero step"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
 
@@ -2828,7 +2828,7 @@ msgstr "zero step"
 #~ msgid "Failed to add service"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
@@ -2844,7 +2844,7 @@ msgstr "zero step"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
@@ -2868,7 +2868,7 @@ msgstr "zero step"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
@@ -2880,7 +2880,7 @@ msgstr "zero step"
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
