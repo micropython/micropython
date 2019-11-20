@@ -10,6 +10,7 @@ try:
     sss = A()[2:5].indices(10)
 except:
     print("SKIP")
+    raise SystemExit
 
 print(A()[:].indices(10))
 print(A()[2:].indices(10))
