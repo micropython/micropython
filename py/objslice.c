@@ -57,10 +57,87 @@ STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 
 #if MICROPY_PY_BUILTINS_SLICE_INDICES
 STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
-    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t length = mp_obj_int_get_checked(length_obj);
+    mp_bound_slice_t bound_indices;
+    mp_obj_t results[3]; // Objects for tuple, in start, stop, step order
+
+    mp_obj_slice_indices(self_in, length, &bound_indices);
+
+    results[0] = MP_OBJ_NEW_SMALL_INT(bound_indices.start);
+    results[1] = MP_OBJ_NEW_SMALL_INT(bound_indices.stop);
+    results[2] = MP_OBJ_NEW_SMALL_INT(bound_indices.step);
+
+    return mp_obj_new_tuple(3, results);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(slice_indices_obj, slice_indices);
+#endif
+
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (attr == MP_QSTR_start) {
+        dest[0] = self->start;
+    } else if (attr == MP_QSTR_stop) {
+        dest[0] = self->stop;
+    } else if (attr == MP_QSTR_step) {
+        dest[0] = self->step;
+#if MICROPY_PY_BUILTINS_SLICE_INDICES
+    } else if (attr == MP_QSTR_indices) {
+        dest[0] = MP_OBJ_FROM_PTR(&slice_indices_obj);
+        dest[1] = self_in;
+#endif
+    }
+}
+#endif
+
+#if MICROPY_PY_BUILTINS_SLICE_INDICES && !MICROPY_PY_BUILTINS_SLICE_ATTRS
+STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_indices), MP_ROM_PTR(&slice_indices_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
+#endif
+
+const mp_obj_type_t mp_type_slice = {
+    { &mp_type_type },
+    .name = MP_QSTR_slice,
+    .print = slice_print,
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    .attr = slice_attr,
+#elif MICROPY_PY_BUILTINS_SLICE_INDICES
+    .locals_dict = (mp_obj_dict_t*)&slice_locals_dict,
+#endif
+};
+
+mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
+    mp_obj_slice_t *o = m_new_obj(mp_obj_slice_t);
+    o->base.type = &mp_type_slice;
+    o->start = ostart;
+    o->stop = ostop;
+    o->step = ostep;
+
+    return MP_OBJ_FROM_PTR(o);
+}
+
+void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
+    assert(mp_obj_is_type(self_in, &mp_type_slice));
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
+    *start = self->start;
+    *stop = self->stop;
+    *step = self->step;
+}
+
+// Return the real index and step values for a slice when applied to a sequence of
+// the given length, resolving missing components, negative values and values off
+// the end of the sequence.
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result) {
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t start, stop, step;
-    mp_obj_t results[3]; // In start, stop, step order
 
     if (self->step == mp_const_none) {
         step = 1;
@@ -115,73 +192,9 @@ STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t length_obj) {
         }
     }
 
-    results[0] = MP_OBJ_NEW_SMALL_INT(start);
-    results[1] = MP_OBJ_NEW_SMALL_INT(stop);
-    results[2] = MP_OBJ_NEW_SMALL_INT(step);
-
-    return mp_obj_new_tuple(3, results);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(slice_indices_obj, slice_indices);
-#endif
-
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
-STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
-        // not load attribute
-        return;
-    }
-    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (attr == MP_QSTR_start) {
-        dest[0] = self->start;
-    } else if (attr == MP_QSTR_stop) {
-        dest[0] = self->stop;
-    } else if (attr == MP_QSTR_step) {
-        dest[0] = self->step;
-#if MICROPY_PY_BUILTINS_SLICE_INDICES
-    } else if (attr == MP_QSTR_indices) {
-        dest[0] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&slice_indices_obj),
-                                        self_in);
-#endif
-    }
-}
-#endif
-
-#if MICROPY_PY_BUILTINS_SLICE_INDICES && !MICROPY_PY_BUILTINS_SLICE_ATTRS
-STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_indices), MP_ROM_PTR(&slice_indices_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
-#endif
-
-const mp_obj_type_t mp_type_slice = {
-    { &mp_type_type },
-    .name = MP_QSTR_slice,
-    .print = slice_print,
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
-    .attr = slice_attr,
-#elif MICROPY_PY_BUILTINS_SLICE_INDICES
-    .locals_dict = (mp_obj_dict_t*)&slice_locals_dict,
-#endif
-};
-
-mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
-    mp_obj_slice_t *o = m_new_obj(mp_obj_slice_t);
-    o->base.type = &mp_type_slice;
-    o->start = ostart;
-    o->stop = ostop;
-    o->step = ostep;
-
-    return MP_OBJ_FROM_PTR(o);
-}
-
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
-    assert(mp_obj_is_type(self_in, &mp_type_slice));
-    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
-    *start = self->start;
-    *stop = self->stop;
-    *step = self->step;
+    result->start = start;
+    result->stop = stop;
+    result->step = step;
 }
 
 #endif
