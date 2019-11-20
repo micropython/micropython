@@ -6,6 +6,7 @@
  * Copyright (c) 2013, 2014, 2015 Damien P. George
  * Copyright (c) 2016 Linaro Limited
  * Copyright (c) 2018 Kaspar Schleiser
+ * Copyright (c) 2019 Koen Zandberg
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +37,16 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "modmachine.h"
+
+#define MP_PIN_PORT_A  0
+#define MP_PIN_PORT_B  1
+#define MP_PIN_PORT_C  2
+#define MP_PIN_PORT_D  3
+#define MP_PIN_PORT_E  4
+#define MP_PIN_PORT_F  5
+#define MP_PIN_PORT_G  6
+#define MP_PIN_PORT_H  7
+#define MP_PIN_PORT_I  8
 
 const mp_obj_base_t machine_pin_obj_template = {&machine_pin_type};
 
@@ -75,8 +86,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get the wanted pin nr
-    int wanted_pin = mp_obj_get_int(args[0]);
+    mp_obj_t *elem;
+    mp_obj_get_array_fixed_n(args[0], 2, &elem);
+
+    gpio_t wanted_pin = GPIO_PIN(mp_obj_get_int(elem[0]),
+                                 mp_obj_get_int(elem[1]));
 
     machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
     pin->base = machine_pin_obj_template;
@@ -159,6 +173,15 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IN_PD),     MP_ROM_INT(GPIO_IN_PD) },
     { MP_ROM_QSTR(MP_QSTR_IN_PU),     MP_ROM_INT(GPIO_IN_PU) },
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_A),    MP_ROM_INT(MP_PIN_PORT_A) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_B),    MP_ROM_INT(MP_PIN_PORT_B) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_C),    MP_ROM_INT(MP_PIN_PORT_C) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_D),    MP_ROM_INT(MP_PIN_PORT_D) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_E),    MP_ROM_INT(MP_PIN_PORT_E) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_F),    MP_ROM_INT(MP_PIN_PORT_F) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_G),    MP_ROM_INT(MP_PIN_PORT_G) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_H),    MP_ROM_INT(MP_PIN_PORT_H) },
+    { MP_ROM_QSTR(MP_QSTR_PORT_I),    MP_ROM_INT(MP_PIN_PORT_I) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
