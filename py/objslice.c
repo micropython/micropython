@@ -34,13 +34,6 @@
 
 #if MICROPY_PY_BUILTINS_SLICE
 
-typedef struct _mp_obj_slice_t {
-    mp_obj_base_t base;
-    mp_obj_t start;
-    mp_obj_t stop;
-    mp_obj_t step;
-} mp_obj_slice_t;
-
 STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_slice_t *o = MP_OBJ_TO_PTR(o_in);
@@ -117,14 +110,6 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     o->stop = ostop;
     o->step = ostep;
     return MP_OBJ_FROM_PTR(o);
-}
-
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
-    assert(mp_obj_is_type(self_in, &mp_type_slice));
-    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
-    *start = self->start;
-    *stop = self->stop;
-    *step = self->step;
 }
 
 // Return the real index and step values for a slice when applied to a sequence of

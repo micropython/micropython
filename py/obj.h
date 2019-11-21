@@ -786,7 +786,12 @@ typedef struct {
 } mp_bound_slice_t;
 
 // slice
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
 void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
 
 // functions
