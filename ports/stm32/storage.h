@@ -47,9 +47,9 @@ void storage_flush(void);
 bool storage_read_block(uint8_t *dest, uint32_t block);
 bool storage_write_block(const uint8_t *src, uint32_t block);
 
-// these return 0 on success, non-zero on error
-mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+// these return 0 on success, negative errno on error
+int storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
 int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg);
 bool flash_bdev_readblock(uint8_t *dest, uint32_t block);
