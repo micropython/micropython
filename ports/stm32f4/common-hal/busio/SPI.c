@@ -38,6 +38,8 @@
 
 #define MAX_SPI 6 //TODO; replace this as part of periph cleanup
 #define ALL_CLOCKS 0xFF
+
+//arrays use 0 based numbering: SPI1 is stored at index 0
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
 
