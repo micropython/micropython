@@ -64,7 +64,7 @@ typedef struct _machine_rtc_obj_t {
 #if MICROPY_HW_RTC_USER_MEM_MAX > 0
 #define MEM_MAGIC           0x75507921
 RTC_DATA_ATTR uint32_t rtc_user_mem_magic;
-RTC_DATA_ATTR uint32_t rtc_user_mem_len;
+RTC_DATA_ATTR uint16_t rtc_user_mem_len;
 RTC_DATA_ATTR uint8_t rtc_user_mem_data[MICROPY_HW_RTC_USER_MEM_MAX];
 #endif
 
@@ -145,10 +145,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
-        uint32_t len = rtc_user_mem_len;
         uint8_t rtcram[MICROPY_HW_RTC_USER_MEM_MAX];
-        memcpy( (char *) rtcram, (char *) rtc_user_mem_data, len);
-        return mp_obj_new_bytes(rtcram,  len);
+        memcpy((char*)rtcram, (char*)rtc_user_mem_data, rtc_user_mem_len);
+        return mp_obj_new_bytes(rtcram, rtc_user_mem_len);
     } else {
         // write RTC memory
         mp_buffer_info_t bufinfo;
