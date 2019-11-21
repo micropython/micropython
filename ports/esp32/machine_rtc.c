@@ -44,22 +44,29 @@ typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
 } machine_rtc_obj_t;
 
-#define MEM_MAGIC           0x75507921
 /* There is 8K of rtc_slow_memory, but some is used by the system software
-    If the USER_MAXLEN is set to high, the following compile error will happen:
+    If the MICROPY_HW_RTC_USER_MEM_MAX is set to high, the following compile error will happen:
         region `rtc_slow_seg' overflowed by N bytes
     The current system software allows almost 4096 to be used.
     To avoid running into issues if the system software uses more, 2048 was picked as a max length
 
     You can also change this max length at compile time by defining MICROPY_HW_RTC_USER_MEM_MAX
     either on your make line, or in your board config.
+
+    If MICROPY_HW_RTC_USER_MEM_MAX is set to 0, the RTC.memory() functionality will be not
+    be compiled which frees some extra flash and RTC memory.
 */
 #ifndef MICROPY_HW_RTC_USER_MEM_MAX
 #define MICROPY_HW_RTC_USER_MEM_MAX     2048
 #endif
+
+// Optionally compile user memory functionality if the size of memory is greater than 0
+#if MICROPY_HW_RTC_USER_MEM_MAX > 0
+#define MEM_MAGIC           0x75507921
 RTC_DATA_ATTR uint32_t rtc_user_mem_magic;
 RTC_DATA_ATTR uint32_t rtc_user_mem_len;
 RTC_DATA_ATTR uint8_t rtc_user_mem_data[MICROPY_HW_RTC_USER_MEM_MAX];
+#endif
 
 // singleton RTC object
 STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
@@ -123,14 +130,19 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
     machine_rtc_datetime_helper(2, args);
 
+    #if MICROPY_HW_RTC_USER_MEM_MAX > 0
     if (rtc_user_mem_magic != MEM_MAGIC) {
         rtc_user_mem_magic = MEM_MAGIC;
         rtc_user_mem_len = 0;
     }
+    #endif
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
+
+#if MICROPY_HW_RTC_USER_MEM_MAX > 0
 STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
@@ -152,11 +164,16 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_memory_obj, 1, 2, machine_rtc_memory);
+#endif
+
 
 STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
+
+    #if MICROPY_HW_RTC_USER_MEM_MAX > 0
     { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&machine_rtc_memory_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
