@@ -84,12 +84,12 @@
 //|
 //|   Catch all exception for Bluetooth related errors.
 //|
-MP_DEFINE_EXCEPTION(BluetoothError, Exception)
+MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_BluetoothError, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_BluetoothError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
@@ -98,11 +98,11 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...)
 //|
 //|   Raised when a connection is unavailable.
 //|
-MP_DEFINE_EXCEPTION(ConnectionError, BluetoothError)
+MP_DEFINE_BLEIO_EXCEPTION(ConnectionError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ConnectionError, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_ConnectionError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
@@ -112,25 +112,26 @@ NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...
 //|   Raised when a resource is used as the mismatched role. For example, if a local CCCD is
 //|   attempted to be set but they can only be set when remote.
 //|
-MP_DEFINE_EXCEPTION(RoleError, BluetoothError)
+MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
-    mp_raise_msg(&mp_type_RoleError, msg);
+    mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
 
 //| .. class:: SecurityError(BluetoothError)
 //|
 //|   Raised when a security related error occurs.
 //|
-MP_DEFINE_EXCEPTION(SecurityError, BluetoothError)
+MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_SecurityError, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_SecurityError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
 
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
+    // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
     { MP_ROM_QSTR(MP_QSTR_Adapter),              MP_ROM_PTR(&bleio_adapter_type) },
     { MP_ROM_QSTR(MP_QSTR_Address),              MP_ROM_PTR(&bleio_address_type) },
@@ -148,13 +149,23 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
 
     // Errors
-    { MP_ROM_QSTR(MP_QSTR_BluetoothError),      MP_ROM_PTR(&mp_type_BluetoothError) },
-    { MP_ROM_QSTR(MP_QSTR_ConnectionError),     MP_ROM_PTR(&mp_type_ConnectionError) },
-    { MP_ROM_QSTR(MP_QSTR_RoleError),           MP_ROM_PTR(&mp_type_RoleError) },
-    { MP_ROM_QSTR(MP_QSTR_SecurityError),       MP_ROM_PTR(&mp_type_SecurityError) },
+    { MP_ROM_QSTR(MP_QSTR_BluetoothError),      MP_ROM_PTR(&mp_type_bleio_BluetoothError) },
+    { MP_ROM_QSTR(MP_QSTR_ConnectionError),     MP_ROM_PTR(&mp_type_bleio_ConnectionError) },
+    { MP_ROM_QSTR(MP_QSTR_RoleError),           MP_ROM_PTR(&mp_type_bleio_RoleError) },
+    { MP_ROM_QSTR(MP_QSTR_SecurityError),       MP_ROM_PTR(&mp_type_bleio_SecurityError) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
+
+void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
+    bool is_subclass = kind & PRINT_EXC_SUBCLASS;
+    if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
+        mp_print_str(print, qstr_str(MP_OBJ_QSTR_VALUE(bleio_module_globals_table[0].value)));
+        mp_print_str(print, ".");
+    }
+    mp_obj_exception_print(print, o_in, kind);
+}
 
 const mp_obj_module_t bleio_module = {
     .base = { &mp_type_module },

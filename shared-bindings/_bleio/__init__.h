@@ -38,10 +38,22 @@
 
 extern bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
-extern const mp_obj_type_t mp_type_BluetoothError;
-extern const mp_obj_type_t mp_type_ConnectionError;
-extern const mp_obj_type_t mp_type_RoleError;
-extern const mp_obj_type_t mp_type_SecurityError;
+void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
+
+#define MP_DEFINE_BLEIO_EXCEPTION(exc_name, base_name) \
+const mp_obj_type_t mp_type_bleio_ ## exc_name = { \
+    { &mp_type_type }, \
+    .name = MP_QSTR_ ## exc_name, \
+    .print = bleio_exception_print, \
+    .make_new = mp_obj_exception_make_new, \
+    .attr = mp_obj_exception_attr, \
+    .parent = &mp_type_ ## base_name, \
+};
+
+extern const mp_obj_type_t mp_type_bleio_BluetoothError;
+extern const mp_obj_type_t mp_type_bleio_ConnectionError;
+extern const mp_obj_type_t mp_type_bleio_RoleError;
+extern const mp_obj_type_t mp_type_bleio_SecurityError;
 
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* msg, ...);
 NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* msg, ...);
