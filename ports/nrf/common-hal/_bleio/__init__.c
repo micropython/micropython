@@ -62,6 +62,9 @@ void check_gatt_status(uint16_t gatt_status) {
         case BLE_GATT_STATUS_ATTERR_INSUF_AUTHENTICATION:
             mp_raise_bleio_SecurityError(translate("Insufficient authentication"));
             return;
+        case BLE_GATT_STATUS_ATTERR_INSUF_ENCRYPTION:
+            mp_raise_bleio_SecurityError(translate("Insufficient encryption"));
+            return;
         default:
             mp_raise_bleio_BluetoothError(translate("Unknown gatt error: 0x%04x"), gatt_status);
     }

@@ -321,7 +321,7 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: connect(address, *, timeout, pair=False)
+//|   .. method:: connect(address, *, timeout)
 //|
 //|     Attempts a connection to the device with the given address.
 //|
@@ -331,11 +331,10 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
 STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_address, ARG_timeout, ARG_pair };
+    enum { ARG_address, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_pair, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -348,7 +347,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
-    return common_hal_bleio_adapter_connect(self, address, timeout, args[ARG_pair].u_bool);
+    return common_hal_bleio_adapter_connect(self, address, timeout);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
 
