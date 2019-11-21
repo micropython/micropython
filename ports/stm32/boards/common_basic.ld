@@ -28,6 +28,13 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
+        /* KEEP required because some of these are left with no references
+        if MICROPY_SMALL_DATA_SECTION is enabled */
+        KEEP(*(.rodata.mp_const_none_obj))
+        KEEP(*(.rodata.mp_const_false_obj))
+        KEEP(*(.rodata.mp_const_true_obj))
+        KEEP(*(.rodata.mp_type_type))
+        . = ALIGN(4);
         *(.text*)          /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */

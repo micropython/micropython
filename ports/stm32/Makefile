@@ -106,6 +106,14 @@ CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 endif
 endif
 
+ifeq ($(MICROPY_SMALL_DATA_SECTION), 1)
+CFLAGS += -DMICROPY_SMALL_DATA_SECTION=1
+CFLAGS += -DMP_SMALL_DATA_CONST_NONE=$(MP_SMALL_DATA_CONST_NONE)
+CFLAGS += -DMP_SMALL_DATA_CONST_FALSE=$(MP_SMALL_DATA_CONST_FALSE)
+CFLAGS += -DMP_SMALL_DATA_CONST_TRUE=$(MP_SMALL_DATA_CONST_TRUE)
+CFLAGS += -DMP_SMALL_DATA_TYPE_TYPE=$(MP_SMALL_DATA_TYPE_TYPE)
+endif
+
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym=_estack_reserve=8
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
