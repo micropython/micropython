@@ -160,7 +160,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
 void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
-    if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
+    if (!is_subclass && (k == PRINT_EXC)) {
         mp_print_str(print, qstr_str(MP_OBJ_QSTR_VALUE(bleio_module_globals_table[0].value)));
         mp_print_str(print, ".");
     }
