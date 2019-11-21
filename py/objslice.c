@@ -124,6 +124,14 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     return MP_OBJ_FROM_PTR(o);
 }
 
+void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
+    assert(mp_obj_is_type(self_in, &mp_type_slice));
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
+    *start = self->start;
+    *stop = self->stop;
+    *step = self->step;
+}
+
 // Return the real index and step values for a slice when applied to a sequence of
 // the given length, resolving missing components, negative values and values off
 // the end of the sequence.

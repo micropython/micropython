@@ -183,23 +183,28 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
 #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
-            mp_bound_slice_t slice;
-            mp_obj_slice_indices(index, utf8_charlen(self_data, self_len), &slice);
-
-            if (slice.step != 1) {
+            mp_obj_t ostart, ostop, ostep;
+            mp_obj_slice_get(index, &ostart, &ostop, &ostep);
+            if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
                 mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
             }
 
-            if (slice.stop <= slice.start) {
+            const byte *pstart, *pstop;
+            if (ostart != mp_const_none) {
+                pstart = str_index_to_ptr(type, self_data, self_len, ostart, true);
+            } else {
+                pstart = self_data;
+            }
+            if (ostop != mp_const_none) {
+                // pstop will point just after the stop character. This depends on
+                // the \0 at the end of the string.
+                pstop = str_index_to_ptr(type, self_data, self_len, ostop, true);
+            } else {
+                pstop = self_data + self_len;
+            }
+            if (pstop < pstart) {
                 return MP_OBJ_NEW_QSTR(MP_QSTR_);
             }
-
-            const byte *pstart, *pstop;
-            pstart = str_index_to_ptr(type, self_data, self_len,
-                                      MP_OBJ_NEW_SMALL_INT(slice.start), true);
-            pstop = str_index_to_ptr(type, self_data, self_len,
-                                     MP_OBJ_NEW_SMALL_INT(slice.stop), true);
-
             return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
 #endif
