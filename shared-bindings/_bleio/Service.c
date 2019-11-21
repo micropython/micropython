@@ -64,7 +64,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
     if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_ValueError(translate("Expected a UUID"));
+        mp_raise_TypeError(translate("Expected a UUID"));
     }
 
     const bool is_secondary = args[ARG_secondary].u_bool;

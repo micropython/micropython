@@ -36,6 +36,7 @@
 #include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Characteristic.h"
@@ -67,7 +68,7 @@
 
 STATIC void ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
-        mp_raise_ValueError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
+        mp_raise_bleio_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
     }
 }
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-17 20:54-0600\n"
+"POT-Creation-Date: 2019-11-20 14:01-0800\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -481,11 +481,6 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr "Nie można zdekodować ble_uuid, błąd 0x%04x"
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
@@ -579,11 +574,6 @@ msgstr ""
 msgid "Expected tuple of length %d, got %d"
 msgstr "Oczekiwano krotkę długości %d, otrzymano %d"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed initiate attribute read, err 0x%04x"
-msgstr ""
-
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr ""
@@ -592,15 +582,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
-
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to add characteristic, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to add descriptor, err 0x%04x"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -613,10 +594,6 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nie udała się alokacja %d bajtów na bufor RX"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr ""
 
@@ -624,92 +601,10 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to create service, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to discover services"
-msgstr "Nie udało się odkryć serwisów"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get local address"
-msgstr "Nie udało się uzyskać lokalnego adresu"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get softdevice state"
-msgstr "Nie udało się odczytać stanu softdevice"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr "Nie udało się powiadomić o wartości atrybutu, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to pair"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Nie udało się odczytać CCCD, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr "Nie udało się odczytać wartości atrybutu, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Nie udało się odczytać gatts, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Nie udało się zarejestrować UUID dostawcy, błąd 0x%04x"
-
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to start advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to start pairing, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr "Nie udało się rozpocząć skanowania, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to stop advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Nie udało się zapisać atrybutu, błąd 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Nie udało się zapisać gatts, błąd 0x%04x"
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -774,6 +669,10 @@ msgstr "Niewłaściwa wielkość bufora"
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Błąd I/O"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1320,6 +1219,21 @@ msgstr "Błąd zapisu do NVM."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Nieoczekiwany typ nrfx uuid."
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -2740,6 +2654,10 @@ msgstr "zerowy krok"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Charakterystyka w użyciu w innym serwisie"
 
+#, c-format
+#~ msgid "Could not decode ble_uuid, err 0x%04x"
+#~ msgstr "Nie można zdekodować ble_uuid, błąd 0x%04x"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
@@ -2771,6 +2689,35 @@ msgstr "zerowy krok"
 #~ msgid "Failed to create mutex"
 #~ msgstr "Nie udało się stworzyć blokady"
 
+#~ msgid "Failed to discover services"
+#~ msgstr "Nie udało się odkryć serwisów"
+
+#~ msgid "Failed to get local address"
+#~ msgstr "Nie udało się uzyskać lokalnego adresu"
+
+#~ msgid "Failed to get softdevice state"
+#~ msgstr "Nie udało się odczytać stanu softdevice"
+
+#, c-format
+#~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
+#~ msgstr "Nie udało się powiadomić o wartości atrybutu, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to read CCCD value, err 0x%04x"
+#~ msgstr "Nie udało się odczytać CCCD, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to read attribute value, err 0x%04x"
+#~ msgstr "Nie udało się odczytać wartości atrybutu, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to read gatts value, err 0x%04x"
+#~ msgstr "Nie udało się odczytać gatts, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+#~ msgstr "Nie udało się zarejestrować UUID dostawcy, błąd 0x%04x"
+
 #~ msgid "Failed to release mutex"
 #~ msgstr "Nie udało się zwolnić blokady"
 
@@ -2783,11 +2730,23 @@ msgstr "zerowy krok"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Nie udało się rozpocząć skanowania"
 
+#, c-format
+#~ msgid "Failed to start scanning, err 0x%04x"
+#~ msgstr "Nie udało się rozpocząć skanowania, błąd 0x%04x"
+
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania"
 
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to write attribute value, err 0x%04x"
+#~ msgstr "Nie udało się zapisać atrybutu, błąd 0x%04x"
+
+#, c-format
+#~ msgid "Failed to write gatts value, err 0x%04x"
+#~ msgstr "Nie udało się zapisać gatts, błąd 0x%04x"
 
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Zła nóżka zegara"
