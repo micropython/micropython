@@ -40,28 +40,49 @@
 
 #include "common-hal/_bleio/__init__.h"
 
-const mp_obj_t base_error_messages[20] = {
-    MP_ROM_QSTR(MP_QSTR_SUCCESS),
-    MP_ROM_QSTR(MP_QSTR_SVC_HANDLER_MISSING),
-    MP_ROM_QSTR(MP_QSTR_SOFTDEVICE_NOT_ENABLED),
-    MP_ROM_QSTR(MP_QSTR_INTERNAL),
-    MP_ROM_QSTR(MP_QSTR_NO_MEM),
-    MP_ROM_QSTR(MP_QSTR_NOT_FOUND),
-    MP_ROM_QSTR(MP_QSTR_NOT_SUPPORTED),
-    MP_ROM_QSTR(MP_QSTR_INVALID_PARAM),
-    MP_ROM_QSTR(MP_QSTR_INVALID_STATE),
-    MP_ROM_QSTR(MP_QSTR_INVALID_LENGTH),
-    MP_ROM_QSTR(MP_QSTR_INVALID_FLAGS),
-    MP_ROM_QSTR(MP_QSTR_INVALID_DATA),
-    MP_ROM_QSTR(MP_QSTR_DATA_SIZE),
-    MP_ROM_QSTR(MP_QSTR_TIMEOUT),
-    MP_ROM_QSTR(MP_QSTR_NULL),
-    MP_ROM_QSTR(MP_QSTR_FORBIDDEN),
-    MP_ROM_QSTR(MP_QSTR_INVALID_ADDR),
-    MP_ROM_QSTR(MP_QSTR_BUSY),
-    MP_ROM_QSTR(MP_QSTR_CONN_COUNT),
-    MP_ROM_QSTR(MP_QSTR_RESOURCES),
-};
+void check_nrf_error(uint32_t err_code) {
+    if (err_code == NRF_SUCCESS) {
+        return;
+    }
+    switch (err_code) {
+        case NRF_ERROR_TIMEOUT:
+            mp_raise_msg(&mp_type_TimeoutError, NULL);
+            return;
+        default:
+            mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
+            break;
+    }
+}
+
+void check_gatt_status(uint16_t gatt_status) {
+    if (gatt_status == BLE_GATT_STATUS_SUCCESS) {
+        return;
+    }
+    switch (gatt_status) {
+        case BLE_GATT_STATUS_ATTERR_INSUF_AUTHENTICATION:
+            mp_raise_bleio_SecurityError(translate("Insufficient authentication"));
+            return;
+        case BLE_GATT_STATUS_ATTERR_INSUF_ENCRYPTION:
+            mp_raise_bleio_SecurityError(translate("Insufficient encryption"));
+            return;
+        default:
+            mp_raise_bleio_BluetoothError(translate("Unknown gatt error: 0x%04x"), gatt_status);
+    }
+}
+
+void check_sec_status(uint8_t sec_status) {
+    if (sec_status == BLE_GAP_SEC_STATUS_SUCCESS) {
+        return;
+    }
+
+    switch (sec_status) {
+        case BLE_GAP_SEC_STATUS_UNSPECIFIED:
+            mp_raise_bleio_SecurityError(translate("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
+            return;
+        default:
+            mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
+    }
+}
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
@@ -85,7 +106,7 @@ bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_OSError_msg(translate("Not connected"));
+        mp_raise_bleio_ConnectionError(translate("Not connected"));
     }
 }
 
@@ -99,10 +120,7 @@ size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_
         .len = len,
     };
 
-    uint32_t err_code = sd_ble_gatts_value_get(conn_handle, handle, &gatts_value);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read gatts value, err 0x%04x"), err_code);
-    }
+    check_nrf_error(sd_ble_gatts_value_get(conn_handle, handle, &gatts_value));
 
     return gatts_value.len;
 }
@@ -116,10 +134,7 @@ void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buff
         .len = bufinfo->len,
     };
 
-    const uint32_t err_code = sd_ble_gatts_value_set(conn_handle, handle, &gatts_value);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to write gatts value, err 0x%04x"), err_code);
-    }
+    check_nrf_error(sd_ble_gatts_value_set(conn_handle, handle, &gatts_value));
 }
 
 typedef struct {
@@ -172,17 +187,12 @@ size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_
     read_info.done = false;
     ble_drv_add_event_handler(_on_gattc_read_rsp_evt, &read_info);
 
-    const uint32_t err_code = sd_ble_gattc_read(conn_handle, handle, 0);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed initiate attribute read, err 0x%04x"), err_code);
-    }
+    check_nrf_error(sd_ble_gattc_read(conn_handle, handle, 0));
 
     while (!read_info.done) {
         RUN_BACKGROUND_TASKS;
     }
-    if (read_info.status != BLE_GATT_STATUS_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read attribute value, err 0x%04x"), read_info.status);
-    }
+    check_gatt_status(read_info.status);
 
     ble_drv_remove_event_handler(_on_gattc_read_rsp_evt, &read_info);
     return read_info.final_len;
@@ -213,7 +223,7 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
         }
 
         // Some real error occurred.
-        mp_raise_OSError_msg_varg(translate("Failed to write attribute value, err 0x%04x"), err_code);
+        check_nrf_error(err_code);
     }
 
 }
