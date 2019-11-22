@@ -26,6 +26,18 @@
 #include "ringbuf.h"
 
 int ringbuf_get16(ringbuf_t *r) {
+    int v = ringbuf_peek16(r);
+    if (v == -1) {
+        return v;
+    }
+    r->iget += 2;
+    if (r->iget >= r->size) {
+        r->iget -= r->size;
+    }
+    return v;
+}
+
+int ringbuf_peek16(ringbuf_t *r) {
     if (r->iget == r->iput) {
         return -1;
     }
@@ -36,12 +48,7 @@ int ringbuf_get16(ringbuf_t *r) {
     if (iget_a == r->iput) {
         return -1;
     }
-    uint16_t v = (r->buf[r->iget] << 8) | (r->buf[iget_a]);
-    r->iget = iget_a + 1;
-    if (r->iget == r->size) {
-        r->iget = 0;
-    }
-    return v;
+    return (r->buf[r->iget] << 8) | (r->buf[iget_a]);
 }
 
 int ringbuf_put16(ringbuf_t *r, uint16_t v) {

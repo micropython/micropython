@@ -792,13 +792,40 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluetooth_ble_invoke_irq_obj, bluetooth_ble_inv
 STATIC bool enqueue_irq(mp_obj_bluetooth_ble_t *o, size_t len, uint16_t event, bool *sched) {
     *sched = false;
 
-    if (o && ringbuf_free(&o->ringbuf) >= len + 2 && (o->irq_trigger & event) && o->irq_handler != mp_const_none) {
-        *sched = ringbuf_avail(&o->ringbuf) == 0;
-        ringbuf_put16(&o->ringbuf, event);
-        return true;
-    } else {
+    if (!o || !(o->irq_trigger & event) || o->irq_handler == mp_const_none) {
         return false;
     }
+
+    if (ringbuf_free(&o->ringbuf) < len + 2) {
+        // Ringbuffer doesn't have room (and is therefore non-empty).
+
+        // If this is another scan result, or the front of the ringbuffer isn't a scan result, then nothing to do.
+        if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT || ringbuf_peek16(&o->ringbuf) != MP_BLUETOOTH_IRQ_SCAN_RESULT) {
+            return false;
+        }
+
+        // Front of the queue is a scan result, remove it.
+
+        // event, addr_type, addr, connectable, rssi
+        int n = 2 + 1 + 6 + 1 + 1;
+        for (int i = 0; i < n; ++i) {
+            ringbuf_get(&o->ringbuf);
+        }
+        // adv_data
+        n = ringbuf_get(&o->ringbuf);
+        for (int i = 0; i < n; ++i) {
+            ringbuf_get(&o->ringbuf);
+        }
+
+        // No need to schedule the handler, as the ringbuffer was non-empty.
+    } else {
+        // Schedule the handler only if this is the first thing in the ringbuffer.
+        *sched = ringbuf_avail(&o->ringbuf) == 0;
+    }
+
+    // Append this event, the caller will then append the arguments.
+    ringbuf_put16(&o->ringbuf, event);
+    return true;
 }
 
 STATIC void schedule_ringbuf(bool sched) {
