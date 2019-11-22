@@ -10,3 +10,5 @@ CHIP_FAMILY = samd21
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 CIRCUITPY_SMALL_BUILD = 1
+
+CFLAGS_BOARD = --param inline-unit-growth=15 --param max-inline-insns-auto=20
