@@ -781,8 +781,8 @@ void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
 // slice indexes resolved to particular sequence
 typedef struct {
-    mp_uint_t start;
-    mp_uint_t stop;
+    mp_int_t start;
+    mp_int_t stop;
     mp_int_t step;
 } mp_bound_slice_t;
 
