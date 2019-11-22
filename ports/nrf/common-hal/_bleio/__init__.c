@@ -62,6 +62,9 @@ void check_gatt_status(uint16_t gatt_status) {
         case BLE_GATT_STATUS_ATTERR_INSUF_AUTHENTICATION:
             mp_raise_bleio_SecurityError(translate("Insufficient authentication"));
             return;
+        case BLE_GATT_STATUS_ATTERR_INSUF_ENCRYPTION:
+            mp_raise_bleio_SecurityError(translate("Insufficient encryption"));
+            return;
         default:
             mp_raise_bleio_BluetoothError(translate("Unknown gatt error: 0x%04x"), gatt_status);
     }
@@ -71,7 +74,14 @@ void check_sec_status(uint8_t sec_status) {
     if (sec_status == BLE_GAP_SEC_STATUS_SUCCESS) {
         return;
     }
-    mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
+
+    switch (sec_status) {
+        case BLE_GAP_SEC_STATUS_UNSPECIFIED:
+            mp_raise_bleio_SecurityError(translate("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
+            return;
+        default:
+            mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
+    }
 }
 
 // Turn off BLE on a reset or reload.

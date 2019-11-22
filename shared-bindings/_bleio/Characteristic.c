@@ -168,7 +168,7 @@ const mp_obj_property_t bleio_characteristic_properties_obj = {
 //|   .. attribute:: uuid
 //|
 //|     The UUID of this characteristic. (read-only)
-//|     
+//|
 //|     Will be ``None`` if the 128-bit UUID for this characteristic is not known.
 //|
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {

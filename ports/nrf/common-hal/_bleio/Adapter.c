@@ -178,6 +178,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
+            connection->pair_status = PAIR_NOT_PAIRED;
             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
             self->connection_objs = NULL;
 
@@ -436,7 +437,7 @@ STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
     return true;
 }
 
-mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout, bool pair) {
+mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout) {
 
     ble_gap_addr_t addr;
 
