@@ -221,6 +221,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
+    NRF_I2S->TASKS_STOP = 1;
+    NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     reset_pin_number(self->bit_clock_pin_number);
     self->bit_clock_pin_number = 0xff;
     reset_pin_number(self->word_select_pin_number);
