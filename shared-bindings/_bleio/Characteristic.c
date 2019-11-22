@@ -338,7 +338,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_locals_dict, bleio_characterist
 STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->uuid) {
-        mp_printf(print, "0x%08x Characteristic(", (uint32_t) self_in);
+        mp_printf(print, "Characteristic(");
         bleio_uuid_print(print, MP_OBJ_FROM_PTR(self->uuid), kind);
         mp_printf(print, ")");
     } else {

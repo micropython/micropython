@@ -290,7 +290,6 @@ STATIC bool discover_next_characteristics(bleio_connection_internal_t* connectio
 
     uint32_t err_code = sd_ble_gattc_characteristics_discover(connection->conn_handle, &handle_range);
     if (err_code != NRF_SUCCESS) {
-        asm("bkpt");
         return false;
     }
 
