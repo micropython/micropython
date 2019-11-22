@@ -173,12 +173,13 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                     break;
                 }
             }
-             
+
             // Central has connected.
             ble_gap_evt_connected_t* connected = &ble_evt->evt.gap_evt.params.connected;
 
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
+            connection->pair_status = PAIR_NOT_PAIRED;
             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
             self->connection_objs = NULL;
 
@@ -210,7 +211,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 obj->disconnect_reason = ble_evt->evt.gap_evt.params.disconnected.reason;
             }
             self->connection_objs = NULL;
-            
+
             break;
         }
 
@@ -228,13 +229,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 }
 
 STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
-    uint32_t err_code;
-
-    err_code = sd_ble_gap_addr_get(address);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to get local address"));
-    }
+    check_nrf_error(sd_ble_gap_addr_get(address));
 }
 
 char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 , 0};
@@ -275,9 +270,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     // Re-init USB hardware
     init_usb_hardware();
 
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to change softdevice state, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
+    check_nrf_error(err_code);
 
     // Add a handler for incoming peripheral connections.
     if (enabled) {
@@ -299,10 +292,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
     uint8_t is_enabled;
 
-    const uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to get softdevice state"));
-    }
+    check_nrf_error(sd_softdevice_is_enabled(&is_enabled));
 
     return is_enabled;
 }
@@ -374,7 +364,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
 mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_RuntimeError(translate("Scan already in progess. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }
@@ -385,7 +375,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
     self->scan_results->common_hal_data = sd_data;
     sd_data->len = max_packet_size;
     sd_data->p_data = raw_data + sizeof(ble_data_t);
-    
+
     ble_drv_add_event_handler(scan_on_ble_evt, self->scan_results);
 
     uint32_t nrf_timeout = SEC_TO_UNITS(timeout, UNIT_10_MS);
@@ -407,7 +397,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
     if (err_code != NRF_SUCCESS) {
         self->scan_results = NULL;
         ble_drv_remove_event_handler(scan_on_ble_evt, self->scan_results);
-        mp_raise_OSError_msg_varg(translate("Failed to start scanning, err 0x%04x"), err_code);
+        check_nrf_error(err_code);
     }
 
     return MP_OBJ_FROM_PTR(self->scan_results);
@@ -432,7 +422,7 @@ STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
         case BLE_GAP_EVT_CONNECTED:
             info->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             info->done = true;
-            
+
             break;
 
         case BLE_GAP_EVT_TIMEOUT:
@@ -448,7 +438,7 @@ STATIC bool connect_on_ble_evt(ble_evt_t *ble_evt, void *info_in) {
     return true;
 }
 
-mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout, bool pair) {
+mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout) {
 
     ble_gap_addr_t addr;
 
@@ -480,7 +470,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 
     if (err_code != NRF_SUCCESS) {
         ble_drv_remove_event_handler(connect_on_ble_evt, &event_info);
-        mp_raise_OSError_msg_varg(translate("Failed to start connecting, error 0x%04x"), err_code);
+        check_nrf_error(err_code);
     }
 
     while (!event_info.done) {
@@ -490,7 +480,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_drv_remove_event_handler(connect_on_ble_evt, &event_info);
 
     if (event_info.conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_OSError_msg(translate("Failed to connect: timeout"));
+        mp_raise_bleio_BluetoothError(translate("Failed to connect: timeout"));
     }
 
     // Make the connection object and return it.
@@ -501,7 +491,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         }
     }
 
-    mp_raise_OSError_msg(translate("Failed to connect: internal error"));
+    mp_raise_bleio_BluetoothError(translate("Failed to connect: internal error"));
 
     return mp_const_none;
 }
@@ -559,11 +549,9 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 
 void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
     if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
-        mp_raise_OSError_msg(translate("Already advertising."));
+        mp_raise_bleio_BluetoothError(translate("Already advertising."));
     }
     // interval value has already been validated.
-
-    uint32_t err_code;
 
     check_data_fit(advertising_data_bufinfo->len);
     check_data_fit(scan_response_data_bufinfo->len);
@@ -575,15 +563,15 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     if (self->scan_response_data == NULL) {
         self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_MAX * sizeof(uint8_t), false, true);
     }
-    
+
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
     memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
 
-    err_code = _common_hal_bleio_adapter_start_advertising(self, connectable, interval, self->advertising_data, advertising_data_bufinfo->len, self->scan_response_data, scan_response_data_bufinfo->len);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to start advertising, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
+    check_nrf_error(_common_hal_bleio_adapter_start_advertising(self, connectable, interval,
+                                                                self->advertising_data,
+                                                                advertising_data_bufinfo->len,
+                                                                self->scan_response_data,
+                                                                scan_response_data_bufinfo->len));
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
@@ -595,7 +583,7 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
     self->current_advertising_data = NULL;
 
     if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE)) {
-        mp_raise_OSError_msg_varg(translate("Failed to stop advertising, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
+        check_nrf_error(err_code);
     }
 }
 
