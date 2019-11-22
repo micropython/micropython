@@ -29,9 +29,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void stm32f4_peripherals_gpio_init(void) {
-    //Enable all GPIO for now
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    /* GPIO Ports Clock Enable */
+    //* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();
