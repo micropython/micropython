@@ -42,24 +42,6 @@ $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
 
-# External modules written in C.
-ifneq ($(USER_C_MODULES),)
-# pre-define USERMOD variables as expanded so that variables are immediate
-# expanded as they're added to them
-SRC_USERMOD :=
-CFLAGS_USERMOD :=
-LDFLAGS_USERMOD :=
-$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
-    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
-    $(info Including User C Module from $(USERMOD_DIR))\
-	$(eval include $(module))\
-)
-
-SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
-CFLAGS_MOD += $(CFLAGS_USERMOD)
-LDFLAGS_MOD += $(LDFLAGS_USERMOD)
-endif
-
 #lodepng
 LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
 ALL_LODEPNG_SRC = $(shell find $(LODEPNG_DIR) -type f)
@@ -79,6 +61,25 @@ $(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp
 	cp $< $@
 
 SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(LODEPNG_MODULE))
+
+
+# External modules written in C.
+ifneq ($(USER_C_MODULES),)
+# pre-define USERMOD variables as expanded so that variables are immediate
+# expanded as they're added to them
+SRC_USERMOD :=
+CFLAGS_USERMOD :=
+LDFLAGS_USERMOD :=
+$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(module))\
+)
+
+SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
+CFLAGS_MOD += $(CFLAGS_USERMOD)
+LDFLAGS_MOD += $(LDFLAGS_USERMOD)
+endif
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\

@@ -203,8 +203,8 @@ writes from a central to a given characteristic, use
     value.
 
     The **flags** are a bitwise-OR combination of the
-    :data:`ubluetooth.FLAGS_READ`, :data:`bluetooth.FLAGS_WRITE` and
-    :data:`ubluetooth.FLAGS_NOTIFY` values defined below.
+    :data:`ubluetooth.FLAG_READ`, :data:`ubluetooth.FLAG_WRITE` and
+    :data:`ubluetooth.FLAG_NOTIFY` values defined below.
 
     The return value is a list (one element per service) of tuples (each element
     is a value handle). Characteristics and descriptor handles are flattened

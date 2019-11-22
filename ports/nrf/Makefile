@@ -43,8 +43,7 @@ include ../../py/py.mk
 
 GIT_SUBMODULES = lib/nrfx lib/tinyusb
 
-MICROPY_FATFS ?= 0
-FATFS_DIR = lib/oofatfs
+MICROPY_VFS_FAT ?= 0
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
 
@@ -318,7 +317,7 @@ OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
-$(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
+$(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 .PHONY: all flash deploy sd binary hex

@@ -227,8 +227,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
                     return image_from_parsed_str(str, len);
                 }
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                    "Image(s) takes a string."));
+                mp_raise_msg(&mp_type_TypeError, "Image(s) takes a string.");
             }
         }
 
@@ -259,8 +258,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
         }
 
         default: {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "Image() takes 0 to 3 arguments"));
+            mp_raise_msg(&mp_type_TypeError, "Image() takes 0 to 3 arguments");
         }
     }
 }
@@ -365,7 +363,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(microbit_image_get_pixel_obj, microbit_image_get_pixel
 /* Raise an exception if not mutable */
 static void check_mutability(microbit_image_obj_t *self) {
     if (self->base.five) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "image cannot be modified (try copying first)"));
+        mp_raise_msg(&mp_type_TypeError, "image cannot be modified (try copying first)");
     }
 }
 
@@ -408,11 +406,10 @@ mp_obj_t microbit_image_blit(mp_uint_t n_args, const mp_obj_t *args) {
 
     mp_obj_t src = args[1];
     if (mp_obj_get_type(src) != &microbit_image_type) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "expecting an image"));
+        mp_raise_msg(&mp_type_TypeError, "expecting an image");
     }
     if (n_args == 7) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "must specify both offsets"));
+        mp_raise_msg(&mp_type_TypeError, "must specify both offsets");
     }
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);

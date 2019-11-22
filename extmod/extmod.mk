@@ -1,7 +1,20 @@
 # This makefile fragment provides rules to build 3rd-party components for extmod modules
 
+################################################################################
+# VFS FAT FS
+
+OOFATFS_DIR = lib/oofatfs
+
 # this sets the config file for FatFs
-CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
+CFLAGS_MOD += -DFFCONF_H=\"$(OOFATFS_DIR)/ffconf.h\"
+
+ifeq ($(MICROPY_VFS_FAT),1)
+CFLAGS_MOD += -DMICROPY_VFS_FAT=1
+SRC_MOD += $(addprefix $(OOFATFS_DIR)/,\
+	ff.c \
+	ffunicode.c \
+	)
+endif
 
 ################################################################################
 # VFS littlefs

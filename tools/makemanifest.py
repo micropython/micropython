@@ -147,7 +147,7 @@ def get_timestamp(path, default=None):
 
 def get_timestamp_newest(path):
     ts_newest = 0
-    for dirpath, dirnames, filenames in os.walk(path):
+    for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
         for f in filenames:
             ts_newest = max(ts_newest, get_timestamp(os.path.join(dirpath, f)))
     return ts_newest
@@ -171,7 +171,7 @@ def freeze_internal(kind, path, script, opt):
             raise FreezeError('can only freeze one str directory')
         manifest_list.append((KIND_AS_STR, path, script, opt))
     elif script is None:
-        for dirpath, dirnames, filenames in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
             for f in filenames:
                 freeze_internal(kind, path, (dirpath + '/' + f)[len(path) + 1:], opt)
     elif not isinstance(script, str):
@@ -185,7 +185,8 @@ def freeze_internal(kind, path, script, opt):
                     kind = k
                     break
             else:
-                raise FreezeError('unsupported file type {}'.format(script))
+                print('warn: unsupported file type, skipped freeze: {}'.format(script))
+                return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
             raise FreezeError('expecting a {} file, got {}'.format(wanted_extension, script))
@@ -269,13 +270,13 @@ def main():
         return
 
     # Freeze paths as strings
-    res, output_str = system([MAKE_FROZEN] + str_paths)
+    res, output_str = system([sys.executable, MAKE_FROZEN] + str_paths)
     if res != 0:
         print('error freezing strings {}: {}'.format(str_paths, output_str))
         sys.exit(1)
 
     # Freeze .mpy files
-    res, output_mpy = system([MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+    res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
     if res != 0:
         print('error freezing mpy {}: {}'.format(mpy_files, output_mpy))
         sys.exit(1)

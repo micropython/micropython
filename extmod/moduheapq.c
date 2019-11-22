@@ -81,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_uheapq_heappush_obj, mod_uheapq_heappush);
 STATIC mp_obj_t mod_uheapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = uheapq_get_heap(heap_in);
     if (heap->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
+        mp_raise_msg(&mp_type_IndexError, "empty heap");
     }
     mp_obj_t item = heap->items[0];
     heap->len -= 1;

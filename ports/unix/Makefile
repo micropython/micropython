@@ -25,7 +25,7 @@ INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
-CWARN = -Wall
+CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
@@ -78,7 +78,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2  
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
@@ -162,16 +162,15 @@ LIB_SRC_C = $(addprefix lib/,\
     lv_bindings/driver/SDL/SDL_monitor.c \
     lv_bindings/driver/SDL/SDL_mouse.c \
 	lv_bindings/driver/SDL/modSDL.c \
-	lv_bindings/driver/linux/modfb.c \
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
 	)
 
-# FatFS VFS support
+ifneq ($(UNAME_S),Darwin)
 LIB_SRC_C += $(addprefix lib/,\
-	oofatfs/ff.c \
-	oofatfs/ffunicode.c \
+	lv_bindings/driver/linux/modfb.c \
 	)
+endif
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -261,7 +260,7 @@ coverage:
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
-	    MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
+	    MICROPY_VFS_FAT=1 MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
 	    FROZEN_MANIFEST=manifest_coverage.py \
 	    BUILD=build-coverage PROG=micropython_coverage
 

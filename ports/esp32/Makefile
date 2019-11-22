@@ -29,9 +29,9 @@ QSTR_GLOBAL_REQUIREMENTS = $(SDKCONFIG_H)
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
-MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
-MICROPY_PY_ESPIFD = 1
+MICROPY_VFS_FAT = 1
+MICROPY_VFS_LFS2 = 1
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -276,6 +276,9 @@ COPT += -Os -DNDEBUG
 #LDFLAGS += --gc-sections
 endif
 
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=xtensawin
+
 # Enable SPIRAM support if CONFIG_ESP32_SPIRAM_SUPPORT=y in sdkconfig
 ifeq ($(CONFIG_ESP32_SPIRAM_SUPPORT),y)
 CFLAGS_COMMON += -mfix-esp32-psram-cache-issue
@@ -345,14 +348,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/sys_stdio_mphal.c \
 	)
 
-ifeq ($(MICROPY_FATFS), 1)
-LIB_SRC_C += \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/ffunicode.c
-endif
-
-ifeq ($(MICROPY_PY_ESPIFD), 1)
-
 #esp-idf generated module
 ESPIDFMOD_SOURCE = $(TOP)/lib/lv_bindings/driver/esp32/espidf.h
 ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE) $(SDKCONFIG_H)
@@ -360,7 +355,7 @@ ESPIDFMOD_MODULE = $(BUILD)/espidfmod/mp_espidf.c
 ESPIDFMOD_PP = $(BUILD)/espidfmod/mp_espidf.pp.c
 CFLAGS_MOD += $(ESPIDFMOD_CFLAGS) -Wno-deprecated-declarations
 
-$(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
+$(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 	$(ECHO) "ESPIDFMOD-GEN $@"
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CPP) $(ESPIDFMOD_CFLAGS) -DPYCPARSER -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(INC_ESPCOMP) $(ESPIDFMOD_SOURCE) > $(ESPIDFMOD_PP)
@@ -371,10 +366,8 @@ LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modrtch.c \
 	lib/lv_bindings/driver/esp32/espidf.c \
 	$(ESPIDFMOD_MODULE) \
-	# lib/lv_bindings/driver/esp32/modxpt2046.c \
-	# lib/lv_bindings/driver/esp32/modILI9341.c \
-
-endif
+	lib/lv_bindings/driver/esp32/modxpt2046.c \
+	lib/lv_bindings/driver/esp32/modILI9341.c \
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \

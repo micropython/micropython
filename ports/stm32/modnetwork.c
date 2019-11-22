@@ -119,7 +119,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
         return nic;
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+    mp_raise_msg(&mp_type_OSError, "no available NIC");
 }
 
 STATIC mp_obj_t network_route(void) {

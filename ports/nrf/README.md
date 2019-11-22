@@ -107,12 +107,12 @@ To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze
 
-## Enable MICROPY_FATFS
-As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_FATFS is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` and `MICROPY_VFS_FAT` in mpconfigport.h.
+## Enable MICROPY_VFS_FAT
+As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
 
 For example:
 
-     make BOARD=pca10040 MICROPY_FATFS=1
+     make BOARD=pca10040 MICROPY_VFS_FAT=1
 
 ## Target Boards and Make Flags
 

@@ -61,8 +61,6 @@ void *esp_native_code_commit(void*, size_t);
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
-#define MICROPY_VFS_FAT                     (1)
-#define MICROPY_PY_LVGL                     (1)
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
@@ -165,6 +163,9 @@ void *esp_native_code_commit(void*, size_t);
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_NAME   ("ESP32")
+#define MICROPY_PY_LVGL                     (1)
+#define MICROPY_PY_ESPIDF                   (1)
+#define MICROPY_PY_LODEPNG                  (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -197,6 +198,8 @@ extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_espidf;
 extern const struct _mp_obj_module_t mp_module_lvesp32;
 extern const struct _mp_obj_module_t mp_module_rtch;
+extern const struct _mp_obj_module_t mp_module_lodepng;
+
 // extern const struct _mp_obj_module_t mp_module_ILI9341;
 // extern const struct _mp_obj_module_t mp_module_xpt2046;
 
@@ -219,6 +222,8 @@ extern const struct _mp_obj_module_t mp_module_rtch;
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 },
 
 #define MP_STATE_PORT MP_STATE_VM
+
+struct _machine_timer_obj_t;
 
 #if MICROPY_PY_LVGL
 #include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"

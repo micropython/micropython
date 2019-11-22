@@ -2696,7 +2696,7 @@ STATIC void emit_native_return_value(emit_t *emit) {
         }
         if (return_vtype != VTYPE_PYOBJ) {
             emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, return_vtype, REG_ARG_2);
-            #if REG_RET != REG_PARENT_ARG_RET
+            #if REG_RET != REG_PARENT_RET
             ASM_MOV_REG_REG(emit->as, REG_PARENT_RET, REG_RET);
             #endif
         }

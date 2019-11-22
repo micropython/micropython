@@ -558,7 +558,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
             arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
             if (index >= arr_sz) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "struct: index out of range"));
+                mp_raise_msg(&mp_type_IndexError, "struct: index out of range");
             }
 
             if (t->len == 2) {

@@ -27,6 +27,7 @@
 
 #include "stdio.h"
 
+#include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "py/mphal.h"
@@ -135,7 +136,7 @@ void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, i
     BaseType_t result = xTaskCreatePinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id, MP_TASK_COREID);
     if (result != pdPASS) {
         mp_thread_mutex_unlock(&thread_mutex);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));
+        mp_raise_msg(&mp_type_OSError, "can't create thread");
     }
 
     // adjust the stack_size to provide room to recover from hitting the limit

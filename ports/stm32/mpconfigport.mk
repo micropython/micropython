@@ -8,3 +8,6 @@ MICROPY_PY_WIZNET5K ?= 0
 
 # cc3k module for wifi support
 MICROPY_PY_CC3K ?= 0
+
+# VFS FAT FS support
+MICROPY_VFS_FAT ?= 1
