@@ -127,7 +127,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     if (self->step == mp_const_none) {
         step = 1;
     } else {
-        step = mp_obj_int_get_checked(self->step);
+        step = mp_obj_get_int(self->step);
         if (step == 0) {
             mp_raise_ValueError("slice step cannot be zero");
         }
@@ -138,7 +138,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
         if (self->start == mp_const_none) {
             start = 0;
         } else {
-            start = mp_obj_int_get_checked(self->start);
+            start = mp_obj_get_int(self->start);
             if (start < 0) {
                 start += length;
             }
@@ -148,7 +148,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
         if (self->stop == mp_const_none) {
             stop = length;
         } else {
-            stop = mp_obj_int_get_checked(self->stop);
+            stop = mp_obj_get_int(self->stop);
             if (stop < 0) {
                 stop += length;
             }
@@ -159,7 +159,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
         if (self->start == mp_const_none) {
             start = length - 1;
         } else {
-            start = mp_obj_int_get_checked(self->start);
+            start = mp_obj_get_int(self->start);
             if (start < 0) {
                 start += length;
             }
@@ -169,7 +169,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
         if (self->stop == mp_const_none) {
             stop = -1;
         } else {
-            stop = mp_obj_int_get_checked(self->stop);
+            stop = mp_obj_get_int(self->stop);
             if (stop < 0) {
                 stop += length;
             }
