@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-20 14:01-0800\n"
+"POT-Creation-Date: 2019-11-21 16:50-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -677,6 +677,10 @@ msgstr "Eingabe-/Ausgabefehler"
 msgid "Insufficient authentication"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -1258,6 +1262,12 @@ msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
 "Nicht übereinstimmende Anzahl von Elementen auf der rechten Seite (erwartet "
 "%d, %d erhalten)."
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
