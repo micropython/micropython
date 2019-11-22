@@ -17,6 +17,8 @@ endif
 
 CIRCUITPY_AUDIOIO = 0
 
+# The ifndef's allow overriding in mpconfigboard.mk.
+
 ifndef CIRCUITPY_AUDIOMIXER
 CIRCUITPY_AUDIOMIXER = 1
 endif

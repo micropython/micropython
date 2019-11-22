@@ -38,6 +38,8 @@ ifeq ($(CHIP_FAMILY),samd51)
 # No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
+# The ifndef's allow overriding in mpconfigboard.mk.
+
 ifndef CIRCUITPY_NETWORK
 CIRCUITPY_NETWORK = 1
 MICROPY_PY_WIZNET5K = 5500
