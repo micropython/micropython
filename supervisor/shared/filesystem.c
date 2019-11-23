@@ -72,12 +72,12 @@ static void make_empty_file(FATFS *fatfs, const char *path) {
 
 static void make_sample_code_file(FATFS *fatfs) {
     FIL fs;
-    UINT *char_written = 0;
+    UINT char_written = 0;
     const byte buffer[] = "print('Hello World!')\n";
 
     //Create or modify existing code.py file 
     f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
-    f_write(&fs, buffer, sizeof(buffer) - 1, char_written);
+    f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
     f_close(&fs);
 }
 
