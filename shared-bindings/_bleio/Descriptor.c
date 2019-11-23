@@ -46,9 +46,8 @@
 //|
 //|   There is no regular constructor for a Descriptor. A new local Descriptor can be created
 //|   and attached to a Characteristic by calling `add_to_characteristic()`.
-//|   Remote Descriptor objects are created by `Central.discover_remote_services()`
-//|   or `Peripheral.discover_remote_services()` as part of remote Characteristics
-//|   in the remote Services that are discovered.
+//|   Remote Descriptor objects are created by `Connection.discover_remote_services()`
+//|   as part of remote Characteristics in the remote Services that are discovered.
 //|
 //|   .. classmethod:: add_to_characteristic(characteristic, uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=b'')
 //|
@@ -90,12 +89,12 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
 
     const mp_obj_t characteristic_obj = args[ARG_characteristic].u_obj;
     if (!MP_OBJ_IS_TYPE(characteristic_obj, &bleio_characteristic_type)) {
-        mp_raise_ValueError(translate("Expected a Characteristic"));
+        mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
     if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_ValueError(translate("Expected a UUID"));
+        mp_raise_TypeError(translate("Expected a UUID"));
     }
 
     const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
@@ -180,7 +179,9 @@ const mp_obj_property_t bleio_descriptor_characteristic_obj = {
 STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return common_hal_bleio_descriptor_get_value(self);
+    uint8_t temp[512];
+    size_t actual_len = common_hal_bleio_descriptor_get_value(self, temp, sizeof(temp));
+    return mp_obj_new_bytearray(actual_len, temp);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_value_obj, bleio_descriptor_get_value);
 

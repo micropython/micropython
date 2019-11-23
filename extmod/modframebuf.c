@@ -31,7 +31,7 @@
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "ports/stm32/font_petme128_8x8.h"
+#include "font_petme128_8x8.h"
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;

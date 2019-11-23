@@ -8,6 +8,7 @@ sys.path.append("../../tools/usb_descriptor")
 from adafruit_usb_descriptor import audio, audio10, cdc, hid, midi, msc, standard, util
 import hid_report_descriptors
 
+DEFAULT_INTERFACE_NAME = 'CircuitPython'
 ALL_DEVICES='CDC,MSC,AUDIO,HID'
 ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
 DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
@@ -32,8 +33,31 @@ parser.add_argument('--devices', type=lambda l: tuple(l.split(',')), default=DEF
                     help='devices to include in descriptor (AUDIO includes MIDI support)')
 parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default=DEFAULT_HID_DEVICES,
                     help='HID devices to include in HID report descriptor')
-parser.add_argument('--msc_num_endpoint_pairs', type=int, default=1,
-                    help='Use 1 or 2 endpoint pairs for MSC (1 bidirectional, or 1 input + 1 output (required by SAMD21))')
+parser.add_argument('--interface_name', type=str,
+                    help='The name/prefix to use in the interface descriptions',
+                    default=DEFAULT_INTERFACE_NAME)
+parser.add_argument('--msc_max_packet_size', type=int, default=64,
+                    help='Max packet size for MSC')
+parser.add_argument('--no-renumber_endpoints', dest='renumber_endpoints', action='store_false',
+                    help='use to not renumber endpoint')
+parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
+                    help='endpoint number of CDC NOTIFICATION')
+parser.add_argument('--cdc_ep_num_data_out', type=int, default=0,
+                    help='endpoint number of CDC DATA OUT')
+parser.add_argument('--cdc_ep_num_data_in', type=int, default=0,
+                    help='endpoint number of CDC DATA IN')
+parser.add_argument('--msc_ep_num_out', type=int, default=0,
+                    help='endpoint number of MSC OUT')
+parser.add_argument('--msc_ep_num_in', type=int, default=0,
+                    help='endpoint number of MSC IN')
+parser.add_argument('--hid_ep_num_out', type=int, default=0,
+                    help='endpoint number of HID OUT')
+parser.add_argument('--hid_ep_num_in', type=int, default=0,
+                    help='endpoint number of HID IN')
+parser.add_argument('--midi_ep_num_out', type=int, default=0,
+                    help='endpoint number of MIDI OUT')
+parser.add_argument('--midi_ep_num_in', type=int, default=0,
+                    help='endpoint number of MIDI IN')
 parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
@@ -47,9 +71,32 @@ unknown_hid_devices = list(frozenset(args.hid_devices) - ALL_HID_DEVICES_SET)
 if unknown_hid_devices:
     raise ValueError("Unknown HID devices(s)", unknown_hid_devices)
 
-if args.msc_num_endpoint_pairs not in (1, 2):
-    raise ValueError("--msc_num_endpoint_pairs must be 1 or 2")
+if not args.renumber_endpoints:
+    if 'CDC' in args.devices:
+        if args.cdc_ep_num_notification == 0:
+            raise ValueError("CDC notification endpoint number must not be 0")
+        elif args.cdc_ep_num_data_out == 0:
+            raise ValueError("CDC data OUT endpoint number must not be 0")
+        elif args.cdc_ep_num_data_in == 0:
+            raise ValueError("CDC data IN endpoint number must not be 0")
 
+    if 'MSC' in args.devices:
+        if args.msc_ep_num_out == 0:
+            raise ValueError("MSC endpoint OUT number must not be 0")
+        elif  args.msc_ep_num_in == 0:
+            raise ValueError("MSC endpoint IN number must not be 0")
+
+    if 'HID' in args.devices:
+        if args.args.hid_ep_num_out == 0:
+            raise ValueError("HID endpoint OUT number must not be 0")
+        elif  args.hid_ep_num_in == 0:
+            raise ValueError("HID endpoint IN number must not be 0")
+
+    if 'AUDIO' in args.devices:
+        if args.args.midi_ep_num_out == 0:
+            raise ValueError("MIDI endpoint OUT number must not be 0")
+        elif  args.midi_ep_num_in == 0:
+            raise ValueError("MIDI endpoint IN number must not be 0")
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -108,7 +155,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
     bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
     bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
     bInterfaceProtocol=cdc.CDC_PROTOCOL_NONE,
-    iInterface=StringIndex.index("CircuitPython CDC control"),
+    iInterface=StringIndex.index("{} CDC control".format(args.interface_name)),
     subdescriptors=[
         cdc.Header(
             description="CDC comm",
@@ -120,7 +167,7 @@ cdc_comm_interface = standard.InterfaceDescriptor(
         cdc_union,
         standard.EndpointDescriptor(
             description="CDC comm in",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bEndpointAddress=args.cdc_ep_num_notification | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
             wMaxPacketSize=0x0040,
             bInterval=0x10)
@@ -129,15 +176,15 @@ cdc_comm_interface = standard.InterfaceDescriptor(
 cdc_data_interface = standard.InterfaceDescriptor(
     description="CDC data",
     bInterfaceClass=cdc.CDC_CLASS_DATA,
-    iInterface=StringIndex.index("CircuitPython CDC data"),
+    iInterface=StringIndex.index("{} CDC data".format(args.interface_name)),
     subdescriptors=[
         standard.EndpointDescriptor(
             description="CDC data out",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+            bEndpointAddress=args.cdc_ep_num_data_out | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
         standard.EndpointDescriptor(
             description="CDC data in",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bEndpointAddress=args.cdc_ep_num_data_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
     ])
 
@@ -149,20 +196,20 @@ msc_interfaces = [
         bInterfaceClass=msc.MSC_CLASS,
         bInterfaceSubClass=msc.MSC_SUBCLASS_TRANSPARENT,
         bInterfaceProtocol=msc.MSC_PROTOCOL_BULK,
-        iInterface=StringIndex.index("CircuitPython Mass Storage"),
+        iInterface=StringIndex.index("{} Mass Storage".format(args.interface_name)),
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="MSC in",
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+                bEndpointAddress=args.msc_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0),
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size),
             standard.EndpointDescriptor(
                 description="MSC out",
-                # SAMD21 needs to use a separate pair of endpoints for MSC.
-                bEndpointAddress=((0x1 if args.msc_num_endpoint_pairs == 2 else 0x0) |
-                                  standard.EndpointDescriptor.DIRECTION_OUT),
+                bEndpointAddress=(args.msc_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-                bInterval=0)
+                bInterval=0,
+                wMaxPacketSize=args.msc_max_packet_size)
         ]
     )
 ]
@@ -197,13 +244,13 @@ else:
 # and will fail (possibly silently) if both are not supplied.
 hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
-    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+    bEndpointAddress=args.hid_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
     bInterval=8)
 
 hid_endpoint_out_descriptor = standard.EndpointDescriptor(
     description="HID out",
-    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+    bEndpointAddress=args.hid_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
     bInterval=8)
 
@@ -213,7 +260,7 @@ hid_interfaces = [
         bInterfaceClass=hid.HID_CLASS,
         bInterfaceSubClass=hid.HID_SUBCLASS_NOBOOT,
         bInterfaceProtocol=hid.HID_PROTOCOL_NONE,
-        iInterface=StringIndex.index("CircuitPython HID"),
+        iInterface=StringIndex.index("{} HID".format(args.interface_name)),
         subdescriptors=[
             hid.HIDDescriptor(
                 description="HID",
@@ -229,9 +276,9 @@ hid_interfaces = [
 
 # USB OUT -> midi_in_jack_emb -> midi_out_jack_ext -> CircuitPython
 midi_in_jack_emb = midi.InJackDescriptor(
-    description="MIDI PC -> CircuitPython",
+    description="MIDI PC -> {}".format(args.interface_name),
     bJackType=midi.JACK_TYPE_EMBEDDED,
-    iJack=StringIndex.index("CircuitPython usb_midi.ports[0]"))
+    iJack=StringIndex.index("{} usb_midi.ports[0]".format(args.interface_name)))
 midi_out_jack_ext = midi.OutJackDescriptor(
                     description="MIDI data out to user code.",
                     bJackType=midi.JACK_TYPE_EXTERNAL,
@@ -244,10 +291,10 @@ midi_in_jack_ext = midi.InJackDescriptor(
                     bJackType=midi.JACK_TYPE_EXTERNAL,
                     iJack=0)
 midi_out_jack_emb = midi.OutJackDescriptor(
-    description="MIDI PC <- CircuitPython",
+    description="MIDI PC <- {}".format(args.interface_name),
     bJackType=midi.JACK_TYPE_EMBEDDED,
     input_pins=[(midi_in_jack_ext, 1)],
-    iJack=StringIndex.index("CircuitPython usb_midi.ports[1]"))
+    iJack=StringIndex.index("{} usb_midi.ports[1]".format(args.interface_name)))
 
 
 audio_midi_interface = standard.InterfaceDescriptor(
@@ -255,7 +302,7 @@ audio_midi_interface = standard.InterfaceDescriptor(
     bInterfaceClass=audio.AUDIO_CLASS_DEVICE,
     bInterfaceSubClass=audio.AUDIO_SUBCLASS_MIDI_STREAMING,
     bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
-    iInterface=StringIndex.index("CircuitPython MIDI"),
+    iInterface=StringIndex.index("{} MIDI".format(args.interface_name)),
     subdescriptors=[
         midi.Header(
             jacks_and_elements=[
@@ -266,13 +313,13 @@ audio_midi_interface = standard.InterfaceDescriptor(
             ],
         ),
         standard.EndpointDescriptor(
-            description="MIDI data out to CircuitPython",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+            description="MIDI data out to {}".format(args.interface_name),
+            bEndpointAddress=args.midi_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
         midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
         standard.EndpointDescriptor(
-            description="MIDI data in from CircuitPython",
-            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            description="MIDI data in from {}".format(args.interface_name),
+            bEndpointAddress=args.midi_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
             bInterval = 0x0),
         midi.DataEndpointDescriptor(baAssocJack=[midi_out_jack_emb]),
@@ -291,7 +338,7 @@ audio_control_interface = standard.InterfaceDescriptor(
         bInterfaceClass=audio.AUDIO_CLASS_DEVICE,
         bInterfaceSubClass=audio.AUDIO_SUBCLASS_CONTROL,
         bInterfaceProtocol=audio.AUDIO_PROTOCOL_V1,
-        iInterface=StringIndex.index("CircuitPython Audio"),
+        iInterface=StringIndex.index("{} Audio".format(args.interface_name)),
         subdescriptors=[
             cs_ac_interface,
         ])
@@ -316,7 +363,7 @@ if 'AUDIO' in args.devices:
 # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
 # interface cross-references.
-interfaces = util.join_interfaces(*interfaces_to_join)
+interfaces = util.join_interfaces(interfaces_to_join, renumber_endpoints=args.renumber_endpoints)
 
 # Now adjust the CDC interface cross-references.
 

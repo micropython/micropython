@@ -38,6 +38,8 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
+#include "supervisor/shared/bluetooth.h"
+
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 // Flag indicating progress of internal flash operation.
@@ -52,6 +54,14 @@ void ble_drv_reset() {
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
 }
 
+void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t* entry, ble_drv_evt_handler_t func, void *param) {
+    entry->next = MP_STATE_VM(ble_drv_evt_handler_entries);
+    entry->param = param;
+    entry->func = func;
+
+    MP_STATE_VM(ble_drv_evt_handler_entries) = entry;
+}
+
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
     while (it != NULL) {
@@ -64,11 +74,7 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
 
     // Add a new handler to the front of the list
     ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
-    handler->next = MP_STATE_VM(ble_drv_evt_handler_entries);
-    handler->param = param;
-    handler->func = func;
-
-    MP_STATE_VM(ble_drv_evt_handler_entries) = handler;
+    ble_drv_add_event_handler_entry(handler, func, param);
 }
 
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
@@ -127,10 +133,20 @@ void SD_EVT_IRQHandler(void) {
             break;
         }
 
+        ble_evt_t* event = (ble_evt_t *)m_ble_evt_buf;
+
+        if (supervisor_bluetooth_hook(event)) {
+            continue;
+        }
+
         ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+        bool done = false;
         while (it != NULL) {
-            it->func((ble_evt_t *)m_ble_evt_buf, it->param);
+            done = it->func(event, it->param) || done;
             it = it->next;
+        }
+        if (!done) {
+            //mp_printf(&mp_plat_print, "Unhandled ble event: 0x%04x\n", event->header.evt_id);
         }
     }
 }

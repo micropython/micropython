@@ -38,6 +38,7 @@
 #include "tick.h"
 
 #include "shared-bindings/_bleio/__init__.h"
+#include "shared-bindings/_bleio/Connection.h"
 #include "common-hal/_bleio/CharacteristicBuffer.h"
 
 STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
@@ -50,7 +51,7 @@ STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *d
     sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
-STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
+STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *) param;
     switch (ble_evt->header.evt_id) {
         case BLE_GATTS_EVT_WRITE: {
@@ -75,7 +76,11 @@ STATIC void characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
+        default:
+            return false;
+            break;
     }
+    return true;
 }
 
 // Assumes that timeout and buffer_size have been validated before call.
@@ -150,6 +155,7 @@ void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_o
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {
     return self->characteristic != NULL &&
         self->characteristic->service != NULL &&
-        self->characteristic->service->device != NULL &&
-        common_hal_bleio_device_get_conn_handle(self->characteristic->service->device) != BLE_CONN_HANDLE_INVALID;
+        (!self->characteristic->service->is_remote ||
+         (self->characteristic->service->connection != MP_OBJ_NULL &&
+          common_hal_bleio_connection_get_connected(self->characteristic->service->connection)));
 }

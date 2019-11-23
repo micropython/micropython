@@ -509,7 +509,6 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
         gc_collect();
         collected = 1;
         GC_ENTER();
-        collected = true;
     }
     #endif
 

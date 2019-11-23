@@ -3,7 +3,6 @@
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
-
 #define MICROPY_HW_LED_STATUS   (&pin_PA27)
 
 #define MICROPY_HW_NEOPIXEL (&pin_PB22)

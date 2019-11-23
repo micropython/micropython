@@ -119,4 +119,76 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[12] = {
     SPI(5, 6, &pin_PE11)
 };
 
-//UART, Etc
+USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, NULL, NULL, NULL, USART6};
+bool mcu_uart_has_usart[MAX_UART] = {true, true, false, false, false, true};
+
+const mcu_uart_tx_obj_t mcu_uart_tx_list[7] = {
+    UART(2, 7, &pin_PA02),
+    UART(1, 7, &pin_PA09),
+    UART(1, 7, &pin_PA15),
+    UART(6, 8, &pin_PA11),
+    UART(1, 7, &pin_PB06),
+    UART(6, 8, &pin_PC06),
+    UART(2, 7, &pin_PD05),
+};
+
+const mcu_uart_rx_obj_t mcu_uart_rx_list[7] = {
+    UART(2, 7, &pin_PA03),
+    UART(1, 7, &pin_PA10),
+    UART(6, 8, &pin_PA12),
+    UART(1, 7, &pin_PB03),
+    UART(1, 7, &pin_PB07),
+    UART(6, 8, &pin_PC07),
+    UART(2, 7, &pin_PD06),
+};
+
+//Timers
+//TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
+TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, NULL, TIM9, TIM10,
+                                    TIM11, NULL, NULL, NULL};
+
+const mcu_tim_pin_obj_t mcu_tim_pin_list[44] = {
+    TIM(2,1,1,&pin_PA00),
+    TIM(5,2,1,&pin_PA00),
+    TIM(2,1,2,&pin_PA01),
+    TIM(5,2,2,&pin_PA01),
+    TIM(2,1,3,&pin_PA02),
+    TIM(5,2,3,&pin_PA02),
+    TIM(2,1,4,&pin_PA03),
+    TIM(5,2,4,&pin_PA03),
+    TIM(9,3,1,&pin_PA02),
+    TIM(9,3,2,&pin_PA03),
+    TIM(3,2,1,&pin_PA06),
+    TIM(3,2,2,&pin_PA07),
+    TIM(1,1,1,&pin_PA08),
+    TIM(1,1,2,&pin_PA09),
+    TIM(1,1,3,&pin_PA10),
+    TIM(1,1,4,&pin_PA11),
+    TIM(2,1,1,&pin_PA15),
+    TIM(3,2,3,&pin_PB00),
+    TIM(3,2,4,&pin_PB01),
+    TIM(2,1,2,&pin_PB03),
+    TIM(3,2,1,&pin_PB04),
+    TIM(3,2,2,&pin_PB05),
+    TIM(4,2,1,&pin_PB06),
+    TIM(4,2,2,&pin_PB07),
+    TIM(4,2,3,&pin_PB08),
+    TIM(10,2,1,&pin_PB08),
+    TIM(4,2,4,&pin_PB09),
+    TIM(11,2,1,&pin_PB09),
+    TIM(2,1,3,&pin_PB10),
+    TIM(3,2,1,&pin_PC06),
+    TIM(3,2,2,&pin_PC07),
+    TIM(3,2,3,&pin_PC08),
+    TIM(3,2,4,&pin_PC09),
+    TIM(4,2,1,&pin_PD12),
+    TIM(4,2,2,&pin_PD13),
+    TIM(4,2,3,&pin_PD14),
+    TIM(4,2,4,&pin_PD15),
+    TIM(9,3,1,&pin_PE05),
+    TIM(9,3,2,&pin_PE06),
+    TIM(1,1,1,&pin_PE09),
+    TIM(1,1,2,&pin_PE11),
+    TIM(1,1,3,&pin_PE13),
+    TIM(1,1,4,&pin_PE14),
+};

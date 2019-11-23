@@ -45,8 +45,8 @@
 //|
 //|   There is no regular constructor for a Characteristic. A new local Characteristic can be created
 //|   and attached to a Service by calling `add_to_service()`.
-//|   Remote Characteristic objects are created by `Central.discover_remote_services()`
-//|   or `Peripheral.discover_remote_services()` as part of remote Services.
+//|   Remote Characteristic objects are created by `Connection.discover_remote_services()`
+//|   as part of remote Services.
 //|
 
 //|   .. method:: add_to_service(service, uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=None)
@@ -94,12 +94,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
 
     const mp_obj_t service_obj = args[ARG_service].u_obj;
     if (!MP_OBJ_IS_TYPE(service_obj, &bleio_service_type)) {
-        mp_raise_ValueError(translate("Expected a Service"));
+        mp_raise_TypeError(translate("Expected a Service"));
     }
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
     if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_ValueError(translate("Expected a UUID"));
+        mp_raise_TypeError(translate("Expected a UUID"));
     }
 
     const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
@@ -134,11 +134,9 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     // Range checking on max_length arg is done by the common_hal layer, because
     // it may vary depending on underlying BLE implementation.
     common_hal_bleio_characteristic_construct(
-        characteristic, MP_OBJ_TO_PTR(service_obj), MP_OBJ_TO_PTR(uuid_obj),
+        characteristic, MP_OBJ_TO_PTR(service_obj), 0, MP_OBJ_TO_PTR(uuid_obj),
         properties, read_perm, write_perm,
         max_length, fixed_length, &initial_value_bufinfo);
-
-    common_hal_bleio_service_add_characteristic(service_obj, characteristic);
 
     return MP_OBJ_FROM_PTR(characteristic);
 }
@@ -170,7 +168,8 @@ const mp_obj_property_t bleio_characteristic_properties_obj = {
 //|   .. attribute:: uuid
 //|
 //|     The UUID of this characteristic. (read-only)
-//|       Will be ``None`` if the 128-bit UUID for this characteristic is not known.
+//|
+//|     Will be ``None`` if the 128-bit UUID for this characteristic is not known.
 //|
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -194,7 +193,9 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return common_hal_bleio_characteristic_get_value(self);
+    uint8_t temp[512];
+    size_t actual_len = common_hal_bleio_characteristic_get_value(self, temp, sizeof(temp));
+    return mp_obj_new_bytearray(actual_len, temp);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_value_obj, bleio_characteristic_get_value);
 
@@ -224,8 +225,20 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *char_list = common_hal_bleio_characteristic_get_descriptor_list(self);
-    return mp_obj_new_tuple(char_list->len, char_list->items);
+    bleio_descriptor_obj_t *descriptors = common_hal_bleio_characteristic_get_descriptor_list(self);
+    bleio_descriptor_obj_t *head = descriptors;
+    size_t len = 0;
+    while (head != NULL) {
+        len++;
+        head = head->next;
+    }
+    mp_obj_tuple_t * t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
+    head = descriptors;
+    for (size_t i = len - 1; i >= 0; i--) {
+        t->items[i] = MP_OBJ_FROM_PTR(head);
+        head = head->next;
+    }
+    return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio_characteristic_get_descriptors);
 
@@ -282,7 +295,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_set_cccd_obj, 1, bleio_ch
 
 STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_to_service), MP_ROM_PTR(&bleio_characteristic_add_to_service_obj) },
-    { MP_ROM_QSTR(MP_QSTR_properties),     MP_ROM_PTR(&bleio_characteristic_get_properties_obj) },
+    { MP_ROM_QSTR(MP_QSTR_properties),     MP_ROM_PTR(&bleio_characteristic_properties_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),           MP_ROM_PTR(&bleio_characteristic_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),          MP_ROM_PTR(&bleio_characteristic_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_cccd),       MP_ROM_PTR(&bleio_characteristic_set_cccd_obj) },
