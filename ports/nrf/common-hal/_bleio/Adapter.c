@@ -180,8 +180,17 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
             connection->pair_status = PAIR_NOT_PAIRED;
+
             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
             self->connection_objs = NULL;
+
+            // Save the current connection parameters.
+            memcpy(&connection->conn_params, &connected->conn_params, sizeof(ble_gap_conn_params_t));
+
+            #if CIRCUITPY_VERBOSE_BLE
+            ble_gap_conn_params_t *cp = &connected->conn_params;
+            mp_printf(&mp_plat_print, "conn params: min_ci %d max_ci %d s_l %d sup_timeout %d\n", cp->min_conn_interval, cp->max_conn_interval, cp->slave_latency, cp->conn_sup_timeout);
+            #endif
 
             // See if connection interval set by Central is out of range.
             // If so, negotiate our preferred range.
