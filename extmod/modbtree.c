@@ -246,6 +246,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     }
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {

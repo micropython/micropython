@@ -310,6 +310,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 //|       del group[0]
 //|
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value, mp_obj_t instance) {
     displayio_group_t *self = native_group(self_in);
 

@@ -60,6 +60,7 @@ STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "<%u-bit memory>", 8 * self->elem_size);
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     // TODO support slice index to read/write multiple values at once
     machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);

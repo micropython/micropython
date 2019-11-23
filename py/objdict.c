@@ -174,6 +174,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     }
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     if (value == MP_OBJ_NULL) {
         // delete
