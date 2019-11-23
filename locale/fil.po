@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-23 13:58-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -852,6 +852,10 @@ msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -948,11 +952,6 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -2654,10 +2653,6 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr ""
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
@@ -2872,6 +2867,11 @@ msgstr "zero step"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
+
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr ""
+#~ "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"

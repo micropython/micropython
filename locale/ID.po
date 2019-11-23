@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-23 13:58-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -843,6 +843,10 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -936,10 +940,6 @@ msgstr ""
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Only slices with step=1 (aka None) are supported"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2612,10 +2612,6 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
 msgstr ""
 
 #: py/objstr.c

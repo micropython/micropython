@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-23 13:58-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -847,6 +847,10 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr "Muss eine %q Unterklasse sein."
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Kein CCCD für diese Charakteristik"
@@ -946,10 +950,6 @@ msgid ""
 msgstr ""
 "Nur monochrome, indizierte 4bpp oder 8bpp, und 16bpp oder größere BMPs "
 "unterstützt: %d bpp wurden gegeben"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1464,9 +1464,8 @@ msgid "byte code not implemented"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2648,10 +2647,6 @@ msgstr "value_count muss größer als 0 sein"
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr "write_args muss eine Liste, ein Tupel oder None sein"
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "falsche Anzahl an Argumenten"
@@ -2941,6 +2936,10 @@ msgstr ""
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
+
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "erwarte DigitalInOut"
 
@@ -3007,3 +3006,6 @@ msgstr ""
 
 #~ msgid "wifi_set_ip_info() failed"
 #~ msgstr "wifi_set_ip_info() fehlgeschlagen"
+
+#~ msgid "write_args must be a list, tuple, or None"
+#~ msgstr "write_args muss eine Liste, ein Tupel oder None sein"

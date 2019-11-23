@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-23 13:58-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -860,6 +860,10 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -959,11 +963,6 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "seuls les slices avec 'step=1' (cad 'None') sont supportées"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -2695,10 +2694,6 @@ msgstr "'value_count' doit être > 0"
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr "'write_args' doit être une liste, un tuple ou 'None'"
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mauvais nombres d'arguments"
@@ -2945,6 +2940,10 @@ msgstr "'step' nul"
 #~ "Seul les BMP monochromes, 8bit indexé et 16bit sont supportés: %d bpp "
 #~ "fourni"
 
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr "seuls les slices avec 'step=1' (cad 'None') sont supportées"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Seul les BMP 24bits ou plus sont supportés %x"
 
@@ -3107,3 +3106,6 @@ msgstr "'step' nul"
 
 #~ msgid "wifi_set_ip_info() failed"
 #~ msgstr "wifi_set_ip_info() a échoué"
+
+#~ msgid "write_args must be a list, tuple, or None"
+#~ msgstr "'write_args' doit être une liste, un tuple ou 'None'"
