@@ -29,19 +29,19 @@
 
 STATIC mp_obj_t op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
-    return type->subscr(self_in, key_in, MP_OBJ_SENTINEL);
+    return type->subscr(self_in, key_in, MP_OBJ_SENTINEL, self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_op_getitem_obj, op_getitem);
 
 STATIC mp_obj_t op_setitem(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
-    return type->subscr(self_in, key_in, value_in);
+    return type->subscr(self_in, key_in, value_in, self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mp_op_setitem_obj, op_setitem);
 
 STATIC mp_obj_t op_delitem(mp_obj_t self_in, mp_obj_t key_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
-    return type->subscr(self_in, key_in, MP_OBJ_NULL);
+    return type->subscr(self_in, key_in, MP_OBJ_NULL, self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_op_delitem_obj, op_delitem);
 

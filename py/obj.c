@@ -488,15 +488,14 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 }
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
+    return mp_obj_subscr_impl(base, index, value, base);
+}
+
+mp_obj_t mp_obj_subscr_impl(mp_obj_t base, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     mp_obj_type_t *type = mp_obj_get_type(base);
-    mp_obj_t instance = base;
-    // If we got an MP_OBJ_SENTINEL as the type, then we got called by instance_subscr
-    if (type == MP_OBJ_SENTINEL) {
-        instance = ((mp_obj_t *)base)[1];
-        type = mp_obj_get_type(((mp_obj_t *)base)[2]);
-    }
+
     if (type->subscr != NULL) {
-        mp_obj_t ret = type->subscr(instance, index, value);
+        mp_obj_t ret = type->subscr(base, index, value, instance);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
@@ -551,7 +550,7 @@ STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
     mp_obj_type_t *type = mp_obj_get_type(self->obj);
     mp_obj_t current_length = type->unary_op(MP_UNARY_OP_LEN, self->obj);
     if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
-        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL, self->obj);
         self->cur += 1;
         return o_out;
     } else {

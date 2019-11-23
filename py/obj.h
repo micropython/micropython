@@ -444,7 +444,7 @@ typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, cons
 typedef mp_obj_t (*mp_unary_op_fun_t)(mp_unary_op_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
+typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance);
 typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 // Buffer protocol
@@ -708,6 +708,7 @@ mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); // may return MP_OBJ_NULL
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
+mp_obj_t mp_obj_subscr_impl(mp_obj_t base, mp_obj_t index, mp_obj_t val, mp_obj_t instance);
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 
 // cell

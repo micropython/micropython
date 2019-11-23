@@ -823,7 +823,7 @@ STATIC void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -850,8 +850,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         meth_args = 3;
     }
     if (member[0] == MP_OBJ_SENTINEL) {
-        mp_obj_t args[3] = {MP_OBJ_SENTINEL, self_in, self->subobj[0]};
-        return mp_obj_subscr(args, index, value);
+        return mp_obj_subscr_impl(self->subobj[0], index, value, instance);
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw

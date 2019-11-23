@@ -310,7 +310,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|
 //|       del group[0]
 //|
-STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
+STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value, mp_obj_t instance) {
     displayio_group_t *self = native_group(self_in);
 
     if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {

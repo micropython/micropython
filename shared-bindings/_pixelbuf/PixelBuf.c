@@ -348,7 +348,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_s
 //|
 //|     Sets the pixel value at the given index.
 //|
-STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value, mp_obj_t instance) {
     if (value == MP_OBJ_NULL) {
         // delete item
         // slice deletion
@@ -410,7 +410,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 }
             }
             if (self->auto_write)
-                call_show(self_in, 's');
+                call_show(instance, 's');
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported
@@ -430,7 +430,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
                 self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
             if (self->auto_write)
-                call_show(self_in, 'i');
+                call_show(instance, 'i');
             return mp_const_none;
         }
     }

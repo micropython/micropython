@@ -518,7 +518,7 @@ STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value, mp_obj_t instance) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_NULL) {

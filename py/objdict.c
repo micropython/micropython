@@ -174,7 +174,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     }
 }
 
-STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     if (value == MP_OBJ_NULL) {
         // delete
         mp_obj_dict_delete(self_in, index);

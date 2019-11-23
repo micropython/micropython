@@ -396,7 +396,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);
 #endif
 
-STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value, mp_obj_t instance) {
     if (value == MP_OBJ_NULL) {
         // delete item
         // TODO implement

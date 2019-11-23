@@ -158,7 +158,7 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
-STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     if (value == MP_OBJ_NULL) {
         // delete
 #if MICROPY_PY_BUILTINS_SLICE

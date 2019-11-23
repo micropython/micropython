@@ -241,7 +241,7 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
     check_exception();
 }
 
-STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     mp_obj_jobject_t *self = self_in;
     mp_uint_t idx = mp_obj_get_int(index);
     char class_name[64];
