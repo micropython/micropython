@@ -163,9 +163,11 @@ void *esp_native_code_commit(void*, size_t);
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_NAME   ("ESP32")
+
 #define MICROPY_PY_LVGL                     (1)
 #define MICROPY_PY_ESPIDF                   (1)
-#define MICROPY_PY_LODEPNG                  (1)
+#define MICROPY_PY_LODEPNG                  (0)
+#define MICROPY_PY_RTCH                     (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -199,9 +201,36 @@ extern const struct _mp_obj_module_t mp_module_espidf;
 extern const struct _mp_obj_module_t mp_module_lvesp32;
 extern const struct _mp_obj_module_t mp_module_rtch;
 extern const struct _mp_obj_module_t mp_module_lodepng;
-
 // extern const struct _mp_obj_module_t mp_module_ILI9341;
 // extern const struct _mp_obj_module_t mp_module_xpt2046;
+
+#if MICROPY_PY_LVGL
+#define MICROPY_PORT_LVGL_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32), (mp_obj_t)&mp_module_lvesp32 },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_ILI9341 },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 },
+#else
+#define MICROPY_PORT_LVGL_DEF
+#endif
+
+#if MICROPY_PY_ESPIDF
+#define MICROPY_PORT_ESPIDF_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_espidf), (mp_obj_t)&mp_module_espidf },
+#else
+#define MICROPY_PORT_ESPIDF_DEF
+#endif
+
+#if MICROPY_PY_LODEPNG
+#define MICROPY_PORT_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
+#else
+#define MICROPY_PORT_LODEPNG_DEF
+#endif
+
+#if MICROPY_PY_RTCH
+#define MICROPY_PORT_RTCH_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_rtch), (mp_obj_t)&mp_module_rtch },
+#else
+#define MICROPY_PORT_RTCH_DEF
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
@@ -213,13 +242,10 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_espidf), (mp_obj_t)&mp_module_espidf }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32), (mp_obj_t)&mp_module_lvesp32 }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rtch), (mp_obj_t)&mp_module_rtch },
-
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_ILI9341 },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 },
+    MICROPY_PORT_LVGL_DEF \
+    MICROPY_PORT_ESPIDF_DEF \
+    MICROPY_PORT_LODEPNG_DEF \
+    MICROPY_PORT_RTCH_DEF
 
 #define MP_STATE_PORT MP_STATE_VM
 
