@@ -1,6 +1,6 @@
 LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
-USB_PID = 0x801F
+USB_PID = 0x806C
 USB_PRODUCT = "shIRtty"
 USB_MANUFACTURER = "@sarfata"
 
