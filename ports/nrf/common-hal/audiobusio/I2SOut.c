@@ -250,6 +250,10 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     NRF_I2S->CONFIG.SWIDTH = self->bytes_per_sample == 1
         ? I2S_CONFIG_SWIDTH_SWIDTH_8Bit
         : I2S_CONFIG_SWIDTH_SWIDTH_16Bit;
+    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1
+        ? I2S_CONFIG_CHANNELS_CHANNELS_Left
+        : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
+
     choose_i2s_clocking(self, sample_rate);
     /* Allocate buffers based on a maximum duration
      * This duration was chosen empirically based on what would
@@ -272,9 +276,6 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->paused = false;
     self->stopping = false;
     i2s_buffer_fill(self);
-
-    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1 ? I2S_CONFIG_CHANNELS_CHANNELS_Left : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
-
 
     NRF_I2S->RXTXD.MAXCNT = self->buffer_length / 4;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Enabled;
