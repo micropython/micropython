@@ -246,6 +246,10 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->single_buffer = single_buffer;
     self->samples_signed = samples_signed;
 
+
+    NRF_I2S->CONFIG.SWIDTH = self->bytes_per_sample == 1
+        ? I2S_CONFIG_SWIDTH_SWIDTH_8Bit
+        : I2S_CONFIG_SWIDTH_SWIDTH_16Bit;
     choose_i2s_clocking(self, sample_rate);
     /* Allocate buffers based on a maximum duration
      * This duration was chosen empirically based on what would
