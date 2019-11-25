@@ -88,7 +88,12 @@ STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
 #endif // BLUETOOTH_SD
 
-    return MP_OBJ_NEW_SMALL_INT(nrf_temp_read());
+    nrf_temp_event_clear(NRF_TEMP, NRF_TEMP_EVENT_DATARDY);
+    nrf_temp_task_trigger(NRF_TEMP, NRF_TEMP_TASK_START);
+    while (!nrf_temp_event_check(NRF_TEMP, NRF_TEMP_EVENT_DATARDY)) {
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(nrf_temp_read() / 4);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_temp_read_obj, 0, 1, machine_temp_read);
