@@ -240,7 +240,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
 
     uint32_t max_buffer_length;
     bool single_buffer, samples_signed;
-    audiosample_get_buffer_structure(sample, /* single channel */ false,
+    audiosample_get_buffer_structure(sample, /* single channel */ true,
         &single_buffer, &samples_signed, &max_buffer_length,
         &self->channel_count);
     self->single_buffer = single_buffer;
