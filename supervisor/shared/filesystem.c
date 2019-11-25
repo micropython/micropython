@@ -71,14 +71,13 @@ static void make_empty_file(FATFS *fatfs, const char *path) {
 
 
 static void make_sample_code_file(FATFS *fatfs) {
+    #if CIRCUITPY_FULL_BUILD == 0
+    make_empty_file(fatfs, "/code.py");
+
+    #else
     FIL fs;
     UINT char_written = 0;
     const byte buffer[] = "print('Hello World!')\n";
-
-    #if CIRCUITPY_FULL_BUILD == 0
-    make_empty_file(&vfs_fat->fatfs, "/code.py");
-
-    #else
     //Create or modify existing code.py file 
     f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
     f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
