@@ -139,14 +139,14 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
             uint16_t *bp = (uint16_t*)buffer;
             uint16_t *be = (uint16_t*)(buffer + bytecount);
             uint16_t *sp = (uint16_t*)self->sample_data;
-            for (; bp != be;) {
+            for (; bp < be;) {
                 *bp++ = *sp++ + 0x8000;
             }
         } else {
             uint8_t *bp = (uint8_t*)buffer;
             uint8_t *be = (uint8_t*)(buffer + bytecount);
             uint8_t *sp = (uint8_t*)self->sample_data;
-            for (; bp != be;) {
+            for (; bp < be;) {
                 *bp++ = *sp++ + 0x80;
             }
         }
