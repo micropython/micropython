@@ -53,7 +53,7 @@ ifndef CIRCUITPY_DEFAULT_BUILD
 endif
 
 # Some features have no unique HAL component, and thus there's never
-# a reason to not include them. 
+# a reason to not include them.
 ifndef CIRCUITPY_ALWAYS_BUILD
   CIRCUITPY_ALWAYS_BUILD = 1
 endif
@@ -170,7 +170,7 @@ CIRCUITPY_NEOPIXEL_WRITE = $(CIRCUITPY_DEFAULT_BUILD)
 endif
 CFLAGS += -DCIRCUITPY_NEOPIXEL_WRITE=$(CIRCUITPY_NEOPIXEL_WRITE)
 
-# Only certain boards support NETWORK (Ethernet)
+# Enabled on SAMD51. Won't fit on SAMD21 builds. Not tested on nRF or STM32F4 builds.
 ifndef CIRCUITPY_NETWORK
 CIRCUITPY_NETWORK = 0
 endif
