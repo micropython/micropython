@@ -279,8 +279,8 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // Parse arguments
     enum { ARG_start, ARG_len };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_len,   MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
