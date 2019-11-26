@@ -184,8 +184,6 @@ void mp_lexer_to_next(mp_lexer_t *lex);
 // platform specific import function; must be implemented for a specific port
 // TODO tidy up, rename, or put elsewhere
 
-//mp_lexer_t *mp_import_open_file(qstr mod_name);
-
 typedef enum {
     MP_IMPORT_STAT_NO_EXIST,
     MP_IMPORT_STAT_DIR,
