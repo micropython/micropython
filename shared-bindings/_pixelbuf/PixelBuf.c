@@ -454,6 +454,7 @@ const mp_obj_type_t pixelbuf_pixelbuf_type = {
         .subscr = pixelbuf_pixelbuf_subscr,
         .make_new = pixelbuf_pixelbuf_make_new,
         .unary_op = pixelbuf_pixelbuf_unary_op,
+        .getiter = mp_obj_new_generic_iterator,
         .print = NULL,
         .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
 };
