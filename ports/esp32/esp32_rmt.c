@@ -57,6 +57,8 @@ typedef struct _esp32_rmt_obj_t {
     uint8_t channel_id;
     gpio_num_t pin;
     uint8_t clock_divider;
+    mp_uint_t num_items;
+    rmt_item32_t* items;
 } esp32_rmt_obj_t;
 
 
@@ -83,7 +85,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError("Clock divider must be between 1 and 255");
     }
 
-    esp32_rmt_obj_t *self = m_new_obj(esp32_rmt_obj_t);
+    esp32_rmt_obj_t *self = m_new_obj_with_finaliser(esp32_rmt_obj_t);
     self->base.type = &esp32_rmt_type;
     self->channel_id = channel_id;
     self->pin = pin_id;
@@ -117,7 +119,7 @@ STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     if (self->pin != -1) {
         mp_printf(print, "RMT(channel=%u, pin=%u, clock_divider=%u)", self->channel_id, self->pin, self->clock_divider);
     } else {
-        mp_printf(print, "RMT(channel=%u, inactive)", self->channel_id);
+        mp_printf(print, "RMT()");
     }
 }
 
@@ -125,10 +127,13 @@ STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
     // fixme: check for valid channel. Return exception if error occurs.
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    rmt_driver_uninstall(self->channel_id);
+    if (self->pin != -1) // Check if channel has already been deinitialised.
+    {
+        rmt_driver_uninstall(self->channel_id);
 
-    self->pin = -1; // -1 to indicate RMT is unused
-
+        self->pin = -1; // -1 to indicate RMT is unused
+        m_free(self->items);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
@@ -158,9 +163,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_pulse_length_obj, esp32_rmt_max_p
 STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_self,        MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_pulses,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_start_level, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_self,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_pulses, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_start,  MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 1} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -186,45 +191,37 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
     }
 
     mp_uint_t num_items = (pulses_length / 2) + (pulses_length % 2);
-    rmt_item32_t* items = (rmt_item32_t*)m_malloc(num_items * sizeof(rmt_item32_t));
-
+    if (num_items > self->num_items)
+    {
+        //printf("realloc required, old=%u, new=%u\n", self->num_items, num_items);
+        self->items = (rmt_item32_t*)m_realloc(self->items, num_items * sizeof(rmt_item32_t *));
+        self->num_items = num_items;
+    }
     //printf("num_items=%d pulses_length=%d\n\n", num_items, pulses_length);
 
     for (mp_uint_t item_index = 0; item_index < num_items; item_index++)
     {
         mp_uint_t pulse_index = item_index * 2;
-        items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
-        items[item_index].level0 = start_level++; // Note that start_level _could_ wrap.
+        self->items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
+        self->items[item_index].level0 = start_level++; // Note that start_level _could_ wrap.
         //printf("duration=%d start_level=%d\n", items[item_index].duration0, items[item_index].level0);
         if (pulse_index < pulses_length)
         {
-            items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
-            items[item_index].level1 = start_level++;
+            self->items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
+            self->items[item_index].level1 = start_level++;
             //printf("duration=%d start_level=%d\n", items[item_index].duration1, items[item_index].level1);
         }
     }
-    check_esp_err(rmt_write_items(self->channel_id, items, num_items, true));
-
-    m_free(items); // Not freed if there's an error in rmt_write_item()
+    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false /* non-blocking */));
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_send_pulses_obj, 2, esp32_rmt_send_pulses);
 
-void esp32_rmt_deinit_all(void) {
-    rmt_channel_status_result_t status[RMT_CHANNEL_MAX];
-    rmt_get_channel_status(status);
-
-    for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
-        if (status[i].status != RMT_CHANNEL_UNINIT) {
-            rmt_driver_uninstall(i);
-        }
-    }
-}
-
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_resolution), MP_ROM_PTR(&esp32_rmt_resolution_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_duration), MP_ROM_PTR(&esp32_rmt_max_pulse_length_obj) },
 };

@@ -68,9 +68,6 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
-// Forward-declare RMT deinit function (could be defined in a header).
-void esp32_rmt_deinit_all(void);
-
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD
@@ -150,7 +147,6 @@ soft_reset:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
-    esp32_rmt_deinit_all();
     machine_pins_deinit();
     usocket_events_deinit();
 
