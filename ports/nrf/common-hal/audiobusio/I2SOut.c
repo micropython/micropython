@@ -245,11 +245,19 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
 
     uint32_t max_buffer_length;
     bool single_buffer, samples_signed;
-    audiosample_get_buffer_structure(sample, /* single channel */ false,
+    audiosample_get_buffer_structure(sample, /* single channel */ true,
         &single_buffer, &samples_signed, &max_buffer_length,
         &self->channel_count);
     self->single_buffer = single_buffer;
     self->samples_signed = samples_signed;
+
+
+    NRF_I2S->CONFIG.SWIDTH = self->bytes_per_sample == 1
+        ? I2S_CONFIG_SWIDTH_SWIDTH_8Bit
+        : I2S_CONFIG_SWIDTH_SWIDTH_16Bit;
+    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1
+        ? I2S_CONFIG_CHANNELS_CHANNELS_Left
+        : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
 
     choose_i2s_clocking(self, sample_rate);
     /* Allocate buffers based on a maximum duration
@@ -273,9 +281,6 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->paused = false;
     self->stopping = false;
     i2s_buffer_fill(self);
-
-    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1 ? I2S_CONFIG_CHANNELS_CHANNELS_Left : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
-
 
     NRF_I2S->RXTXD.MAXCNT = self->buffer_length / 4;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Enabled;
