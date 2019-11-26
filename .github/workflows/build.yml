@@ -15,10 +15,7 @@ jobs:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: python -c "import os; print os.environ['GITHUB_CONTEXT']"
-    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
-      run: exit 1
-      if: github.event_name == 'release' && (github.event.action != 'published' && github.event.action != 'rerequested')
+      run: echo "$GITHUB_CONTEXT"
     - name: Set up Python 3.5
       uses: actions/setup-python@v1
       with:
