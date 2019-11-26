@@ -87,7 +87,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
         mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
     }
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
