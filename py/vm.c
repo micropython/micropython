@@ -386,7 +386,7 @@ dispatch_loop:
                 ENTRY(MP_BC_LOAD_SUBSCR): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t index = POP();
-                    SET_TOP(mp_obj_subscr(TOP(), index, MP_OBJ_SENTINEL));
+                    SET_TOP(mp_obj_subscr(TOP(), index, MP_OBJ_SENTINEL, TOP()));
                     DISPATCH();
                 }
 
@@ -464,7 +464,7 @@ dispatch_loop:
 
                 ENTRY(MP_BC_STORE_SUBSCR):
                     MARK_EXC_IP_SELECTIVE();
-                    mp_obj_subscr(sp[-1], sp[0], sp[-2]);
+                    mp_obj_subscr(sp[-1], sp[0], sp[-2], sp[-1]);
                     sp -= 3;
                     DISPATCH();
 

@@ -852,7 +852,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         meth_args = 3;
     }
     if (member[0] == MP_OBJ_SENTINEL) {
-        return mp_obj_subscr_impl(self->subobj[0], index, value, instance);
+        return mp_obj_subscr(self->subobj[0], index, value, instance);
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw

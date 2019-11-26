@@ -311,7 +311,7 @@ STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 // TODO: subscr_load_adaptor & subscr_getiter convenience functions
 // should be moved to common location for reuse.
 STATIC mp_obj_t subscr_load_adaptor(mp_obj_t self_in, mp_obj_t index_in) {
-    return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL);
+    return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL, self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(subscr_load_adaptor_obj, subscr_load_adaptor);
 

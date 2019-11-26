@@ -150,7 +150,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_urandom_randint_obj, mod_urandom_randint);
 STATIC mp_obj_t mod_urandom_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len > 0) {
-        return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL);
+        return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL, seq);
     } else {
         nlr_raise(mp_obj_new_exception(&mp_type_IndexError));
     }

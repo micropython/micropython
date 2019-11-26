@@ -487,11 +487,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     }
 }
 
-mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
-    return mp_obj_subscr_impl(base, index, value, base);
-}
-
-mp_obj_t mp_obj_subscr_impl(mp_obj_t base, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
+mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
     mp_obj_type_t *type = mp_obj_get_type(base);
 
     if (type->subscr != NULL) {
