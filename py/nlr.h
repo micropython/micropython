@@ -76,6 +76,9 @@
     #define MICROPY_NLR_POWERPC (1)
     // this could be less but using 128 for safety
     #define MICROPY_NLR_NUM_REGS (128)
+#elif defined(__riscv_xlen) && __riscv_xlen == 32
+    #define MICROPY_NLR_RISCV32 (1)
+    #define MICROPY_NLR_NUM_REGS (14)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
