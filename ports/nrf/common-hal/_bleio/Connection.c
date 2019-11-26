@@ -34,6 +34,7 @@
 #include "ble_drv.h"
 #include "ble_hci.h"
 #include "nrf_soc.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/gc.h"
 #include "py/objlist.h"
 #include "py/objstr.h"
@@ -51,7 +52,7 @@
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
 static const ble_gap_sec_params_t pairing_sec_params = {
-    .bond = 1,
+    .bond = 0,
     .mitm = 0,
     .lesc = 0,
     .keypress = 0,
@@ -109,7 +110,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // SoftDevice will respond to a length update request.
             sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
             break;
-        
+
         case BLE_GAP_EVT_DATA_LENGTH_UPDATE: // 0x24
             break;
 
@@ -162,7 +163,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
             // Pairing process completed
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
-            if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) {
+            self->sec_status = status->auth_status;
+            if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
                 // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
             } else {
@@ -213,7 +215,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             if (dump_events) {
                 mp_printf(&mp_plat_print, "Unhandled connection event: 0x%04x\n", ble_evt->header.evt_id);
             }
-            
+
             return false;
     }
     return true;
@@ -228,6 +230,13 @@ void bleio_connection_clear(bleio_connection_internal_t *self) {
     memset(&self->bonding_keys, 0, sizeof(self->bonding_keys));
 }
 
+bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {
+    if (self->connection == NULL) {
+        return false;
+    }
+    return self->connection->pair_status == PAIR_PAIRED;
+}
+
 bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self) {
     if (self->connection == NULL) {
         return false;
@@ -239,22 +248,18 @@ void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
     sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
 }
 
-void common_hal_bleio_connection_pair(bleio_connection_internal_t *self) {
+void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bond) {
     self->pair_status = PAIR_WAITING;
 
-    uint32_t err_code = sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params);
+    check_nrf_error(sd_ble_gap_authenticate(self->conn_handle, &pairing_sec_params));
 
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to start pairing, NRF_ERROR_%q"), MP_OBJ_QSTR_VALUE(base_error_messages[err_code - NRF_ERROR_BASE_NUM]));
-    }
-
-    while (self->pair_status == PAIR_WAITING) {
+    while (self->pair_status == PAIR_WAITING && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
-
-    if (self->pair_status == PAIR_NOT_PAIRED) {
-        mp_raise_OSError_msg(translate("Failed to pair"));
+    if (mp_hal_is_interrupted()) {
+        return;
     }
+    check_sec_status(self->sec_status);
 }
 
 
@@ -263,11 +268,8 @@ STATIC bool discover_next_services(bleio_connection_internal_t* connection, uint
     m_discovery_successful = false;
     m_discovery_in_process = true;
 
-    uint32_t err_code = sd_ble_gattc_primary_services_discover(connection->conn_handle, start_handle, service_uuid);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg(translate("Failed to discover services"));
-    }
+    check_nrf_error(sd_ble_gattc_primary_services_discover(connection->conn_handle,
+                                                           start_handle, service_uuid));
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
@@ -516,7 +518,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
         mp_obj_t uuid_obj;
         while ((uuid_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-                mp_raise_ValueError(translate("non-UUID found in service_uuids_whitelist"));
+                mp_raise_TypeError(translate("non-UUID found in service_uuids_whitelist"));
             }
             bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
 
@@ -582,10 +584,9 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
             // discovery call returns nothing.
             // discover_next_descriptors() appends to the descriptor_list.
             while (next_desc_start_handle <= service->end_handle &&
-                   next_desc_start_handle < next_desc_end_handle &&
+                   next_desc_start_handle <= next_desc_end_handle &&
                    discover_next_descriptors(self, characteristic,
                                              next_desc_start_handle, next_desc_end_handle)) {
-
                 // Get the most recently discovered descriptor, and then ask for descriptors
                 // whose handles start after that descriptor's handle.
                 const bleio_descriptor_obj_t *descriptor = characteristic->descriptor_list;

@@ -26,6 +26,6 @@ CIRCUITPY_SMALL_BUILD = 1
 SUPEROPT_GC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
+# FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote

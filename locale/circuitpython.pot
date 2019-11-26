@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-11-21 16:50-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -478,11 +478,6 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr ""
@@ -576,11 +571,6 @@ msgstr ""
 msgid "Expected tuple of length %d, got %d"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed initiate attribute read, err 0x%04x"
-msgstr ""
-
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr ""
@@ -588,15 +578,6 @@ msgstr ""
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to add characteristic, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to add descriptor, err 0x%04x"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -610,10 +591,6 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr ""
 
@@ -621,91 +598,9 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to create service, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to discover services"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get local address"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get softdevice state"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to pair"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr ""
-
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to start advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to start pairing, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to stop advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write gatts value, err 0x%04x"
 msgstr ""
 
 #: py/moduerrno.c
@@ -768,6 +663,14 @@ msgstr ""
 
 #: py/moduerrno.c
 msgid "Input/output error"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -1119,7 +1022,7 @@ msgstr ""
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr ""
 
@@ -1301,9 +1204,30 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
