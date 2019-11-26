@@ -36,3 +36,6 @@
 [submodule "lib/nxp_driver"]
 	path = lib/nxp_driver
 	url = https://github.com/hathach/nxp_driver.git
+[submodule "ports/gd32vf103/gd32vf103inator"]
+	path = ports/gd32vf103/gd32vf103inator
+	url = https://github.com/esmil/gd32vf103inator.git
