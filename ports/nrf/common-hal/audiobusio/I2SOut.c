@@ -108,6 +108,7 @@ void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
 
 static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
     void *buffer = self->buffers[self->next_buffer];
+    void *buffer_start = buffer;
     NRF_I2S->TXD.PTR = (uintptr_t)buffer;
     self->next_buffer = !self->next_buffer;
     size_t bytesleft = self->buffer_length;
@@ -157,15 +158,17 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
 
     // Find the last frame of real audio data and replicate its samples until
     // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
-    if (self->bytes_per_sample == 1 && self->channel_count == 1) {
-        // For 8-bit mono, 4 copies of the final sample are required
-        self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
-    } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
-        // For 16-bit stereo, 1 copy of the final sample is required
-        self->hold_value = *(uint32_t*)(buffer-4);
-    } else {
-        // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
-        self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+    if(buffer != buffer_start) {
+        if (self->bytes_per_sample == 1 && self->channel_count == 1) {
+            // For 8-bit mono, 4 copies of the final sample are required
+            self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
+        } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
+            // For 16-bit stereo, 1 copy of the final sample is required
+            self->hold_value = *(uint32_t*)(buffer-4);
+        } else {
+            // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
+            self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+        }
     }
 
     // Emulate pausing and stopping by filling the DMA buffer with copies of
@@ -218,6 +221,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
+    NRF_I2S->TASKS_STOP = 1;
+    NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     reset_pin_number(self->bit_clock_pin_number);
     self->bit_clock_pin_number = 0xff;
     reset_pin_number(self->word_select_pin_number);
