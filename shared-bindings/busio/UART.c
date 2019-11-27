@@ -71,7 +71,7 @@ extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
 STATIC void validate_timeout(mp_float_t timeout) {
     if (timeout < (mp_float_t) 0.0f ||  timeout > (mp_float_t) 100.0f) {
-        mp_raise_ValueError(translate("timeout must be 0.0-100.0"));
+        mp_raise_ValueError(translate("timeout must be 0.0-100.0 seconds"));
     }
 }
 
