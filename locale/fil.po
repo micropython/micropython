@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 13:13-0500\n"
+"POT-Creation-Date: 2019-11-27 14:54-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -2496,7 +2496,7 @@ msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
 
 #: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c

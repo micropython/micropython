@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 13:13-0500\n"
+"POT-Creation-Date: 2019-11-27 14:54-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2424,7 +2424,7 @@ msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
 #: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
