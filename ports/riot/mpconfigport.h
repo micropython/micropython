@@ -61,6 +61,11 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_MODULE_WEAK_LINKS       (1)
 #define MICROPY_PY_STRUCT               (1)
+// Include SPI when enabled in RIOT
+#ifdef MODULE_PERIPH_SPI
+#define MICROPY_PY_MACHINE_SPI          (1)
+#endif
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hw_spi_make_new
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
 #define MICROPY_PY_UERRNO               (1)
