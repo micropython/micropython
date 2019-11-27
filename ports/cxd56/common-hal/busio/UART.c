@@ -173,7 +173,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 }
 
 mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
-    return (mp_float_t) (self->timeout / 1000000.0f);
+    return (mp_float_t) (self->timeout_us / 1000000.0f);
 }
 
 void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
