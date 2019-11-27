@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 13:13-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2487,13 +2487,9 @@ msgstr "limite debe ser en el rango 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() toma un sequencio 9"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() acepta exactamente 1 argumento"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timepo muerto >100 (unidades en segundos)"
+msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -2718,7 +2714,6 @@ msgstr "paso cero"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Características ya esta en uso por otro Serivice"
 
-#, c-format
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "No se puede descodificar ble_uuid, err 0x%04x"
 
@@ -2785,11 +2780,9 @@ msgstr "paso cero"
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "No se puede notificar el valor del anuncio. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr "Error al notificar o indicar el valor del atributo, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "No se puede leer el valor del atributo. err 0x%02x"
 
@@ -2797,15 +2790,13 @@ msgstr "paso cero"
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "No se puede leer el valor del atributo. status 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Error al leer valor del atributo, err 0x%04"
 
-#, c-format
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "No se puede escribir el valor del atributo. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Fallo al registrar el Vendor-Specific UUID, err 0x%04x"
 
@@ -2824,7 +2815,6 @@ msgstr "paso cero"
 #~ msgid "Failed to start scanning"
 #~ msgstr "No se puede iniciar el escaneo. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "No se puede iniciar el escaneo. err 0x%04x"
 
@@ -2835,11 +2825,9 @@ msgstr "paso cero"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "No se puede detener el anuncio. err: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "No se puede escribir el valor del atributo. err: 0x%04x"
 
@@ -3038,6 +3026,12 @@ msgstr "paso cero"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "el indice del tile fuera de limite"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() acepta exactamente 1 argumento"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timepo muerto >100 (unidades en segundos)"
 
 #~ msgid "too many arguments"
 #~ msgstr "muchos argumentos"

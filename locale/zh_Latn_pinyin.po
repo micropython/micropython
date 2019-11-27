@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 13:13-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -2463,13 +2463,9 @@ msgstr "yùzhí bìxū zài fànwéi 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() xūyào wánquán 1 cānshù"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "chāoshí >100 (dānwèi shì miǎo, ér bùshì háomiǎo)"
+msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -2680,7 +2676,6 @@ msgstr "líng bù"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
 
-#, c-format
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
 
@@ -2696,7 +2691,6 @@ msgstr "líng bù"
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to add descriptor, err 0x%04x"
 #~ msgstr "Wúfǎ tiānjiā miáoshù fú, err 0x%04x"
 
@@ -2733,26 +2727,21 @@ msgstr "líng bù"
 #~ msgid "Failed to get softdevice state"
 #~ msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
 
-#, c-format
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
 
 #~ msgid "Failed to pair"
 #~ msgstr "Pèiduì shībài"
 
-#, c-format
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Dòu qǔ CCCD zhí, err 0x%04x shībài"
 
-#, c-format
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Dòu qǔ shǔxìng zhí shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Wúfǎ dòu qǔ gatts zhí, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Wúfǎ zhùcè màizhǔ tèdìng de UUID, err 0x%04x"
 
@@ -2768,7 +2757,6 @@ msgstr "líng bù"
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to start connecting, error 0x%04x"
 #~ msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
 
@@ -2778,7 +2766,6 @@ msgstr "líng bù"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Qǐdòng sǎomiáo shībài"
 
-#, c-format
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
 
@@ -2788,15 +2775,12 @@ msgstr "líng bù"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write CCCD, err 0x%04x"
 #~ msgstr "Wúfǎ xiě rù CCCD, cuòwù 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Xiě rù shǔxìng zhí shībài, err 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
 
@@ -2865,6 +2849,12 @@ msgstr "líng bù"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "kuài suǒyǐn chāochū fànwéi"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() xūyào wánquán 1 cānshù"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "chāoshí >100 (dānwèi shì miǎo, ér bùshì háomiǎo)"
 
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"

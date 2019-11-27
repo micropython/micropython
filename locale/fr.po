@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 13:13-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -2535,13 +2535,9 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() prend exactement 1 argument"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout >100 (exprimé en secondes, pas en ms)"
+msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
@@ -2769,7 +2765,6 @@ msgstr "'step' nul"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "'Characteristic' déjà en utilisation par un autre service"
 
-#, c-format
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Impossible de décoder le 'ble_uuid', err 0x%04x"
 
@@ -2840,12 +2835,11 @@ msgstr "'step' nul"
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Impossible de notifier la valeur de l'attribut. status: 0x%08lX"
 
-#, c-format
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr ""
 #~ "Impossible de notifier ou d'indiquer la valeur de l'attribut, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Impossible de lire la valeur 'CCCD', err 0x%04x"
 
@@ -2853,15 +2847,14 @@ msgstr "'step' nul"
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
 
-#, c-format
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Impossible de lire la valeur de l'attribut, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Impossible de lire la valeur de 'gatts', err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Echec de l'ajout de l'UUID du fournisseur, err 0x%04x"
 
@@ -2881,7 +2874,7 @@ msgstr "'step' nul"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Impossible de commencer à scanner"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Impossible de commencer à scanner, err 0x%04x"
 
@@ -2893,11 +2886,11 @@ msgstr "'step' nul"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Impossible d'écrire la valeur de l'attribut, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Impossible d'écrire la valeur de 'gatts', err 0x%04x"
 
@@ -3090,6 +3083,12 @@ msgstr "'step' nul"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "indice de tuile hors limites"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() prend exactement 1 argument"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timeout >100 (exprimé en secondes, pas en ms)"
 
 #~ msgid "too many arguments"
 #~ msgstr "trop d'arguments"

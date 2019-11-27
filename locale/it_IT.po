@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 13:13-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -2494,12 +2494,8 @@ msgstr "la soglia deve essere nell'intervallo 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() prende esattamente un argomento"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -2790,11 +2786,10 @@ msgstr "zero step"
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Impossibile notificare valore dell'attributo. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr "Notificamento o indicazione di attribute value fallito, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
@@ -2802,15 +2797,14 @@ msgstr "zero step"
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#, c-format
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Tentative leggere attribute value fallito, err 0x%04x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Non è possibile aggiungere l'UUID del vendor specifico da 128-bit"
 
@@ -2830,7 +2824,7 @@ msgstr "zero step"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Impossible iniziare la scansione. status: 0x%02x"
 
@@ -2842,11 +2836,11 @@ msgstr "zero step"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Impossibile fermare advertisement. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Impossibile scrivere valore dell'attributo. status: 0x%02x"
 
@@ -3007,6 +3001,9 @@ msgstr "zero step"
 
 #~ msgid "scan failed"
 #~ msgstr "scansione fallita"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() prende esattamente un argomento"
 
 #~ msgid "too many arguments"
 #~ msgstr "troppi argomenti"

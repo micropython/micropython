@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 13:13-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -2450,13 +2450,9 @@ msgstr "threshold musi być w zakresie 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() wymaga jednego argumentu"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout > 100 (jednostkami są sekundy)"
+msgid "timeout must be 0.0-100.0 (units are now seconds, not msecs)"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -2664,7 +2660,6 @@ msgstr "zerowy krok"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Charakterystyka w użyciu w innym serwisie"
 
-#, c-format
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Nie można zdekodować ble_uuid, błąd 0x%04x"
 
@@ -2708,23 +2703,18 @@ msgstr "zerowy krok"
 #~ msgid "Failed to get softdevice state"
 #~ msgstr "Nie udało się odczytać stanu softdevice"
 
-#, c-format
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr "Nie udało się powiadomić o wartości atrybutu, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Nie udało się odczytać CCCD, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Nie udało się odczytać wartości atrybutu, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Nie udało się odczytać gatts, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Nie udało się zarejestrować UUID dostawcy, błąd 0x%04x"
 
@@ -2740,7 +2730,6 @@ msgstr "zerowy krok"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Nie udało się rozpocząć skanowania"
 
-#, c-format
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Nie udało się rozpocząć skanowania, błąd 0x%04x"
 
@@ -2750,11 +2739,9 @@ msgstr "zerowy krok"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Nie udało się zatrzymać rozgłaszania, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Nie udało się zapisać atrybutu, błąd 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Nie udało się zapisać gatts, błąd 0x%04x"
 
@@ -2805,3 +2792,9 @@ msgstr "zerowy krok"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "indeks kafelka poza zakresem"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() wymaga jednego argumentu"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timeout > 100 (jednostkami są sekundy)"
