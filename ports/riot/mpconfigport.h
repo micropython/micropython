@@ -65,6 +65,10 @@
 #ifdef MODULE_PERIPH_SPI
 #define MICROPY_PY_MACHINE_SPI          (1)
 #endif
+// Include ADC when enabled in RIOT
+#ifdef MODULE_PERIPH_ADC
+#define MICROPY_PY_MACHINE_ADC          (1)
+#endif
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hw_spi_make_new
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort

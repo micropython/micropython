@@ -6,6 +6,7 @@
 
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_hw_spi_type;
+extern const mp_obj_type_t machine_adc_type;
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_info_obj);
 
