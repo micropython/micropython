@@ -428,9 +428,11 @@ class RawCodeNative(RawCode):
         else:
             self.fun_data_attributes = '__attribute__((section(".text,\\"ax\\",%progbits @ ")))'
 
-        # Allow single-byte alignment by default for x86/x64/xtensa, but on ARM we need halfword- or word- alignment.
-        if config.native_arch == MP_NATIVE_ARCH_ARMV6:
-            # ARMV6 -- four byte align.
+        # Allow single-byte alignment by default for x86/x64.
+        # ARM needs word alignment, ARM Thumb needs halfword, due to instruction size.
+        # Xtensa needs word alignment due to the 32-bit constant table embedded in the code.
+        if config.native_arch in (MP_NATIVE_ARCH_ARMV6, MP_NATIVE_ARCH_XTENSA, MP_NATIVE_ARCH_XTENSAWIN):
+            # ARMV6 or Xtensa -- four byte align.
             self.fun_data_attributes += ' __attribute__ ((aligned (4)))'
         elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
             # ARMVxxM -- two byte align.
@@ -452,8 +454,11 @@ class RawCodeNative(RawCode):
             is_obj = kind == 2
             if is_obj:
                 qst = '((uintptr_t)MP_OBJ_NEW_QSTR(%s))' % qst
-            if config.native_arch in (MP_NATIVE_ARCH_X86, MP_NATIVE_ARCH_X64):
-                print('    %s & 0xff, %s >> 8, 0, 0,' % (qst, qst))
+            if config.native_arch in (
+                MP_NATIVE_ARCH_X86, MP_NATIVE_ARCH_X64,
+                MP_NATIVE_ARCH_XTENSA, MP_NATIVE_ARCH_XTENSAWIN
+                ):
+                print('    %s & 0xff, (%s >> 8) & 0xff, (%s >> 16) & 0xff, %s >> 24,' % (qst, qst, qst, qst))
                 return 4
             elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
                 if is_obj:
