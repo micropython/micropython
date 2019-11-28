@@ -73,7 +73,7 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx *self, mp_obj_t bdev, size_
     config->erase = MP_VFS_LFSx(dev_erase);
     config->sync = MP_VFS_LFSx(dev_sync);
 
-    MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_INIT, 0, false); // initialise block device
+    MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_INIT, 1, false); // initialise block device
     int bs = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_SIZE, 0, true); // get block size
     int bc = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_COUNT, 0, true); // get block count
     self->blockdev.block_size = bs;

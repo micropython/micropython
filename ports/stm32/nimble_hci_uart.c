@@ -162,7 +162,9 @@ void nimble_hci_uart_tx_strn(const char *str, uint len) {
     if (mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 1) {
         //printf("BT WAKE for TX\n");
         mp_hal_pin_low(pyb_pin_BT_DEV_WAKE); // wake up
-        mp_hal_delay_ms(5); // can't go lower than this
+        // Use delay_us rather than delay_ms to prevent running the scheduler (which
+        // might result in more BLE operations).
+        mp_hal_delay_us(5000); // can't go lower than this
     }
     #endif
 

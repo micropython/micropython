@@ -2,6 +2,7 @@
 
 from micropython import const
 import struct
+import bluetooth
 
 # Advertising payloads are repeated packets of the following form:
 #   1 byte data length (N + 1)
@@ -46,3 +47,39 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
     _append(_ADV_TYPE_APPEARANCE, struct.pack('<h', appearance))
 
     return payload
+
+
+def decode_field(payload, adv_type):
+    i = 0
+    result = []
+    while i + 1 < len(payload):
+        if payload[i + 1] == adv_type:
+            result.append(payload[i + 2:i + payload[i] + 1])
+        i += 1 + payload[i]
+    return result
+
+
+def decode_name(payload):
+    n = decode_field(payload, _ADV_TYPE_NAME)
+    return str(n[0], 'utf-8') if n else ''
+
+
+def decode_services(payload):
+    services = []
+    for u in decode_field(payload, _ADV_TYPE_UUID16_COMPLETE):
+        services.append(bluetooth.UUID(struct.unpack('<h', u)[0]))
+    for u in decode_field(payload, _ADV_TYPE_UUID32_COMPLETE):
+        services.append(bluetooth.UUID(struct.unpack('<d', u)[0]))
+    for u in decode_field(payload, _ADV_TYPE_UUID128_COMPLETE):
+        services.append(bluetooth.UUID(u))
+    return services
+
+
+def demo():
+    payload = advertising_payload(name='micropython', services=[bluetooth.UUID(0x181A), bluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')])
+    print(payload)
+    print(decode_name(payload))
+    print(decode_services(payload))
+
+if __name__ == '__main__':
+    demo()

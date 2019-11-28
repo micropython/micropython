@@ -31,6 +31,7 @@
 #include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"
+#include "py/runtime.h"
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
@@ -192,11 +193,16 @@ qstr qstr_from_str(const char *str) {
 }
 
 qstr qstr_from_strn(const char *str, size_t len) {
-    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     QSTR_ENTER();
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         // qstr does not exist in interned pool so need to add it
+
+        // check that len is not too big
+        if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
+            QSTR_EXIT();
+            mp_raise_msg(&mp_type_RuntimeError, "name too long");
+        }
 
         // compute number of bytes needed to intern this string
         size_t n_bytes = MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1;

@@ -292,4 +292,44 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block) {
     return true;
 }
 
+int flash_bdev_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint32_t len) {
+    // Get data from flash memory, possibly via cache
+    while (len) {
+        uint32_t l = MIN(len, FLASH_BLOCK_SIZE - offset);
+        uint32_t flash_addr = convert_block_to_flash_addr(block);
+        if (flash_addr == -1) {
+            // bad block number
+            return -1;
+        }
+        uint8_t *src = flash_cache_get_addr_for_read(flash_addr + offset);
+        memcpy(dest, src, l);
+        dest += l;
+        block += 1;
+        offset = 0;
+        len -= l;
+    }
+    return 0;
+}
+
+int flash_bdev_writeblocks_ext(const uint8_t *src, uint32_t block, uint32_t offset, uint32_t len) {
+    // Copy to cache
+    while (len) {
+        uint32_t l = MIN(len, FLASH_BLOCK_SIZE - offset);
+        uint32_t flash_addr = convert_block_to_flash_addr(block);
+        if (flash_addr == -1) {
+            // bad block number
+            return -1;
+        }
+        uint32_t basepri = raise_irq_pri(IRQ_PRI_FLASH); // prevent cache flushing and USB access
+        uint8_t *dest = flash_cache_get_addr_for_write(flash_addr + offset);
+        memcpy(dest, src, l);
+        restore_irq_pri(basepri);
+        src += l;
+        block += 1;
+        offset = 0;
+        len -= l;
+    }
+    return 0;
+}
+
 #endif // MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE

@@ -70,9 +70,9 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
     const void *buf = o->vstr->buf;
     o->vstr->buf = m_new(char, o->vstr->len);
-    memcpy(o->vstr->buf, buf, o->vstr->len);
     o->vstr->fixed_buf = false;
     o->ref_obj = MP_OBJ_NULL;
+    memcpy(o->vstr->buf, buf, o->vstr->len);
 }
 
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {

@@ -117,14 +117,14 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
         case BLE_UUID_TYPE_16:
             result.type = MP_BLUETOOTH_UUID_TYPE_16;
             result.data[0] = uuid->u16.value & 0xff;
-            result.data[1] = (uuid->u16.value << 8) & 0xff;
+            result.data[1] = (uuid->u16.value >> 8) & 0xff;
             break;
         case BLE_UUID_TYPE_32:
             result.type = MP_BLUETOOTH_UUID_TYPE_32;
             result.data[0] = uuid->u32.value & 0xff;
-            result.data[1] = (uuid->u32.value << 8) & 0xff;
-            result.data[2] = (uuid->u32.value << 16) & 0xff;
-            result.data[3] = (uuid->u32.value << 24) & 0xff;
+            result.data[1] = (uuid->u32.value >> 8) & 0xff;
+            result.data[2] = (uuid->u32.value >> 16) & 0xff;
+            result.data[3] = (uuid->u32.value >> 24) & 0xff;
             break;
         case BLE_UUID_TYPE_128:
             result.type = MP_BLUETOOTH_UUID_TYPE_128;
@@ -659,6 +659,9 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
 }
 
 int mp_bluetooth_gap_scan_stop(void) {
+    if (!ble_gap_disc_active()) {
+        return 0;
+    }
     int err = ble_gap_disc_cancel();
     if (err == 0) {
         mp_bluetooth_gap_on_scan_complete();
