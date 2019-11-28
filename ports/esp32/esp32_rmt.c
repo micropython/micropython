@@ -173,10 +173,10 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
 
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
     mp_obj_t pulses = args[1].u_obj;
-    mp_uint_t start_level = args[2].u_int;
+    mp_uint_t start = args[2].u_int;
 
-    if (start_level < 0 || start_level > 1) {
-        mp_raise_ValueError("start_level can only be 0 or 1");
+    if (start < 0 || start > 1) {
+        mp_raise_ValueError("start can only be 0 or 1");
     }
 
     mp_uint_t pulses_length = 0;
@@ -203,13 +203,13 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
     {
         mp_uint_t pulse_index = item_index * 2;
         self->items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
-        self->items[item_index].level0 = start_level++; // Note that start_level _could_ wrap.
-        //printf("duration=%d start_level=%d\n", items[item_index].duration0, items[item_index].level0);
+        self->items[item_index].level0 = start++; // Note that start _could_ wrap.
+        //printf("duration=%d start=%d\n", items[item_index].duration0, items[item_index].level0);
         if (pulse_index < pulses_length)
         {
             self->items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
-            self->items[item_index].level1 = start_level++;
-            //printf("duration=%d start_level=%d\n", items[item_index].duration1, items[item_index].level1);
+            self->items[item_index].level1 = start++;
+            //printf("duration=%d start=%d\n", items[item_index].duration1, items[item_index].level1);
         }
     }
     check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false /* non-blocking */));
