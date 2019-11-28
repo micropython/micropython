@@ -29,6 +29,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                 prog->len++;
                 break;
             }
+            MP_FALLTHROUGH
         default:
             term = PC;
             EMIT(PC++, Char);

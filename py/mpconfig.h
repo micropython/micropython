@@ -1643,6 +1643,13 @@ typedef double mp_float_t;
 #endif
 #endif
 
+// Explicitly annotate switch case fall throughs
+#if defined(__GNUC__) && __GNUC__ >= 7
+#define MP_FALLTHROUGH __attribute__((fallthrough));
+#else
+#define MP_FALLTHROUGH
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
 #define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))
