@@ -33,6 +33,7 @@
 #include "py/objarray.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "extmod/modbluetooth.h"
 #include <string.h>
 
