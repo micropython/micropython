@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-21 16:50-0800\n"
+"POT-Creation-Date: 2019-11-27 14:54-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -2495,13 +2495,9 @@ msgstr "ang threshold ay dapat sa range 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() kumukuha ng 1 argument"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout >100 (units ay seconds, hindi na msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
@@ -2789,7 +2785,7 @@ msgstr "zero step"
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
@@ -2797,11 +2793,11 @@ msgstr "zero step"
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr ""
 #~ "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
@@ -2822,7 +2818,7 @@ msgstr "zero step"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
@@ -2834,11 +2830,11 @@ msgstr "zero step"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
@@ -3005,6 +3001,12 @@ msgstr "zero step"
 
 #~ msgid "scan failed"
 #~ msgstr "nabigo ang pag-scan"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() kumukuha ng 1 argument"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timeout >100 (units ay seconds, hindi na msecs)"
 
 #~ msgid "too many arguments"
 #~ msgstr "masyadong maraming argumento"

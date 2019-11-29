@@ -26,6 +26,7 @@
 
 #include "shared-bindings/displayio/EPaperDisplay.h"
 
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/FourWire.h"
@@ -299,7 +300,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
 }
 
 bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* self) {
-    
+
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
         if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
             self->refreshing = false;
@@ -366,6 +367,8 @@ void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self) {
     displayio_display_core_collect_ptrs(&self->core);
+    gc_collect_ptr(self->start_sequence);
+    gc_collect_ptr(self->stop_sequence);
 }
 
 bool maybe_refresh_epaperdisplay(void) {
