@@ -616,6 +616,20 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+STATIC void gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    size_t len = OS_MBUF_PKTLEN(om);
+    len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len);
+    while (len > 0 && om != NULL) {
+        size_t n = MIN(om->om_len, len);
+        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t*), n);
+        len -= n;
+        om = SLIST_NEXT(om, om_next);
+    }
+    mp_bluetooth_gattc_on_data_available_end();
+    MICROPY_PY_BLUETOOTH_EXIT
+}
+
 STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
     DEBUG_EVENT_printf("gap_scan_cb: event=%d type=%d\n", event->type, event->type == BLE_GAP_EVENT_DISC ? event->disc.event_type : -1);
 
@@ -674,8 +688,6 @@ int mp_bluetooth_gap_scan_stop(void) {
 STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
     DEBUG_EVENT_printf("peripheral_gap_event_cb: event=%d\n", event->type);
     struct ble_gap_conn_desc desc;
-    uint8_t buf[MP_BLUETOOTH_MAX_ATTR_SIZE];
-    size_t len;
     uint8_t addr[6] = {0};
 
     switch (event->type) {
@@ -698,15 +710,11 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
             break;
 
-        case BLE_GAP_EVENT_NOTIFY_RX:
-            len = MIN(MP_BLUETOOTH_MAX_ATTR_SIZE, OS_MBUF_PKTLEN(event->notify_rx.om));
-            os_mbuf_copydata(event->notify_rx.om, 0, len, buf);
-            if (event->notify_rx.indication == 0) {
-                mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, event->notify_rx.conn_handle, event->notify_rx.attr_handle, buf, len);
-            } else {
-                mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_INDICATE, event->notify_rx.conn_handle, event->notify_rx.attr_handle, buf, len);
-            }
+        case BLE_GAP_EVENT_NOTIFY_RX: {
+            uint16_t ev = event->notify_rx.indication == 0 ? MP_BLUETOOTH_IRQ_GATTC_NOTIFY : MP_BLUETOOTH_IRQ_GATTC_INDICATE;
+            gattc_on_data_available(ev, event->notify_rx.conn_handle, event->notify_rx.attr_handle, event->notify_rx.om);
             break;
+        }
 
         case BLE_GAP_EVENT_CONN_UPDATE:
             // TODO
@@ -790,10 +798,7 @@ STATIC int ble_gatt_attr_read_cb(uint16_t conn_handle, const struct ble_gatt_err
     DEBUG_EVENT_printf("ble_gatt_attr_read_cb: conn_handle=%d status=%d handle=%d\n", conn_handle, error->status, attr ? attr->handle : -1);
     // TODO: Maybe send NULL if error->status non-zero.
     if (error->status == 0) {
-        uint8_t buf[MP_BLUETOOTH_MAX_ATTR_SIZE];
-        size_t len = MIN(MP_BLUETOOTH_MAX_ATTR_SIZE, OS_MBUF_PKTLEN(attr->om));
-        os_mbuf_copydata(attr->om, 0, len, buf);
-        mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, buf, len);
+        gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, attr->om);
     }
     return 0;
 }

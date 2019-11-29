@@ -42,12 +42,6 @@
 #error modbluetooth requires MICROPY_ENABLE_SCHEDULER
 #endif
 
-// This is used to protect the ringbuffer.
-#ifndef MICROPY_PY_BLUETOOTH_ENTER
-#define MICROPY_PY_BLUETOOTH_ENTER mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_END_ATOMIC_SECTION(atomic_state);
-#endif
-
 #define MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS 2000
 
 #define MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN 5
@@ -961,20 +955,28 @@ void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t hand
     MICROPY_PY_BLUETOOTH_EXIT
 }
 
-void mp_bluetooth_gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16_t value_handle, const uint8_t *data, size_t data_len) {
-    MICROPY_PY_BLUETOOTH_ENTER
+size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     data_len = MIN(MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN, data_len);
     if (enqueue_irq(o, 2 + 2 + 1 + data_len, event)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
         ringbuf_put(&o->ringbuf, data_len);
-        for (int i = 0; i < data_len; ++i) {
-            ringbuf_put(&o->ringbuf, data[i]);
-        }
+        return data_len;
+    } else {
+        return 0;
     }
+}
+
+void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len) {
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    for (int i = 0; i < data_len; ++i) {
+        ringbuf_put(&o->ringbuf, data[i]);
+    }
+}
+
+void mp_bluetooth_gattc_on_data_available_end(void) {
     schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
 }
 
 void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status) {

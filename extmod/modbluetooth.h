@@ -47,6 +47,12 @@
 #define MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK (0)
 #endif
 
+// This is used to protect the ringbuffer.
+#ifndef MICROPY_PY_BLUETOOTH_ENTER
+#define MICROPY_PY_BLUETOOTH_ENTER mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_END_ATOMIC_SECTION(atomic_state);
+#endif
+
 // Common constants.
 #ifndef MP_BLUETOOTH_MAX_ATTR_SIZE
 #define MP_BLUETOOTH_MAX_ATTR_SIZE (20)
@@ -247,7 +253,11 @@ void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t 
 void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t handle, mp_obj_bluetooth_uuid_t *descriptor_uuid);
 
 // Notify modbluetooth that a read has completed with data (or notify/indicate data available, use `event` to disambiguate).
-void mp_bluetooth_gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16_t value_handle, const uint8_t *data, size_t data_len);
+// Note: these functions are to be called in a group protected by MICROPY_PY_BLUETOOTH_ENTER/EXIT.
+// _start returns the number of bytes to submit to the calls to _chunk, followed by a call to _end.
+size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len);
+void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len);
+void mp_bluetooth_gattc_on_data_available_end(void);
 
 // Notify modbluetooth that a write has completed.
 void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status);
