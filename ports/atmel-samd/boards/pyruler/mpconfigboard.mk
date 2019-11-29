@@ -13,4 +13,4 @@ CIRCUITPY_SMALL_BUILD = 1
 
 SUPEROPT_GC = 0
 
-CFLAGS_BOARD = --param inline-unit-growth=15 --param max-inline-insns-auto=15
+CFLAGS_BOARD = --param max-inline-insns-auto=15

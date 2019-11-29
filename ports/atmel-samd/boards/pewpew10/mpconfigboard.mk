@@ -24,4 +24,4 @@ SUPEROPT_GC = 0
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/pew-pewpew-standalone-10.x
 
-CFLAGS_BOARD = --param inline-unit-growth=15 --param max-inline-insns-auto=15
+CFLAGS_BOARD = --param max-inline-insns-auto=15

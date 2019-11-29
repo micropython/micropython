@@ -125,6 +125,10 @@ else
 
   CFLAGS += -flto -flto-partition=none
 
+  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
+  endif
+
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)
   endif

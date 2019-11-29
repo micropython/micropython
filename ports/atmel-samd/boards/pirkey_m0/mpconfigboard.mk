@@ -30,4 +30,4 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote
 
-CFLAGS_BOARD = --param inline-unit-growth=15 --param max-inline-insns-auto=12
+CFLAGS_BOARD = --param max-inline-insns-auto=12
