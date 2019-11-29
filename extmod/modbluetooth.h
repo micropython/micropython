@@ -65,6 +65,10 @@
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
 
+// For mp_bluetooth_gattc_write, the mode parameter
+#define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE     (0)
+#define MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE   (1)
+
 // Type value also doubles as length.
 #define MP_BLUETOOTH_UUID_TYPE_16  (2)
 #define MP_BLUETOOTH_UUID_TYPE_32  (4)
@@ -219,7 +223,7 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle);
 
 // Write the value to the remote peripheral.
-int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len);
+int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

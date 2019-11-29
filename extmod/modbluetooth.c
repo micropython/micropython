@@ -641,9 +641,13 @@ STATIC mp_obj_t bluetooth_ble_gattc_write(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     size_t len = bufinfo.len;
-    return bluetooth_handle_errno(mp_bluetooth_gattc_write(conn_handle, value_handle, bufinfo.buf, &len));
+    unsigned int mode = MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE;
+    if (n_args == 5) {
+        mode = mp_obj_get_int(args[4]);
+    }
+    return bluetooth_handle_errno(mp_bluetooth_gattc_write(conn_handle, value_handle, bufinfo.buf, &len, mode));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_write_obj, 4, 4, bluetooth_ble_gattc_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_write_obj, 4, 5, bluetooth_ble_gattc_write);
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 

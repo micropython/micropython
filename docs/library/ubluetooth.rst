@@ -310,12 +310,23 @@ Central Role (GATT Client)
 
     On success, the ``_IRQ_GATTC_READ_RESULT`` event will be raised.
 
-.. method:: BLE.gattc_write(conn_handle, value_handle, data)
+.. method:: BLE.gattc_write(conn_handle, value_handle, data, mode=0)
 
     Issue a remote write to a connected peripheral for the specified
     characteristic or descriptor handle.
 
-    On success, the ``_IRQ_GATTC_WRITE_STATUS`` event will be raised.
+    The argument *mode* specifies the write behaviour, with the currently
+    supported values being:
+
+        * ``mode=0`` (default) is a write-without-response: the write will
+          be sent to the remote peripheral but no confirmation will be
+          returned, and no event will be raised.
+        * ``mode=1`` is a write-with-response: the remote peripheral is
+          requested to send a response/acknowledgement that it received the
+          data.
+
+    If a response is received from the remote peripheral the
+    ``_IRQ_GATTC_WRITE_STATUS`` event will be raised.
 
 
 class UUID
