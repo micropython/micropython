@@ -32,13 +32,26 @@ Configuration
 
     The radio must be made active before using any other methods on this class.
 
-.. method:: BLE.config(name)
+.. method:: BLE.config('param')
+            BLE.config(param=value, ...)
 
-    Queries a configuration value by *name*. Currently supported values are:
+    Get or set configuration values of the BLE interface.  To get a value the
+    parameter name should be quoted as a string, and just one parameter is
+    queried at a time.  To set values use the keyword syntax, and one ore more
+    parameter can be set at a time.
+
+    Currently supported values are:
 
     - ``'mac'``: Returns the device MAC address. If a device has a fixed address
       (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
       address will be generated when the BLE interface is made active.
+
+    - ``'rxbuf'``: Set the size in bytes of the internal buffer used to store
+      incoming events.  This buffer is global to the entire BLE driver and so
+      handles incoming data for all events, including all characteristics.
+      Increasing this allows better handling of bursty incoming data (for
+      example scan results) and the ability for a central role to receive
+      larger characteristic values.
 
 Event Handling
 --------------
