@@ -46,6 +46,7 @@ ifeq ($(ARCH),x86)
 CROSS =
 CFLAGS += -m32 -fno-stack-protector
 MPY_CROSS_FLAGS += -mcache-lookup-bc
+MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),x64)
 
@@ -53,12 +54,14 @@ else ifeq ($(ARCH),x64)
 CROSS =
 CFLAGS += -fno-stack-protector
 MPY_CROSS_FLAGS += -mcache-lookup-bc
+MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),armv7m)
 
 # thumb
 CROSS = arm-none-eabi-
 CFLAGS += -mthumb -mcpu=cortex-m3
+MICROPY_FLOAT_IMPL ?= none
 
 else ifeq ($(ARCH),armv7emsp)
 
@@ -66,6 +69,7 @@ else ifeq ($(ARCH),armv7emsp)
 CROSS = arm-none-eabi-
 CFLAGS += -mthumb -mcpu=cortex-m4
 CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+MICROPY_FLOAT_IMPL ?= float
 
 else ifeq ($(ARCH),armv7emdp)
 
@@ -73,22 +77,28 @@ else ifeq ($(ARCH),armv7emdp)
 CROSS = arm-none-eabi-
 CFLAGS += -mthumb -mcpu=cortex-m7
 CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard
+MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),xtensa)
 
 # xtensa
 CROSS = xtensa-lx106-elf-
 CFLAGS += -mforce-l32
+MICROPY_FLOAT_IMPL ?= none
 
 else ifeq ($(ARCH),xtensawin)
 
 # xtensawin
 CROSS = xtensa-esp32-elf-
 CFLAGS +=
+MICROPY_FLOAT_IMPL ?= float
 
 else
 $(error architecture '$(ARCH)' not supported)
 endif
+
+MICROPY_FLOAT_IMPL_UPPER = $(shell echo $(MICROPY_FLOAT_IMPL) | tr '[:lower:]' '[:upper:]')
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_$(MICROPY_FLOAT_IMPL_UPPER)
 
 CFLAGS += $(CFLAGS_EXTRA)
 

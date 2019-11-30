@@ -190,4 +190,20 @@ static inline void mp_raise_OSError_dyn(int er) {
     nlr_raise(mp_call_function_n_kw(mp_load_global(MP_QSTR_OSError), 1, 0, &args[0]));
 }
 
+/******************************************************************************/
+// Floating point
+
+#define mp_obj_new_float_from_f(f)  (mp_fun_table.obj_new_float_from_f((f)))
+#define mp_obj_new_float_from_d(d)  (mp_fun_table.obj_new_float_from_d((d)))
+#define mp_obj_get_float_to_f(o)    (mp_fun_table.obj_get_float_to_f((o)))
+#define mp_obj_get_float_to_d(o)    (mp_fun_table.obj_get_float_to_d((o)))
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define mp_obj_new_float(f)         (mp_obj_new_float_from_f((f)))
+#define mp_obj_get_float(o)         (mp_obj_get_float_to_f((o)))
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define mp_obj_new_float(f)         (mp_obj_new_float_from_d((f)))
+#define mp_obj_get_float(o)         (mp_obj_get_float_to_d((o)))
+#endif
+
 #endif // MICROPY_INCLUDED_PY_DYNRUNTIME_H

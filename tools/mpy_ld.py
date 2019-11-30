@@ -663,7 +663,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
 
     # Resolve unknown symbols
     mp_fun_table_sec = Section('.external.mp_fun_table', b'', 0)
-    fun_table = {key: 63 + idx
+    fun_table = {key: 67 + idx
         for idx, key in enumerate([
             'mp_type_type',
             'mp_type_str',
