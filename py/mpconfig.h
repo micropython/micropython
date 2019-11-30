@@ -1468,7 +1468,9 @@ typedef double mp_float_t;
 #define BYTES_PER_WORD (sizeof(mp_uint_t))
 #endif
 
+#ifndef BITS_PER_BYTE
 #define BITS_PER_BYTE (8)
+#endif
 #define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // mp_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
