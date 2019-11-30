@@ -211,6 +211,48 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     return false;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    return mp_obj_new_float((mp_float_t)f);
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    return mp_obj_new_float((mp_float_t)d);
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    return (float)mp_obj_get_float(o);
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    return (double)mp_obj_get_float(o);
+}
+
+#else
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    (void)f;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    (void)d;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+#endif
+
 // these must correspond to the respective enum in runtime0.h
 const mp_fun_table_t mp_fun_table = {
     &mp_const_none_obj,
@@ -282,6 +324,10 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_new_str,
     mp_obj_new_bytes,
     mp_obj_new_bytearray_by_ref,
+    mp_obj_new_float_from_f,
+    mp_obj_new_float_from_d,
+    mp_obj_get_float_to_f,
+    mp_obj_get_float_to_d,
     mp_get_buffer_raise,
     mp_get_stream_raise,
     &mp_plat_print,
