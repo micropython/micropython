@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <assert.h>
 
 #include "py/obj.h"

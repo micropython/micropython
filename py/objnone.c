@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-
 #include "py/obj.h"
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS

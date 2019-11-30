@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "py/objtype.h"
 #include "py/runtime.h"

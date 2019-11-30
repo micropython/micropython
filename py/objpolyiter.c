@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-
 #include "py/runtime.h"
 
 // This is universal iterator type which calls "iternext" method stored in

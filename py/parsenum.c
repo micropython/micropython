@@ -25,7 +25,7 @@
  */
 
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "py/runtime.h"
 #include "py/parsenumbase.h"
