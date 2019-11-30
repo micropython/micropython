@@ -186,6 +186,16 @@ mp_obj_t mp_load_global(qstr qst) {
         #endif
         elem = mp_map_lookup((mp_map_t *)&mp_module_builtins_globals.map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
         if (elem == NULL) {
+            #if MICROPY_LAZY_LOAD_GLOBAL
+            // allow port to provide this global
+            mp_obj_t obj = mp_lazy_load_global(qst);
+            if (MP_OBJ_NULL != obj) {
+                // cache it for faster access next time
+                mp_store_global(qst, obj);
+                return obj;
+            }
+            #endif
+
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_msg(&mp_type_NameError, MP_ERROR_TEXT("name not defined"));
             #else

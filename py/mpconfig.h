@@ -797,6 +797,14 @@ typedef double mp_float_t;
 #define MICROPY_CAN_OVERRIDE_BUILTINS (0)
 #endif
 
+// Allow ports to provide a lazy load function for undefined globals
+// By enabling this, MicroPython will call mp_lazy_load_global() whenever an undefined
+// global is accessed.  Ports can return a non-MP_OBJ_NULL value which will be returned instead
+// of raising NameError.  It is also cached for faster future access.
+#ifndef MICROPY_LAZY_LOAD_GLOBAL
+#define MICROPY_LAZY_LOAD_GLOBAL (0)
+#endif
+
 // Whether to check that the "self" argument of a builtin method has the
 // correct type.  Such an explicit check is only needed if a builtin
 // method escapes to Python land without a first argument, eg
