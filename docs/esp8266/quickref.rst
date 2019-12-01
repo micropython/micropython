@@ -348,15 +348,31 @@ The DHT driver is implemented in software and works on all pins::
     import dht
     import machine
 
-    d = dht.DHT11(machine.Pin(4))
+    d = dht.DHT11(machine.Pin(4), delay=250, flags=0)
     d.measure()
     d.temperature() # eg. 23 (°C)
     d.humidity()    # eg. 41 (% RH)
 
-    d = dht.DHT22(machine.Pin(4))
+    d = dht.DHT22(machine.Pin(4), delay=250, flags=0)
     d.measure()
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
+
+Use *delay* (optional) to specify how long in milliseconds the driver
+will wait before sending the start pulse to the sensor. Increase the
+value if you experience a high number of *ETIMEDOUT* errors when calling
+*measure()*. In applications using an event loop or uasyncio specify
+*delay=0* and handle the polling frequency in your framework, like using
+*await uasyncio.sleep(5)* in a coro dedicated to refresh the DHT data.
+
+*flags* (optional) is a or'ed combination of the following:
+
+* *dht.ENABLE_HIGH* - (ESP8266 only, ignored on ESP32) enable the output
+  as HIGH while reading data from the sensor. The open drain implementation
+  of the esp8266 port seems to require this for some sensors. Some details
+  are discussed in
+  `Issue #4233 <https://github.com/micropython/micropython/issues/4233>`_
+  .
 
 WebREPL (web browser interactive prompt)
 ----------------------------------------

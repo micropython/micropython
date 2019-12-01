@@ -1,19 +1,31 @@
 # DHT11/DHT22 driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
+ENABLE_HIGH = 1
+
 try:
     from esp import dht_readinto
 except:
     from pyb import dht_readinto
 
+from machine import Pin
+from utime import sleep_ms
+
 class DHTBase:
-    def __init__(self, pin):
+    def __init__(self, pin, delay=250, flags=0):
         self.pin = pin
         self.buf = bytearray(5)
+        self.delay = delay
+        self.flags = flags
+        pin.init(mode=Pin.OPEN_DRAIN, value=1)
+        if delay < 250:
+            sleep_ms(250 - delay)
 
     def measure(self):
         buf = self.buf
-        dht_readinto(self.pin, buf)
+        if self.delay > 0:
+            sleep_ms(self.delay)
+        dht_readinto(self.pin, self.flags, buf)
         if (buf[0] + buf[1] + buf[2] + buf[3]) & 0xff != buf[4]:
             raise Exception("checksum error")
 

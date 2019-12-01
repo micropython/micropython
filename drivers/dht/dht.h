@@ -3,6 +3,8 @@
 
 #include "py/obj.h"
 
-MP_DECLARE_CONST_FUN_OBJ_2(dht_readinto_obj);
+#define	DHT_FLAG_ENABLE_HIGH (0x01)
+
+MP_DECLARE_CONST_FUN_OBJ_3(dht_readinto_obj);
 
 #endif // MICROPY_INCLUDED_DRIVERS_DHT_DHT_H
