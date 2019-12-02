@@ -224,7 +224,7 @@ def compress(encoding_table, decompressed):
     if current_bit != 7:
         current_byte += 1
     if current_byte > len(decompressed):
-        print("Note: compression increased length", repr(decompressed.decode('utf-8')), len(decompressed), current_byte, file=sys.stderr)
+        print("Note: compression increased length", repr(decompressed), len(decompressed), current_byte, file=sys.stderr)
     return enc[:current_byte]
 
 def qstr_escape(qst):
