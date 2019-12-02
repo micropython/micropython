@@ -355,8 +355,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
             if (self->auto_write)
                 call_show(self_in);
     }
+    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_fill);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
 
 
 //|   .. method:: __getitem__(index)
