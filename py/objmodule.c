@@ -27,7 +27,6 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <assert.h>
 
 #include "py/objmodule.h"
 #include "py/runtime.h"

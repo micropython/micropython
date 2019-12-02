@@ -28,6 +28,7 @@
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"

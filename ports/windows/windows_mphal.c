@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
+#include <assert.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;

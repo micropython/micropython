@@ -25,7 +25,6 @@
  */
 
 #include <stddef.h>
-#include <assert.h>
 
 #include "py/objtuple.h"
 #include "py/runtime.h"

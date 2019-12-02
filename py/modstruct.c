@@ -25,7 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <string.h>
 
 #include "py/runtime.h"

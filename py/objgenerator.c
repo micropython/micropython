@@ -26,7 +26,6 @@
  */
 
 #include <stddef.h>
-#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/bc.h"

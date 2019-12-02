@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include <assert.h>
 
 #include "py/binary.h"
 #include "py/smallint.h"

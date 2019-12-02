@@ -30,7 +30,6 @@
 // exception handling, basically a stack of setjmp/longjmp buffers
 
 #include <limits.h>
-#include <assert.h>
 
 #include "py/mpconfig.h"
 
@@ -150,6 +149,7 @@ NORETURN void nlr_jump_fail(void *val);
 #ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
+#include <assert.h>
 #include "mpstate.h"
 #define nlr_raise(val) \
     do { \

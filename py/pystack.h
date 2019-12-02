@@ -33,6 +33,7 @@
 #define MP_PYSTACK_DEBUG (0)
 
 #if MICROPY_ENABLE_PYSTACK
+#include <assert.h>
 
 void mp_pystack_init(void *start, void *end);
 void *mp_pystack_alloc(size_t n_bytes);
