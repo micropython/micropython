@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 #include <assert.h>
 
 #include "py/parsenumbase.h"

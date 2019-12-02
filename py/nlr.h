@@ -29,8 +29,6 @@
 // non-local return
 // exception handling, basically a stack of setjmp/longjmp buffers
 
-#include <limits.h>
-
 #include "py/mpconfig.h"
 
 #define MICROPY_NLR_NUM_REGS_X86            (6)
