@@ -131,9 +131,10 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
     print("// values", values, "lengths", len(lengths), lengths)
     print("// estimated total memory size", len(lengths) + 2*len(values) + sum(len(cb[u]) for u in all_strings_concat))
     print("//", values, lengths)
+    values_type = "uint16_t" if max(ord(u) for u in values) > 255 else "uint8_t"
     with open(compression_filename, "w") as f:
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
-        f.write("const uint16_t values[] = {{ {} }};\n".format(", ".join(str(ord(u)) for u in values)))
+        f.write("const {} values[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(u)) for u in values)))
     return values, lengths
 
 def decompress(encoding_table, length, encoded):
