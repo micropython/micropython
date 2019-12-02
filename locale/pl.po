@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 14:54-0500\n"
+"POT-Creation-Date: 2019-12-02 14:06-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -2794,11 +2794,11 @@ msgstr "zerowy krok"
 #~ msgid "tile index out of bounds"
 #~ msgstr "indeks kafelka poza zakresem"
 
-#~ msgid "write_args must be a list, tuple, or None"
-#~ msgstr "write_args musi być listą, krotką lub None"
-
 #~ msgid "time.struct_time() takes exactly 1 argument"
 #~ msgstr "time.struct_time() wymaga jednego argumentu"
 
 #~ msgid "timeout >100 (units are now seconds, not msecs)"
 #~ msgstr "timeout > 100 (jednostkami są sekundy)"
+
+#~ msgid "write_args must be a list, tuple, or None"
+#~ msgstr "write_args musi być listą, krotką lub None"
