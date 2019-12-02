@@ -431,13 +431,13 @@ STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     struct mp_stream_seek_t seek_s;
     // TODO: Could be uint64
     seek_s.offset = mp_obj_get_int(args[1]);
-    seek_s.whence = SEEK_SET;
+    seek_s.whence = MP_SEEK_SET;
     if (n_args == 3) {
         seek_s.whence = mp_obj_get_int(args[2]);
     }
 
     // In POSIX, it's error to seek before end of stream, we enforce it here.
-    if (seek_s.whence == SEEK_SET && seek_s.offset < 0) {
+    if (seek_s.whence == MP_SEEK_SET && seek_s.offset < 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
@@ -455,7 +455,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
 
 STATIC mp_obj_t stream_tell(mp_obj_t self) {
     mp_obj_t offset = MP_OBJ_NEW_SMALL_INT(0);
-    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(SEEK_CUR);
+    mp_obj_t whence = MP_OBJ_NEW_SMALL_INT(MP_SEEK_CUR);
     const mp_obj_t args[3] = {self, offset, whence};
     return stream_seek(3, args);
 }
