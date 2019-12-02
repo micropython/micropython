@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
+#include "boards/board.h"
 
-#include "py/obj.h"
+void board_init(void) {
+}
 
-#include "common-hal/microcontroller/Pin.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    int8_t number;
-    const mcu_pin_obj_t *tx_pin;
-    const mcu_pin_obj_t *rx_pin;
-    uint32_t baudrate;
-    uint32_t timeout_us;
-} busio_uart_obj_t;
-
-void busio_uart_reset(void);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_BUSIO_UART_H
+void reset_board(void) {
+}
