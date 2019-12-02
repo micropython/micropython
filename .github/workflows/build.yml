@@ -140,6 +140,7 @@ jobs:
         - "robohatmm1_m4"
         - "sam32"
         - "serpente"
+        - "shirtty"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"

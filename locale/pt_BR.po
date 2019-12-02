@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-23 13:58-0500\n"
+"POT-Creation-Date: 2019-11-27 14:54-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2440,12 +2440,8 @@ msgstr "Limite deve estar no alcance de 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr ""
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -2701,7 +2697,7 @@ msgstr "passo zero"
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
@@ -2709,11 +2705,11 @@ msgstr "passo zero"
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr ""
 #~ "Não é possível adicionar o UUID de 128 bits específico do fornecedor."
@@ -2734,7 +2730,7 @@ msgstr "passo zero"
 #~ msgid "Failed to start scanning"
 #~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Não é possível iniciar o anúncio. status: 0x%02x"
 
@@ -2746,11 +2742,11 @@ msgstr "passo zero"
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Não pode parar propaganda. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Não é possível gravar o valor do atributo. status: 0x%02x"
 

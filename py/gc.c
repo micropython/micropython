@@ -53,9 +53,6 @@
 // detect untraced object still in use
 #define CLEAR_ON_SWEEP (0)
 
-#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
-#define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
-
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
 // 0b01 = HEAD -- head of a chain of blocks
@@ -208,13 +205,6 @@ void gc_unlock(void) {
 bool gc_is_locked(void) {
     return MP_STATE_MEM(gc_lock_depth) != 0;
 }
-
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-23 13:58-0500\n"
+"POT-Creation-Date: 2019-11-27 14:54-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -2478,12 +2478,8 @@ msgstr "threshold muss im Intervall 0-65536 liegen"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr ""
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -2714,7 +2710,6 @@ msgstr ""
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
 
-#, c-format
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
 
@@ -2743,7 +2738,6 @@ msgstr ""
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to add descriptor, err 0x%04x"
 #~ msgstr "Deskriptor konnte nicht hinzugefügt werden. Status: 0x%04x"
 
@@ -2783,22 +2777,18 @@ msgstr ""
 #~ msgid "Failed to pair"
 #~ msgstr "Koppeln fehlgeschlagen"
 
-#, c-format
 #~ msgid "Failed to read CCCD value, err 0x%04x"
 #~ msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read attribute value, err 0x%04x"
 #~ msgstr "Kann Attributwert nicht lesen, Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to read gatts value, err 0x%04x"
 #~ msgstr "gatts value konnte nicht gelesen werden. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
 #~ msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
 
@@ -2814,7 +2804,6 @@ msgstr ""
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to start connecting, error 0x%04x"
 #~ msgstr "Verbindung konnte nicht hergestellt werden. Status: 0x%04x"
 
@@ -2824,7 +2813,6 @@ msgstr ""
 #~ msgid "Failed to start scanning"
 #~ msgstr "Der Scanvorgang kann nicht gestartet werden"
 
-#, c-format
 #~ msgid "Failed to start scanning, err 0x%04x"
 #~ msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
 
@@ -2834,15 +2822,12 @@ msgstr ""
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write CCCD, err 0x%04x"
 #~ msgstr "Konnte CCCD nicht schreiben, Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write attribute value, err 0x%04x"
 #~ msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
 
-#, c-format
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "gatts value konnte nicht geschrieben werden. Status: 0x%04x"
 
