@@ -34,8 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
-
-#include "tick.h"
+#include "supervisor/shared/tick.h"
 
 #include "hpl_sercom_config.h"
 #include "peripheral_clk_config.h"
@@ -272,10 +271,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     usart_async_get_io_descriptor(usart_desc_p, &io);
 
     size_t total_read = 0;
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Busy-wait until timeout or until we've read enough chars.
-    while (ticks_ms - start_ticks <= self->timeout_ms) {
+    while (supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = io_read(io, data, len);
 
@@ -289,7 +288,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         }
         if (num_read > 0) {
             // Reset the timeout on every character read.
-            start_ticks = ticks_ms;
+            start_ticks = supervisor_ticks_ms64();
         }
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.

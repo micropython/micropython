@@ -40,6 +40,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "supervisor/shared/safe_mode.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
@@ -343,7 +344,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
     ble_gap_evt_adv_report_t *report = &ble_evt->evt.gap_evt.params.adv_report;
 
     shared_module_bleio_scanresults_append(scan_results,
-                                           ticks_ms,
+                                           supervisor_ticks_ms64(),
                                            report->type.connectable,
                                            report->type.scan_response,
                                            report->rssi,
