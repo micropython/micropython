@@ -1,0 +1,8 @@
+# hack: to get the list of objects in a legitimate way, we will have
+# to include our real makefile, but that will override the kernel makefile
+# targets...
+# so this trick is a workaround.
+BUILT_OBJ = $(shell find $(M) -name '*.o')
+
+mpy-y = $(BUILT_OBJ:$(M)/%=%)
+obj-m = mpy.o
