@@ -26,3 +26,4 @@ implementation and the best practices to use them.
    constrained.rst
    packages.rst
    asm_thumb2_index.rst
+   pyboard.py.rst
