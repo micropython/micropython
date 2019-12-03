@@ -109,7 +109,7 @@ STATIC int usage(char **argv) {
 "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
 "-mno-unicode : don't support unicode in compiled strings\n"
 "-mcache-lookup-bc : cache map lookups in the bytecode\n"
-"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, xtensa, xtensawin\n"
+"-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
 "\n"
 "Implementation specific options:\n", argv[0]
 );
@@ -284,6 +284,15 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv7m") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7M;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                } else if (strcmp(arch, "armv7em") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EM;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                } else if (strcmp(arch, "armv7emsp") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EMSP;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                } else if (strcmp(arch, "armv7emdp") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EMDP;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "xtensa") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSA;
