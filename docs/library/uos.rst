@@ -178,6 +178,35 @@ represented by VFS classes.
 
         Build a FAT filesystem on *block_dev*.
 
+.. class:: VfsLfs1(block_dev)
+
+    Create a filesystem object that uses the `littlefs v1 filesystem format`_.
+    Storage of the littlefs filesystem is provided by *block_dev*, which must
+    support the :ref:`extended interface <block-device-interface>`.
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    See :ref:`filesystem` for more information.
+
+    .. staticmethod:: mkfs(block_dev)
+
+        Build a Lfs1 filesystem on *block_dev*.
+
+.. class:: VfsLfs2(block_dev)
+
+    Create a filesystem object that uses the `littlefs v2 filesystem format`_.
+    Storage of the littlefs filesystem is provided by *block_dev*, which must
+    support the :ref:`extended interface <block-device-interface>`.
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    See :ref:`filesystem` for more information.
+
+    .. staticmethod:: mkfs(block_dev)
+
+        Build a Lfs2 filesystem on *block_dev*.
+
+.. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
+.. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
+
 Block devices
 -------------
 
@@ -187,9 +216,15 @@ implementation of this class will usually allow access to the memory-like
 functionality a piece of hardware (like flash memory).  A block device can be
 used by a particular filesystem driver to store the data for its filesystem.
 
+.. _block-device-interface:
+
+Simple and extended interface
+.............................
+
 There are two compatible signatures for the ``readblocks`` and ``writeblocks``
 methods (see below), in order to support a variety of use cases.  A given block
-device may implement one form or the other, or both at the same time.
+device may implement one form or the other, or both at the same time. The second
+form (with the offset parameter) is referred to as the "extended interface".
 
 .. class:: AbstractBlockDev(...)
 
@@ -247,64 +282,5 @@ device may implement one form or the other, or both at the same time.
             (*arg* is unused)
           - 6 -- erase a block, *arg* is the block number to erase
 
-By way of example, the following class will implement a block device that stores
-its data in RAM using a ``bytearray``::
-
-    class RAMBlockDev:
-        def __init__(self, block_size, num_blocks):
-            self.block_size = block_size
-            self.data = bytearray(block_size * num_blocks)
-
-        def readblocks(self, block_num, buf):
-            for i in range(len(buf)):
-                buf[i] = self.data[block_num * self.block_size + i]
-
-        def writeblocks(self, block_num, buf):
-            for i in range(len(buf)):
-                self.data[block_num * self.block_size + i] = buf[i]
-
-        def ioctl(self, op, arg):
-            if op == 4: # get number of blocks
-                return len(self.data) // self.block_size
-            if op == 5: # get block size
-                return self.block_size
-
-It can be used as follows::
-
-    import uos
-
-    bdev = RAMBlockDev(512, 50)
-    uos.VfsFat.mkfs(bdev)
-    vfs = uos.VfsFat(bdev)
-    uos.mount(vfs, '/ramdisk')
-
-An example of a block device that supports both signatures and behaviours of
-the :meth:`readblocks` and :meth:`writeblocks` methods is::
-
-    class RAMBlockDev:
-        def __init__(self, block_size, num_blocks):
-            self.block_size = block_size
-            self.data = bytearray(block_size * num_blocks)
-
-        def readblocks(self, block, buf, offset=0):
-            addr = block_num * self.block_size + offset
-            for i in range(len(buf)):
-                buf[i] = self.data[addr + i]
-
-        def writeblocks(self, block_num, buf, offset=None):
-            if offset is None:
-                # do erase, then write
-                for i in range(len(buf) // self.block_size):
-                    self.ioctl(6, block_num + i)
-                offset = 0
-            addr = block_num * self.block_size + offset
-            for i in range(len(buf)):
-                self.data[addr + i] = buf[i]
-
-        def ioctl(self, op, arg):
-            if op == 4: # block count
-                return len(self.data) // self.block_size
-            if op == 5: # block size
-                return self.block_size
-            if op == 6: # block erase
-                return 0
+See :ref:`filesystem` for example implementations of block devices using both
+protocols.
