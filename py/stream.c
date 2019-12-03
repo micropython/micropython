@@ -86,8 +86,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
-    const mp_stream_p_t *stream_p = type->protocol;
+    const mp_stream_p_t *stream_p = mp_proto_get(MP_QSTR_protocol_stream, self_in);
     if (stream_p == NULL
         || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
@@ -522,7 +521,7 @@ int mp_stream_errno;
 
 ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len) {
     mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t out_sz = stream_p->write(stream, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -533,7 +532,7 @@ ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len) {
 
 ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len) {
     mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t out_sz = stream_p->read(stream, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -544,7 +543,7 @@ ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len) {
 
 off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
     const mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = mp_get_stream(o);
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
     seek_s.whence = whence;
@@ -557,7 +556,7 @@ off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
 
 int mp_stream_posix_fsync(mp_obj_t stream) {
     mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = mp_get_stream(o);
     mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_FLUSH, 0, &mp_stream_errno);
     if (res == MP_STREAM_ERROR) {
         return -1;

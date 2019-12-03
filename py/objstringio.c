@@ -240,6 +240,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
 
 STATIC const mp_stream_p_t stringio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,
@@ -247,6 +248,7 @@ STATIC const mp_stream_p_t stringio_stream_p = {
 };
 
 STATIC const mp_stream_p_t bytesio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,

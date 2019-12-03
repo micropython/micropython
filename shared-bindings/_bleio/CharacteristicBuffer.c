@@ -230,6 +230,7 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] =
 STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
 
 STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = bleio_characteristic_buffer_read,
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,
