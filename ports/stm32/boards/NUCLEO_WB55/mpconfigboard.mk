@@ -7,3 +7,4 @@ STARTUP_FILE = lib/stm32lib/CMSIS/STM32WBxx/Source/Templates/gcc/startup_stm32wb
 # MicroPython settings
 MICROPY_PY_BLUETOOTH = 1
 MICROPY_BLUETOOTH_NIMBLE = 1
+MICROPY_VFS_LFS2 = 1
