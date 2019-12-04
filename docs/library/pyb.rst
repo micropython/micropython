@@ -309,6 +309,7 @@ Classes
    pyb.CAN.rst
    pyb.DAC.rst
    pyb.ExtInt.rst
+   pyb.Flash.rst
    pyb.I2C.rst
    pyb.LCD.rst
    pyb.LED.rst
