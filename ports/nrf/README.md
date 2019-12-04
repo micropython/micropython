@@ -109,6 +109,22 @@ To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze
 
+## Compile with freeze manifest
+
+Freeze manifests can be used by definining `FROZEN_MANIFEST` pointing to a
+`manifest.py`. This can either be done by a `make` invocation or by defining
+it in the specific target board's `mpconfigboard.mk`.
+
+For example:
+
+    make BOARD=pca10040 FROZEN_MANIFEST=path/to/manifest.py
+
+In case of using the target board's makefile, add a line similar to this:
+
+    FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+
+In these two examples, the manual `make` invocation will have precedence.
+
 ## Enable MICROPY_VFS_FAT
 As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
 
