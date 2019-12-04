@@ -191,7 +191,8 @@ bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     spi_clock_disable(1<<(self->sck->spi_index - 1));
-    reserved_spi[self->sck->spi_index - 1] = true;
+    reserved_spi[self->sck->spi_index - 1] = false;
+    never_reset_spi[self->sck->spi_index - 1] = false;
 
     reset_pin_number(self->sck->pin->port,self->sck->pin->number);
     reset_pin_number(self->mosi->pin->port,self->mosi->pin->number);
