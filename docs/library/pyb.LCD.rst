@@ -63,13 +63,13 @@ Methods
 .. method:: LCD.fill(colour)
 
    Fill the screen with the given colour (0 or 1 for white or black).
-   
+
    This method writes to the hidden buffer.  Use ``show()`` to show the buffer.
 
 .. method:: LCD.get(x, y)
 
    Get the pixel at the position ``(x, y)``.  Returns 0 or 1.
-   
+
    This method reads from the visible buffer.
 
 .. method:: LCD.light(value)
@@ -79,7 +79,7 @@ Methods
 .. method:: LCD.pixel(x, y, colour)
 
    Set the pixel at ``(x, y)`` to the given colour (0 or 1).
-   
+
    This method writes to the hidden buffer.  Use ``show()`` to show the buffer.
 
 .. method:: LCD.show()
@@ -89,7 +89,7 @@ Methods
 .. method:: LCD.text(str, x, y, colour)
 
    Draw the given text to the position ``(x, y)`` using the given colour (0 or 1).
-   
+
    This method writes to the hidden buffer.  Use ``show()`` to show the buffer.
 
 .. method:: LCD.write(str)

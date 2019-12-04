@@ -62,7 +62,7 @@ Timer ``id``'s take values from 0 to 3.::
     tim = Timer(0, mode=Timer.PERIODIC)
     tim_a = tim.channel(Timer.A, freq=1000)
     tim_a.freq(5) # 5 Hz
-    
+
     p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(trigger=Timer.TIMEOUT, handler=lambda t: p_out.toggle())
 
@@ -75,7 +75,7 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
 
     # timer 1 in PWM mode and width must be 16 buts
     tim = Timer(1, mode=Timer.PWM, width=16)
-    
+
     # enable channel A @1KHz with a 50.55% duty cycle
     tim_a = tim.channel(Timer.A, freq=1000, duty_cycle=5055)
 

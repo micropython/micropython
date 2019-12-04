@@ -44,7 +44,7 @@ Now that we are connected we can download and display the data::
     ...     data = s.recv(500)
     ...     print(str(data, 'utf8'), end='')
     ...
- 
+
 When this loop executes it should start showing the animation (use ctrl-C to
 interrupt it).
 

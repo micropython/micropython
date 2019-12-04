@@ -92,21 +92,21 @@ Methods
 .. method:: USB_VCP.recv(data, \*, timeout=5000)
 
    Receive data on the bus:
-   
+
      - ``data`` can be an integer, which is the number of bytes to receive,
        or a mutable buffer, which will be filled with received bytes.
      - ``timeout`` is the timeout in milliseconds to wait for the receive.
-   
+
    Return value: if ``data`` is an integer then a new buffer of the bytes received,
    otherwise the number of bytes read into ``data`` is returned.
 
 .. method:: USB_VCP.send(data, \*, timeout=5000)
 
    Send data over the USB VCP:
-   
+
      - ``data`` is the data to send (an integer to send, or a buffer object).
      - ``timeout`` is the timeout in milliseconds to wait for the send.
-   
+
    Return value: number of bytes sent.
 
 
