@@ -731,6 +731,15 @@ void USART3_8_IRQHandler(void) {
     IRQ_EXIT(USART3_8_IRQn);
 }
 
+#elif defined(STM32L0)
+
+void USART4_5_IRQHandler(void) {
+    IRQ_ENTER(USART4_5_IRQn);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    IRQ_EXIT(USART4_5_IRQn);
+}
+
 #else
 
 void USART3_IRQHandler(void) {
