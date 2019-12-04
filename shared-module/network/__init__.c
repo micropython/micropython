@@ -31,6 +31,8 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/tick.h"
+
 #include "shared-bindings/random/__init__.h"
 
 #include "shared-module/network/__init__.h"
@@ -53,7 +55,7 @@ void network_module_deinit(void) {
 
 void network_module_background(void) {
     static uint32_t next_tick = 0;
-    uint32_t this_tick = ticks_ms;
+    uint32_t this_tick = supervisor_ticks_ms32();
     if (this_tick < next_tick) return;
     next_tick = this_tick + 1000;
 

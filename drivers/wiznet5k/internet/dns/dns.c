@@ -52,7 +52,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "tick.h"
+#include "supervisor/shared/tick.h"
 
 //#include "Ethernet/socket.h"
 //#include "Internet/DNS/dns.h"
@@ -125,7 +125,7 @@ uint16_t DNS_MSGID;     // DNS message ID
 
 
 uint32_t HAL_GetTick(void) {
-    return ticks_ms;
+    return supervisor_ticks_ms32();
 }
 
 uint32_t hal_sys_tick;

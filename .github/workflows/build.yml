@@ -169,7 +169,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version

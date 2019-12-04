@@ -673,11 +673,11 @@ msgstr "Shūrù/shūchū cuòwù"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
-msgstr ""
+msgstr "Rènzhèng bùzú"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
-msgstr ""
+msgstr "Jiāmì bùzú"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2465,7 +2465,7 @@ msgstr "time.struct_time() xūyào 9 xùliè"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
-msgstr ""
+msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
