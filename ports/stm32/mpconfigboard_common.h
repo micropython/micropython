@@ -196,7 +196,7 @@
 #define PYB_EXTI_NUM_VECTORS (30) // TODO (22 configurable, 7 direct)
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (22)
-#define MICROPY_HW_MAX_UART (4)
+#define MICROPY_HW_MAX_UART (5)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
