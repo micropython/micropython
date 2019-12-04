@@ -1077,7 +1077,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t MP_SMALL_DATA_SECTION(".rodata.mp_type_type") _mp_type_type = {
+const mp_obj_type_t _mp_type_type = {
     { &_mp_type_type },
     .name = MP_QSTR_type,
     .print = type_print,

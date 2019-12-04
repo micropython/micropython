@@ -20,7 +20,7 @@ SECTIONS
         ASSERT(. == MP_SMALL_DATA_CONST_TRUE, "bad MP_SMALL_DATA_CONST_TRUE");
         *(.rodata.mp_const_true_obj)
         ASSERT(. == MP_SMALL_DATA_TYPE_TYPE, "bad MP_SMALL_DATA_TYPE_TYPE");
-        KEEP(*(.rodata.mp_type_type))
+        KEEP(*(.rodata._mp_type_type))
         *(.text*)
         *(.rodata*)
         . = ALIGN(4);

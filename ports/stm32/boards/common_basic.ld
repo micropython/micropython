@@ -33,7 +33,7 @@ SECTIONS
         KEEP(*(.rodata.mp_const_none_obj))
         KEEP(*(.rodata.mp_const_false_obj))
         KEEP(*(.rodata.mp_const_true_obj))
-        KEEP(*(.rodata.mp_type_type))
+        KEEP(*(.rodata._mp_type_type))
         . = ALIGN(4);
         *(.text*)          /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
