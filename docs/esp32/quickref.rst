@@ -368,21 +368,35 @@ Notes:
 RMT
 ---
 
-The RMT (Remote Control) module, specific to the ESP32, was originally designed to send
-and receive infrared remote control signals. However, due to a flexible design and
-very accurate (12.5ns) pulse generation, it can also be used to transmit or receive
-many other types of digital signals::
+The RMT (Remote Control) module, specific to the ESP32, was originally designed
+to send and receive infrared remote control signals. However, due to a flexible
+design and very accurate (as low as 12.5ns) pulse generation, it can also be
+used to transmit or receive many other types of digital signals::
 
     r = esp32.RMT(0, Pin(18), 80)
     r  # RMT(channel=0, pin=18, clock_divider=80)
     r.resolution(), r.max_pulse_length()  # (1e-06, 0.032768)
-    r.send_pulses((100, 2000, 100, 4000), start_level=0)  # Send 0 for 100*1e-06s, 1 for 2000*1e-06s etc
+    r.send_pulses((100, 2000, 100, 4000), start=0)  # Send 0 for 100*1e-06s, 1 for 2000*1e-06s etc
 
-For more details see Espressif `ESP-IDF RMT documentation.
+The input to the RMT module is an 80MHz clock. ``clock_divider`` *divides* the
+clock input which determines the minimum *resolution* of a pulse. The numbers
+specificed in ``send_pulses`` are *multiplied* by the minimum resolution to
+define the pulses.
+
+``clock_divider`` is an 8-bit divider (0-255) and each pulse can be defined by
+multiplying the minimum resolution by a 15-bit (0-32,768) number. There are
+eight channels (0-7) and each can have a different clock divider.
+
+So, in the example above, the 80MHz clock is divided by 80. Thus the minimum
+resolution is (1/(80Mhz/80)) 1µs. Since the ``start`` level is 0 and toggles
+with each number, the bitstream is ``0101`` with durations of [100µs, 2ms,
+100µs, 4ms].
+
+For more details see Espressif's `ESP-IDF RMT documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
 
 .. Warning::
-   The current MicroPython RMT implementation lacks some features, notably receiving pulses
+   The current MicroPython RMT implementation lacks some features, most notably receiving pulses
    and carrier transmit.
 
 OneWire driver
