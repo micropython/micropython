@@ -165,7 +165,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->baudrate = (get_busclock(SPIx)/16);
     self->prescaler = 16;
     self->polarity = 0;
-    self->phase = 1;
+    self->phase = 0;
     self->bits = 8;
 
     claim_pin(sck);
