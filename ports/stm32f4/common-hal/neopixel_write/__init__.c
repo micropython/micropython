@@ -76,13 +76,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         cyc = (pix & mask) ? t1 : t0;
         start = DWT->CYCCNT;
         LL_GPIO_SetOutputPin(p_port, p_mask);
-        while((DWT->CYCCNT - start) < cyc) {
-            __asm__ __volatile__("nop");
-        }
+        while((DWT->CYCCNT - start) < cyc);
         LL_GPIO_ResetOutputPin(p_port, p_mask);
-        while((DWT->CYCCNT - start) < interval) {
-            __asm__ __volatile__("nop");
-        }
+        while((DWT->CYCCNT - start) < interval);
         if(!(mask >>= 1)) {
             if(p >= end) break;
             pix       = *p++;
