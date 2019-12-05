@@ -80,14 +80,12 @@ STATIC void ensure_connected(bleio_connection_obj_t *self) {
 //|
 //|   .. method:: disconnect()
 //|
-//|     Disconnects from the remote peripheral.
+//|     Disconnects from the remote peripheral. Does nothing if already disconnected.
 //|
 STATIC mp_obj_t bleio_connection_disconnect(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    ensure_connected(self);
-
+    // common_hal_bleio_connection_disconnect() does nothing if already disconnected.
     common_hal_bleio_connection_disconnect(self->connection);
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_disconnect_obj, bleio_connection_disconnect);
