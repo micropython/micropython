@@ -107,13 +107,17 @@ endif
 endif
 
 ifeq ($(MICROPY_SMALL_DATA_SECTION), 1)
-CFLAGS += -DMICROPY_SMALL_DATA_SECTION=1
-CFLAGS += -DMP_SMALL_DATA_CONST_NONE=$(MP_SMALL_DATA_CONST_NONE)
-CFLAGS += -DMP_SMALL_DATA_CONST_FALSE=$(MP_SMALL_DATA_CONST_FALSE)
-CFLAGS += -DMP_SMALL_DATA_CONST_TRUE=$(MP_SMALL_DATA_CONST_TRUE)
-CFLAGS += -DMP_SMALL_DATA_TYPE_TYPE=$(MP_SMALL_DATA_TYPE_TYPE)
+CFLAGS_SMALL_DATA_SECTION = -DMICROPY_SMALL_DATA_SECTION=1
+CFLAGS_SMALL_DATA_SECTION += -DMP_SMALL_DATA_CONST_NONE=$(MP_SMALL_DATA_CONST_NONE)
+CFLAGS_SMALL_DATA_SECTION += -DMP_SMALL_DATA_CONST_FALSE=$(MP_SMALL_DATA_CONST_FALSE)
+CFLAGS_SMALL_DATA_SECTION += -DMP_SMALL_DATA_CONST_TRUE=$(MP_SMALL_DATA_CONST_TRUE)
+CFLAGS_SMALL_DATA_SECTION += -DMP_SMALL_DATA_TYPE_TYPE=$(MP_SMALL_DATA_TYPE_TYPE)
+CFLAGS += $(CFLAGS_SMALL_DATA_SECTION)
 endif
 
+# common_basic.ld is actually generated. replace its reference with path for the generated
+# one, so Make knows it should be built.
+LD_FILES := $(subst boards/common_basic,$(BUILD)/common_basic,$(LD_FILES))
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym=_estack_reserve=8
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -568,13 +572,16 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 
 endif
 
+$(BUILD)/common_basic.ld: boards/common_basic.ld.in
+	$(Q)$(CC) $(CFLAGS_SMALL_DATA_SECTION) -E -Wp,-P,-C -o $@ - < $<
+
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
 	$(Q)$(OBJCOPY) -O ihex $< $@
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $@
 ifneq ($(TEXT0_ADDR),0x08000000)
 	$(ECHO) "INFO: this build requires mboot to be installed first"

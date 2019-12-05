@@ -28,13 +28,22 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
+#if MICROPY_SMALL_DATA_SECTION
+        /* FLASH does not reside at 0x0, and MP_SMALL_DATA_* are the address based at 0x0.
+           So deduct ORIGIN(FLASH) before ASSERTing it. This, of course, implies that
+           MICROPY_SMALL_DATA_SECTION is relevant only for builds where the flash is aliased at 0x0. */
+        ASSERT(. - ORIGIN(FLASH) == MP_SMALL_DATA_CONST_NONE, "bad MP_SMALL_DATA_CONST_NONE");
         /* KEEP required because some of these are left with no references
-        if MICROPY_SMALL_DATA_SECTION is enabled */
+           if MICROPY_SMALL_DATA_SECTION is enabled */
         KEEP(*(.rodata.mp_const_none_obj))
+        ASSERT(. - ORIGIN(FLASH) == MP_SMALL_DATA_CONST_FALSE, "bad MP_SMALL_DATA_CONST_FALSE");
         KEEP(*(.rodata.mp_const_false_obj))
+        ASSERT(. - ORIGIN(FLASH) == MP_SMALL_DATA_CONST_TRUE, "bad MP_SMALL_DATA_CONST_TRUE");
         KEEP(*(.rodata.mp_const_true_obj))
+        ASSERT(. - ORIGIN(FLASH) == MP_SMALL_DATA_TYPE_TYPE, "bad MP_SMALL_DATA_TYPE_TYPE");
         KEEP(*(.rodata._mp_type_type))
         . = ALIGN(4);
+#endif
         *(.text*)          /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
