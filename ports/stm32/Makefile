@@ -140,7 +140,6 @@ MPY_CROSS_FLAGS += -march=armv7m
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
-	netutils/netutils.c \
 	netutils/trace.c \
 	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
@@ -149,6 +148,9 @@ SRC_LIB = $(addprefix lib/,\
 	utils/sys_stdio_mphal.c \
 	utils/mpirq.c \
 	)
+ifneq ($(MICROPY_PY_LWIP),1)
+SRC_LIB += lib/netutils/netutils.c
+endif
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 SRC_LIBM = $(addprefix lib/libm_dbl/,\
