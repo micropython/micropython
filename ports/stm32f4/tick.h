@@ -30,8 +30,6 @@
 
 #include <stdint.h>
 
-extern volatile uint64_t ticks_ms;
-
 extern struct timer_descriptor ms_timer;
 
 void tick_init(void);
