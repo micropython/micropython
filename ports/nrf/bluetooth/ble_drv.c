@@ -153,10 +153,6 @@ void SD_EVT_IRQHandler(void) {
             ble_gatts_evt_write_t* write_evt = &event->evt.gatts_evt.params.write;
             mp_printf(&mp_plat_print, "Write to: UUID(0x%04x) handle %x of length %d auth %x\n", write_evt->uuid.uuid, write_evt->handle, write_evt->len, write_evt->auth_required);
         }
-        if (!done) {
-            mp_printf(&mp_plat_print, "Unhandled ble event: 0x%04x\n", event->header.evt_id);
-
-        }
         #endif
     }
 }
