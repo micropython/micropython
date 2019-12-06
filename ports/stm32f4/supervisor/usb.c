@@ -43,6 +43,7 @@ void init_usb_hardware(void) {
     PA11     ------> USB_OTG_FS_DM
     PA12     ------> USB_OTG_FS_DP 
     */
+
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
       /* Configure DM DP Pins */
@@ -58,7 +59,7 @@ void init_usb_hardware(void) {
     /* Configure VBUS Pin */
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL; 
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 9);
 
@@ -82,4 +83,10 @@ void init_usb_hardware(void) {
 
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
+}
+
+void disable_usb_vbus(void) {
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
 }

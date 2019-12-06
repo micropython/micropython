@@ -33,6 +33,7 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV 25
+#define BOARD_NO_VBUS
 
 // On-board flash
 // #define SPI_FLASH_MOSI_PIN          (&pin_PA07)

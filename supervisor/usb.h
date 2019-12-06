@@ -37,6 +37,8 @@ void usb_background(void);
 // TinyUSB.
 void init_usb_hardware(void);
 
+void disable_usb_vbus(void);
+
 // Shared implementation.
 bool usb_enabled(void);
 void usb_init(void);
