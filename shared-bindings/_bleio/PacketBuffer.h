@@ -3,9 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include "common-hal/_bleio/PacketBuffer.h"
 
-#include "shared-bindings/_bleio/Connection.h"
-#include "shared-bindings/_bleio/ScanResults.h"
+extern const mp_obj_type_t bleio_packet_buffer_type;
 
-#define BLEIO_TOTAL_CONNECTION_COUNT 2
+extern void common_hal_bleio_packet_buffer_construct(
+    bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
+    size_t buffer_size);
+void common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t* header, size_t header_len);
+int common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len);
+uint16_t common_hal_bleio_packet_buffer_get_packet_size(bleio_packet_buffer_obj_t *self);
+bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self);
+void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self);
 
-extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
-
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t* advertising_data;
-    uint8_t* scan_response_data;
-    uint8_t* current_advertising_data;
-    bleio_scanresults_obj_t* scan_results;
-    mp_obj_t name;
-    mp_obj_tuple_t *connection_objs;
-    ble_drv_evt_handler_entry_t handler_entry;
-} bleio_adapter_obj_t;
-
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_PACKETBUFFER_H
