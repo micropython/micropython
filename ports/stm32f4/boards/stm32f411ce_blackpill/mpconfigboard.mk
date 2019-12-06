@@ -1,8 +1,13 @@
 USB_VID = 0x239A
 USB_PID = 0x806A
-USB_PRODUCT = "stm32f411ce-blackpill"
+USB_PRODUCT = "stm32f411ce blackpill"
 USB_MANUFACTURER = "Unknown"
-USB_DEVICES = "CDC"
+USB_DEVICES = "CDC,MSC"
+
+# SPI_FLASH_FILESYSTEM = 1
+# EXTERNAL_FLASH_DEVICE_COUNT = 1
+# EXTERNAL_FLASH_DEVICES = xxxxxx #See supervisor/shared/external_flash/devices.h for options
+# LONGINT_IMPL = MPZ
 
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE

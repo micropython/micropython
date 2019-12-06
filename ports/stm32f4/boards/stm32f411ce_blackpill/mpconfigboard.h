@@ -33,6 +33,13 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV 25
+#define BOARD_USB_VBUS_BOOST
+
+// On-board flash
+// #define SPI_FLASH_MOSI_PIN          (&pin_PA07)
+// #define SPI_FLASH_MISO_PIN          (&pin_PA06)
+// #define SPI_FLASH_SCK_PIN           (&pin_PA05)
+// #define SPI_FLASH_CS_PIN            (&pin_PA04)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
