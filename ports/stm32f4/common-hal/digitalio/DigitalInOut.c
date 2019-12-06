@@ -47,7 +47,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     GPIO_InitStruct.Pin = pin_mask(self->pin->number);
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     HAL_GPIO_Init(pin_port(self->pin->port), &GPIO_InitStruct);
 
     return DIGITALINOUT_OK;
@@ -73,7 +73,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
     GPIO_InitStruct.Pin = pin_mask(self->pin->number);
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     HAL_GPIO_Init(pin_port(self->pin->port), &GPIO_InitStruct);
 
     common_hal_digitalio_digitalinout_set_pull(self, pull);
@@ -114,7 +114,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     GPIO_InitStruct.Mode = (drive_mode == DRIVE_MODE_OPEN_DRAIN ? 
         GPIO_MODE_OUTPUT_OD : GPIO_MODE_OUTPUT_PP);
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     HAL_GPIO_Init(pin_port(self->pin->port), &GPIO_InitStruct);
 }
 
