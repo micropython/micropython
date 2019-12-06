@@ -86,7 +86,12 @@ void init_usb_hardware(void) {
 }
 
 void disable_usb_vbus(void) {
+
+#ifdef USB_OTG_GCCFG_VBDEN
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+#else
     USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
+#endif
 }
