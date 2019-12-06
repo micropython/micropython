@@ -35,6 +35,7 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/shared/tick.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -281,7 +282,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
 }
 
 void displayio_display_core_start_refresh(displayio_display_core_t* self) {
-    self->last_refresh = ticks_ms;
+    self->last_refresh = supervisor_ticks_ms64();
 }
 
 void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
@@ -289,7 +290,7 @@ void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
         displayio_group_finish_refresh(self->current_group);
     }
     self->full_refresh = false;
-    self->last_refresh = ticks_ms;
+    self->last_refresh = supervisor_ticks_ms64();
 }
 
 void release_display_core(displayio_display_core_t* self) {

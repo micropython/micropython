@@ -20,20 +20,45 @@ endif
 
 # Put samd21-only choices here.
 ifeq ($(CHIP_FAMILY),samd21)
-# frequencyio not yet verified as working on SAMD21.
+# frequencyio not yet verified as working on SAMD21, though make it possible to override.
+ifndef CIRCUITPY_AUDIOMIXER
 CIRCUITPY_AUDIOMIXER = 0
+endif
+
+ifndef CIRCUITPY_FREQUENCYIO
 CIRCUITPY_FREQUENCYIO = 0
+endif
+
+ifndef CIRCUITPY_TOUCHIO_USE_NATIVE
 CIRCUITPY_TOUCHIO_USE_NATIVE = 1
+endif
 
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
 USB_MSC_EP_NUM_OUT = 1
-endif
+
+endif # samd21
 
 # Put samd51-only choices here.
 ifeq ($(CHIP_FAMILY),samd51)
-CIRCUITPY_SAMD = 1
+# No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+# The ifndef's allow overriding in mpconfigboard.mk.
+
+ifndef CIRCUITPY_NETWORK
+CIRCUITPY_NETWORK = 1
+MICROPY_PY_WIZNET5K = 5500
 endif
+
+ifndef CIRCUITPY_PS2IO
+CIRCUITPY_PS2IO = 1
+endif
+
+ifndef CIRCUITPY_SAMD
+CIRCUITPY_SAMD = 1
+endif
+
+endif # samd51
 
 INTERNAL_LIBM = 1
 

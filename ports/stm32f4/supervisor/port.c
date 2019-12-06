@@ -33,6 +33,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
+#include "common-hal/busio/UART.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 #include "stm32f4/clocks.h"
 #include "stm32f4/gpio.h"
@@ -40,12 +42,12 @@
 #include "stm32f4xx_hal.h"
 
 safe_mode_t port_init(void) {
-	HAL_Init();
+    HAL_Init();
     __HAL_RCC_SYSCFG_CLK_ENABLE();
     __HAL_RCC_PWR_CLK_ENABLE();
 
-	stm32f4_peripherals_clocks_init();
-	stm32f4_peripherals_gpio_init();
+    stm32f4_peripherals_clocks_init();
+    stm32f4_peripherals_gpio_init();
 
     tick_init();
     board_init(); 
@@ -54,9 +56,11 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-	reset_all_pins();
+    reset_all_pins();
     i2c_reset();
     spi_reset();
+    uart_reset();
+    pwmout_reset();
 }
 
 void reset_to_bootloader(void) {
@@ -64,7 +68,15 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-	NVIC_SystemReset();
+    NVIC_SystemReset();
+}
+
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
 }
 
 extern uint32_t _ebss;
@@ -78,7 +90,7 @@ uint32_t port_get_saved_word(void) {
 }
 
 void HardFault_Handler(void) {
-	reset_into_safe_mode(HARD_CRASH);
+    reset_into_safe_mode(HARD_CRASH);
     while (true) {
         asm("nop;");
     }

@@ -50,7 +50,7 @@ regions = {}
 with open(sys.argv[1], "r") as f:
     for line in f:
         line = line.strip()
-        if line.startswith(("FLASH", "RAM")):
+        if line.startswith(("FLASH_FIRMWARE", "RAM")):
             regions[line.split()[0]] = line.split("=")[-1]
 
 for region in regions:
@@ -61,10 +61,10 @@ for region in regions:
     space = M_PATTERN.sub(M_REPLACE, space)
     regions[region] = eval(space)
 
-free_flash = regions["FLASH"] - text - data
+free_flash = regions["FLASH_FIRMWARE"] - text - data
 free_ram = regions["RAM"] - data - bss
-print(free_flash, "bytes free in flash out of", regions["FLASH"], "bytes (", regions["FLASH"] / 1024, "kb ).")
-print(free_ram, "bytes free in ram for stack out of", regions["RAM"], "bytes (", regions["RAM"] / 1024, "kb ).")
+print("{} bytes free in flash firmware space out of {} bytes ({}kB).".format(free_flash, regions["FLASH_FIRMWARE"], regions["FLASH_FIRMWARE"] / 1024))
+print("{} bytes free in ram for stack out of {} bytes ({}kB).".format(free_ram, regions["RAM"], regions["RAM"] / 1024))
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data

@@ -10,26 +10,36 @@ SRC_SUPERVISOR = \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
+	supervisor/shared/tick.c \
 	supervisor/shared/translate.c
 
 ifndef $(NO_USB)
 	NO_USB = $(wildcard supervisor/usb.c)
 endif
 
-ifneq ($(INTERNAL_FLASH_FILESYSTEM),)
-	CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
+ifndef INTERNAL_FLASH_FILESYSTEM
+INTERNAL_FLASH_FILESYSTEM = 0
 endif
-ifneq ($(QSPI_FLASH_FILESYSTEM),)
-# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
-	CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
+
+ifndef QSPI_FLASH_FILESYSTEM
+QSPI_FLASH_FILESYSTEM = 0
 endif
-ifneq ($(SPI_FLASH_FILESYSTEM),)
 # EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
-	CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+
+ifndef SPI_FLASH_FILESYSTEM
+SPI_FLASH_FILESYSTEM = 0
+endif
+# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
+CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
+
+ifeq ($(CIRCUITPY_BLEIO),1)
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
 endif
 
 # Choose which flash filesystem impl to use.
-# (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
+# (Right now INTERNAL_FLASH_FILESYSTEM and (Q)SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
 ifdef EXTERNAL_FLASH_DEVICES
 	CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
@@ -87,6 +97,10 @@ else
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
+ifndef USB_INTERFACE_NAME
+USB_INTERFACE_NAME = "CircuitPython"
+endif
+
 ifndef USB_DEVICES
 USB_DEVICES = "CDC,MSC,AUDIO,HID"
 endif
@@ -141,6 +155,7 @@ USB_DESCRIPTOR_ARGS = \
 	--vid $(USB_VID)\
 	--pid $(USB_PID)\
 	--serial_number_length $(USB_SERIAL_NUMBER_LENGTH)\
+	--interface_name $(USB_INTERFACE_NAME)\
 	--devices $(USB_DEVICES)\
 	--hid_devices $(USB_HID_DEVICES)\
   --msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\

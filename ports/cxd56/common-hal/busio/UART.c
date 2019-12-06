@@ -32,7 +32,6 @@
 #include <sys/time.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
-#include <arch/chip/pin.h>
 #include <nuttx/serial/tioctl.h>
 #include <nuttx/fs/ioctl.h>
 
@@ -42,21 +41,22 @@
 
 #include "shared-bindings/busio/UART.h"
 
+typedef struct {
+    const char* devpath;
+    const mcu_pin_obj_t *tx;
+    const mcu_pin_obj_t *rx;
+    int fd;
+} busio_uart_dev_t;
+
+STATIC busio_uart_dev_t busio_uart_dev[] = {
+    {"/dev/ttyS2", &pin_UART2_TXD, &pin_UART2_RXD, -1},
+};
+
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, uint32_t baudrate,
     uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
     uint16_t receiver_buffer_size) {
     struct termios tio;
-
-    self->uart_fd = open("/dev/ttyS2", O_RDWR);
-    if (self->uart_fd < 0) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
-    }
-
-    ioctl(self->uart_fd, TCGETS, (long unsigned int)&tio);
-    tio.c_speed = baudrate;
-    ioctl(self->uart_fd, TCSETS, (long unsigned int)&tio);
-    ioctl(self->uart_fd, TCFLSH, (long unsigned int)NULL);
 
     if (bits != 8) {
         mp_raise_ValueError(translate("Could not initialize UART"));
@@ -70,9 +70,31 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Could not initialize UART"));
     }
 
-    if (tx->number != PIN_UART2_TXD || rx->number != PIN_UART2_RXD) {
+    self->number = -1;
+
+    for (int i = 0; i < MP_ARRAY_SIZE(busio_uart_dev); i++) {
+        if (tx->number == busio_uart_dev[i].tx->number &&
+            rx->number == busio_uart_dev[i].rx->number) {
+            self->number = i;
+            break;
+        }
+    }
+
+    if (self->number < 0) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
+
+    if (busio_uart_dev[self->number].fd < 0) {
+        busio_uart_dev[self->number].fd = open(busio_uart_dev[self->number].devpath, O_RDWR);
+        if (busio_uart_dev[self->number].fd < 0) {
+            mp_raise_ValueError(translate("Could not initialize UART"));
+        }
+    }
+
+    ioctl(busio_uart_dev[self->number].fd, TCGETS, (long unsigned int)&tio);
+    tio.c_speed = baudrate;
+    ioctl(busio_uart_dev[self->number].fd, TCSETS, (long unsigned int)&tio);
+    ioctl(busio_uart_dev[self->number].fd, TCFLSH, (long unsigned int)NULL);
 
     claim_pin(tx);
     claim_pin(rx);
@@ -80,7 +102,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->tx_pin = tx;
     self->rx_pin = rx;
     self->baudrate = baudrate;
-    self->timeout = timeout;
+    self->timeout_us = timeout * 1000000;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -88,15 +110,15 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         return;
     }
 
-    close(self->uart_fd);
-    self->uart_fd = -1;
+    close(busio_uart_dev[self->number].fd);
+    busio_uart_dev[self->number].fd = -1;
 
     reset_pin_number(self->tx_pin->number);
     reset_pin_number(self->rx_pin->number);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->uart_fd < 0;
+    return busio_uart_dev[self->number].fd < 0;
 }
 
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
@@ -110,15 +132,15 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     FD_ZERO(&rfds);
-    FD_SET(self->uart_fd, &rfds);
+    FD_SET(busio_uart_dev[self->number].fd, &rfds);
 
     tv.tv_sec = 0;
-    tv.tv_usec = self->timeout * 1000;
+    tv.tv_usec = self->timeout_us;
 
-    retval = select(self->uart_fd + 1, &rfds, NULL, NULL, &tv);
+    retval = select(busio_uart_dev[self->number].fd + 1, &rfds, NULL, NULL, &tv);
 
     if (retval) {
-        bytes_read = read(self->uart_fd, data, len);
+        bytes_read = read(busio_uart_dev[self->number].fd, data, len);
     } else {
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
@@ -128,8 +150,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 }
 
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    int bytes_written = write(self->uart_fd, data, len);
-
+    int bytes_written = write(busio_uart_dev[self->number].fd, data, len);
     if (bytes_written < 0) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
@@ -145,16 +166,24 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     struct termios tio;
 
-    ioctl(self->uart_fd, TCGETS, (long unsigned int)&tio);
+    ioctl(busio_uart_dev[self->number].fd, TCGETS, (long unsigned int)&tio);
     tio.c_speed = baudrate;
-    ioctl(self->uart_fd, TCSETS, (long unsigned int)&tio);
-    ioctl(self->uart_fd, TCFLSH, (long unsigned int)NULL);
+    ioctl(busio_uart_dev[self->number].fd, TCSETS, (long unsigned int)&tio);
+    ioctl(busio_uart_dev[self->number].fd, TCFLSH, (long unsigned int)NULL);
+}
+
+mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
+    return (mp_float_t) (self->timeout_us / 1000000.0f);
+}
+
+void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
+    self->timeout_us = timeout * 1000000;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
     int count = 0;
 
-    ioctl(self->uart_fd, FIONREAD, (long unsigned int)&count);
+    ioctl(busio_uart_dev[self->number].fd, FIONREAD, (long unsigned int)&count);
 
     return count;
 }
@@ -163,6 +192,15 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-    ioctl(self->uart_fd, TCFLSH, (long unsigned int)NULL);
+    ioctl(busio_uart_dev[self->number].fd, TCFLSH, (long unsigned int)NULL);
     return true;
+}
+
+void busio_uart_reset(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(busio_uart_dev); i++) {
+        if (busio_uart_dev[i].fd >= 0) {
+            close(busio_uart_dev[i].fd);
+            busio_uart_dev[i].fd = -1;
+        }
+    }
 }

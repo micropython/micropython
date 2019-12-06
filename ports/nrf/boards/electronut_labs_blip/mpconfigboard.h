@@ -32,7 +32,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "Electronut Labs Blip"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "ElectronutLabsPapyr"
 
 #define BOARD_HAS_CRYSTAL 1
 

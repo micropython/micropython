@@ -62,9 +62,11 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
         return PWMOUT_INVALID_PIN;
     }
 
-    pwmout_dev[self->number].fd = open(pwmout_dev[self->number].devpath, O_RDONLY);
     if (pwmout_dev[self->number].fd < 0) {
-        return PWMOUT_INVALID_PIN;
+        pwmout_dev[self->number].fd = open(pwmout_dev[self->number].devpath, O_RDONLY);
+        if (pwmout_dev[self->number].fd < 0) {
+            return PWMOUT_INVALID_PIN;
+        }
     }
 
     self->info.frequency = frequency;
@@ -97,7 +99,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t *self) {
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t *self) {
-    return self->pin == mp_const_none;
+    return pwmout_dev[self->number].fd < 0;
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t *self, uint16_t duty) {

@@ -1,6 +1,12 @@
 name: Build CI
 
-on: [push, pull_request, release]
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  check_suite:
+    types: [rerequested]
 
 jobs:
   test:
@@ -10,9 +16,6 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Fail if not a release publish # workaround has `on` doesn't have this filter
-      run: exit 1
-      if: github.event_name == 'release' && (github.event.action != 'published' && github.event.action != 'rerequested')
     - name: Set up Python 3.5
       uses: actions/setup-python@v1
       with:
@@ -49,9 +52,6 @@ jobs:
         done
       working-directory: tests
       if: failure()
-    - name: Test threads
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread
-      working-directory: tests
     - name: Native Tests
       run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
@@ -75,6 +75,7 @@ jobs:
         board:
         - "arduino_mkr1300"
         - "arduino_mkrzero"
+        - "arduino_nano_33_ble"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
@@ -92,7 +93,6 @@ jobs:
         - "electronut_labs_blip"
         - "electronut_labs_papyr"
         - "escornabot_makech"
-        - "feather_f405"
         - "feather_m0_adalogger"
         - "feather_m0_basic"
         - "feather_m0_express"
@@ -103,12 +103,14 @@ jobs:
         - "feather_m4_express"
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
+        - "feather_stm32f405_express"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
+        - "itsybitsy_nrf52840_express"
         - "kicksat-sprite"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
@@ -135,13 +137,15 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
-        - "robohatmm1_m0"
         - "robohatmm1_m4"
         - "sam32"
         - "serpente"
+        - "shirtty"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
+        - "sparkfun_qwiic_micro_no_flash"
+        - "sparkfun_qwiic_micro_with_flash"
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
@@ -154,6 +158,7 @@ jobs:
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
+        - "winterbloom_sol"
 
     steps:
     - name: Set up Python 3.5
@@ -164,7 +169,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -185,7 +191,7 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
-      run: aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -194,7 +200,7 @@ jobs:
       run: |
         pip install uritemplate
     - name: Upload to Release
-      run: python3 -u upload_release_files.py
+      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
       working-directory: tools
       env:
         UPLOAD_URL: ${{ github.event.release.upload_url }}

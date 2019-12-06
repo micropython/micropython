@@ -204,7 +204,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -iname "*.c" -print0 | (LC_ALL=C sort -z) | xargs -0 xgettext -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
 translate: locale/circuitpython.pot
 	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done

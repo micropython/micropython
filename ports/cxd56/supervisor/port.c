@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <sys/boardctl.h>
 
+#include "sched/sched.h"
+
 #include "boards/board.h"
 
 #include "supervisor/port.h"
@@ -35,6 +37,7 @@
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/busio/UART.h"
 
 safe_mode_t port_init(void) {
     boardctl(BOARDIOC_INIT, 0);
@@ -60,11 +63,26 @@ void reset_port(void) {
     pulseout_reset();
     pwmout_reset();
 #endif
+#if CIRCUITPY_BUSIO
+    busio_uart_reset();
+#endif
 
     reset_all_pins();
 }
 
 void reset_to_bootloader(void) {
+}
+
+uint32_t *port_stack_get_limit(void) {
+    struct tcb_s *rtcb = this_task();
+
+    return rtcb->adj_stack_ptr - (uint32_t)rtcb->adj_stack_size;
+}
+
+uint32_t *port_stack_get_top(void) {
+    struct tcb_s *rtcb = this_task();
+
+    return rtcb->adj_stack_ptr;
 }
 
 extern uint32_t _ebss;

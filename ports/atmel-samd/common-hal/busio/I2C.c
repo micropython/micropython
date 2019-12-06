@@ -116,6 +116,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
+        common_hal_busio_i2c_deinit(self);
         mp_raise_ValueError(translate("Unsupported baudrate"));
     }
 

@@ -33,15 +33,19 @@
 ifndef CIRCUITPY_FULL_BUILD
   ifeq ($(CIRCUITPY_SMALL_BUILD),1)
     CIRCUITPY_FULL_BUILD = 0
-    CFLAGS += -DCIRCUITPY_FULL_BUILD=0
   else
     CIRCUITPY_FULL_BUILD = 1
-    CFLAGS += -DCIRCUITPY_FULL_BUILD=1
   endif
 endif
+CFLAGS += -DCIRCUITPY_FULL_BUILD=$(CIRCUITPY_FULL_BUILD)
 
 # Setting CIRCUITPY_MINIMAL_BUILD = 1 will disable all features
 # Use for for early stage or highly restricted ports
+ifndef CIRCUITPY_MINIMAL_BUILD
+CIRCUITPY_MINIMAL_BUILD = 0
+endif
+CFLAGS += -DCIRCUITPY_MINIMAL_BUILD=$(CIRCUITPY_MINIMAL_BUILD)
+
 ifndef CIRCUITPY_DEFAULT_BUILD
   ifeq ($(CIRCUITPY_MINIMAL_BUILD),1)
         CIRCUITPY_FULL_BUILD = 0
@@ -50,12 +54,14 @@ ifndef CIRCUITPY_DEFAULT_BUILD
         CIRCUITPY_DEFAULT_BUILD = 1
   endif
 endif
+CFLAGS += -DCIRCUITPY_DEFAULT_BUILD=$(CIRCUITPY_DEFAULT_BUILD)
 
 # Some features have no unique HAL component, and thus there's never
-# a reason to not include them. 
+# a reason to not include them.
 ifndef CIRCUITPY_ALWAYS_BUILD
   CIRCUITPY_ALWAYS_BUILD = 1
 endif
+CFLAGS += -DCIRCUITPY_ALWAYS_BUILD=$(CIRCUITPY_ALWAYS_BUILD)
 
 
 # All builtin modules are listed below, with default values (0 for off, 1 for on)
@@ -169,7 +175,7 @@ CIRCUITPY_NEOPIXEL_WRITE = $(CIRCUITPY_DEFAULT_BUILD)
 endif
 CFLAGS += -DCIRCUITPY_NEOPIXEL_WRITE=$(CIRCUITPY_NEOPIXEL_WRITE)
 
-# Only certain boards support NETWORK (Ethernet)
+# Enabled on SAMD51. Won't fit on SAMD21 builds. Not tested on nRF or STM32F4 builds.
 ifndef CIRCUITPY_NETWORK
 CIRCUITPY_NETWORK = 0
 endif
@@ -306,3 +312,9 @@ ifndef CIRCUITPY_SERIAL_UART
 CIRCUITPY_SERIAL_UART = 0
 endif
 CFLAGS += -DCIRCUITPY_SERIAL_UART=$(CIRCUITPY_SERIAL_UART)
+
+# Enabled micropython.native decorator (experimental)
+ifndef CIRCUITPY_ENABLE_MPY_NATIVE
+CIRCUITPY_ENABLE_MPY_NATIVE = 0
+endif
+CFLAGS += -DCIRCUITPY_ENABLE_MPY_NATIVE=$(CIRCUITPY_ENABLE_MPY_NATIVE)

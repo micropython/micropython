@@ -122,7 +122,16 @@ else
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
+
   CFLAGS += -flto -flto-partition=none
+
+  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
+  endif
+
+  ifdef CFLAGS_BOARD
+    CFLAGS += $(CFLAGS_BOARD)
+  endif
 endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)

@@ -30,6 +30,10 @@
 
 #include "ble_drv.h"
 
+#ifdef NRF52840
+#define MICROPY_PY_SYS_PLATFORM "nRF52840"
+#endif
+
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
@@ -41,16 +45,69 @@
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
-#include "py/circuitpy_mpconfig.h"
+#if INTERNAL_FLASH_FILESYSTEM
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
+#else
+#define CIRCUITPYINTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#endif
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
+#define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
 #endif
 
 #ifndef BOARD_HAS_32KHZ_XTAL
 // Assume crystal is present, which is the most common case.
 #define BOARD_HAS_32KHZ_XTAL (1)
 #endif
+
+// Flash layout, starting at 0x00000000
+//
+// SoftDevice
+// ISR
+// firmware
+// BLE config (bonding info, etc.) (optional)
+// microntroller.nvm (optional)
+// internal CIRCUITPY flash filesystem (optional)
+// bootloader (note the MBR at 0x0 redirects to the bootloader here, in high flash)
+// bootloader settings
+
+// Bootloader values from https://github.com/adafruit/Adafruit_nRF52_Bootloader/blob/master/src/linker/s140_v6.ld
+
+// Define these regions starting up from the bottom of flash:
+
+#define MBR_START_ADDR  (0x0)
+// MBR_SIZE is from nrf_sdm.h
+#define SD_FLASH_START_ADDR   (MBR_START_ADDR + MBR_SIZE)
+
+// SD_FLASH_SIZE is from nrf_sdm.h
+#define ISR_FLASH_START_ADDR  (SD_FLASH_START_ADDR + SD_FLASH_SIZE)
+#define ISR_FLASH_SIZE        (0x1000)   // 4kiB
+
+#define CIRCUITPY_FIRMWARE_START_ADDR  (ISR_FLASH_START_ADDR + ISR_FLASH_LENGTH)
+
+// Define these regions starting down from the bootloader:
+
+#define BOOTLOADER_START_ADDR          (0x000F4000)
+#define BOOTLOADER_SIZE                (0xA000)     // 40kiB
+#define BOOTLOADER_SETTINGS_START_ADDR (0x000FF000)
+#define BOOTLOADER_SETTINGS_SIZE       (0x1000)     // 4kiB
+
+#define FLASH_FATFS_SIZE     (256*1024)
+#define FLASH_FATFS_START_ADDR (BOOTLOADER_START_ADDR - FLASH_FATFS_SIZE)
+
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR (FLASH_FATFS_START_ADDR - CIRCUITPY_INTERNAL_NVM_SIZE)
+
+#define CIRCUITPY_BLE_CONFIG_SIZE       (32*1024)
+#define CIRCUITPY_BLE_CONFIG_START_ADDR (CIRCUITPY_INTERNAL_NVM_START_ADDR - CIRCUITPY_BLE_CONFIG_SIZE)
+
+// The firmware space is the space left over between the fixed lower and upper regions.
+#define CIRCUITPY_FIRMWARE_SIZE (CIRCUITPY_BLE_CONFIG_START_ADDR - CIRCUITPY_FIRMWARE_START_ADDR)
+
+#if CIRCUITPY_FIRMWARE_SIZE < 0
+#error No space left in flash for firmware after specifying other regions!
+#endif
+
+#include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \

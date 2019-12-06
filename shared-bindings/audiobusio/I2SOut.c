@@ -62,7 +62,7 @@
 //|     import time
 //|     import math
 //|
-//|     # Generate one period of sine wav.
+//|     # Generate one period of sine wave.
 //|     length = 8000 // 440
 //|     sine_wave = array.array("H", [0] * length)
 //|     for i in range(length):
@@ -117,7 +117,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     assert_pin(data_obj, false);
     const mcu_pin_obj_t *data = MP_OBJ_TO_PTR(data_obj);
 
-    audiobusio_i2sout_obj_t *self = m_new_obj(audiobusio_i2sout_obj_t);
+    audiobusio_i2sout_obj_t *self = m_new_obj_with_finaliser(audiobusio_i2sout_obj_t);
     self->base.type = &audiobusio_i2sout_type;
     common_hal_audiobusio_i2sout_construct(self, bit_clock, word_select, data, args[ARG_left_justified].u_bool);
 
@@ -268,6 +268,7 @@ const mp_obj_property_t audiobusio_i2sout_paused_obj = {
 
 STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiobusio_i2sout___exit___obj) },

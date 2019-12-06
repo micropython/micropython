@@ -30,27 +30,27 @@
 // Definitions for which SAMD chip we're using.
 #include "include/sam.h"
 
-#ifdef SAMD21
-
 #if INTERNAL_FLASH_FILESYSTEM
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
 #else
-#define CIRCUITPYINTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
-#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (256)
+#ifndef CALIBRATE_CRYSTALLESS
+#define CALIBRATE_CRYSTALLESS (0)
 #endif
 
 // if CALIBRATE_CRYSTALLESS is requested, make room for storing
 // calibration data generated from external USB.
 #ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
-  #ifdef CALIBRATE_CRYSTALLESS
-#define CIRCUITPY_INTERNAL_CONFIG_SIZE (256)
+  #if CALIBRATE_CRYSTALLESS
+     #define CIRCUITPY_INTERNAL_CONFIG_SIZE (256)
   #else
-#define CIRCUITPY_INTERNAL_CONFIG_SIZE (0)
- #endif
+     #define CIRCUITPY_INTERNAL_CONFIG_SIZE (0)
+  #endif
 #endif
+
+#ifdef SAMD21
 
 // HMCRAMC0_SIZE is defined in the ASF4 include files for each SAMD21 chip.
 #define RAM_SIZE                                    HMCRAMC0_SIZE
@@ -77,6 +77,10 @@
     X(ENODEV) \
     X(EISDIR) \
     X(EINVAL) \
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (256)
+#endif
 
 #endif // SAMD21
 
@@ -121,18 +125,30 @@
 // microntroller.nvm (optional)
 // internal CIRCUITPY flash filesystem (optional)
 
-// Bootloader starts at 0x00000000.
-#define CIRCUITPY_FIRMWARE_START_ADDR        BOOTLOADER_SIZE
+// Define these regions starting up from the bottom of flash:
 
-// Total space available for code, after subtracting size of other regions used for non-code.
-#define CIRCUITPY_FIRMWARE_SIZE \
-    (FLASH_SIZE - BOOTLOADER_SIZE - CIRCUITPY_INTERNAL_CONFIG_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE - \
-     CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
+#define BOOTLOADER_START_ADDR          (0x00000000)
 
-#define CIRCUITPY_INTERNAL_CONFIG_START_ADDR (CIRCUITPY_FIRMWARE_START_ADDR + CIRCUITPY_FIRMWARE_SIZE)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR    (CIRCUITPY_INTERNAL_CONFIG_START_ADDR + CIRCUITPY_INTERNAL_CONFIG_SIZE)
+#define CIRCUITPY_FIRMWARE_START_ADDR  (BOOTLOADER_START_ADDR + BOOTLOADER_SIZE)
+
+// Define these regions start down from the top of flash:
+
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR \
-    (CIRCUITPY_INTERNAL_NVM_START_ADDR + CIRCUITPY_INTERNAL_NVM_SIZE)
+    (FLASH_SIZE - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
+
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR \
+    (CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR - CIRCUITPY_INTERNAL_NVM_SIZE)
+
+#define CIRCUITPY_INTERNAL_CONFIG_START_ADDR \
+    (CIRCUITPY_INTERNAL_NVM_START_ADDR - CIRCUITPY_INTERNAL_CONFIG_SIZE)
+
+// The firmware space is the space left over between the fixed lower and upper regions.
+#define CIRCUITPY_FIRMWARE_SIZE \
+    (CIRCUITPY_INTERNAL_CONFIG_START_ADDR - CIRCUITPY_FIRMWARE_START_ADDR)
+
+#if CIRCUITPY_FIRMWARE_SIZE < 0
+#error No space left in flash for firmware after specifying other regions!
+#endif
 
 // Turning off audioio, audiobusio, and touchio as necessary
 // due to limitations of chips is handled in mpconfigboard.mk

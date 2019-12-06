@@ -27,19 +27,10 @@
 #include "tick.h"
 
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/filesystem.h"
-
-// Global millisecond tick count
-volatile uint64_t ticks_ms = 0;
+#include "supervisor/shared/tick.h"
 
 void board_timerhook(void)
 {
-    ticks_ms += 1;
-
-#if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
-    filesystem_tick();
-#endif
-#if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
-    autoreload_tick();
-#endif
+    // Do things common to all ports when the tick occurs
+    supervisor_tick();
 }

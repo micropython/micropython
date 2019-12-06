@@ -30,6 +30,11 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 
+#include "py/mperrno.h"
+#include "py/runtime.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4/periph.h"
+
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
@@ -56,11 +61,35 @@ mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+#define RNG_TIMEOUT 5
 
-    for (uint32_t i = 0; i < length; i++) {
-        buffer[i] = 4; //read in my coffee dregs; the truest random number, chosen by Nrthalotep
-        //todo: spurn the gods, replace with actual code. 
+bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+    #if (HAS_TRNG)
+    //init the RNG
+    __HAL_RCC_RNG_CLK_ENABLE();
+    RNG_HandleTypeDef handle;
+    handle.Instance = RNG;
+    if (HAL_RNG_Init(&handle) != HAL_OK) mp_raise_ValueError(translate("RNG Init Error"));
+
+    //Assign bytes
+    for (uint i = 0; i < length; i++) {
+        uint32_t temp;
+        uint32_t start = HAL_GetTick();
+        //the HAL function has a timeout, but it isn't long enough, and isn't adjustable
+        while(!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT));
+        //
+        if (HAL_RNG_GenerateRandomNumber(&handle, &temp) != HAL_OK) {
+            mp_raise_ValueError(translate("Random number generation error"));
+        }
+        *buffer = (uint8_t)temp;
     }
+
+    //shut down the peripheral
+    if (HAL_RNG_DeInit(&handle) != HAL_OK) mp_raise_ValueError(translate("RNG DeInit Error"));
+    __HAL_RCC_RNG_CLK_DISABLE();
+
     return true;
+    #else
+    return false;
+    #endif
 }

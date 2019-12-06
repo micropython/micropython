@@ -17,26 +17,39 @@ args = parser.parse_args()
 
 defines = {}
 
-# We're looking for lines like this:
-# <expression> ///DEFINE_VALUE NAME_OF_VALUE <optional Python lambda expression to transform value>
-VALUE_LINE_RE = re.compile(r'^([^/].*); ///DEFINE_VALUE (\w+)(.*)$')
+#
+REMOVE_UL_RE = re.compile('([0-9]+)UL')
+def remove_UL(s):
+    return REMOVE_UL_RE.sub(r'\1', s)
 
+# We skip all lines before
+# // START_LD_DEFINES
+# Then we look for lines like this:
+# /*NAME_OF_VALUE=*/ NAME_OF_VALUE;
+VALUE_LINE_RE = re.compile(r'^/\*\s*(\w+)\s*=\*/\s*(.*);\s*$')
+
+start_processing = False
 for line in args.defines:
-    match = VALUE_LINE_RE.match(line.strip())
-    if match:
-        value = match.group(1).strip()
-        name = match.group(2)
-        lambda_exp = match.group(3).strip()
-        # Apply the given lambda to the value if it is present, else just store the value.
-        defines[match.group(2)] = eval(lambda_exp)(value) if lambda_exp else value
+    line = line.strip()
+    if line == '// START_LD_DEFINES':
+        start_processing = True
+        continue
+    if start_processing:
+        match = VALUE_LINE_RE.match(line)
+        if match:
+            name = match.group(1)
+            value = match.group(2).strip()
+            defines[name] = remove_UL(value)
 
-#print(defines)
 fail = False
 
 for template_file in args.template_files:
     ld_template_basename = os.path.basename(template_file.name)
     ld_pathname = os.path.join(args.out_dir, ld_template_basename.replace('.template.ld', '.ld'))
     with open(ld_pathname, 'w') as output:
+        for k,v in defines.items():
+            print('/*', k, '=', v, '*/', file=output)
+        print(file=output)
         try:
             output.write(Template(template_file.read()).substitute(defines))
         except KeyError as e:

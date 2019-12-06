@@ -37,9 +37,50 @@ mp_obj_t common_hal_bleio_scanentry_get_address(bleio_scanentry_obj_t *self) {
 }
 
 mp_obj_t common_hal_bleio_scanentry_get_advertisement_bytes(bleio_scanentry_obj_t *self) {
-    return self->data;
+    return MP_OBJ_FROM_PTR(self->data);
 }
 
 mp_int_t common_hal_bleio_scanentry_get_rssi(bleio_scanentry_obj_t *self) {
     return self->rssi;
+}
+
+bool common_hal_bleio_scanentry_get_connectable(bleio_scanentry_obj_t *self) {
+    return self->connectable;
+}
+
+bool common_hal_bleio_scanentry_get_scan_response(bleio_scanentry_obj_t *self) {
+    return self->scan_response;
+}
+
+bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t* prefixes, size_t prefixes_length, bool any) {
+    if (prefixes_length == 0) {
+        return true;
+    }
+    size_t i = 0;
+    while(i < prefixes_length) {
+        uint8_t prefix_length = prefixes[i];
+        i += 1;
+        size_t j = 0;
+        while (j < len) {
+            uint8_t structure_length = data[j];
+            j += 1;
+            if (structure_length == 0) {
+                break;
+            }
+            if (structure_length >= prefix_length && memcmp(data + j, prefixes + i, prefix_length) == 0) {
+                if (any) {
+                    return true;
+                }
+            } else if (!any) {
+                return false;
+            }
+            j += structure_length;
+        }
+        i += prefix_length;
+    }
+    return !any;
+}
+
+bool common_hal_bleio_scanentry_matches(bleio_scanentry_obj_t *self, const uint8_t* prefixes, size_t prefixes_len, bool all) {
+    return bleio_scanentry_data_matches(self->data->data, self->data->len, prefixes, prefixes_len, !all);
 }
