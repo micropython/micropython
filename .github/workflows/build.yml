@@ -129,7 +129,6 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
-        - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
