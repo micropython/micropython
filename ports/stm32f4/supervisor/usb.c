@@ -31,7 +31,6 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 #include "stm32f4xx_hal.h"
-#include "py/mpconfig.h"
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -59,11 +58,7 @@ void init_usb_hardware(void) {
     /* Configure VBUS Pin */
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-#ifdef BOARD_USB_VBUS_BOOST
-    GPIO_InitStruct.Pull = GPIO_PULLUP; //GPIO_NOPULL;
-#else
-    GPIO_InitStruct.Pull = GPIO_NOPULL; //GPIO_NOPULL;
-#endif
+    GPIO_InitStruct.Pull = GPIO_NOPULL; 
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 9);
 
