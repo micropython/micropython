@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-04 09:58-0600\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -120,8 +120,7 @@ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr ""
 
 #: py/proto.c
-#, c-format
-msgid "'%s' object does not support '%s'"
+msgid "'%s' object does not support '%q'"
 msgstr ""
 
 #: py/obj.c
