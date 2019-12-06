@@ -65,6 +65,9 @@ ifndef CIRCUITPY_NEOPIXEL_WRITE
 CIRCUITPY_NEOPIXEL_WRITE = 1
 endif
 
+ifndef
+CIRCUITPY_DISPLAYIO = 1
+endif
 
 #ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
 #endif
