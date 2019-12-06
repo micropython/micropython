@@ -153,6 +153,15 @@ STATIC mp_obj_t esp32_rmt_resolution(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_resolution_obj, esp32_rmt_resolution);
 
 
+// Return the longest pulse duration, in seconds.
+// Increasing the clock_divider yields longer maximum pulse lengths.
+STATIC mp_obj_t esp32_rmt_max_pulse_length(mp_obj_t self_in) {
+    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_float(resolution_for_divider(self->clock_divider) * 32768); // 2^15 is the maximum number of bits for ticks
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_pulse_length_obj, esp32_rmt_max_pulse_length);
+
+
 // Query whether the channel has finished sending pulses. Takes an optional
 // timeout (in ticks of the 80MHz clock), returning true if the pulse stream has
 // completed or false if they are still transmitting (or timeout is reached).
@@ -173,13 +182,14 @@ STATIC mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_done);
 
 
-// Return the longest pulse duration, in seconds.
-// Increasing the clock_divider yields longer maximum pulse lengths.
-STATIC mp_obj_t esp32_rmt_max_pulse_length(mp_obj_t self_in) {
+STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(resolution_for_divider(self->clock_divider) * 32768); // 2^15 is the maximum number of bits for ticks
+
+    check_esp_err(rmt_set_tx_loop_mode(self->channel_id, mp_obj_get_int(loop)));
+    return mp_const_none;
+
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_pulse_length_obj, esp32_rmt_max_pulse_length);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
 
 
 STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -242,12 +252,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_send_pulses_obj, 2, esp32_rmt_send_p
 
 
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_resolution), MP_ROM_PTR(&esp32_rmt_resolution_obj) },
-    { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_duration), MP_ROM_PTR(&esp32_rmt_max_pulse_length_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
+    { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 
