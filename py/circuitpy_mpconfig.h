@@ -666,4 +666,6 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
+#define CIRCUITPY_VERBOSE_BLE 0
+
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

@@ -193,6 +193,46 @@ const mp_obj_property_t bleio_connection_paired_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+
+//|   .. attribute:: connection_interval
+//|
+//|     Time between transmissions in milliseconds. Will be multiple of 1.25ms. Lower numbers
+//|     increase speed and decrease latency but increase power consumption.
+//|
+//|     When setting connection_interval, the peer may reject the new interval and
+//|     `connection_interval` will then remain the same.
+//|
+//|     Apple has additional guidelines that dictate should be a multiple of 15ms except if HID is
+//|     available. When HID is available Apple devices may accept 11.25ms intervals.
+//|
+//|
+STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
+    bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    ensure_connected(self);
+    return mp_obj_new_float(common_hal_bleio_connection_get_connection_interval(self->connection));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, bleio_connection_get_connection_interval);
+
+STATIC mp_obj_t bleio_connection_set_connection_interval(mp_obj_t self_in, mp_obj_t interval_in) {
+    bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_float_t interval = mp_obj_get_float(interval_in);
+
+    ensure_connected(self);
+    common_hal_bleio_connection_set_connection_interval(self->connection, interval);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_connection_set_connection_interval_obj, bleio_connection_set_connection_interval);
+
+const mp_obj_property_t bleio_connection_connection_interval_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_connection_get_connection_interval_obj,
+               (mp_obj_t)&bleio_connection_set_connection_interval_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_pair),                     MP_ROM_PTR(&bleio_connection_pair_obj) },
@@ -200,8 +240,10 @@ STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_discover_remote_services), MP_ROM_PTR(&bleio_connection_discover_remote_services_obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_connected),       MP_ROM_PTR(&bleio_connection_connected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_paired),          MP_ROM_PTR(&bleio_connection_paired_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),           MP_ROM_PTR(&bleio_connection_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_paired),              MP_ROM_PTR(&bleio_connection_paired_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connection_interval), MP_ROM_PTR(&bleio_connection_connection_interval_obj) },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_locals_dict_table);
