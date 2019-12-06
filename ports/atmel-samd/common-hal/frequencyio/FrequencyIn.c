@@ -213,7 +213,7 @@ void frequencyin_samd51_start_dpll() {
     // Will also enable the Lock Bypass due to low-frequency sources causing DPLL unlocks
     // as outlined in the Errata (1.12.1)
     OSCCTRL->Dpll[1].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(0) | OSCCTRL_DPLLRATIO_LDR(2999);
-    if (board_has_crystal()) { // we can use XOSC32K directly as the source
+    if (BOARD_HAS_CRYSTAL) { // we can use XOSC32K directly as the source
         OSC32KCTRL->XOSC32K.bit.EN32K = 1;
         OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(1) |
                                          OSCCTRL_DPLLCTRLB_LBYPASS;

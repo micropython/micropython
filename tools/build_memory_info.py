@@ -41,6 +41,7 @@ data = 0
 bss = 0
 # stdin is the linker output.
 for line in sys.stdin:
+    print(line)
     line = line.strip()
     if not line.startswith("text"):
         text, data, bss = map(int, line.split()[:3])
@@ -64,7 +65,7 @@ for region in regions:
 free_flash = regions["FLASH_FIRMWARE"] - text - data
 free_ram = regions["RAM"] - data - bss
 print("{} bytes free in flash firmware space out of {} bytes ({}kB).".format(free_flash, regions["FLASH_FIRMWARE"], regions["FLASH_FIRMWARE"] / 1024))
-print("{} bytes free in ram for stack out of {} bytes ({}kB).".format(free_ram, regions["RAM"], regions["RAM"] / 1024))
+print("{} bytes free in ram for heap out of {} bytes ({}kB).".format(free_ram, regions["RAM"], regions["RAM"] / 1024))
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data

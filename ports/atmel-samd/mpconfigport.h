@@ -30,27 +30,15 @@
 // Definitions for which SAMD chip we're using.
 #include "include/sam.h"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef SAMD21
+
 #if INTERNAL_FLASH_FILESYSTEM
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
 #else
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
-
-#ifndef CALIBRATE_CRYSTALLESS
-#define CALIBRATE_CRYSTALLESS (0)
-#endif
-
-// if CALIBRATE_CRYSTALLESS is requested, make room for storing
-// calibration data generated from external USB.
-#ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
-  #if CALIBRATE_CRYSTALLESS
-     #define CIRCUITPY_INTERNAL_CONFIG_SIZE (256)
-  #else
-     #define CIRCUITPY_INTERNAL_CONFIG_SIZE (0)
-  #endif
-#endif
-
-#ifdef SAMD21
 
 // HMCRAMC0_SIZE is defined in the ASF4 include files for each SAMD21 chip.
 #define RAM_SIZE                                    HMCRAMC0_SIZE
@@ -84,6 +72,8 @@
 
 #endif // SAMD21
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #ifdef SAMD51
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
@@ -110,12 +100,36 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
+// MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_UJSON                            (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
 
 #endif // SAMD51
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// This also includes mpconfigboard.h.
+#include "py/circuitpy_mpconfig.h"
+
+#ifndef CALIBRATE_CRYSTALLESS
+#define CALIBRATE_CRYSTALLESS (0)
+#endif
+
+#ifndef BOARD_HAS_CRYSTAL
+#define BOARD_HAS_CRYSTAL (0)
+#endif
+
+// if CALIBRATE_CRYSTALLESS is requested, make room for storing
+// calibration data generated from external USB.
+#ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
+  #if CALIBRATE_CRYSTALLESS
+    #define CIRCUITPY_INTERNAL_CONFIG_SIZE (NVMCTRL_ROW_SIZE) // 256
+  #else
+    #define CIRCUITPY_INTERNAL_CONFIG_SIZE (0)
+  #endif
+#endif
 
 // Flash layout, starting at 0x00000000
 //
@@ -154,8 +168,6 @@
 // due to limitations of chips is handled in mpconfigboard.mk
 
 #include "peripherals/samd/dma.h"
-
-#include "py/circuitpy_mpconfig.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \

@@ -174,7 +174,8 @@ typedef long mp_off_t;
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
-// board specific definitions
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// board-specific definitions, which control and may override definitions below.
 #include "mpconfigboard.h"
 
 // CIRCUITPY_FULL_BUILD is defined in a *.mk file.
