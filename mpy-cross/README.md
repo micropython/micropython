@@ -22,4 +22,10 @@ the unix port of MicroPython requires the following:
 
     $ ./mpy-cross -mcache-lookup-bc foo.py
 
+If the Python code contains `@native` or `@viper` annotations, then you must
+specify `-march` to match the target architecture.
+
 Run `./mpy-cross -h` to get a full list of options.
+
+The optimisation level is 0 by default. Optimisation levels are detailed in
+https://docs.micropython.org/en/latest/library/micropython.html#micropython.opt_level
