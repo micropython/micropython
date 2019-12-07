@@ -43,4 +43,6 @@ extern mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(blei
 mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_internal_t *self);
 void common_hal_bleio_connection_set_connection_interval(bleio_connection_internal_t *self, mp_float_t new_interval);
 
+void bleio_connection_ensure_connected(bleio_connection_obj_t *self);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CONNECTION_H

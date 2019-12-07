@@ -248,11 +248,6 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
 
         default:
-            // For debugging.
-            #if CIRCUITPY_VERBOSE_BLE
-                mp_printf(&mp_plat_print, "Unhandled connection event: 0x%04x\n", ble_evt->header.evt_id);
-            #endif
-
             return false;
     }
     return true;
@@ -659,6 +654,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
 
 mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist) {
     discover_remote_services(self->connection, service_uuids_whitelist);
+    bleio_connection_ensure_connected(self);
     // Convert to a tuple and then clear the list so the callee will take ownership.
     mp_obj_tuple_t *services_tuple = service_linked_list_to_tuple(self->connection->remote_service_list);
     self->connection->remote_service_list = NULL;
