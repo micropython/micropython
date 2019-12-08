@@ -56,12 +56,62 @@ void gc_collect(void) {
     gc_dump_info();
 }
 
+struct kernel_reader {
+    struct file *filp;
+    loff_t pos;
+};
+
+STATIC mp_uint_t kernel_reader_readbyte(void *data) {
+    struct kernel_reader *kr = (struct kernel_reader*)data;
+    uint8_t buf;
+
+    ssize_t ret = kernel_read(kr->filp, &buf, sizeof(buf), &kr->pos);
+    if (1 == ret) {
+        return buf;
+    } else if (0 == ret) {
+        return MP_READER_EOF;
+    } else {
+        // ?
+        return MP_READER_EOF;
+    }
+}
+
+STATIC void kernel_reader_close(void *data) {
+    struct kernel_reader *kr = (struct kernel_reader*)data;
+
+    filp_close(kr->filp, NULL);
+    gc_free(kr);
+}
+
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    mp_raise_OSError(MP_ENOENT);
+    struct file *filp = filp_open(filename, O_RDONLY, 0);
+    if (IS_ERR(filp)) {
+        mp_raise_OSError(PTR_ERR(filp));
+    }
+
+    struct kernel_reader *kr = (struct kernel_reader*)m_malloc(sizeof(struct kernel_reader));
+    kr->pos = 0;
+    kr->filp = filp;
+
+    mp_reader_t reader;
+    reader.data = kr;
+    reader.readbyte = kernel_reader_readbyte;
+    reader.close = kernel_reader_close;
+
+    return mp_lexer_new(qstr_from_str(filename), reader);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
+    struct file *f = filp_open(path, O_RDONLY|O_DIRECTORY, 0);
+    if (IS_ERR(f)) {
+        if (-ENOTDIR == PTR_ERR(f)) {
+            return MP_IMPORT_STAT_FILE;
+        }
+
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    filp_close(f, NULL);
+    return MP_IMPORT_STAT_DIR;
 }
 
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
@@ -211,6 +261,8 @@ out:
 STATIC int __init mpy_init_module(void) {
     gc_init(heap, heap + sizeof(heap));
     mp_init();
+    mp_obj_list_init(mp_sys_argv, 0);
+    mp_obj_list_init(mp_sys_path, 0);
 
     kthread_run(run_server, NULL, "kmp");
 
