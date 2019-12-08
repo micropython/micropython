@@ -349,8 +349,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_s
 STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
 
-    for (size_t offset = 0; offset < self->pixels; offset++) {
-        pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
+    for (size_t offset = 0; offset < self->bytes; offset+= self->pixel_step) {
+        pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? (self->rawbuf + offset) : NULL,
                            self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
             if (self->auto_write)
                 call_show(self_in);
@@ -382,7 +382,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
     } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
         mp_bound_slice_t slice;
 
-        mp_seq_get_fast_slice_indexes(self->bytes, index_in, &slice);
+        mp_seq_get_fast_slice_indexes(self->pixels, index_in, &slice);
 
         if ((slice.stop * self->pixel_step) > self->bytes)
             mp_raise_IndexError(translate("Range out of bounds"));
@@ -399,8 +399,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             if (!(MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple)))
                 mp_raise_ValueError(translate("tuple/list required on RHS"));
 
-            size_t dst_len = (slice.stop - slice.start);
-            dst_len = (slice.stop - slice.start) / slice.step;
+            size_t dst_len = (slice.stop - slice.start) / slice.step;
             if (slice.step > 1) {
                 if ((slice.stop - slice.start) % slice.step)
                     dst_len ++;
