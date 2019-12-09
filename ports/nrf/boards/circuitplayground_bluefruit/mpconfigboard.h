@@ -54,6 +54,9 @@
 #define SPI_FLASH_CS_PIN &pin_P0_15
 #endif
 
+// Disables onboard peripherals and neopixels to save power.
+#define POWER_SWITCH_PIN            (&pin_P0_06)
+
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
