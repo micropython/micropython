@@ -156,6 +156,13 @@ As it supports the extended interface, it can be used with :class:`littlefs
     os.VfsLfs2.mkfs(bdev)
     os.mount(bdev, '/ramdisk')
 
+Once mounted, the filesystem (regardless of its type) can be used as it
+normally would be used from Python code, for example::
+
+    with open('/ramdisk/hello.txt', 'w') as f:
+        f.write('Hello world')
+    print(open('/ramdisk/hello.txt').read())
+
 Filesystems
 -----------
 
