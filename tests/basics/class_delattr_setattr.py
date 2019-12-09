@@ -60,3 +60,29 @@ try:
     print(a.a)
 except AttributeError:
     print("AttributeError")
+
+# test object.__setattr__
+class C:
+    def __init__(self):
+        pass
+
+    def __setattr__(self, attr, value):
+        print(attr, "=", value)
+
+c = C()
+c.a = 5
+try:
+    print(c.a)
+except AttributeError:
+    print("AttributeError")
+
+object.__setattr__(c, "a", 5)
+super(C, c).__setattr__("b", 6)
+print(c.a)
+print(c.b)
+
+try:
+    # attribute name must be string
+    object.__setattr__(c, 5, 5)
+except TypeError:
+    print("TypeError")
