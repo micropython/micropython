@@ -170,25 +170,77 @@ STATIC mp_obj_t kernel_ffi_bytes(mp_obj_t obj, mp_obj_t n) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(kernel_ffi_bytes_obj, kernel_ffi_bytes);
 
-STATIC mp_obj_t kernel_ffi_u8p(mp_obj_t obj) {
-    return mp_obj_new_int_from_uint(*(u8*)get_ptr(obj));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_u8p_obj, kernel_ffi_u8p);
+STATIC mp_obj_t kernel_ffi_p8(size_t n_args, const mp_obj_t *args) {
+    u8 *ptr = (u8*)get_ptr(args[0]);
 
-STATIC mp_obj_t kernel_ffi_u16p(mp_obj_t obj) {
-    return mp_obj_new_int_from_uint(*(u16*)get_ptr(obj));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_u16p_obj, kernel_ffi_u16p);
+    if (n_args == 2) {
+        mp_int_t value = mp_obj_int_get_checked(args[1]);
+        u8 value8 = (u8)value;
+        if (value8 != value) {
+            mp_raise_ValueError("value overflow");
+        }
 
-STATIC mp_obj_t kernel_ffi_u32p(mp_obj_t obj) {
-    return mp_obj_new_int_from_uint(*(u32*)get_ptr(obj));
+        *ptr = (u8)value;
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int_from_uint(*ptr);
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_u32p_obj, kernel_ffi_u32p);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p8_obj, 1, 2, kernel_ffi_p8);
 
-STATIC mp_obj_t kernel_ffi_u64p(mp_obj_t obj) {
-    return mp_obj_new_int_from_uint(*(u64*)get_ptr(obj));
+STATIC mp_obj_t kernel_ffi_p16(size_t n_args, const mp_obj_t *args) {
+    u16 *ptr = (u16*)get_ptr(args[0]);
+
+    if (n_args == 2) {
+        mp_int_t value = mp_obj_int_get_checked(args[1]);
+        u16 value16 = (u16)value;
+        if (value16 != value) {
+            mp_raise_ValueError("value overflow");
+        }
+
+        *ptr = (u16)value;
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int_from_uint(*ptr);
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_u64p_obj, kernel_ffi_u64p);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p16_obj, 1, 2, kernel_ffi_p16);
+
+STATIC mp_obj_t kernel_ffi_p32(size_t n_args, const mp_obj_t *args) {
+    u32 *ptr = (u32*)get_ptr(args[0]);
+
+    if (n_args == 2) {
+        mp_int_t value = mp_obj_int_get_checked(args[1]);
+        u32 value32 = (u32)value;
+        if (value32 != value) {
+            mp_raise_ValueError("value overflow");
+        }
+
+        *ptr = (u32)value;
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int_from_uint(*ptr);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p32_obj, 1, 2, kernel_ffi_p32);
+
+STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
+    u64 *ptr = (u64*)get_ptr(args[0]);
+
+    if (n_args == 2) {
+        mp_int_t value = mp_obj_int_get_truncated(args[1]);
+        u64 value64 = (u64)value;
+        if (value64 != value) {
+            mp_raise_ValueError("value overflow");
+        }
+
+        *ptr = (u64)value;
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int_from_uint(*ptr);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p64_obj, 1, 2, kernel_ffi_p64);
 
 STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_kernel_ffi) },
@@ -196,10 +248,10 @@ STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Symbol), MP_ROM_PTR(&mp_type_symbol) },
     { MP_ROM_QSTR(MP_QSTR_str),    MP_ROM_PTR(&kernel_ffi_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytes),  MP_ROM_PTR(&kernel_ffi_bytes_obj) },
-    { MP_ROM_QSTR(MP_QSTR_u8p),    MP_ROM_PTR(&kernel_ffi_u8p_obj) },
-    { MP_ROM_QSTR(MP_QSTR_u16p),   MP_ROM_PTR(&kernel_ffi_u16p_obj) },
-    { MP_ROM_QSTR(MP_QSTR_u32p),   MP_ROM_PTR(&kernel_ffi_u32p_obj) },
-    { MP_ROM_QSTR(MP_QSTR_u64p),   MP_ROM_PTR(&kernel_ffi_u64p_obj) },
+    { MP_ROM_QSTR(MP_QSTR_p8),     MP_ROM_PTR(&kernel_ffi_p8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_p16),    MP_ROM_PTR(&kernel_ffi_p16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_p32),    MP_ROM_PTR(&kernel_ffi_p32_obj) },
+    { MP_ROM_QSTR(MP_QSTR_p64),    MP_ROM_PTR(&kernel_ffi_p64_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(kernel_ffi_module_globals, kernel_ffi_module_globals_table);

@@ -72,7 +72,7 @@ The ``kernel_ffi`` module provides the following helpers:
 
 ``bytes(p, n)`` - Reads ``n`` bytes from memory into a Python ``bytes``.
 
-``u64p/u32p/u16p/u8p(p)`` - Dereference a pointer value and give the result.
+``p64/p32/p16/p8(p)`` - Dereference a pointer value and give the result.
 
 I recommend to import them this way for faster typing.
 
@@ -84,9 +84,9 @@ For example:
 
 .. code-block:: python
 
-    >>> u64p(jiffies_64)
+    >>> p64(jiffies_64)
     4295353334
-    >>> u64p(jiffies_64)
+    >>> p64(jiffies_64)
     4295353840
 
 Also, the good old ``umachine`` module and its ``mem8/mem16/mem32`` objects are available.
@@ -122,12 +122,12 @@ Count network namespaces:
     def count_net_ns():
         down_read(net_rwsem)
 
-        first = u64p(net_namespace_list)  # list_head.next
+        first = p64(net_namespace_list)  # list_head.next
         n = 1
 
         cur = first
-        while u64p(cur) != first:  # list_head.next
-            cur = u64p(cur)
+        while p64(cur) != first:  # list_head.next
+            cur = p64(cur)
             n += 1
 
         up_read(net_rwsem)
@@ -140,7 +140,12 @@ return value, it will be garbage and it should be ignored.
 Modify memory
 ^^^^^^^^^^^^^
 
-TODO
+The ``p64/p32/p16/p8(p)`` functions can receive a 2nd argument in which case they write that
+value instead of reading.
+
+.. code-block:: python
+
+    >>> p64(jiffies_64, 0)  # oh boy
 
 Access structs
 ^^^^^^^^^^^^^^
