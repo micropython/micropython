@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 14:54-0500\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -122,6 +122,10 @@ msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
 #, fuzzy, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' l'entier 0x%x ne correspond pas au masque 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format

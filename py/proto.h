@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "extmod/virtpin.h"
-#include "py/proto.h"
+#ifndef MICROPY_INCLUDED_PY_PROTO_H
+#define MICROPY_INCLUDED_PY_PROTO_H
 
-int mp_virtual_pin_read(mp_obj_t pin) {
-    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(pin);
-    const mp_pin_p_t *pin_p = mp_proto_get(MP_QSTR_protocol_pin, s);
-    return pin_p->ioctl(pin, MP_PIN_READ, 0, NULL);
-}
+#ifdef MICROPY_UNSAFE_PROTO
+#define MP_PROTOCOL_HEAD /* NOTHING */
+#define MP_PROTO_IMPLEMENT(name) /* NOTHING */
+static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) { return mp_obj_get_type(obj)->protocol; }
+#else
+#define MP_PROTOCOL_HEAD \
+    uint16_t name; // The name of this protocol, a qstr
+#define MP_PROTO_IMPLEMENT(n) .name = n,
+const void *mp_proto_get(uint16_t name, mp_const_obj_t obj);
+const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj);
+#endif
 
-void mp_virtual_pin_write(mp_obj_t pin, int value) {
-    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(pin);
-    const mp_pin_p_t *pin_p = mp_proto_get(MP_QSTR_protocol_pin, s);
-    pin_p->ioctl(pin, MP_PIN_WRITE, value, NULL);
-}
+#endif
+

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
-#define MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
 
 #include "py/obj.h"
 #include "py/proto.h"
-#include "py/mphal.h"
-#include "drivers/bus/spi.h"
+#include "py/runtime.h"
 
-// SPI protocol
-typedef struct _mp_machine_spi_p_t {
-    MP_PROTOCOL_HEAD
-    void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
-    void (*deinit)(mp_obj_base_t *obj); // can be NULL
-    void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
-} mp_machine_spi_p_t;
+#ifndef MICROPY_UNSAFE_PROTO
+const void *mp_proto_get(uint16_t name, mp_const_obj_t obj) {
+    mp_obj_type_t *type = mp_obj_get_type(obj);
+    if (!type->protocol) return NULL;
+    uint16_t proto_name = *(const uint16_t*) type->protocol;
+    if (proto_name == name) {
+        return type->protocol;
+    }
+    return NULL;
+}
+#endif
 
-typedef struct _mp_machine_soft_spi_obj_t {
-    mp_obj_base_t base;
-    mp_soft_spi_obj_t spi;
-} mp_machine_soft_spi_obj_t;
-
-extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
-extern const mp_obj_type_t mp_machine_soft_spi_type;
-extern const mp_obj_dict_t mp_machine_spi_locals_dict;
-
-mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj);
-MP_DECLARE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj);
-
-#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
+const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj) {
+    const void *proto = mp_proto_get(name, obj);
+    if (proto) {
+        return proto;
+    }
+    mp_raise_TypeError_varg(translate("'%s' object does not support '%q'"),
+        mp_obj_get_type_str(obj), name);
+}

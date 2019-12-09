@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 14:54-0500\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -117,6 +117,10 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
 msgstr ""
 
 #: py/obj.c
