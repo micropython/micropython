@@ -43,7 +43,7 @@
 
 
 STATIC char *stack_top;
-STATIC char heap[1 << 18];
+STATIC char heap[1 << 23];
 
 void gc_collect(void) {
     // WARNING: This gc_collect implementation doesn't try to get root
