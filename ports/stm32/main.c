@@ -644,7 +644,7 @@ soft_reset:
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
-        if (!mounted_flash || mp_vfs_import_stat("SKIPSD") == MP_IMPORT_STAT_FILE) {
+        if (!mounted_flash || mp_vfs_import_stat("SKIPSD") == MP_IMPORT_STAT_NO_EXIST) {
             mounted_sdcard = init_sdcard_fs();
         }
     }
