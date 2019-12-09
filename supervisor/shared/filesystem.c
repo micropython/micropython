@@ -69,6 +69,19 @@ static void make_empty_file(FATFS *fatfs, const char *path) {
     f_close(&fp);
 }
 
+
+static void make_sample_code_file(FATFS *fatfs) {
+    #if CIRCUITPY_FULL_BUILD
+    FIL fs;
+    UINT char_written = 0;
+    const byte buffer[] = "print('Hello World!')\n";
+    //Create or modify existing code.py file 
+    f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
+    f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
+    f_close(&fs);
+    #endif
+}
+
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
 void filesystem_init(bool create_allowed, bool force_create) {
@@ -98,6 +111,8 @@ void filesystem_init(bool create_allowed, bool force_create) {
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
         make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
+        // make a sample code.py file
+        make_sample_code_file(&vfs_fat->fatfs);
 
         // create empty lib directory
         f_mkdir(&vfs_fat->fatfs, "/lib");

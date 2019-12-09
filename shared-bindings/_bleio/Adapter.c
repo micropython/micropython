@@ -144,6 +144,9 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|     Starts advertising until `stop_advertising` is called or if connectable, another device
 //|     connects to us.
 //|
+//|     .. warning: If data is longer than 31 bytes, then this will automatically advertise as an
+//|        extended advertisement that older BLE 4.x clients won't be able to scan for.
+//|
 //|     :param buf data: advertising data packet bytes
 //|     :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|     :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
@@ -321,7 +324,7 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: connect(address, *, timeout, pair=False)
+//|   .. method:: connect(address, *, timeout)
 //|
 //|     Attempts a connection to the device with the given address.
 //|
@@ -331,24 +334,23 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
 STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_address, ARG_timeout, ARG_pair };
+    enum { ARG_address, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_pair, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (!MP_OBJ_IS_TYPE(args[ARG_address].u_obj, &bleio_address_type)) {
-        mp_raise_ValueError(translate("Expected an Address"));
+        mp_raise_TypeError(translate("Expected an Address"));
     }
 
     bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
-    return common_hal_bleio_adapter_connect(self, address, timeout, args[ARG_pair].u_bool);
+    return common_hal_bleio_adapter_connect(self, address, timeout);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
 

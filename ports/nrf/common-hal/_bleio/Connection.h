@@ -60,8 +60,11 @@ typedef struct {
     bonding_keys_t bonding_keys;
     uint16_t ediv;
     pair_status_t pair_status;
+    uint8_t sec_status; // Internal security status.
     mp_obj_t connection_obj;
     ble_drv_evt_handler_entry_t handler_entry;
+    ble_gap_conn_params_t conn_params;
+    volatile bool conn_params_updating;
 } bleio_connection_internal_t;
 
 typedef struct {
