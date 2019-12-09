@@ -264,6 +264,10 @@ STATIC int __init mpy_init_module(void) {
     mp_obj_list_init(mp_sys_argv, 0);
     mp_obj_list_init(mp_sys_path, 0);
 
+#ifdef INCLUDE_STRUCT_LAYOUT
+    pyexec_frozen_module("structs.py");
+#endif
+
     kthread_run(run_server, NULL, "kmp");
 
     return 0;

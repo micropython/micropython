@@ -150,9 +150,50 @@ value instead of reading.
 Access structs
 ^^^^^^^^^^^^^^
 
-You can use the ``uctypes`` module.
+I have written a supplementary project that provides a Pythonic way to access kernel structs.
+You can find it `here <https://github.com/Jongy/struct_layout>`_.
 
-TODO automatic struct access (without manual declaration)
+To use it, you need to pass ``STRUCT_LAYOUT=1`` to ``make`` when building the module.
+
+To make a struct from a pointer:
+
+.. code-block:: python
+
+    net_device = partial_struct("net_device")
+    task_struct = partial_struct("task_struct")
+
+Now, working with it:
+
+.. code-block:: python
+
+    d = net_device(dev_get_by_name(init_net, "eth0"))
+
+    # should match "ifconfig eth0"
+    print(d.stats.rx_bytes)
+
+    # you can write
+    d.stats.rx_bytes = 1 << 63
+
+
+.. code-block:: python
+
+    t = task_struct(init_task)
+
+    next = task_struct(container_of(int(t), "task_struct", "tasks"))
+    next.comm[0] = ord('h')
+    next.comm[1] = ord('i')
+    next.comm[2] = 0
+
+    # now find it in ps
+
+    # arrays can also be written this way
+    next.comm = "myawesomecomm\b"
+
+    # it will guard you from overflows
+    next.comm = "this is longer than TASK_COMM_LEN"
+    # ValueError: Buffer overflow!
+
+You can also use the ``uctypes`` module.
 
 Python callbacks
 ^^^^^^^^^^^^^^^^

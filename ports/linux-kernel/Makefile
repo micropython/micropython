@@ -62,6 +62,15 @@ include ../../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
+CFLAGS = $(INC) -Wall -Werror -O3
+
+ifneq ($(STRUCT_LAYOUT),)
+FROZEN_MANIFEST = manifest.py
+CFLAGS += -DINCLUDE_STRUCT_LAYOUT
+MPY_CROSS_FLAGS += -msmall-int-bits=32 -X heapsize=4m
+MPY_TOOL_FLAGS += -mmpz-dig-size=32
+endif
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -72,8 +81,6 @@ INC += -I$(BUILD)
 KDIR ?= /lib/modules/$(shell uname -r)/build
 
 LD = gcc
-
-CFLAGS = $(INC) -Wall -Werror -O3
 
 KERNEL_CFLAGS = $(shell cat "$(CFLAGS_FILE)")
 # the kernel compiles with gnu89, MicroPython does not. gnu99 works for both.
@@ -101,7 +108,7 @@ SRC_C = \
 	modkernel_ffi.c \
 	modmachine.c
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 SRC_QSTR += $(SRC_C)
 
