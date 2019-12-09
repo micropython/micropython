@@ -12,6 +12,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 
 #define MICROPY_BOARD_EARLY_INIT    NUCLEO_F767ZI_board_early_init
 void NUCLEO_F767ZI_board_early_init(void);
@@ -70,6 +71,11 @@ void NUCLEO_F767ZI_board_early_init(void);
 #define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+// SD card detect switch (actual pin may need to be changed for a particular use)
+#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_G2)
+#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // Ethernet via RMII
 #define MICROPY_HW_ETH_MDC          (pin_C1)
