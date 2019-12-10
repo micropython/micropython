@@ -26,11 +26,14 @@
 
 #include <linux/kallsyms.h>
 #include <linux/module.h>
+#include <linux/kprobes.h>
 
 #include <py/runtime.h>
 #include <py/qstr.h>
 #include <py/obj.h>
 #include <py/objstr.h>
+#include <py/objfun.h>
+#include <py/bc.h>
 
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
@@ -47,6 +50,8 @@ const mp_obj_type_t mp_type_symbol = {
     .binary_op = symbol_binary_op,
 };
 
+#define mp_obj_is_symbol(obj) mp_obj_is_type(obj, &mp_type_symbol)
+
 typedef struct {
     mp_obj_base_t base;
     qstr name; // TODO can save the string ptr instead? is it okay w/ GC?
@@ -56,21 +61,23 @@ typedef struct {
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     sym_obj_t *sym = (sym_obj_t*)MP_OBJ_TO_PTR(self_in);
-    size_t l;
-    const char *s = qstr_data(sym->name, &l);
+    const char *s = qstr_str(sym->name);
     mp_printf(print, "Symbol(\"%s\", 0x%p, exported=%s)", s, sym->value,
         sym->exported ? "True": "False");
 }
 
 STATIC unsigned long convert_arg(mp_obj_t obj, size_t i) {
     mp_int_t n;
-    if (mp_obj_get_int_maybe(obj, &n)) { // covers int/bool
+
+    if (mp_obj_is_int(obj)) { // covers small ints & ints
+        return mp_obj_int_get_uint_checked(obj);
+    } else if (mp_obj_get_int_maybe(obj, &n)) { // covers bool
         return n;
     } else if (mp_const_none == obj) {
         return 0;
     } else if (mp_obj_is_str_or_bytes(obj)) {
         return (unsigned long)mp_obj_str_get_str(obj);
-    } else if (mp_obj_is_type(obj, &mp_type_symbol)) {
+    } else if (mp_obj_is_symbol(obj)) {
         return ((sym_obj_t*)MP_OBJ_TO_PTR(obj))->value;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -166,7 +173,7 @@ STATIC mp_obj_t kernel_ffi_str(mp_obj_t obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_str_obj, kernel_ffi_str);
 
 STATIC mp_obj_t kernel_ffi_bytes(mp_obj_t obj, mp_obj_t n) {
-    return mp_obj_new_bytes((const byte*)get_ptr(obj), mp_obj_int_get_checked(n));
+    return mp_obj_new_bytes((const byte*)get_ptr(obj), mp_obj_get_int(n));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(kernel_ffi_bytes_obj, kernel_ffi_bytes);
 
@@ -228,7 +235,7 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
     u64 *ptr = (u64*)get_ptr(args[0]);
 
     if (n_args == 2) {
-        mp_int_t value = mp_obj_int_get_truncated(args[1]);
+        mp_int_t value = mp_obj_int_get_uint_checked(args[1]);
         u64 value64 = (u64)value;
         if (value64 != value) {
             mp_raise_ValueError("value overflow");
@@ -255,16 +262,263 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p64_obj, 1, 2, kernel_ffi_p64);
 
+
+#define MAX_CB_NARGS 6 // max arguments passed in registers. can also handle stack arguments, but meh now.
+
+STATIC size_t check_func_for_cb(mp_obj_t func) {
+    if (!mp_obj_is_type(func, &mp_type_fun_bc)) {
+        mp_raise_TypeError("expected Python function");
+    }
+    mp_obj_fun_bc_t *f = (mp_obj_fun_bc_t*)MP_OBJ_FROM_PTR(func);
+    const byte *ip = f->bytecode;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
+
+    if (n_kwonly_args != 0 || n_def_pos_args != 0) {
+        mp_raise_TypeError("kwargs/defaults not supported");
+    }
+
+    if (n_pos_args > MAX_CB_NARGS) {
+        mp_raise_TypeError("max args is " MP_STRINGIFY(MAX_CB_NARGS));
+    }
+
+    return n_pos_args;
+}
+
+typedef struct {
+    mp_obj_base_t base;
+    struct kprobe kp;
+    mp_obj_t func;
+    size_t nargs;
+} kprobe_obj_t;
+
+STATIC mp_obj_t kprobe_rm(mp_obj_t self_in) {
+    kprobe_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    unregister_kprobe(&self->kp);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(kprobe_rm_obj, kprobe_rm);
+
+STATIC mp_obj_t kprobe_del(mp_obj_t self_in) {
+    // kprobe.rm might've been called already, but unregister_kprobe handles that.
+    return kprobe_rm(self_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(kprobe_del_obj, kprobe_del);
+
+STATIC const mp_rom_map_elem_t kprobe_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&kprobe_del_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rm), MP_ROM_PTR(&kprobe_rm_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(kprobe_locals_dict, kprobe_locals_dict_table);
+
+static const mp_obj_type_t kprobe_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_kprobe,
+    .locals_dict = (void*)&kprobe_locals_dict,
+};
+
+STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bool *ret_none,
+    unsigned long arg1, unsigned long arg2, unsigned long arg3,
+    unsigned long arg4, unsigned long arg5, unsigned long arg6) {
+
+    nlr_buf_t nlr;
+    unsigned long ret = 0;
+    mp_obj_t args[MAX_CB_NARGS];
+
+    if (nlr_push(&nlr) == 0) {
+        assert(nargs <= MP_ARRAY_SIZE(args));
+        switch (nargs) {
+        case 6: args[5] = mp_obj_new_int_from_uint(arg6);
+        case 5: args[4] = mp_obj_new_int_from_uint(arg5);
+        case 4: args[3] = mp_obj_new_int_from_uint(arg4);
+        case 3: args[2] = mp_obj_new_int_from_uint(arg3);
+        case 2: args[1] = mp_obj_new_int_from_uint(arg2);
+        case 1: args[0] = mp_obj_new_int_from_uint(arg1);
+        case 0: break;
+        }
+
+        mp_obj_t obj = mp_call_function_n_kw(func, nargs, 0, args);
+        if (obj == mp_const_none) {
+            *ret_none = true;
+            // ret remains 0
+        } else {
+            *ret_none = false;
+            ret = mp_obj_int_get_uint_checked(obj);
+        }
+        *call_ok = true;
+
+        nlr_pop();
+    } else {
+        printk("mpy: exception in python callback\n");
+        *call_ok = false;
+    }
+
+    return ret;
+}
+
+STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
+    kprobe_obj_t *kp_obj = container_of(p, kprobe_obj_t, kp);
+
+    bool call_ok;
+    bool ret_none;
+    unsigned long ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, &ret_none,
+        regs->di, regs->si, regs->dx, regs->cx, regs->r8, regs->r9);
+    // if mp function call was a success, don't continue to the probed function.
+    if (call_ok && !ret_none) {
+        // set up registers for a return
+        regs->ax = ret;
+        regs->ip = ((unsigned long*)regs->sp)[0];
+        regs->sp += 8;
+        return 1;
+    } else {
+        // callback either raised an exception, or returned None. proceed to probed
+        // function.
+        return 0;
+    }
+}
+
+STATIC void set_kprobe_target(struct kprobe *kp, mp_obj_t target) {
+    if (mp_obj_is_int(target)) {
+        kp->addr = (kprobe_opcode_t*)mp_obj_int_get_uint_checked(target);
+    } else if (mp_obj_is_str(target)) {
+        kp->symbol_name = mp_obj_str_get_str(target);
+    } else if (mp_obj_is_symbol(target)) {
+        kp->addr = (kprobe_opcode_t*)((sym_obj_t*)MP_OBJ_TO_PTR(target))->value;
+    } else {
+        mp_raise_TypeError("int/str/Symbol accepted for kprobe target");
+    }
+}
+
+STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t func) {
+    size_t nargs = check_func_for_cb(func);
+
+    kprobe_obj_t *kp_obj = m_new_obj_with_finaliser(kprobe_obj_t);
+    kp_obj->base.type = &kprobe_type;
+    kp_obj->func = func;
+    kp_obj->nargs = nargs;
+
+    memset(&kp_obj->kp, 0, sizeof(kp_obj->kp));
+    kp_obj->kp.pre_handler = kprobe_pre_handler;
+    set_kprobe_target(&kp_obj->kp, target);
+
+    int ret = register_kprobe(&kp_obj->kp);
+    if (ret) {
+        mp_raise_OSError(-ret);
+    }
+
+    return MP_OBJ_TO_PTR(kp_obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(kernel_ffi_kprobe_obj, kernel_ffi_kprobe);
+
+typedef struct _mp_obj_fficallback_t {
+    mp_obj_base_t base;
+    mp_obj_t func;
+    void *trampoline;
+    unsigned int nargs;
+} callback_obj_t;
+
+STATIC mp_obj_t callback_ptr(mp_obj_t self_in) {
+    callback_obj_t *self = self_in;
+    return mp_obj_new_int_from_uint((mp_uint_t)self->trampoline);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_ptr_obj, callback_ptr);
+
+STATIC mp_obj_t callback_del(mp_obj_t self_in) {
+    callback_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    vfree(self->trampoline);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_del_obj, callback_del);
+
+STATIC const mp_rom_map_elem_t callback_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_ptr), MP_ROM_PTR(&callback_ptr_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&callback_del_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(callback_locals_dict, callback_locals_dict_table);
+
+STATIC const mp_obj_type_t callback_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_callback,
+    .locals_dict = (void*)&callback_locals_dict,
+};
+
+STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4,
+    unsigned long arg5, unsigned long arg6) {
+
+    register unsigned long rax asm("rax");
+    const callback_obj_t *cb_obj = (callback_obj_t*)rax;
+
+    bool call_ok; // unused anyway, we have no fallback.
+    bool ret_none;
+    return call_py_func(cb_obj->func, cb_obj->nargs, &call_ok, &ret_none,
+        arg1, arg2, arg3, arg4, arg5, arg6);
+}
+
+STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
+    size_t nargs = check_func_for_cb(func);
+
+    callback_obj_t *cb_obj = m_new_obj_with_finaliser(callback_obj_t);
+    cb_obj->base.type = &callback_type;
+    cb_obj->func = func;
+    cb_obj->nargs = nargs;
+
+    // this trampoline does the python equivalent of "partial(callback_handler, cb_obj)".
+    // instead of a full wrapper that prepends the cb_obj argument, a hacky trick
+    // is employed: rax is a volatile register but not used to pass any arguments.
+    // a small trampoline that sets rax to the cb_obj then jumps to callback_handler
+    // is created, and used as the callback pointer.
+    struct {
+        u8 movabs_rax_handler_addr[10];
+        u8 push_rax[1];
+        u8 movabs_rax_parameter[10];
+        u8 ret[1];
+    } __attribute__((packed)) *trampoline = __vmalloc(PAGE_SIZE, GFP_KERNEL, PAGE_KERNEL_EXEC);
+    if (NULL == trampoline) {
+        mp_raise_OSError(0);
+    }
+
+    static const u8 trampoline_base[] = {
+        // movabs $callback_handler, %rax
+        0x48, 0xb8, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        // push %rax
+        0x50,
+        // movabs $cb_obj, %rax
+        0x48, 0xb8, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+        // retq
+        0xc3,
+    };
+
+    memcpy(trampoline, trampoline_base, sizeof(trampoline_base));
+
+    // write the target pointer
+    void **p = (void**)&trampoline->movabs_rax_handler_addr[2];
+    *p = (void*)callback_handler;
+    // write the parameter (callback object)
+    p = (void**)&trampoline->movabs_rax_parameter[2];
+    *p = cb_obj;
+
+    cb_obj->trampoline = trampoline;
+
+    return MP_OBJ_FROM_PTR(cb_obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_callback_obj, kernel_ffi_callback);
+
 STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_kernel_ffi) },
 
     { MP_ROM_QSTR(MP_QSTR_Symbol), MP_ROM_PTR(&mp_type_symbol) },
+
     { MP_ROM_QSTR(MP_QSTR_str),    MP_ROM_PTR(&kernel_ffi_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_bytes),  MP_ROM_PTR(&kernel_ffi_bytes_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_p8),     MP_ROM_PTR(&kernel_ffi_p8_obj) },
     { MP_ROM_QSTR(MP_QSTR_p16),    MP_ROM_PTR(&kernel_ffi_p16_obj) },
     { MP_ROM_QSTR(MP_QSTR_p32),    MP_ROM_PTR(&kernel_ffi_p32_obj) },
     { MP_ROM_QSTR(MP_QSTR_p64),    MP_ROM_PTR(&kernel_ffi_p64_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_kprobe), MP_ROM_PTR(&kernel_ffi_kprobe_obj) },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&kernel_ffi_callback_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(kernel_ffi_module_globals, kernel_ffi_module_globals_table);
