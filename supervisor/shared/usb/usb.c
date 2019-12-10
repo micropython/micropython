@@ -33,8 +33,6 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
-#include "py/mpconfig.h"
-
 #include "tusb.h"
 
 // Serial number as hex characters. This writes directly to the USB
@@ -74,11 +72,6 @@ void usb_init(void) {
 #if CIRCUITPY_USB_MIDI
     usb_midi_init();
 #endif
-
-#ifdef BOARD_NO_VBUS
-    disable_usb_vbus();
-#endif
-
 }
 
 void usb_background(void) {
