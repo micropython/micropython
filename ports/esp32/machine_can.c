@@ -265,19 +265,19 @@ STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_
     const machine_can_obj_t *self =  MP_OBJ_TO_PTR(args[0]);
     if (self->config->initialized){
         ESP_LOGW(DEVICE_NAME, "Device is already initialized");
-        return mp_const_false;
+        return mp_const_none;
     }
     return machine_hw_can_init_helper(self, n_args - 1, args + 1, kw_args);
 }
 
-// INTERNAL FUNCTION init(tx, rx, baudrate, mode = CAN_MODE_NORMAL, tx_queue = 2, rx_queue = 5, filter_mask = 0xFFFFFFFF, filter_code = 0; single_filter = True)
+// INTERNAL FUNCTION init(mode, tx, rx, baudrate, tx_queue = 2, rx_queue = 5, filter_mask = 0xFFFFFFFF, filter_code = 0; single_filter = True)
 STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_mode, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
+    enum { ARG_mode, ARG_tx, ARG_rx, ARG_baudrate, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mode,          MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_tx,            MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 4}                },
         { MP_QSTR_rx,            MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 2}                },
         { MP_QSTR_baudrate,      MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 500}              },
-        { MP_QSTR_mode,          MP_ARG_INT,                      {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_tx_queue,      MP_ARG_INT,                      {.u_int  = 0}               },
         { MP_QSTR_rx_queue,      MP_ARG_INT,                      {.u_int  = 5}               },
         { MP_QSTR_filter_mask,   MP_ARG_INT,                      {.u_int = 0xFFFFFFFF}       },
@@ -287,12 +287,13 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    //Check if device was already configured
+    // Check if device was already configured
     if (self->config->initialized){
-        ESP_LOGE(DEVICE_NAME, "Device is already initialized: unable to re-init");
+        //TODO: check if this condition is redundant compared to init()
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "CAN device is already initialized"));
         return mp_const_none;
     }
-    //Configure device
+    // Configure device
     can_general_config_t g_config = {.mode = args[ARG_mode].u_int,
                                     .tx_io = args[ARG_tx].u_int, 
                                     .rx_io = args[ARG_rx].u_int,
@@ -336,7 +337,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
              self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_1MBITS());
             break;
         default:
-            ESP_LOGE(DEVICE_NAME, "Unable to set baudrate");
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Unable to set baudrate"));
             self->config->baudrate = 0;
             return mp_const_none;
     }
@@ -344,9 +345,9 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     
     uint8_t status = can_driver_install(self->config->general, self->config->timing, self->config->filter);
     if (status != ESP_OK){
-        ESP_LOGE(DEVICE_NAME, "Unable to init the device. ErrCode: %u",status);
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, "Unable to init the device. ErrCode: %u",status));
     }else if (can_start() != ESP_OK){
-        ESP_LOGE(DEVICE_NAME, "Unable to start the device. ErrCode: %u",status);
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, "Unable to start the device. ErrCode: %u",status));
     }else{
         self->config->initialized = true;
     }
@@ -359,17 +360,17 @@ STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
     const machine_can_obj_t *self =  &machine_can_obj;
     if (self->config->initialized != true){
         ESP_LOGW(DEVICE_NAME, "Device is not initialized");
-        return mp_const_false;
+        return mp_const_none;
     }
 	if(can_stop()!=ESP_OK){
-        ESP_LOGW(DEVICE_NAME, "Unable to stop device");
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to stop the device"));
     }
     if (can_driver_uninstall() != ESP_OK){
-        ESP_LOGW(DEVICE_NAME, "Unable to uninstall device");
-        return mp_const_false;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to uninstall the device"));
+        return mp_const_none;
     }
     self->config->initialized = false;
-    return mp_const_true;
+    return mp_const_none;
 }
 
 #endif // MICROPY_HW_ENABLE_CAN
