@@ -36,7 +36,7 @@
 
 #include <machine_can.h>
 
-//#if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN
 
 // Internal Functions
 STATIC can_state_t _machine_hw_can_get_state();
@@ -372,4 +372,4 @@ STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
     return mp_const_true;
 }
 
-//#endif // MICROPY_HW_ENABLE_CAN
+#endif // MICROPY_HW_ENABLE_CAN

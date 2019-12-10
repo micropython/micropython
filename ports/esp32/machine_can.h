@@ -30,6 +30,8 @@
 
 #include "py/obj.h"
 
+#if MICROPY_HW_ENABLE_CAN
+
 #define DEVICE_NAME "CAN"
 
 #define CAN_BAUDRATE_25k 25
@@ -118,4 +120,6 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
 
+
+#endif // MICROPY_HW_ENABLE_CAN
 #endif // MICROPY_INCLUDED_ESP32_CAN_H
