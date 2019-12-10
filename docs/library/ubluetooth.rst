@@ -12,6 +12,9 @@ roles concurrently.
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
 
+.. note:: This module is still under development and its classes, functions,
+          methods and constants are subject to change.
+
 class BLE
 ---------
 
