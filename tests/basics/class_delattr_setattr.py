@@ -69,6 +69,9 @@ class C:
     def __setattr__(self, attr, value):
         print(attr, "=", value)
 
+    def __delattr__(self, attr):
+        print("del", attr)
+
 c = C()
 c.a = 5
 try:
@@ -86,3 +89,25 @@ try:
     object.__setattr__(c, 5, 5)
 except TypeError:
     print("TypeError")
+
+
+# test object.__delattr__
+del c.a
+print(c.a)
+
+object.__delattr__(c, "a")
+try:
+    print(c.a)
+except AttributeError:
+    print("AttributeError")
+
+super(C, c).__delattr__("b")
+try:
+    print(c.b)
+except AttributeError:
+    print("AttributeError")
+
+try:
+    object.__delattr__(c, "c")
+except AttributeError:
+    print("AttributeError")

@@ -77,6 +77,23 @@ STATIC mp_obj_t object___setattr__(mp_obj_t self_in, mp_obj_t attr, mp_obj_t val
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(object___setattr___obj, object___setattr__);
+
+STATIC mp_obj_t object___delattr__(mp_obj_t self_in, mp_obj_t attr) {
+    if (!mp_obj_is_instance_type(mp_obj_get_type(MP_OBJ_TO_PTR(self_in)))) {
+        mp_raise_TypeError("arg must be user-type");
+    }
+
+    if (!mp_obj_is_str(attr)) {
+        mp_raise_TypeError(NULL);
+    }
+
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    if (mp_map_lookup(&self->members, attr, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == NULL) {
+        mp_raise_msg(&mp_type_AttributeError, "no such attribute");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(object___delattr___obj, object___delattr__);
 #endif
 
 STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
@@ -88,6 +105,7 @@ STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
     #endif
     #if MICROPY_PY_DELATTR_SETATTR
     { MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj) },
+    { MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj) },
     #endif
 };
 
