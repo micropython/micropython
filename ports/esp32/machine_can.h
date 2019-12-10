@@ -117,13 +117,5 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
-//Python object definition
-const mp_obj_type_t machine_can_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CAN,
-    .print = machine_hw_can_print, // give it a print-function
-    .make_new = machine_hw_can_make_new,  // give it a constructor
-    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
-};
 
 #endif // MICROPY_INCLUDED_ESP32_CAN_H

@@ -41,6 +41,16 @@
 // Internal Functions
 STATIC can_state_t _machine_hw_can_get_state();
 
+
+//Python object definition
+const mp_obj_type_t machine_can_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_CAN,
+    .print = machine_hw_can_print, // give it a print-function
+    .make_new = machine_hw_can_make_new,  // give it a constructor
+    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
+};
+
 // singleton CAN device object
 machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERAL_CONFIG_DEFAULT(2,4,0)),
                                    .filter = &((can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL()),
