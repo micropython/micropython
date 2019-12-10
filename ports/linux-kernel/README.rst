@@ -198,4 +198,87 @@ You can also use the ``uctypes`` module.
 Python callbacks
 ^^^^^^^^^^^^^^^^
 
-TODO
+``kernel_ffi.callback`` wraps a Python function and gives you a pointer
+that can be called by native code.
+
+Make ``/dev/null`` readable:
+
+.. code-block:: python
+
+    file_operations = partial_struct("file_operations")
+    null_fops = file_operations(null_fops)
+
+    from kernel_ffi import callback
+
+    def my_read_null(file, buf, count, ppos):
+        pos = p64(ppos)
+        b = "who said /dev/null must be empty?\n"[pos:]
+        l = min(len(b), count)
+        memcpy(buf, b, l)
+        p64(ppos, pos + l)
+        return l
+
+    c = callback(my_read_null)
+    null_fops.read = c.ptr()
+
+    # now try "cat /dev/null"
+
+    # to revert:
+    null_fops.read = int(read_null)
+
+
+TODO: Multithreading is not handled correctly. Specifically, all callbacks
+use the same exception stack, and GC locking is missing. So, things generally work, but
+under some stress they might break.
+
+Hook kernel code
+^^^^^^^^^^^^^^^^
+
+Based on the kernel's "kprobe" mechanism, you can hook arbitrary kernel code
+and run your Python code instead (or along).
+
+``kernel_ffi.kprobe`` accepts 2 arguments:
+
+* kprobe target - can be an address, a name or a Symbol object.
+* handler function - Python function.
+
+Your handler function should return an unsigned integer, or ``None``.
+If it returns ``None`` (or, doesn't return anything at all) then execution continues
+to the probed function.
+If it returns an integer, execution returns to the caller function with this integer
+as the return value.
+
+Printing all files opened on the system:
+
+.. code-block:: python
+
+    from kernel_ffi import kprobe, str as s
+    from struct_access import partial_struct
+
+    filename = partial_struct("filename")
+
+    def do_filp_open_hook(dfd, fn):  # don't have to receive all args if you don't need
+        print("do_filp_open: fd {} name {!r}".format(dfd, s(filename(fn).name._ptr)))
+        # by not returning anything (== return None) the probed function
+        # will be called.
+
+    kp = kprobe("do_filp_open", do_filp_open_hook)
+
+    # when you're done:
+    kp.rm()
+    # if kp goes out of scope, the gc finalizer will also remove it.
+
+TODO: Modifying execution path doesn't work atm because the kernel
+optimizes the kprobes, and an optimized kprobe can't modify execution
+path. Probes wanting to change the path should be distinguished and
+unoptimized.
+
+Current workaround: ``sysctl -w debug.kprobes-optimization=0``. This
+has a performance hit on all probes.
+
+Also, same TODO from callbakcs about multithreading applies here as well.
+
+TODO: Handler currently assumes it hooks the prologue of a function. It extracts
+arguments from the registers. However, kprobes supports hooking arbitrary addresses.
+If hooking a mid-function address, it makes more sense to pass the ``pt_regs`` struct
+to the Python hook.
