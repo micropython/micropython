@@ -191,6 +191,9 @@ represented by VFS classes.
 
         Build a Lfs1 filesystem on *block_dev*.
 
+    .. note:: There are reports of littlefs v1 failing in certain situations,
+              for details see `littlefs issue 347`_.
+
 .. class:: VfsLfs2(block_dev)
 
     Create a filesystem object that uses the `littlefs v2 filesystem format`_.
@@ -204,8 +207,13 @@ represented by VFS classes.
 
         Build a Lfs2 filesystem on *block_dev*.
 
+    .. note:: There are reports of littlefs v2 failing in certain situations,
+              for details see `littlefs issue 295`_.
+
 .. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
 .. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
+.. _littlefs issue 295: https://github.com/ARMmbed/littlefs/issues/295
+.. _littlefs issue 347: https://github.com/ARMmbed/littlefs/issues/347
 
 Block devices
 -------------

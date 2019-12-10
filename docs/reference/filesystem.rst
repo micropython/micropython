@@ -214,13 +214,18 @@ Littlefs
 Littlefs_ is a filesystem designed for flash-based devices, and is much more
 resistant to filesystem corruption.
 
+.. note:: There are reports of littlefs v1 and v2 failing in certain
+          situations, for details see `littlefs issue 347`_  and
+          `littlefs issue 295`_.
+
 Note: It can be still be accessed over USB MSC using the `littlefs FUSE
 driver`_. Note that you must use the ``-b=4096`` option to override the block
 size.
 
 .. _littlefs FUSE driver: https://github.com/ARMmbed/littlefs-fuse/tree/master/littlefs
-
 .. _Littlefs: https://github.com/ARMmbed/littlefs
+.. _littlefs issue 295: https://github.com/ARMmbed/littlefs/issues/295
+.. _littlefs issue 347: https://github.com/ARMmbed/littlefs/issues/347
 
 To format the entire flash using littlefs v2::
 
