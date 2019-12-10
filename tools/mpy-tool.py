@@ -474,6 +474,9 @@ class RawCodeNative(RawCode):
                 assert 0
 
     def freeze(self, parent_name):
+        if self.prelude[2] & ~0x0f:
+            raise FreezeError('unable to freeze code with relocations')
+
         self.freeze_children(parent_name)
 
         # generate native code data
