@@ -486,6 +486,33 @@ The DHT driver is implemented in software and works on all pins::
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
 
+Separate methods to send the start signal and receive the result
+exist to minimize blocking in event loops. This is a uasyncio
+based example printing the sensor data every 2 seconds::
+
+    import dht
+    import machine
+    import uasyncio as asyncio
+
+    async def report_dht_data(d):
+        while True:
+            await asyncio.sleep(2)
+            try:
+                wait_ms = d.start()
+                await asyncio.sleep_ms(wait_ms)
+                d.receive()
+            except Exception as ex:
+                print("error: {}".format(ex))
+                continue
+
+            print("temp: {}°C humi: {}%RH".format(d.temperature(),
+                                                  d.humidity()))
+
+    d = dht.DHT22(machine.Pin(4))
+    loop = asyncio.get_event_loop()
+    loop.create_task(report_dht_data(d))
+    loop.run_forever()
+
 WebREPL (web browser interactive prompt)
 ----------------------------------------
 
