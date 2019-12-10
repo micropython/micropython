@@ -46,7 +46,11 @@ bool neopixel_in_use;
 #elif MCU_PACKAGE == 64
     #define GPIO_PORT_COUNT 3
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
+#elif MCU_PACKAGE == 48
+    #define GPIO_PORT_COUNT 3
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
 #endif
+
 
 STATIC uint16_t claimed_pins[GPIO_PORT_COUNT];
 STATIC uint16_t never_reset_pins[GPIO_PORT_COUNT];
