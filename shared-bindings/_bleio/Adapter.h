@@ -55,6 +55,6 @@ void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self);
 
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);
 mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self);
-mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout, bool pair);
+mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H

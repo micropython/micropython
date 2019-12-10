@@ -59,7 +59,7 @@
 //|
 //|   with open("/sample.bmp", "rb") as f:
 //|       odb = displayio.OnDiskBitmap(f)
-//|       face = displayio.TileGrid(odb, pixel_shader=displayio.ColorConverter(), position=(0,0))
+//|       face = displayio.TileGrid(odb, pixel_shader=displayio.ColorConverter())
 //|       splash.append(face)
 //|       # Wait for the image to load.
 //|       board.DISPLAY.wait_for_frame()

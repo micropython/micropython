@@ -57,7 +57,7 @@
 //|   :param int bits:  the number of bits per byte, 7, 8 or 9.
 //|   :param Parity parity:  the parity used for error checking.
 //|   :param int stop:  the number of stop bits, 1 or 2.
-//|   :param float timeout:  the timeout in seconds to wait for the first character and between subsequent characters. Raises ``ValueError`` if timeout >100 seconds.
+//|   :param float timeout:  the timeout in seconds to wait for the first character and between subsequent characters when reading. Raises ``ValueError`` if timeout >100 seconds.
 //|   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
 //|
 //|   *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
@@ -68,6 +68,12 @@ typedef struct {
 } busio_uart_parity_obj_t;
 extern const busio_uart_parity_obj_t busio_uart_parity_even_obj;
 extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
+
+STATIC void validate_timeout(mp_float_t timeout) {
+    if (timeout < (mp_float_t) 0.0f ||  timeout > (mp_float_t) 100.0f) {
+        mp_raise_ValueError(translate("timeout must be 0.0-100.0 seconds"));
+    }
+}
 
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Always initially allocate the UART object within the long-lived heap.
@@ -116,9 +122,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     }
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
-    if (timeout > (mp_float_t)100.0) {
-        mp_raise_ValueError(translate("timeout >100 (units are now seconds, not msecs)"));
-    }
+    validate_timeout(timeout);
 
     common_hal_busio_uart_construct(self, tx, rx,
                                     args[ARG_baudrate].u_int, bits, parity, stop, timeout,
@@ -286,6 +290,35 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: timeout
+//|
+//|     The current timeout, in seconds (float).
+//|
+STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_float(common_hal_busio_uart_get_timeout(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_timeout_obj, busio_uart_obj_get_timeout);
+
+STATIC mp_obj_t busio_uart_obj_set_timeout(mp_obj_t self_in, mp_obj_t timeout) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    mp_float_t timeout_float = mp_obj_get_float(timeout);
+    validate_timeout(timeout_float);
+    common_hal_busio_uart_set_timeout(self, timeout_float);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(busio_uart_set_timeout_obj, busio_uart_obj_set_timeout);
+
+
+const mp_obj_property_t busio_uart_timeout_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&busio_uart_get_timeout_obj,
+              (mp_obj_t)&busio_uart_set_timeout_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|   .. method:: reset_input_buffer()
 //|
 //|     Discard any unread characters in the input buffer.
@@ -355,8 +388,9 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_input_buffer), MP_ROM_PTR(&busio_uart_reset_input_buffer_obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&busio_uart_baudrate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&busio_uart_in_waiting_obj) },
+    { MP_ROM_QSTR(MP_QSTR_baudrate),     MP_ROM_PTR(&busio_uart_baudrate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_in_waiting),   MP_ROM_PTR(&busio_uart_in_waiting_obj) },
+    { MP_ROM_QSTR(MP_QSTR_timeout),      MP_ROM_PTR(&busio_uart_timeout_obj) },
 
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
@@ -364,6 +398,7 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table);
 
 STATIC const mp_stream_p_t uart_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = busio_uart_read,
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,

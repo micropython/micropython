@@ -28,10 +28,11 @@
 // sure that the same feature set and settings are used, such as in atmel-samd
 // and nrf.
 
-#include <stdint.h>
-
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
+
+#include <stdint.h>
+#include <stdatomic.h>
 
 // This is CircuitPython.
 #define CIRCUITPY 1
@@ -56,8 +57,8 @@
 #define MICROPY_COMP_MODULE_CONST        (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_DEBUG_PRINTERS           (0)
-#define MICROPY_EMIT_INLINE_THUMB        (0)
-#define MICROPY_EMIT_THUMB               (0)
+#define MICROPY_EMIT_INLINE_THUMB        (CIRCUITPY_ENABLE_MPY_NATIVE)
+#define MICROPY_EMIT_THUMB               (CIRCUITPY_ENABLE_MPY_NATIVE)
 #define MICROPY_EMIT_X64                 (0)
 #define MICROPY_ENABLE_DOC_STRING        (0)
 #define MICROPY_ENABLE_FINALISER         (1)
@@ -652,17 +653,19 @@ extern const struct _mp_obj_module_t ustack_module;
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
-void run_background_tasks(void);
-#define RUN_BACKGROUND_TASKS (run_background_tasks())
+void supervisor_run_background_tasks_if_tick(void);
+#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()
 
-#define MICROPY_VM_HOOK_LOOP run_background_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_tasks();
+#define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
+#define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+
+#define CIRCUITPY_VERBOSE_BLE 0
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

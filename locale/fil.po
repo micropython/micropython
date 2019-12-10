@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -121,6 +121,10 @@ msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' integer 0x%x ay wala sa mask na sakop ng 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -487,11 +491,6 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
@@ -590,11 +589,6 @@ msgstr ""
 msgid "Expected tuple of length %d, got %d"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed initiate attribute read, err 0x%04x"
-msgstr ""
-
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr ""
@@ -603,15 +597,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to add characteristic, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to add descriptor, err 0x%04x"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -624,10 +609,6 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr ""
 
@@ -635,95 +616,10 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to create service, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-#, fuzzy
-msgid "Failed to discover services"
-msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
-msgid "Failed to get local address"
-msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
-msgid "Failed to get softdevice state"
-msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to pair"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, fuzzy, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
-
 #: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to start advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to start pairing, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to stop advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -788,6 +684,14 @@ msgstr ""
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1151,7 +1055,7 @@ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
@@ -1344,9 +1248,30 @@ msgstr "Hindi ma i-sulat sa NVM."
 msgid "Unexpected nrfx uuid type"
 msgstr "hindi inaasahang indent"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
@@ -2574,13 +2499,9 @@ msgstr "ang threshold ay dapat sa range 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() kumukuha ng 1 argument"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout >100 (units ay seconds, hindi na msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
+msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
@@ -2820,7 +2741,7 @@ msgstr "zero step"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Nabigo sa paglagay ng characteristic, status: 0x%08lX"
 
@@ -2828,7 +2749,7 @@ msgstr "zero step"
 #~ msgid "Failed to add service"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Hindi matagumpay ang paglagay ng service, status: 0x%08lX"
 
@@ -2844,7 +2765,7 @@ msgstr "zero step"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Hindi maituloy ang pag scan, status: 0x%0xlX"
 
@@ -2853,12 +2774,37 @@ msgstr "zero step"
 #~ msgstr "Hindi matagumpay ang pagbuo ng mutex, status: 0x%0xlX"
 
 #, fuzzy
+#~ msgid "Failed to discover services"
+#~ msgstr "Nabigo sa pagdiscover ng services, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to get local address"
+#~ msgstr "Nabigo sa pagkuha ng local na address, , error: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to get softdevice state"
+#~ msgstr "Nabigo sa pagkuha ng softdevice state, error: 0x%08lX"
+
+#, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Hindi mabalitaan ang attribute value, status: 0x%08lX"
 
 #, fuzzy
+#~ msgid "Failed to read CCCD value, err 0x%04x"
+#~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
+
+#, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Hindi mabasa ang value ng attribute, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to read gatts value, err 0x%04x"
+#~ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+#~ msgstr ""
+#~ "Hindi matagumpay ang paglagay ng Vender Specific UUID, status: 0x%08lX"
 
 #, fuzzy
 #~ msgid "Failed to release mutex"
@@ -2868,7 +2814,7 @@ msgstr "zero step"
 #~ msgid "Failed to start advertising"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Hindi masimulaan ang advertisement, status: 0x%08lX"
 
@@ -2877,12 +2823,24 @@ msgstr "zero step"
 #~ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
 
 #, fuzzy
+#~ msgid "Failed to start scanning, err 0x%04x"
+#~ msgstr "Hindi masimulaan mag i-scan, status: 0x%0xlX"
+
+#, fuzzy
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
 
-#, fuzzy, c-format
+#, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Hindi mahinto ang advertisement, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to write attribute value, err 0x%04x"
+#~ msgstr "Hindi maisulat ang attribute value, status: 0x%08lX"
+
+#, fuzzy
+#~ msgid "Failed to write gatts value, err 0x%04x"
+#~ msgstr "Hindi maisulat ang gatts value, status: 0x%08lX"
 
 #~ msgid "Function requires lock."
 #~ msgstr "Kailangan ng lock ang function."
@@ -3047,6 +3005,12 @@ msgstr "zero step"
 
 #~ msgid "scan failed"
 #~ msgstr "nabigo ang pag-scan"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() kumukuha ng 1 argument"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timeout >100 (units ay seconds, hindi na msecs)"
 
 #~ msgid "too many arguments"
 #~ msgstr "masyadong maraming argumento"

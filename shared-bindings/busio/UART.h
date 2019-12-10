@@ -57,7 +57,8 @@ extern size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
 
 extern uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self);
 extern void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate);
-
+extern mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self);
+extern void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout);
 
 extern uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self);
 extern void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self);

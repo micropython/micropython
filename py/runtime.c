@@ -31,8 +31,6 @@
 
 #include "extmod/vfs.h"
 
-// #include "py/mpstate.h"
-// #include "py/nlr.h"
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/objstr.h"

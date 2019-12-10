@@ -488,6 +488,7 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 
 STATIC const mp_vfs_proto_t fat_vfs_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = fat_vfs_import_stat,
 };
 

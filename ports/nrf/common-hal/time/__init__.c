@@ -29,7 +29,7 @@
 #include "tick.h"
 
 uint64_t common_hal_time_monotonic(void) {
-    return ticks_ms;
+    return supervisor_ticks_ms64();
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {

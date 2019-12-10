@@ -39,7 +39,10 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+#define MAX_UART 10 //how many UART are implemented
+
 #define MICROPY_PORT_ROOT_POINTERS \
+    void *cpy_uart_obj_all[MAX_UART]; \
 	CIRCUITPY_COMMON_ROOT_POINTERS
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

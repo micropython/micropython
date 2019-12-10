@@ -119,7 +119,28 @@ const mcu_spi_nss_obj_t mcu_spi_nss_list[12] = {
     SPI(5, 6, &pin_PE11)
 };
 
-//UART, Etc
+USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, NULL, NULL, NULL, USART6};
+bool mcu_uart_has_usart[MAX_UART] = {true, true, false, false, false, true};
+
+const mcu_uart_tx_obj_t mcu_uart_tx_list[7] = {
+    UART(2, 7, &pin_PA02),
+    UART(1, 7, &pin_PA09),
+    UART(1, 7, &pin_PA15),
+    UART(6, 8, &pin_PA11),
+    UART(1, 7, &pin_PB06),
+    UART(6, 8, &pin_PC06),
+    UART(2, 7, &pin_PD05),
+};
+
+const mcu_uart_rx_obj_t mcu_uart_rx_list[7] = {
+    UART(2, 7, &pin_PA03),
+    UART(1, 7, &pin_PA10),
+    UART(6, 8, &pin_PA12),
+    UART(1, 7, &pin_PB03),
+    UART(1, 7, &pin_PB07),
+    UART(6, 8, &pin_PC07),
+    UART(2, 7, &pin_PD06),
+};
 
 //Timers
 //TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
@@ -171,4 +192,3 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[44] = {
     TIM(1,1,3,&pin_PE13),
     TIM(1,1,4,&pin_PE14),
 };
-

@@ -180,9 +180,20 @@ STATIC const mp_rom_map_elem_t audioio_rawsample_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_rawsample_locals_dict, audioio_rawsample_locals_dict_table);
 
+STATIC const audiosample_p_t audioio_rawsample_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_audiosample)
+    .sample_rate = (audiosample_sample_rate_fun)common_hal_audioio_rawsample_get_sample_rate,
+    .bits_per_sample = (audiosample_bits_per_sample_fun)common_hal_audioio_rawsample_get_bits_per_sample,
+    .channel_count = (audiosample_channel_count_fun)common_hal_audioio_rawsample_get_channel_count,
+    .reset_buffer = (audiosample_reset_buffer_fun)audioio_rawsample_reset_buffer,
+    .get_buffer = (audiosample_get_buffer_fun)audioio_rawsample_get_buffer,
+    .get_buffer_structure = (audiosample_get_buffer_structure_fun)audioio_rawsample_get_buffer_structure,
+};
+
 const mp_obj_type_t audioio_rawsample_type = {
     { &mp_type_type },
     .name = MP_QSTR_RawSample,
     .make_new = audioio_rawsample_make_new,
     .locals_dict = (mp_obj_dict_t*)&audioio_rawsample_locals_dict,
+    .protocol = &audioio_rawsample_proto,
 };

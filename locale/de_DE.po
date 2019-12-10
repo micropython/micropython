@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -120,6 +120,10 @@ msgstr "'%s' integer %d ist nicht im Bereich %d..%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' Integer 0x%x passt nicht in Maske 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -482,11 +486,6 @@ msgstr "Beschädigte .mpy Datei"
 msgid "Corrupt raw code"
 msgstr "Beschädigter raw code"
 
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Konnte UART nicht initialisieren"
@@ -580,11 +579,6 @@ msgstr "Erwartet eine Adresse"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed initiate attribute read, err 0x%04x"
-msgstr ""
-
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr "Kommando nicht gesendet."
@@ -593,15 +587,6 @@ msgstr "Kommando nicht gesendet."
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Mutex konnte nicht akquiriert werden. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to add characteristic, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to add descriptor, err 0x%04x"
-msgstr "Deskriptor konnte nicht hinzugefügt werden. Status: 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -614,10 +599,6 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Konnte keine RX Buffer mit %d allozieren"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr ""
 
@@ -625,92 +606,10 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr "Verbindung nicht erfolgreich: timeout"
 
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to create service, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to discover services"
-msgstr "Es konnten keine Dienste gefunden werden"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get local address"
-msgstr "Lokale Adresse konnte nicht abgerufen werden"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get softdevice state"
-msgstr "Fehler beim Abrufen des Softdevice-Status"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to pair"
-msgstr "Koppeln fehlgeschlagen"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr "Kann Attributwert nicht lesen, Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr "gatts value konnte nicht gelesen werden. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
-
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to start advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr "Verbindung konnte nicht hergestellt werden. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to start pairing, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to stop advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr "Konnte CCCD nicht schreiben, Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr "gatts value konnte nicht geschrieben werden. Status: 0x%04x"
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -736,7 +635,9 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Die aufgezeichnete Frequenz liegt über der Leistungsgrenze. Aufnahme angehalten."
+msgstr ""
+"Die aufgezeichnete Frequenz liegt über der Leistungsgrenze. Aufnahme "
+"angehalten."
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -775,6 +676,14 @@ msgstr "Inkorrekte Puffergröße"
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Eingabe-/Ausgabefehler"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1140,7 +1049,7 @@ msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA oder SCL brauchen pull up"
 
@@ -1336,12 +1245,33 @@ msgstr "Schreiben in nvm nicht möglich."
 msgid "Unexpected nrfx uuid type"
 msgstr "Unerwarteter nrfx uuid-Typ"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
 "Nicht übereinstimmende Anzahl von Elementen auf der rechten Seite (erwartet "
 "%d, %d erhalten)."
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
@@ -2558,12 +2488,8 @@ msgstr "threshold muss im Intervall 0-65536 liegen"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr ""
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
+msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -2794,6 +2720,9 @@ msgstr ""
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
 
+#~ msgid "Could not decode ble_uuid, err 0x%04x"
+#~ msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Daten sind zu groß für das advertisement packet"
 
@@ -2816,14 +2745,15 @@ msgstr ""
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Akquirieren des Mutex gescheitert"
 
-#, c-format
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Hinzufügen des Characteristic ist gescheitert. Status: 0x%04x"
+
+#~ msgid "Failed to add descriptor, err 0x%04x"
+#~ msgstr "Deskriptor konnte nicht hinzugefügt werden. Status: 0x%04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Dienst konnte nicht hinzugefügt werden"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Dienst konnte nicht hinzugefügt werden. Status: 0x%04x"
 
@@ -2836,46 +2766,80 @@ msgstr ""
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Der Scanvorgang kann nicht fortgesetzt werden"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Der Scanvorgang kann nicht fortgesetzt werden. Status: 0x%04x"
 
 #~ msgid "Failed to create mutex"
 #~ msgstr "Erstellen des Mutex ist fehlgeschlagen"
 
+#~ msgid "Failed to discover services"
+#~ msgstr "Es konnten keine Dienste gefunden werden"
+
+#~ msgid "Failed to get local address"
+#~ msgstr "Lokale Adresse konnte nicht abgerufen werden"
+
+#~ msgid "Failed to get softdevice state"
+#~ msgstr "Fehler beim Abrufen des Softdevice-Status"
+
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Kann den Attributwert nicht mitteilen. Status: 0x%04x"
+
+#~ msgid "Failed to pair"
+#~ msgstr "Koppeln fehlgeschlagen"
+
+#~ msgid "Failed to read CCCD value, err 0x%04x"
+#~ msgstr "Kann CCCD value nicht lesen. Status: 0x%04x"
 
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Kann den Attributwert nicht lesen. Status: 0x%04x"
 
+#~ msgid "Failed to read attribute value, err 0x%04x"
+#~ msgstr "Kann Attributwert nicht lesen, Status: 0x%04x"
+
+#~ msgid "Failed to read gatts value, err 0x%04x"
+#~ msgstr "gatts value konnte nicht gelesen werden. Status: 0x%04x"
+
+#~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+#~ msgstr "Kann keine herstellerspezifische UUID hinzufügen. Status: 0x%04x"
+
 #~ msgid "Failed to release mutex"
 #~ msgstr "Loslassen des Mutex gescheitert"
 
-#, c-format
 #~ msgid "Failed to set device name, err 0x%04x"
 #~ msgstr "Gerätename konnte nicht gesetzt werden, Status: 0x%04x"
 
 #~ msgid "Failed to start advertising"
 #~ msgstr "Kann advertisement nicht starten"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht starten. Status: 0x%04x"
 
-#, c-format
+#~ msgid "Failed to start connecting, error 0x%04x"
+#~ msgstr "Verbindung konnte nicht hergestellt werden. Status: 0x%04x"
+
 #~ msgid "Failed to start pairing, error 0x%04x"
 #~ msgstr "Starten des Koppelns fehlgeschlagen, Status: 0x%04x"
 
 #~ msgid "Failed to start scanning"
 #~ msgstr "Der Scanvorgang kann nicht gestartet werden"
 
+#~ msgid "Failed to start scanning, err 0x%04x"
+#~ msgstr "Der Scanvorgang kann nicht gestartet werden. Status: 0x%04x"
+
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Kann advertisement nicht stoppen"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Kann advertisement nicht stoppen. Status: 0x%04x"
+
+#~ msgid "Failed to write CCCD, err 0x%04x"
+#~ msgstr "Konnte CCCD nicht schreiben, Status: 0x%04x"
+
+#~ msgid "Failed to write attribute value, err 0x%04x"
+#~ msgstr "Kann den Attributwert nicht schreiben. Status: 0x%04x"
+
+#~ msgid "Failed to write gatts value, err 0x%04x"
+#~ msgstr "gatts value konnte nicht geschrieben werden. Status: 0x%04x"
 
 #~ msgid "Function requires lock."
 #~ msgstr ""

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#ifndef MICROPY_INCLUDED_PY_PROTO_H
+#define MICROPY_INCLUDED_PY_PROTO_H
 
-void board_init(void)
-{
-}
+#ifdef MICROPY_UNSAFE_PROTO
+#define MP_PROTOCOL_HEAD /* NOTHING */
+#define MP_PROTO_IMPLEMENT(name) /* NOTHING */
+static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) { return mp_obj_get_type(obj)->protocol; }
+#else
+#define MP_PROTOCOL_HEAD \
+    uint16_t name; // The name of this protocol, a qstr
+#define MP_PROTO_IMPLEMENT(n) .name = n,
+const void *mp_proto_get(uint16_t name, mp_const_obj_t obj);
+const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj);
+#endif
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+#endif
 
-void reset_board(void) {
-}

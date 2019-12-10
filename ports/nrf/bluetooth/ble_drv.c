@@ -134,6 +134,9 @@ void SD_EVT_IRQHandler(void) {
         }
 
         ble_evt_t* event = (ble_evt_t *)m_ble_evt_buf;
+        #if CIRCUITPY_VERBOSE_BLE
+        mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
+        #endif
 
         if (supervisor_bluetooth_hook(event)) {
             continue;
@@ -145,8 +148,11 @@ void SD_EVT_IRQHandler(void) {
             done = it->func(event, it->param) || done;
             it = it->next;
         }
-        if (!done) {
-            //mp_printf(&mp_plat_print, "Unhandled ble event: 0x%04x\n", event->header.evt_id);
+        #if CIRCUITPY_VERBOSE_BLE
+        if (event->header.evt_id == BLE_GATTS_EVT_WRITE) {
+            ble_gatts_evt_write_t* write_evt = &event->evt.gatts_evt.params.write;
+            mp_printf(&mp_plat_print, "Write to: UUID(0x%04x) handle %x of length %d auth %x\n", write_evt->uuid.uuid, write_evt->handle, write_evt->len, write_evt->auth_required);
         }
+        #endif
     }
 }

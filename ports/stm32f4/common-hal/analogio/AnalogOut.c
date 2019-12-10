@@ -40,11 +40,11 @@
 #include "stm32f4xx_hal.h"
 
 //DAC is shared between both channels. 
-//TODO: store as struct with channel info, automatically turn it off if unused 
-//on both channels for power save?
 #if HAS_DAC
 DAC_HandleTypeDef handle;
 #endif
+
+STATIC bool dac_on[2];
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -53,8 +53,10 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     #else
     if (pin == &pin_PA04) {
         self->channel = DAC_CHANNEL_1;
+        self->dac_index = 0;
     } else if (pin == &pin_PA05) {
         self->channel = DAC_CHANNEL_2;
+        self->dac_index = 1;
     } else {
         mp_raise_ValueError(translate("Invalid DAC pin supplied"));
     }
@@ -82,22 +84,27 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         mp_raise_ValueError(translate("DAC Channel Init Error"));
     }
 
+    dac_on[self->dac_index] = true;
     self->pin = pin;
-    self->deinited = false;
     claim_pin(pin);
     #endif
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return self->deinited;
+    return !dac_on[self->dac_index];
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     #if HAS_DAC
     reset_pin_number(self->pin->port,self->pin->number);
     self->pin = mp_const_none;
-    self->deinited = true;
-    //TODO: if both are de-inited, should we turn off the DAC? 
+    dac_on[self->dac_index] = false;
+
+    //turn off the DAC if both channels are off
+    if(dac_on[0] == false && dac_on[1] == false) {
+        __HAL_RCC_DAC_CLK_DISABLE();
+        HAL_DAC_DeInit(&handle);
+    }
     #endif
 }
 

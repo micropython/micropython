@@ -25,8 +25,9 @@
  */
 
 #include "mphalport.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "rgb_led_status.h"
+#include "supervisor/shared/tick.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
@@ -117,7 +118,7 @@ void rgb_led_status_init() {
                                               mp_const_none);
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
-            // This may call us recursively if reset_pin_number() is called,
+            // This may call us recursively if common_hal_reset_pin() is called,
             // The rgb_led_status_init_in_progress guard will prevent further recursion.
             common_hal_busio_spi_deinit(&status_apa102);
         }
@@ -181,11 +182,11 @@ void rgb_led_status_init() {
 
 void reset_status_led() {
     #ifdef MICROPY_HW_NEOPIXEL
-        reset_pin_number(MICROPY_HW_NEOPIXEL->number);
+        common_hal_reset_pin(MICROPY_HW_NEOPIXEL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-        reset_pin_number(MICROPY_HW_APA102_MOSI->number);
-        reset_pin_number(MICROPY_HW_APA102_SCK->number);
+        common_hal_reset_pin(MICROPY_HW_APA102_MOSI);
+        common_hal_reset_pin(MICROPY_HW_APA102_SCK);
     #endif
     #if defined(CP_RGB_STATUS_LED)
         // TODO: Support sharing status LED with user.
@@ -360,7 +361,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
                                rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     new_status_color(ALL_DONE);
-    status->pattern_start = ticks_ms;
+    status->pattern_start = supervisor_ticks_ms32();
     status->safe_mode = safe_mode;
     status->found_main = found_main;
     status->total_exception_cycle = 0;
@@ -405,11 +406,11 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
 
 void tick_rgb_status_animation(rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
-    uint32_t tick_diff = ticks_ms - status->pattern_start;
+    uint32_t tick_diff = supervisor_ticks_ms32() - status->pattern_start;
     if (status->ok) {
         // All is good. Ramp ALL_DONE up and down.
         if (tick_diff > ALL_GOOD_CYCLE_MS) {
-            status->pattern_start = ticks_ms;
+            status->pattern_start = supervisor_ticks_ms32();
             tick_diff = 0;
         }
 
@@ -424,7 +425,7 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
         }
     } else {
         if (tick_diff > status->total_exception_cycle) {
-            status->pattern_start = ticks_ms;
+            status->pattern_start = supervisor_ticks_ms32();
             tick_diff = 0;
         }
         // First flash the file color.

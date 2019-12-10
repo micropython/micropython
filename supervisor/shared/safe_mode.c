@@ -34,6 +34,7 @@
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/tick.h"
 
 #define SAFE_MODE_DATA_GUARD 0xad0000af
 #define SAFE_MODE_DATA_GUARD_MASK 0xff0000ff
@@ -59,14 +60,14 @@ safe_mode_t wait_for_safe_mode_reset(void) {
     common_hal_digitalio_digitalinout_construct(&status_led, MICROPY_HW_LED_STATUS);
     common_hal_digitalio_digitalinout_switch_to_output(&status_led, true, DRIVE_MODE_PUSH_PULL);
     #endif
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
     uint64_t diff = 0;
     while (diff < 700) {
         #ifdef MICROPY_HW_LED_STATUS
         // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
         common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
         #endif
-        diff = ticks_ms - start_ticks;
+        diff = supervisor_ticks_ms64() - start_ticks;
     }
     #ifdef MICROPY_HW_LED_STATUS
     common_hal_digitalio_digitalinout_deinit(&status_led);
