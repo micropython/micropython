@@ -38,6 +38,9 @@
 
 //#if MICROPY_HW_ENABLE_CAN
 
+// Internal Functions
+STATIC can_state_t _machine_hw_can_get_state();
+
 // singleton CAN device object
 machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERAL_CONFIG_DEFAULT(2,4,0)),
                                    .filter = &((can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL()),
@@ -55,33 +58,54 @@ STATIC can_status_info_t _machine_hw_can_get_status(){
     return status;
 }
 
+}
+
+// any(fifo) - return `True` if any message waiting on the FIFO, else `False`
+STATIC mp_obj_t machine_hw_can_any(mp_obj_t self_in, mp_obj_t fifo_in){
+    can_status_info_t status = _machine_hw_can_get_status();
+    if(mp_obj_new_int(status.msgs_to_rx)>0){
+        return mp_const_true;
+    }else{
+        return mp_const_false;
+    }
+}
+
+// Get the state of the controller
+STATIC mp_obj_t machine_hw_can_state(mp_obj_t self_in) {
+    can_status_info_t status = _machine_hw_can_get_status();
+    return mp_obj_new_int(status.state);
+}
+
 STATIC can_state_t _machine_hw_can_get_state(){
     can_status_info_t status = _machine_hw_can_get_status();
     return status.state;
 }
 
-STATIC mp_obj_t machine_hw_can_get_rx_waiting_messages(mp_obj_t self_in){
+// Get info about error states and TX/RX buffers
+STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
+    //machine_can_obj_t *self = MP_OBJ_TO_PTR(args[0]); //FIXME: Remove it if useless
+    mp_obj_list_t *list;
+    if (n_args == 1) {
+        list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
+    } else {
+        if (!mp_obj_is_type(args[1], &mp_type_list)) {
+            mp_raise_TypeError(NULL);
+        }
+        list = MP_OBJ_TO_PTR(args[1]);
+        if (list->len < 8) {
+            mp_raise_ValueError(NULL);
+        }
+    }
     can_status_info_t status = _machine_hw_can_get_status();
-        return mp_obj_new_int(status.msgs_to_rx);
-}
-
-STATIC mp_obj_t machine_hw_can_get_tx_waiting_messages(mp_obj_t self_in){
-    can_status_info_t status = _machine_hw_can_get_status();
-    return mp_obj_new_int(status.msgs_to_tx);
-}
-
-STATIC mp_obj_t machine_hw_can_get_tec(mp_obj_t self_in){
-    can_status_info_t status = _machine_hw_can_get_status();
-    return mp_obj_new_int(status.tx_error_counter);
-}
-
-STATIC mp_obj_t machine_hw_can_get_rec(mp_obj_t self_in){
-    can_status_info_t status = _machine_hw_can_get_status();
-    return mp_obj_new_int(status.rx_error_counter);
-}
-
-STATIC mp_obj_t machine_hw_can_get_state(mp_obj_t self_in){
-    return mp_obj_new_int(_machine_hw_can_get_state()); 
+    list->items[0] = MP_OBJ_NEW_SMALL_INT(status.tx_error_counter);
+    list->items[1] = MP_OBJ_NEW_SMALL_INT(status.rx_error_counter);
+    //list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning); //FIXME:
+    //list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive); //FIXME:
+    //list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off); //FIXME:
+    list->items[5] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_tx);
+    //list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3); //FIXME:
+    //list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3); //FIXME:
+    return MP_OBJ_FROM_PTR(list);
 }
 
 //Clear TX Queue
@@ -137,7 +161,8 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
             case ESP_ERR_INVALID_STATE: ESP_LOGW(DEVICE_NAME, "Device is not initialized"); break;
             case ESP_ERR_NOT_SUPPORTED: ESP_LOGW(DEVICE_NAME, "Listen Only Mode active"); break;
         }
-        return machine_hw_can_get_tx_waiting_messages(pos_args[0]);
+
+        return 0; //machine_hw_can_get_tx_waiting_messages(pos_args[0]);
     }else{
         ESP_LOGW(DEVICE_NAME, "Unable to send the message");
         return MP_OBJ_NEW_SMALL_INT(-1);
