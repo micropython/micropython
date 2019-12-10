@@ -42,10 +42,6 @@
 #include "nrf_sdm.h"
 #endif
 
-// defined in linker
-extern uint32_t __fatfs_flash_start_addr[];
-extern uint32_t __fatfs_flash_length[];
-
 #define NO_CACHE        0xffffffff
 
 uint8_t  _flash_cache[FLASH_PAGE_SIZE] __attribute__((aligned(4)));
@@ -56,7 +52,7 @@ uint32_t _flash_page_addr = NO_CACHE;
 /* Internal Flash API
  *------------------------------------------------------------------*/
 static inline uint32_t lba2addr(uint32_t block) {
-    return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
 }
 
 void supervisor_flash_init(void) {
@@ -67,7 +63,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE ;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE ;
 }
 
 void supervisor_flash_flush(void) {

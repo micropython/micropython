@@ -30,9 +30,6 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit Circuit Playground Bluefruit"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define FLASH_SIZE                  (0x100000)
-#define FLASH_PAGE_SIZE             (4096)
-
 #define MICROPY_HW_LED_STATUS       (&pin_P1_14)
 
 // Unusually, board does not have a 32 kHz xtal. Nearly all boards do.

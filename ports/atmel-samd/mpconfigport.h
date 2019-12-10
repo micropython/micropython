@@ -81,12 +81,12 @@
 #endif
 
 // If CIRCUITPY is internal, use half of flash for it.
-#ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
-  #if INTERNAL_FLASH_FILESYSTEM
-  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (FLASH_SIZE/2)
-  #else
-  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#if INTERNAL_FLASH_FILESYSTEM
+  #ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
+    #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (FLASH_SIZE/2)
   #endif
+#else
+  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
 // HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
@@ -135,9 +135,9 @@
 //
 // bootloader (8 or 16kB)
 // firmware
+// internal CIRCUITPY flash filesystem (optional)
 // internal config, used to store crystalless clock calibration info (optional)
 // microntroller.nvm (optional)
-// internal CIRCUITPY flash filesystem (optional)
 
 // Define these regions starting up from the bottom of flash:
 
@@ -147,18 +147,43 @@
 
 // Define these regions start down from the top of flash:
 
-#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR \
-    (FLASH_SIZE - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
-
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR \
-    (CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR - CIRCUITPY_INTERNAL_NVM_SIZE)
+    (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define CIRCUITPY_INTERNAL_CONFIG_START_ADDR \
     (CIRCUITPY_INTERNAL_NVM_START_ADDR - CIRCUITPY_INTERNAL_CONFIG_SIZE)
 
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR \
+    (CIRCUITPY_INTERNAL_CONFIG_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
+
 // The firmware space is the space left over between the fixed lower and upper regions.
 #define CIRCUITPY_FIRMWARE_SIZE \
-    (CIRCUITPY_INTERNAL_CONFIG_START_ADDR - CIRCUITPY_FIRMWARE_START_ADDR)
+    (CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR - CIRCUITPY_FIRMWARE_START_ADDR)
+
+#if BOOTLOADER_START_ADDR % FLASH_PAGE_SIZE != 0
+#error BOOTLOADER_START_ADDR must be on a flash page boundary.
+#endif
+
+#if CIRCUITPY_INTERNAL_NVM_START_ADDR % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_NVM_START_ADDR must be on a flash page boundary.
+#endif
+#if CIRCUITPY_INTERNAL_NVM_SIZE % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_NVM_SIZE must be a multiple of FLASH_PAGE_SIZE.
+#endif
+
+#if CIRCUITPY_INTERNAL_CONFIG_START_ADDR % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_CONFIG_SIZE must be on a flash page boundary.
+#endif
+#if CIRCUITPY_INTERNAL_CONFIG_SIZE % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_CONFIG_SIZE must be a multiple of FLASH_PAGE_SIZE.
+#endif
+
+#if CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE must be on a flash page boundary.
+#endif
+#if CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE % FLASH_PAGE_SIZE != 0
+#error CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE must be a multiple of FLASH_PAGE_SIZE.
+#endif
 
 #if CIRCUITPY_FIRMWARE_SIZE < 0
 #error No space left in flash for firmware after specifying other regions!

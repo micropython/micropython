@@ -157,7 +157,7 @@ endif
 
 
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
@@ -324,19 +324,10 @@ SRC_QSTR_PREPROCESSOR += peripherals/samd/$(CHIP_FAMILY)/clocks.c
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
-LD_FILE = $(BUILD)/$(notdir $(patsubst %.template.ld,%.ld,$(LD_TEMPLATE_FILE)))
-
-# ld_defines.pp is generated from ld_defines.c. See py/mkrules.mk.
-# Run gen_ld_files.py over ALL *.template.ld files, not just LD_TEMPLATE_FILE,
-# because it may include other template files.
-$(LD_FILE): $(BUILD)/ld_defines.pp boards/*.template.ld
-	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
-
-$(BUILD)/firmware.elf: $(OBJ) $(LD_FILE)
+$(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
