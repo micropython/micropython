@@ -324,6 +324,10 @@ static bool allocate_ram_cache(void) {
         return true;
     }
 
+    if (MP_STATE_MEM(gc_pool_start) == 0) {
+        return false;
+    }
+
     MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
