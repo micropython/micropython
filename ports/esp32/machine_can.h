@@ -78,6 +78,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_send_obj, 3, machine_hw_can_send);
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_recv_obj, 0, machine_hw_can_recv);
 MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_tx_queue_obj, machine_hw_can_clear_tx_queue);
 MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_rx_queue_obj, machine_hw_can_clear_rx_queue);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_restart_obj, machine_hw_can_restart);
 MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_any_obj, machine_hw_can_any);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
 

@@ -58,6 +58,10 @@ STATIC can_status_info_t _machine_hw_can_get_status(){
     return status;
 }
 
+// Force a software restart of the controller, to allow transmission after a bus error
+STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
+    mp_raise_NotImplementedError(""); //TODO: Implement this function
+    return self_in;
 }
 
 // any(fifo) - return `True` if any message waiting on the FIFO, else `False`
