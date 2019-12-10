@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 14:54-0500\n"
+"POT-Creation-Date: 2019-12-06 13:25-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -121,6 +121,10 @@ msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' integer 0x%x ay wala sa mask na sakop ng 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format

@@ -48,8 +48,12 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SLIDE_SWITCH), MP_ROM_PTR(&pin_P1_06) },
     { MP_ROM_QSTR(MP_QSTR_D7), MP_ROM_PTR(&pin_P1_06) },
 
-    { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_P1_14) },
+    // If high, turns off NeoPixels, LIS3DH, sound sensor, light sensor, temp sensor.
+    { MP_ROM_QSTR(MP_QSTR_POWER_SWITCH), MP_ROM_PTR(&pin_P0_06) },
+    { MP_ROM_QSTR(MP_QSTR_D35), MP_ROM_PTR(&pin_P0_06) },
+
     { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P1_14) },
+    { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_P1_14) },
 
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_P0_13) },
     { MP_ROM_QSTR(MP_QSTR_D8), MP_ROM_PTR(&pin_P0_13) },

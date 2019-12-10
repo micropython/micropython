@@ -187,7 +187,11 @@ size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_
     read_info.done = false;
     ble_drv_add_event_handler(_on_gattc_read_rsp_evt, &read_info);
 
-    check_nrf_error(sd_ble_gattc_read(conn_handle, handle, 0));
+    uint32_t nrf_error = NRF_ERROR_BUSY;
+    while (nrf_error == NRF_ERROR_BUSY) {
+        nrf_error = sd_ble_gattc_read(conn_handle, handle, 0);
+    }
+    check_nrf_error(nrf_error);
 
     while (!read_info.done) {
         RUN_BACKGROUND_TASKS;

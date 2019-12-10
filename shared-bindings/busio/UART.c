@@ -398,6 +398,7 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table);
 
 STATIC const mp_stream_p_t uart_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = busio_uart_read,
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,

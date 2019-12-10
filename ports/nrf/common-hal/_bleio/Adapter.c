@@ -180,8 +180,17 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
             connection->pair_status = PAIR_NOT_PAIRED;
+
             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
             self->connection_objs = NULL;
+
+            // Save the current connection parameters.
+            memcpy(&connection->conn_params, &connected->conn_params, sizeof(ble_gap_conn_params_t));
+
+            #if CIRCUITPY_VERBOSE_BLE
+            ble_gap_conn_params_t *cp = &connected->conn_params;
+            mp_printf(&mp_plat_print, "conn params: min_ci %d max_ci %d s_l %d sup_timeout %d\n", cp->min_conn_interval, cp->max_conn_interval, cp->slave_latency, cp->conn_sup_timeout);
+            #endif
 
             // See if connection interval set by Central is out of range.
             // If so, negotiate our preferred range.
@@ -499,8 +508,9 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 // The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
 uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
-STATIC void check_data_fit(size_t data_len) {
-    if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX) {
+STATIC void check_data_fit(size_t data_len, bool connectable) {
+    if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
+        (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
         mp_raise_ValueError(translate("Data too large for advertisement packet"));
     }
 }
@@ -516,11 +526,31 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         common_hal_bleio_adapter_stop_advertising(self);
     }
 
+
+    bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
+                    scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
+
+    uint8_t adv_type;
+    if (extended) {
+        if (connectable) {
+            adv_type = BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED;
+        } else if (scan_response_data_len > 0) {
+            adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
+        } else {
+            adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
+        }
+    } else if (connectable) {
+        adv_type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED;
+    } else if (scan_response_data_len > 0) {
+        adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
+    } else {
+        adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
+    }
+
     uint32_t err_code;
     ble_gap_adv_params_t adv_params = {
         .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
-        .properties.type = connectable ? BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED
-        : BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED,
+        .properties.type = adv_type,
         .duration = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED,
         .filter_policy = BLE_GAP_ADV_FP_ANY,
         .primary_phy = BLE_GAP_PHY_1MBPS,
@@ -553,15 +583,15 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     }
     // interval value has already been validated.
 
-    check_data_fit(advertising_data_bufinfo->len);
-    check_data_fit(scan_response_data_bufinfo->len);
+    check_data_fit(advertising_data_bufinfo->len, connectable);
+    check_data_fit(scan_response_data_bufinfo->len, connectable);
     // The advertising data buffers must not move, because the SoftDevice depends on them.
     // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
-        self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_MAX * sizeof(uint8_t), false, true);
+        self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
     }
     if (self->scan_response_data == NULL) {
-        self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_MAX * sizeof(uint8_t), false, true);
+        self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
     }
 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);

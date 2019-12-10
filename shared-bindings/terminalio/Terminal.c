@@ -112,6 +112,7 @@ STATIC const mp_rom_map_elem_t terminalio_terminal_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(terminalio_terminal_locals_dict, terminalio_terminal_locals_dict_table);
 
 STATIC const mp_stream_p_t terminalio_terminal_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = NULL,
     .write = terminalio_terminal_write,
     .ioctl = terminalio_terminal_ioctl,

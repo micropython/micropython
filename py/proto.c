@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,27 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "py/obj.h"
+#include "py/proto.h"
+#include "py/runtime.h"
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#ifndef MICROPY_UNSAFE_PROTO
+const void *mp_proto_get(uint16_t name, mp_const_obj_t obj) {
+    mp_obj_type_t *type = mp_obj_get_type(obj);
+    if (!type->protocol) return NULL;
+    uint16_t proto_name = *(const uint16_t*) type->protocol;
+    if (proto_name == name) {
+        return type->protocol;
+    }
+    return NULL;
+}
+#endif
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
-
-#define BOARD_OSC_DIV 8
-
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
-
-#define AUTORESET_DELAY_MS 500
+const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj) {
+    const void *proto = mp_proto_get(name, obj);
+    if (proto) {
+        return proto;
+    }
+    mp_raise_TypeError_varg(translate("'%s' object does not support '%q'"),
+        mp_obj_get_type_str(obj), name);
+}
