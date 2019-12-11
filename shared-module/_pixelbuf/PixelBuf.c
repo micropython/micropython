@@ -96,9 +96,6 @@ void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_
 
 mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_details_t *byteorder, uint8_t step, mp_int_t slice_step, bool dotstar) {
     mp_obj_t elems[len];
-    if (slice_step > 1) {
-        len = len / slice_step;
-    }
     for (uint i = 0; i < len; i++) {
         elems[i] = pixelbuf_get_pixel(buf + ((i * slice_step) * step), byteorder, dotstar);
     }

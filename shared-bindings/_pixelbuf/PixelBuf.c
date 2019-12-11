@@ -391,6 +391,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
         if (value == MP_OBJ_SENTINEL) { // Get
             size_t len = slice.stop - slice.start;
+            if (slice.step > 1) {
+                len = (len / slice.step) + (len % slice.step ? 1 : 0);
+            }
             uint8_t *readbuf = self->two_buffers ? self->rawbuf : self->buf;
             return pixelbuf_get_pixel_array(readbuf + slice.start, len, &self->byteorder, self->pixel_step, slice.step, self->byteorder.is_dotstar);
         } else { // Set
@@ -399,10 +402,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             if (!(MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple)))
                 mp_raise_ValueError(translate("tuple/list required on RHS"));
 
-            size_t dst_len = (slice.stop - slice.start) / slice.step;
+            size_t dst_len = (slice.stop - slice.start);
             if (slice.step > 1) {
-                if ((slice.stop - slice.start) % slice.step)
-                    dst_len ++;
+                dst_len = (dst_len / slice.step) + (dst_len % slice.step ? 1 : 0);
             }
             mp_obj_t *src_objs;
             size_t num_items;
