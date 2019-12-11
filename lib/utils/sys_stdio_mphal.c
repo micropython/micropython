@@ -123,6 +123,7 @@ STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 
 STATIC const mp_stream_p_t stdio_obj_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_read,
     .write = stdio_write,
     .ioctl = stdio_ioctl,
@@ -158,6 +159,7 @@ STATIC mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t
 }
 
 STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
     .is_text = false,

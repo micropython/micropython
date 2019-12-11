@@ -28,10 +28,11 @@
 // sure that the same feature set and settings are used, such as in atmel-samd
 // and nrf.
 
-#include <stdint.h>
-
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H
+
+#include <stdint.h>
+#include <stdatomic.h>
 
 // This is CircuitPython.
 #define CIRCUITPY 1
@@ -249,6 +250,13 @@ extern const struct _mp_obj_module_t audioio_module;
 extern const struct _mp_obj_module_t audiomixer_module;
 #else
 #define AUDIOMIXER_MODULE
+#endif
+
+#if CIRCUITPY_AUDIOMP3
+#define AUDIOMP3_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomp3), (mp_obj_t)&audiomp3_module },
+extern const struct _mp_obj_module_t audiomp3_module;
+#else
+#define AUDIOMP3_MODULE
 #endif
 
 #if CIRCUITPY_AUDIOPWMIO
@@ -581,6 +589,7 @@ extern const struct _mp_obj_module_t ustack_module;
     AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
     AUDIOMIXER_MODULE \
+    AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
@@ -652,17 +661,19 @@ extern const struct _mp_obj_module_t ustack_module;
     FLASH_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
-void run_background_tasks(void);
-#define RUN_BACKGROUND_TASKS (run_background_tasks())
+void supervisor_run_background_tasks_if_tick(void);
+#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
 
 // TODO: Used in wiznet5k driver, but may not be needed in the long run.
 #define MICROPY_THREAD_YIELD()
 
-#define MICROPY_VM_HOOK_LOOP run_background_tasks();
-#define MICROPY_VM_HOOK_RETURN run_background_tasks();
+#define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
+#define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+
+#define CIRCUITPY_VERBOSE_BLE 0
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

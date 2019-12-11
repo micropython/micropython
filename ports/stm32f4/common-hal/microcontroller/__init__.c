@@ -48,9 +48,9 @@ STATIC uint32_t get_us(void) {
     uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
     uint32_t micros, sys_cycles;
     do {
-        micros = ticks_ms;
+        micros = supervisor_ticks_ms32();
         sys_cycles = SysTick->VAL; //counts backwards
-    } while (micros != ticks_ms); //try again if ticks_ms rolled over
+    } while (micros != supervisor_ticks_ms32()); //try again if ticks_ms rolled over
     return (micros * 1000) + (ticks_per_us * 1000 - sys_cycles) / ticks_per_us;
 }
 
@@ -169,7 +169,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PE15), MP_ROM_PTR(&pin_PE15) },
 #endif
   { MP_ROM_QSTR(MP_QSTR_PB10), MP_ROM_PTR(&pin_PB10) },
-#if MCU_PACKAGE != 100
+#if MCU_PACKAGE == 144
   { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
 #endif  
   { MP_ROM_QSTR(MP_QSTR_PB12), MP_ROM_PTR(&pin_PB12) },

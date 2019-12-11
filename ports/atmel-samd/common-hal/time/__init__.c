@@ -28,10 +28,10 @@
 
 #include "shared-bindings/time/__init__.h"
 
-#include "tick.h"
+#include "supervisor/shared/tick.h"
 
 inline uint64_t common_hal_time_monotonic() {
-    return ticks_ms;
+    return supervisor_ticks_ms64();
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {

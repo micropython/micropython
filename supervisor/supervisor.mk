@@ -10,6 +10,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
+	supervisor/shared/tick.c \
 	supervisor/shared/translate.c
 
 ifndef $(NO_USB)

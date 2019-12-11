@@ -36,6 +36,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 STATIC bool reserved_i2c[3];
+STATIC bool never_reset[3];
 
 void i2c_reset(void) {
     //Note: I2Cs are also forcibly reset in construct, due to silicon error
@@ -48,10 +49,23 @@ void i2c_reset(void) {
         __HAL_RCC_I2C2_CLK_DISABLE(); 
     #endif
     #ifdef I2C3
-        reserved_i2c[3] = false;
+        reserved_i2c[2] = false;
         __HAL_RCC_I2C3_CLK_DISABLE(); 
     #endif
 }
+
+void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
+    for (size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
+        if (self->handle.Instance == mcu_i2c_banks[i]) {
+            never_reset[i] = true;
+
+            never_reset_pin_number(self->scl->pin->port, self->scl->pin->number);
+            never_reset_pin_number(self->sda->pin->port, self->scl->pin->number);
+            break;
+        }
+    }
+}
+
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
@@ -166,19 +180,22 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     }
     #ifdef I2C1
     if(self->handle.Instance==I2C1) {
-        reserved_i2c[0] = 0;
+        never_reset[0] = false;
+        reserved_i2c[0] = false;
         __HAL_RCC_I2C1_CLK_DISABLE(); 
     }
     #endif
     #ifdef I2C2
     if(self->handle.Instance==I2C2) {
-        reserved_i2c[1] = 0;
+        never_reset[1] = false;
+        reserved_i2c[1] = false;
         __HAL_RCC_I2C2_CLK_DISABLE(); 
     }
     #endif
     #ifdef I2C3
     if(self->handle.Instance==I2C3) {
-        reserved_i2c[3] = 0;
+        never_reset[2] = false;
+        reserved_i2c[2] = false;
         __HAL_RCC_I2C3_CLK_DISABLE(); 
     }
     #endif

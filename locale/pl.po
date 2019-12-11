@@ -120,6 +120,10 @@ msgstr "'%s' liczba %d poza zakresem %d..%d"
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' liczba 0x%x nie pasuje do maski 0x%x"
 
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
+
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
@@ -480,11 +484,21 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate decoder"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate first buffer"
 msgstr "Nie udała się alokacja pierwszego bufora"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate input buffer"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate second buffer"
 msgstr "Nie udała się alokacja drugiego bufora"
 
@@ -594,6 +608,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
+msgstr ""
+
+#: shared-module/audiomp3/MP3File.c
+msgid "Failed to parse MP3 file"
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
@@ -1768,7 +1786,7 @@ msgstr "nadmiarowe argumenty nazwane"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3File.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"

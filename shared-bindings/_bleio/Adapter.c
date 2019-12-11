@@ -144,6 +144,9 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|     Starts advertising until `stop_advertising` is called or if connectable, another device
 //|     connects to us.
 //|
+//|     .. warning: If data is longer than 31 bytes, then this will automatically advertise as an
+//|        extended advertisement that older BLE 4.x clients won't be able to scan for.
+//|
 //|     :param buf data: advertising data packet bytes
 //|     :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|     :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
