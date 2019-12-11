@@ -5,21 +5,13 @@ This is a port of CircuitPython to the Nordic Semiconductor nRF52 series of chip
 > **NOTE**: There are board-specific READMEs that may be more up to date than the
   generic board-neutral documentation below.
 
-## Compile and Flash
-
-Prerequisite steps for building the nrf port:
-
-    git clone <URL>.git circuitpython
-    cd circuitpython
-    git submodule update --init --recursive
-    make -C mpy-cross
+## Flash
 
 Some boards have UF2 bootloaders and can simply be flashed in the normal way, by copying
 firmware.uf2 to the BOOT drive.
 
-To build and flash issue the following command inside the ports/nrf/ folder:
+For some boards, you can use the `flash` target:
 
-	make BOARD=pca10056
 	make BOARD=pca10056 flash
 
 ## Segger Targets

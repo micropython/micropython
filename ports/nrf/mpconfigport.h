@@ -81,11 +81,9 @@
 // firmware
 // internal CIRCUITPY flash filesystem (optional)
 // BLE config (bonding info, etc.) (optional)
-// microntroller.nvm (optional)
+// microcontroller.nvm (optional)
 // bootloader (note the MBR at 0x0 redirects to the bootloader here, in high flash)
 // bootloader settings
-
-// Bootloader values from https://github.com/adafruit/Adafruit_nRF52_Bootloader/blob/master/src/linker/s140_v6.ld
 
 // Define these regions starting up from the bottom of flash:
 
@@ -101,6 +99,7 @@
 
 // Define these regions starting down from the bootloader:
 
+// Bootloader values from https://github.com/adafruit/Adafruit_nRF52_Bootloader/blob/master/src/linker/s140_v6.ld
 #define BOOTLOADER_START_ADDR          (0x000F4000)
 #define BOOTLOADER_SIZE                (0xA000)     // 40kiB
 #define BOOTLOADER_SETTINGS_START_ADDR (0x000FF000)

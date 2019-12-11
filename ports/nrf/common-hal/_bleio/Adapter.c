@@ -59,8 +59,8 @@ const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
-    .len = CIRCUITPY_BLE_CONFIG_SIZE,
     .start_address = (uint8_t*) CIRCUITPY_BLE_CONFIG_START_ADDR,
+    .len = CIRCUITPY_BLE_CONFIG_SIZE,
 };
 
 STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
