@@ -90,7 +90,7 @@ INC += -I../../supervisor/shared/usb
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -Og
 else
-  CFLAGS += -Os -DNDEBUG -ggdb3
+  CFLAGS += -Os -DNDEBUG
   CFLAGS += -flto -flto-partition=none
 endif
 
