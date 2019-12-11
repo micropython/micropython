@@ -256,6 +256,13 @@ extern const struct _mp_obj_module_t audiomixer_module;
 #define AUDIOMIXER_MODULE
 #endif
 
+#if CIRCUITPY_AUDIOMP3
+#define AUDIOMP3_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomp3), (mp_obj_t)&audiomp3_module },
+extern const struct _mp_obj_module_t audiomp3_module;
+#else
+#define AUDIOMP3_MODULE
+#endif
+
 #if CIRCUITPY_AUDIOPWMIO
 #define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
 extern const struct _mp_obj_module_t audiopwmio_module;
@@ -586,6 +593,7 @@ extern const struct _mp_obj_module_t ustack_module;
     AUDIOCORE_MODULE \
     AUDIOIO_MODULE \
     AUDIOMIXER_MODULE \
+    AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
@@ -676,5 +684,7 @@ void supervisor_run_background_tasks_if_tick(void);
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+
+#define CIRCUITPY_VERBOSE_BLE 0
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

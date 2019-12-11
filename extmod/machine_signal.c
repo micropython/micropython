@@ -47,12 +47,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, const 
     bool invert = false;
 
     #if defined(MICROPY_PY_MACHINE_PIN_MAKE_NEW)
-    mp_pin_p_t *pin_p = NULL;
-
-    if (MP_OBJ_IS_OBJ(pin)) {
-        mp_obj_base_t *pin_base = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-        pin_p = (mp_pin_p_t*)pin_base->type->protocol;
-    }
+    mp_pin_p_t *pin_p = (mp_pin_t*)mp_proto_get(QSTR_pin_protocol, pin);
 
     if (pin_p == NULL) {
         // If first argument isn't a Pin-like object, we filter out "invert"
@@ -170,6 +165,7 @@ STATIC const mp_rom_map_elem_t signal_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(signal_locals_dict, signal_locals_dict_table);
 
 STATIC const mp_pin_p_t signal_pin_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_pin)
     .ioctl = signal_ioctl,
 };
 

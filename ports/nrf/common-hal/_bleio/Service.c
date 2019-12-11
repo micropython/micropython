@@ -119,6 +119,10 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
 
     bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);
     bleio_attribute_gatts_set_security_mode(&char_attr_md.write_perm, characteristic->write_perm);
+    #if CIRCUITPY_VERBOSE_BLE
+    // Turn on read authorization so that we receive an event to print on every read.
+    char_attr_md.rd_auth = true;
+    #endif
 
     ble_gatts_attr_t char_attr = {
         .p_uuid = &char_uuid,
@@ -137,6 +141,9 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     characteristic->cccd_handle = char_handles.cccd_handle;
     characteristic->sccd_handle = char_handles.sccd_handle;
     characteristic->handle = char_handles.value_handle;
+    #if CIRCUITPY_VERBOSE_BLE
+    mp_printf(&mp_plat_print, "Char handle %x user %x cccd %x sccd %x\n", characteristic->handle, characteristic->user_desc_handle, characteristic->cccd_handle, characteristic->sccd_handle);
+    #endif
 
     mp_obj_list_append(self->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
 }

@@ -214,6 +214,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objtype.o \
 	objzip.o \
 	opmethods.o \
+	proto.o \
 	reload.o \
 	sequence.o \
 	stream.o \

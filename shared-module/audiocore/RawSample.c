@@ -60,6 +60,12 @@ void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t* self,
                                                   uint32_t sample_rate) {
     self->sample_rate = sample_rate;
 }
+uint8_t common_hal_audioio_rawsample_get_bits_per_sample(audioio_rawsample_obj_t* self) {
+    return self->bits_per_sample;
+}
+uint8_t common_hal_audioio_rawsample_get_channel_count(audioio_rawsample_obj_t* self) {
+    return self->channel_count;
+}
 
 void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t* self,
                                     bool single_channel,

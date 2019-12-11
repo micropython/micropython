@@ -74,6 +74,7 @@ mp_uint_t pinbase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *err
 }
 
 STATIC const mp_pin_p_t pinbase_pin_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_pin)
     .ioctl = pinbase_ioctl,
 };
 

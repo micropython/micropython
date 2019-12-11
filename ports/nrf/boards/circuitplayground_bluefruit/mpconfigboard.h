@@ -51,6 +51,9 @@
 #define SPI_FLASH_CS_PIN &pin_P0_15
 #endif
 
+// Disables onboard peripherals and neopixels to save power.
+#define POWER_SWITCH_PIN            (&pin_P0_06)
+
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_04)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
 
