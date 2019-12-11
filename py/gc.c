@@ -667,6 +667,9 @@ void gc_free(void *ptr) {
     if (ptr == NULL) {
         GC_EXIT();
     } else {
+        if (MP_STATE_MEM(gc_pool_start) == 0) {
+            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));
         size_t block = BLOCK_FROM_PTR(ptr);
