@@ -27,9 +27,8 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/timeutils/timeutils.h"
-
-extern void common_hal_rtc_get_time(timeutils_struct_time_t *tm);
-extern void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm);
+#include "shared-bindings/rtc/RTC.h"
+#include "shared-bindings/time/__init__.h"
 
 DWORD get_fattime(void) {
 #if CIRCUITPY_RTC
