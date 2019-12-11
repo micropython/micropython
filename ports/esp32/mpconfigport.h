@@ -166,7 +166,7 @@ void *esp_native_code_commit(void*, size_t);
 
 #define MICROPY_PY_LVGL                     (1)
 #define MICROPY_PY_ESPIDF                   (1)
-#define MICROPY_PY_LODEPNG                  (0)
+#define MICROPY_PY_LODEPNG                  (1)
 #define MICROPY_PY_RTCH                     (1)
 
 // fatfs configuration

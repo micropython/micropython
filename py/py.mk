@@ -44,11 +44,14 @@ SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_GENERIC_DRV_DIR)
 
 #lodepng
 LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
+MP_LODEPNG_C = $(TOP)/lib/lv_bindings/driver/png/mp_lodepng.c
 ALL_LODEPNG_SRC = $(shell find $(LODEPNG_DIR) -type f)
 LODEPNG_MODULE = $(BUILD)/lodepng/mp_lodepng.c
 LODEPNG_C = $(BUILD)/lodepng/lodepng.c
 LODEPNG_PP = $(BUILD)/lodepng/lodepng.pp.c
 INC += -I$(LODEPNG_DIR)
+LODEPNG_CFLAGS += -DLODEPNG_NO_COMPILE_ENCODER -DLODEPNG_NO_COMPILE_DISK -DLODEPNG_NO_COMPILE_ALLOCATORS
+CFLAGS_MOD += $(LODEPNG_CFLAGS)
 
 $(LODEPNG_MODULE): $(ALL_LODEPNG_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
 	$(ECHO) "LODEPNG-GEN $@"
@@ -60,7 +63,7 @@ $(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp $(LODEPNG_DIR)/*
 	$(Q)mkdir -p $(dir $@)
 	cp $< $@
 
-SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(LODEPNG_MODULE))
+SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(MP_LODEPNG_C) $(LODEPNG_MODULE))
 
 
 # External modules written in C.
