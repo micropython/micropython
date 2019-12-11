@@ -169,8 +169,8 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PE15), MP_ROM_PTR(&pin_PE15) },
 #endif
   { MP_ROM_QSTR(MP_QSTR_PB10), MP_ROM_PTR(&pin_PB10) },
-#if MCU_PACKAGE != 100
-  { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
+#if (0)
+//  { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
 #endif  
   { MP_ROM_QSTR(MP_QSTR_PB12), MP_ROM_PTR(&pin_PB12) },
   { MP_ROM_QSTR(MP_QSTR_PB13), MP_ROM_PTR(&pin_PB13) },
