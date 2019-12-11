@@ -247,6 +247,7 @@ def main():
     cmd_parser.add_argument(
         "-f", "--mpy-cross-flags", default="", help="flags to pass to mpy-cross"
     )
+    cmd_parser.add_argument('--mpy-tool-flags', default='', help='flags to pass to mpy-tool')
     cmd_parser.add_argument("-v", "--var", action="append", help="variables to substitute")
     cmd_parser.add_argument("files", nargs="+", help="input manifest list")
     args = cmd_parser.parse_args()
@@ -341,7 +342,7 @@ def main():
                 "-q",
                 args.build_dir + "/genhdr/qstrdefs.preprocessed.h",
             ]
-            + mpy_files
+            + args.mpy_tool_flags.split() + mpy_files
         )
         if res != 0:
             print("error freezing mpy {}:".format(mpy_files))

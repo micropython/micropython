@@ -266,7 +266,9 @@ ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
 # freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
+ifneq ($(MICROPY_FORCE_32BIT),1)
+MPY_TOOL_FLAGS += "-mmpz-dig-size=32"
+endif
 MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
