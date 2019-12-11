@@ -10,8 +10,6 @@
 #define MICROPY_PORT_C        (0)
 #define MICROPY_PORT_D 		  (0)
 
-#define CALIBRATE_CRYSTALLESS 1
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define DEFAULT_I2C_BUS_SCL  (&pin_PA17)

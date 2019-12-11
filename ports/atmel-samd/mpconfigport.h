@@ -30,15 +30,11 @@
 // Definitions for which SAMD chip we're using.
 #include "include/sam.h"
 
+// Definitions that control circuitpy_mpconfig.h:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef SAMD21
 
-#if INTERNAL_FLASH_FILESYSTEM
-#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
-#else
-#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
-#endif
+#ifdef SAMD21
 
 // HMCRAMC0_SIZE is defined in the ASF4 include files for each SAMD21 chip.
 #define RAM_SIZE                                    HMCRAMC0_SIZE
@@ -66,28 +62,11 @@
     X(EISDIR) \
     X(EINVAL) \
 
-#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (256)
-#endif
-
 #endif // SAMD21
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef SAMD51
-
-#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
-#endif
-
-// If CIRCUITPY is internal, use half of flash for it.
-#if INTERNAL_FLASH_FILESYSTEM
-  #ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
-    #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (FLASH_SIZE/2)
-  #endif
-#else
-  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
-#endif
 
 // HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
 #define RAM_SIZE                                    HSRAM_SIZE
@@ -112,6 +91,45 @@
 
 // This also includes mpconfigboard.h.
 #include "py/circuitpy_mpconfig.h"
+
+// Definitions that can be overridden by mpconfigboard.h:
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef SAMD21
+
+#if INTERNAL_FLASH_FILESYSTEM
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (64*1024)
+#else
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#endif
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (256)
+#endif
+
+#endif // SAMD21
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef SAMD51
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
+#endif
+
+// If CIRCUITPY is internal, use half of flash for it.
+#if INTERNAL_FLASH_FILESYSTEM
+  #ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
+    #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (FLASH_SIZE/2)
+  #endif
+#else
+  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#endif
+
+#endif // SAMD51
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef CALIBRATE_CRYSTALLESS
 #define CALIBRATE_CRYSTALLESS (0)

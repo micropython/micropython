@@ -146,10 +146,6 @@
 #error No space left in flash for firmware after specifying other regions!
 #endif
 
-#if CIRCUITPY_FIRMWARE_SIZE < 0
-#error No space left in flash for firmware after specifying other regions!
-#endif
-
 
 
 

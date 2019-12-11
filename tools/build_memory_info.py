@@ -61,7 +61,7 @@ for region in regions:
         space = space.split("/*")[0]
     space = K_PATTERN.sub(K_REPLACE, space)
     space = M_PATTERN.sub(M_REPLACE, space)
-    regions[region] = eval(space)
+    regions[region] = int(eval(space))
 
 # TODO Remove check for both FLASH_FIRMWARE and FLASH after all ports are converted to use FLASH_FIRMWARE.
 try:
