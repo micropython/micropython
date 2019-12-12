@@ -227,6 +227,9 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
                                                         uint8_t channel,
                                                         uint8_t** bufptr,
                                                         uint32_t* buffer_length) {
+    if (!self->inbuf) {
+        return GET_BUFFER_ERROR;
+    }
     if (!single_channel) {
         channel = 0;
     }
