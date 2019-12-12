@@ -32,6 +32,8 @@
 #include "lib/mp-readline/readline.h"
 #include "stm32f4xx_hal.h"
 
+#include "py/mpconfig.h"
+
 #include "common-hal/microcontroller/Pin.h"
 
 void init_usb_hardware(void) {
@@ -79,7 +81,21 @@ void init_usb_hardware(void) {
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
 #endif
+    
+#ifdef BOARD_NO_VBUS
+    disable_usb_vbus();
+#endif
 
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
+}
+
+STATIC void disable_usb_vbus(void) {
+#ifdef USB_OTG_GCCFG_VBDEN
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+#else
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
+#endif
 }

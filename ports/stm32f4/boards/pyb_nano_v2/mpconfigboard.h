@@ -26,27 +26,22 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
-#define MICROPY_HW_MCU_NAME         "STM32F405RG"
+#define MICROPY_HW_BOARD_NAME       "PYB LR Nano V2"
+#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                  (0x100000)
+#define FLASH_SIZE                  (0x80000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define AUTORESET_DELAY_MS 500
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
+#define BOARD_OSC_DIV 8
 
 // On-board flash
-#define SPI_FLASH_MOSI_PIN          &pin_PB05
-#define SPI_FLASH_MISO_PIN          &pin_PB04
-#define SPI_FLASH_SCK_PIN           &pin_PB03
-#define SPI_FLASH_CS_PIN            &pin_PA15
+#define SPI_FLASH_MOSI_PIN          (&pin_PB15)
+#define SPI_FLASH_MISO_PIN          (&pin_PB14)
+#define SPI_FLASH_SCK_PIN           (&pin_PB13)
+#define SPI_FLASH_CS_PIN            (&pin_PB12)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
-#define DEFAULT_SPI_BUS_SCK (&pin_PB13)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PB15)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB14)
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
 
-#define DEFAULT_UART_BUS_RX (&pin_PB11)
-#define DEFAULT_UART_BUS_TX (&pin_PB10)
+#define AUTORESET_DELAY_MS 500

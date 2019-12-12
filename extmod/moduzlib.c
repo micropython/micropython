@@ -134,6 +134,7 @@ STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
 
 STATIC const mp_stream_p_t decompio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = decompio_read,
 };
 
