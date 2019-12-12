@@ -151,11 +151,11 @@
 
 // Flash layout, starting at 0x00000000
 //
-// bootloader (8 or 16kB)
-// firmware
-// internal CIRCUITPY flash filesystem (optional)
-// internal config, used to store crystalless clock calibration info (optional)
-// microntroller.nvm (optional)
+// - bootloader (8 or 16kB)
+// - firmware
+// - internal CIRCUITPY flash filesystem (optional)
+// - internal config, used to store crystalless clock calibration info (optional)
+// - microntroller.nvm (optional)
 
 // Define these regions starting up from the bottom of flash:
 

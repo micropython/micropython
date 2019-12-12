@@ -76,14 +76,16 @@
 
 // Flash layout, starting at 0x00000000
 //
-// SoftDevice
-// ISR
-// firmware
-// internal CIRCUITPY flash filesystem (optional)
-// BLE config (bonding info, etc.) (optional)
-// microcontroller.nvm (optional)
-// bootloader (note the MBR at 0x0 redirects to the bootloader here, in high flash)
-// bootloader settings
+// - SoftDevice
+// - ISR
+// - firmware
+// - BLE config (bonding info, etc.) (optional)
+// - microcontroller.nvm (optional)
+// - internal CIRCUITPY flash filesystem (optional)
+//   The flash filesystem is adjacent to the bootloader, so that its location will not change even if
+//   other regions change in size.
+// - bootloader (note the MBR at 0x0 redirects to the bootloader here, in high flash)
+// - bootloader settings
 
 // Define these regions starting up from the bottom of flash:
 
@@ -105,13 +107,17 @@
 #define BOOTLOADER_SETTINGS_START_ADDR (0x000FF000)
 #define BOOTLOADER_SETTINGS_SIZE       (0x1000)     // 4kiB
 
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR (BOOTLOADER_START_ADDR - CIRCUITPY_INTERNAL_NVM_SIZE)
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR (BOOTLOADER_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
+
+#if CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE > 0 && CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR != (BOOTLOADER_START_ADDR - 256*1024)
+#warning Internal flash filesystem location has moved!
+#endif
+
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR (CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 // 32kiB for bonding, etc.
 #define CIRCUITPY_BLE_CONFIG_SIZE       (32*1024)
 #define CIRCUITPY_BLE_CONFIG_START_ADDR (CIRCUITPY_INTERNAL_NVM_START_ADDR - CIRCUITPY_BLE_CONFIG_SIZE)
-
-#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR (CIRCUITPY_BLE_CONFIG_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
 
 // The firmware space is the space left over between the fixed lower and upper regions.
 #define CIRCUITPY_FIRMWARE_SIZE (CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR - CIRCUITPY_FIRMWARE_START_ADDR)
