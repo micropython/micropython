@@ -36,15 +36,15 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-STATIC void disable_usb_vbus(void) {
-#ifdef USB_OTG_GCCFG_VBDEN
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
-#else
-    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
-#endif
-}
+// STATIC void disable_usb_vbus(void) {
+// #ifdef USB_OTG_GCCFG_VBDEN
+//     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+// #else
+//     USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+//     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+//     USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
+// #endif
+// }
 
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management. 
@@ -92,8 +92,16 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 8);
 #endif
     
-#ifdef BOARD_NO_VBUS
-    disable_usb_vbus();
+// #ifdef BOARD_NO_VBUS
+//     disable_usb_vbus();
+// #endif
+
+#ifdef USB_OTG_GCCFG_VBDEN
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+#else
+    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
 #endif
 
     /* Peripheral clock enable */
