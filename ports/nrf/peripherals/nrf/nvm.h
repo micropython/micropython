@@ -27,4 +27,4 @@
 
 #define FLASH_PAGE_SIZE (4096)
 
-void nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data);
+bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data);

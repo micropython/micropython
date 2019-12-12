@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "common-hal/nvm/ByteArray.h"
 
 #include <stdio.h>
@@ -39,13 +40,17 @@ static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
     // Write a whole page to flash, buffering it first and then erasing and rewriting
     // it since we can only clear a whole page at a time.
 
+    bool status;
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
-        nrf_nvm_safe_flash_page_write(page_addr, bytes);
+        status = nrf_nvm_safe_flash_page_write(page_addr, bytes);
     } else {
         uint8_t buffer[FLASH_PAGE_SIZE];
         memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
         memcpy(buffer + offset, bytes, len);
-        nrf_nvm_safe_flash_page_write(page_addr, buffer);
+        status = nrf_nvm_safe_flash_page_write(page_addr, buffer);
+    }
+    if (!status) {
+        mp_raise_OSError_msg(translate("Flash write failed"));
     }
 }
 

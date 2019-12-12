@@ -39,7 +39,7 @@ typedef struct {
     uint8_t* inbuf;
     uint32_t inbuf_length;
     uint32_t inbuf_offset;
-    uint8_t* buffers[2];
+    int16_t* buffers[2];
     uint32_t len;
     uint32_t frame_buffer_size;
 
@@ -50,8 +50,8 @@ typedef struct {
     uint8_t channel_count;
     bool eof;
 
-    uint16_t read_count;
-    uint16_t channel_read_count[2];
+    int8_t other_channel;
+    int8_t other_buffer_index;
 } audiomp3_mp3file_obj_t;
 
 // These are not available from Python because it may be called in an interrupt.

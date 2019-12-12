@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/shared/safe_mode.h"
 
 #include "peripherals/nrf/nvm.h"
 
@@ -71,7 +72,9 @@ void supervisor_flash_flush(void) {
 
     // Skip if data is the same
     if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
-        nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
+        if (!nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache)) {
+            reset_into_safe_mode(FLASH_WRITE_FAIL);
+        }
     }
 }
 
