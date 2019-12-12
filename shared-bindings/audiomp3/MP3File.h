@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +25,24 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
-#include "common-hal/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
 
-void stm32f4_peripherals_gpio_init(void) {
-    //* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
+#include "py/obj.h"
+#include "extmod/vfs_fat.h"
 
-    //Never reset pins
-    never_reset_pin_number(2,14); //PC14 OSC32_IN
-    never_reset_pin_number(2,15); //PC15 OSC32_OUT
-    never_reset_pin_number(0,13); //PA13 SWDIO
-    never_reset_pin_number(0,14); //PA14 SWCLK
+#include "shared-module/audiomp3/MP3File.h"
 
-    // Port H is not included in GPIO port array
-    // never_reset_pin_number(5,0); //PH0 JTDO   
-    // never_reset_pin_number(5,1); //PH1 JTRST
-}
+extern const mp_obj_type_t audiomp3_mp3file_type;
 
-//LEDs are inverted on F411 DISCO
-void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
-}
+void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
+    pyb_file_obj_t* file, uint8_t *buffer, size_t buffer_size);
 
+void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t* self);
+bool common_hal_audiomp3_mp3file_deinited(audiomp3_mp3file_obj_t* self);
+uint32_t common_hal_audiomp3_mp3file_get_sample_rate(audiomp3_mp3file_obj_t* self);
+void common_hal_audiomp3_mp3file_set_sample_rate(audiomp3_mp3file_obj_t* self, uint32_t sample_rate);
+uint8_t common_hal_audiomp3_mp3file_get_bits_per_sample(audiomp3_mp3file_obj_t* self);
+uint8_t common_hal_audiomp3_mp3file_get_channel_count(audiomp3_mp3file_obj_t* self);
 
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
