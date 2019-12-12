@@ -309,7 +309,7 @@ STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_
 // init(mode, extframe=False, baudrate=500, *)
 STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_extframe, ARG_baudrate, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2,
-           ARG_auto_restart, ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
+           ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,          MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_extframe,      MP_ARG_BOOL,                     {.u_bool = false}           },
@@ -318,7 +318,6 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
         { MP_QSTR_sjw,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_SJW} },
         { MP_QSTR_bs1,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_BS1} },
         { MP_QSTR_bs2,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_BS2} },
-        { MP_QSTR_auto_restart,  MP_ARG_KW_ONLY | MP_ARG_BOOL,    {.u_bool = false}           },
         { MP_QSTR_tx_io,         MP_ARG_INT,                      {.u_int = 4}                },
         { MP_QSTR_rx_io,         MP_ARG_INT,                      {.u_int = 2}                },
         { MP_QSTR_tx_queue,      MP_ARG_INT,                      {.u_int  = 0}               },
@@ -327,7 +326,6 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
         { MP_QSTR_filter_code,   MP_ARG_INT,                      {.u_int = 0}                },
         { MP_QSTR_single_filter, MP_ARG_BOOL,                     {.u_bool = true}            },
     };
-    //FIXME: auto_restart
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -399,7 +397,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }else{
-        status = can_start()
+        status = can_start();
         if (status != ESP_OK){
             mp_raise_OSError(-status);
         }else{
