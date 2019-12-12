@@ -40,10 +40,12 @@ STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 STATIC mp_obj_t symbol_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
 STATIC mp_obj_t symbol_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 STATIC mp_obj_t symbol_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+STATIC mp_obj_t symbol_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 const mp_obj_type_t mp_type_symbol = {
     { &mp_type_type },
     .name = MP_QSTR_Symbol,
+    .make_new = symbol_make_new,
     .print = symbol_print,
     .call = symbol_call,
     .unary_op = symbol_unary_op,
@@ -58,6 +60,17 @@ typedef struct {
     unsigned long value;
     bool exported; // was it found via find_symbol (=true) or kallsyms_lookup_name (=false)
 } sym_obj_t;
+
+STATIC mp_obj_t symbol_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+
+    sym_obj_t *o = m_new_obj(sym_obj_t);
+    o->base.type = type;
+    o->name = mp_obj_str_get_qstr(args[0]);
+    o->value = mp_obj_int_get_uint_checked(args[1]);
+    o->exported = false;
+    return MP_OBJ_FROM_PTR(o);
+}
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     sym_obj_t *sym = (sym_obj_t*)MP_OBJ_TO_PTR(self_in);
