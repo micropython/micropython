@@ -26,13 +26,19 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#define MICROPY_HW_BOARD_NAME       "PYB LR Nano V2"
+#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
+#define FLASH_SIZE                  (0x80000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV 8
+
+// On-board flash
+#define SPI_FLASH_MOSI_PIN          (&pin_PB15)
+#define SPI_FLASH_MISO_PIN          (&pin_PB14)
+#define SPI_FLASH_SCK_PIN           (&pin_PB13)
+#define SPI_FLASH_CS_PIN            (&pin_PB12)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 

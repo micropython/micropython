@@ -117,6 +117,9 @@ endif
 ifeq ($(CIRCUITPY_AUDIOMIXER),1)
 SRC_PATTERNS += audiomixer/%
 endif
+ifeq ($(CIRCUITPY_AUDIOMP3),1)
+SRC_PATTERNS += audiomp3/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
@@ -319,6 +322,8 @@ SRC_SHARED_MODULE_ALL = \
 	audiomixer/__init__.c \
 	audiomixer/Mixer.c \
 	audiomixer/MixerVoice.c \
+	audiomp3/__init__.c \
+	audiomp3/MP3File.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
@@ -370,6 +375,26 @@ else
 SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
+endif
+ifeq ($(CIRCUITPY_AUDIOMP3),1)
+SRC_MOD += $(addprefix lib/mp3/src/, \
+	bitstream.c \
+	buffers.c \
+	dct32.c \
+	dequant.c \
+	dqchan.c \
+	huffman.c \
+	hufftabs.c \
+	imdct.c \
+	mp3dec.c \
+	mp3tabs.c \
+	polyphase.c \
+	scalfact.c \
+	stproc.c \
+	subband.c \
+	trigtabs.c \
+)
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

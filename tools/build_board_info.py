@@ -49,6 +49,7 @@ extension_by_board = {
 aliases_by_board = {
     "circuitplayground_express": ["circuitplayground_express_4h", "circuitplayground_express_digikey_pycon2019"],
     "pybadge": ["edgebadge"],
+    "pyportal": ["pyportal_pynt"],
     "gemma_m0": ["gemma_m0_pycon2018"],
     "pewpew10": ["pewpew13"]
 }

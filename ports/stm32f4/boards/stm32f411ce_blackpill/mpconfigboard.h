@@ -26,13 +26,19 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#define MICROPY_HW_BOARD_NAME       "stm32f411ce-blackpill"
+#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
+#define FLASH_SIZE                  (0x80000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-#define BOARD_OSC_DIV 8
+#define BOARD_OSC_DIV 25
+
+// On-board flash
+// #define SPI_FLASH_MOSI_PIN          (&pin_PA07)
+// #define SPI_FLASH_MISO_PIN          (&pin_PA06)
+// #define SPI_FLASH_SCK_PIN           (&pin_PA05)
+// #define SPI_FLASH_CS_PIN            (&pin_PA04)
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 

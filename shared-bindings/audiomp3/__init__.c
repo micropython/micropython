@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,37 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include <stdint.h>
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+#include "py/obj.h"
+#include "py/runtime.h"
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
+#include "shared-bindings/audiomp3/MP3File.h"
 
-#define BOARD_OSC_DIV 8
+//| :mod:`audiomp3` --- Support for MP3-compressed audio files
+//| ==========================================================
+//|
+//| .. module:: audiomp3
+//|   :synopsis: Support for mp3 files
+//|
+//| The `audiomp3` module contains an mp3 decoder
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     MP3File
+//|
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomp3) },
+    { MP_ROM_QSTR(MP_QSTR_MP3File), MP_ROM_PTR(&audiomp3_mp3file_type) },
+};
 
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
+STATIC MP_DEFINE_CONST_DICT(audiomp3_module_globals, audiomp3_module_globals_table);
 
-#define AUTORESET_DELAY_MS 500
+const mp_obj_module_t audiomp3_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&audiomp3_module_globals,
+};
