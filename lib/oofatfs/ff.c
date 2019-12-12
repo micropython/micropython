@@ -3382,7 +3382,11 @@ FRESULT f_read (
             if (!sect) ABORT(fs, FR_INT_ERR);
             sect += csect;
             cc = btr / SS(fs);                  /* When remaining bytes >= sector size, */
-            if (cc) {                           /* Read maximum contiguous sectors directly */
+            if (cc
+#if _FS_DISK_READ_ALIGNED
+                    && (((int)rbuff & 3) == 0)
+#endif
+                    ) {/* Read maximum contiguous sectors directly */
                 if (csect + cc > fs->csize) {   /* Clip at cluster boundary */
                     cc = fs->csize - csect;
                 }

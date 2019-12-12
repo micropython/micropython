@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-06 13:25-0600\n"
+"POT-Creation-Date: 2019-12-10 13:55-0600\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -489,11 +489,21 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate decoder"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate first buffer"
 msgstr "Nie udała się alokacja pierwszego bufora"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate input buffer"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate second buffer"
 msgstr "Nie udała się alokacja drugiego bufora"
 
@@ -603,6 +613,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
+msgstr ""
+
+#: shared-module/audiomp3/MP3File.c
+msgid "Failed to parse MP3 file"
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
@@ -1774,7 +1788,7 @@ msgstr "nadmiarowe argumenty nazwane"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3File.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "file musi być otwarte w trybie bajtowym"
