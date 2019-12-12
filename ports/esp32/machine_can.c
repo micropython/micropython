@@ -20,8 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include <string.h>
 
 #include "py/obj.h"
+#include "py/objarray.h"
+#include "py/binary.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
@@ -37,6 +40,12 @@
 #include <machine_can.h>
 
 #if MICROPY_HW_ENABLE_CAN
+
+//Default baudrate: 500kb
+#define CAN_DEFAULT_PRESCALER       (8)
+#define CAN_DEFAULT_SJW             (3)
+#define CAN_DEFAULT_BS1             (15)
+#define CAN_DEFAULT_BS2             (4)
 
 // Internal Functions
 STATIC can_state_t _machine_hw_can_get_state();
@@ -57,7 +66,7 @@ machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERA
                                    .timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS()),
                                    .initialized = false};
                                    
-STATIC const machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
+STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
 
 //Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
@@ -233,36 +242,41 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     
 }
 
-// CAN(...) No argument to get the object
-// Any argument will be used to init the device through init function
+// CAN(bus, ...) No argument to get the object
+//If no arguments are provided, the initialized object will be returned
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, 
                                 size_t n_kw, const mp_obj_t *args){
-    const machine_can_obj_t *self =  &machine_can_obj;
-
-    if (n_args > 0 || n_kw > 0) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    if (mp_obj_is_int(args[0])!=true){
+        mp_raise_TypeError("bus must be a number");
+    }
+    mp_uint_t can_idx = mp_obj_get_int(args[0]);
+    if (can_idx > 1) { //TODO: check naming convention
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", can_idx));
+    }
+    machine_can_obj_t *self =  &machine_can_obj;
+    if (n_args > 1 || n_kw > 0) {
         if (self->config->initialized) {
             // The caller is requesting a reconfiguration of the hardware
             // this can only be done if the hardware is in init mode
             ESP_LOGW(DEVICE_NAME, "Device is going to be reconfigured");
             machine_hw_can_deinit(&self);
         }
-        //TODO: implement callback
-        /*self->rxcallback0 = mp_const_none;
-        self->rxcallback1 = mp_const_none;
-        self->rx_state0 = RX_STATE_FIFO_EMPTY;
-        self->rx_state1 = RX_STATE_FIFO_EMPTY;*/
+        self->rxcallback = mp_const_none;
+        self->rx_state = RX_STATE_FIFO_EMPTY;
 
         // start the peripheral
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        machine_hw_can_init_helper(self, n_args, args, &kw_args);
+        machine_hw_can_init_helper(self, n_args - 1, args + 1, &kw_args);
     }
     return MP_OBJ_FROM_PTR(self);
 }
 
 // init(tx, rx, baudrate, mode = CAN_MODE_NORMAL, tx_queue = 2, rx_queue = 5)
 STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    const machine_can_obj_t *self =  MP_OBJ_TO_PTR(args[0]);
+    machine_can_obj_t *self =  MP_OBJ_TO_PTR(args[0]);
     if (self->config->initialized){
         ESP_LOGW(DEVICE_NAME, "Device is already initialized");
         return mp_const_none;
@@ -270,20 +284,28 @@ STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_
     return machine_hw_can_init_helper(self, n_args - 1, args + 1, kw_args);
 }
 
-// INTERNAL FUNCTION init(mode, tx, rx, baudrate, tx_queue = 2, rx_queue = 5, filter_mask = 0xFFFFFFFF, filter_code = 0; single_filter = True)
+// init(mode, extframe=False, baudrate=500, *)
 STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_tx, ARG_rx, ARG_baudrate, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
+    enum { ARG_mode, ARG_extframe, ARG_baudrate, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2,
+           ARG_auto_restart, ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,          MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int  = CAN_MODE_NORMAL} },
-        { MP_QSTR_tx,            MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 4}                },
-        { MP_QSTR_rx,            MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 2}                },
-        { MP_QSTR_baudrate,      MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int = 500}              },
+        { MP_QSTR_extframe,      MP_ARG_BOOL,                     {.u_bool = false}           },
+        { MP_QSTR_baudrate,      MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int = 0}                },
+        { MP_QSTR_prescaler,     MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_PRESCALER} },
+        { MP_QSTR_sjw,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_SJW} },
+        { MP_QSTR_bs1,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_BS1} },
+        { MP_QSTR_bs2,           MP_ARG_KW_ONLY | MP_ARG_INT,     {.u_int  = CAN_DEFAULT_BS2} },
+        { MP_QSTR_auto_restart,  MP_ARG_KW_ONLY | MP_ARG_BOOL,    {.u_bool = false}           },
+        { MP_QSTR_tx_io,         MP_ARG_INT,                      {.u_int = 4}                },
+        { MP_QSTR_rx_io,         MP_ARG_INT,                      {.u_int = 2}                },
         { MP_QSTR_tx_queue,      MP_ARG_INT,                      {.u_int  = 0}               },
         { MP_QSTR_rx_queue,      MP_ARG_INT,                      {.u_int  = 5}               },
         { MP_QSTR_filter_mask,   MP_ARG_INT,                      {.u_int = 0xFFFFFFFF}       },
         { MP_QSTR_filter_code,   MP_ARG_INT,                      {.u_int = 0}                },
         { MP_QSTR_single_filter, MP_ARG_BOOL,                     {.u_bool = true}            },
     };
+    //FIXME: auto_restart
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -295,8 +317,8 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     }
     // Configure device
     can_general_config_t g_config = {.mode = args[ARG_mode].u_int,
-                                    .tx_io = args[ARG_tx].u_int, 
-                                    .rx_io = args[ARG_rx].u_int,
+                                    .tx_io = args[ARG_tx_io].u_int, 
+                                    .rx_io = args[ARG_rx_io].u_int,
                                     .clkout_io = CAN_IO_UNUSED, 
                                     .bus_off_io = CAN_IO_UNUSED,
                                     .tx_queue_len = args[ARG_tx_queue].u_int, 
@@ -312,6 +334,14 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     self->config->filter = &f_config;
 
     switch ((int)args[ARG_baudrate].u_int){
+        case 0:
+            self->config->timing = &((can_timing_config_t){ 
+                .brp = args[ARG_prescaler].u_int,
+                .sjw = args[ARG_sjw].u_int,
+                .tseg_1 = args[ARG_bs1].u_int,
+                .tseg_2 = args[ARG_bs1].u_int,
+                .triple_sampling = false});
+            break;
         case CAN_BAUDRATE_25k:
             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS());
             break;
@@ -345,13 +375,15 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     
     uint8_t status = can_driver_install(self->config->general, self->config->timing, self->config->filter);
     if (status != ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, "Unable to init the device. ErrCode: %u",status));
-    }else if (can_start() != ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError, "Unable to start the device. ErrCode: %u",status));
+        mp_raise_OSError(-status);
     }else{
-        self->config->initialized = true;
+        status = can_start()
+        if (status != ESP_OK){
+            mp_raise_OSError(-status);
+        }else{
+            self->config->initialized = true;
+        }
     }
-    
     return mp_const_none;
 }
 

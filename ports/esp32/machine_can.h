@@ -55,7 +55,20 @@ typedef struct _machine_can_config_t {
 typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
     machine_can_config_t *config;
+    mp_obj_t rxcallback;
+    byte rx_state;
+    bool extframe : 1;
+    uint16_t num_error_warning; //FIXME: populate this value somewhere
+    uint16_t num_error_passive;
+    uint16_t num_bus_off;
 } machine_can_obj_t;
+
+typedef enum _rx_state_t {
+    RX_STATE_FIFO_EMPTY = 0,
+    RX_STATE_MESSAGE_PENDING,
+    RX_STATE_FIFO_FULL,
+    RX_STATE_FIFO_OVERFLOW,
+} rx_state_t;
 
 //Functions signature definition
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
