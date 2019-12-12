@@ -96,48 +96,48 @@ void __attribute__((noinline,)) reset_into_safe_mode(safe_mode_t reason) {
 
 
 
-#define FILE_AN_ISSUE translate("\r\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\r\n")
+#define FILE_AN_ISSUE translate("\nPlease file an issue with the contents of your CIRCUITPY drive at \nhttps://github.com/adafruit/circuitpython/issues\n")
 
 void print_safe_mode_message(safe_mode_t reason) {
     if (reason == NO_SAFE_MODE) {
         return;
     }
-    serial_write("\r\n");
+    serial_write("\n");
     // Output a user safe mode string if it's set.
     #ifdef BOARD_USER_SAFE_MODE
     if (reason == USER_SAFE_MODE) {
         serial_write_compressed(translate("You requested starting safe mode by "));
         serial_write(BOARD_USER_SAFE_MODE_ACTION);
-        serial_write_compressed(translate("\r\nTo exit, please reset the board without "));
+        serial_write_compressed(translate("\nTo exit, please reset the board without "));
         serial_write(BOARD_USER_SAFE_MODE_ACTION);
-        serial_write("\r\n");
+        serial_write("\n");
     } else
     #endif
         switch (reason) {
             case MANUAL_SAFE_MODE:
-                serial_write_compressed(translate("CircuitPython is in safe mode because you pressed the reset button during boot. Press again to exit safe mode.\r\n"));
+                serial_write_compressed(translate("CircuitPython is in safe mode because you pressed the reset button during boot. Press again to exit safe mode.\n"));
                 return;
             case PROGRAMMATIC_SAFE_MODE:
-                serial_write_compressed(translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.\r\n"));
+                serial_write_compressed(translate("The `microcontroller` module was used to boot into safe mode. Press reset to exit safe mode.\n"));
                 return;
             default:
                 break;
         }
 
-        serial_write_compressed(translate("You are in safe mode: something unanticipated happened.\r\n"));
+        serial_write_compressed(translate("You are in safe mode: something unanticipated happened.\n"));
         switch (reason) {
             case BROWNOUT:
-                serial_write_compressed(translate("The microcontroller's power dipped. Make sure your power supply provides\r\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).\r\n"));
+                serial_write_compressed(translate("The microcontroller's power dipped. Make sure your power supply provides\nenough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"));
                 return;
             case HEAP_OVERWRITTEN:
-                serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\r\nPlease increase the stack size if you know how, or if not:"));
+                serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\nPlease increase the stack size if you know how, or if not:"));
                 serial_write_compressed(FILE_AN_ISSUE);
                 return;
             default:
                 break;
         }
 
-        serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\r\n"));
+        serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
         switch (reason) {
             case HARD_CRASH:
                 serial_write_compressed(translate("Crash into the HardFault_Handler."));
