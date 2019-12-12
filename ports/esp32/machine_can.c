@@ -177,48 +177,70 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
         tx_msg.data[i] = mp_obj_get_int(items[i]);
     }
     if (_machine_hw_can_get_state()==CAN_STATE_RUNNING){
-        switch(can_transmit(&tx_msg, args[ARG_timeout].u_int)){
-            case ESP_ERR_INVALID_ARG: ESP_LOGW(DEVICE_NAME, "Arguments are invalid"); break;
-            case ESP_ERR_TIMEOUT: //TX Queue is full
-            case ESP_FAIL: ESP_LOGW(DEVICE_NAME, "Message transmission failed"); break;
-            case ESP_ERR_INVALID_STATE: ESP_LOGW(DEVICE_NAME, "Device is not initialized"); break;
-            case ESP_ERR_NOT_SUPPORTED: ESP_LOGW(DEVICE_NAME, "Listen Only Mode active"); break;
+        int status = can_transmit(&tx_msg, args[ARG_timeout].u_int);
+        if (status!=ESP_OK){
+            mp_raise_OSError(-status);
         }
-
-        return 0; //machine_hw_can_get_tx_waiting_messages(pos_args[0]);
+        return mp_const_none;
     }else{
-        ESP_LOGW(DEVICE_NAME, "Unable to send the message");
-        return MP_OBJ_NEW_SMALL_INT(-1);
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to send the message"));
     }
 }
 
-// recv(timeout=5000)
+// recv(list=None, *, timeout=5000)
 STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_timeout };
-    mp_obj_t ret_obj = mp_obj_new_tuple(3, NULL);
-    mp_obj_t *items = ((mp_obj_tuple_t*)MP_OBJ_TO_PTR(ret_obj))->items;
+    enum { ARG_fifo, ARG_list, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_list,    MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
+
+    // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     can_message_t rx_message;
-    switch(can_receive(&rx_message, 1)){
-        case ESP_OK:
-            items[0] = MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
-            items[1] = mp_obj_new_bytes(rx_message.data, rx_message.data_length_code);
-            items[2] = MP_OBJ_NEW_SMALL_INT(rx_message.flags);
-            return ret_obj;
-        case ESP_ERR_TIMEOUT:
-            mp_raise_ValueError("Timeout");
-        case ESP_ERR_INVALID_ARG:
-            mp_raise_ValueError("Invalid Args");
-        case ESP_ERR_INVALID_STATE:
-            mp_raise_ValueError("Invalid State");
-        default:
-            mp_raise_ValueError("");
-    };
+    int status = can_receive(&rx_message, 1);
+    if (status != ESP_OK){
+        mp_raise_OSError(-status);
+    }
+    //TODO: manage callback
+    // Create the tuple, or get the list, that will hold the return values
+    // Also populate the fourth element, either a new bytes or reuse existing memoryview
+    mp_obj_t ret_obj = args[ARG_list].u_obj;
+    mp_obj_t *items;
+    if (ret_obj == mp_const_none){
+        ret_obj = mp_obj_new_tuple(4, NULL);
+        items = ((mp_obj_tuple_t*)MP_OBJ_TO_PTR(ret_obj))->items;
+        items[3] = mp_obj_new_bytes(rx_message.data, rx_message.data_length_code);
+    } else {
+        // User should provide a list of length at least 4 to hold the values
+        if (!mp_obj_is_type(ret_obj, &mp_type_list)) {
+            mp_raise_TypeError(NULL);
+        }
+        mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
+        if (list->len < 4) {
+            mp_raise_ValueError(NULL);
+        }
+        items = list->items;
+        // Fourth element must be a memoryview which we assume points to a
+        // byte-like array which is large enough, and then we resize it inplace
+        if (!mp_obj_is_type(items[3], &mp_type_memoryview)) {
+            mp_raise_TypeError(NULL);
+        }
+        mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);
+        if (!(mv->typecode == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | BYTEARRAY_TYPECODE)
+            || (mv->typecode | 0x20) == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | 'b'))) {
+            mp_raise_ValueError(NULL);
+        }
+        mv->len = rx_message.data_length_code;
+        memcpy(mv->items, rx_message.data, rx_message.data_length_code);
+
+    }
+    items[0] = MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
+    items[1] = rx_message.flags && CAN_MSG_FLAG_RTR > 0 ? mp_const_true : mp_const_false;
+    items[2] = 0; //TODO: check if Filter Mailbox Index is available for ESP32
+    return ret_obj;
 }
 
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
