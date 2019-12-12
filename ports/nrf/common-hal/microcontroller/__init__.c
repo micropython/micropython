@@ -76,11 +76,14 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
+    .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
+    .len = CIRCUITPY_INTERNAL_NVM_SIZE,
 };
 #endif
 

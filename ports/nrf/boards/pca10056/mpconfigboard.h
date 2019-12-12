@@ -29,8 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "PCA10056 nRF52840-DK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
 #define MICROPY_HW_LED_STATUS          (&pin_P0_13)
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)

@@ -204,7 +204,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
 
 bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
         serial_write("\n");
         if (autoreload_is_enabled()) {
