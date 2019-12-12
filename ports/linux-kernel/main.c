@@ -144,6 +144,10 @@ static inline bool is_retry_errno(int err) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
+    if (NULL == current_peer) {
+        return CHAR_CTRL_D;
+    }
+
     struct msghdr msg = { };
     uint8_t c;
     struct kvec iov = { .iov_base = &c, .iov_len = sizeof(c) };
@@ -165,6 +169,10 @@ retry:
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    if (NULL == current_peer) {
+        return;
+    }
+
     struct msghdr msg = {};
     struct kvec iov = { .iov_base = (uint8_t*)str, .iov_len = len };
 
