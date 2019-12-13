@@ -23,6 +23,7 @@ TEST_MAPPINGS = {
     'btree': 'btree/btree_$(ARCH).mpy',
     'framebuf': 'framebuf/framebuf_$(ARCH).mpy',
     'uheapq': 'uheapq/uheapq_$(ARCH).mpy',
+    'urandom': 'urandom/urandom_$(ARCH).mpy',
     'ure': 'ure/ure_$(ARCH).mpy',
     'uzlib': 'uzlib/uzlib_$(ARCH).mpy',
 }
