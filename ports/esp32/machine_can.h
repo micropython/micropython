@@ -57,6 +57,7 @@ typedef struct _machine_can_obj_t {
     mp_obj_t rxcallback;
     byte rx_state;
     bool extframe : 1;
+    bool loopback : 1;
     uint16_t num_error_warning; //FIXME: populate this value somewhere
     uint16_t num_error_passive;
     uint16_t num_bus_off;

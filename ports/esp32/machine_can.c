@@ -136,7 +136,7 @@ STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in){
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_rx_queue_obj, machine_hw_can_clear_rx_queue);
 
 
-// send([data], id, timeout=0, rtr=False, self_flag=False)
+// send([data], id, *)
 STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_self };
     static const mp_arg_t allowed_args[] = {
@@ -144,10 +144,10 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_id,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rtr,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_self_flag,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     
     // parse args
+    machine_can_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     
@@ -159,15 +159,17 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
         mp_raise_ValueError("CAN data field too long");
     }
     uint8_t flags = (args[ARG_rtr].u_bool==true ? CAN_MSG_FLAG_RTR : CAN_MSG_FLAG_NONE);
-    if (args[ARG_id].u_int>0x7ff){
+    uint32_t id = args[ARG_id].u_int;
+    if (self->extframe){
         flags += CAN_MSG_FLAG_EXTD;
+        id &= 0x1FFFFFFF;
     }
-    if (args[ARG_self].u_bool){
+    if (self->loopback){
         flags += CAN_MSG_FLAG_SELF;
+        id &= 0x1FF;
     }
-    
     can_message_t tx_msg = {.data_length_code = length, 
-                            .identifier = args[ARG_id].u_int & 0x1FFFFFFF, 
+                            .identifier = id, 
                             .flags = flags};
     for (uint8_t i=0; i<length; i++ ){
         tx_msg.data[i] = mp_obj_get_int(items[i]);
@@ -179,7 +181,7 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
         }
         return mp_const_none;
     }else{
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to send the message"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "CAN Device is not ready"));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_send_obj, 3, machine_hw_can_send);
@@ -375,7 +377,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
         return mp_const_none;
     }
     // Configure device
-    can_general_config_t g_config = {.mode = args[ARG_mode].u_int,
+    can_general_config_t g_config = {.mode = args[ARG_mode].u_int & 0x0F,
                                     .tx_io = args[ARG_tx_io].u_int, 
                                     .rx_io = args[ARG_rx_io].u_int,
                                     .clkout_io = CAN_IO_UNUSED, 
@@ -385,6 +387,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
                                     .alerts_enabled = CAN_ALERT_NONE,
                                     .clkout_divider = 0};
     self->config->general = &g_config;
+    self->loopback = (args[ARG_mode] && 0x10 > 0)
     can_filter_config_t f_config = {
         .acceptance_code = args[ARG_filter_code].u_int, 
         .acceptance_mask = args[ARG_filter_mask].u_int, 
@@ -471,7 +474,9 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     
      // CAN_MODE
     { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(CAN_MODE_NORMAL | 0x10) },
     { MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(CAN_MODE_NO_ACK) },
+    { MP_ROM_QSTR(MP_QSTR_SILENT_LOOPBACK), MP_ROM_INT(CAN_MODE_NO_ACK | 0x10) },
     { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
     // CAN_STATE
     { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
