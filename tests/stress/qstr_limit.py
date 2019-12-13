@@ -64,19 +64,17 @@ for l in range(254, 259):
         print('RuntimeError', l)
 
 # import module
-# (different OS's have different results so only print those that are consistent)
-for l in range(150, 259):
+# (different OS's have different results so only run those that are consistent)
+for l in (100, 101, 256, 257, 258):
     try:
         __import__(make_id(l))
     except ImportError:
-        if l < 152:
-            print('ok', l)
+        print('ok', l)
     except RuntimeError:
-        if l > 255:
-            print('RuntimeError', l)
+        print('RuntimeError', l)
 
 # import package
-for l in range(125, 130):
+for l in (100, 101, 102, 128, 129):
     try:
         exec('import ' + make_id(l) + '.' + make_id(l, 'A'))
     except ImportError:
