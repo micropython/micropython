@@ -519,7 +519,7 @@ STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_obj_t value, mp_obj_t instance) {
+STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_obj_t value) {
     mp_obj_uctypes_struct_t *self = mp_instance_cast_to_native_base(base_in, &uctypes_struct_type);
 
     if (value == MP_OBJ_NULL) {

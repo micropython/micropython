@@ -242,7 +242,7 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
+STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_jobject_t *self = self_in;
     mp_uint_t idx = mp_obj_get_int(index);
     char class_name[64];
@@ -311,7 +311,7 @@ STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 // TODO: subscr_load_adaptor & subscr_getiter convenience functions
 // should be moved to common location for reuse.
 STATIC mp_obj_t subscr_load_adaptor(mp_obj_t self_in, mp_obj_t index_in) {
-    return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL, self_in);
+    return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(subscr_load_adaptor_obj, subscr_load_adaptor);
 

@@ -826,7 +826,7 @@ STATIC void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value, mp_obj_t instance) {
+STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -855,7 +855,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     if (member[0] == MP_OBJ_SENTINEL) { // native base subscr exists
         mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
         // return mp_obj_subscr(self->subobj[0], index, value, instance);
-        mp_obj_t ret = subobj_type->subscr(self_in, index, value, instance);
+        mp_obj_t ret = subobj_type->subscr(self_in, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         return ret;
