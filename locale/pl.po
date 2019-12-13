@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2019-12-13 13:44-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -2637,12 +2637,12 @@ msgstr "zerowy krok"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Adres nie ma długości %d bajtów lub zły format"
 
+#~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
+#~ msgstr "Próba alokacji pamięci na stercie gdy VM nie działa.\n"
+
 #, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "Nie można używać dotstar z %s"
-
-#~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
-#~ msgstr "Próba alokacji pamięci na stercie gdy VM nie działa.\n"
 
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Nie można dodać serwisów w trybie Central"

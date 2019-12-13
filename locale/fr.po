@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2019-12-13 13:44-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -2724,13 +2724,13 @@ msgstr "'step' nul"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "L'adresse n'est pas longue de %d octets ou est d'un format erroné"
 
-#, c-format
-#~ msgid "Can not use dotstar with %s"
-#~ msgstr "Impossible d'utiliser 'dotstar' avec %s"
-
 #~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
 #~ msgstr ""
 #~ "Tentative d'allocation de tas alors que la VM MicroPython ne tourne pas.\n"
+
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Impossible d'utiliser 'dotstar' avec %s"
 
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Impossible d'ajouter des services en mode Central"
