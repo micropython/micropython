@@ -31,7 +31,7 @@
 #include "py/mperrno.h"
 #include "mpconfigport.h"
 
-//Headers of ESP-IDF library
+// Headers of ESP-IDF library
 #include "soc/dport_reg.h"
 #include "driver/can.h"
 #include "esp_err.h"
@@ -41,19 +41,17 @@
 
 #if MICROPY_HW_ENABLE_CAN
 
-//Default baudrate: 500kb
+// Default baudrate: 500kb
 #define CAN_DEFAULT_PRESCALER       (8)
 #define CAN_DEFAULT_SJW             (3)
 #define CAN_DEFAULT_BS1             (15)
 #define CAN_DEFAULT_BS2             (4)
 
+
 // Internal Functions
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
-
-
-
 
 // singleton CAN device object
 machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERAL_CONFIG_DEFAULT(2,4,0)),
@@ -63,7 +61,7 @@ machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERA
                                    
 STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
 
-//INTERNAL FUNCTION Return status information
+// INTERNAL FUNCTION Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
     if(can_get_status_info(&status)!=ESP_OK){
@@ -125,20 +123,20 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
 
-//Clear TX Queue
+// Clear TX Queue
 STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_transmit_queue()==ESP_OK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_tx_queue_obj, machine_hw_can_clear_tx_queue);
 
-//Clear RX Queue
+// Clear RX Queue
 STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_receive_queue()==ESP_OK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_rx_queue_obj, machine_hw_can_clear_rx_queue);
 
 
-//send([data], id, timeout=0, rtr=False, self_flag=False)
+// send([data], id, timeout=0, rtr=False, self_flag=False)
 STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_self };
     static const mp_arg_t allowed_args[] = {
@@ -296,7 +294,7 @@ STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_init_obj, 4, machine_hw_can_init);
 
-//deinit()
+// deinit()
 STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
     const machine_can_obj_t *self =  &machine_can_obj;
     if (self->config->initialized != true){
@@ -316,7 +314,7 @@ STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_deinit_obj, machine_hw_can_deinit);
 
 // CAN(bus, ...) No argument to get the object
-//If no arguments are provided, the initialized object will be returned
+// If no arguments are provided, the initialized object will be returned
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, 
                                 size_t n_kw, const mp_obj_t *args){
     // check arguments
@@ -450,9 +448,9 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
 
 
 STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
-    //CAN_ATTRIBUTES
+    // CAN_ATTRIBUTES
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_CAN) },
-    //Micropython Generic API
+    // Micropython Generic API
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&machine_hw_can_restart_obj) },
@@ -467,20 +465,20 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&pyb_can_clearfilter_obj) },
     */
    { MP_ROM_QSTR(MP_QSTR_rxcallback), MP_ROM_PTR(&machine_hw_can_rxcallback_obj) },
-   //ESP32 Specific API
+   // ESP32 Specific API
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
     
-     //CAN_MODE
+     // CAN_MODE
     { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
     { MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(CAN_MODE_NO_ACK) },
     { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
-    //CAN_STATE
+    // CAN_STATE
     { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
     { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(CAN_STATE_RUNNING) },
     { MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF) },
     { MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING) },
-    //CAN_BAUDRATE
+    // CAN_BAUDRATE
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_25k), MP_ROM_INT(CAN_BAUDRATE_25k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_50k), MP_ROM_INT(CAN_BAUDRATE_50k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_100k), MP_ROM_INT(CAN_BAUDRATE_100k) },
@@ -492,7 +490,7 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
-//Python object definition
+// Python object definition
 const mp_obj_type_t machine_can_type = {
     { &mp_type_type },
     .name = MP_QSTR_CAN,
