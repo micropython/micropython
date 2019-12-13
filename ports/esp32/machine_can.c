@@ -49,16 +49,12 @@
 
 // Internal Functions
 STATIC can_state_t _machine_hw_can_get_state();
+mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 
-//Python object definition
-const mp_obj_type_t machine_can_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CAN,
-    .print = machine_hw_can_print, // give it a print-function
-    .make_new = machine_hw_can_make_new,  // give it a constructor
-    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
-};
+
 
 // singleton CAN device object
 machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERAL_CONFIG_DEFAULT(2,4,0)),
@@ -82,6 +78,7 @@ STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
     mp_raise_NotImplementedError(""); //TODO: Implement this function
     return self_in;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_restart_obj, machine_hw_can_restart);
 
 // any(fifo) - return `True` if any message waiting on the FIFO, else `False`
 STATIC mp_obj_t machine_hw_can_any(mp_obj_t self_in, mp_obj_t fifo_in){
@@ -92,6 +89,7 @@ STATIC mp_obj_t machine_hw_can_any(mp_obj_t self_in, mp_obj_t fifo_in){
         return mp_const_false;
     }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_any_obj, machine_hw_can_any);
 
 // Get the state of the controller
 STATIC mp_obj_t machine_hw_can_state(mp_obj_t self_in) {
@@ -103,6 +101,7 @@ STATIC can_state_t _machine_hw_can_get_state(){
     can_status_info_t status = _machine_hw_can_get_status();
     return status.state;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_state_obj, machine_hw_can_state);
 
 // Get info about error states and TX/RX buffers
 STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
@@ -130,15 +129,20 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
     //list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3); //FIXME:
     return MP_OBJ_FROM_PTR(list);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
 
 //Clear TX Queue
 STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_transmit_queue()==ESP_OK);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_tx_queue_obj, machine_hw_can_clear_tx_queue);
+
 //Clear RX Queue
 STATIC mp_obj_t machine_hw_can_clear_rx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_receive_queue()==ESP_OK);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clear_rx_queue_obj, machine_hw_can_clear_rx_queue);
+
 
 //send([data], id, timeout=0, rtr=False, self_flag=False)
 STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -186,6 +190,7 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
         nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to send the message"));
     }
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_send_obj, 3, machine_hw_can_send);
 
 // recv(list=None, *, timeout=5000)
 STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -242,6 +247,27 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
     items[2] = 0; //TODO: check if Filter Mailbox Index is available for ESP32
     return ret_obj;
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_recv_obj, 0, machine_hw_can_recv);
+
+STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in) {
+    mp_raise_NotImplementedError("IRQ not supported yet");
+    machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in); 
+
+    if (callback_in == mp_const_none) {
+        self->rxcallback = mp_const_none;
+    } else if (self->rxcallback != mp_const_none) {
+        // Rx call backs has already been initialized
+        // only the callback function should be changed
+        self->rxcallback = callback_in;
+        // TODO: disable interrupt
+    } else if (mp_obj_is_callable(callback_in)) {
+        self->rxcallback = callback_in;
+        // TODO: set interrupt
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_rxcallback_obj, machine_hw_can_rxcallback);
+
 
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -263,6 +289,37 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     }
     
 }
+
+
+// init(tx, rx, baudrate, mode = CAN_MODE_NORMAL, tx_queue = 2, rx_queue = 5)
+STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    machine_can_obj_t *self =  MP_OBJ_TO_PTR(args[0]);
+    if (self->config->initialized){
+        ESP_LOGW(DEVICE_NAME, "Device is already initialized");
+        return mp_const_none;
+    }
+    return machine_hw_can_init_helper(self, n_args - 1, args + 1, kw_args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_init_obj, 4, machine_hw_can_init);
+
+//deinit()
+STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
+    const machine_can_obj_t *self =  &machine_can_obj;
+    if (self->config->initialized != true){
+        ESP_LOGW(DEVICE_NAME, "Device is not initialized");
+        return mp_const_none;
+    }
+	if(can_stop()!=ESP_OK){
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to stop the device"));
+    }
+    if (can_driver_uninstall() != ESP_OK){
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to uninstall the device"));
+        return mp_const_none;
+    }
+    self->config->initialized = false;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_deinit_obj, machine_hw_can_deinit);
 
 // CAN(bus, ...) No argument to get the object
 //If no arguments are provided, the initialized object will be returned
@@ -294,16 +351,6 @@ mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args,
         machine_hw_can_init_helper(self, n_args - 1, args + 1, &kw_args);
     }
     return MP_OBJ_FROM_PTR(self);
-}
-
-// init(tx, rx, baudrate, mode = CAN_MODE_NORMAL, tx_queue = 2, rx_queue = 5)
-STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    machine_can_obj_t *self =  MP_OBJ_TO_PTR(args[0]);
-    if (self->config->initialized){
-        ESP_LOGW(DEVICE_NAME, "Device is already initialized");
-        return mp_const_none;
-    }
-    return machine_hw_can_init_helper(self, n_args - 1, args + 1, kw_args);
 }
 
 // init(mode, extframe=False, baudrate=500, *)
@@ -407,40 +454,56 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     return mp_const_none;
 }
 
-STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in) {
-    mp_raise_NotImplementedError("IRQ not supported yet");
-    machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in); 
 
-    if (callback_in == mp_const_none) {
-        self->rxcallback = mp_const_none;
-    } else if (self->rxcallback != mp_const_none) {
-        // Rx call backs has already been initialized
-        // only the callback function should be changed
-        self->rxcallback = callback_in;
-        // TODO: disable interrupt
-    } else if (mp_obj_is_callable(callback_in)) {
-        self->rxcallback = callback_in;
-        // TODO: set interrupt
-    }
-    return mp_const_none;
-}
+STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
+    //CAN_ATTRIBUTES
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_CAN) },
+    //Micropython Generic API
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&machine_hw_can_restart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&machine_hw_can_state_obj) },
+    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&machine_hw_can_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_hw_can_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_send_obj)},
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_hw_can_recv_obj)},
+    /*
+    { MP_ROM_QSTR(MP_QSTR_initfilterbanks), MP_ROM_PTR(&pyb_can_initfilterbanks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&pyb_can_setfilter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&pyb_can_clearfilter_obj) },
+    */
+   { MP_ROM_QSTR(MP_QSTR_rxcallback), MP_ROM_PTR(&machine_hw_can_rxcallback_obj) },
+   //ESP32 Specific API
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
+    
+     //CAN_MODE
+    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(CAN_MODE_NO_ACK) },
+    { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
+    //CAN_STATE
+    { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
+    { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(CAN_STATE_RUNNING) },
+    { MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING) },
+    //CAN_BAUDRATE
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_25k), MP_ROM_INT(CAN_BAUDRATE_25k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_50k), MP_ROM_INT(CAN_BAUDRATE_50k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_100k), MP_ROM_INT(CAN_BAUDRATE_100k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_125k), MP_ROM_INT(CAN_BAUDRATE_125k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_250k), MP_ROM_INT(CAN_BAUDRATE_250k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(CAN_BAUDRATE_500k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_800k), MP_ROM_INT(CAN_BAUDRATE_800k) },
+    { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(CAN_BAUDRATE_1M) },
+};
+STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
-//deinit()
-STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
-    const machine_can_obj_t *self =  &machine_can_obj;
-    if (self->config->initialized != true){
-        ESP_LOGW(DEVICE_NAME, "Device is not initialized");
-        return mp_const_none;
-    }
-	if(can_stop()!=ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to stop the device"));
-    }
-    if (can_driver_uninstall() != ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to uninstall the device"));
-        return mp_const_none;
-    }
-    self->config->initialized = false;
-    return mp_const_none;
-}
-
+//Python object definition
+const mp_obj_type_t machine_can_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_CAN,
+    .print = machine_hw_can_print, // give it a print-function
+    .make_new = machine_hw_can_make_new,  // give it a constructor
+    .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
+};
 #endif // MICROPY_HW_ENABLE_CAN
