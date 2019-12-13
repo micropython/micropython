@@ -97,6 +97,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 
 #define mp_obj_new_bool(b)                  ((b) ? (mp_obj_t)mp_fun_table.const_true : (mp_obj_t)mp_fun_table.const_false)
 #define mp_obj_new_int(i)                   (mp_fun_table.native_to_obj(i, MP_NATIVE_TYPE_INT))
+#define mp_obj_new_int_from_uint(i)         (mp_fun_table.native_to_obj(i, MP_NATIVE_TYPE_UINT))
 #define mp_obj_new_str(data, len)           (mp_fun_table.obj_new_str((data), (len)))
 #define mp_obj_new_str_of_type(t, d, l)     (mp_obj_new_str_of_type_dyn((t), (d), (l)))
 #define mp_obj_new_bytes(data, len)         (mp_fun_table.obj_new_bytes((data), (len)))
@@ -106,11 +107,14 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 
 #define mp_obj_get_type(o)                  (mp_fun_table.obj_get_type((o)))
 #define mp_obj_get_int(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_INT))
+#define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
 #define mp_obj_str_get_str(s)               ((void*)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
 
+#define mp_obj_len(o)                       (mp_obj_len_dyn(o))
+#define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte* data, size_t len) {
@@ -126,6 +130,11 @@ static inline void *mp_obj_str_get_data_dyn(mp_obj_t o, size_t *l) {
     mp_get_buffer_raise(o, &bufinfo, MP_BUFFER_READ);
     *l = bufinfo.len;
     return bufinfo.buf;
+}
+
+static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
+    // If bytes implemented MP_UNARY_OP_LEN could use: mp_unary_op(MP_UNARY_OP_LEN, o)
+    return mp_fun_table.call_function_n_kw(mp_fun_table.load_name(MP_QSTR_len), 1, &o);
 }
 
 /******************************************************************************/
