@@ -154,6 +154,7 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // LEDs
+#define MICROPY_HW_LED_INVERTED     (1) // LEDs are on when pin is driven low
 #define MICROPY_HW_LED1             (pyb_pin_LED_RED)
 #define MICROPY_HW_LED2             (pyb_pin_LED_GREEN)
 #define MICROPY_HW_LED3             (pyb_pin_LED_BLUE)
