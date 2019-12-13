@@ -38,7 +38,6 @@ void stm32f4_peripherals_gpio_init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     //Never reset pins
-    never_reset_pin_number(2,13); //PC13 anti tamp
     never_reset_pin_number(2,14); //PC14 OSC32_IN
     never_reset_pin_number(2,15); //PC15 OSC32_OUT
     never_reset_pin_number(0,13); //PA13 SWDIO

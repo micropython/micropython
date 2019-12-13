@@ -43,7 +43,7 @@
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 // Flag indicating progress of internal flash operation.
-sd_flash_operation_status_t sd_flash_operation_status;
+volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 __attribute__((aligned(4)))
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];

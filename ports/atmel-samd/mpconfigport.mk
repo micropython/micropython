@@ -1,3 +1,7 @@
+# All linking can be done with this common templated linker script, which has
+# parameters that vary based on chip and/or board.
+LD_TEMPLATE_FILE = boards/common.template.ld
+
 # Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
 # $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
 # This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
@@ -35,7 +39,8 @@ endif
 
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
 USB_MSC_EP_NUM_OUT = 1
-endif
+
+endif # samd21
 
 # Put samd51-only choices here.
 ifeq ($(CHIP_FAMILY),samd51)
@@ -57,7 +62,7 @@ ifndef CIRCUITPY_SAMD
 CIRCUITPY_SAMD = 1
 endif
 
-endif
+endif # samd51
 
 INTERNAL_LIBM = 1
 

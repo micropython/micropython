@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
 USB_PID = 0x801F
 USB_PRODUCT = "Trinket M0"
@@ -17,4 +16,3 @@ CFLAGS_BOARD = --param max-inline-insns-auto=15
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 35
 endif
-
