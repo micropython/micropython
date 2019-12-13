@@ -337,7 +337,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     }
 
     if (mod_len == 0) {
-        mp_raise_ValueError(NULL);
+        return mp_raise_ValueError_o(NULL);
     }
 
     // check if module already exists

@@ -163,7 +163,10 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     // Ensure the generator cannot be reentered during execution
     if (self->pend_exc == MP_OBJ_NULL) {
-        mp_raise_ValueError("generator already executing");
+        mp_raise_ValueError_o("generator already executing");
+        *ret_val = MP_OBJ_FROM_PTR(MP_STATE_THREAD(active_exception));
+        MP_STATE_THREAD(active_exception) = NULL;
+        return MP_VM_RETURN_EXCEPTION;
     }
 
     #if MICROPY_PY_GENERATOR_PEND_THROW

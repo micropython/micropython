@@ -1099,6 +1099,10 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 const char *lookup;
                 for (lookup = field_name; lookup < field_name_top && *lookup != '.' && *lookup != '['; lookup++);
                 mp_obj_t field_q = mp_obj_new_str_via_qstr(field_name, lookup - field_name); // should it be via qstr?
+                if (field_q == MP_OBJ_NULL) {
+                    vstr.buf = NULL;
+                    return vstr;
+                }
                 field_name = lookup;
                 mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
                 if (key_elem == NULL) {
@@ -1498,6 +1502,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                 ++str;
             }
             mp_obj_t k_obj = mp_obj_new_str_via_qstr((const char*)key, str - key);
+            if (k_obj == MP_OBJ_NULL) {
+                return MP_OBJ_NULL;
+            }
             arg = mp_obj_dict_get(dict, k_obj);
             if (arg == MP_OBJ_NULL) {
                 return MP_OBJ_NULL;
@@ -2095,7 +2102,12 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, siz
 
 // Create a str using a qstr to store the data; may use existing or new qstr.
 mp_obj_t mp_obj_new_str_via_qstr(const char* data, size_t len) {
-    return MP_OBJ_NEW_QSTR(qstr_from_strn(data, len));
+    qstr qst = qstr_from_strn(data, len);
+    if (qst == MP_QSTRnull) {
+        return MP_OBJ_NULL;
+    } else {
+        return MP_OBJ_NEW_QSTR(qst);
+    }
 }
 
 // Create a str/bytes object from the given vstr.  The vstr buffer is resized to
