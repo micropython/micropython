@@ -139,7 +139,15 @@ STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t* self) {
 }
 
 STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t* self, MP3FrameInfo* fi) {
-    int err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+    int err;
+    do {
+        err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+        if (err == ERR_MP3_NONE) {
+           break;
+        }
+        CONSUME(self, 1);
+        mp3file_find_sync_word(self);
+    } while (!self->eof);
     return err == ERR_MP3_NONE;
 }
 
