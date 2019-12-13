@@ -407,6 +407,24 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
     return mp_const_none;
 }
 
+STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in) {
+    mp_raise_NotImplementedError("IRQ not supported yet");
+    machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in); 
+
+    if (callback_in == mp_const_none) {
+        self->rxcallback = mp_const_none;
+    } else if (self->rxcallback != mp_const_none) {
+        // Rx call backs has already been initialized
+        // only the callback function should be changed
+        self->rxcallback = callback_in;
+        // TODO: disable interrupt
+    } else if (mp_obj_is_callable(callback_in)) {
+        self->rxcallback = callback_in;
+        // TODO: set interrupt
+    }
+    return mp_const_none;
+}
+
 //deinit()
 STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
     const machine_can_obj_t *self =  &machine_can_obj;
