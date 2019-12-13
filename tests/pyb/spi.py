@@ -1,7 +1,7 @@
 from pyb import SPI
 
-# test we can correctly create by id or name
-for bus in (-1, 0, 1, 2, 3, "X", "Y", "Z"):
+# test we can correctly create by id
+for bus in (-1, 0, 1, 2):
     try:
         SPI(bus)
         print("SPI", bus)
@@ -14,7 +14,7 @@ print(spi)
 spi = SPI(1, SPI.MASTER)
 spi = SPI(1, SPI.MASTER, baudrate=500000)
 spi = SPI(1, SPI.MASTER, 500000, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
-print(spi)
+print(str(spi)[:28], str(spi)[49:]) # don't print baudrate/prescaler
 
 spi.init(SPI.SLAVE, phase=1)
 print(spi)
