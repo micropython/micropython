@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 14:51-0500\n"
+"POT-Creation-Date: 2019-12-12 15:33-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -420,6 +420,10 @@ msgstr "Hindi makakakuha ng pull habang nasa output mode"
 #, fuzzy
 msgid "Cannot get temperature"
 msgstr "Hindi makuha ang temperatura. status 0x%02x"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
