@@ -48,7 +48,6 @@
 #define CAN_DEFAULT_BS2             (4)
 
 // Internal Functions
-STATIC can_state_t _machine_hw_can_get_state();
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
@@ -64,7 +63,7 @@ machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERA
                                    
 STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
 
-//Return status information
+//INTERNAL FUNCTION Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
     if(can_get_status_info(&status)!=ESP_OK){
@@ -95,11 +94,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_any_obj, machine_hw_can_any);
 STATIC mp_obj_t machine_hw_can_state(mp_obj_t self_in) {
     can_status_info_t status = _machine_hw_can_get_status();
     return mp_obj_new_int(status.state);
-}
-
-STATIC can_state_t _machine_hw_can_get_state(){
-    can_status_info_t status = _machine_hw_can_get_status();
-    return status.state;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_state_obj, machine_hw_can_state);
 
@@ -180,7 +174,7 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
     for (uint8_t i=0; i<length; i++ ){
         tx_msg.data[i] = mp_obj_get_int(items[i]);
     }
-    if (_machine_hw_can_get_state()==CAN_STATE_RUNNING){
+    if (_machine_hw_can_get_status().state==CAN_STATE_RUNNING){
         int status = can_transmit(&tx_msg, args[ARG_timeout].u_int);
         if (status!=ESP_OK){
             mp_raise_OSError(-status);
