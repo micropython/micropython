@@ -88,6 +88,39 @@ STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
 #define BYTES_LEFT(self) (self->inbuf_length - self->inbuf_offset)
 #define CONSUME(self, n) (self->inbuf_offset += n)
 
+// http://id3.org/d3v2.3.0
+// http://id3.org/id3v2.3.0
+STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t* self) {
+    mp3file_update_inbuf(self);
+    if (BYTES_LEFT(self) < 10) {
+        return;
+    }
+    uint8_t *data = READ_PTR(self);
+    if (!(
+            data[0] == 'I' &&
+            data[1] == 'D' &&
+            data[2] == '3' &&
+            data[3] != 0xff &&
+            data[4] != 0xff &&
+            (data[5] & 0x1f) == 0 &&
+            (data[6] & 0x80) == 0 &&
+            (data[7] & 0x80) == 0 &&
+            (data[8] & 0x80) == 0 &&
+            (data[9] & 0x80) == 0)) {
+        return;
+    }
+    uint32_t size = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | (data[9]);
+    size += 10; // size excludes the "header" (but not the "extended header")
+    // First, deduct from size whatever is left in buffer
+    uint32_t to_consume = MIN(size, BYTES_LEFT(self));
+    CONSUME(self, to_consume);
+    size -= to_consume;
+
+    // Next, seek in the file after the header
+    f_lseek(&self->file->fp, f_tell(&self->file->fp) + size);
+    return;
+}
+
 /* If a sync word can be found, advance to it and return true.  Otherwise,
  * return false.
  */
@@ -223,6 +256,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t* self,
     self->eof = 0;
     self->other_channel = -1;
     mp3file_update_inbuf(self);
+    mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
 }
 
@@ -253,6 +287,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
     self->buffer_index = !self->buffer_index;
     int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
 
+    mp3file_skip_id3v2(self);
     if (!mp3file_find_sync_word(self)) {
         return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
     }
