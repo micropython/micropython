@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-10 13:55-0600\n"
+"POT-Creation-Date: 2019-12-12 15:33-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -21,6 +21,19 @@ msgstr ""
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"Please file an issue with the contents of your CIRCUITPY drive at \n"
+"https://github.com/adafruit/circuitpython/issues\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -295,7 +308,7 @@ msgid "Array values should be single bytes."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running.\n"
+msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 
 #: main.c
@@ -405,6 +418,10 @@ msgstr ""
 msgid "Cannot get temperature"
 msgstr "Não pode obter a temperatura. status: 0x%02x"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr ""
@@ -447,6 +464,16 @@ msgstr "Não é possível ler sem um pino MOSI"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython core code crashed hard. Whoops!\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"CircuitPython is in safe mode because you pressed the reset button during "
+"boot. Press again to exit safe mode.\n"
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -511,7 +538,7 @@ msgid "Couldn't allocate second buffer"
 msgstr "Não pôde alocar segundo buffer"
 
 #: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler.\n"
+msgid "Crash into the HardFault_Handler."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -630,26 +657,16 @@ msgstr ""
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
+#: supervisor/shared/safe_mode.c
+msgid "Failed to write internal flash."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Arquivo já existe"
 
-#: ports/nrf/peripherals/nrf/nvm.c
-msgid "Flash erase failed"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash erase failed to start, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
+#: ports/nrf/common-hal/nvm/ByteArray.c
 msgid "Flash write failed"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash write failed to start, err 0x%04x"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -827,13 +844,6 @@ msgstr "Tamanho deve ser um int"
 msgid "Length must be non-negative"
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Looks like our core CircuitPython code crashed hard. Whoops!\n"
-"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
-" with the contents of your CIRCUITPY drive and this message:\n"
-msgstr ""
-
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
 msgstr "Inicialização do pino MISO falhou"
@@ -848,11 +858,11 @@ msgid "Maximum x value when mirrored is %d"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgid "MicroPython NLR jump failed. Likely memory corruption."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error.\n"
+msgid "MicroPython fatal error."
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -919,6 +929,10 @@ msgstr ""
 
 #: py/moduerrno.c
 msgid "No such file/directory"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Nordic Soft Device failure assertion."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1104,10 +1118,7 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting "
-"CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of "
-"your CIRCUITPY drive:\n"
+"Please increase the stack size if you know how, or if not:"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1118,16 +1129,9 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
+"The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The reset button was pressed while booting CircuitPython. Press again to "
-"exit safe mode.\n"
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -1161,10 +1165,6 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Para sair, por favor, reinicie a placa sem "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1244,6 +1244,10 @@ msgstr ""
 msgid "Unknown gatt error: 0x%04x"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Unknown reason."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown security error: 0x%04x"
@@ -1315,8 +1319,7 @@ msgid ""
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"You are running in safe mode which means something unanticipated happened.\n"
+msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2836,6 +2839,9 @@ msgstr "passo zero"
 
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Para sair, por favor, reinicie a placa sem "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) não existe"
