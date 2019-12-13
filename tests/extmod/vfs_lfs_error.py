@@ -106,8 +106,9 @@ def test(bdev, vfs_class):
 
     # error during seek
     with vfs.open('testfile', 'r') as f:
+        f.seek(1 << 30) # SEEK_SET
         try:
-            f.seek(1 << 31)
+            f.seek(1 << 30, 1) # SEEK_CUR
         except OSError:
             print('seek OSError')
 
