@@ -369,6 +369,13 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
         }
         return 0;
     }
+    if (self->nic == MP_OBJ_NULL) {
+        if (request == MP_STREAM_POLL) {
+            return MP_STREAM_POLL_NVAL;
+        }
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
     return self->nic_type->ioctl(self, request, arg, errcode);
 }
 
