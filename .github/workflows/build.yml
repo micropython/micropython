@@ -155,6 +155,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stringcar_m0_express"
+        - "teknikio_bluebird"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
