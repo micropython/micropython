@@ -13,12 +13,6 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PA09)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA08)
 
@@ -36,4 +30,3 @@
 // Not connected
 #define IGNORE_PIN_PA13     1
 #define IGNORE_PIN_PA28     1
-

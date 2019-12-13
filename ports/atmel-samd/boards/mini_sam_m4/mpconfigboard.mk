@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x1209
 USB_PID = 0x2017
 USB_PRODUCT = "Mini SAM M4"
