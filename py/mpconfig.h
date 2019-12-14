@@ -570,6 +570,21 @@
 #define MICROPY_REPL_EMACS_KEYS (0)
 #endif
 
+// Whether to include emacs-style word movement/kill readline behavior in REPL.
+// This adds Alt+F, Alt+B, Alt+D and Alt+Backspace for forward-word, backward-word, forward-kill-word
+// and backward-kill-word, respectively.
+#ifndef MICROPY_REPL_EMACS_WORDS_MOVE
+#define MICROPY_REPL_EMACS_WORDS_MOVE (0)
+#endif
+
+// Whether to include extra convenience keys for word movement/kill in readline REPL.
+// This adds Ctrl+Right, Ctrl+Left and Ctrl+W for forward-word, backward-word and backward-kill-word
+// respectively. Ctrl+Delete is not implemented because it's a very different escape sequence.
+// Depends on MICROPY_REPL_EMACS_WORDS_MOVE.
+#ifndef MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE
+#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (0)
+#endif
+
 // Whether to implement auto-indent in REPL
 #ifndef MICROPY_REPL_AUTO_INDENT
 #define MICROPY_REPL_AUTO_INDENT (0)

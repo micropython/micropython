@@ -284,8 +284,13 @@ def run_tests(pyb, tests, args, base_path="."):
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
-        if not 'True' in str(t, 'ascii'):
+        if 'True' not in str(t, 'ascii'):
             skip_tests.add('cmdline/repl_emacs_keys.py')
+
+        # Check if words movement in repl is supported, and skip such tests if it's not
+        t = run_feature_check(pyb, args, base_path, 'repl_words_move_check.py')
+        if 'True' not in str(t, 'ascii'):
+            skip_tests.add('cmdline/repl_words_move.py')
 
         upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
         upy_float_precision = run_feature_check(pyb, args, base_path, 'float.py')
