@@ -117,7 +117,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin != -1) {
-        mp_printf(print, "RMT(channel=%u, pin=%u, clock_divider=%u)", self->channel_id, self->pin, self->clock_divider);
+        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u)",
+            self->channel_id, self->pin, APB_CLK_FREQ, self->clock_divider);
     } else {
         mp_printf(print, "RMT()");
     }
@@ -139,27 +140,21 @@ STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 
 
-// Helper function to return the resolution for the specified clock divider
-static float resolution_for_divider(uint8_t clock_divider) {
-    return 1.0 / (APB_CLK_FREQ / clock_divider);
+// Return the source frequency.
+// Currently only the APB clock (80MHz) can be used but it is possible other
+// clock sources will added in the future.
+STATIC mp_obj_t esp32_rmt_source_freq(mp_obj_t self_in) {
+    return mp_obj_new_int(APB_CLK_FREQ);
 }
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_source_freq_obj, esp32_rmt_source_freq);
 
 
-// Return the resolution (shortest possible pulse), in seconds
-STATIC mp_obj_t esp32_rmt_resolution(mp_obj_t self_in) {
+// Return the clock divider.
+STATIC mp_obj_t esp32_rmt_clock_div(mp_obj_t self_in) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(resolution_for_divider(self->clock_divider));
+    return mp_obj_new_int(self->clock_divider);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_resolution_obj, esp32_rmt_resolution);
-
-
-// Return the longest pulse duration, in seconds.
-// Increasing the clock_divider yields longer maximum pulse lengths.
-STATIC mp_obj_t esp32_rmt_max_pulse_length(mp_obj_t self_in) {
-    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(resolution_for_divider(self->clock_divider) * 32768); // 2^15 is the maximum number of bits for ticks
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_max_pulse_length_obj, esp32_rmt_max_pulse_length);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_clock_div_obj, esp32_rmt_clock_div);
 
 
 // Query whether the channel has finished sending pulses. Takes an optional
@@ -208,7 +203,7 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
     mp_uint_t start = args[2].u_int;
 
     if (start < 0 || start > 1) {
-        mp_raise_ValueError("start can only be 0 or 1");
+        mp_raise_ValueError("Start must be 0 or 1");
     }
 
     mp_uint_t pulses_length = 0;
@@ -254,8 +249,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_send_pulses_obj, 2, esp32_rmt_send_p
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_resolution), MP_ROM_PTR(&esp32_rmt_resolution_obj) },
-    { MP_ROM_QSTR(MP_QSTR_max_duration), MP_ROM_PTR(&esp32_rmt_max_pulse_length_obj) },
+    { MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clock_div), MP_ROM_PTR(&esp32_rmt_clock_div_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
     { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
     { MP_ROM_QSTR(MP_QSTR_send_pulses), MP_ROM_PTR(&esp32_rmt_send_pulses_obj) },
