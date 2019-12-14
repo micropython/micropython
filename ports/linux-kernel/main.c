@@ -264,6 +264,8 @@ STATIC int run_server(void *data) {
         goto out_sock;
     }
 
+    printk(KERN_INFO "mpy: server is up\n");
+
     struct socket *peer;
     while (1) {
         err = kernel_accept(sock, &peer, 0);
@@ -294,9 +296,11 @@ STATIC int __init mpy_init_module(void) {
     mp_obj_list_init(mp_sys_path, 0);
 
 #ifdef INCLUDE_STRUCT_LAYOUT
+    printk("mpy: calling struct access initializer\n");
     pyexec_frozen_module("structs.py");
 #endif
 
+    printk("mpy: starting server\n");
     kthread_run(run_server, NULL, "kmp");
 
     return 0;
