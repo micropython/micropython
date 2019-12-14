@@ -235,7 +235,13 @@ and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
 Real time clock (RTC)
 ---------------------
 
-See :ref:`machine.RTC <machine.RTC>` ::
+See :ref:`machine.RTC <machine.RTC>` 
+
+.. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*)` 
+          (using a custom handler), `RTC.init()` and `RTC.deinit()` are
+          currently not supported.
+
+::
 
     from machine import RTC
 
