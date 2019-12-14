@@ -249,6 +249,10 @@ See :ref:`machine.RTC <machine.RTC>` ::
     ntptime.settime() # set the rtc datetime from the remote server
     rtc.datetime()    # get the date and time in UTC
 
+.. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*) <RTC.irq>`
+          (using a custom handler), `RTC.init()` and `RTC.deinit()` are
+          currently not supported.
+
 Deep-sleep mode
 ---------------
 
