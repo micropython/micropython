@@ -234,7 +234,20 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError("value overflow");
         }
 
+        // temporarily disable WP bit, to allow writing to unwritable areas.
+        // (most likely a "const" variable)
+        // disable interrupts in this short while, to prevent the CPU from jumping
+        // to any other interrupt/preemption/whatever while the protection is off.
+
+        unsigned long flags;
+        local_irq_save(flags);
+        write_cr0(read_cr0() & (~0x10000));
+
         *ptr = (u64)value;
+
+        write_cr0(read_cr0() | 0x10000);
+        local_irq_restore(flags);
+
         return mp_const_none;
     } else {
         return mp_obj_new_int_from_uint(*ptr);
