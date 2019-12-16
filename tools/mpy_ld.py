@@ -765,14 +765,6 @@ class MPYOutput:
             self.write_uint(len(s) << 1)
             self.write_bytes(s)
 
-    def write_obj(self, o):
-        if o is Ellipsis:
-            self.write_bytes(b'e')
-            return
-        else:
-            # Other Python types not implemented
-            assert 0
-
     def write_reloc(self, base, offset, dest, n):
         need_offset = not (base == self.prev_base and offset == self.prev_offset + 1)
         self.prev_offset = offset + n - 1
@@ -845,16 +837,10 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.write_uint(scope_flags)
 
     # MPY: n_obj
-    out.write_uint(bool(len(env.full_rodata)) + bool(len(env.full_bss)))
+    out.write_uint(0)
 
     # MPY: n_raw_code
     out.write_uint(0)
-
-    # MPY: optional bytes object with rodata
-    if len(env.full_rodata):
-        out.write_obj(Ellipsis)
-    if len(env.full_bss):
-        out.write_obj(Ellipsis)
 
     # MPY: rodata and/or bss
     if len(env.full_rodata):

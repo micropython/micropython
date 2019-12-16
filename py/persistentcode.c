@@ -438,9 +438,18 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
         // Allocate constant table
         size_t n_alloc = prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code;
+        #if MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             ++n_alloc; // additional entry for mp_fun_table
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
+                ++n_alloc; // additional entry for rodata
+            }
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERBSS) {
+                ++n_alloc; // additional entry for BSS
+            }
         }
+        #endif
+
         const_table = m_new(mp_uint_t, n_alloc);
         mp_uint_t *ct = const_table;
 
@@ -454,6 +463,21 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         if (kind != MP_CODE_BYTECODE) {
             // Populate mp_fun_table entry
             *ct++ = (mp_uint_t)(uintptr_t)&mp_fun_table;
+
+            // Allocate and load rodata if needed
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
+                size_t size = read_uint(reader, NULL);
+                uint8_t *rodata = m_new(uint8_t, size);
+                read_bytes(reader, rodata, size);
+                *ct++ = (uintptr_t)rodata;
+            }
+
+            // Allocate BSS if needed
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERBSS) {
+                size_t size = read_uint(reader, NULL);
+                uint8_t *bss = m_new0(uint8_t, size);
+                *ct++ = (uintptr_t)bss;
+            }
         }
         #endif
 
@@ -469,6 +493,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     // Create raw_code and return it
     mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
     if (kind == MP_CODE_BYTECODE) {
+        // Assign bytecode to raw code object
         mp_emit_glue_assign_bytecode(rc, fun_data,
             #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             fun_data_len,
@@ -481,18 +506,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
-        mp_uint_t *ct = &const_table[1];
-        if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
-            size_t size = read_uint(reader, NULL);
-            uint8_t *rodata = m_new(uint8_t, size);
-            read_bytes(reader, rodata, size);
-            *ct++ = (uintptr_t)rodata;
-        }
-        if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERBSS) {
-            size_t size = read_uint(reader, NULL);
-            uint8_t *bss = m_new0(uint8_t, size);
-            *ct++ = (uintptr_t)bss;
-        }
+        // Relocate and commit code to executable address space
         reloc_info_t ri = {reader, const_table};
         #if defined(MP_PLAT_COMMIT_EXEC)
         void *opt_ri = (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRELOC) ? &ri : NULL;
@@ -503,6 +517,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         }
         #endif
 
+        // Assign native code to raw code object
         mp_emit_glue_assign_native(rc, kind,
             fun_data, fun_data_len, const_table,
             #if MICROPY_PERSISTENT_CODE_SAVE
