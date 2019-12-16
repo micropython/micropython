@@ -166,8 +166,8 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     enum { ARG_passive, ARG_essid, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_passive, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -212,10 +212,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_cyw43_scan_obj, 1, network_cyw43_scan)
 STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_essid, ARG_key, ARG_auth, ARG_bssid, ARG_channel };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_auth, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 

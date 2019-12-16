@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_type, MP_ARG_INT, {.u_int = ESP_PARTITION_TYPE_APP} },
         { MP_QSTR_subtype, MP_ARG_INT, {.u_int = ESP_PARTITION_SUBTYPE_ANY} },
-        { MP_QSTR_label, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_label, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
