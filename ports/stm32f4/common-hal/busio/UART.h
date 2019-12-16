@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,33 @@
 #define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "stm32f4/periph.h"
+#include "stm32f4xx_hal.h" 
 
 #include "py/obj.h"
+#include "py/ringbuf.h"
+
+#ifndef UART_IRQPRI
+#define UART_IRQPRI       1
+#endif
+#ifndef UART_IRQSUB_PRI
+#define UART_IRQSUB_PRI    0
+#endif
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t rx_pin;
-    uint8_t tx_pin;
-    uint8_t character_bits;
-    bool rx_error;
+    UART_HandleTypeDef handle;
+    IRQn_Type irq;
+    const mcu_uart_tx_obj_t *tx;
+    const mcu_uart_rx_obj_t *rx;
+
+    ringbuf_t rbuf;
+    uint8_t rx_char;
+
     uint32_t baudrate;
     uint32_t timeout_ms;
-    uint32_t buffer_length;
-    uint8_t* buffer;
 } busio_uart_obj_t;
+
+void uart_reset(void);
 
 #endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H

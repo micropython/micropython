@@ -76,7 +76,8 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb.git
-	branch = develop
+	branch = master
+	fetchRecurseSubmodules = false
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
@@ -104,3 +105,6 @@
 [submodule "frozen/Adafruit_CircuitPython_SD"]
 	path = frozen/Adafruit_CircuitPython_SD
 	url = https://github.com/adafruit/Adafruit_CircuitPython_SD.git
+[submodule "lib/mp3"]
+	path = lib/mp3
+	url = https://github.com/adafruit/Adafruit_MP3

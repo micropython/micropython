@@ -37,7 +37,7 @@ typedef struct {
     const mcu_pin_obj_t *tx_pin;
     const mcu_pin_obj_t *rx_pin;
     uint32_t baudrate;
-    uint32_t timeout;
+    uint32_t timeout_us;
 } busio_uart_obj_t;
 
 void busio_uart_reset(void);

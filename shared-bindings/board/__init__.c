@@ -93,6 +93,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 //|
 //|   Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
 //|
+//|   The object created uses the default parameter values for `busio.UART`. If you need to set
+//|   parameters that are not changeable after creation, such as ``receiver_buffer_size``,
+//|   do not use `board.UART()`; instead create a `busio.UART` object explicitly with the
+//|   desired parameters.
+//|
+//|
 #if BOARD_UART
 mp_obj_t board_uart(void) {
     mp_obj_t singleton = common_hal_board_get_uart();

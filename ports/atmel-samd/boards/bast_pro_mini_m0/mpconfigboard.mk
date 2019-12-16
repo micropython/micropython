@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x1209
 USB_PID = 0xBAB3
 USB_PRODUCT = "Bast Pro Mini M0"

@@ -214,6 +214,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objtype.o \
 	objzip.o \
 	opmethods.o \
+	proto.o \
 	reload.o \
 	sequence.o \
 	stream.o \
@@ -307,7 +308,7 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
-	@$(ECHO) "GEN $@"
+	@$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
 
 SRC_QSTR += $(HEADER_BUILD)/moduledefs.h

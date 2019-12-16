@@ -97,27 +97,28 @@ STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
         return;
     }
-    uint32_t num_samples = buffer_length / self->bytes_per_sample / self->spacing;
+    uint32_t num_samples = buffer_length / self->bytes_per_sample / self->sample_channel_count;
+    uint16_t *end_dev_buffer = dev_buffer + 2 * num_samples;
 
     if (self->bytes_per_sample == 1) {
         uint8_t offset = self->signed_to_unsigned ? 0x80 : 0;
         uint16_t scale = self->scale;
-        for (uint32_t i=0; i<buffer_length/self->spacing; i++) {
+        while (dev_buffer < end_dev_buffer) {
             uint8_t rawval = (*buffer++ + offset);
             uint16_t val = (uint16_t)(((uint32_t)rawval * (uint32_t)scale) >> 8);
             *dev_buffer++ = val;
-            if (self->spacing == 1)
+            if (self->sample_channel_count == 1)
                 *dev_buffer++ = val;
         }
     } else {
         uint16_t offset = self->signed_to_unsigned ? 0x8000 : 0;
         uint16_t scale = self->scale;
         uint16_t *buffer16 = (uint16_t*)buffer;
-        for (uint32_t i=0; i<buffer_length/2/self->spacing; i++) {
+        while (dev_buffer < end_dev_buffer) {
             uint16_t rawval = (*buffer16++ + offset);
             uint16_t val = (uint16_t)((rawval * (uint32_t)scale) >> 16);
             *dev_buffer++ = val;
-            if (self->spacing == 1)
+            if (self->sample_channel_count == 1)
                 *dev_buffer++ = val;
         }
     }
@@ -231,9 +232,12 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
 
     uint32_t max_buffer_length;
+    uint8_t spacing;
     audiosample_get_buffer_structure(sample, /* single channel */ false,
         &self->single_buffer, &self->signed_to_unsigned, &max_buffer_length,
-        &self->spacing);
+        &spacing);
+    self->sample_channel_count = audiosample_channel_count(sample);
+
     if (max_buffer_length > UINT16_MAX) {
         mp_raise_ValueError_varg(translate("Buffer length %d too big. It must be less than %d"), max_buffer_length, UINT16_MAX);
     }

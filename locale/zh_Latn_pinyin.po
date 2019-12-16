@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:50-0700\n"
+"POT-Creation-Date: 2019-12-12 15:33-0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -24,6 +24,19 @@ msgid ""
 msgstr ""
 "\n"
 "Dàimǎ yǐ wánchéng yùnxíng. Zhèngzài děngdài chóngxīn jiāzài.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"Please file an issue with the contents of your CIRCUITPY drive at \n"
+"https://github.com/adafruit/circuitpython/issues\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"To exit, please reset the board without "
+msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -120,6 +133,10 @@ msgstr "'%s' zhěngshù %d bùzài fànwéi nèi %d.%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -290,8 +307,8 @@ msgid "Array values should be single bytes."
 msgstr "Shùzǔ zhí yīnggāi shì dāngè zì jié."
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running.\n"
-msgstr "MicroPython VM wèi yùnxíng shí chángshì duī fēnpèi.\n"
+msgid "Attempted heap allocation when MicroPython VM not running."
+msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -400,6 +417,10 @@ msgstr "Zài shūchū móshì xià wúfǎ huòqǔ lādòng"
 msgid "Cannot get temperature"
 msgstr "Wúfǎ huòqǔ wēndù"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
@@ -444,6 +465,16 @@ msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Wèi tígōng zìfú huǎncún xiě rù"
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython core code crashed hard. Whoops!\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"CircuitPython is in safe mode because you pressed the reset button during "
+"boot. Press again to exit safe mode.\n"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr "Shízhōng de yǐn jiǎo chūshǐhuà shībài."
@@ -482,26 +513,31 @@ msgstr "Fǔbài de .mpy wénjiàn"
 msgid "Corrupt raw code"
 msgstr "Sǔnhuài de yuánshǐ dàimǎ"
 
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Wúfǎ chūshǐhuà UART"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate decoder"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate first buffer"
 msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
 
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate input buffer"
+msgstr ""
+
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate second buffer"
 msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
 
 #: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler.\n"
-msgstr "Bēngkuì dào HardFault_Handler.\n"
+msgid "Crash into the HardFault_Handler."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -580,11 +616,6 @@ msgstr "Qídài yīgè dìzhǐ"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed initiate attribute read, err 0x%04x"
-msgstr ""
-
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr "Fāsòng mìnglìng shībài."
@@ -593,15 +624,6 @@ msgstr "Fāsòng mìnglìng shībài."
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to add characteristic, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to add descriptor, err 0x%04x"
-msgstr "Wúfǎ tiānjiā miáoshù fú, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -614,10 +636,6 @@ msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to change softdevice state, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr ""
 
@@ -625,114 +643,26 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr "Liánjiē shībài: Chāoshí"
 
-#: ports/nrf/common-hal/_bleio/Service.c
-msgid "Failed to create service, NRF_ERROR_%q"
+#: shared-module/audiomp3/MP3File.c
+msgid "Failed to parse MP3 file"
 msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to discover services"
-msgstr "Fāxiàn fúwù shībài"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get local address"
-msgstr "Huòqǔ běndì dìzhǐ shībài"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to get softdevice state"
-msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
-msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to pair"
-msgstr "Pèiduì shībài"
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Dòu qǔ CCCD zhí, err 0x%04x shībài"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr "Dòu qǔ shǔxìng zhí shībài, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Wúfǎ dòu qǔ gatts zhí, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/UUID.c
-#, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Wúfǎ zhùcè màizhǔ tèdìng de UUID, err 0x%04x"
 
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to start advertising, NRF_ERROR_%q"
+#: supervisor/shared/safe_mode.c
+msgid "Failed to write internal flash."
 msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Connection.c
-msgid "Failed to start pairing, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-#, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/Adapter.c
-msgid "Failed to stop advertising, NRF_ERROR_%q"
-msgstr ""
-
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr "Wúfǎ xiě rù CCCD, cuòwù 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Xiě rù shǔxìng zhí shībài, err 0x%04x"
-
-#: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
 
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
-#: ports/nrf/peripherals/nrf/nvm.c
-msgid "Flash erase failed"
-msgstr "Flash cā chú shībài"
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash erase failed to start, err 0x%04x"
-msgstr "Flash cā chú shībài, err 0x%04x"
-
-#: ports/nrf/peripherals/nrf/nvm.c
+#: ports/nrf/common-hal/nvm/ByteArray.c
 msgid "Flash write failed"
 msgstr "Flash xiě rù shībài"
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash write failed to start, err 0x%04x"
-msgstr "Flash xiě rù shībài, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -775,6 +705,14 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr "Rènzhèng bùzú"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr "Jiāmì bùzú"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -900,17 +838,6 @@ msgstr "Chángdù bìxū shì yīgè zhěngshù"
 msgid "Length must be non-negative"
 msgstr "Chángdù bìxū shìfēi fùshù"
 
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Looks like our core CircuitPython code crashed hard. Whoops!\n"
-"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
-" with the contents of your CIRCUITPY drive and this message:\n"
-msgstr ""
-"Kàn lái wǒmen de héxīn CircuitPython dàimǎ bēngkuì dé hěn lìhài. Āi yōu!\n"
-"Qǐng zài https://Github.Com/adafruit/circuitpython/issues\n"
-"shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de nèiróng "
-"hé cǐ xiāoxī:\n"
-
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
 msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
@@ -925,12 +852,12 @@ msgid "Maximum x value when mirrored is %d"
 msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr "MicroPython NLR tiàoyuè shībài. Kěnéng nèicún fǔbài.\n"
+msgid "MicroPython NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error.\n"
-msgstr "MicroPython zhìmìng cuòwù.\n"
+msgid "MicroPython fatal error."
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -997,6 +924,10 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 #: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
+
+#: supervisor/shared/safe_mode.c
+msgid "Nordic Soft Device failure assertion."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1133,7 +1064,7 @@ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ g
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA huò SCL xūyào lādòng"
 
@@ -1180,16 +1111,8 @@ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting "
-"CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of "
-"your CIRCUITPY drive:\n"
+"Please increase the stack size if you know how, or if not:"
 msgstr ""
-"Yóuyú duīzhàn tài xiǎo, huánliú Python rè sǔnhuài.\n"
-"Qǐng zēngjiā duīzhàn chǐcùn xiànzhì, ránhòu chóngxīn shèzhì (zài dànchū "
-"CIRCUITPY).\n"
-"Rúguǒ nín méiyǒu gǎibiàn duīzhàn, qǐng zài cǐ chù tíchū yīgè wèntí, bìng zài "
-"rù nín de CIRCUITPY qūdòngqì:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1201,22 +1124,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
+"The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"Wēi kòngzhì qì de diànliàng bèi chōng chū. Qǐng quèbǎo nín de diànyuán wèi\n"
-"zhěnggè diànlù tígōng zúgòu de diànyuán bìng àn xià fùwèi (zài dànchū "
-"CIRCUITPY hòu).\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The reset button was pressed while booting CircuitPython. Press again to "
-"exit safe mode.\n"
-msgstr ""
-"Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ tuìchū "
-"ānquán móshì\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1249,10 +1160,6 @@ msgstr "Píng pū zhí chāochū fànwéi"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Píng pū kuāndù bìxū huàfēn wèi tú kuāndù"
-
-#: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1327,10 +1234,35 @@ msgstr "Wúfǎ xiě rù nvm."
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Unknown reason."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
+
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "RHS (yùqí %d, huòdé %d) shàng wèi pǐpèi de xiàngmù."
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
@@ -1386,11 +1318,8 @@ msgstr ""
 "Ruò yào liè chū nèizài de mókuài, qǐng qǐng zuò yǐxià `help(\"modules\")`.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"You are running in safe mode which means something unanticipated happened.\n"
+msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
-"Nǐ zhèngzài ānquán móshì xià yùnxíng, zhè yì wèi zhuó yìwài fāshēng de "
-"shìqíng.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -1857,7 +1786,7 @@ msgstr "éwài de guānjiàn cí cānshù"
 msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
-#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3File.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
@@ -2539,13 +2468,9 @@ msgstr "yùzhí bìxū zài fànwéi 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() xūyào wánquán 1 cānshù"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "chāoshí >100 (dānwèi shì miǎo, ér bùshì háomiǎo)"
+msgid "timeout must be 0.0-100.0 seconds"
+msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -2735,6 +2660,9 @@ msgstr "líng bù"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
 
+#~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
+#~ msgstr "MicroPython VM wèi yùnxíng shí chángshì duī fēnpèi.\n"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Wúfǎ zài zhōngyāng móshì xià tiānjiā fúwù"
 
@@ -2756,6 +2684,12 @@ msgstr "líng bù"
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
 
+#~ msgid "Could not decode ble_uuid, err 0x%04x"
+#~ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
+
+#~ msgid "Crash into the HardFault_Handler.\n"
+#~ msgstr "Bēngkuì dào HardFault_Handler.\n"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
@@ -2765,21 +2699,21 @@ msgstr "líng bù"
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Wúfǎ huòdé mutex"
 
-#, c-format
 #~ msgid "Failed to add characteristic, err 0x%04x"
 #~ msgstr "Tiānjiā tèxìng shībài, err 0x%04x"
+
+#~ msgid "Failed to add descriptor, err 0x%04x"
+#~ msgstr "Wúfǎ tiānjiā miáoshù fú, err 0x%04x"
 
 #~ msgid "Failed to add service"
 #~ msgstr "Tiānjiā fúwù shībài"
 
-#, c-format
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Tiānjiā fúwù shībài, err 0x%04x"
 
 #~ msgid "Failed to change softdevice state"
 #~ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
 
-#, c-format
 #~ msgid "Failed to configure advertising, err 0x%04x"
 #~ msgstr "Wúfǎ pèizhì guǎnggào, cuòwù 0x%04x"
 
@@ -2789,40 +2723,86 @@ msgstr "líng bù"
 #~ msgid "Failed to continue scanning"
 #~ msgstr "Jìxù sǎomiáo shībài"
 
-#, c-format
 #~ msgid "Failed to continue scanning, err 0x%04x"
 #~ msgstr "Jìxù sǎomiáo shībài, err 0x%04x"
 
 #~ msgid "Failed to create mutex"
 #~ msgstr "Wúfǎ chuàngjiàn hù chì suǒ"
 
+#~ msgid "Failed to discover services"
+#~ msgstr "Fāxiàn fúwù shībài"
+
+#~ msgid "Failed to get local address"
+#~ msgstr "Huòqǔ běndì dìzhǐ shībài"
+
+#~ msgid "Failed to get softdevice state"
+#~ msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
+
+#~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
+#~ msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
+
+#~ msgid "Failed to pair"
+#~ msgstr "Pèiduì shībài"
+
+#~ msgid "Failed to read CCCD value, err 0x%04x"
+#~ msgstr "Dòu qǔ CCCD zhí, err 0x%04x shībài"
+
+#~ msgid "Failed to read attribute value, err 0x%04x"
+#~ msgstr "Dòu qǔ shǔxìng zhí shībài, err 0x%04x"
+
+#~ msgid "Failed to read gatts value, err 0x%04x"
+#~ msgstr "Wúfǎ dòu qǔ gatts zhí, err 0x%04x"
+
+#~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+#~ msgstr "Wúfǎ zhùcè màizhǔ tèdìng de UUID, err 0x%04x"
+
 #~ msgid "Failed to release mutex"
 #~ msgstr "Wúfǎ shìfàng mutex"
 
-#, c-format
 #~ msgid "Failed to set device name, err 0x%04x"
 #~ msgstr "Wúfǎ shèzhì shèbèi míngchēng, cuòwù 0x%04x"
 
 #~ msgid "Failed to start advertising"
 #~ msgstr "Qǐdòng guǎnggào shībài"
 
-#, c-format
 #~ msgid "Failed to start advertising, err 0x%04x"
 #~ msgstr "Qǐdòng guǎnggào shībài, err 0x%04x"
 
-#, c-format
+#~ msgid "Failed to start connecting, error 0x%04x"
+#~ msgstr "Wúfǎ kāishǐ liánjiē, cuòwù 0x%04x"
+
 #~ msgid "Failed to start pairing, error 0x%04x"
 #~ msgstr "Wúfǎ kāishǐ pèiduì, cuòwù 0x%04x"
 
 #~ msgid "Failed to start scanning"
 #~ msgstr "Qǐdòng sǎomiáo shībài"
 
+#~ msgid "Failed to start scanning, err 0x%04x"
+#~ msgstr "Qǐdòng sǎomiáo shībài, err 0x%04x"
+
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào"
 
-#, c-format
 #~ msgid "Failed to stop advertising, err 0x%04x"
 #~ msgstr "Wúfǎ tíngzhǐ guǎnggào, err 0x%04x"
+
+#~ msgid "Failed to write CCCD, err 0x%04x"
+#~ msgstr "Wúfǎ xiě rù CCCD, cuòwù 0x%04x"
+
+#~ msgid "Failed to write attribute value, err 0x%04x"
+#~ msgstr "Xiě rù shǔxìng zhí shībài, err 0x%04x"
+
+#~ msgid "Failed to write gatts value, err 0x%04x"
+#~ msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
+
+#~ msgid "Flash erase failed"
+#~ msgstr "Flash cā chú shībài"
+
+#~ msgid "Flash erase failed to start, err 0x%04x"
+#~ msgstr "Flash cā chú shībài, err 0x%04x"
+
+#~ msgid "Flash write failed to start, err 0x%04x"
+#~ msgstr "Flash xiě rù shībài, err 0x%04x"
 
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
@@ -2832,6 +2812,22 @@ msgstr "líng bù"
 
 #~ msgid "Invalid data pin"
 #~ msgstr "Wúxiào de shùjù yǐn jiǎo"
+
+#~ msgid ""
+#~ "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+#~ " with the contents of your CIRCUITPY drive and this message:\n"
+#~ msgstr ""
+#~ "Kàn lái wǒmen de héxīn CircuitPython dàimǎ bēngkuì dé hěn lìhài. Āi yōu!\n"
+#~ "Qǐng zài https://Github.Com/adafruit/circuitpython/issues\n"
+#~ "shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de "
+#~ "nèiróng hé cǐ xiāoxī:\n"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+#~ msgstr "MicroPython NLR tiàoyuè shībài. Kěnéng nèicún fǔbài.\n"
+
+#~ msgid "MicroPython fatal error.\n"
+#~ msgstr "MicroPython zhìmìng cuòwù.\n"
 
 #~ msgid "Must be a Group subclass."
 #~ msgstr "Bìxū shì fēnzǔ zi lèi."
@@ -2854,18 +2850,58 @@ msgstr "líng bù"
 #~ msgstr ""
 #~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
-#, c-format
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
 
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase stack size limits and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ "If you didn't change the stack, then file an issue here with the contents "
+#~ "of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Yóuyú duīzhàn tài xiǎo, huánliú Python rè sǔnhuài.\n"
+#~ "Qǐng zēngjiā duīzhàn chǐcùn xiànzhì, ránhòu chóngxīn shèzhì (zài dànchū "
+#~ "CIRCUITPY).\n"
+#~ "Rúguǒ nín méiyǒu gǎibiàn duīzhàn, qǐng zài cǐ chù tíchū yīgè wèntí, bìng "
+#~ "zài rù nín de CIRCUITPY qūdòngqì:\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Please make sure your power supply "
+#~ "provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "Wēi kòngzhì qì de diànliàng bèi chōng chū. Qǐng quèbǎo nín de diànyuán "
+#~ "wèi\n"
+#~ "zhěnggè diànlù tígōng zúgòu de diànyuán bìng àn xià fùwèi (zài dànchū "
+#~ "CIRCUITPY hòu).\n"
+
+#~ msgid ""
+#~ "The reset button was pressed while booting CircuitPython. Press again to "
+#~ "exit safe mode.\n"
+#~ msgstr ""
+#~ "Qǐdòng CircuitPython shí, chóng zhì ànniǔ bèi àn xià. Zàicì àn xià yǐ "
+#~ "tuìchū ānquán móshì\n"
+
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 
 #~ msgid "UUID integer value not in range 0 to 0xffff"
 #~ msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"
 
 #~ msgid "Voice index too high"
 #~ msgstr "Yǔyīn suǒyǐn tài gāo"
+
+#~ msgid ""
+#~ "You are running in safe mode which means something unanticipated "
+#~ "happened.\n"
+#~ msgstr ""
+#~ "Nǐ zhèngzài ānquán móshì xià yùnxíng, zhè yì wèi zhuó yìwài fāshēng de "
+#~ "shìqíng.\n"
 
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
@@ -2890,6 +2926,12 @@ msgstr "líng bù"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "kuài suǒyǐn chāochū fànwéi"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() xūyào wánquán 1 cānshù"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "chāoshí >100 (dānwèi shì miǎo, ér bùshì háomiǎo)"
 
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"

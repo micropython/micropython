@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,37 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include <stdint.h>
 
-void board_init(void)
-{
-}
+#include "py/obj.h"
+#include "py/runtime.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+#include "shared-bindings/audiomp3/MP3File.h"
 
-void reset_board(void) {
-}
+//| :mod:`audiomp3` --- Support for MP3-compressed audio files
+//| ==========================================================
+//|
+//| .. module:: audiomp3
+//|   :synopsis: Support for mp3 files
+//|
+//| The `audiomp3` module contains an mp3 decoder
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     MP3File
+//|
+
+STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomp3) },
+    { MP_ROM_QSTR(MP_QSTR_MP3File), MP_ROM_PTR(&audiomp3_mp3file_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(audiomp3_module_globals, audiomp3_module_globals_table);
+
+const mp_obj_module_t audiomp3_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&audiomp3_module_globals,
+};

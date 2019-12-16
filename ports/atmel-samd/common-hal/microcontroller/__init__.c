@@ -92,7 +92,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     },
 };
 
-// NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
@@ -100,7 +99,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = (uint8_t*) (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+    .start_address = (uint8_t*) (CIRCUITPY_INTERNAL_NVM_START_ADDR)
 };
 #endif
 

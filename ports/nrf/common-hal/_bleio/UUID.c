@@ -49,10 +49,7 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, uint32_t uuid16, co
         memcpy(vs_uuid.uuid128, uuid128, sizeof(vs_uuid.uuid128));
 
         // Register this vendor-specific UUID. Bytes 12 and 13 will be zero.
-        const uint32_t err_code = sd_ble_uuid_vs_add(&vs_uuid, &self->nrf_ble_uuid.type);
-        if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg_varg(translate("Failed to register Vendor-Specific UUID, err 0x%04x"), err_code);
-        }
+        check_nrf_error(sd_ble_uuid_vs_add(&vs_uuid, &self->nrf_ble_uuid.type));
         vm_used_ble = true;
     }
 }
@@ -67,11 +64,7 @@ uint32_t common_hal_bleio_uuid_get_uuid16(bleio_uuid_obj_t *self) {
 
 void common_hal_bleio_uuid_get_uuid128(bleio_uuid_obj_t *self, uint8_t uuid128[16]) {
     uint8_t length;
-    const uint32_t err_code = sd_ble_uuid_encode(&self->nrf_ble_uuid, &length, uuid128);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Could not decode ble_uuid, err 0x%04x"), err_code);
-    }
+    check_nrf_error(sd_ble_uuid_encode(&self->nrf_ble_uuid, &length, uuid128));
 }
 
 void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf) {
@@ -85,7 +78,7 @@ void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf) {
 
 void bleio_uuid_construct_from_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_ble_uuid) {
     if (nrf_ble_uuid->type == BLE_UUID_TYPE_UNKNOWN) {
-        mp_raise_RuntimeError(translate("Unexpected nrfx uuid type"));
+        mp_raise_bleio_BluetoothError(translate("Unexpected nrfx uuid type"));
     }
     self->nrf_ble_uuid.uuid = nrf_ble_uuid->uuid;
     self->nrf_ble_uuid.type = nrf_ble_uuid->type;

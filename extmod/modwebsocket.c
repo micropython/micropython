@@ -286,6 +286,7 @@ STATIC const mp_rom_map_elem_t websocket_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 
 STATIC const mp_stream_p_t websocket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = websocket_read,
     .write = websocket_write,
     .ioctl = websocket_ioctl,

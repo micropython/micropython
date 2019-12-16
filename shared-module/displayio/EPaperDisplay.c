@@ -26,6 +26,7 @@
 
 #include "shared-bindings/displayio/EPaperDisplay.h"
 
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/FourWire.h"
@@ -35,6 +36,7 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include <stdint.h>
@@ -82,7 +84,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     if (busy_pin != NULL) {
         self->busy.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->busy, busy_pin);
-        never_reset_pin_number(busy_pin->number);
+        common_hal_never_reset_pin(busy_pin);
     }
 
     // Clear the color memory if it isn't in use.
@@ -175,7 +177,7 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
         return 0;
     }
     // Refresh at seconds per frame rate.
-    uint32_t elapsed_time = ticks_ms - self->core.last_refresh;
+    uint32_t elapsed_time = supervisor_ticks_ms64() - self->core.last_refresh;
     if (elapsed_time > self->milliseconds_per_frame) {
         return 0;
     }
@@ -298,7 +300,7 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
 }
 
 bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* self) {
-    
+
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
         if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
             self->refreshing = false;
@@ -339,7 +341,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
             bool busy = common_hal_digitalio_digitalinout_get_value(&self->busy);
             refresh_done = busy != self->busy_state;
         } else {
-            refresh_done = ticks_ms - self->core.last_refresh > self->refresh_time;
+            refresh_done = supervisor_ticks_ms64() - self->core.last_refresh > self->refresh_time;
         }
         if (refresh_done) {
             self->refreshing = false;
@@ -365,6 +367,8 @@ void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self) {
     displayio_display_core_collect_ptrs(&self->core);
+    gc_collect_ptr(self->start_sequence);
+    gc_collect_ptr(self->stop_sequence);
 }
 
 bool maybe_refresh_epaperdisplay(void) {

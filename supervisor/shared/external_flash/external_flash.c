@@ -324,6 +324,10 @@ static bool allocate_ram_cache(void) {
         return true;
     }
 
+    if (MP_STATE_MEM(gc_pool_start) == 0) {
+        return false;
+    }
+
     MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
@@ -367,7 +371,7 @@ static void release_ram_cache(void) {
     if (supervisor_cache != NULL) {
         free_memory(supervisor_cache);
         supervisor_cache = NULL;
-    } else {
+    } else if (MP_STATE_MEM(gc_pool_start)) {
         m_free(MP_STATE_VM(flash_ram_cache));
     }
     MP_STATE_VM(flash_ram_cache) = NULL;
@@ -415,7 +419,7 @@ static bool flush_ram_cache(bool keep_cache) {
             write_flash(current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                         MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                         SPI_FLASH_PAGE_SIZE);
-            if (!keep_cache && supervisor_cache == NULL) {
+            if (!keep_cache && supervisor_cache == NULL && MP_STATE_MEM(gc_pool_start)) {
                 m_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }

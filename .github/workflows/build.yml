@@ -129,6 +129,7 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
+        - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
@@ -137,10 +138,10 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
-        - "robohatmm1_m0"
         - "robohatmm1_m4"
         - "sam32"
         - "serpente"
+        - "shirtty"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
@@ -150,6 +151,7 @@ jobs:
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
         - "spresense"
+        - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stringcar_m0_express"
@@ -171,7 +173,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -192,7 +195,7 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
-      run: aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -201,7 +204,7 @@ jobs:
       run: |
         pip install uritemplate
     - name: Upload to Release
-      run: python3 -u upload_release_files.py
+      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
       working-directory: tools
       env:
         UPLOAD_URL: ${{ github.event.release.upload_url }}

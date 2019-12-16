@@ -101,7 +101,7 @@ mp_obj_t common_hal_board_create_uart(void) {
     const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
     const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
 
-    common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1000, 64);
+    common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1.0f, 64);
     MP_STATE_VM(shared_uart_bus) = MP_OBJ_FROM_PTR(self);
     return MP_STATE_VM(shared_uart_bus);
 }
