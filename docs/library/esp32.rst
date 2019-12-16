@@ -101,6 +101,50 @@ The Ultra-Low-Power co-processor
 
     Start the ULP running at the given *entry_point*.
 
+RMT
+---
+
+.. class:: RMT(channel, pin, clock_div)
+
+    This class provides access to one of the eight RMT channels. *channel* is
+    required and identifies which RMT channel (0-7) will be configured. *pin*,
+    also required, configures which Pin is bound to the RMT channel. *clock_div*
+    is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
+    channel allowing the *resolution* to be specified.
+
+.. method:: RMT.source_freq()
+
+    Returns the source clock frequency. Currently the source clock is not
+    configurable so this will always return 80MHz.
+
+.. method:: RMT.clock_div()
+
+    Return the clock divider. Note that *resolution* is
+    ``1/(source_freq/clock_div)``.
+
+.. method:: RMT.wait_done(timeout=0)
+
+    Returns True if ``send_pulses`` has completed.
+
+    If *timeout* (defined in ticks of ``source_freq/clock_div``) is specified
+    the method will wait for *timeout* or until ``send_pulses`` is complete,
+    returning False if the channel continues to transmit.
+
+.. Warning::
+    Avoid using ``wait_done()`` if looping is enabled.
+
+.. method:: RMT.loop(enable_loop)
+
+    Configure looping on the channel, allowing a stream of pulses to be
+    indefinitely repeated. *enable_loop* is bool, set to True to enable looping.
+
+.. method:: RMT.send_pulses(pulses, start)
+
+    Begin sending *pulses*, a list or tuple defining the stream of pulses. The
+    length of each pulse is defined by a number to be multiplied by the channel
+    resolution (1/(source_freq/clock_div)). *start* defines whether the stream
+    starts at 0 or 1.
+
 
 Constants
 ---------
