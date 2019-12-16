@@ -368,37 +368,19 @@ Notes:
 RMT
 ---
 
-The RMT (Remote Control) module, specific to the ESP32, was originally designed
-to send and receive infrared remote control signals. However, due to a flexible
-design and very accurate (as low as 12.5ns) pulse generation, it can also be
-used to transmit or receive many other types of digital signals::
+See :ref:`esp32.RMT <esp32.RMT>`
+
+The RMT is ESP32-specific and allows generation of accurate digital pulses with
+12.5ns resolution. Usage is::
+
+    import esp32
+    from machine import Pin
 
     r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
-    # The *resolution* is 100ns (1/(source_freq/clock_div)).
+    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
+    # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.send_pulses((1, 20, 2, 40), start=0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
-The input to the RMT module is an 80MHz clock (in the future it may be able to
-configure the input clock but, for now, it's fixed). ``clock_div`` *divides*
-the clock input which determines the *resolution* of the RMT channel. The
-numbers specificed in ``send_pulses`` are *multiplied* by the resolution to
-define the pulses.
-
-``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by
-multiplying the resolution by a 15-bit (0-32,768) number. There are eight
-channels (0-7) and each can have a different clock divider.
-
-So, in the example above, the 80MHz clock is divided by 8. Thus the
-resolution is (1/(80Mhz/8)) 100ns. Since the ``start`` level is 0 and toggles
-with each number, the bitstream is ``0101`` with durations of [100ns, 2000ns,
-100ns, 4000ns].
-
-For more details see Espressif's `ESP-IDF RMT documentation.
-<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
-
-.. Warning::
-   The current MicroPython RMT implementation lacks some features, most notably receiving pulses
-   and carrier transmit. It's also a *beta feature* and the interface may change in the future.
 
 OneWire driver
 --------------
