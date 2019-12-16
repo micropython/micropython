@@ -213,7 +213,7 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         # IDF v3 build
         - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
-        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
+        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2 components/nimble components/bt
         - make ${MAKEOPTS} -C ports/esp32 submodules
         - make ${MAKEOPTS} -C ports/esp32
         # clean
