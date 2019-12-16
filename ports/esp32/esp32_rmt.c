@@ -226,23 +226,19 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
     mp_uint_t num_items = (pulses_length / 2) + (pulses_length % 2);
     if (num_items > self->num_items)
     {
-        //printf("realloc required, old=%u, new=%u\n", self->num_items, num_items);
         self->items = (rmt_item32_t*)m_realloc(self->items, num_items * sizeof(rmt_item32_t *));
         self->num_items = num_items;
     }
-    //printf("num_items=%d pulses_length=%d\n\n", num_items, pulses_length);
 
     for (mp_uint_t item_index = 0; item_index < num_items; item_index++)
     {
         mp_uint_t pulse_index = item_index * 2;
         self->items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
         self->items[item_index].level0 = start++; // Note that start _could_ wrap.
-        //printf("duration=%d start=%d\n", items[item_index].duration0, items[item_index].level0);
         if (pulse_index < pulses_length)
         {
             self->items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
             self->items[item_index].level1 = start++;
-            //printf("duration=%d start=%d\n", items[item_index].duration1, items[item_index].level1);
         }
     }
     check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false /* non-blocking */));
