@@ -234,6 +234,10 @@ methods (see below), in order to support a variety of use cases.  A given block
 device may implement one form or the other, or both at the same time. The second
 form (with the offset parameter) is referred to as the "extended interface".
 
+Some filesystems (such as littlefs) that require more control over write
+operations, for example writing to sub-block regions without erasing, may require
+that the block device supports the extended interface.
+
 .. class:: AbstractBlockDev(...)
 
     Construct a block device object.  The parameters to the constructor are
