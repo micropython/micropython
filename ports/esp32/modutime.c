@@ -31,6 +31,7 @@
 #include <sys/time.h>
 
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "lib/timeutils/timeutils.h"
 #include "extmod/utime_mphal.h"
 
@@ -82,12 +83,41 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
+STATIC mp_obj_t time_adjtime(size_t n_args, const mp_obj_t *args) {
+    struct timeval dout_tv;
+    mp_obj_t dout_tup[2];
+
+    if (n_args == 1 && args[0] != mp_const_none) {
+	// Set a new adjustment value from struct tv delta
+	mp_obj_t *delta_tup;
+	struct timeval delta_tv;
+
+	mp_obj_get_array_fixed_n(args[0], 2, &delta_tup);
+	delta_tv.tv_sec = mp_obj_get_int(delta_tup[0]);
+	delta_tv.tv_usec = mp_obj_get_int(delta_tup[1]);
+
+	if (adjtime(&delta_tv, &dout_tv) != 0)
+	    mp_raise_OSError(MP_EINVAL);
+    } else {
+	// Just query the remaining adjustment
+	if (adjtime(NULL, &dout_tv) != 0)
+	    mp_raise_OSError(MP_EINVAL);
+    }
+
+    // Build the return struct tv tuple
+    dout_tup[0] = mp_obj_new_int(dout_tv.tv_sec);
+    dout_tup[1] = mp_obj_new_int(dout_tv.tv_usec);
+    return mp_obj_new_tuple(2, dout_tup);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_adjtime_obj, 0, 1, time_adjtime);
+
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_adjtime), MP_ROM_PTR(&time_adjtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
