@@ -255,9 +255,9 @@ STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
 
 // these must correspond to the respective enum in runtime0.h
 const mp_fun_table_t mp_fun_table = {
-    &mp_const_none_obj,
-    &mp_const_false_obj,
-    &mp_const_true_obj,
+    mp_const_none,
+    mp_const_false,
+    mp_const_true,
     mp_native_from_obj,
     mp_native_to_obj,
     mp_native_swap_globals,
