@@ -86,6 +86,15 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->height = height;
     self->ram_width = ram_width;
     self->ram_height = ram_height;
+
+    displayio_display_core_set_rotation(self, rotation);
+}
+
+void displayio_display_core_set_rotation( displayio_display_core_t* self,
+        int rotation) {
+    int height = self->height;
+    int width = self->width;
+
     rotation = rotation % 360;
     self->rotation = rotation;
     self->transform.x = 0;
