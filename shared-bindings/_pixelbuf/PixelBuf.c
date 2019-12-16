@@ -352,9 +352,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
     for (size_t offset = 0; offset < self->bytes; offset+= self->pixel_step) {
         pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? (self->rawbuf + offset) : NULL,
                            self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
-            if (self->auto_write)
-                call_show(self_in);
     }
+    if (self->auto_write)
+        call_show(self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
