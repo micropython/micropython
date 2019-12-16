@@ -235,13 +235,7 @@ and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
 Real time clock (RTC)
 ---------------------
 
-See :ref:`machine.RTC <machine.RTC>` 
-
-.. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*)` 
-          (using a custom handler), `RTC.init()` and `RTC.deinit()` are
-          currently not supported.
-
-::
+See :ref:`machine.RTC <machine.RTC>` ::
 
     from machine import RTC
 
@@ -254,6 +248,10 @@ See :ref:`machine.RTC <machine.RTC>`
     import ntptime
     ntptime.settime() # set the rtc datetime from the remote server
     rtc.datetime()    # get the date and time in UTC
+
+.. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*)` 
+          (using a custom handler), `RTC.init()` and `RTC.deinit()` are
+          currently not supported.
 
 Deep-sleep mode
 ---------------
