@@ -246,6 +246,11 @@ typedef union _mp_rom_obj_t { uint64_t u64; struct { const void *lo, *hi; } u32;
 #define MP_ROM_NONE MP_ROM_PTR(&mp_const_none_obj)
 #endif
 
+#ifndef MP_ROM_FALSE
+#define MP_ROM_FALSE MP_ROM_PTR(&mp_const_false_obj)
+#define MP_ROM_TRUE MP_ROM_PTR(&mp_const_true_obj)
+#endif
+
 #ifndef MP_ROM_INT
 typedef mp_const_obj_t mp_rom_obj_t;
 #define MP_ROM_INT(i) MP_OBJ_NEW_SMALL_INT(i)
