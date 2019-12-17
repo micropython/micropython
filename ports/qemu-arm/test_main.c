@@ -12,9 +12,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "lib/utils/gchelper.h"
-
-#include "tinytest.h"
-#include "tinytest_macros.h"
+#include "lib/tinytest/tinytest.h"
+#include "lib/tinytest/tinytest_macros.h"
 
 #define HEAP_SIZE (100 * 1024)
 
