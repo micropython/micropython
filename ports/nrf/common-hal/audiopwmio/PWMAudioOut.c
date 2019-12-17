@@ -255,16 +255,18 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->pwm->LOOP = 1;
     audiosample_reset_buffer(self->sample, false, 0);
     activate_audiopwmout_obj(self);
+    self->stopping = false;
+    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
     fill_buffers(self, 0);
     self->pwm->SEQ[1].PTR = self->pwm->SEQ[0].PTR;
     self->pwm->SEQ[1].CNT = self->pwm->SEQ[0].CNT;
     self->pwm->EVENTS_SEQSTARTED[0] = 0;
     self->pwm->EVENTS_SEQSTARTED[1] = 0;
+    self->pwm->EVENTS_SEQEND[0] = 0;
+    self->pwm->EVENTS_SEQEND[1] = 0;
     self->pwm->EVENTS_STOPPED = 0;
-    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
     self->pwm->TASKS_SEQSTART[0] = 1;
     self->playing = true;
-    self->stopping = false;
     self->paused = false;
 }
 
