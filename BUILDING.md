@@ -44,10 +44,6 @@ Examples:
 
 If you aren't sure what boards exist, have a peek in the boards subdirectory of your port.
 
-Useful make arguments or targets:
-
-    make BOARD=circuitplayground_express clean
-
 # Testing
 
 If you are working on changes to the core language, you might find it useful to run the test suite.
@@ -70,14 +66,14 @@ A successful run will say something like
 
 # Debugging
 
-The easiest way to debug CircuitPython on hardware is with a JLink device, JLinkGDBServer, and `gcc-arm-embedded`.   
+The easiest way to debug CircuitPython on hardware is with a JLink device, JLinkGDBServer, and an appropriate GDB.   
 Instructions can be found at https://learn.adafruit.com/debugging-the-samd21-with-gdb
 
-If using JLink, you'll need both the `JLinkGDBServer` and `arm-non-eabi-gdb-py` running.
+If using JLink, you'll need both the `JLinkGDBServer` and `arm-none-eabi-gdb` running.
 
 Example:
 
     JLinkGDBServer -if SWD -device ATSAMD51J19
-    arm-none-eabi-gdb-py build-metro_m4_express/firmware.elf -iex "target extended-remote :2331"
+    arm-none-eabi-gdb build-metro_m4_express/firmware.elf -iex "target extended-remote :2331"
  
  
