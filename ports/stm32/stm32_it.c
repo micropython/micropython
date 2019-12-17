@@ -609,6 +609,14 @@ void TIM1_UP_TIM16_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32H7)
+void TIM1_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_UP_IRQn);
+}
+#endif
+
 void TIM1_TRG_COM_TIM11_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM11_IRQn);
     timer_irq_handler(11);
@@ -702,6 +710,26 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
     timer_irq_handler(14);
     IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
+}
+#endif
+
+#if defined(STM32H7)
+void TIM15_IRQHandler(void) {
+    IRQ_ENTER(TIM15_IRQn);
+    timer_irq_handler(15);
+    IRQ_EXIT(TIM15_IRQn);
+}
+
+void TIM16_IRQHandler(void) {
+    IRQ_ENTER(TIM16_IRQn);
+    timer_irq_handler(16);
+    IRQ_EXIT(TIM16_IRQn);
+}
+
+void TIM17_IRQHandler(void) {
+    IRQ_ENTER(TIM17_IRQn);
+    timer_irq_handler(17);
+    IRQ_EXIT(TIM17_IRQn);
 }
 #endif
 
