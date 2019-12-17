@@ -27,6 +27,9 @@
 // Explanation of how a user got into safe mode.
 #define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up"
 
+// Increase stack size slightly due to CPX library import nesting
+#define CIRCUITPY_DEFAULT_STACK_SIZE  (4504)
+
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB02)
 
