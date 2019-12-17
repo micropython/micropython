@@ -43,6 +43,8 @@ Examples:
     make BOARD=circuitplayground_bluefruit
 
 If you aren't sure what boards exist, have a peek in the boards subdirectory of your port.
+If you have a fast computer with many cores, consider adding `-j` to your build flags, such as `-j17` on
+a 6-core 12-thread machine.
 
 # Testing
 
@@ -75,5 +77,6 @@ Example:
 
     JLinkGDBServer -if SWD -device ATSAMD51J19
     arm-none-eabi-gdb build-metro_m4_express/firmware.elf -iex "target extended-remote :2331"
- 
- 
+
+If your port/build includes `arm-none-eabi-gdb-py`, consider using it instead, as it can be used for better register
+debugging with https://github.com/bnahill/PyCortexMDebug
