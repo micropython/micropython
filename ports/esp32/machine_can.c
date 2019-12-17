@@ -78,16 +78,12 @@ STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_restart_obj, machine_hw_can_restart);
 
-// any(fifo) - return `True` if any message waiting on the FIFO, else `False`
-STATIC mp_obj_t machine_hw_can_any(mp_obj_t self_in, mp_obj_t fifo_in){
+// any() - return `True` if any message waiting, else `False`
+STATIC mp_obj_t machine_hw_can_any(mp_obj_t self_in){
     can_status_info_t status = _machine_hw_can_get_status();
-    if(mp_obj_new_int(status.msgs_to_rx)>0){
-        return mp_const_true;
-    }else{
-        return mp_const_false;
-    }
+    return mp_obj_new_bool((status.msgs_to_rx)>0);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_any_obj, machine_hw_can_any);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_any_obj, machine_hw_can_any);
 
 // Get the state of the controller
 STATIC mp_obj_t machine_hw_can_state(mp_obj_t self_in) {
