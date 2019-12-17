@@ -6,7 +6,7 @@ Welcome to CircuitPython!
 This document is a quick-start guide only.
 
 Detailed guides on how to build CircuitPython can be found in the Adafruit Learn system at
-https://learn.adafruit.com/building-circuitpython/.
+https://learn.adafruit.com/building-circuitpython/
 
 ## Setup
 
