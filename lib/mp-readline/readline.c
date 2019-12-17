@@ -74,6 +74,7 @@ STATIC void mp_hal_move_cursor_back(uint pos) {
         // snprintf needs space for the terminating null character
         int n = snprintf(&vt100_command[0], sizeof(vt100_command), "\x1b[%u", pos);
         if (n > 0) {
+            assert((unsigned)n < sizeof(vt100_command));
             vt100_command[n] = 'D'; // replace null char
             mp_hal_stdout_tx_strn(vt100_command, n + 1);
         }
