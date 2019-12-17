@@ -36,6 +36,29 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+STATIC void init_usb_vbus_sense(void) {
+
+#ifdef BOARD_NO_VBUS
+    // Disable VBUS sensing
+    #ifdef USB_OTG_GCCFG_VBDEN
+        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+    #else
+        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
+        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
+        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
+    #endif
+#else
+    // Enable VBUS hardware sensing
+    #ifdef USB_OTG_GCCFG_VBDEN
+        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBDEN;
+    #else
+        USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_NOVBUSSENS;
+        USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBUSBSEN; // B Device sense
+    #endif
+#endif
+}
+
+
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management. 
 
@@ -82,20 +105,8 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 8);
 #endif
     
-#ifdef BOARD_NO_VBUS
-    disable_usb_vbus();
-#endif
-
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
-}
 
-STATIC void disable_usb_vbus(void) {
-#ifdef USB_OTG_GCCFG_VBDEN
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
-#else
-    USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
-    USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSASEN;
-#endif
+    init_usb_vbus_sense();
 }
