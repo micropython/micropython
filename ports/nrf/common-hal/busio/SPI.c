@@ -135,7 +135,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All SPI peripherals are in use"));
     }
 
-    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
+    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG(NRFX_SPIM_PIN_NOT_USED, NRFX_SPIM_PIN_NOT_USED,
+                                                         NRFX_SPIM_PIN_NOT_USED, NRFX_SPIM_PIN_NOT_USED);
     config.frequency = NRF_SPIM_FREQ_8M;
 
     config.sck_pin = clock->number;
