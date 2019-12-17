@@ -64,8 +64,9 @@ STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_co
 // INTERNAL FUNCTION Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
-    if(can_get_status_info(&status)!=ESP_OK){
-        mp_raise_ValueError("Unable to get CAN status");
+    uint8_t err_code = can_get_status_info(&status);
+    if(err_code!=ESP_OK){
+        mp_raise_OSError(-err_code);
     }
     return status;
 }
@@ -97,7 +98,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_state_obj, machine_hw_can_state)
 
 // Get info about error states and TX/RX buffers
 STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
-    //machine_can_obj_t *self = MP_OBJ_TO_PTR(args[0]); //FIXME: Remove it if useless
     mp_obj_list_t *list;
     if (n_args == 1) {
         list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
@@ -113,9 +113,9 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
     can_status_info_t status = _machine_hw_can_get_status();
     list->items[0] = MP_OBJ_NEW_SMALL_INT(status.tx_error_counter);
     list->items[1] = MP_OBJ_NEW_SMALL_INT(status.rx_error_counter);
-    //list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning); //FIXME:
-    //list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive); //FIXME:
-    //list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off); //FIXME:
+    list->items[2] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_error_warning
+    list->items[3] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_error_passive
+    list->items[4] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_bus_off
     list->items[5] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_tx);
     //list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3); //FIXME:
     //list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3); //FIXME:
@@ -303,12 +303,13 @@ STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
         ESP_LOGW(DEVICE_NAME, "Device is not initialized");
         return mp_const_none;
     }
-	if(can_stop()!=ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to stop the device"));
+    uint8_t status = can_stop();
+	if(status!=ESP_OK){
+        mp_raise_OSError(-status);
     }
-    if (can_driver_uninstall() != ESP_OK){
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "Unable to uninstall the device"));
-        return mp_const_none;
+    status = can_driver_uninstall();
+    if (status != ESP_OK){
+        mp_raise_OSError(-status);
     }
     self->config->initialized = false;
     return mp_const_none;
@@ -429,7 +430,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
              self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_1MBITS());
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Unable to set baudrate"));
+            mp_raise_ValueError("Unable to set baudrate");
             self->config->baudrate = 0;
             return mp_const_none;
     }
