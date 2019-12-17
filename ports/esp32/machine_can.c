@@ -50,7 +50,7 @@
 
 // Internal Functions
 mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // singleton CAN device object
@@ -349,7 +349,7 @@ mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 // init(mode, extframe=False, baudrate=500, *)
-STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_extframe, ARG_baudrate, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2,
            ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
     static const mp_arg_t allowed_args[] = {
@@ -388,7 +388,8 @@ STATIC mp_obj_t machine_hw_can_init_helper(const machine_can_obj_t *self, size_t
                                     .alerts_enabled = CAN_ALERT_NONE,
                                     .clkout_divider = 0};
     self->config->general = &g_config;
-    self->loopback = (args[ARG_mode] && 0x10 > 0)
+    self->loopback = ((args[ARG_mode].u_int & 0x10) > 0); 
+    self->extframe = args[ARG_extframe].u_bool;
     can_filter_config_t f_config = {
         .acceptance_code = args[ARG_filter_code].u_int, 
         .acceptance_mask = args[ARG_filter_mask].u_int, 
