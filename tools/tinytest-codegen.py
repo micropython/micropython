@@ -33,8 +33,10 @@ test_function = (
     "void {name}(void* data) {{\n"
     "  static const char pystr[] = {script};\n"
     "  static const char exp[] = {output};\n"
+    '  printf("\\n");\n'
     "  upytest_set_expected_output(exp, sizeof(exp) - 1);\n"
     "  upytest_execute_test(pystr);\n"
+    '  printf("result: ");\n'
     "}}"
 )
 
