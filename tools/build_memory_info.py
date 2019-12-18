@@ -73,7 +73,7 @@ ram_region = regions["RAM"]
 free_flash = firmware_region - text - data
 free_ram = ram_region - data - bss
 print("{} bytes free in flash firmware space out of {} bytes ({}kB).".format(free_flash, firmware_region, firmware_region / 1024))
-print("{} bytes free in ram for heap out of {} bytes ({}kB).".format(free_ram, ram_region, ram_region / 1024))
+print("{} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(free_ram, ram_region, ram_region / 1024))
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data
