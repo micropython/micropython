@@ -87,10 +87,12 @@ void usb_background(void) {
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
+    usb_msc_mount();
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
+    usb_msc_umount();
 }
 
 // Invoked when usb bus is suspended

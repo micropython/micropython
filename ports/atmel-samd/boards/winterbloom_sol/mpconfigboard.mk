@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x20-bootloader-external-flash.ld
 # Adafruit
 USB_VID = 0x239A
 # Allocated for Winterbloom Sol

@@ -108,7 +108,7 @@ NORETURN void nlr_jump(void *val) {
     :                               // clobbered registers
     );
 
-    for (;;); // needed to silence compiler warning
+    MP_UNREACHABLE
 }
 
 #endif // MICROPY_NLR_X64

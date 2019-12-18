@@ -59,7 +59,7 @@ typedef enum {
 } sd_flash_operation_status_t;
 
 // Flag indicating progress of internal flash operation.
-extern sd_flash_operation_status_t sd_flash_operation_status;
+extern volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 typedef struct ble_drv_evt_handler_entry {
     struct ble_drv_evt_handler_entry *next;

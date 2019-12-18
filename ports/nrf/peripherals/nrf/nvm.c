@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "nrf_nvmc.h"
+#include "nrfx_nvmc.h"
 
 #define FLASH_PAGE_SIZE (4096)
 
@@ -50,7 +50,7 @@ STATIC sd_flash_operation_status_t sd_flash_operation_wait_until_done(void) {
 }
 #endif
 
-void nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
+bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
     #ifdef BLUETOOTH_SD
         uint8_t sd_en = 0;
         (void) sd_softdevice_is_enabled(&sd_en);
@@ -61,11 +61,11 @@ void nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
             sd_flash_operation_start();
             err_code = sd_flash_page_erase(page_addr / FLASH_PAGE_SIZE);
             if (err_code != NRF_SUCCESS) {
-                mp_raise_OSError_msg_varg(translate("Flash erase failed to start, err 0x%04x"), err_code);
+                return false;
             }
             status = sd_flash_operation_wait_until_done();
             if (status == SD_FLASH_OPERATION_ERROR) {
-                mp_raise_OSError_msg(translate("Flash erase failed"));
+                return false;
             }
 
             // Divide a full page into parts, because writing a full page causes an assertion failure.
@@ -78,18 +78,19 @@ void nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
                                           (uint32_t *)data + i * words_to_write,
                                           words_to_write);
                 if (err_code != NRF_SUCCESS) {
-                    mp_raise_OSError_msg_varg(translate("Flash write failed to start, err 0x%04x"), err_code);
+                    return false;
                 }
                 status = sd_flash_operation_wait_until_done();
                 if (status == SD_FLASH_OPERATION_ERROR) {
-                    mp_raise_OSError_msg(translate("Flash write failed"));
+                    return false;
                 }
             }
 
-            return;
+            return true;
         }
     #endif
 
-    nrf_nvmc_page_erase(page_addr);
-    nrf_nvmc_write_bytes(page_addr, data, FLASH_PAGE_SIZE);
-}    
+    nrfx_nvmc_page_erase(page_addr);
+    nrfx_nvmc_bytes_write(page_addr, data, FLASH_PAGE_SIZE);
+    return true;
+}

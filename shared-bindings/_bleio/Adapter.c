@@ -29,6 +29,7 @@
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
@@ -185,7 +186,12 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
                                  ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
-    common_hal_bleio_adapter_start_advertising(self, args[ARG_connectable].u_bool, interval,
+    bool connectable = args[ARG_connectable].u_bool;
+    if (data_bufinfo.len > 31 && connectable && scan_response_bufinfo.len > 0) {
+        mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
+    }
+
+    common_hal_bleio_adapter_start_advertising(self, connectable, interval,
                                                &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;
