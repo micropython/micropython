@@ -310,7 +310,7 @@ STATIC mp_obj_t machine_hw_can_deinit(const mp_obj_t self_in){
         ESP_LOGW(DEVICE_NAME, "Device is not initialized");
         return mp_const_none;
     }
-    uint8_t status = can_stop();
+    uint32_t status = can_stop();
 	if(status!=ESP_OK){
         mp_raise_OSError(-status);
     }
@@ -444,7 +444,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     }
     self->config->baudrate = args[ARG_baudrate].u_int;
     
-    uint8_t status = can_driver_install(self->config->general, self->config->timing, self->config->filter);
+    uint32_t status = can_driver_install(self->config->general, self->config->timing, self->config->filter);
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }else{
