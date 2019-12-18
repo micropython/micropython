@@ -1,4 +1,5 @@
 #include "shared-bindings/board/__init__.h"
+#include "supervisor/spi_flash_api.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LED_RED), MP_ROM_PTR(&pin_PB04) },
@@ -59,5 +60,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P0), MP_ROM_PTR(&pin_PA00) },
     { MP_ROM_QSTR(MP_QSTR_P3), MP_ROM_PTR(&pin_PB00) },
 
+    { MP_ROM_QSTR(MP_QSTR_INTERNAL_SPI), MP_ROM_PTR(&spi) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
