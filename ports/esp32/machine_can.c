@@ -73,8 +73,16 @@ STATIC can_status_info_t _machine_hw_can_get_status(){
 
 // Force a software restart of the controller, to allow transmission after a bus error
 STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
-    mp_raise_NotImplementedError(""); //TODO: Implement this function
-    return self_in;
+    uint32_t status = can_initiate_recovery();
+    if (status != ESP_OK){
+        mp_raise_OSError(-status);
+    }
+    mp_hal_delay_ms(200); // FIXME: replace it with a smarter solution
+    status = can_start();
+    if (status != ESP_OK){
+        mp_raise_OSError(-status);
+    }
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_restart_obj, machine_hw_can_restart);
 
