@@ -215,9 +215,9 @@ STATIC mp_obj_t esp32_rmt_send_pulses(size_t n_args, const mp_obj_t *pos_args, m
     mp_uint_t pulses_length = 0;
     mp_obj_t* pulses_ptr = NULL;
 
-    if(MP_OBJ_IS_TYPE(pulses, &mp_type_tuple) == true) {
+    if(mp_obj_is_type(pulses, &mp_type_tuple) == true) {
         mp_obj_tuple_get(pulses, &pulses_length, &pulses_ptr);
-    } else if(MP_OBJ_IS_TYPE(pulses, &mp_type_list) == true) {
+    } else if(mp_obj_is_type(pulses, &mp_type_list) == true) {
         mp_obj_list_get(pulses, &pulses_length, &pulses_ptr);
     } else {
         mp_raise_TypeError("Pulses must be specified with a tuple or list");
