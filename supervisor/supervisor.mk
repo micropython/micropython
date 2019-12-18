@@ -17,25 +17,27 @@ ifndef $(NO_USB)
 	NO_USB = $(wildcard supervisor/usb.c)
 endif
 
-ifneq ($(INTERNAL_FLASH_FILESYSTEM),)
-	CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
+ifndef INTERNAL_FLASH_FILESYSTEM
+INTERNAL_FLASH_FILESYSTEM = 0
 endif
-ifneq ($(QSPI_FLASH_FILESYSTEM),)
-# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
-	CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
-endif
-ifneq ($(SPI_FLASH_FILESYSTEM),)
-# EXPRESS_BOARD is obsolete and should be removed when samd-peripherals is updated.
-	CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM) -DEXPRESS_BOARD
-endif
+CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
 
+ifndef QSPI_FLASH_FILESYSTEM
+QSPI_FLASH_FILESYSTEM = 0
+endif
+CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM)
+
+ifndef SPI_FLASH_FILESYSTEM
+SPI_FLASH_FILESYSTEM = 0
+endif
+CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
 	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
 endif
 
 # Choose which flash filesystem impl to use.
-# (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
+# (Right now INTERNAL_FLASH_FILESYSTEM and (Q)SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
 ifdef EXTERNAL_FLASH_DEVICES
 	CFLAGS += -DEXTERNAL_FLASH_DEVICES=$(EXTERNAL_FLASH_DEVICES) \
@@ -52,7 +54,7 @@ ifdef EXTERNAL_FLASH_DEVICES
 else
 	ifeq ($(DISABLE_FILESYSTEM),1)
 		SRC_SUPERVISOR += supervisor/stub/internal_flash.c
-	else 
+	else
 		SRC_SUPERVISOR += supervisor/internal_flash.c
 	endif
 endif
@@ -64,30 +66,31 @@ ifeq ($(USB),FALSE)
 		SRC_SUPERVISOR += supervisor/serial.c
 	endif
 else
-	SRC_SUPERVISOR += lib/tinyusb/src/common/tusb_fifo.c \
-					  lib/tinyusb/src/device/usbd.c \
-					  lib/tinyusb/src/device/usbd_control.c \
-					  lib/tinyusb/src/class/msc/msc_device.c \
-					  lib/tinyusb/src/class/cdc/cdc_device.c \
-					  lib/tinyusb/src/class/hid/hid_device.c \
-					  lib/tinyusb/src/class/midi/midi_device.c \
-					  lib/tinyusb/src/tusb.c \
-					  supervisor/shared/serial.c \
-					  supervisor/usb.c \
-					  supervisor/shared/usb/usb_desc.c \
-					  supervisor/shared/usb/usb.c \
-					  supervisor/shared/usb/usb_msc_flash.c \
-					  shared-bindings/usb_hid/__init__.c \
-					  shared-bindings/usb_hid/Device.c \
-					  shared-bindings/usb_midi/__init__.c \
-					  shared-bindings/usb_midi/PortIn.c \
-					  shared-bindings/usb_midi/PortOut.c \
-					  shared-module/usb_hid/__init__.c \
-					  shared-module/usb_hid/Device.c \
-					  shared-module/usb_midi/__init__.c \
-					  shared-module/usb_midi/PortIn.c \
-					  shared-module/usb_midi/PortOut.c \
-					  $(BUILD)/autogen_usb_descriptor.c
+	SRC_SUPERVISOR += \
+		lib/tinyusb/src/common/tusb_fifo.c \
+		lib/tinyusb/src/device/usbd.c \
+		lib/tinyusb/src/device/usbd_control.c \
+		lib/tinyusb/src/class/msc/msc_device.c \
+		lib/tinyusb/src/class/cdc/cdc_device.c \
+		lib/tinyusb/src/class/hid/hid_device.c \
+		lib/tinyusb/src/class/midi/midi_device.c \
+		lib/tinyusb/src/tusb.c \
+		supervisor/shared/serial.c \
+		supervisor/usb.c \
+		supervisor/shared/usb/usb_desc.c \
+		supervisor/shared/usb/usb.c \
+		supervisor/shared/usb/usb_msc_flash.c \
+		shared-bindings/usb_hid/__init__.c \
+		shared-bindings/usb_hid/Device.c \
+		shared-bindings/usb_midi/__init__.c \
+		shared-bindings/usb_midi/PortIn.c \
+		shared-bindings/usb_midi/PortOut.c \
+		shared-module/usb_hid/__init__.c \
+		shared-module/usb_hid/Device.c \
+		shared-module/usb_midi/__init__.c \
+		shared-module/usb_midi/PortIn.c \
+		shared-module/usb_midi/PortOut.c \
+		$(BUILD)/autogen_usb_descriptor.c
 
 	CFLAGS += -DUSB_AVAILABLE
 endif

@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x4097
 USB_PID = 0x0001
 USB_PRODUCT = "Datalore IP M4"
