@@ -1,0 +1,6 @@
+*.exp
+!non_compliant_lexer.py.exp
+!non_compliant.py.exp
+!sys_atexit.py.exp
+!sys_settrace_generator.py.exp
+!sys_settrace_loop.py.exp
