@@ -21,7 +21,7 @@ Please ensure you setup your build environment appropriately, as per the guide. 
 This project has a bunch of git submodules.  You will need to update them regularly.
 
     git submodule sync
-    git submodule update --init --recursive
+    git submodule update --init
 
 ### mpy-cross
 
