@@ -109,3 +109,11 @@ Constants
           esp32.WAKEUP_ANY_HIGH
 
    Selects the wake level for pins.
+
+Classes
+-------
+
+.. toctree::
+   :maxdepth: 1
+
+   esp32.CAN.rst
