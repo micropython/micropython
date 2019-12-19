@@ -28,6 +28,10 @@
 
 #include "extmod/vfs.h"
 
+#if MICROPY_VFS_FAT
+#include "extmod/vfs_fat.h"
+#endif
+
 #if MICROPY_PY_UOS
 
 STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
@@ -46,6 +50,9 @@ STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    #endif
+    #if MICROPY_VFS_FAT
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(uos_module_globals, uos_module_globals_table);
