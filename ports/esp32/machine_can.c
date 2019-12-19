@@ -127,6 +127,16 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
 
+STATIC mp_obj_t machine_hw_can_alert(mp_obj_t self_in){
+    uint32_t alerts;
+    uint32_t status = can_read_alerts(&alerts, 0);
+    if (status != ESP_OK){
+        mp_raise_OSError(-status);
+    }
+    return mp_obj_new_int(alerts);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_alert_obj, machine_hw_can_alert);
+
 // Clear TX Queue
 STATIC mp_obj_t machine_hw_can_clear_tx_queue(mp_obj_t self_in){
     return mp_obj_new_bool(can_clear_transmit_queue()==ESP_OK);
@@ -392,7 +402,8 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
                                     .bus_off_io = CAN_IO_UNUSED,
                                     .tx_queue_len = args[ARG_tx_queue].u_int, 
                                     .rx_queue_len = args[ARG_rx_queue].u_int,
-                                    .alerts_enabled = CAN_ALERT_NONE,
+                                    .alerts_enabled = CAN_ALERT_AND_LOG || CAN_ALERT_BELOW_ERR_WARN || CAN_ALERT_ERR_ACTIVE || CAN_ALERT_BUS_RECOVERED || 
+                                                      CAN_ALERT_ABOVE_ERR_WARN || CAN_ALERT_BUS_ERROR || CAN_ALERT_ERR_PASS || CAN_ALERT_BUS_OFF,
                                     .clkout_divider = 0};
     self->config->general = &g_config;
     self->loopback = ((args[ARG_mode].u_int & 0x10) > 0); 
@@ -481,6 +492,7 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
     
+    { MP_OBJ_NEW_QSTR(MP_QSTR_alerts), MP_ROM_PTR(&machine_hw_can_alert_obj)},
      // CAN_MODE
     { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
     { MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(CAN_MODE_NORMAL | 0x10) },
@@ -501,6 +513,20 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(CAN_BAUDRATE_500k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_800k), MP_ROM_INT(CAN_BAUDRATE_800k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(CAN_BAUDRATE_1M) },
+    // CAN_ALERT
+    { MP_ROM_QSTR(MP_QSTR_ALERT_TX_IDLE), MP_ROM_INT(CAN_ALERT_TX_IDLE) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_TX_SUCCESS), MP_ROM_INT(CAN_ALERT_TX_SUCCESS) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_BELOW_ERR_WARN), MP_ROM_INT(CAN_ALERT_BELOW_ERR_WARN) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_ERR_ACTIVE), MP_ROM_INT(CAN_ALERT_ERR_ACTIVE) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_RECOVERY_IN_PROGRESS), MP_ROM_INT(CAN_ALERT_RECOVERY_IN_PROGRESS) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_BUS_RECOVERED), MP_ROM_INT(CAN_ALERT_BUS_RECOVERED) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_ARB_LOST), MP_ROM_INT(CAN_ALERT_ARB_LOST) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_ABOVE_ERR_WARN), MP_ROM_INT(CAN_ALERT_ABOVE_ERR_WARN) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_BUS_ERROR), MP_ROM_INT(CAN_ALERT_BUS_ERROR) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_TX_FAILED), MP_ROM_INT(CAN_ALERT_TX_FAILED) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_RX_QUEUE_FULL), MP_ROM_INT(CAN_ALERT_RX_QUEUE_FULL) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_ERR_PASS), MP_ROM_INT(CAN_ALERT_ERR_PASS) },
+    { MP_ROM_QSTR(MP_QSTR_ALERT_BUS_OFF), MP_ROM_INT(CAN_ALERT_BUS_OFF) }
 };
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
