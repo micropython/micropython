@@ -46,6 +46,7 @@ SRC_C = main.c \
 	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
+	zephyr_storage.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
