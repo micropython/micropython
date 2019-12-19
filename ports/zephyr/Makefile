@@ -17,6 +17,8 @@ OUTDIR_PREFIX = $(BOARD)
 MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
+MICROPY_VFS_FAT ?= 1
+
 # Default target
 all:
 
@@ -48,6 +50,7 @@ SRC_C = main.c \
 	machine_pin.c \
 	uart_core.c \
 	zephyr_storage.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
@@ -61,7 +64,7 @@ SRC_QSTR += $(SRC_C)
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 CFLAGS = $(Z_CFLAGS) \
-	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
+	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(INC)
 
 include $(TOP)/py/mkrules.mk
 

@@ -84,6 +84,13 @@
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_NORTC            (1)
+
 // Saving extra crumbs to make sure binary fits in 128K
 #define MICROPY_COMP_CONST_FOLDING  (0)
 #define MICROPY_COMP_CONST (0)
