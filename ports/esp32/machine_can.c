@@ -368,7 +368,7 @@ mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args,
 // init(mode, extframe=False, baudrate=500, *)
 STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_extframe, ARG_baudrate, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2,
-           ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_filter_mask, ARG_filter_code, ARG_single_filter};
+           ARG_tx_io, ARG_rx_io, ARG_tx_queue, ARG_rx_queue, ARG_auto_restart};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,          MP_ARG_REQUIRED | MP_ARG_INT,    {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_extframe,      MP_ARG_BOOL,                     {.u_bool = false}           },
@@ -381,9 +381,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
         { MP_QSTR_rx_io,         MP_ARG_INT,                      {.u_int = 2}                },
         { MP_QSTR_tx_queue,      MP_ARG_INT,                      {.u_int  = 0}               },
         { MP_QSTR_rx_queue,      MP_ARG_INT,                      {.u_int  = 5}               },
-        { MP_QSTR_filter_mask,   MP_ARG_INT,                      {.u_int = 0xFFFFFFFF}       },
-        { MP_QSTR_filter_code,   MP_ARG_INT,                      {.u_int = 0}                },
-        { MP_QSTR_single_filter, MP_ARG_BOOL,                     {.u_bool = true}            },
+        { MP_QSTR_auto_restart, MP_ARG_BOOL,                     {.u_bool = true}            },
     };
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -408,11 +406,10 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     self->config->general = &g_config;
     self->loopback = ((args[ARG_mode].u_int & 0x10) > 0); 
     self->extframe = args[ARG_extframe].u_bool;
-    can_filter_config_t f_config = {
-        .acceptance_code = args[ARG_filter_code].u_int, 
-        .acceptance_mask = args[ARG_filter_mask].u_int, 
-        .single_filter =  args[ARG_single_filter].u_bool
-    };
+    if (args[ARG_auto_restart].u_bool){
+        mp_raise_NotImplementedError("Auto-restart not supported");
+    }
+    can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
     self->config->filter = &f_config;
 
     switch ((int)args[ARG_baudrate].u_int){
