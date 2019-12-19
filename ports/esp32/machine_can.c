@@ -121,8 +121,8 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
     list->items[3] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_error_passive
     list->items[4] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_bus_off
     list->items[5] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_tx);
-    //list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3); //FIXME:
-    //list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3); //FIXME:
+    list->items[6] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_rx);
+    list->items[7] = mp_const_none;
     return MP_OBJ_FROM_PTR(list);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
@@ -252,7 +252,7 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
     }
     items[0] = MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
     items[1] = rx_message.flags && CAN_MSG_FLAG_RTR > 0 ? mp_const_true : mp_const_false;
-    items[2] = 0; //TODO: check if Filter Mailbox Index is available for ESP32
+    items[2] = 0;
     return ret_obj;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_recv_obj, 0, machine_hw_can_recv);
@@ -489,7 +489,7 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
     
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alerts), MP_ROM_PTR(&machine_hw_can_alert_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_alerts), MP_ROM_PTR(&machine_hw_can_alert_obj)},
      // CAN_MODE
     { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
     { MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(CAN_MODE_NORMAL | 0x10) },
@@ -498,7 +498,7 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
     // CAN_STATE
     { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
-    { MP_ROM_QSTR(MP_QSTR_RUNNING), MP_ROM_INT(CAN_STATE_RUNNING) },
+    { MP_ROM_QSTR(MP_QSTR_ERROR_ACTIVE), MP_ROM_INT(CAN_STATE_RUNNING) },
     { MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF) },
     { MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING) },
     // CAN_BAUDRATE
