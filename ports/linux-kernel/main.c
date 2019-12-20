@@ -27,6 +27,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/kthread.h>
+#include <linux/version.h>
 
 #include <net/sock.h>
 
@@ -60,11 +61,25 @@ struct kernel_reader {
     loff_t pos;
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0) // bdd1d2d3d251c
+static inline ssize_t _kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
+    return kernel_read(file, buf, count, pos);
+}
+#else
+static inline ssize_t _kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
+    ssize_t ret = (ssize_t)kernel_read(file, *pos, buf, count);
+    if (ret > 0) {
+        *pos += ret;
+    }
+    return ret;
+}
+#endif
+
 STATIC mp_uint_t kernel_reader_readbyte(void *data) {
     struct kernel_reader *kr = (struct kernel_reader*)data;
     uint8_t buf;
 
-    ssize_t ret = kernel_read(kr->filp, &buf, sizeof(buf), &kr->pos);
+    ssize_t ret = _kernel_read(kr->filp, &buf, sizeof(buf), &kr->pos);
     if (1 == ret) {
         return buf;
     } else if (0 == ret) {

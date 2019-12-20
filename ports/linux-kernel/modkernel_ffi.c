@@ -27,6 +27,7 @@
 #include <linux/kallsyms.h>
 #include <linux/module.h>
 #include <linux/kprobes.h>
+#include <linux/vmalloc.h>
 
 #include <py/runtime.h>
 #include <py/qstr.h>

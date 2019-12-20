@@ -46,6 +46,9 @@ all:
 	mkdir -p $(CFLAGS_BUILD)
 	cp $(MAKEFILE) $(CFLAGS_BUILD)/Makefile
 	$(MAKE) -C $(KDIR) M=$(abspath $(CFLAGS_BUILD))
+	# remove results & makefile to prevent them from interfering with the final build.
+	$(MAKE) -C $(KDIR) M=$(abspath $(CFLAGS_BUILD)) clean
+	rm $(CFLAGS_BUILD)/Makefile
 	# re-invoke make on the current file, now that we have the cflags.
 	$(MAKE)
 
@@ -93,6 +96,9 @@ KERNEL_CFLAGS := $(subst -Wundef,,$(KERNEL_CFLAGS))
 KERNEL_CFLAGS := $(subst -Wdeclaration-after-statement,,$(KERNEL_CFLAGS))
 # fix path of structleak plugin
 KERNEL_CFLAGS := $(subst ./scripts/gcc-plugins/structleak_plugin.so,$(KDIR)/scripts/gcc-plugins/structleak_plugin.so,$(KERNEL_CFLAGS))
+# required before v5.0 (0b999ae3614d0)
+# but meh, let's apply on all versions...
+KERNEL_CFLAGS += -Wno-missing-attributes
 # finally! add the kernel cflags
 CFLAGS += $(KERNEL_CFLAGS)
 CSUPEROPT = -O3
