@@ -71,6 +71,10 @@ STATIC can_status_info_t _machine_hw_can_get_status(){
     return status;
 }
 
+STATIC void _machine_hw_can_set_filter(uint32_t addr, uint32_t mask, uint8_t bank, bool rtr){
+    //addr = addr & ()
+}
+
 // Force a software restart of the controller, to allow transmission after a bus error
 STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
     uint32_t status = can_initiate_recovery();
@@ -318,7 +322,7 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
             filter->acceptance_code = 0;
             filter->acceptance_mask = 0xFFFFFFFF;
         }
-        
+        uint32_t addr = params[0] & (self->extframe ? 0x1FFFFFFF : 0x7FF)
     }
 
 }
