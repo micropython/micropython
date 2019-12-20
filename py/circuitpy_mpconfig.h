@@ -193,7 +193,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 // Opposite setting is deliberate.
 #define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
