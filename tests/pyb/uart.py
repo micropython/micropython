@@ -1,7 +1,7 @@
 from pyb import UART
 
 # test we can correctly create by id
-for bus in (-1, 0, 1, 2, 5, 6, 7):
+for bus in (-1, 0, 1, 2, 5, 6):
     try:
         UART(bus, 9600)
         print("UART", bus)
