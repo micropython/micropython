@@ -435,18 +435,9 @@ typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_b
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
-    // if we'd bother to support various versions of structure
-    // (with different number of fields), we can distinguish
-    // them with ver = sizeof(struct). Cons: overkill for *micro*?
-    //int ver; // ?
-
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
-
-    // Rationale: to load arbitrary-sized sprites directly to LCD
-    // Cons: a bit adhoc usecase
-    // int stride;
 } mp_buffer_info_t;
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
