@@ -117,9 +117,9 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
     can_status_info_t status = _machine_hw_can_get_status();
     list->items[0] = MP_OBJ_NEW_SMALL_INT(status.tx_error_counter);
     list->items[1] = MP_OBJ_NEW_SMALL_INT(status.rx_error_counter);
-    list->items[2] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_error_warning
-    list->items[3] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_error_passive
-    list->items[4] = MP_OBJ_NEW_SMALL_INT(0); // TODO: self->num_bus_off
+    list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning);
+    list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive);
+    list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
     list->items[5] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_tx);
     list->items[6] = MP_OBJ_NEW_SMALL_INT(status.msgs_to_rx);
     list->items[7] = mp_const_none;
@@ -217,7 +217,6 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }
-    //TODO: manage callback
     // Create the tuple, or get the list, that will hold the return values
     // Also populate the fourth element, either a new bytes or reuse existing memoryview
     mp_obj_t ret_obj = args[ARG_list].u_obj;
@@ -298,9 +297,7 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     }else{
         mp_printf(print, "CAN Device is not initialized");
     }
-    
 }
-
 
 // init(tx, rx, baudrate, mode = CAN_MODE_NORMAL, tx_queue = 2, rx_queue = 5)
 STATIC mp_obj_t machine_hw_can_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -343,7 +340,7 @@ mp_obj_t machine_hw_can_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_TypeError("bus must be a number");
     }
     mp_uint_t can_idx = mp_obj_get_int(args[0]);
-    if (can_idx > 1) { //TODO: check naming convention
+    if (can_idx > 1) { 
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", can_idx));
     }
     machine_can_obj_t *self =  &machine_can_obj;
@@ -386,11 +383,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    // Check if device was already configured
-    if (self->config->initialized){
-        //TODO: check if this condition is redundant compared to init()
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "CAN device is already initialized"));
-        return mp_const_none;
+    return mp_const_none;
     }
     // Configure device
     can_general_config_t g_config = {.mode = args[ARG_mode].u_int & 0x0F,
@@ -465,7 +458,6 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     }
     return mp_const_none;
 }
-
 
 STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     // CAN_ATTRIBUTES
