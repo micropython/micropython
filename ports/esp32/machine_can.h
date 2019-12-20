@@ -43,9 +43,16 @@
 #define CAN_BAUDRATE_800k 800
 #define CAN_BAUDRATE_1M 1000
 
+typedef enum _filter_mode_t{
+    FILTER_RAW_SINGLE = 0,
+    FILTER_RAW_DUAL,
+    FILTER_ADDR_SINGLE,
+    FILTER_ADDR_DUAL
+}
+
 typedef struct _machine_can_config_t {
     const can_timing_config_t *timing;
-    const can_filter_config_t *filter;
+    can_filter_config_t *filter; //FIXME: point to this variable for setting
     const can_general_config_t *general;
     uint16_t baudrate;
     bool initialized;
