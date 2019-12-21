@@ -1,5 +1,9 @@
 include ../py/mkenv.mk
 
+ifneq ($(CONFIG_BUILD_MPY_CROSS),y)
+$(error BUILD_MPY_CROSS is not selected in .config file)
+endif
+
 # define main target
 PROG = mpy-cross
 

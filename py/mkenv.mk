@@ -73,4 +73,16 @@ all:
 
 .DELETE_ON_ERROR:
 
+# NB: The kconfig.mk file is dynamically generated based on the selections in
+# .config. If we try to use a normal makefile rule to generate this file, the
+# include statement won't work because the file is included before any targets
+# can run. Therefore, we abuse the shell command to ensure that genconfig is
+# run _before_ make includes the generated file.
+include $(shell mkdir -p $(BUILD)/genhdr && \
+		$(TOP)/tools/Kconfiglib/genconfig.py \
+			--header-path $(BUILD)/genhdr/kconfig.h \
+			--config-out $(BUILD)/kconfig.mk \
+			$(TOP)/Kconfig; \
+		echo $(BUILD)/kconfig.mk) 
+
 MKENV_INCLUDED = 1

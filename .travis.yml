@@ -32,7 +32,7 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/stm32 submodules
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
@@ -53,7 +53,7 @@ jobs:
         - arm-none-eabi-gcc --version
         - qemu-system-arm --version
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
       after_failure:
         - grep "FAIL" ports/qemu-arm/build/console.out
@@ -69,7 +69,7 @@ jobs:
         - gcc --version
         - python3 --version
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix coverage
@@ -102,7 +102,7 @@ jobs:
     - stage: test
       env: NAME="unix port build and tests"
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
@@ -115,7 +115,7 @@ jobs:
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
-        - make ${MAKEOPTS} -C mpy-cross PYTHON=python2
+        - make ${MAKEOPTS} mpy-cross PYTHON=python2
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 nanbox
@@ -127,7 +127,7 @@ jobs:
       install:
         - sudo apt-get install clang
       script:
-        - make ${MAKEOPTS} -C mpy-cross CC=clang
+        - make ${MAKEOPTS} mpy-cross CC=clang
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
         - make ${MAKEOPTS} -C ports/unix CC=clang test
@@ -136,7 +136,7 @@ jobs:
     - stage: test
       env: NAME="unix port with sys.settrace build and tests"
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test
         - make ${MAKEOPTS} -C ports/unix clean
         - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
@@ -156,7 +156,7 @@ jobs:
       install:
         - sudo apt-get install gcc-mingw-w64
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
     # esp32 port
@@ -171,7 +171,7 @@ jobs:
         - git clone https://github.com/espressif/esp-idf.git
         - export IDF_PATH=$(pwd)/esp-idf
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         # IDF v3 build
         - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
         - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2
@@ -194,7 +194,7 @@ jobs:
         - zcat xtensa-lx106-elf-standalone.tar.gz | tar x
         - export PATH=$(pwd)/xtensa-lx106-elf/bin:$PATH
       script:
-        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} mpy-cross
         - make ${MAKEOPTS} -C ports/esp8266 submodules
         - make ${MAKEOPTS} -C ports/esp8266
         - make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_512K

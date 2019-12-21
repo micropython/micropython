@@ -47,6 +47,9 @@
 // You can override any of the options below using mpconfigport.h file
 // located in a directory of your port.
 
+// kconfig.h is the automatically generated config header file from Kconfig
+#include "genhdr/kconfig.h"
+
 // mpconfigport.h is a file containing configuration settings for a
 // particular port. mpconfigport.h is actually a default name for
 // such config, and it can be overridden using MP_CONFIGFILE preprocessor

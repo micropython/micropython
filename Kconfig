@@ -1,0 +1,24 @@
+mainmenu "MicroPython"
+
+choice BUILD
+    bool "Build"
+    help
+      Select the target program to build, either MicroPython or mpy-cross.
+
+config BUILD_MICROPYTHON
+    bool "MicroPython"
+
+config BUILD_MPY_CROSS
+    bool "mpy-cross"
+
+endchoice
+
+if BUILD_MICROPYTHON
+rsource "ports/Kconfig"
+endif
+
+if BUILD_MPY_CROSS
+rsource "mpy-cross/Kconfig"
+endif
+
+rsource "py/Kconfig"

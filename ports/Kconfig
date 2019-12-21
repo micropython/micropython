@@ -1,0 +1,76 @@
+
+choice
+    bool "Port"
+    default PORT_STM32
+    help
+      Select the MicroPython port to build.
+
+config PORT_BARE_ARM
+    bool "Generic bare-metal ARM"
+
+config PORT_CC3200
+    bool "Texas Instruments CC3200"
+
+config PORT_ESP32
+    bool "Espressif Systems ESP32"
+
+config PORT_ESP8266
+    bool "Espressif Systems ESP8266"
+
+config PORT_JAVASCRIPT
+    bool "Javascript"
+
+config PORT_MINIMAL
+    bool "Example minimal port (unix/STM32F4)"
+
+config PORT_NRF
+    bool "Nordic Semiconductor nRF"
+
+config PORT_PIC16
+    bool "Microchip PIC16"
+
+config PORT_POWERPC
+    bool "PowerPC"
+
+config PORT_QEMU_ARM
+    bool "QEMU ARM"
+
+config PORT_SAMD
+    bool "Amtel SAMD"
+
+config PORT_STM32
+    bool "STMicroelectronics STM32"
+
+config PORT_TEENSY
+    bool "PJRC Teensy"
+
+config PORT_UNIX
+    bool "Unix (Linux/macOS)"
+
+config PORT_WINDOWS
+    bool "Microsoft Windows"
+
+config PORT_ZEPHYR
+    bool "Zephyr RTOS"
+
+endchoice
+
+# Map port selection to directory
+config PORT
+    string
+    default "bare-arm" if PORT_BARE_ARM
+    default "cc3200" if PORT_CC3200
+    default "esp32" if PORT_ESP32
+    default "esp8266" if PORT_ESP8266
+    default "javascript" if PORT_JAVASCRIPT
+    default "minimal" if PORT_MINIMAL
+    default "nrf" if PORT_NRF
+    default "pic16bit" if PORT_PIC16
+    default "powerpc" if PORT_POWERPC
+    default "qemu-arm" if PORT_QEMU_ARM
+    default "samd" if PORT_SAMD
+    default "stm32" if PORT_STM32
+    default "teensy" if PORT_TEENSY
+    default "unix" if PORT_UNIX
+    default "windows" if PORT_WINDOWS
+    default "zephyr" if PORT_ZEPHYR

@@ -1,3 +1,9 @@
+# Kconfig
+.config
+.config.old
+.mpy-cross-config
+.mpy-cross-config.old
+
 # Compiled Sources
 ###################
 *.o
