@@ -30,3 +30,6 @@
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
 	url = https://github.com/apache/mynewt-nimble.git
+[submodule "tools/Kconfiglib"]
+	path = tools/Kconfiglib
+	url = https://github.com/ulfalizer/Kconfiglib.git
