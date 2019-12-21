@@ -9,7 +9,7 @@ include $(TOP)/py/py.mk
 ARCH = $(shell uname -m)
 ifneq ("$(ARCH)", "ppc64")
 ifneq ("$(ARCH)", "ppc64le")
-	CROSS_COMPILE = powerpc64le-linux-
+	CROSS_COMPILE ?= powerpc64le-linux-
 endif
 endif
 
