@@ -48,7 +48,7 @@ typedef enum _filter_mode_t{
     FILTER_RAW_DUAL,
     FILTER_ADDR_SINGLE,
     FILTER_ADDR_DUAL
-}
+} filter_mode_t;
 
 typedef struct _machine_can_config_t {
     const can_timing_config_t *timing;

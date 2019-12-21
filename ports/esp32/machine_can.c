@@ -106,6 +106,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_state_obj, machine_hw_can_state)
 
 // Get info about error states and TX/RX buffers
 STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
+    machine_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_list_t *list;
     if (n_args == 1) {
         list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
@@ -310,23 +311,23 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
     can_filter_config_t *filter = self->config->filter;
     if (args[ARG_mode].u_int==FILTER_RAW_DUAL || args[ARG_mode].u_int==FILTER_RAW_DUAL){
         filter->single_filter = single_filter;
-        filter->acceptance_code = params[0];
-        filter->acceptance_mask = params[1]; // FIXME: check if order is right
+        filter->acceptance_code = mp_obj_get_int(params[0]);
+        filter->acceptance_mask = mp_obj_get_int(params[1]); // FIXME: check if order is right
     }else{
         if (self->extframe && !single_filter){
-            mp_raise_ValueError("Dual filter for Extd Msg is not supported. Use FILTER_RAW_DUAL")
+            mp_raise_ValueError("Dual filter for Extd Msg is not supported. Use FILTER_RAW_DUAL");
         }
-        if (filter->single_filter==true & single_filter==false){
+        if (filter->single_filter==true && single_filter==false){
             // Switch to dual filter from single filter
             filter->single_filter = single_filter;
             filter->acceptance_code = 0;
             filter->acceptance_mask = 0xFFFFFFFF;
         }
-        uint32_t addr = params[0] & (self->extframe ? 0x1FFFFFFF : 0x7FF)
+        uint32_t addr = mp_obj_get_int(params[0]) & (self->extframe ? 0x1FFFFFFF : 0x7FF);
     }
 
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_setfilter_obj, 1, machine_hw_can_setfilter);s
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_setfilter_obj, 1, machine_hw_can_setfilter);
 
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -435,8 +436,6 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    return mp_const_none;
-    }
     // Configure device
     can_general_config_t g_config = {.mode = args[ARG_mode].u_int & 0x0F,
                                     .tx_io = args[ARG_tx_io].u_int, 
@@ -455,7 +454,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
         mp_raise_NotImplementedError("Auto-restart not supported");
     }
     can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
-    f_config->single_filter = self->extframe;
+    f_config.single_filter = self->extframe;
     self->config->filter = &f_config;
 
     switch ((int)args[ARG_baudrate].u_int){
