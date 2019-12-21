@@ -76,7 +76,7 @@ STATIC void mp_reset(void) {
         os_dupterm(2, args);
     }
 
-    #if MICROPY_MODULE_FROZEN
+    #if CONFIG_MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {

@@ -1,3 +1,19 @@
 
 comment "MicroPython options"
 
+
+menu "Frozen modules"
+
+config MICROPY_MODULE_FROZEN_STR
+    bool "Frozen modules are supported in the form of strings"
+    select CONFIG_MICROPY_MODULE_FROZEN
+
+config MICROPY_MODULE_FROZEN_MPY
+    bool "Frozen modules are supported in the form of .mpy files"
+    select CONFIG_MICROPY_MODULE_FROZEN
+    select MICROPY_PERSISTENT_CODE
+
+config MICROPY_MODULE_FROZEN
+    bool
+
+endmenu # Frozen modules

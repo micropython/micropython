@@ -299,7 +299,7 @@ soft_reset:
     }
 #endif
 
-#if MICROPY_MODULE_FROZEN
+#if CONFIG_MICROPY_MODULE_FROZEN
     pyexec_frozen_module("boot.py");
 #else
     if (!pyexec_file_if_exists("/boot.py")) {
@@ -311,7 +311,7 @@ soft_reset:
     led_state(PYB_LED_BUILTIN, 0);
 
     // run main script
-#if MICROPY_MODULE_FROZEN
+#if CONFIG_MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
 #else
     {

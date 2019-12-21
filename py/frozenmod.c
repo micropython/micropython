@@ -31,7 +31,7 @@
 #include "py/lexer.h"
 #include "py/frozenmod.h"
 
-#if MICROPY_MODULE_FROZEN_STR
+#if CONFIG_MICROPY_MODULE_FROZEN_STR
 
 #ifndef MICROPY_MODULE_FROZEN_LEXER
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str_len
@@ -75,7 +75,7 @@ STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
 
 #endif
 
-#if MICROPY_MODULE_FROZEN_MPY
+#if CONFIG_MICROPY_MODULE_FROZEN_MPY
 
 #include "py/emitglue.h"
 
@@ -96,7 +96,7 @@ STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t len) {
 
 #endif
 
-#if MICROPY_MODULE_FROZEN
+#if CONFIG_MICROPY_MODULE_FROZEN
 
 STATIC mp_import_stat_t mp_frozen_stat_helper(const char *name, const char *str) {
     size_t len = strlen(str);
@@ -118,14 +118,14 @@ STATIC mp_import_stat_t mp_frozen_stat_helper(const char *name, const char *str)
 mp_import_stat_t mp_frozen_stat(const char *str) {
     mp_import_stat_t stat;
 
-    #if MICROPY_MODULE_FROZEN_STR
+    #if CONFIG_MICROPY_MODULE_FROZEN_STR
     stat = mp_frozen_stat_helper(mp_frozen_str_names, str);
     if (stat != MP_IMPORT_STAT_NO_EXIST) {
         return stat;
     }
     #endif
 
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if CONFIG_MICROPY_MODULE_FROZEN_MPY
     stat = mp_frozen_stat_helper(mp_frozen_mpy_names, str);
     if (stat != MP_IMPORT_STAT_NO_EXIST) {
         return stat;
@@ -136,14 +136,14 @@ mp_import_stat_t mp_frozen_stat(const char *str) {
 }
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
-    #if MICROPY_MODULE_FROZEN_STR
+    #if CONFIG_MICROPY_MODULE_FROZEN_STR
     mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
     if (lex != NULL) {
         *data = lex;
         return MP_FROZEN_STR;
     }
     #endif
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if CONFIG_MICROPY_MODULE_FROZEN_MPY
     const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
     if (rc != NULL) {
         *data = (void*)rc;

@@ -64,7 +64,7 @@ STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
     }
 }
 
-#if MICROPY_MODULE_FROZEN
+#if CONFIG_MICROPY_MODULE_FROZEN
 STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
     while (*name) {
         size_t l = strlen(name);
@@ -80,12 +80,12 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_FROZEN_STR
+    #if CONFIG_MICROPY_MODULE_FROZEN_STR
     extern const char mp_frozen_str_names[];
     mp_help_add_from_names(list, mp_frozen_str_names);
     #endif
 
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if CONFIG_MICROPY_MODULE_FROZEN_MPY
     extern const char mp_frozen_mpy_names[];
     mp_help_add_from_names(list, mp_frozen_mpy_names);
     #endif

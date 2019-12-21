@@ -230,7 +230,7 @@ pin_init0();
 
 led_state(1, 0);
 
-#if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
+#if MICROPY_VFS || MICROPY_MBFS || CONFIG_MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
     pyexec_file_if_exists("boot.py");
     pyexec_file_if_exists("main.py");

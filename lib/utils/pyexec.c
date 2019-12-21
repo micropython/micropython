@@ -69,7 +69,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
-        #if MICROPY_MODULE_FROZEN_MPY
+        #if CONFIG_MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
             // source is a raw_code object, create the function
             module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
@@ -542,7 +542,7 @@ int pyexec_file(const char *filename) {
 }
 
 int pyexec_file_if_exists(const char *filename) {
-    #if MICROPY_MODULE_FROZEN
+    #if CONFIG_MICROPY_MODULE_FROZEN
     if (mp_frozen_stat(filename) == MP_IMPORT_STAT_FILE) {
         return pyexec_frozen_module(filename);
     }
@@ -553,18 +553,18 @@ int pyexec_file_if_exists(const char *filename) {
     return pyexec_file(filename);
 }
 
-#if MICROPY_MODULE_FROZEN
+#if CONFIG_MICROPY_MODULE_FROZEN
 int pyexec_frozen_module(const char *name) {
     void *frozen_data;
     int frozen_type = mp_find_frozen_module(name, strlen(name), &frozen_data);
 
     switch (frozen_type) {
-        #if MICROPY_MODULE_FROZEN_STR
+        #if CONFIG_MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
             return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
         #endif
 
-        #if MICROPY_MODULE_FROZEN_MPY
+        #if CONFIG_MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
             return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
         #endif

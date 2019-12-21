@@ -57,7 +57,7 @@ bool mp_obj_is_package(mp_obj_t module) {
 // Stat either frozen or normal module by a given path
 // (whatever is available, if at all).
 STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
-    #if MICROPY_MODULE_FROZEN
+    #if CONFIG_MICROPY_MODULE_FROZEN
     mp_import_stat_t st = mp_frozen_stat(path);
     if (st != MP_IMPORT_STAT_NO_EXIST) {
         return st;
@@ -131,7 +131,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #endif
 }
 
-#if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
+#if CONFIG_MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
@@ -144,7 +144,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 }
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
+#if MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_MODULE_FROZEN_MPY
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
     (void)source_name;
 
@@ -182,20 +182,20 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, co
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    #if MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
+    #if CONFIG_MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
     char *file_str = vstr_null_terminated_str(file);
     #endif
 
     // If we support frozen modules (either as str or mpy) then try to find the
     // requested filename in the list of frozen module filenames.
-    #if MICROPY_MODULE_FROZEN
+    #if CONFIG_MICROPY_MODULE_FROZEN
     void *modref;
     int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
     #endif
 
     // If we support frozen str modules and the compiler is enabled, and we
     // found the filename in the list of frozen files, then load and execute it.
-    #if MICROPY_MODULE_FROZEN_STR
+    #if CONFIG_MICROPY_MODULE_FROZEN_STR
     if (frozen_type == MP_FROZEN_STR) {
         do_load_from_lexer(module_obj, modref);
         return;
@@ -204,7 +204,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     // If we support frozen mpy modules and we found a corresponding file (and
     // its data) in the list of frozen files, execute it.
-    #if MICROPY_MODULE_FROZEN_MPY
+    #if CONFIG_MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
         do_execute_raw_code(module_obj, modref, file_str);
         return;
