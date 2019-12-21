@@ -1,5 +1,3 @@
-MCU_SERIES = f4
-CMSIS_MCU = STM32F405xx
 AF_FILE = boards/stm32f405_af.csv
 ifeq ($(USE_MBOOT),1)
 # When using Mboot all the text goes together after the filesystem

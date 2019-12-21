@@ -1,6 +1,4 @@
 # MCU settings
-MCU_SERIES = f7
-CMSIS_MCU = STM32F733xx
 MICROPY_FLOAT_IMPL = single
 AF_FILE = boards/stm32f722_af.csv
 LD_FILES = boards/PYBD_SF2/f722_qspi.ld

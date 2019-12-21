@@ -1,30 +1,33 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
-BOARD ?= PYBV10
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
-# Allow the directory containing the board configuration to be specified
-BOARD_DIR ?= $(abspath ../boards/$(BOARD))
-
 # Set USE_MBOOT to 1 so that TEXT0_ADDR gets set properly for those boards
 # that can be built with or without mboot.
 USE_MBOOT ?= 1
+
+include ../../../py/mkenv.mk
+
+MCU_SERIES := $(CONFIG_STM32_MCU_SERIES:"%"=%)
+MCU_SERIES_LOWER := $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+ifeq ($(MCU_SERIES),)
+$(error Kconfig did not select STM32_MCU_SERIES)
+endif
+
+CMSIS_MCU := $(CONFIG_STM32_CMSIS_MCU:"%"=%)
+CMSIS_MCU_LOWER := $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
+ifeq ($(CMSIS_MCU),)
+$(error Kconfig did not select STM32_CMSIS_MCU)
+endif
+
+BOARD := $(CONFIG_STM32_BOARD:"%"=%)
+BOARD_DIR := ../boards/$(BOARD)
 
 # Sanity check that the board configuration directory exists
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
-include ../../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
-CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-
-CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
+CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES)xx/Include
+HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES)xx_HAL_Driver
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -32,9 +35,9 @@ DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
-STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I..
@@ -49,17 +52,17 @@ INC += -I../$(USBDEV_DIR)/core/inc -I../$(USBDEV_DIR)/class/inc
 CFLAGS_CORTEX_M = -mthumb
 
 # Options for particular MCU series
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_F4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_F7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_H7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_L4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
-CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
+CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
 CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
@@ -108,8 +111,8 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	ports/stm32/resethandler.o \
 
-$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
-SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_ll_usb.o: CFLAGS += -Wno-attributes
+SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal_cortex.c \
 	hal_flash.c \
 	hal_flash_ex.c \

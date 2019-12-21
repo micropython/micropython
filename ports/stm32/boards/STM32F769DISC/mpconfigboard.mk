@@ -6,8 +6,6 @@ USE_MBOOT ?= 1
 USE_QSPI ?= 1
 
 # MCU settings
-MCU_SERIES = f7
-CMSIS_MCU = STM32F769xx
 MICROPY_FLOAT_IMPL = double
 AF_FILE = boards/stm32f767_af.csv
 

@@ -1,16 +1,29 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
-BOARD ?= PYBV10
+include ../../py/mkenv.mk
 
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
+ifneq ($(CONFIG_PORT_STM32),y)
+$(error The STM32 port (PORT_STM32) is not selected in .config file)
+endif
 
-BOARD_DIR ?= boards/$(BOARD)
+MCU_SERIES := $(CONFIG_STM32_MCU_SERIES:"%"=%)
+MCU_SERIES_LOWER := $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+ifeq ($(MCU_SERIES),)
+$(error Kconfig did not select STM32_MCU_SERIES)
+endif
+
+CMSIS_MCU := $(CONFIG_STM32_CMSIS_MCU:"%"=%)
+CMSIS_MCU_LOWER := $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
+ifeq ($(CMSIS_MCU),)
+$(error Kconfig did not select STM32_CMSIS_MCU)
+endif
+
+BOARD := $(CONFIG_STM32_BOARD:"%"=%)
+BOARD_DIR := boards/$(BOARD)
+
+# Sanity check that the board configuration directory exists
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
-include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
@@ -26,12 +39,9 @@ include $(TOP)/py/py.mk
 
 GIT_SUBMODULES = lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
 
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
-CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-
 LD_DIR=boards
-CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
+CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES)xx/Include
+HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 DFU=$(TOP)/tools/dfu.py
@@ -43,8 +53,8 @@ DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
-STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
-SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
+STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES)xx/Source/Templates/system_stm32$(MCU_SERIES_LOWER)xx.o
 
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
@@ -63,36 +73,31 @@ INC += -Ilwip_inc
 CFLAGS_CORTEX_M = -mthumb
 
 # Select hardware floating-point support
-SUPPORTS_HARDWARE_FP_SINGLE = 0
-SUPPORTS_HARDWARE_FP_DOUBLE = 0
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
+ifeq ($(CONFIG_STM32_FPU_VFP5_D16),y)
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
-SUPPORTS_HARDWARE_FP_SINGLE = 1
-SUPPORTS_HARDWARE_FP_DOUBLE = 1
 else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
-CFLAGS_CORTEX_M += -msoft-float
-else
+ifeq ($(CONFIG_STM32_FPU_VFP4_SP_D16),y)
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-SUPPORTS_HARDWARE_FP_SINGLE = 1
+else
+CFLAGS_CORTEX_M += -msoft-float
 endif
 endif
 
 # Options for particular MCU series
-CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_l0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
-CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_F0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
+CFLAGS_MCU_F4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_F7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_L0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
+CFLAGS_MCU_L4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_H7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_WB = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
-CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
+CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -182,7 +187,7 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	tgamma.c \
 	trunc.c \
 	)
-ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
+ifeq ($(CONFIG_STM32_FPU_SUPPORTS_DOUBLE),y)
 SRC_LIBM += lib/libm_dbl/thumb_vfp_sqrt.c
 else
 SRC_LIBM += lib/libm_dbl/sqrt.c
@@ -215,7 +220,7 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
-ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
+ifeq ($(CONFIG_STM32_FPU_SUPPORTS_SINGLE),y)
 SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
 else
 SRC_LIBM += lib/libm/ef_sqrt.c
@@ -308,12 +313,12 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
 
-ifeq ($(MCU_SERIES),f0)
+ifeq ($(MCU_SERIES),F0)
 SRC_O += \
 	resethandler_m0.o \
 	lib/utils/gchelper_m0.o
 else
-ifeq ($(MCU_SERIES),l0)
+ifeq ($(MCU_SERIES),L0)
 CSUPEROPT = -Os # save some code space
 SRC_O += \
 	resethandler_m0.o \
@@ -326,7 +331,7 @@ SRC_O += \
 endif
 endif
 
-SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
@@ -350,22 +355,22 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_uart.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l0 l4 wb))
-SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),F4 F7 H7 L0 L4 WB))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	ll_usb.c \
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
-SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),F4 F7 H7 L4))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
 	ll_fmc.c \
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
-SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),F4 F7 H7))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal_mmc.c \
 	hal_sdram.c \
 	hal_dma_ex.c \
@@ -374,10 +379,10 @@ SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 endif
 
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
-    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
+    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_, hal_fdcan.c)
 else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))
-    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),F0 F4 F7 H7 L4))
+    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_, hal_can.c)
 endif
 endif
 
@@ -640,7 +645,7 @@ CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c $(if $(filter $(MCU_SERIES),f7),--relax-pll48,) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
+	$(Q)$(PYTHON) $(PLLVALUES) -c $(if $(filter $(MCU_SERIES),F7),--relax-pll48,) file:$(BOARD_DIR)/stm32$(MCU_SERIES_LOWER)xx_hal_conf.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to

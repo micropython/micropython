@@ -33,15 +33,15 @@ jobs:
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} mpy-cross
-        - make ${MAKEOPTS} -C ports/stm32 submodules
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=B_L072Z_LRWAN1
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
-        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
+        - make ${MAKEOPTS} submodules PORT=stm32
+        - make ${MAKEOPTS} CONFIG=configs/stm32_nucleo_f091rc_config
+        - make ${MAKEOPTS} CONFIG=configs/stm32_pybv11_config MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+        - make ${MAKEOPTS} CONFIG=configs/stm32_pybd_sf2_config
+        - make ${MAKEOPTS} CONFIG=configs/stm32_nucleo_h743zi_config CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
+        - make ${MAKEOPTS} CONFIG=configs/stm32_b_l072z_lrwan1_config
+        - make ${MAKEOPTS} CONFIG=configs/stm32_stm32l476disc_config
+        - make ${MAKEOPTS} CONFIG=configs/stm32_nucleo_wb55_config
+        - make ${MAKEOPTS} PORT=stm32/mboot CONFIG=configs/stm32_pybd_sf6_config
 
     # qemu-arm port
     - stage: test
