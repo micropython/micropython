@@ -33,11 +33,11 @@
 #include "shared-bindings/random/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| :mod:`random` --- psuedo-random numbers and choices
+//| :mod:`random` --- pseudo-random numbers and choices
 //| ========================================================
 //|
 //| .. module:: random
-//|   :synopsis: psuedo-random numbers and choices
+//|   :synopsis: pseudo-random numbers and choices
 //|   :platform: SAMD21, ESP8266
 //|
 //| The `random` module is a strict subset of the CPython `cpython:random`

@@ -394,11 +394,18 @@ STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_rotation(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_rotation_obj, displayio_display_obj_get_rotation);
+STATIC mp_obj_t displayio_display_obj_set_rotation(mp_obj_t self_in, mp_obj_t value) {
+    displayio_display_obj_t *self = native_display(self_in);
+    common_hal_displayio_display_set_rotation(self, mp_obj_get_int(value));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_set_rotation_obj, displayio_display_obj_set_rotation);
+
 
 const mp_obj_property_t displayio_display_rotation_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&displayio_display_get_rotation_obj,
-              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&displayio_display_set_rotation_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 

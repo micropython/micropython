@@ -225,10 +225,6 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->loop = loop;
 
     uint32_t sample_rate = audiosample_sample_rate(sample);
-    uint32_t max_sample_rate = 62500;
-    if (sample_rate > max_sample_rate) {
-        mp_raise_ValueError_varg(translate("Sample rate too high. It must be less than %d"), max_sample_rate);
-    }
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
 
     uint32_t max_buffer_length;
