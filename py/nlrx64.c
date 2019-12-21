@@ -58,7 +58,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     #else
 
     __asm volatile (
-        #if defined(__APPLE__) && defined(__MACH__)
+        #if (defined(__APPLE__) && defined(__MACH__)) || (defined(__KERNEL__) && defined(CONFIG_FRAME_POINTER))
         "pop    %rbp                \n" // undo function's prelude
         #endif
         "movq   (%rsp), %rax        \n" // load return %rip
