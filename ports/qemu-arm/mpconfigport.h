@@ -3,9 +3,9 @@
 // options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (512)
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_THUMB          (1)
-#define MICROPY_EMIT_INLINE_THUMB   (1)
+#define CONFIG_MICROPY_EMIT_X64            (0)
+#define CONFIG_MICROPY_EMIT_THUMB          (1)
+#define CONFIG_MICROPY_EMIT_INLINE_THUMB   (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (0)

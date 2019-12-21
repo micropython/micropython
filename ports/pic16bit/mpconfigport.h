@@ -29,9 +29,9 @@
 // options to control how MicroPython is built
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
 #define MICROPY_ALLOC_PATH_MAX      (64)
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
+#define CONFIG_MICROPY_EMIT_X64            (0)
+#define CONFIG_MICROPY_EMIT_THUMB          (0)
+#define CONFIG_MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_CONST          (0)
 #define MICROPY_MEM_STATS           (0)

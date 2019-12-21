@@ -33,7 +33,7 @@
 #include "py/emit.h"
 #include "py/asmxtensa.h"
 
-#if MICROPY_EMIT_INLINE_XTENSA
+#if CONFIG_MICROPY_EMIT_INLINE_XTENSA
 
 struct _emit_inline_asm_t {
     asm_xtensa_t as;
@@ -347,4 +347,4 @@ const emit_inline_asm_method_table_t emit_inline_xtensa_method_table = {
     emit_inline_xtensa_op,
 };
 
-#endif // MICROPY_EMIT_INLINE_XTENSA
+#endif // CONFIG_MICROPY_EMIT_INLINE_XTENSA

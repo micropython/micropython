@@ -33,7 +33,7 @@
 #include "py/emit.h"
 #include "py/asmthumb.h"
 
-#if MICROPY_EMIT_INLINE_THUMB
+#if CONFIG_MICROPY_EMIT_INLINE_THUMB
 
 typedef enum {
 // define rules with a compile function
@@ -212,7 +212,7 @@ STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp
     return 0;
 }
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
+#if CONFIG_MICROPY_EMIT_INLINE_THUMB_FLOAT
 STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     if (reg_str[0] == 's' && reg_str[1] != '\0') {
@@ -399,7 +399,7 @@ STATIC const format_9_10_op_t format_9_10_op_table[] = {
 };
 #undef X
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
+#if CONFIG_MICROPY_EMIT_INLINE_THUMB_FLOAT
 // actual opcodes are: 0xee00 | op.hi_nibble, 0x0a00 | op.lo_nibble
 typedef struct _format_vfp_op_t { byte op; char name[3]; } format_vfp_op_t;
 STATIC const format_vfp_op_t format_vfp_op_table[] = {
@@ -411,7 +411,11 @@ STATIC const format_vfp_op_t format_vfp_op_table[] = {
 #endif
 
 // shorthand alias for whether we allow ARMv7-M instructions
-#define ARMV7M MICROPY_EMIT_INLINE_THUMB_ARMV7M
+#ifdef CONFIG_MICROPY_EMIT_INLINE_THUMB_ARMV7M
+#define ARMV7M CONFIG_MICROPY_EMIT_INLINE_THUMB_ARMV7M
+#else
+#define ARMV7M 0
+#endif
 
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
@@ -427,7 +431,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     size_t op_len;
     const char *op_str = (const char*)qstr_data(op, &op_len);
 
-    #if MICROPY_EMIT_INLINE_THUMB_FLOAT
+    #if CONFIG_MICROPY_EMIT_INLINE_THUMB_FLOAT
     if (op_str[0] == 'v') {
         // floating point operations
         if (n_args == 2) {
@@ -824,4 +828,4 @@ const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
     emit_inline_thumb_op,
 };
 
-#endif // MICROPY_EMIT_INLINE_THUMB
+#endif // CONFIG_MICROPY_EMIT_INLINE_THUMB

@@ -67,7 +67,7 @@ STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
     3,
     { I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO) }
 };
-#if MICROPY_PERSISTENT_CODE_LOAD
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD
 #define SYS_IMPLEMENTATION_ELEMS \
     MP_ROM_QSTR(MP_QSTR_micropython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
@@ -81,20 +81,20 @@ STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
 STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
-    #if MICROPY_PERSISTENT_CODE_LOAD
+    #if CONFIG_MICROPY_PERSISTENT_CODE_LOAD
     MP_QSTR_mpy,
     #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    2 + MICROPY_PERSISTENT_CODE_LOAD,
+    2 + CONFIG_MICROPY_PERSISTENT_CODE_LOAD,
         SYS_IMPLEMENTATION_ELEMS
 );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
-    2 + MICROPY_PERSISTENT_CODE_LOAD,
+    2 + CONFIG_MICROPY_PERSISTENT_CODE_LOAD,
     {
         SYS_IMPLEMENTATION_ELEMS
     }

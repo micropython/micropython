@@ -226,7 +226,7 @@ struct _emit_t {
     uint16_t const_table_cur_raw_code;
     mp_uint_t *const_table;
 
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     uint16_t qstr_link_cur;
     mp_qstr_link_entry_t *qstr_link;
     #endif
@@ -298,7 +298,7 @@ STATIC void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local
 }
 
 STATIC void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     size_t loc = ASM_MOV_REG_IMM_FIX_U16(emit->as, arg_reg, qst);
     size_t link_idx = emit->qstr_link_cur++;
     if (emit->pass == MP_PASS_EMIT) {
@@ -311,7 +311,7 @@ STATIC void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
 }
 
 STATIC void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     size_t loc = ASM_MOV_REG_IMM_FIX_WORD(emit->as, reg_dest, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
     size_t link_idx = emit->qstr_link_cur++;
     if (emit->pass == MP_PASS_EMIT) {
@@ -341,7 +341,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->const_table_cur_obj = 0;
     #endif
     emit->const_table_cur_raw_code = 0;
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     emit->qstr_link_cur = 0;
     #endif
     emit->last_emit_was_return_value = false;
@@ -628,14 +628,14 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         size_t n_exc_stack = 0; // exc-stack not needed for native code
         MP_BC_PRELUDE_SIG_ENCODE(n_state, n_exc_stack, emit->scope, emit_native_write_code_info_byte, emit);
 
-        #if MICROPY_PERSISTENT_CODE
+        #if CONFIG_MICROPY_PERSISTENT_CODE
         size_t n_info = 4;
         #else
         size_t n_info = 1;
         #endif
         MP_BC_PRELUDE_SIZE_ENCODE(n_info, emit->n_cell, emit_native_write_code_info_byte, emit);
 
-        #if MICROPY_PERSISTENT_CODE
+        #if CONFIG_MICROPY_PERSISTENT_CODE
         mp_asm_base_data(&emit->as->base, 1, emit->scope->simple_name);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->simple_name >> 8);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->source_file);
@@ -690,7 +690,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         emit->const_table[nqstr] = (mp_uint_t)(uintptr_t)&mp_fun_table;
         #endif
 
-        #if MICROPY_PERSISTENT_CODE_SAVE
+        #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
         size_t qstr_link_alloc = emit->qstr_link_cur;
         if (qstr_link_alloc > 0) {
             emit->qstr_link = m_new(mp_qstr_link_entry_t, qstr_link_alloc);
@@ -705,7 +705,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
             f, f_len, emit->const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
             emit->prelude_offset,
             emit->const_table_cur_obj, emit->const_table_cur_raw_code,
             emit->qstr_link_cur, emit->qstr_link,
@@ -1350,7 +1350,7 @@ STATIC void emit_native_import(emit_t *emit, qstr qst, int kind) {
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     if (tok == MP_TOKEN_ELLIPSIS) {
-        #if MICROPY_PERSISTENT_CODE_SAVE
+        #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
         emit_native_load_const_obj(emit, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
         #else
         emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));

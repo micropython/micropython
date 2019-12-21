@@ -59,7 +59,7 @@ typedef enum {
 #undef DEF_RULE_NC
 } pn_kind_t;
 
-#define NEED_METHOD_TABLE MICROPY_EMIT_NATIVE
+#define NEED_METHOD_TABLE CONFIG_MICROPY_EMIT_NATIVE
 
 #if NEED_METHOD_TABLE
 
@@ -79,7 +79,7 @@ typedef enum {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+#if CONFIG_MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
 
 #define NATIVE_EMITTER(f) emit_native_table[mp_dynamic_compiler.native_arch]->emit_##f
 #define NATIVE_EMITTER_TABLE emit_native_table[mp_dynamic_compiler.native_arch]
@@ -98,19 +98,19 @@ STATIC const emit_method_table_t *emit_native_table[] = {
     &emit_native_xtensawin_method_table,
 };
 
-#elif MICROPY_EMIT_NATIVE
+#elif CONFIG_MICROPY_EMIT_NATIVE
 // define a macro to access external native emitter
-#if MICROPY_EMIT_X64
+#if CONFIG_MICROPY_EMIT_X64
 #define NATIVE_EMITTER(f) emit_native_x64_##f
-#elif MICROPY_EMIT_X86
+#elif CONFIG_MICROPY_EMIT_X86
 #define NATIVE_EMITTER(f) emit_native_x86_##f
-#elif MICROPY_EMIT_THUMB
+#elif CONFIG_MICROPY_EMIT_THUMB
 #define NATIVE_EMITTER(f) emit_native_thumb_##f
-#elif MICROPY_EMIT_ARM
+#elif CONFIG_MICROPY_EMIT_ARM
 #define NATIVE_EMITTER(f) emit_native_arm_##f
-#elif MICROPY_EMIT_XTENSA
+#elif CONFIG_MICROPY_EMIT_XTENSA
 #define NATIVE_EMITTER(f) emit_native_xtensa_##f
-#elif MICROPY_EMIT_XTENSAWIN
+#elif CONFIG_MICROPY_EMIT_XTENSAWIN
 #define NATIVE_EMITTER(f) emit_native_xtensawin_##f
 #else
 #error "unknown native emitter"
@@ -118,7 +118,7 @@ STATIC const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER_TABLE &NATIVE_EMITTER(method_table)
 #endif
 
-#if MICROPY_EMIT_INLINE_ASM && MICROPY_DYNAMIC_COMPILER
+#if CONFIG_MICROPY_EMIT_INLINE_ASM && MICROPY_DYNAMIC_COMPILER
 
 #define ASM_EMITTER(f) emit_asm_table[mp_dynamic_compiler.native_arch]->asm_##f
 #define ASM_EMITTER_TABLE emit_asm_table[mp_dynamic_compiler.native_arch]
@@ -137,12 +137,12 @@ STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
     NULL,
 };
 
-#elif MICROPY_EMIT_INLINE_ASM
+#elif CONFIG_MICROPY_EMIT_INLINE_ASM
 // define macros for inline assembler
-#if MICROPY_EMIT_INLINE_THUMB
+#if CONFIG_MICROPY_EMIT_INLINE_THUMB
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_thumb
 #define ASM_EMITTER(f) emit_inline_thumb_##f
-#elif MICROPY_EMIT_INLINE_XTENSA
+#elif CONFIG_MICROPY_EMIT_INLINE_XTENSA
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
 #define ASM_EMITTER(f) emit_inline_xtensa_##f
 #else
@@ -184,7 +184,7 @@ typedef struct _compiler_t {
     const emit_method_table_t *emit_method_table;   // current emit method table
     #endif
 
-    #if MICROPY_EMIT_INLINE_ASM
+    #if CONFIG_MICROPY_EMIT_INLINE_ASM
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
     #endif
@@ -214,7 +214,7 @@ STATIC uint comp_next_label(compiler_t *comp) {
     return comp->next_label++;
 }
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 STATIC void reserve_labels_for_native(compiler_t *comp, int n) {
     if (comp->scope_cur->emit_options != MP_EMIT_OPT_BYTECODE) {
         comp->next_label += n;
@@ -611,7 +611,7 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
     }
     this_scope->num_def_pos_args = n_pos_defaults;
 
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     // When creating a function/closure it will take a reference to the current globals
     comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_REFGLOBALS | MP_SCOPE_FLAG_HASCONSTS;
     #endif
@@ -835,13 +835,13 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == MP_QSTR_bytecode) {
         *emit_options = MP_EMIT_OPT_BYTECODE;
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
     } else if (attr == MP_QSTR_native) {
         *emit_options = MP_EMIT_OPT_NATIVE_PYTHON;
     } else if (attr == MP_QSTR_viper) {
         *emit_options = MP_EMIT_OPT_VIPER;
 #endif
-    #if MICROPY_EMIT_INLINE_ASM
+    #if CONFIG_MICROPY_EMIT_INLINE_ASM
     #if MICROPY_DYNAMIC_COMPILER
     } else if (attr == MP_QSTR_asm_thumb) {
         *emit_options = MP_EMIT_OPT_ASM;
@@ -2803,7 +2803,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 STATIC int compile_viper_type_annotation(compiler_t *comp, mp_parse_node_t pn_annotation) {
     int native_type = MP_NATIVE_TYPE_OBJ;
     if (MP_PARSE_NODE_IS_NULL(pn_annotation)) {
@@ -2899,7 +2899,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         id_info->kind = ID_INFO_KIND_LOCAL;
         id_info->flags = param_flag;
 
-        #if MICROPY_EMIT_NATIVE
+        #if CONFIG_MICROPY_EMIT_NATIVE
         if (comp->scope_cur->emit_options == MP_EMIT_OPT_VIPER && pn_name == PN_typedargslist_name && pns != NULL) {
             id_info->flags |= compile_viper_type_annotation(comp, pns->nodes[1]) << ID_FLAG_VIPER_TYPE_POS;
         }
@@ -3039,12 +3039,12 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             comp->have_star = false;
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
 
-            #if MICROPY_EMIT_NATIVE
+            #if CONFIG_MICROPY_EMIT_NATIVE
             if (scope->emit_options == MP_EMIT_OPT_VIPER) {
                 // Compile return type; pns->nodes[2] is return/whole function annotation
                 scope->scope_flags |= compile_viper_type_annotation(comp, pns->nodes[2]) << MP_SCOPE_FLAG_VIPERRET_POS;
             }
-            #endif // MICROPY_EMIT_NATIVE
+            #endif // CONFIG_MICROPY_EMIT_NATIVE
         }
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
@@ -3164,7 +3164,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     assert(comp->cur_except_level == 0);
 }
 
-#if MICROPY_EMIT_INLINE_ASM
+#if CONFIG_MICROPY_EMIT_INLINE_ASM
 // requires 3 passes: SCOPE, CODE_SIZE, EMIT
 STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
@@ -3314,7 +3314,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             mp_emit_glue_assign_native(comp->scope_cur->raw_code, MP_CODE_NATIVE_ASM,
                 f, mp_asm_base_get_code_size((mp_asm_base_t*)comp->emit_inline_asm),
                 NULL,
-                #if MICROPY_PERSISTENT_CODE_SAVE
+                #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
                 0, 0, 0, 0, NULL,
                 #endif
                 comp->scope_cur->num_pos_args, 0, type_sig);
@@ -3359,7 +3359,7 @@ STATIC void scope_compute_things(scope_t *scope) {
         if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
-        #if MICROPY_EMIT_NATIVE
+        #if CONFIG_MICROPY_EMIT_NATIVE
         if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
             // This function makes a reference to a global variable
             if (scope->emit_options == MP_EMIT_OPT_VIPER
@@ -3420,7 +3420,7 @@ STATIC void scope_compute_things(scope_t *scope) {
     }
 }
 
-#if !MICROPY_PERSISTENT_CODE_SAVE
+#if !CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 STATIC
 #endif
 mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl) {
@@ -3434,7 +3434,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     comp->continue_label = INVALID_LABEL;
 
     // create the module scope
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     const uint emit_opt = MP_STATE_VM(default_emit_opt);
     #else
     const uint emit_opt = MP_EMIT_OPT_NONE;
@@ -3446,12 +3446,12 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 
     // compile pass 1
     comp->emit = emit_bc;
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
     #endif
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        #if MICROPY_EMIT_INLINE_ASM
+        #if CONFIG_MICROPY_EMIT_INLINE_ASM
         if (s->emit_options == MP_EMIT_OPT_ASM) {
             compile_scope_inline_asm(comp, s, MP_PASS_SCOPE);
         } else
@@ -3483,11 +3483,11 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     emit_bc_set_max_num_labels(emit_bc, max_num_labels);
 
     // compile pass 2 and 3
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
     emit_t *emit_native = NULL;
 #endif
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        #if MICROPY_EMIT_INLINE_ASM
+        #if CONFIG_MICROPY_EMIT_INLINE_ASM
         if (s->emit_options == MP_EMIT_OPT_ASM) {
             // inline assembly
             if (comp->emit_inline_asm == NULL) {
@@ -3496,7 +3496,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
             comp->emit = NULL;
             comp->emit_inline_asm_method_table = ASM_EMITTER_TABLE;
             compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
-            #if MICROPY_EMIT_INLINE_XTENSA
+            #if CONFIG_MICROPY_EMIT_INLINE_XTENSA
             // Xtensa requires an extra pass to compute size of l32r const table
             // TODO this can be improved by calculating it during SCOPE pass
             // but that requires some other structural changes to the asm emitters
@@ -3518,7 +3518,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 
             switch (s->emit_options) {
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
@@ -3527,11 +3527,11 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                     comp->emit_method_table = NATIVE_EMITTER_TABLE;
                     comp->emit = emit_native;
                     break;
-#endif // MICROPY_EMIT_NATIVE
+#endif // CONFIG_MICROPY_EMIT_NATIVE
 
                 default:
                     comp->emit = emit_bc;
-                    #if MICROPY_EMIT_NATIVE
+                    #if CONFIG_MICROPY_EMIT_NATIVE
                     comp->emit_method_table = &emit_bc_method_table;
                     #endif
                     break;
@@ -3564,12 +3564,12 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     // free the emitters
 
     emit_bc_free(emit_bc);
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
         NATIVE_EMITTER(free)(emit_native);
     }
 #endif
-    #if MICROPY_EMIT_INLINE_ASM
+    #if CONFIG_MICROPY_EMIT_INLINE_ASM
     if (comp->emit_inline_asm != NULL) {
         ASM_EMITTER(free)(comp->emit_inline_asm);
     }

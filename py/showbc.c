@@ -44,7 +44,7 @@
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 
-#if MICROPY_PERSISTENT_CODE
+#if CONFIG_MICROPY_PERSISTENT_CODE
 
 #define DECODE_QSTR \
     qst = ip[0] | ip[1] << 8; \
@@ -88,7 +88,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     MP_BC_PRELUDE_SIZE_DECODE(ip);
     const byte *code_info = ip;
 
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     qstr block_name = code_info[0] | (code_info[1] << 8);
     qstr source_file = code_info[2] | (code_info[3] << 8);
     code_info += 4;

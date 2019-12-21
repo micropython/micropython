@@ -2,7 +2,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_EMIT_THUMB
+#if CONFIG_MICROPY_EMIT_THUMB
 
 // this is defined so that the assembler exports generic assembler API macros
 #define GENERIC_ASM_API (1)

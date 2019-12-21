@@ -33,7 +33,7 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 
-#if MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
+#if CONFIG_MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
 
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
@@ -104,4 +104,4 @@ void ffi_closure_free(void *ptr) {
 }
 #endif
 
-#endif // MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)
+#endif // CONFIG_MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)

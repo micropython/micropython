@@ -19,8 +19,8 @@
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
 // emitters
-#define MICROPY_PERSISTENT_CODE_LOAD        (1)
-#define MICROPY_EMIT_XTENSAWIN              (1)
+#define CONFIG_MICROPY_PERSISTENT_CODE_LOAD        (1)
+#define CONFIG_MICROPY_EMIT_XTENSAWIN              (1)
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)

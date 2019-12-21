@@ -758,7 +758,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UnicodeError), MP_ROM_PTR(&mp_type_UnicodeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ValueError), MP_ROM_PTR(&mp_type_ValueError) },
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     { MP_ROM_QSTR(MP_QSTR_ViperTypeError), MP_ROM_PTR(&mp_type_ViperTypeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },

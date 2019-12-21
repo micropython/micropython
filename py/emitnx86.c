@@ -3,7 +3,7 @@
 #include "py/mpconfig.h"
 #include "py/nativeglue.h"
 
-#if MICROPY_EMIT_X86
+#if CONFIG_MICROPY_EMIT_X86
 
 // This is defined so that the assembler exports generic assembler API macros
 #define GENERIC_ASM_API (1)

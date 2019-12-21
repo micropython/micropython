@@ -41,15 +41,6 @@
 #endif
 #define MICROPY_ALLOC_PATH_MAX      (128)
 
-// emitters
-#define MICROPY_PERSISTENT_CODE_LOAD (1)
-#ifndef MICROPY_EMIT_THUMB
-#define MICROPY_EMIT_THUMB          (1)
-#endif
-#ifndef MICROPY_EMIT_INLINE_THUMB
-#define MICROPY_EMIT_INLINE_THUMB   (1)
-#endif
-
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)

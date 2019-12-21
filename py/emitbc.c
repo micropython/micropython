@@ -67,7 +67,7 @@ struct _emit_t {
     size_t n_info;
     size_t n_cell;
 
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     uint16_t ct_cur_obj;
     uint16_t ct_num_obj;
     uint16_t ct_cur_raw_code;
@@ -127,7 +127,7 @@ STATIC void emit_write_code_info_byte(emit_t* emit, byte val) {
 }
 
 STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     assert((qst >> 16) == 0);
     byte *c = emit_get_cur_to_write_code_info(emit, 2);
     c[0] = qst;
@@ -224,7 +224,7 @@ STATIC void emit_write_bytecode_byte_uint(emit_t *emit, int stack_adj, byte b, m
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
-#if MICROPY_PERSISTENT_CODE
+#if CONFIG_MICROPY_PERSISTENT_CODE
 STATIC void emit_write_bytecode_byte_const(emit_t *emit, int stack_adj, byte b, mp_uint_t n, mp_uint_t c) {
     if (emit->pass == MP_PASS_EMIT) {
         emit->const_table[n] = c;
@@ -234,7 +234,7 @@ STATIC void emit_write_bytecode_byte_const(emit_t *emit, int stack_adj, byte b, 
 #endif
 
 STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, int stack_adj, byte b, qstr qst) {
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     assert((qst >> 16) == 0);
     mp_emit_bc_adjust_stack_size(emit, stack_adj);
     byte *c = emit_get_cur_to_write_bytecode(emit, 3);
@@ -247,7 +247,7 @@ STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, int stack_adj, byte b, q
 }
 
 STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp_obj_t obj) {
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, stack_adj, b,
         emit->scope->num_pos_args + emit->scope->num_kwonly_args
         + emit->ct_cur_obj++, (mp_uint_t)obj);
@@ -263,7 +263,7 @@ STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp
 }
 
 STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, int stack_adj, byte b, mp_raw_code_t *rc) {
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, stack_adj, b,
         emit->scope->num_pos_args + emit->scope->num_kwonly_args
         + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)(uintptr_t)rc);
@@ -356,7 +356,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_code_info_qstr(emit, scope->simple_name);
     emit_write_code_info_qstr(emit, scope->source_file);
 
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     emit->ct_cur_obj = 0;
     emit->ct_cur_raw_code = 0;
     #endif
@@ -415,13 +415,13 @@ void mp_emit_bc_end_pass(emit_t *emit) {
         }
     }
 
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     assert(emit->pass <= MP_PASS_STACK_SIZE || (emit->ct_num_obj == emit->ct_cur_obj));
     emit->ct_num_obj = emit->ct_cur_obj;
     #endif
 
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        #if !MICROPY_PERSISTENT_CODE
+        #if !CONFIG_MICROPY_PERSISTENT_CODE
         // so bytecode is aligned
         emit->code_info_offset = (size_t)MP_ALIGN(emit->code_info_offset, sizeof(mp_uint_t));
         #endif
@@ -431,7 +431,7 @@ void mp_emit_bc_end_pass(emit_t *emit) {
         emit->bytecode_size = emit->bytecode_offset;
         emit->code_base = m_new0(byte, emit->code_info_size + emit->bytecode_size);
 
-        #if MICROPY_PERSISTENT_CODE
+        #if CONFIG_MICROPY_PERSISTENT_CODE
         emit->const_table = m_new0(mp_uint_t,
             emit->scope->num_pos_args + emit->scope->num_kwonly_args
             + emit->ct_cur_obj + emit->ct_cur_raw_code);
@@ -442,11 +442,11 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
-            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             emit->code_info_size + emit->bytecode_size,
             #endif
             emit->const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
             emit->ct_cur_obj, emit->ct_cur_raw_code,
             #endif
             emit->scope->scope_flags);
@@ -856,7 +856,7 @@ void mp_emit_bc_end_except_handler(emit_t *emit) {
     mp_emit_bc_adjust_stack_size(emit, -3); // stack adjust
 }
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 const emit_method_table_t emit_bc_method_table = {
     #if MICROPY_DYNAMIC_COMPILER
     NULL,

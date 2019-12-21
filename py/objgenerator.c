@@ -84,7 +84,7 @@ const mp_obj_type_t mp_type_gen_wrap = {
 /******************************************************************************/
 // native generator wrapper
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 
 STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // The state for a native generating function is held in the same struct as a bytecode function
@@ -92,7 +92,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Determine start of prelude, and extract n_state from it
     uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
-    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    #if CONFIG_MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
     // Prelude is in bytes object in const_table, at index prelude_offset
     mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->const_table[prelude_offset]);
     prelude_offset = (const byte*)prelude_bytes->data - self_fun->bytecode;
@@ -134,7 +134,7 @@ const mp_obj_type_t mp_type_native_gen_wrap = {
     #endif
 };
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // CONFIG_MICROPY_EMIT_NATIVE
 
 /******************************************************************************/
 /* generator instance                                                         */
@@ -185,7 +185,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     mp_vm_return_kind_t ret_kind;
 
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator, with entry point 2 words into the "bytecode" pointer
         typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);

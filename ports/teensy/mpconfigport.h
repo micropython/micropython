@@ -3,8 +3,8 @@
 // options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (128)
-#define MICROPY_EMIT_THUMB          (1)
-#define MICROPY_EMIT_INLINE_THUMB   (1)
+#define CONFIG_MICROPY_EMIT_THUMB          (1)
+#define CONFIG_MICROPY_EMIT_INLINE_THUMB   (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)

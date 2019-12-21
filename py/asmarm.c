@@ -32,7 +32,7 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_ARM
+#if CONFIG_MICROPY_EMIT_ARM
 
 #include "py/asmarm.h"
 
@@ -383,4 +383,4 @@ void asm_arm_bx_reg(asm_arm_t *as, uint reg_src) {
     emit_al(as, 0x012fff10 | reg_src);
 }
 
-#endif // MICROPY_EMIT_ARM
+#endif // CONFIG_MICROPY_EMIT_ARM

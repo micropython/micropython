@@ -34,7 +34,7 @@
 // the compiler will clear the parse tree before it returns
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl);
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 // this has the same semantics as mp_compile
 mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl);
 #endif

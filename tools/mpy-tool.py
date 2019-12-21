@@ -346,7 +346,7 @@ class RawCode(object):
             print('    .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
         else:
             print('    .const_table = NULL,')
-        print('    #if MICROPY_PERSISTENT_CODE_SAVE')
+        print('    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE')
         print('    .fun_data_len = %u,' % len(self.bytecode))
         print('    .n_obj = %u,' % len(self.objs))
         print('    .n_raw_code = %u,' % len(self.raw_codes))
@@ -366,13 +366,13 @@ class RawCode(object):
             print('    },')
             print('    .line_of_definition = %u,' % 0) # TODO
             print('    #endif')
-        print('    #if MICROPY_EMIT_MACHINE_CODE')
+        print('    #if CONFIG_MICROPY_EMIT_MACHINE_CODE')
         print('    .prelude_offset = %u,' % self.prelude_offset)
         print('    .n_qstr = %u,' % len(qstr_links))
         print('    .qstr_link = NULL,') # TODO
         print('    #endif')
         print('    #endif')
-        print('    #if MICROPY_EMIT_MACHINE_CODE')
+        print('    #if CONFIG_MICROPY_EMIT_MACHINE_CODE')
         print('    .type_sig = %u,' % type_sig)
         print('    #endif')
         print('};')

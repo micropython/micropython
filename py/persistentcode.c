@@ -35,7 +35,7 @@
 #include "py/bc0.h"
 #include "py/objstr.h"
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/smallint.h"
 
@@ -47,7 +47,7 @@
 #define MPY_FEATURE_ARCH_DYNAMIC MPY_FEATURE_ARCH
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD || (MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_DYNAMIC_COMPILER)
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD || (CONFIG_MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_DYNAMIC_COMPILER)
 // The bytecode will depend on the number of bits in a small-int, and
 // this function computes that (could make it a fixed constant, but it
 // would need to be defined in mpconfigport.h).
@@ -88,7 +88,7 @@ STATIC qstr qstr_window_pull(qstr_window_t *qw, size_t idx) {
     return qst;
 }
 
-#if MICROPY_PERSISTENT_CODE_LOAD
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD
 
 // Access a qstr at the given index, relative to the head of the window (0=head)
 STATIC qstr qstr_window_access(qstr_window_t *qw, size_t idx) {
@@ -97,7 +97,7 @@ STATIC qstr qstr_window_access(qstr_window_t *qw, size_t idx) {
 
 #endif
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
 // Insert a qstr at the head of the window, either by pulling an existing one or pushing a new one
 STATIC size_t qstr_window_insert(qstr_window_t *qw, qstr qst) {
@@ -140,23 +140,23 @@ STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
     return ip_info;
 }
 
-#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#endif // CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
-#if MICROPY_PERSISTENT_CODE_LOAD
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD
 
 #include "py/parsenum.h"
 
 STATIC int read_byte(mp_reader_t *reader);
 STATIC size_t read_uint(mp_reader_t *reader, byte **out);
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if CONFIG_MICROPY_EMIT_MACHINE_CODE
 
 typedef struct _reloc_info_t {
     mp_reader_t *reader;
     mp_uint_t *const_table;
 } reloc_info_t;
 
-#if MICROPY_EMIT_THUMB
+#if CONFIG_MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
     // high part
     *(uint16_t*)pc = (*(uint16_t*)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
@@ -171,12 +171,12 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
     if (is_obj) {
         val = (mp_uint_t)MP_OBJ_NEW_QSTR(qst);
     }
-    #if MICROPY_EMIT_X86 || MICROPY_EMIT_X64 || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
+    #if CONFIG_MICROPY_EMIT_X86 || CONFIG_MICROPY_EMIT_X64 || CONFIG_MICROPY_EMIT_ARM || CONFIG_MICROPY_EMIT_XTENSA || CONFIG_MICROPY_EMIT_XTENSAWIN
     pc[0] = val & 0xff;
     pc[1] = (val >> 8) & 0xff;
     pc[2] = (val >> 16) & 0xff;
     pc[3] = (val >> 24) & 0xff;
-    #elif MICROPY_EMIT_THUMB
+    #elif CONFIG_MICROPY_EMIT_THUMB
     if (is_obj) {
         // qstr object, movw and movt
         asm_thumb_rewrite_mov(pc, val); // movw
@@ -352,7 +352,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     int kind = (kind_len & 3) + MP_CODE_BYTECODE;
     size_t fun_data_len = kind_len >> 2;
 
-    #if !MICROPY_EMIT_MACHINE_CODE
+    #if !CONFIG_MICROPY_EMIT_MACHINE_CODE
     if (kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError("incompatible .mpy file");
     }
@@ -360,7 +360,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     uint8_t *fun_data = NULL;
     bytecode_prelude_t prelude = {0};
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if CONFIG_MICROPY_EMIT_MACHINE_CODE
     size_t prelude_offset = 0;
     mp_uint_t type_sig = 0;
     size_t n_qstr_link = 0;
@@ -377,7 +377,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         // Load bytecode
         load_bytecode(reader, qw, ip, fun_data + fun_data_len);
 
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if CONFIG_MICROPY_EMIT_MACHINE_CODE
     } else {
         // Allocate memory for native data and load it
         size_t fun_alloc;
@@ -438,7 +438,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
         // Allocate constant table
         size_t n_alloc = prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code;
-        #if MICROPY_EMIT_MACHINE_CODE
+        #if CONFIG_MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             ++n_alloc; // additional entry for mp_fun_table
             if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
@@ -459,7 +459,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
             *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader, qw));
         }
 
-        #if MICROPY_EMIT_MACHINE_CODE
+        #if CONFIG_MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             // Populate mp_fun_table entry
             *ct++ = (mp_uint_t)(uintptr_t)&mp_fun_table;
@@ -495,16 +495,16 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     if (kind == MP_CODE_BYTECODE) {
         // Assign bytecode to raw code object
         mp_emit_glue_assign_bytecode(rc, fun_data,
-            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             fun_data_len,
             #endif
             const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
             n_obj, n_raw_code,
             #endif
             prelude.scope_flags);
 
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if CONFIG_MICROPY_EMIT_MACHINE_CODE
     } else {
         // Relocate and commit code to executable address space
         reloc_info_t ri = {reader, const_table};
@@ -520,7 +520,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         // Assign native code to raw code object
         mp_emit_glue_assign_native(rc, kind,
             fun_data, fun_data_len, const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
+            #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
             prelude_offset,
             n_obj, n_raw_code,
             n_qstr_link, NULL,
@@ -570,9 +570,9 @@ mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
 
 #endif // MICROPY_HAS_FILE_READER
 
-#endif // MICROPY_PERSISTENT_CODE_LOAD
+#endif // CONFIG_MICROPY_PERSISTENT_CODE_LOAD
 
-#if MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/objstr.h"
 
@@ -693,7 +693,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
         // Save bytecode
         const byte *ip_top = (const byte*)rc->fun_data + rc->fun_data_len;
         save_bytecode(print, qstr_window, ip, ip_top);
-    #if MICROPY_EMIT_MACHINE_CODE
+    #if CONFIG_MICROPY_EMIT_MACHINE_CODE
     } else {
         // Save native code
         mp_print_bytes(print, rc->fun_data, rc->fun_data_len);
@@ -836,4 +836,4 @@ void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
 #error mp_raw_code_save_file not implemented for this platform
 #endif
 
-#endif // MICROPY_PERSISTENT_CODE_SAVE
+#endif // CONFIG_MICROPY_PERSISTENT_CODE_SAVE

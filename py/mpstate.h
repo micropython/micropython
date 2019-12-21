@@ -210,7 +210,7 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_COMPILER
     mp_uint_t mp_optimise_value;
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     uint8_t default_emit_opt; // one of MP_EMIT_OPT_xxx
     #endif
     #endif

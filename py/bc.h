@@ -237,7 +237,7 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define MP_TAGPTR_TAG1(x) ((uintptr_t)(x) & 2)
 #define MP_TAGPTR_MAKE(ptr, tag) ((void*)((uintptr_t)(ptr) | (tag)))
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
 uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 

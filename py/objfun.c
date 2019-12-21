@@ -140,20 +140,20 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 
 qstr mp_obj_code_get_name(const byte *code_info) {
     MP_BC_PRELUDE_SIZE_DECODE(code_info);
-    #if MICROPY_PERSISTENT_CODE
+    #if CONFIG_MICROPY_PERSISTENT_CODE
     return code_info[0] | (code_info[1] << 8);
     #else
     return mp_decode_uint_value(code_info);
     #endif
 }
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 STATIC const mp_obj_type_t mp_type_fun_native;
 #endif
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
         // TODO native functions don't have name stored
         return MP_QSTR_;
@@ -395,7 +395,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 /******************************************************************************/
 /* native functions                                                           */
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
@@ -417,12 +417,12 @@ mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const
     return o;
 }
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // CONFIG_MICROPY_EMIT_NATIVE
 
 /******************************************************************************/
 /* inline assembler functions                                                 */
 
-#if MICROPY_EMIT_INLINE_ASM
+#if CONFIG_MICROPY_EMIT_INLINE_ASM
 
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
@@ -527,4 +527,4 @@ mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_
     return o;
 }
 
-#endif // MICROPY_EMIT_INLINE_ASM
+#endif // CONFIG_MICROPY_EMIT_INLINE_ASM

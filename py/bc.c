@@ -40,7 +40,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if !MICROPY_PERSISTENT_CODE
+#if !CONFIG_MICROPY_PERSISTENT_CODE
 
 mp_uint_t mp_decode_uint(const byte **ptr) {
     mp_uint_t unum = 0;
@@ -287,7 +287,7 @@ continue2:;
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
-    #if !MICROPY_PERSISTENT_CODE
+    #if !CONFIG_MICROPY_PERSISTENT_CODE
     // so bytecode is aligned
     ip = MP_ALIGN(ip, sizeof(mp_uint_t));
     #endif
@@ -300,7 +300,7 @@ continue2:;
     dump_args(code_state->state, n_state);
 }
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_PERSISTENT_CODE_SAVE
 
 // The following table encodes the number of bytes that a specific opcode
 // takes up.  Some opcodes have an extra byte, defined by MP_BC_MASK_EXTRA_BYTE.
@@ -340,4 +340,4 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
     return f;
 }
 
-#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#endif // CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_PERSISTENT_CODE_SAVE

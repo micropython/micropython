@@ -88,7 +88,7 @@ void mp_init(void) {
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     MP_STATE_VM(default_emit_opt) = MP_EMIT_OPT_NONE;
     #endif
     #endif

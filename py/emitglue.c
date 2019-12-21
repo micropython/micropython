@@ -60,11 +60,11 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
 }
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
     size_t len,
     #endif
     const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_obj, uint16_t n_raw_code,
     #endif
     mp_uint_t scope_flags) {
@@ -73,7 +73,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->scope_flags = scope_flags;
     rc->fun_data = code;
     rc->const_table = const_table;
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     rc->fun_data_len = len;
     rc->n_obj = n_obj;
     rc->n_raw_code = n_raw_code;
@@ -97,9 +97,9 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 #endif
 }
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if CONFIG_MICROPY_EMIT_MACHINE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     uint16_t prelude_offset,
     uint16_t n_obj, uint16_t n_raw_code,
     uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
@@ -115,7 +115,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->const_table = const_table;
     rc->type_sig = type_sig;
 
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if CONFIG_MICROPY_PERSISTENT_CODE_SAVE
     rc->fun_data_len = fun_len;
     rc->prelude_offset = prelude_offset;
     rc->n_obj = n_obj;
@@ -158,7 +158,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        #if MICROPY_EMIT_NATIVE
+        #if CONFIG_MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->fun_data, rc->const_table);
@@ -168,7 +168,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             }
             break;
         #endif
-        #if MICROPY_EMIT_INLINE_ASM
+        #if CONFIG_MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->fun_data, rc->type_sig);
             break;

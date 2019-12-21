@@ -57,7 +57,7 @@
 #define DECODE_ULABEL size_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
 #define DECODE_SLABEL size_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
 
-#if MICROPY_PERSISTENT_CODE
+#if CONFIG_MICROPY_PERSISTENT_CODE
 
 #define DECODE_QSTR \
     qstr qst = ip[0] | ip[1] << 8; \
@@ -1462,12 +1462,12 @@ unwind_loop:
                 MP_BC_PRELUDE_SIG_DECODE(ip);
                 MP_BC_PRELUDE_SIZE_DECODE(ip);
                 const byte *bytecode_start = ip + n_info + n_cell;
-                #if !MICROPY_PERSISTENT_CODE
+                #if !CONFIG_MICROPY_PERSISTENT_CODE
                 // so bytecode is aligned
                 bytecode_start = MP_ALIGN(bytecode_start, sizeof(mp_uint_t));
                 #endif
                 size_t bc = code_state->ip - bytecode_start;
-                #if MICROPY_PERSISTENT_CODE
+                #if CONFIG_MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);
                 ip += 4;

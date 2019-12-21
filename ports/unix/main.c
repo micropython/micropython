@@ -313,7 +313,7 @@ STATIC int usage(char **argv) {
     int impl_opts_cnt = 0;
     printf(
 "  compile-only                 -- parse and compile only\n"
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
 #else
 "  emit=bytecode                -- set the default code emitter\n"
@@ -347,7 +347,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
-                #if MICROPY_EMIT_NATIVE
+                #if CONFIG_MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
@@ -456,7 +456,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_init();
 
-    #if MICROPY_EMIT_NATIVE
+    #if CONFIG_MICROPY_EMIT_NATIVE
     // Set default emitter options
     MP_STATE_VM(default_emit_opt) = emit_opt;
     #else

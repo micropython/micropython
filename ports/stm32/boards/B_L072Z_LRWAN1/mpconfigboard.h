@@ -5,8 +5,6 @@
 #define MICROPY_HW_BOARD_NAME       "B-L072Z-LRWAN1"
 #define MICROPY_HW_MCU_NAME         "STM32L072CZ"
 
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_FRAMEBUF         (0)

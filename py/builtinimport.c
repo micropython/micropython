@@ -72,7 +72,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
         return stat;
     }
 
-    #if MICROPY_PERSISTENT_CODE_LOAD
+    #if CONFIG_MICROPY_PERSISTENT_CODE_LOAD
     vstr_ins_byte(path, path->len - 2, 'm');
     stat = mp_import_stat_any(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
@@ -144,7 +144,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 }
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_MODULE_FROZEN_MPY
+#if CONFIG_MICROPY_PERSISTENT_CODE_LOAD || CONFIG_MICROPY_MODULE_FROZEN_MPY
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
     (void)source_name;
 
@@ -182,7 +182,7 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, co
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    #if CONFIG_MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
+    #if CONFIG_MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (CONFIG_MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
     char *file_str = vstr_null_terminated_str(file);
     #endif
 
@@ -213,7 +213,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
-    #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
+    #if MICROPY_HAS_FILE_READER && CONFIG_MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         do_execute_raw_code(module_obj, raw_code, file_str);

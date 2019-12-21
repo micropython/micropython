@@ -28,10 +28,10 @@
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_D)
 
 // native emitters don't work with nan-boxing
-#define MICROPY_EMIT_X86 (0)
-#define MICROPY_EMIT_X64 (0)
-#define MICROPY_EMIT_THUMB (0)
-#define MICROPY_EMIT_ARM (0)
+#define CONFIG_MICROPY_EMIT_X86 (0)
+#define CONFIG_MICROPY_EMIT_X64 (0)
+#define CONFIG_MICROPY_EMIT_THUMB (0)
+#define CONFIG_MICROPY_EMIT_ARM (0)
 
 #include <stdint.h>
 

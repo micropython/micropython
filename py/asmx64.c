@@ -32,7 +32,7 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_X64
+#if CONFIG_MICROPY_EMIT_X64
 
 #include "py/asmx64.h"
 
@@ -629,4 +629,4 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r64) {
     asm_x64_write_byte_2(as, OPCODE_CALL_RM32, MODRM_R64(2) | MODRM_RM_REG | MODRM_RM_R64(temp_r64));
 }
 
-#endif // MICROPY_EMIT_X64
+#endif // CONFIG_MICROPY_EMIT_X64

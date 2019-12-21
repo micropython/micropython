@@ -40,7 +40,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if CONFIG_MICROPY_EMIT_NATIVE
 
 int mp_native_type_from_qstr(qstr qst) {
     switch (qst) {
@@ -78,7 +78,7 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_MACHINE_CODE
+#if CONFIG_MICROPY_EMIT_MACHINE_CODE
 
 // convert a native value to a MicroPython object based on type
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
@@ -96,7 +96,7 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
+#if CONFIG_MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER
 
 #if !MICROPY_PY_BUILTINS_SET
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
@@ -346,4 +346,4 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_write_obj,
 };
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // CONFIG_MICROPY_EMIT_NATIVE

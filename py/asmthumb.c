@@ -31,7 +31,7 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+#if CONFIG_MICROPY_EMIT_THUMB || CONFIG_MICROPY_EMIT_INLINE_THUMB
 
 #include "py/mpstate.h"
 #include "py/persistentcode.h"
@@ -122,7 +122,7 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
 
     // If this Thumb machine code is run from ARM state then add a prelude
     // to switch to Thumb state for the duration of the function.
-    #if MICROPY_DYNAMIC_COMPILER || MICROPY_EMIT_ARM || (defined(__arm__) && !defined(__thumb2__))
+    #if MICROPY_DYNAMIC_COMPILER || CONFIG_MICROPY_EMIT_ARM || (defined(__arm__) && !defined(__thumb2__))
     #if MICROPY_DYNAMIC_COMPILER
     if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_ARMV6)
     #endif
@@ -410,4 +410,4 @@ void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp) {
     asm_thumb_op16(as, OP_BLX(reg_temp));
 }
 
-#endif // MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+#endif // CONFIG_MICROPY_EMIT_THUMB || CONFIG_MICROPY_EMIT_INLINE_THUMB

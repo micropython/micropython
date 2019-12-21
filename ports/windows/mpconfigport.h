@@ -32,10 +32,10 @@
 #endif
 
 #define MICROPY_ALLOC_PATH_MAX      (260) //see minwindef.h for msvc or limits.h for mingw
-#define MICROPY_PERSISTENT_CODE_LOAD (1)
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
+#define CONFIG_MICROPY_PERSISTENT_CODE_LOAD (1)
+#define CONFIG_MICROPY_EMIT_X64            (0)
+#define CONFIG_MICROPY_EMIT_THUMB          (0)
+#define CONFIG_MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_RETURN_IF_EXPR (1)

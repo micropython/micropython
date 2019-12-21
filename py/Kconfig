@@ -1,6 +1,94 @@
 
 comment "MicroPython options"
 
+menu "Emitters"
+
+config MICROPY_PERSISTENT_CODE_LOAD
+    bool "Enables support of loading persistent code"
+    default y if !BUILD_MPY_CROSS
+    select MICROPY_PERSISTENT_CODE
+
+config MICROPY_PERSISTENT_CODE_SAVE
+    bool "Enables support of saving persistent code"
+    default y if BUILD_MPY_CROSS
+    select MICROPY_PERSISTENT_CODE
+
+config MICROPY_PERSISTENT_CODE
+    bool
+
+
+config MICROPY_EMIT_X64
+    bool "Enable emitting x86_64 native code"
+    default y if (PORT_UNIX && ARCH_X64) || BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+config MICROPY_EMIT_X86
+    bool "Enable emitting x86 native code"
+    default y if (PORT_UNIX && ARCH_X86) || BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+config MICROPY_EMIT_THUMB
+    bool "Enable emitting ARM Thumb native code"
+    default y if PORT_QEMU_ARM || PORT_STM32 || (PORT_UNIX && ARCH_ARM_THUMB) || BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+menuconfig MICROPY_EMIT_INLINE_THUMB
+    bool "Enable emitting ARM Thumb inline assembly"
+    default y if PORT_QEMU_ARM || PORT_STM32 || BUILD_MPY_CROSS
+    select MICROPY_EMIT_INLINE_ASM
+
+if MICROPY_EMIT_INLINE_THUMB
+
+config MICROPY_EMIT_INLINE_THUMB_ARMV7M
+    bool "Enable ARMv7-M instructions in Thumb inline assembly"
+    default y if BUILD_MPY_CROSS
+
+config MICROPY_EMIT_INLINE_THUMB_FLOAT
+    bool "Enable floating point support in Thumb inline assembly"
+    default y if BUILD_MPY_CROSS
+
+endif
+
+config MICROPY_EMIT_ARM
+    bool "Enable emitting ARM native code"
+    default y if BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+config MICROPY_EMIT_XTENSA
+    bool "Enable emitting Xtensa native code"
+    default y if BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+config MICROPY_EMIT_INLINE_XTENSA
+    bool "Enable emitting inline Xtensa inline assembly code"
+    default y if BUILD_MPY_CROSS
+    select MICROPY_EMIT_INLINE_ASM
+
+config MICROPY_EMIT_XTENSAWIN
+    bool "Enable emitting Xtensa-Windowed native code"
+    default y if BUILD_MPY_CROSS
+    select MICROPY_EMIT_NATIVE
+
+# Convenience definition for whether any native emitter is enabled
+config MICROPY_EMIT_NATIVE
+    bool
+    select MICROPY_EMIT_MACHINE_CODE
+
+# Select prelude-as-bytes-object for certain emitters
+config MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    bool
+
+# Convenience definition for whether any inline assembler emitter is enabled
+config MICROPY_EMIT_INLINE_ASM
+    bool
+    select MICROPY_EMIT_MACHINE_CODE
+
+# Convenience definition for whether any native or inline assembler emitter is enabled
+config MICROPY_EMIT_MACHINE_CODE
+    bool
+
+endmenu # Emitters
+
 
 menu "Frozen modules"
 
