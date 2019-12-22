@@ -54,9 +54,9 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // singleton CAN device object
-machine_can_config_t can_config = {.general = &((can_general_config_t)CAN_GENERAL_CONFIG_DEFAULT(2,4,0)),
-                                   .filter = &((can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL()),
-                                   .timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS()),
+machine_can_config_t can_config = {.general = CAN_GENERAL_CONFIG_DEFAULT(2,4,0),
+                                   .filter = CAN_FILTER_CONFIG_ACCEPT_ALL(),
+                                   .timing = CAN_TIMING_CONFIG_25KBITS(),
                                    .initialized = false};
                                    
 STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_config};
@@ -333,7 +333,7 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->config->initialized){
         qstr mode;
-        switch(self->config->general->mode){
+        switch(self->config->general.mode){
             case CAN_MODE_LISTEN_ONLY: mode = MP_QSTR_LISTEN; break;
             case CAN_MODE_NO_ACK: mode = MP_QSTR_NO_ACK; break;
             case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
@@ -341,8 +341,8 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         }
         mp_printf(print, 
                     "CAN(tx=%u, rx=%u, baudrate=%ukb, mode=%q, loopback=%u, extframe=%u)", 
-                    self->config->general->tx_io, 
-                    self->config->general->rx_io, 
+                    self->config->general.tx_io, 
+                    self->config->general.rx_io, 
                     self->config->baudrate, 
                     mode,
                     self->loopback,
@@ -437,29 +437,29 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     // Configure device
-    can_general_config_t g_config = {.mode = args[ARG_mode].u_int & 0x0F,
-                                    .tx_io = args[ARG_tx_io].u_int, 
-                                    .rx_io = args[ARG_rx_io].u_int,
-                                    .clkout_io = CAN_IO_UNUSED, 
-                                    .bus_off_io = CAN_IO_UNUSED,
-                                    .tx_queue_len = args[ARG_tx_queue].u_int, 
-                                    .rx_queue_len = args[ARG_rx_queue].u_int,
-                                    .alerts_enabled = CAN_ALERT_AND_LOG || CAN_ALERT_BELOW_ERR_WARN || CAN_ALERT_ERR_ACTIVE || CAN_ALERT_BUS_RECOVERED || 
-                                                      CAN_ALERT_ABOVE_ERR_WARN || CAN_ALERT_BUS_ERROR || CAN_ALERT_ERR_PASS || CAN_ALERT_BUS_OFF,
-                                    .clkout_divider = 0};
-    self->config->general = &g_config;
+    self->config->general.mode = args[ARG_mode].u_int & 0x0F;
+    self->config->general.tx_io = args[ARG_tx_io].u_int;
+    self->config->general.rx_io = args[ARG_rx_io].u_int;
+    self->config->general.clkout_io = CAN_IO_UNUSED;
+    self->config->general.bus_off_io = CAN_IO_UNUSED;
+    self->config->general.tx_queue_len = args[ARG_tx_queue].u_int;
+    self->config->general.rx_queue_len = args[ARG_rx_queue].u_int;
+    self->config->general.alerts_enabled = CAN_ALERT_AND_LOG || CAN_ALERT_BELOW_ERR_WARN || CAN_ALERT_ERR_ACTIVE || CAN_ALERT_BUS_RECOVERED || 
+                                                      CAN_ALERT_ABOVE_ERR_WARN || CAN_ALERT_BUS_ERROR || CAN_ALERT_ERR_PASS || CAN_ALERT_BUS_OFF;
+    self->config->general.clkout_divider = 0;
     self->loopback = ((args[ARG_mode].u_int & 0x10) > 0); 
     self->extframe = args[ARG_extframe].u_bool;
     if (args[ARG_auto_restart].u_bool){
         mp_raise_NotImplementedError("Auto-restart not supported");
     }
     can_filter_config_t f_config = CAN_FILTER_CONFIG_ACCEPT_ALL();
-    f_config.single_filter = self->extframe;
-    self->config->filter = &f_config;
-
+    self->config->filter.single_filter = self->extframe;
+    self->config->filter.acceptance_code = f_config.acceptance_code;
+    self->config->filter.acceptance_mask = f_config.acceptance_mask;
+    can_timing_config_t *timing;
     switch ((int)args[ARG_baudrate].u_int){
         case 0:
-            self->config->timing = &((can_timing_config_t){ 
+            timing = &((can_timing_config_t){ 
                 .brp = args[ARG_prescaler].u_int,
                 .sjw = args[ARG_sjw].u_int,
                 .tseg_1 = args[ARG_bs1].u_int,
@@ -467,37 +467,41 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
                 .triple_sampling = false});
             break;
         case CAN_BAUDRATE_25k:
-            self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS());
             break;
         case CAN_BAUDRATE_50k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_50KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_50KBITS());
             break;
         case CAN_BAUDRATE_100k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_100KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_100KBITS());
             break;
         case CAN_BAUDRATE_125k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_125KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_125KBITS());
             break;
         case CAN_BAUDRATE_250k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_250KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_250KBITS());
             break;
         case CAN_BAUDRATE_500k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_500KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_500KBITS());
             break;
         case CAN_BAUDRATE_800k:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_800KBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_800KBITS());
             break;
         case CAN_BAUDRATE_1M:
-             self->config->timing = &((can_timing_config_t)CAN_TIMING_CONFIG_1MBITS());
+            timing = &((can_timing_config_t)CAN_TIMING_CONFIG_1MBITS());
             break;
         default:
             mp_raise_ValueError("Unable to set baudrate");
             self->config->baudrate = 0;
             return mp_const_none;
     }
+    self->config->timing = *timing;
     self->config->baudrate = args[ARG_baudrate].u_int;
     
-    uint32_t status = can_driver_install(self->config->general, self->config->timing, self->config->filter);
+    uint32_t status = can_driver_install(
+                        &self->config->general, 
+                        &self->config->timing, 
+                        &(can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL()); //self->config->filter);
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }else{

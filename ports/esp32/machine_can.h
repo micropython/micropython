@@ -51,9 +51,9 @@ typedef enum _filter_mode_t{
 } filter_mode_t;
 
 typedef struct _machine_can_config_t {
-    const can_timing_config_t *timing;
-    can_filter_config_t *filter; //FIXME: point to this variable for setting
-    const can_general_config_t *general;
+    can_timing_config_t timing;
+    can_filter_config_t filter; 
+    can_general_config_t general;
     uint16_t baudrate;
     bool initialized;
 } machine_can_config_t;
