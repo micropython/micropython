@@ -130,7 +130,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
+                subprocess.check_output([MPYCROSS] + args.mpy_cross_flags.split() + ['-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
                 cmdlist.extend(['-m', 'mpytest'])
             else:
                 cmdlist.append(test_file)
@@ -566,6 +566,7 @@ the last matching regex is used:
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
+    cmd_parser.add_argument('--mpy-cross-flags', default='-mcache-lookup-bc', help='flags to pass to mpy-cross')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
