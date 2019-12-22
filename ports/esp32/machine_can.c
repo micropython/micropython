@@ -71,8 +71,29 @@ STATIC can_status_info_t _machine_hw_can_get_status(){
     return status;
 }
 
-STATIC void _machine_hw_can_set_filter(uint32_t addr, uint32_t mask, uint8_t bank, bool rtr){
-    //addr = addr & ()
+//INTERNAL FUNCTION Populates the filter register according to inputs
+STATIC void _machine_hw_can_set_filter(machine_can_obj_t *self, uint32_t addr, uint32_t mask, uint8_t bank, bool rtr){
+    //Check if bank is allowed
+    if (bank<0 && bank>((self->extframe && self->config->filter.single_filter) ? 0 : 1)){
+        mp_raise_ValueError("CAN filter parameter error");
+    }
+    uint32_t preserve_mask;
+    if (self->extframe){
+        addr = (addr & 0x1FFFFFFF) << 3 | (rtr ? 0x04 : 0);
+        mask = (mask & 0x1FFFFFFF) << 3 | 0x04;
+        preserve_mask = 0;
+    }else{
+        addr = ((addr & 0x7FF) | (rtr ? 0x800 : 0)) << (bank==1 ? 16 : 0);
+        mask = ((mask & 0x7FF) | 0x800)  << (bank==1 ? 16 : 0);
+        preserve_mask = 0xFFFF << (bank==0 ? 16 : 0);;
+    }
+    ESP_LOGI(DEVICE_NAME, "Address: %08X",addr);
+    ESP_LOGI(DEVICE_NAME, "Mask: %08X", mask);
+    ESP_LOGI(DEVICE_NAME, "Preserve: %08X", preserve_mask);
+    self->config->filter.acceptance_code &= preserve_mask;
+    self->config->filter.acceptance_code |= addr;
+    self->config->filter.acceptance_mask &= preserve_mask;
+    self->config->filter.acceptance_mask |= mask;
 }
 
 // Force a software restart of the controller, to allow transmission after a bus error
@@ -281,7 +302,7 @@ STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_rxcallback_obj, machine_hw_can_rxcallback);
 
-// bank: 1 or 2(only for std)
+// bank: 0 or 1(only for std)
 // mode: FILTER_RAW_SINGLE, FILTER_RAW_DUAL or FILTER_ADDR_SINGLE or FILTER_ADDR_DUAL
 // params: [id, mask]
 // rtr: ignored if FILTER_RAW
@@ -301,32 +322,31 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
 
     size_t len;
     mp_obj_t *params;
-    mp_obj_get_array(args[ARG_params].u_obj, &len, &params);    
+    mp_obj_get_array(args[ARG_params].u_obj, &len, &params);   
     if(len != 2){
         mp_raise_ValueError("params shall be a 2-values list");
     }
-    bool single_filter = (args[ARG_mode].u_int==FILTER_ADDR_SINGLE || args[ARG_mode].u_int==FILTER_RAW_SINGLE);
-    if (args[ARG_bank].u_int<0 || (args[ARG_bank].u_int > (single_filter ? 1 : 2))){
-        mp_raise_ValueError("selected bank is not available");
-    }
-    can_filter_config_t *filter = self->config->filter;
-    if (args[ARG_mode].u_int==FILTER_RAW_DUAL || args[ARG_mode].u_int==FILTER_RAW_DUAL){
-        filter->single_filter = single_filter;
-        filter->acceptance_code = mp_obj_get_int(params[0]);
-        filter->acceptance_mask = mp_obj_get_int(params[1]); // FIXME: check if order is right
+    uint32_t id = mp_obj_get_int(params[0]);
+    uint32_t mask = mp_obj_get_int(params[1]); // FIXME: Overflow in case 0xFFFFFFFF for mask
+    if (args[ARG_mode].u_int==FILTER_RAW_SINGLE || args[ARG_mode].u_int==FILTER_RAW_DUAL){
+        self->config->filter.single_filter = (args[ARG_mode].u_int==FILTER_RAW_SINGLE);
+        self->config->filter.acceptance_code = id;
+        self->config->filter.acceptance_mask = mask;
     }else{
-        if (self->extframe && !single_filter){
-            mp_raise_ValueError("Dual filter for Extd Msg is not supported. Use FILTER_RAW_DUAL");
-        }
-        if (filter->single_filter==true && single_filter==false){
-            // Switch to dual filter from single filter
-            filter->single_filter = single_filter;
-            filter->acceptance_code = 0;
-            filter->acceptance_mask = 0xFFFFFFFF;
-        }
-        uint32_t addr = mp_obj_get_int(params[0]) & (self->extframe ? 0x1FFFFFFF : 0x7FF);
+        _machine_hw_can_set_filter(self, id, mask, args[ARG_bank].u_int, args[ARG_rtr].u_int);
     }
 
+ESP_LOGI(DEVICE_NAME, "New Code: %08X",self->config->filter.acceptance_code);
+ESP_LOGI(DEVICE_NAME, "New Mask: %08X",self->config->filter.acceptance_mask);
+	ESP_STATUS_CHECK(can_stop());
+    ESP_STATUS_CHECK(can_driver_uninstall());
+    ESP_STATUS_CHECK(can_driver_install(
+        &self->config->general, 
+        &self->config->timing, 
+        &self->config->filter));
+    ESP_STATUS_CHECK(can_start());
+    ESP_LOGI(DEVICE_NAME, "Restarted");
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_setfilter_obj, 1, machine_hw_can_setfilter);
 
@@ -528,6 +548,7 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_hw_can_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_send_obj)},
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_hw_can_recv_obj)},
+    { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&machine_hw_can_setfilter_obj) },
     /*
     { MP_ROM_QSTR(MP_QSTR_initfilterbanks), MP_ROM_PTR(&pyb_can_initfilterbanks_obj) },
     { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&pyb_can_setfilter_obj) },
@@ -559,6 +580,10 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_500k), MP_ROM_INT(CAN_BAUDRATE_500k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_800k), MP_ROM_INT(CAN_BAUDRATE_800k) },
     { MP_ROM_QSTR(MP_QSTR_BAUDRATE_1M),   MP_ROM_INT(CAN_BAUDRATE_1M) },
+    // CAN_FILTER_MODE
+    { MP_ROM_QSTR(MP_QSTR_FILTER_RAW_SINGLE),   MP_ROM_INT(FILTER_RAW_SINGLE) },
+    { MP_ROM_QSTR(MP_QSTR_FILTER_RAW_DUAL),   MP_ROM_INT(FILTER_RAW_DUAL) },
+    { MP_ROM_QSTR(MP_QSTR_FILTER_ADDRESS),   MP_ROM_INT(FILTER_ADDRESS) },
     // CAN_ALERT
     { MP_ROM_QSTR(MP_QSTR_ALERT_TX_IDLE), MP_ROM_INT(CAN_ALERT_TX_IDLE) },
     { MP_ROM_QSTR(MP_QSTR_ALERT_TX_SUCCESS), MP_ROM_INT(CAN_ALERT_TX_SUCCESS) },
