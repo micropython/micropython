@@ -497,7 +497,7 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 #endif
 
 void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32) {
-    assert(n_args <= 5);
+    assert(n_args <= 4);
 
     // Align stack on 16-byte boundary during the call
     unsigned int align = ((n_args + 3) & ~3) - n_args;
@@ -505,9 +505,6 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
         asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, align * WORD_SIZE);
     }
 
-    if (n_args > 4) {
-        asm_x86_push_r32(as, ASM_X86_REG_ARG_5);
-    }
     if (n_args > 3) {
         asm_x86_push_r32(as, ASM_X86_REG_ARG_4);
     }
