@@ -64,7 +64,7 @@ STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config=&can_co
 // INTERNAL FUNCTION Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
-    uint8_t err_code = can_get_status_info(&status);
+    uint32_t err_code = can_get_status_info(&status);
     if(err_code!=ESP_OK){
         mp_raise_OSError(-err_code);
     }
@@ -182,10 +182,11 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
     if (self->extframe){
         flags += CAN_MSG_FLAG_EXTD;
         id &= 0x1FFFFFFF;
+    }else{
+        id &= 0x1FF;
     }
     if (self->loopback){
         flags += CAN_MSG_FLAG_SELF;
-        id &= 0x1FF;
     }
     can_message_t tx_msg = {.data_length_code = length, 
                             .identifier = id, 
@@ -431,7 +432,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
         { MP_QSTR_rx_io,         MP_ARG_INT,                      {.u_int = 2}                },
         { MP_QSTR_tx_queue,      MP_ARG_INT,                      {.u_int  = 0}               },
         { MP_QSTR_rx_queue,      MP_ARG_INT,                      {.u_int  = 5}               },
-        { MP_QSTR_auto_restart, MP_ARG_BOOL,                     {.u_bool = true}            },
+        { MP_QSTR_auto_restart, MP_ARG_BOOL,                     {.u_bool = false}            },
     };
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
