@@ -38,7 +38,7 @@
 
 STATIC void init_usb_vbus_sense(void) {
 
-#ifdef BOARD_NO_VBUS
+#ifdef BOARD_NO_VBUS_SENSE
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
