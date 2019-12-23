@@ -80,16 +80,27 @@ STATIC void _machine_hw_can_set_filter(machine_can_obj_t *self, uint32_t addr, u
     uint32_t preserve_mask;
     if (self->extframe){
         addr = (addr & 0x1FFFFFFF) << 3 | (rtr ? 0x04 : 0);
-        mask = (mask & 0x1FFFFFFF) << 3 | 0x04;
+        mask = (mask & 0x1FFFFFFF) << 3 | 0x03;
+        preserve_mask = 0;
+    }else if(self->config->filter.single_filter){
+        addr = (((addr & 0x7FF) << 5) | (rtr ? 0x10 : 0));
+        mask =  ((mask & 0x7FF) << 5);
+        mask |= 0xFFFFF000;
         preserve_mask = 0;
     }else{
-        addr = ((addr & 0x7FF) | (rtr ? 0x800 : 0)) << (bank==1 ? 16 : 0);
-        mask = ((mask & 0x7FF) | 0x800)  << (bank==1 ? 16 : 0);
-        preserve_mask = 0xFFFF << (bank==0 ? 16 : 0);;
+        addr = (((addr & 0x7FF) << 5) | (rtr ? 0x10 : 0));
+        mask =  ((mask & 0x7FF) << 5);
+        preserve_mask = 0xFFFF << (bank==0 ? 16 : 0);
+        if ((self->config->filter.acceptance_mask & preserve_mask) == (0xFFFF << (bank==0 ? 16 : 0))){
+            // Other filter accepts all; it will replaced duplicating current filter
+            addr = addr | (addr << 16);
+            mask = mask | (mask << 16);
+            preserve_mask = 0;
+        }else{
+            addr = addr << (bank==1 ? 16 : 0);
+            mask = mask << (bank==1 ? 16 : 0);
+        }
     }
-    ESP_LOGI(DEVICE_NAME, "Address: %08X",addr);
-    ESP_LOGI(DEVICE_NAME, "Mask: %08X", mask);
-    ESP_LOGI(DEVICE_NAME, "Preserve: %08X", preserve_mask);
     self->config->filter.acceptance_code &= preserve_mask;
     self->config->filter.acceptance_code |= addr;
     self->config->filter.acceptance_mask &= preserve_mask;
@@ -333,11 +344,9 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
         self->config->filter.acceptance_code = id;
         self->config->filter.acceptance_mask = mask;
     }else{
+        self->config->filter.single_filter = self->extframe;
         _machine_hw_can_set_filter(self, id, mask, args[ARG_bank].u_int, args[ARG_rtr].u_int);
     }
-
-ESP_LOGI(DEVICE_NAME, "New Code: %08X",self->config->filter.acceptance_code);
-ESP_LOGI(DEVICE_NAME, "New Mask: %08X",self->config->filter.acceptance_mask);
 	ESP_STATUS_CHECK(can_stop());
     ESP_STATUS_CHECK(can_driver_uninstall());
     ESP_STATUS_CHECK(can_driver_install(
@@ -345,7 +354,6 @@ ESP_LOGI(DEVICE_NAME, "New Mask: %08X",self->config->filter.acceptance_mask);
         &self->config->timing, 
         &self->config->filter));
     ESP_STATUS_CHECK(can_start());
-    ESP_LOGI(DEVICE_NAME, "Restarted");
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_setfilter_obj, 1, machine_hw_can_setfilter);
@@ -522,7 +530,7 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     uint32_t status = can_driver_install(
                         &self->config->general, 
                         &self->config->timing, 
-                        &(can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL()); //self->config->filter);
+                        &(can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL());
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }else{
