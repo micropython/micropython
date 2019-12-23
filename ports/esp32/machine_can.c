@@ -313,6 +313,22 @@ STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_rxcallback_obj, machine_hw_can_rxcallback);
 
+STATIC mp_obj_t machine_hw_can_clearfilter(mp_obj_t self_in) {
+    machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->config->filter.single_filter = self->extframe;
+    self->config->filter.acceptance_code = 0;
+    self->config->filter.acceptance_mask = 0xFFFFFFFF;
+    ESP_STATUS_CHECK(can_stop());
+    ESP_STATUS_CHECK(can_driver_uninstall());
+    ESP_STATUS_CHECK(can_driver_install(
+        &self->config->general, 
+        &self->config->timing, 
+        &self->config->filter));
+    ESP_STATUS_CHECK(can_start());
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clearfilter_obj, machine_hw_can_clearfilter);
+
 // bank: 0 or 1(only for std)
 // mode: FILTER_RAW_SINGLE, FILTER_RAW_DUAL or FILTER_ADDR_SINGLE or FILTER_ADDR_DUAL
 // params: [id, mask]
@@ -557,12 +573,8 @@ STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_send_obj)},
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_hw_can_recv_obj)},
     { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&machine_hw_can_setfilter_obj) },
-    /*
-    { MP_ROM_QSTR(MP_QSTR_initfilterbanks), MP_ROM_PTR(&pyb_can_initfilterbanks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&pyb_can_setfilter_obj) },
-    { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&pyb_can_clearfilter_obj) },
-    */
-   { MP_ROM_QSTR(MP_QSTR_rxcallback), MP_ROM_PTR(&machine_hw_can_rxcallback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&machine_hw_can_clearfilter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rxcallback), MP_ROM_PTR(&machine_hw_can_rxcallback_obj) },
    // ESP32 Specific API
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
