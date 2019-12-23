@@ -37,9 +37,54 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
-#include <machine_can.h>
+#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_CAN
+
+#define DEVICE_NAME "CAN"
+
+#define CAN_BAUDRATE_25k 25
+#define CAN_BAUDRATE_50k 50
+#define CAN_BAUDRATE_100k 100
+#define CAN_BAUDRATE_125k 125
+#define CAN_BAUDRATE_250k 250
+#define CAN_BAUDRATE_500k 500
+#define CAN_BAUDRATE_800k 800
+#define CAN_BAUDRATE_1M 1000
+
+#define ESP_STATUS_CHECK(status) if (status != ESP_OK){ mp_raise_OSError(-status);}
+typedef enum _filter_mode_t{
+    FILTER_RAW_SINGLE = 0,
+    FILTER_RAW_DUAL,
+    FILTER_ADDRESS
+} filter_mode_t;
+
+typedef struct _machine_can_config_t {
+    can_timing_config_t timing;
+    can_filter_config_t filter; 
+    can_general_config_t general;
+    uint16_t baudrate;
+    bool initialized;
+} machine_can_config_t;
+
+typedef struct _machine_can_obj_t {
+    mp_obj_base_t base;
+    machine_can_config_t *config;
+    mp_obj_t rxcallback;
+    byte rx_state;
+    bool extframe : 1;
+    bool loopback : 1;
+    uint16_t num_error_warning; //FIXME: populate this value somewhere
+    uint16_t num_error_passive;
+    uint16_t num_bus_off;
+} machine_can_obj_t;
+
+typedef enum _rx_state_t {
+    RX_STATE_FIFO_EMPTY = 0,
+    RX_STATE_MESSAGE_PENDING,
+    RX_STATE_FIFO_FULL,
+    RX_STATE_FIFO_OVERFLOW,
+} rx_state_t;
 
 // Default baudrate: 500kb
 #define CAN_DEFAULT_PRESCALER       (8)
@@ -113,7 +158,7 @@ STATIC mp_obj_t machine_hw_can_restart(mp_obj_t self_in){
     if (status != ESP_OK){
         mp_raise_OSError(-status);
     }
-    mp_hal_delay_ms(200); // FIXME: replace it with a smarter solution
+    mp_hal_delay_ms(200); // TODO: replace it with a smarter solution
     status = can_start();
     if (status != ESP_OK){
         mp_raise_OSError(-status);
