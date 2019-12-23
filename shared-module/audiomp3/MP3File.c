@@ -145,7 +145,7 @@ STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t* self, MP3FrameIn
     do {
         err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
         if (err == ERR_MP3_NONE) {
-           break;
+            break;
         }
         CONSUME(self, 1);
         mp3file_find_sync_word(self);
