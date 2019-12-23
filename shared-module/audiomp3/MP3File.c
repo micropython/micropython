@@ -37,6 +37,8 @@
 #include "supervisor/shared/translate.h"
 #include "lib/mp3/src/mp3common.h"
 
+#define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
+
 /** Fill the input buffer if it is less than half full.
  *
  * Returns true if the input buffer contains any useful data,
@@ -165,7 +167,6 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
     // than the two 4kB output buffers, except that the alignment allows to
     // never allocate that extra frame buffer.
 
-    self->file = file;
     self->inbuf_length = 2048;
     self->inbuf_offset = self->inbuf_length;
     self->inbuf = m_malloc(self->inbuf_length, false);
@@ -181,6 +182,38 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
                      translate("Couldn't allocate decoder"));
     }
 
+    if ((intptr_t)buffer & 1) {
+        buffer += 1; buffer_size -= 1;
+    }
+    if (buffer_size >= 2 * MAX_BUFFER_LEN) {
+        self->buffers[0] = (int16_t*)(void*)buffer;
+        self->buffers[1] = (int16_t*)(void*)(buffer + MAX_BUFFER_LEN);
+    } else {
+        self->buffers[0] = m_malloc(MAX_BUFFER_LEN, false);
+        if (self->buffers[0] == NULL) {
+            common_hal_audiomp3_mp3file_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate first buffer"));
+        }
+
+        self->buffers[1] = m_malloc(MAX_BUFFER_LEN, false);
+        if (self->buffers[1] == NULL) {
+            common_hal_audiomp3_mp3file_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate second buffer"));
+        }
+    }
+
+    common_hal_audiomp3_mp3file_set_file(self, file);
+}
+
+void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t* self, pyb_file_obj_t* file) {
+    self->file = file;
+    f_lseek(&self->file->fp, 0);
+    self->inbuf_offset = self->inbuf_length;
+    self->eof = 0;
+    self->other_channel = -1;
+    mp3file_update_inbuf(self);
     mp3file_find_sync_word(self);
     MP3FrameInfo fi;
     if(!mp3file_get_next_frame_info(self, &fi)) {
@@ -191,30 +224,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
     self->sample_rate = fi.samprate;
     self->channel_count = fi.nChans;
     self->frame_buffer_size = fi.outputSamps*sizeof(int16_t);
-
-    if ((intptr_t)buffer & 1) {
-        buffer += 1; buffer_size -= 1;
-    }
-    if (buffer_size >= 2 * self->frame_buffer_size) {
-        self->len = buffer_size / 2 / self->frame_buffer_size * self->frame_buffer_size;
-        self->buffers[0] = (int16_t*)(void*)buffer;
-        self->buffers[1] = (int16_t*)(void*)buffer + self->len;
-    } else {
-        self->len = 2 * self->frame_buffer_size;
-        self->buffers[0] = m_malloc(self->len, false);
-        if (self->buffers[0] == NULL) {
-            common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate first buffer"));
-        }
-
-        self->buffers[1] = m_malloc(self->len, false);
-        if (self->buffers[1] == NULL) {
-            common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate second buffer"));
-        }
-    }
+    self->len = 2 * self->frame_buffer_size;
 }
 
 void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t* self) {
