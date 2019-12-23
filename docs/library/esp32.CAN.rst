@@ -32,17 +32,6 @@ Constructors
 
    The physical pins of the CAN bus can be assigned during init.
 
-Class Methods
--------------
-.. classmethod:: CAN.initfilterbanks(nr) TODO:
-
-   Reset and disable all filter banks and assign how many banks should be available for CAN(1).
-
-   STM32F405 has 28 filter banks that are shared between the two available CAN bus controllers.
-   This function configures how many filter banks should be assigned to each. *nr* is the number of banks
-   that will be assigned to CAN(1), the rest of the 28 are assigned to CAN(2).
-   At boot, 14 banks are assigned to each controller.
-
 Methods
 -------
 
@@ -122,53 +111,37 @@ Methods
    - number of pending RX messages
    - Reserved
 
-.. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr) TODO: 
+.. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr) 
 
    Configure a filter bank:
 
-   - *bank* is the filter bank that is to be configured.
+   - *bank* is the filter bank that is to be configured (0 for extended, 0 or 1 for standard msg)
    - *mode* is the mode the filter should operate in.
-   - *fifo* is which fifo (0 or 1) a message should be stored in, if it is accepted by this filter.
-   - *params* is an array of values the defines the filter. The contents of the array depends on the *mode* argument.
+   - *params* is an array of two values that defines the filter. 
+     The first element will be the id to filter and the second element will be the mask to apply.
+     mask bit implementation considers 1 as a don't care state and 0 as a check state.
 
-   +-----------+---------------------------------------------------------+
+   +----------------------+----------------------------------------------+
    |*mode*     |contents of *params* array                               |
-   +===========+=========================================================+
-   |CAN.LIST16 |Four 16 bit ids that will be accepted                    |
-   +-----------+---------------------------------------------------------+
-   |CAN.LIST32 |Two 32 bit ids that will be accepted                     |
-   +-----------+---------------------------------------------------------+
-   |CAN.MASK16 |Two 16 bit id/mask pairs. E.g. (1, 3, 4, 4)              |
-   |           | | The first pair, 1 and 3 will accept all ids           |
-   |           | | that have bit 0 = 1 and bit 1 = 0.                    |
-   |           | | The second pair, 4 and 4, will accept all ids         |
-   |           | | that have bit 2 = 1.                                  |
-   +-----------+---------------------------------------------------------+
-   |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
-   +-----------+---------------------------------------------------------+
+   +======================+==============================================+
+   |CAN.FILTER_RAW_SINGLE | *params* will be copied in hardware variable |
+   |                      | and single_filter_mode will be selected      |
+   |                      | In this mode, *bank* will be ignored         |
+   +----------------------+----------------------------------------------+
+   |CAN.FILTER_RAW_DUAL   | *params* will be copied in hardware variable |
+   |                      | and single_filter_mode will be cleared       |
+   |                      | In this mode, *bank* will be ignored         |
+   +----------------------+----------------------------------------------+
+   |CAN.FILTER_ADDRESS    | *params* will be set in hardware registers   |
+   |                      | according to *bank* selection                |
+   +----------------------+----------------------------------------------+
 
-   - *rtr* is an array of booleans that states if a filter should accept a
-     remote transmission request message.  If this argument is not given
-     then it defaults to ``False`` for all entries.  The length of the array
-     depends on the *mode* argument.
+   - *rtr* is  bool that states if a filter should accept a remote transmission request message.  
+     If this argument is not given then it defaults to ``False``. 
 
-   +-----------+----------------------+
-   |*mode*     |length of *rtr* array |
-   +===========+======================+
-   |CAN.LIST16 |4                     |
-   +-----------+----------------------+
-   |CAN.LIST32 |2                     |
-   +-----------+----------------------+
-   |CAN.MASK16 |2                     |
-   +-----------+----------------------+
-   |CAN.MASK32 |1                     |
-   +-----------+----------------------+
+.. method:: CAN.clearfilter(bank)
 
-.. method:: CAN.clearfilter(bank) TODO:
-
-   Clear and disables a filter bank:
-
-   - *bank* is the filter bank that is to be cleared.
+   Clear and disables all filters
 
 .. method:: CAN.any(fifo)
 

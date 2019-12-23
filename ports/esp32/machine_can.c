@@ -209,6 +209,7 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_hw_can_info_obj, 1, 2, machine_hw_can_info);
 
+// Get Alert info
 STATIC mp_obj_t machine_hw_can_alert(mp_obj_t self_in){
     uint32_t alerts;
     uint32_t status = can_read_alerts(&alerts, 0);
@@ -358,6 +359,7 @@ STATIC mp_obj_t machine_hw_can_rxcallback(mp_obj_t self_in, mp_obj_t callback_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hw_can_rxcallback_obj, machine_hw_can_rxcallback);
 
+// Clear filters setting
 STATIC mp_obj_t machine_hw_can_clearfilter(mp_obj_t self_in) {
     machine_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     self->config->filter.single_filter = self->extframe;
@@ -378,6 +380,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hw_can_clearfilter_obj, machine_hw_can_
 // mode: FILTER_RAW_SINGLE, FILTER_RAW_DUAL or FILTER_ADDR_SINGLE or FILTER_ADDR_DUAL
 // params: [id, mask]
 // rtr: ignored if FILTER_RAW
+// Set CAN HW filter
 STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
     enum { ARG_bank, ARG_mode, ARG_params, ARG_rtr };
     static const mp_arg_t allowed_args[] = {
@@ -675,3 +678,4 @@ const mp_obj_type_t machine_can_type = {
     .locals_dict = (mp_obj_dict_t*)&machine_can_locals_dict, // and the global members
 };
 #endif // MICROPY_HW_ENABLE_CAN
+ 
