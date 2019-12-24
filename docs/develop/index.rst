@@ -11,3 +11,4 @@ See the `getting started guide
 
    cmodules.rst
    qstr.rst
+   natmod.rst

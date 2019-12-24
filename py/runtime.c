@@ -1038,9 +1038,11 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
                 || m_type == &mp_type_fun_builtin_1
                 || m_type == &mp_type_fun_builtin_2
                 || m_type == &mp_type_fun_builtin_3
-                || m_type == &mp_type_fun_builtin_var)) {
+                || m_type == &mp_type_fun_builtin_var)
+            && type != &mp_type_object) {
             // we extracted a builtin method without a first argument, so we must
             // wrap this function in a type checker
+            // Note that object will do its own checking so shouldn't be wrapped.
             dest[0] = mp_obj_new_checked_fun(type, member);
         } else
         #endif

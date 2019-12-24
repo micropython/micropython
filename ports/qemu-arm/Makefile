@@ -31,7 +31,7 @@ LDSCRIPT = mps2.ld
 SRC_BOARD_O = lib/utils/gchelper_m3.o
 endif
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I$(TOP)
