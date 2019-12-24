@@ -215,6 +215,13 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t* self, pyb_file
     self->other_channel = -1;
     mp3file_update_inbuf(self);
     mp3file_find_sync_word(self);
+    // It **SHOULD** not be necessary to do this; the buffer should be filled
+    // with fresh content before it is returned by get_buffer().  The fact that
+    // this is necessary to avoid a glitch at the start of playback of a second
+    // track using the same decoder object means there's still a bug in
+    // get_buffer() that I didn't understand.
+    memset(self->buffers[0], 0, MAX_BUFFER_LEN);
+    memset(self->buffers[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
     if(!mp3file_get_next_frame_info(self, &fi)) {
         mp_raise_msg(&mp_type_RuntimeError,
@@ -290,7 +297,6 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
         channel = 0;
     }
 
-    *bufptr = (uint8_t*)(self->buffers[self->buffer_index] + channel);
     *buffer_length = self->frame_buffer_size;
 
     if (channel == self->other_channel) {
@@ -299,11 +305,12 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
         return GET_BUFFER_MORE_DATA;
     }
 
-    self->other_channel = 1-channel;
-    self->other_buffer_index = self->buffer_index;
 
     self->buffer_index = !self->buffer_index;
+    self->other_channel = 1-channel;
+    self->other_buffer_index = self->buffer_index;
     int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    *bufptr = (uint8_t*)buffer;
 
     mp3file_skip_id3v2(self);
     if (!mp3file_find_sync_word(self)) {
