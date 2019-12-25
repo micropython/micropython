@@ -560,6 +560,11 @@
 #define MICROPY_HELPER_REPL (0)
 #endif
 
+// Allow enabling debug prints after each REPL line
+#ifndef MICROPY_REPL_INFO
+#define MICROPY_REPL_INFO (0)
+#endif
+
 // Whether to include emacs-style readline behavior in REPL
 #ifndef MICROPY_REPL_EMACS_KEYS
 #define MICROPY_REPL_EMACS_KEYS (0)
