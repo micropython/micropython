@@ -107,6 +107,7 @@ void soft_timer_remove(soft_timer_entry_t *entry) {
             *cur = entry->next;
             break;
         }
+        *cur = (*cur)->next;
     }
     restore_irq_pri(irq_state);
 }
