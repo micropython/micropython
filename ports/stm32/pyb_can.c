@@ -563,7 +563,7 @@ STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self, mp_obj_t bank_in) {
     #endif
 
     for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(self, f, can2_start_bank);
+        can_clearfilter(MP_OBJ_TO_PTR(self), f, can2_start_bank);
     }
     return mp_const_none;
 }
