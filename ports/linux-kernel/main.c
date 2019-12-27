@@ -282,6 +282,14 @@ STATIC int run_server(void *data) {
             peer = NULL;
         } else if (is_retry_errno(err)) {
             continue;
+        } else if (err == -EINVAL) {
+            // we'll get EINVAL after module exit shuts down the socket.
+            pr_info("stop requested identified\n");
+            // technically we can "continue" here and let kthread_should_stop() return true,
+            // however it's a bit of a race here (because kernel_sock_shutdown might've been
+            // called, but kthread_stop wasn't yet).
+            // so just go out...
+            goto out;
         } else {
             pr_warn("kernel_accept: %d\n", err);
             goto out;
@@ -291,7 +299,8 @@ STATIC int run_server(void *data) {
     pr_info("done!\n");
 
 out:
-    sock_release(sock);
+    // module exit function will kill the socket
+
     pr_info("server stopped\n");
 
     mp_deinit();
@@ -300,6 +309,7 @@ out:
 }
 
 STATIC struct task_struct *server_thread;
+STATIC struct socket *listener;
 
 STATIC int __init mpy_init_module(void) {
     int err;
@@ -335,6 +345,8 @@ STATIC int __init mpy_init_module(void) {
         goto out_sock;
     }
 
+    listener = sock;
+
     pr_info("starting server\n");
     server_thread = kthread_run(run_server, sock, "kmpy");
     if (IS_ERR(server_thread)) {
@@ -351,11 +363,14 @@ out:
 }
 
 STATIC void __exit mpy_exit_module(void) {
+    kernel_sock_shutdown(listener, SHUT_RDWR); // breaks out from kernel_accept
     // kill the socket, it will make existing python session to die, if running.
     if (current_peer) {
         kernel_sock_shutdown(current_peer, SHUT_RDWR);
     }
     kthread_stop(server_thread);
+    // now we can safely close this
+    sock_release(listener);
 }
 
 module_init(mpy_init_module);
