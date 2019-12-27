@@ -67,6 +67,14 @@ The known limitations are:
 So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
+Linker limitation: the native module is not linked against the symbol table of the
+full micropython firmware. Rather, it is linked against an explicit table of exported
+symbols found in ``mp_fun_table``. It is thus not possible to simply call some arbitrary function
+in FreeRTOS, for example. Adding new symbols to the end of the table is relatively easy,
+they then also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the same location.
+This allows ``mpy_ld.py`` to be able to pick the new symbols up and provide relocations
+for them when the mpy is imported.
+
 Defining a native module
 ------------------------
 
