@@ -281,7 +281,7 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p64_obj, 1, 2, kernel_ffi_p64);
 
 
-#define MAX_CB_NARGS 6 // max arguments passed in registers. can also handle stack arguments, but meh now.
+#define MAX_CB_NARGS 10 // arbitrary, can increase this. works for stack arguments as well.
 
 STATIC size_t check_func_for_cb(mp_obj_t func) {
     if (!mp_obj_is_type(func, &mp_type_fun_bc)) {
@@ -302,11 +302,25 @@ STATIC size_t check_func_for_cb(mp_obj_t func) {
     return n_pos_args;
 }
 
+#ifdef CONFIG_KPROBES
+
+enum kp_type {
+    KP_TYPE_MIN = 0,
+    KP_ARGS_MODIFY = 0,
+    KP_ARGS_WATCH,
+    KP_REGS_MODIFY,
+    KP_REGS_WATCH,
+    KP_TYPE_NUM,
+};
+
 typedef struct {
     mp_obj_base_t base;
     struct kprobe kp;
     mp_obj_t func;
+    mp_obj_t call_sym;
     size_t nargs;
+    enum kp_type type;
+    bool disabled;
 } kprobe_obj_t;
 
 STATIC mp_obj_t kprobe_rm(mp_obj_t self_in) {
@@ -329,38 +343,48 @@ STATIC const mp_rom_map_elem_t kprobe_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(kprobe_locals_dict, kprobe_locals_dict_table);
 
-static const mp_obj_type_t kprobe_type = {
+STATIC const mp_obj_type_t kprobe_type = {
     { &mp_type_type },
     .name = MP_QSTR_kprobe,
     .locals_dict = (void*)&kprobe_locals_dict,
 };
 
-STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bool *ret_none,
+STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,
-    unsigned long arg4, unsigned long arg5, unsigned long arg6) {
+    unsigned long arg4, unsigned long arg5, unsigned long arg6,
+    unsigned long arg7, unsigned long arg8, unsigned long arg9,
+    unsigned long arg10) {
 
     nlr_buf_t nlr;
     unsigned long ret = 0;
-    mp_obj_t args[MAX_CB_NARGS];
+    mp_obj_t args[1 + MAX_CB_NARGS];
+
+    bool has_first = first_arg != MP_OBJ_NULL;
+    if (has_first) {
+        args[0] = first_arg;
+    }
+
 
     if (nlr_push(&nlr) == 0) {
         assert(nargs <= MP_ARRAY_SIZE(args));
         switch (nargs) {
-        case 6: args[5] = mp_obj_new_int_from_uint(arg6);
-        case 5: args[4] = mp_obj_new_int_from_uint(arg5);
-        case 4: args[3] = mp_obj_new_int_from_uint(arg4);
-        case 3: args[2] = mp_obj_new_int_from_uint(arg3);
-        case 2: args[1] = mp_obj_new_int_from_uint(arg2);
-        case 1: args[0] = mp_obj_new_int_from_uint(arg1);
+        case 10: args[10] = mp_obj_new_int_from_uint(arg10);
+        case 9: args[9] = mp_obj_new_int_from_uint(arg9);
+        case 8: args[8] = mp_obj_new_int_from_uint(arg8);
+        case 7: args[7] = mp_obj_new_int_from_uint(arg7);
+        case 6: args[6] = mp_obj_new_int_from_uint(arg6);
+        case 5: args[5] = mp_obj_new_int_from_uint(arg5);
+        case 4: args[4] = mp_obj_new_int_from_uint(arg4);
+        case 3: args[3] = mp_obj_new_int_from_uint(arg3);
+        case 2: args[2] = mp_obj_new_int_from_uint(arg2);
+        case 1: args[1] = mp_obj_new_int_from_uint(arg1);
         case 0: break;
         }
 
-        mp_obj_t obj = mp_call_function_n_kw(func, nargs, 0, args);
+        mp_obj_t obj = mp_call_function_n_kw(func, nargs + (has_first ? 1 : 0), 0, &args[has_first ? 0 : 1]);
         if (obj == mp_const_none) {
-            *ret_none = true;
             // ret remains 0
         } else {
-            *ret_none = false;
             ret = mp_obj_int_get_uint_checked(obj);
         }
         *call_ok = true;
@@ -376,50 +400,139 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bo
     return ret;
 }
 
+STATIC void kprobe_empty_post_handler(struct kprobe *p, struct pt_regs *regs, unsigned long flags) { }
+
+STATIC unsigned long get_stack_arg(unsigned long sp, int i) {
+    assert(i >= 7);
+    return ((unsigned long*)sp)[i - 6];
+}
+
 STATIC int kprobe_pre_handler(struct kprobe *p, struct pt_regs *regs) {
     kprobe_obj_t *kp_obj = container_of(p, kprobe_obj_t, kp);
 
+    if (kp_obj->disabled) {
+        return 0;
+    }
+
     bool call_ok;
-    bool ret_none;
-    unsigned long ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, &ret_none,
-        regs->di, regs->si, regs->dx, regs->cx, regs->r8, regs->r9);
-    // if mp function call was a success, don't continue to the probed function.
-    if (call_ok && !ret_none) {
-        // set up registers for a return
+    unsigned long ret;
+    switch (kp_obj->type) {
+    case KP_ARGS_MODIFY:
+    case KP_ARGS_WATCH:
+        ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, kp_obj->call_sym,
+            regs->di, regs->si, regs->dx, regs->cx, regs->r8, regs->r9,
+            get_stack_arg(regs->sp, 7), get_stack_arg(regs->sp, 8), get_stack_arg(regs->sp, 9),
+            get_stack_arg(regs->sp, 10));
+        break;
+
+    case KP_REGS_MODIFY:
+    case KP_REGS_WATCH:
+        ret = call_py_func(kp_obj->func, kp_obj->nargs, &call_ok, kp_obj->call_sym, (unsigned long)regs,
+            0, 0, 0, 0, 0, 0, 0, 0, 0);
+        break;
+
+    default:
+        MP_UNREACHABLE;
+    }
+
+    if (!call_ok) {
+        // disable this kprobe! w/o calling disable_kprobe because it uses mutexes, which
+        // may be unavailable in current context.
+        kp_obj->disabled = true;
+        return 0; // proceed to probed.
+    }
+
+    switch (kp_obj->type) {
+    case KP_ARGS_MODIFY:
         regs->ax = ret;
         regs->ip = ((unsigned long*)regs->sp)[0];
         regs->sp += 8;
-        return 1;
-    } else {
-        // callback either raised an exception, or returned None. proceed to probed
-        // function.
+        /* fall through */
+    case KP_REGS_MODIFY:
+        return 1; // don't continue
+
+    case KP_ARGS_WATCH:
+    case KP_REGS_WATCH:
+        // always proceed to probed on WATCH kprobes function.
         return 0;
+
+    default:
+        MP_UNREACHABLE;
     }
 }
 
-STATIC void set_kprobe_target(struct kprobe *kp, mp_obj_t target) {
+STATIC unsigned long resolve_target(mp_obj_t target) {
+    unsigned long addr;
+
     if (mp_obj_is_int(target)) {
-        kp->addr = (kprobe_opcode_t*)mp_obj_int_get_uint_checked(target);
+        addr = mp_obj_int_get_uint_checked(target);
     } else if (mp_obj_is_str(target)) {
-        kp->symbol_name = mp_obj_str_get_str(target);
+        addr = kallsyms_lookup_name(mp_obj_str_get_str(target));
+        if (0 == addr) {
+            mp_raise_ValueError("target symbol not found");
+        }
+        addr = addr;
     } else if (mp_obj_is_symbol(target)) {
-        kp->addr = (kprobe_opcode_t*)((sym_obj_t*)MP_OBJ_TO_PTR(target))->value;
+        addr = ((sym_obj_t*)MP_OBJ_TO_PTR(target))->value;
     } else {
-        mp_raise_TypeError("int/str/Symbol accepted for kprobe target");
+        mp_raise_TypeError("int/str/Symbol require for target");
     }
+
+    return addr;
 }
 
-STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t func) {
+STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t _type, mp_obj_t func) {
+    enum kp_type type = mp_obj_get_int(_type);
+    if (type < KP_TYPE_MIN || type >= KP_TYPE_NUM) {
+        mp_raise_ValueError("bad kprobe type, accepeted values are KP_*");
+    }
+
     size_t nargs = check_func_for_cb(func);
+
+    const unsigned long addr = resolve_target(target);
+
+    kprobe_post_handler_t post_handler;
+    mp_obj_t call_sym;
+
+    switch (type) {
+    case KP_ARGS_MODIFY:
+        if (nargs < 1) {
+            mp_raise_ValueError("func should expect at least 1 argument (call_sym)");
+        }
+        nargs -= 1;
+        post_handler = kprobe_empty_post_handler;
+        call_sym = make_new_sym(MP_QSTR_, addr, false);
+        break;
+
+    case KP_ARGS_WATCH:
+        post_handler = NULL;
+        call_sym = MP_OBJ_NULL;
+        break;
+
+    case KP_REGS_MODIFY:
+    case KP_REGS_WATCH:
+        if (nargs != 1) {
+            mp_raise_ValueError("func should expect exactly 1 argument (pt_regs)");
+        }
+        post_handler = type == KP_REGS_MODIFY ? kprobe_empty_post_handler : NULL;
+        call_sym = MP_OBJ_NULL;
+        break;
+
+    default:
+        MP_UNREACHABLE;
+    }
 
     kprobe_obj_t *kp_obj = m_new_obj_with_finaliser(kprobe_obj_t);
     kp_obj->base.type = &kprobe_type;
     kp_obj->func = func;
     kp_obj->nargs = nargs;
+    kp_obj->type = type;
+    kp_obj->call_sym = call_sym;
 
     memset(&kp_obj->kp, 0, sizeof(kp_obj->kp));
     kp_obj->kp.pre_handler = kprobe_pre_handler;
-    set_kprobe_target(&kp_obj->kp, target);
+    kp_obj->kp.post_handler = post_handler;
+    kp_obj->kp.addr = (kprobe_opcode_t*)addr;
 
     int ret = register_kprobe(&kp_obj->kp);
     if (ret) {
@@ -428,7 +541,9 @@ STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t func) {
 
     return MP_OBJ_TO_PTR(kp_obj);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(kernel_ffi_kprobe_obj, kernel_ffi_kprobe);
+MP_DEFINE_CONST_FUN_OBJ_3(kernel_ffi_kprobe_obj, kernel_ffi_kprobe);
+
+#endif // CONFIG_KPROBES
 
 typedef struct _mp_obj_fficallback_t {
     mp_obj_base_t base;
@@ -464,15 +579,15 @@ STATIC const mp_obj_type_t callback_type = {
 };
 
 STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4,
-    unsigned long arg5, unsigned long arg6) {
+    unsigned long arg5, unsigned long arg6, unsigned long arg7,
+    unsigned long arg8, unsigned long arg9, unsigned long arg10) {
 
     register unsigned long rax asm("rax");
     const callback_obj_t *cb_obj = (callback_obj_t*)rax;
 
     bool call_ok; // unused anyway, we have no fallback.
-    bool ret_none;
-    return call_py_func(cb_obj->func, cb_obj->nargs, &call_ok, &ret_none,
-        arg1, arg2, arg3, arg4, arg5, arg6);
+    return call_py_func(cb_obj->func, cb_obj->nargs, &call_ok, MP_OBJ_NULL,
+        arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 }
 
 STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
@@ -537,7 +652,14 @@ STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_p32),    MP_ROM_PTR(&kernel_ffi_p32_obj) },
     { MP_ROM_QSTR(MP_QSTR_p64),    MP_ROM_PTR(&kernel_ffi_p64_obj) },
 
+#ifdef CONFIG_KPROBES
     { MP_ROM_QSTR(MP_QSTR_kprobe), MP_ROM_PTR(&kernel_ffi_kprobe_obj) },
+    { MP_ROM_QSTR(MP_QSTR_KP_ARGS_MODIFY), MP_OBJ_NEW_SMALL_INT(KP_ARGS_MODIFY) },
+    { MP_ROM_QSTR(MP_QSTR_KP_ARGS_WATCH),  MP_OBJ_NEW_SMALL_INT(KP_ARGS_WATCH) },
+    { MP_ROM_QSTR(MP_QSTR_KP_REGS_MODIFY), MP_OBJ_NEW_SMALL_INT(KP_REGS_MODIFY) },
+    { MP_ROM_QSTR(MP_QSTR_KP_REGS_WATCH),  MP_OBJ_NEW_SMALL_INT(KP_REGS_WATCH) },
+#endif
+
     { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&kernel_ffi_callback_obj) },
 };
 

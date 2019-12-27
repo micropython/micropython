@@ -237,48 +237,80 @@ Hook kernel code
 Based on the kernel's "kprobe" mechanism, you can hook arbitrary kernel code
 and run your Python code instead (or along).
 
-``kernel_ffi.kprobe`` accepts 2 arguments:
+``kernel_ffi.kprobe`` accepts 3 arguments:
 
 * kprobe target - can be an address, a name or a Symbol object.
+* kprobe type - will be explained below.
 * handler function - Python function.
 
-Your handler function should return an unsigned integer, or ``None``.
-If it returns ``None`` (or, doesn't return anything at all) then execution continues
-to the probed function.
-If it returns an integer, execution returns to the caller function with this integer
-as the return value.
+Kprobe type is any of:
 
-Printing all files opened on the system:
+* ``kernel_ffi.KP_ARGS_WATCH``
+
+    Prototype: ``def my_probe(arg1, arg2, ...)``.
+
+    Can be used when you kprobe onto functions. In this case, the function arguments will
+    be passed to your Python callback in the same order (as many arguments as you accept
+    in your callback).
+
+    Return value is ignored and execution continues in the probed function.
+
+* ``kernel_ffi.KP_ARGS_MODIFY``
+
+    Prototype: ``def my_probe(call_ptr, arg1, arg2, ...)``.
+
+    Like ``KP_ARGS_WATCH`` but the probed function is not called.
+
+    You can use the ``call_ptr`` object (a ``Symbol``) to call the real probed function.
+    TODO: ``call_ptr`` calls directly onto the probed function again, but I'm not positive
+    yet that kprobes prevents the recursion.
+
+    Return value is used instead of calling the probed function.
+
+* ``kernel_ffi.KP_REGS_WATCH``
+
+    Prototype: ``def my_probe(pt_regs)``.
+
+    You get the ``pt_regs`` to inspect. Useful when not probing directly on a function
+    (so "function arguments" don't mean much).
+
+    Return value is ignored and execution continues in the probed function.
+
+* ``kernel_ffi.KP_REGS_MODIFY``
+
+    Prototype: ``def my_probe(pt_regs)``.
+
+    Like ``KP_REGS_WATCH``, you get the ``struct pt_regs``, and this time any modifications
+    you make to registers are applied (including modifications to the instruction
+    pointer).
+
+    Return value is ignored and execution continues as specified in the ``pt_regs``.
+
+``WATCH`` kprobes might be eligble for kprobes optimization (see the
+`kprobes docs <https://www.kernel.org/doc/Documentation/kprobes.txt>`_) so prefer to use
+them when you don't need to modify anything.
+
+If your probe handler raises an exception, it will be disabled for future calls and the
+particular invocation will be handled as ``WATCH`` (that is, no modifications are applied).
+
+Example 1: Printing all files opened on the system:
 
 .. code-block:: python
 
-    from kernel_ffi import kprobe, str as s
+    from kernel_ffi import kprobe, KP_ARGS_WATCH, str as s
     from struct_access import partial_struct
 
     filename = partial_struct("filename")
 
     def do_filp_open_hook(dfd, fn):  # don't have to receive all args if you don't need
         print("do_filp_open: fd {} name {!r}".format(dfd, s(filename(fn).name._ptr)))
-        # by not returning anything (== return None) the probed function
-        # will be called.
 
-    kp = kprobe("do_filp_open", do_filp_open_hook)
+    kp = kprobe("do_filp_open", KP_ARGS_WATCH, do_filp_open_hook)
 
     # when you're done:
     kp.rm()
     # if kp goes out of scope, the gc finalizer will also remove it.
 
-TODO: Modifying execution path doesn't work atm because the kernel
-optimizes the kprobes, and an optimized kprobe can't modify execution
-path. Probes wanting to change the path should be distinguished and
-unoptimized.
-
-Current workaround: ``sysctl -w debug.kprobes-optimization=0``. This
-has a performance hit on all probes.
+Example 2: TODO example with regs
 
 Also, same TODO from callbakcs about multithreading applies here as well.
-
-TODO: Handler currently assumes it hooks the prologue of a function. It extracts
-arguments from the registers. However, kprobes supports hooking arbitrary addresses.
-If hooking a mid-function address, it makes more sense to pass the ``pt_regs`` struct
-to the Python hook.
