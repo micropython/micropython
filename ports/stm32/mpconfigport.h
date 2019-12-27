@@ -305,11 +305,14 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
+// Assume that if we already defined the obj repr then we also defined these items
+#ifndef MICROPY_OBJ_REPR
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
-
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
+#endif
+
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
