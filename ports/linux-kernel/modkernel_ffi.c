@@ -31,6 +31,7 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/vmalloc.h>
+#include <linux/ftrace.h>
 
 #include <py/runtime.h>
 #include <py/qstr.h>
@@ -545,6 +546,10 @@ MP_DEFINE_CONST_FUN_OBJ_3(kernel_ffi_kprobe_obj, kernel_ffi_kprobe);
 
 #endif // CONFIG_KPROBES
 
+STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4,
+    unsigned long arg5, unsigned long arg6, unsigned long arg7,
+    unsigned long arg8, unsigned long arg9, unsigned long arg10);
+
 typedef struct _mp_obj_fficallback_t {
     mp_obj_base_t base;
     mp_obj_t func;
@@ -577,18 +582,6 @@ STATIC const mp_obj_type_t callback_type = {
     .name = MP_QSTR_callback,
     .locals_dict = (void*)&callback_locals_dict,
 };
-
-STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4,
-    unsigned long arg5, unsigned long arg6, unsigned long arg7,
-    unsigned long arg8, unsigned long arg9, unsigned long arg10) {
-
-    register unsigned long rax asm("rax");
-    const callback_obj_t *cb_obj = (callback_obj_t*)rax;
-
-    bool call_ok; // unused anyway, we have no fallback.
-    return call_py_func(cb_obj->func, cb_obj->nargs, &call_ok, MP_OBJ_NULL,
-        arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
-}
 
 STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
     size_t nargs = check_func_for_cb(func);
@@ -639,6 +632,160 @@ STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_callback_obj, kernel_ffi_callback);
 
+
+#ifdef CONFIG_FUNCTION_TRACER
+
+typedef struct {
+    mp_obj_base_t base;
+    struct ftrace_ops ops;
+    mp_obj_t func;
+    size_t nargs;
+    sym_obj_t *orig;
+    bool removed;
+    bool disabled;
+} ftrace_obj_t;
+
+STATIC mp_obj_t ftrace_rm(mp_obj_t self_in) {
+    ftrace_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!self->removed) {
+        // simple synchronization, but it's okay since the GC operation is locked.
+        // and if one calls us twice from 2 contexts... well...
+        self->removed = true;
+
+        ftrace_set_filter_ip(&self->ops, self->orig->value - MCOUNT_INSN_SIZE, 1, 0);
+        unregister_ftrace_function(&self->ops);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ftrace_rm_obj, ftrace_rm);
+
+STATIC mp_obj_t ftrace_del(mp_obj_t self_in) {
+    return ftrace_rm(self_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ftrace_del_obj, ftrace_del);
+
+STATIC const mp_rom_map_elem_t ftrace_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ftrace_del_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rm), MP_ROM_PTR(&ftrace_rm_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(ftrace_locals_dict, ftrace_locals_dict_table);
+
+STATIC const mp_obj_type_t ftrace_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_ftrace,
+    .locals_dict = (void*)&ftrace_locals_dict,
+};
+
+static void notrace ftrace_trampoline(unsigned long ip, unsigned long parent_ip,
+    struct ftrace_ops *ops, struct pt_regs *regs)
+{
+    ftrace_obj_t *ft_obj = container_of(ops, ftrace_obj_t, ops);
+
+    if (!ft_obj->disabled) {
+        regs->ip = (unsigned long)callback_handler;
+        regs->ax = (unsigned long)ft_obj;
+    }
+}
+
+STATIC mp_obj_t kernel_ffi_ftrace(mp_obj_t target, mp_obj_t func) {
+    size_t nargs = check_func_for_cb(func);
+    if (nargs < 1) {
+        mp_raise_ValueError("func should expect at least 1 argument (call_sym)");
+    }
+    nargs -= 1;
+
+    const unsigned long addr = resolve_target(target);
+
+    ftrace_obj_t *ft_obj = m_new_obj_with_finaliser(ftrace_obj_t);
+    ft_obj->base.type = &ftrace_type;
+
+    ft_obj->ops.func = ftrace_trampoline;
+    ft_obj->ops.flags = FTRACE_OPS_FL_SAVE_REGS  | FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_IPMODIFY;
+
+    ft_obj->func = func;
+    ft_obj->nargs = nargs;
+    ft_obj->orig = make_new_sym(MP_QSTR_, addr + MCOUNT_INSN_SIZE, false);
+    ft_obj->disabled = false;
+
+    int err = ftrace_set_filter_ip(&ft_obj->ops, addr, 0, 0);
+    if (err) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ftrace_set_filter_ip: %d", err));
+    }
+
+    err = register_ftrace_function(&ft_obj->ops);
+    if (err) {
+        ftrace_set_filter_ip(&ft_obj->ops, addr, 1, 0);
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "register_ftrace_function: %d", err));
+    }
+
+    ft_obj->removed = false;
+
+    return MP_OBJ_FROM_PTR(ft_obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(kernel_ffi_ftrace_obj, kernel_ffi_ftrace);
+
+#endif // CONFIG_FUNCTION_TRACER
+
+
+STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4,
+    unsigned long arg5, unsigned long arg6, unsigned long arg7,
+    unsigned long arg8, unsigned long arg9, unsigned long arg10) {
+
+    register mp_obj_base_t *base asm("rax");
+
+    mp_obj_t func;
+    size_t nargs;
+    mp_obj_t first_arg;
+    if (base->type == &callback_type) {
+        const callback_obj_t *cb_obj = container_of(base, callback_obj_t, base);
+
+        func = cb_obj->func;
+        nargs = cb_obj->nargs;
+        first_arg = MP_OBJ_NULL;
+    }
+#ifdef CONFIG_FUNCTION_TRACER
+    else if (base->type == &ftrace_type) {
+        const ftrace_obj_t *ft_obj = container_of(base, ftrace_obj_t, base);
+
+        func = ft_obj->func;
+        nargs = ft_obj->nargs;
+        first_arg = ft_obj->orig;
+    }
+#endif
+    else {
+        MP_UNREACHABLE;
+    }
+
+    bool call_ok;
+    unsigned long ret = call_py_func(func, nargs, &call_ok, first_arg,
+        arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+
+    if (call_ok) {
+        return ret;
+    }
+
+    if (0) {
+#ifdef CONFIG_FUNCTION_TRACER
+    } else if (base->type == &ftrace_type) {
+        ftrace_obj_t *ft_obj = container_of(base, ftrace_obj_t, base);
+
+        ft_obj->disabled = true;
+        // call the original
+#define ul unsigned long
+        return ((ul(*)(ul, ul, ul, ul, ul, ul, ul, ul, ul, ul))ft_obj->orig->value)(
+            arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+#undef ul
+
+#endif // CONFIG_FUNCTION_TRACER
+    } else {
+        assert(base->type == &callback_type);
+        // we have no fallback.
+        return 0;
+    }
+}
+
+
 STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_kernel_ffi) },
 
@@ -661,6 +808,10 @@ STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
 #endif
 
     { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&kernel_ffi_callback_obj) },
+
+#ifdef CONFIG_FUNCTION_TRACER
+    { MP_ROM_QSTR(MP_QSTR_ftrace), MP_ROM_PTR(&kernel_ffi_ftrace_obj) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(kernel_ffi_module_globals, kernel_ffi_module_globals_table);
