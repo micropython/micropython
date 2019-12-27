@@ -67,15 +67,19 @@ typedef struct {
     bool exported; // was it found via find_symbol (=true) or kallsyms_lookup_name (=false)
 } sym_obj_t;
 
+STATIC mp_obj_t _symbol_make_new(const mp_obj_type_t *type, qstr name, unsigned long value, bool exported) {
+    sym_obj_t *o = m_new_obj(sym_obj_t);
+    o->base.type = type;
+    o->name = name;
+    o->value = value;
+    o->exported = exported;
+    return MP_OBJ_FROM_PTR(o);
+}
+
 STATIC mp_obj_t symbol_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
 
-    sym_obj_t *o = m_new_obj(sym_obj_t);
-    o->base.type = type;
-    o->name = mp_obj_str_get_qstr(args[0]);
-    o->value = mp_obj_int_get_uint_checked(args[1]);
-    o->exported = false;
-    return MP_OBJ_FROM_PTR(o);
+    return _symbol_make_new(type, mp_obj_str_get_qstr(args[0]), mp_obj_int_get_uint_checked(args[1]), false);
 }
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -149,12 +153,7 @@ STATIC mp_obj_t symbol_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rh
 }
 
 STATIC sym_obj_t *make_new_sym(qstr name, unsigned long value, bool exported) {
-    sym_obj_t *sym = m_new_obj(sym_obj_t);
-    sym->base.type = &mp_type_symbol;
-    sym->name = name;
-    sym->value = value;
-    sym->exported = exported;
-    return sym;
+    return _symbol_make_new(&mp_type_symbol, name, value, exported);
 }
 
 mp_obj_t mp_lazy_load_global(qstr qst) {
