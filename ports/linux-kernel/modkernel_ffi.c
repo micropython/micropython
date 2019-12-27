@@ -36,6 +36,8 @@
 #include <py/objfun.h>
 #include <py/bc.h>
 
+#include "internal.h"
+
 
 STATIC void symbol_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 STATIC mp_obj_t symbol_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -330,14 +332,6 @@ static const mp_obj_type_t kprobe_type = {
     .name = MP_QSTR_kprobe,
     .locals_dict = (void*)&kprobe_locals_dict,
 };
-
-STATIC void mp_print_printk(void *data, const char *str, size_t len) {
-    (void)data;
-    static bool newline = true;
-
-    printk(newline ? (KERN_WARNING "%*pE") : (KERN_CONT "%*pE"), (int)len, str);
-    newline = str[len - 1] == '\n';
-}
 
 STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bool *ret_none,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,

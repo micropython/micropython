@@ -29,4 +29,6 @@
 
 void NORETURN die(const char *msg);
 
+void mp_print_printk(void *data, const char *str, size_t len);
+
 #endif // MICROPY_INCLUDED_LINUX_KERNEL_INTERNAL_H
