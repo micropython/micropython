@@ -133,7 +133,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
         }
     }
 
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t bluetooth_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -353,7 +353,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_config_obj, 1, bluetooth_ble_con
 STATIC mp_obj_t bluetooth_ble_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ|MP_ARG_REQUIRED, {.u_obj = mp_const_none} },
+        { MP_QSTR_handler, MP_ARG_OBJ|MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = MP_BLUETOOTH_IRQ_ALL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -382,9 +382,9 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
     enum { ARG_interval_us, ARG_adv_data, ARG_resp_data, ARG_connectable };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_interval_us, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(500000)} },
-        { MP_QSTR_adv_data, MP_ARG_OBJ, {.u_obj = mp_const_none } },
-        { MP_QSTR_resp_data, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
-        { MP_QSTR_connectable, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_true } },
+        { MP_QSTR_adv_data, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_resp_data, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_connectable, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_TRUE} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -516,7 +516,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
     mp_obj_t iterable = mp_getiter(services_in, &iter_buf);
     mp_obj_t service_tuple_obj;
 
-    mp_obj_tuple_t *result = mp_obj_new_tuple(len, NULL);
+    mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
 
     uint16_t **handles = m_new0(uint16_t*, len);
     size_t *num_handles = m_new0(size_t, len);
@@ -550,7 +550,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
     // Return tuple of tuple of value handles.
     // TODO: Also the Generic Access service characteristics?
     for (i = 0; i < len; ++i) {
-        mp_obj_tuple_t *service_handles = mp_obj_new_tuple(num_handles[i], NULL);
+        mp_obj_tuple_t *service_handles = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_handles[i], NULL));
         for (int j = 0; j < num_handles[i]; ++j) {
             service_handles->items[j] = MP_OBJ_NEW_SMALL_INT(handles[i][j]);
         }
@@ -927,7 +927,7 @@ STATIC void schedule_ringbuf(void) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (!o->irq_scheduled) {
         o->irq_scheduled = true;
-        mp_sched_schedule(MP_OBJ_FROM_PTR(MP_ROM_PTR(&bluetooth_ble_invoke_irq_obj)), mp_const_none);
+        mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_ble_invoke_irq_obj), mp_const_none);
     }
 }
 
@@ -1071,7 +1071,7 @@ bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_han
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if ((o->irq_trigger & MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST) && o->irq_handler != mp_const_none) {
         // Use pre-allocated tuple because this is a hard IRQ.
-        mp_obj_tuple_t *data = MP_OBJ_FROM_PTR(o->irq_data_tuple);
+        mp_obj_tuple_t *data = MP_OBJ_TO_PTR(o->irq_data_tuple);
         data->items[0] = MP_OBJ_NEW_SMALL_INT(conn_handle);
         data->items[1] = MP_OBJ_NEW_SMALL_INT(value_handle);
         data->len = 2;
