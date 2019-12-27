@@ -189,7 +189,7 @@ void mp_print_printk(void *data, const char *str, size_t len) {
     (void)data;
     static bool newline = true;
 
-    printk(newline ? (KERN_WARNING "%*pE") : (KERN_CONT "%*pE"), (int)len, str);
+    printk(newline ? (KERN_WARNING "%*pEp") : (KERN_CONT "%*pEp"), (int)len, str);
     newline = str[len - 1] == '\n';
 }
 
