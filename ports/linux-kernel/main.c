@@ -252,8 +252,51 @@ STATIC int run_python(struct socket *peer) {
 }
 
 STATIC int run_server(void *data) {
-    (void)data;
+    struct socket *sock = (struct socket*)data;
+    int err;
 
+    gc_init(heap, heap + sizeof(heap));
+    mp_init();
+    mp_obj_list_init(mp_sys_argv, 0);
+    mp_obj_list_init(mp_sys_path, 0);
+
+#ifdef INCLUDE_STRUCT_LAYOUT
+    stack_top = (char*)&err;
+    printk(KERN_INFO "calling struct access initializer\n");
+    pyexec_frozen_module("structs.py");
+#endif
+
+    printk(KERN_INFO "mpy: server is up\n");
+
+    struct socket *peer;
+    while (!kthread_should_stop()) {
+        err = kernel_accept(sock, &peer, 0);
+        if (0 == err) {
+            run_python(peer);
+            sock_release(peer);
+            peer = NULL;
+        } else if (is_retry_errno(err)) {
+            continue;
+        } else {
+            printk(KERN_WARNING "kernel_accept: %d\n", err);
+            goto out;
+        }
+    }
+
+    printk("mpy: done!\n");
+
+out:
+    sock_release(sock);
+    printk("mpy: server stopped\n");
+
+    mp_deinit();
+
+    return 0;
+}
+
+STATIC struct task_struct *server_thread;
+
+STATIC int __init mpy_init_module(void) {
     int err;
     struct socket *sock;
 
@@ -261,6 +304,12 @@ STATIC int run_server(void *data) {
     if (err < 0) {
         printk(KERN_WARNING "sock_create_kern: %d\n", err);
         goto out;
+    }
+
+    int one = 1;
+    err = kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
+    if (err < 0) {
+        printk(KERN_WARNING "kernel_setsockopt(SO_REUSEADDR): %d\n", err);
     }
 
     struct sockaddr_in bind_addr = {
@@ -281,51 +330,27 @@ STATIC int run_server(void *data) {
         goto out_sock;
     }
 
-    printk(KERN_INFO "mpy: server is up\n");
-
-    struct socket *peer;
-    while (1) {
-        err = kernel_accept(sock, &peer, 0);
-        if (0 == err) {
-            run_python(peer);
-            sock_release(peer);
-            peer = NULL;
-        } else if (is_retry_errno(err)) {
-            continue;
-        } else {
-            printk(KERN_WARNING "kernel_accept: %d\n", err);
-            goto out_sock;
-        }
-
-        // TODO exit on rmmod request
+    printk("mpy: starting server\n");
+    server_thread = kthread_run(run_server, sock, "kmpy");
+    if (IS_ERR(server_thread)) {
+        err = PTR_ERR(server_thread);
+        goto out_sock;
     }
+
+    return 0;
 
 out_sock:
     sock_release(sock);
 out:
-    return 0;
-}
-
-STATIC int __init mpy_init_module(void) {
-    gc_init(heap, heap + sizeof(heap));
-    mp_init();
-    mp_obj_list_init(mp_sys_argv, 0);
-    mp_obj_list_init(mp_sys_path, 0);
-
-#ifdef INCLUDE_STRUCT_LAYOUT
-    printk("mpy: calling struct access initializer\n");
-    pyexec_frozen_module("structs.py");
-#endif
-
-    printk("mpy: starting server\n");
-    kthread_run(run_server, NULL, "kmp");
-
-    return 0;
+    return err;
 }
 
 STATIC void __exit mpy_exit_module(void) {
-    // TODO implement
-    mp_deinit();
+    // kill the socket, it will make existing python session to die, if running.
+    if (current_peer) {
+        kernel_sock_shutdown(current_peer, SHUT_RDWR);
+    }
+    kthread_stop(server_thread);
 }
 
 module_init(mpy_init_module);
