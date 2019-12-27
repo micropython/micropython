@@ -38,6 +38,7 @@
 #include "py/gc.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
@@ -45,16 +46,17 @@
 #include "internal.h"
 
 
-STATIC char *stack_top;
 STATIC char heap[1 << 23];
 
 void gc_collect(void) {
     // WARNING: This gc_collect implementation doesn't try to get root
     // pointers from CPU registers, and thus may function incorrectly.
     // TODO collect from regs
-    void *dummy;
     gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+
+    void *dummy;
+    gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(void *));
+
     gc_collect_end();
 }
 
@@ -225,11 +227,17 @@ kill_conn:
     kernel_sock_shutdown(current_peer, SHUT_RDWR);
 }
 
-STATIC int run_python(struct socket *peer) {
-    int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+static inline void set_stack_top_limit(void) {
+    mp_stack_ctrl_init();
+    // this calculation can be made more precise, since it may place the limit too early.
+    // this does protect from stack overflows in the python REPL.
+    mp_stack_set_limit(THREAD_SIZE - 700);
+}
 
+STATIC int run_python(struct socket *peer) {
     current_peer = peer;
+
+    set_stack_top_limit();
 
     (void)pyexec_friendly_repl();
 
@@ -242,13 +250,15 @@ STATIC int run_server(void *data) {
     struct socket *sock = (struct socket*)data;
     int err;
 
+    set_stack_top_limit();
+
     gc_init(heap, heap + sizeof(heap));
     mp_init();
+
     mp_obj_list_init(mp_sys_argv, 0);
     mp_obj_list_init(mp_sys_path, 0);
 
 #ifdef INCLUDE_STRUCT_LAYOUT
-    stack_top = (char*)&err;
     printk(KERN_INFO "calling struct access initializer\n");
     pyexec_frozen_module("structs.py");
 #endif
