@@ -331,6 +331,14 @@ static const mp_obj_type_t kprobe_type = {
     .locals_dict = (void*)&kprobe_locals_dict,
 };
 
+STATIC void mp_print_printk(void *data, const char *str, size_t len) {
+    (void)data;
+    static bool newline = true;
+
+    printk(newline ? (KERN_WARNING "%*pE") : (KERN_CONT "%*pE"), (int)len, str);
+    newline = str[len - 1] == '\n';
+}
+
 STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bool *ret_none,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,
     unsigned long arg4, unsigned long arg5, unsigned long arg6) {
@@ -364,6 +372,8 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bo
         nlr_pop();
     } else {
         printk("mpy: exception in python callback\n");
+        static const mp_print_t print = {NULL, mp_print_printk};
+        mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
         *call_ok = false;
     }
 
