@@ -94,6 +94,9 @@ KERNEL_CFLAGS := $(subst -Wundef,,$(KERNEL_CFLAGS))
 # disable "declaration after statements" warnings enabled by the kernel, MicroPython does that
 # all the time :)
 KERNEL_CFLAGS := $(subst -Wdeclaration-after-statement,,$(KERNEL_CFLAGS))
+# in a035d552a93bb9ef6048733bb9f2a0dc857ff869 this was enabled globally in linux,
+# but MicroPython doesn't follow it yet.
+KERNEL_CFLAGS := $(subst -Wimplicit-fallthrough,,$(KERNEL_CFLAGS))
 # fix path of structleak plugin
 KERNEL_CFLAGS := $(subst ./scripts/gcc-plugins/structleak_plugin.so,$(KDIR)/scripts/gcc-plugins/structleak_plugin.so,$(KERNEL_CFLAGS))
 # required before v5.0 (0b999ae3614d0)
