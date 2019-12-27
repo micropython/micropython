@@ -42,6 +42,8 @@
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
 
+#include "internal.h"
+
 
 STATIC char *stack_top;
 STATIC char heap[1 << 23];
@@ -134,7 +136,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
-STATIC void NORETURN die(const char *msg) {
+void NORETURN die(const char *msg) {
     char comm[sizeof(current->comm)];
     get_task_comm(comm, current);
     printk(KERN_ALERT "fatal error '%s', killing current task '%s'\n", msg, current->comm);
