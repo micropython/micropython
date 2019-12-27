@@ -195,28 +195,7 @@ void mp_print_printk(void *data, const char *str, size_t len) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (NULL == current_peer) {
-        static char line_buf[512];
-        static size_t idx;
-        for (size_t i = 0; i < len; ++i) {
-            line_buf[idx++] = str[i];
-
-            if (str[i] == '\n') {
-                goto print;
-            }
-
-            if (idx == sizeof(line_buf) - 2) {
-                line_buf[idx++] = '\n';
-                goto print;
-            }
-
-            continue;
-
-        print:
-            line_buf[idx] = '\0';
-            printk("mpy: %s", line_buf);
-            idx = 0;
-        }
-
+        mp_print_printk(NULL, str, len);
         return;
     }
 
