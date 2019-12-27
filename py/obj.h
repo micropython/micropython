@@ -178,7 +178,7 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o)
 static inline bool mp_obj_is_qstr(mp_const_obj_t o)
     { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }
 #define MP_OBJ_QSTR_VALUE(o) ((((uint32_t)(o)) >> 1) & 0xffffffff)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)(((uint64_t)(((uint32_t)(qst)) << 1)) | 0x0002000000000001))
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
