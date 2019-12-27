@@ -45,6 +45,7 @@
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
+#include "genhdr/mpversion.h"
 
 #include "internal.h"
 
@@ -314,6 +315,14 @@ STATIC struct socket *listener;
 STATIC int __init mpy_init_module(void) {
     int err;
     struct socket *sock;
+
+    pr_info("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\n");
+#ifndef CONFIG_KPROBES
+    pr_info("CONFIG_KPROBES missing, kernel_ffi.kprobe will not be availale\n");
+#endif
+#ifndef CONFIG_FUNCTION_TRACER
+    pr_info("CONFIG_FUNCTION_TRACER missing, kernel_ffi.ftrace will not be availale\n");
+#endif
 
     err = sock_create_kern(&init_net, AF_INET, SOCK_STREAM, 0, &sock);
     if (err < 0) {
