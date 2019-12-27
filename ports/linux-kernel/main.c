@@ -185,6 +185,14 @@ retry:
     }
 }
 
+void mp_print_printk(void *data, const char *str, size_t len) {
+    (void)data;
+    static bool newline = true;
+
+    printk(newline ? (KERN_WARNING "%*pE") : (KERN_CONT "%*pE"), (int)len, str);
+    newline = str[len - 1] == '\n';
+}
+
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (NULL == current_peer) {
         static char line_buf[512];
