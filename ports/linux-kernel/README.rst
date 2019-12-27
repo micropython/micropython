@@ -234,6 +234,12 @@ under some stress they might break.
 Hook kernel code
 ^^^^^^^^^^^^^^^^
 
+Two hooking mechanisms are available to Python: Kprobes and ftrace (if your kernel supports them,
+of course).
+
+Kprobes
+~~~~~~~
+
 Based on the kernel's "kprobe" mechanism, you can hook arbitrary kernel code
 and run your Python code instead (or along).
 
@@ -312,5 +318,57 @@ Example 1: Printing all files opened on the system:
     # if kp goes out of scope, the gc finalizer will also remove it.
 
 Example 2: TODO example with regs
+
+ftrace
+~~~~~~
+
+ftrace allows for convenient and efficient function hooking. What you get is practically equivalent
+to kprobes's ``KP_ARGS_MODIFY`` - you get called instead of the function, and you can call the "original"
+if you wish.
+
+.. note:: Technically speaking, on new kernels - kprobes placed on functions are optimized to be based on
+          ftrace. The kprobes ``ARGS`` probe types are kept around, so they can be used in kernels w/o ftrace.
+
+Same rules apply as discussed in the kprobes section (return values, exceptions etc).
+
+Hides all processes with an even pid (yeah, it's a stupid trick that can be bypassed in many ways,
+but it shows the point and it works on BusyBox ps :)
+
+.. code-block:: python
+
+    filename = partial_struct("filename")
+    from kernel_ffi import str as s, ftrace
+    from uerrno import ENOENT
+
+
+    def ERR_PTR(err):
+        return (1 << 64) - err
+
+
+    def _do_filp_open(orig, dfd, pathname, op):
+        fn = s(int(filename(pathname).name))
+
+        if fn.startswith("/proc/"):
+            rest = fn.lstrip("/proc/")
+
+            if '/' in rest:
+                rest = rest[:rest.find('/')]
+
+            try:
+                pid = int(rest)
+                if pid % 2 == 0:
+                    return ERR_PTR(ENOENT)
+            except ValueError:
+                # not a process directory
+                pass
+
+        return orig(dfd, pathname, op)
+
+
+    ft = ftrace("do_filp_open", _do_filp_open)
+
+    # ...
+
+    ft.rm()
 
 Also, same TODO from callbakcs about multithreading applies here as well.
