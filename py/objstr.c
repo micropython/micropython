@@ -2153,13 +2153,13 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, size_t *len) {
     }
 }
 
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len) {
     if (mp_obj_is_qstr(self_in)) {
         return qstr_data(MP_OBJ_QSTR_VALUE(self_in), len);
     } else {
-        *len = ((mp_obj_str_t*)self_in)->len;
-        return ((mp_obj_str_t*)self_in)->data;
+        *len = ((mp_obj_str_t*)MP_OBJ_TO_PTR(self_in))->len;
+        return ((mp_obj_str_t*)MP_OBJ_TO_PTR(self_in))->data;
     }
 }
 #endif
