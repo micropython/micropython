@@ -762,8 +762,6 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ViperTypeError), MP_ROM_PTR(&mp_type_ViperTypeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },
-    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
-    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
 
     // Extra builtins as defined by a port
     MICROPY_PORT_BUILTINS
