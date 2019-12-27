@@ -64,7 +64,7 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, MP_ROM_PTR(&object__
 
 #if MICROPY_PY_DELATTR_SETATTR
 STATIC mp_obj_t object___setattr__(mp_obj_t self_in, mp_obj_t attr, mp_obj_t value) {
-    if (!mp_obj_is_instance_type(mp_obj_get_type(MP_OBJ_TO_PTR(self_in)))) {
+    if (!mp_obj_is_instance_type(mp_obj_get_type(self_in))) {
         mp_raise_TypeError("arg must be user-type");
     }
 
@@ -79,7 +79,7 @@ STATIC mp_obj_t object___setattr__(mp_obj_t self_in, mp_obj_t attr, mp_obj_t val
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(object___setattr___obj, object___setattr__);
 
 STATIC mp_obj_t object___delattr__(mp_obj_t self_in, mp_obj_t attr) {
-    if (!mp_obj_is_instance_type(mp_obj_get_type(MP_OBJ_TO_PTR(self_in)))) {
+    if (!mp_obj_is_instance_type(mp_obj_get_type(self_in))) {
         mp_raise_TypeError("arg must be user-type");
     }
 
