@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+
+#define pr_fmt(fmt) "MPY: " fmt
+
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/kthread.h>
@@ -141,7 +144,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 void NORETURN die(const char *msg) {
     char comm[sizeof(current->comm)];
     get_task_comm(comm, current);
-    printk(KERN_ALERT "fatal error '%s', killing current task '%s'\n", msg, current->comm);
+    pr_alert("fatal error '%s', killing current task '%s'\n", msg, current->comm);
     do_exit(0);
 }
 
@@ -151,7 +154,7 @@ void nlr_jump_fail(void *val) {
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
-    printk(KERN_INFO "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    pr_alert("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     die("Assertion failed");
 }
 #endif
@@ -182,7 +185,7 @@ retry:
     } else if(is_retry_errno(ret)) {
         goto retry;
     } else {
-        printk(KERN_WARNING "kernel_recvmsg: %d, killing connection\n", ret);
+        pr_warn("kernel_recvmsg: %d, killing connection\n", ret);
         return CHAR_CTRL_D;
     }
 }
@@ -191,7 +194,12 @@ void mp_print_printk(void *data, const char *str, size_t len) {
     (void)data;
     static bool newline = true;
 
-    printk(newline ? (KERN_WARNING "%*pEp") : (KERN_CONT "%*pEp"), (int)len, str);
+    if (newline) {
+        pr_info("%*pEp", (int)len, str);
+    } else {
+        pr_cont("%*pEp", (int)len, str);
+    }
+
     newline = str[len - 1] == '\n';
 }
 
@@ -215,7 +223,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
         } else if (is_retry_errno(sent_now)) {
             continue;
         } else {
-            printk(KERN_WARNING "kernel_sendmsg: %d, killing connection\n", sent_now);
+            pr_warn("kernel_sendmsg: %d, killing connection\n", sent_now);
             goto kill_conn;
         }
     }
@@ -259,11 +267,11 @@ STATIC int run_server(void *data) {
     mp_obj_list_init(mp_sys_path, 0);
 
 #ifdef INCLUDE_STRUCT_LAYOUT
-    printk(KERN_INFO "calling struct access initializer\n");
+    pr_info("calling struct access initializer\n");
     pyexec_frozen_module("structs.py");
 #endif
 
-    printk(KERN_INFO "mpy: server is up\n");
+    pr_info("server is up\n");
 
     struct socket *peer;
     while (!kthread_should_stop()) {
@@ -275,16 +283,16 @@ STATIC int run_server(void *data) {
         } else if (is_retry_errno(err)) {
             continue;
         } else {
-            printk(KERN_WARNING "kernel_accept: %d\n", err);
+            pr_warn("kernel_accept: %d\n", err);
             goto out;
         }
     }
 
-    printk("mpy: done!\n");
+    pr_info("done!\n");
 
 out:
     sock_release(sock);
-    printk("mpy: server stopped\n");
+    pr_info("server stopped\n");
 
     mp_deinit();
 
@@ -299,14 +307,14 @@ STATIC int __init mpy_init_module(void) {
 
     err = sock_create_kern(&init_net, AF_INET, SOCK_STREAM, 0, &sock);
     if (err < 0) {
-        printk(KERN_WARNING "sock_create_kern: %d\n", err);
+        pr_warn("sock_create_kern: %d\n", err);
         goto out;
     }
 
     int one = 1;
     err = kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char*)&one, sizeof(one));
     if (err < 0) {
-        printk(KERN_WARNING "kernel_setsockopt(SO_REUSEADDR): %d\n", err);
+        pr_warn("kernel_setsockopt(SO_REUSEADDR): %d\n", err);
     }
 
     struct sockaddr_in bind_addr = {
@@ -317,17 +325,17 @@ STATIC int __init mpy_init_module(void) {
     err = kernel_bind(sock, (struct sockaddr *)&bind_addr,
             sizeof(bind_addr));
     if (err < 0) {
-        printk(KERN_WARNING "kernel_bind: %d\n", err);
+        pr_warn("kernel_bind: %d\n", err);
         goto out_sock;
     }
 
     err = kernel_listen(sock, 1);
     if (err < 0) {
-        printk(KERN_WARNING "kernel_listen: %d\n", err);
+        pr_warn("kernel_listen: %d\n", err);
         goto out_sock;
     }
 
-    printk("mpy: starting server\n");
+    pr_info("starting server\n");
     server_thread = kthread_run(run_server, sock, "kmpy");
     if (IS_ERR(server_thread)) {
         err = PTR_ERR(server_thread);

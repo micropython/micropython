@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+
+#define pr_fmt(fmt) "MPY: ffi: " fmt
+
 #include <linux/kallsyms.h>
 #include <linux/module.h>
 #include <linux/kprobes.h>
@@ -365,7 +368,7 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, bo
 
         nlr_pop();
     } else {
-        printk("mpy: exception in python callback\n");
+        pr_err("exception in python callback\n");
         static const mp_print_t print = {NULL, mp_print_printk};
         mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
         *call_ok = false;
