@@ -306,7 +306,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_kmalloc_obj, kernel_ffi_kmalloc);
 
 #define MAX_CB_NARGS 10 // arbitrary, can increase this. works for stack arguments as well.
 
-STATIC size_t check_func_for_cb(mp_obj_t func) {
+STATIC size_t check_func_for_cb(mp_obj_t func, bool has_extra_first) {
     if (!mp_obj_is_type(func, &mp_type_fun_bc)) {
         mp_raise_TypeError("expected Python function");
     }
@@ -318,7 +318,7 @@ STATIC size_t check_func_for_cb(mp_obj_t func) {
         mp_raise_TypeError("kwargs/defaults not supported");
     }
 
-    if (n_pos_args > MAX_CB_NARGS) {
+    if (n_pos_args > MAX_CB_NARGS + (has_extra_first ? 1 : 0)) {
         mp_raise_TypeError("max args is " MP_STRINGIFY(MAX_CB_NARGS));
     }
 
@@ -531,7 +531,7 @@ STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t _type, mp_obj_t func
         mp_raise_ValueError("bad kprobe type, accepeted values are KP_*");
     }
 
-    size_t nargs = check_func_for_cb(func);
+    size_t nargs = check_func_for_cb(func, type == KP_ARGS_MODIFY);
 
     const unsigned long addr = resolve_target(target);
 
@@ -627,7 +627,7 @@ STATIC const mp_obj_type_t callback_type = {
 };
 
 STATIC mp_obj_t kernel_ffi_callback(mp_obj_t func) {
-    size_t nargs = check_func_for_cb(func);
+    size_t nargs = check_func_for_cb(func, false);
 
     callback_obj_t *cb_obj = m_new_obj_with_finaliser(callback_obj_t);
     cb_obj->base.type = &callback_type;
@@ -732,7 +732,7 @@ static void notrace ftrace_trampoline(unsigned long ip, unsigned long parent_ip,
 }
 
 STATIC mp_obj_t kernel_ffi_ftrace(mp_obj_t target, mp_obj_t func) {
-    size_t nargs = check_func_for_cb(func);
+    size_t nargs = check_func_for_cb(func, true);
     if (nargs < 1) {
         mp_raise_ValueError("func should expect at least 1 argument (call_sym)");
     }
