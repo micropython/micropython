@@ -58,6 +58,14 @@
 STATIC char heap[1 << 23];
 
 void gc_collect(void) {
+    if (in_atomic()) {
+        // 1. sholdn't block for too long
+        // 2. while the GC itself doesn't perform any non-atomic operations, it calls objects' finalizers,
+        //    and they might (for example, the kprobe/ftrace finalizer calls the appropriate unregister
+        //    function, and those 2 try to lock mutexes and call synchronize_rcu...)
+        return;
+    }
+
     // WARNING: This gc_collect implementation doesn't try to get root
     // pointers from CPU registers, and thus may function incorrectly.
     // TODO collect from regs
