@@ -108,6 +108,7 @@ CSUPEROPT = -O3
 
 SRC_C = \
 	main.c \
+	mpthreadport.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/interrupt_char.c \
 	lib/mp-readline/readline.c \

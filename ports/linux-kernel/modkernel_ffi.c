@@ -40,6 +40,7 @@
 #include <py/objstr.h>
 #include <py/objfun.h>
 #include <py/bc.h>
+#include <py/stackctrl.h>
 
 #include "internal.h"
 
@@ -379,6 +380,22 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
         args[0] = first_arg;
     }
 
+#if MICROPY_PY_THREAD
+    // temporarily, add current context as a thread.
+    mp_state_thread_t ts;
+    if (!register_new_context(&ts)) {
+        pr_err("failed to register thread context, skipping call\n");
+        return 0;
+    }
+
+    mp_stack_set_top(&ts); // need to include ts in root-pointer scan (for locals dic)
+    set_stack_limit();
+
+    // empty locals
+    mp_locals_set(mp_obj_new_dict(0));
+    // use globals from main context
+    mp_globals_set(mp_state_ctx.thread.dict_globals);
+#endif
 
     if (nlr_push(&nlr) == 0) {
         assert(nargs <= MP_ARRAY_SIZE(args));
@@ -411,6 +428,11 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
         mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
         *call_ok = false;
     }
+
+#if MICROPY_PY_THREAD
+    // remove "thread"
+    mp_thread_finish();
+#endif
 
     return ret;
 }

@@ -228,11 +228,6 @@ Make ``/dev/null`` readable:
     # to revert:
     null_fops.read = int(read_null)
 
-
-TODO: Multithreading is not handled correctly. Specifically, all callbacks
-use the same exception stack, and GC locking is missing. So, things generally work, but
-under some stress they might break.
-
 Hook kernel code
 ^^^^^^^^^^^^^^^^
 
@@ -373,4 +368,107 @@ but it shows the point and it works on BusyBox ps :)
 
     ft.rm()
 
-Also, same TODO from callbakcs about multithreading applies here as well.
+SMP and Multithreading
+^^^^^^^^^^^^^^^^^^^^^^
+
+By default, this port compiles with ``MICROPY_PY_THREAD`` which enables multithreading.
+Multithreading is also required to get the hooks and callbacks to behave properly.
+
+Furthermore, it compiles without ``MICROPY_PY_THREAD_GIL``, to allow for real concurrency & SMP.
+This means you have to protect globals with synchronization primitives as will be shown later.
+
+Without threading enabled, MicroPython manages a single exception stack, so it's impossible
+to run code that uses this stack concurrently (if pushes and pops to the exception stack don't
+happen in their exact reversed order, threads might incorrectly swap contexts).
+Also, shared core resources (the heap, the qstr pool) are not protected from concurrent access.
+
+With threading enabled, we:
+1. Keep a separate exception stack for each thread running Python (be it a thread created by Python, or
+a thread running a hook / callback).
+2. Protect core resources.
+3. Traverse all threads' stacks on each GC collect operation.
+
+.. note:: Being completely free of data races for pieces of Python code running in kernel hook points
+          is hard. I've put this port through some stress testings on SMP systems, but multithreading is still
+          the Achilles heel of it.
+
+          Don't push it too hard if you don't have to ;)
+
+TODOs: Python in interrupt contexts.
+
+Starting Python threads
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Use MicroPython's ``_thread`` module.
+
+.. code-block:: python
+
+    from _thread import start_new_thread
+
+    def my_thread(arg):
+        print("i'm up!!")
+        print("i'll sleep for {}ms now".format(arg))
+        msleep(arg)
+        print("i'm out!!")
+
+    start_new_thread(my_thread, (1500, ))
+
+Synchronization primitives
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``_thread.lock`` are backed up by spinlocks.
+
+.. code-block:: python
+
+    from _thread import allocate_lock
+
+    my_lock = allocate_lock()
+
+    with lock:
+        # do stuff
+        printk("i got this\n")
+
+Since these are spinlock-based, you shouldn't use them in the REPL, which is a normal thread performing
+socket I/O. It might seem to work on an SMP system, but on a uniprocessor system this will certainly deadlock,
+since spinlocks are meant to be used in only in atomic contexts.
+
+If you need more saner primitives, you can use the kernel's semaphores as a mutex. Or you can write anything
+else you need, based on kernel primitives, since you have access to everything.
+
+.. code-block:: python
+
+    from kernel_ffi import kmalloc
+    from struct_access import sizeof
+    from _thread import start_new_thread
+
+    semaphore_s = partial_struct("semaphore")
+
+    def new_mutex():
+        x = semaphore_s(kmalloc(sizeof("semaphore")))
+
+        # gotta do what you gotta do
+        # if CONFIG_DEBUG_LOCK_ALLOC / CONFIG_DEBUG_SPINLOCK are enabled, more work has to
+        # be done.
+        x.count = 1
+        x.lock.raw_lock.val.counter = 0
+        x.wait_list.next = x.wait_list.____ptr
+        x.wait_list.prev = x.wait_list.____ptr
+
+        return x.____ptr
+
+
+    def wait_and_print(x):
+        print("calling down()...")
+        down(x)
+        print("got it!")
+        up(x)
+
+    x = new_mutex()
+    down(x)
+
+    start_new_thread(wait_and_print, (x, ))
+
+    # ....
+    up(x)
+
+    # now you'll see the prints
