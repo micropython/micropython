@@ -17,7 +17,7 @@ Once your environment is set up, it's as easy as:
 
     $ make -C ports/linux-kernel
 
-You'll get ``build/mpy.ko``, which can be loaded on the current machine with ``insmod``.
+You'll get ``ports/linux-kernel/build/mpy.ko``, which can be loaded on the current machine with ``insmod``.
 
 Build for a specific kernel version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,8 +32,7 @@ You can pass the ``KDIR`` variable to ``make`` to build against a specific kerne
 Using it
 --------
 
-Currently, the only exposed interface is a Python REPL. (More will be supported in the future).
-After being loaded, the module creates a server listening on ``0.0.0.0:9999``.
+The exposed interface is a Python REPL. After being loaded, the module creates a server listening on ``0.0.0.0:9999``.
 
 The following ``socat`` command will start a full interactive shell:
 
@@ -80,7 +79,7 @@ I recommend to import them this way for faster typing.
 
 .. code-block:: python
 
-    from kernel_ffi import str as s, bytes as b; from kernel_ffi import *
+    from kernel_ffi import str as s, bytes as b, p8, p16, p32, p64
 
 For example:
 
@@ -117,7 +116,8 @@ Messing with ``ifconfig``:
     >>> rtnl_unlock()
     0
 
-Count network namespaces:
+Count network namespaces: (this shows direct pointers access; examples of proper struct accessing
+will be given later)
 
 .. code-block:: python
 
@@ -155,12 +155,14 @@ Access structs
 I have written a supplementary project that provides a Pythonic way to access kernel structs.
 You can find it `here <https://github.com/Jongy/struct_layout>`_.
 
-To use it, you need to pass ``STRUCT_LAYOUT=1`` to ``make`` when building the module.
+To use it, you need to pass ``STRUCT_LAYOUT=1`` to ``make`` when building the module. It's optional
+because it's an external dependency, yet it is highly recommended you use it ;)
 
-To make a struct from a pointer:
+To make a struct from a pointer, you can create "struct casting" functions:
 
 .. code-block:: python
 
+    # partial_struct is available globally
     net_device = partial_struct("net_device")
     task_struct = partial_struct("task_struct")
 
@@ -189,11 +191,14 @@ Now, working with it:
     # now find it in ps
 
     # arrays can also be written this way
-    next.comm = "myawesomecomm\b"
+    next.comm = "myawesomecomm\0"
 
     # it will guard you from overflows
     next.comm = "this is longer than TASK_COMM_LEN"
     # ValueError: Buffer overflow!
+
+You can always ``int(..)`` any struct object to get its address.
+
 
 You can also use the ``uctypes`` module.
 
@@ -216,11 +221,13 @@ Make ``/dev/null`` readable:
         pos = p64(ppos)
         b = "who said /dev/null must be empty?\n"[pos:]
         l = min(len(b), count)
+        # copy_to_user might be helpful here...
         memcpy(buf, b, l)
         p64(ppos, pos + l)
         return l
 
     c = callback(my_read_null)
+    # null_fops requires CONFIG_KALLSYMS_ALL in your kernel
     null_fops.read = c.ptr()
 
     # now try "cat /dev/null"
@@ -306,7 +313,7 @@ Example 1: Printing all files opened on the system:
     filename = partial_struct("filename")
 
     def do_filp_open_hook(dfd, fn):  # don't have to receive all args if you don't need
-        print("do_filp_open: fd {} name {!r}".format(dfd, s(filename(fn).name._ptr)))
+        print("do_filp_open: fd {} name {!r}".format(dfd, s(int(filename(fn).name))))
 
     kp = kprobe("do_filp_open", KP_ARGS_WATCH, do_filp_open_hook)
 
@@ -451,10 +458,10 @@ else you need, based on kernel primitives, since you have access to everything.
         # be done.
         x.count = 1
         x.lock.raw_lock.val.counter = 0
-        x.wait_list.next = x.wait_list.____ptr
-        x.wait_list.prev = x.wait_list.____ptr
+        x.wait_list.next = int(x.wait_list)
+        x.wait_list.prev = int(x.wait_list)
 
-        return x.____ptr
+        return int(x)
 
 
     def wait_and_print(x):
