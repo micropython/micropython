@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
@@ -122,6 +123,29 @@ STATIC mp_obj_t mod_os_remove(mp_obj_t path_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_remove_obj, mod_os_remove);
+
+STATIC mp_obj_t mod_os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
+    const char *old_path = mp_obj_str_get_str(old_path_in);
+    const char *new_path = mp_obj_str_get_str(new_path_in);
+
+    int r = rename(old_path, new_path);
+
+    RAISE_ERRNO(r, errno);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_os_rename_obj, mod_os_rename);
+
+STATIC mp_obj_t mod_os_rmdir(mp_obj_t path_in) {
+    const char *path = mp_obj_str_get_str(path_in);
+
+    int r = rmdir(path);
+
+    RAISE_ERRNO(r, errno);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_rmdir_obj, mod_os_rmdir);
 
 STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
@@ -236,6 +260,8 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mod_os_system_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mod_os_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mod_os_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mod_os_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
