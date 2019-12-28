@@ -520,7 +520,9 @@ def main():
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-c', '--command', help='program passed in as string')
     cmd_parser.add_argument('-w', '--wait', default=0, type=int, help='seconds to wait for USB connected board to become available')
-    cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
+    group.add_argument('--no-follow', action='store_true', help='Do not follow the output after running the scripts.')
     cmd_parser.add_argument('-f', '--filesystem', action='store_true', help='perform a filesystem action')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
@@ -545,7 +547,11 @@ def main():
 
         def execbuffer(buf):
             try:
-                ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
+                if args.no_follow:
+                    pyb.exec_raw_no_follow(buf)
+                    ret_err = None
+                else:
+                    ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
             except PyboardError as er:
                 print(er)
                 pyb.close()
