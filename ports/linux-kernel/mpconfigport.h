@@ -29,6 +29,8 @@
 
 
 #define MICROPY_ENABLE_COMPILER     (1)
+#define MICROPY_PY_THREAD           (1)
+#define MICROPY_PY_THREAD_GIL       (0)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ALLOC_PATH_MAX      (256) // PATH_MAX is 4096, too much
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (64)

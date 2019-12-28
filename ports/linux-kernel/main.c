@@ -50,6 +50,10 @@
 
 #include "internal.h"
 
+#if MICROPY_PY_THREAD
+#include "mpthreadport.h"
+#endif
+
 
 STATIC char heap[1 << 23];
 
@@ -61,6 +65,10 @@ void gc_collect(void) {
 
     void *dummy;
     gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(void *));
+
+#if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+#endif
 
     gc_collect_end();
 }
@@ -251,16 +259,20 @@ kill_conn:
     kernel_sock_shutdown(current_peer, SHUT_RDWR);
 }
 
-static inline void set_stack_top_limit(void) {
-    mp_stack_ctrl_init();
+void set_stack_limit(void) {
     // -500: have a safe zone. recursion errors are raised correctly.
     mp_stack_set_limit(get_current_stack_limit() - 500);
+}
+
+STATIC void set_stack_top_and_limit(void) {
+    mp_stack_ctrl_init();
+    set_stack_limit();
 }
 
 STATIC int run_python(struct socket *peer) {
     current_peer = peer;
 
-    set_stack_top_limit();
+    set_stack_top_and_limit();
 
     (void)pyexec_friendly_repl();
 
@@ -273,7 +285,9 @@ STATIC int run_server(void *data) {
     struct socket *sock = (struct socket*)data;
     int err;
 
-    set_stack_top_limit();
+    // called first!
+    mp_thread_init();
+    set_stack_top_and_limit();
 
     gc_init(heap, heap + sizeof(heap));
     mp_init();
@@ -319,6 +333,7 @@ out:
     pr_info("server stopped\n");
 
     mp_deinit();
+    mp_thread_finish();
 
     return 0;
 }
@@ -371,7 +386,7 @@ STATIC int __init mpy_init_module(void) {
     listener = sock;
 
     pr_info("starting server\n");
-    server_thread = kthread_run(run_server, sock, "kmpy");
+    server_thread = kthread_run(run_server, sock, "kmpy-server");
     if (IS_ERR(server_thread)) {
         err = PTR_ERR(server_thread);
         goto out_sock;

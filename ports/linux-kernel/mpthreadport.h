@@ -24,13 +24,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_LINUX_KERNEL_INTERNAL_H
-#define MICROPY_INCLUDED_LINUX_KERNEL_INTERNAL_H
+#ifndef MICROPY_INCLUDED_LINUX_KERNEL_MPTHREADPORT_H
+#define MICROPY_INCLUDED_LINUX_KERNEL_MPTHREADPORT_H
 
-void NORETURN die(const char *msg);
+#if MICROPY_PY_THREAD
 
-void mp_print_printk(void *data, const char *str, size_t len);
+#include <linux/spinlock.h>
 
-void set_stack_limit(void);
 
-#endif // MICROPY_INCLUDED_LINUX_KERNEL_INTERNAL_H
+typedef spinlock_t mp_thread_mutex_t;
+
+void mp_thread_init(void);
+void mp_thread_deinit(void);
+void mp_thread_gc_others(void);
+
+static inline void mp_thread_mutex_init(mp_thread_mutex_t *m) {
+    spin_lock_init(m);
+}
+
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *m, int wait) {
+    if (wait) {
+        spin_lock(m);
+        return 1;
+    } else {
+        // returns 1 if successfully taken, 0 if busy.
+        return spin_trylock(m);
+    }
+}
+
+static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {
+    spin_unlock(m);
+}
+
+
+bool __register_new_thread(struct task_struct *k, void *arg, bool pythread, void *ts);
+
+static inline void register_new_pythread(struct task_struct *k, void *arg) {
+    (void)__register_new_thread(k, arg, true, NULL);
+}
+
+static inline bool register_new_context(void *ts) {
+    return __register_new_thread(current, NULL, false, ts);
+}
+
+#endif // MICROPY_PY_THREAD
+
+#endif // MICROPY_INCLUDED_LINUX_KERNEL_MPTHREADPORT_H
