@@ -31,6 +31,7 @@
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include <linux/version.h>
+#include <linux/sched/task_stack.h>
 
 #include <net/sock.h>
 
@@ -142,6 +143,20 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
+// not inlined - to get a more accurate "reading".
+long get_current_stack_limit(void) {
+    register unsigned long sp asm("rsp");
+
+    unsigned long end = (unsigned long)end_of_stack(current);
+
+    // only parisc, anyway...
+#ifdef CONFIG_STACK_GROWSUP
+#error "fix, it's all broken"
+#endif
+
+    return sp - end;
+}
+
 void NORETURN die(const char *msg) {
     char comm[sizeof(current->comm)];
     get_task_comm(comm, current);
@@ -238,9 +253,8 @@ kill_conn:
 
 static inline void set_stack_top_limit(void) {
     mp_stack_ctrl_init();
-    // this calculation can be made more precise, since it may place the limit too early.
-    // this does protect from stack overflows in the python REPL.
-    mp_stack_set_limit(THREAD_SIZE - 700);
+    // -500: have a safe zone. recursion errors are raised correctly.
+    mp_stack_set_limit(get_current_stack_limit() - 500);
 }
 
 STATIC int run_python(struct socket *peer) {
