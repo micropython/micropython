@@ -31,6 +31,7 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/vmalloc.h>
+#include <linux/slab.h>
 #include <linux/ftrace.h>
 
 #include <py/runtime.h>
@@ -281,6 +282,19 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p64_obj, 1, 2, kernel_ffi_p64);
 
+// kmalloc is a common operation, so a nicer API with exceptions and no messing with GFP_*
+// is required.
+STATIC mp_obj_t kernel_ffi_kmalloc(mp_obj_t n) {
+    mp_int_t value = mp_obj_int_get_uint_checked(n);
+
+    void *p = kmalloc(value, GFP_KERNEL);
+    if (!p) {
+        mp_raise_OSError(-ENOMEM);
+    }
+
+    return mp_obj_new_int_from_uint((mp_uint_t)p);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_kmalloc_obj, kernel_ffi_kmalloc);
 
 #define MAX_CB_NARGS 10 // arbitrary, can increase this. works for stack arguments as well.
 
@@ -798,6 +812,8 @@ STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_p16),    MP_ROM_PTR(&kernel_ffi_p16_obj) },
     { MP_ROM_QSTR(MP_QSTR_p32),    MP_ROM_PTR(&kernel_ffi_p32_obj) },
     { MP_ROM_QSTR(MP_QSTR_p64),    MP_ROM_PTR(&kernel_ffi_p64_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_kmalloc), MP_ROM_PTR(&kernel_ffi_kmalloc_obj) },
 
 #ifdef CONFIG_KPROBES
     { MP_ROM_QSTR(MP_QSTR_kprobe), MP_ROM_PTR(&kernel_ffi_kprobe_obj) },

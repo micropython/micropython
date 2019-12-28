@@ -74,6 +74,8 @@ The ``kernel_ffi`` module provides the following helpers:
 
 ``p64/p32/p16/p8(p)`` - Dereference a pointer value and give the result.
 
+``kmalloc(n)`` - Calls ``kmalloc(n, GFP_KERNEL)`` and raises an exception on failed allocation.
+
 I recommend to import them this way for faster typing.
 
 .. code-block:: python
