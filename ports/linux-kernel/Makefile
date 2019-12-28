@@ -72,6 +72,15 @@ FROZEN_MANIFEST = manifest.py
 CFLAGS += -DINCLUDE_STRUCT_LAYOUT
 MPY_CROSS_FLAGS += -msmall-int-bits=32 -X heapsize=4m
 MPY_TOOL_FLAGS += -mmpz-dig-size=32
+
+STRUCT_LAYOUT_DIR := $(abspath $(TOP)/../struct_layout/)
+
+$(STRUCT_LAYOUT_DIR)/all.py:
+	@if [ ! -d $(STRUCT_LAYOUT_DIR) ]; then echo; echo "struct_layout not fonund at $(STRUCT_LAYOUT_DIR), please follow \
+	the instructions in the README to clone it"; echo; exit 1; fi
+	$(MAKE) -C $(STRUCT_LAYOUT_DIR) linux_all KDIR=$(KDIR)
+
+$(BUILD)/frozen_content.c: $(STRUCT_LAYOUT_DIR)/all.py
 endif
 
 # include py core make definitions
@@ -80,8 +89,6 @@ include $(TOP)/py/py.mk
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-
-KDIR ?= /lib/modules/$(shell uname -r)/build
 
 LD = gcc
 
