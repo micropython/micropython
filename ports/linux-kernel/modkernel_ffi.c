@@ -269,11 +269,18 @@ STATIC mp_obj_t kernel_ffi_p64(size_t n_args, const mp_obj_t *args) {
 
         unsigned long flags;
         local_irq_save(flags);
-        write_cr0(read_cr0() & (~0x10000));
 
+        const unsigned long cr0 = read_cr0();
+        const unsigned long cr0_no_wp = cr0 & ~X86_CR0_WP;
+
+        // just place these here instead of calling write_cr0, which tries to
+        // re-enable WP (see 8dbec27a242cd3e2816eeb98d3237b9f57cf6232 in linux)
+        // TODO: use paravirt ops when appropriate...
+
+        asm volatile("mov %0,%%cr0": : "r" (cr0_no_wp));
         *ptr = (u64)value;
+        asm volatile("mov %0,%%cr0": : "r" (cr0));
 
-        write_cr0(read_cr0() | 0x10000);
         local_irq_restore(flags);
 
         return mp_const_none;
