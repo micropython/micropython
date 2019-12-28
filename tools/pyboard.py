@@ -287,7 +287,10 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self):
-        self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+        # ctrl-C twice: interrupt any running program
+        self.serial.write(b'\r\x03')
+        time.sleep(0.01)
+        self.serial.write(b'\x03')
 
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
