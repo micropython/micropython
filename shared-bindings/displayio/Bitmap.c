@@ -134,7 +134,7 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
 //|       bitmap[0,1] = 3
 //|
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj, mp_obj_t instance) {
+STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     if (value_obj == mp_const_none) {
         // delete item
         mp_raise_AttributeError(translate("Cannot delete values"));

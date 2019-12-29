@@ -145,7 +145,7 @@ STATIC mp_obj_t random_choice(mp_obj_t seq) {
     if (len == 0) {
         mp_raise_IndexError(translate("empty sequence"));
     }
-    return mp_obj_subscr(seq, mp_obj_new_int(shared_modules_random_randrange(0, len, 1)), MP_OBJ_SENTINEL, seq);
+    return mp_obj_subscr(seq, mp_obj_new_int(shared_modules_random_randrange(0, len, 1)), MP_OBJ_SENTINEL);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_choice_obj, random_choice);
 

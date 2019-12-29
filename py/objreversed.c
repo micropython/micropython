@@ -66,7 +66,7 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
 
     // pre-decrement and index sequence
     self->cur_index -= 1;
-    return mp_obj_subscr(self->seq, MP_OBJ_NEW_SMALL_INT(self->cur_index), MP_OBJ_SENTINEL, self->seq);
+    return mp_obj_subscr(self->seq, MP_OBJ_NEW_SMALL_INT(self->cur_index), MP_OBJ_SENTINEL);
 }
 
 const mp_obj_type_t mp_type_reversed = {

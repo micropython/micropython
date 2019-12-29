@@ -70,7 +70,7 @@ STATIC const mp_rom_map_elem_t nvm_bytearray_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(nvm_bytearray_locals_dict, nvm_bytearray_locals_dict_table);
 
-STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value, mp_obj_t instance) {
+STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
         // slice deletion

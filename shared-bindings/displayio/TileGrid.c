@@ -349,7 +349,7 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
 //|
 //|       grid[0,0] = 10
 //|
-STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj, mp_obj_t instance) {
+STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
 
 
