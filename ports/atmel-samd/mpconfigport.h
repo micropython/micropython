@@ -42,7 +42,6 @@
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define SPI_FLASH_MAX_BAUDRATE 8000000
-#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
@@ -74,8 +73,6 @@
 #define CIRCUITPY_MCU_FAMILY                        samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define SPI_FLASH_MAX_BAUDRATE 24000000
-// 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE                0x6000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
@@ -108,6 +105,10 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE (256)
 #endif
 
+#ifndef CIRCUITPY_DEFAULT_STACK_SIZE
+#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
+#endif
+
 #endif // SAMD21
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,6 +117,10 @@
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
+#endif
+
+#ifndef CIRCUITPY_DEFAULT_STACK_SIZE
+#define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
 #endif
 
 // If CIRCUITPY is internal, use half of flash for it.

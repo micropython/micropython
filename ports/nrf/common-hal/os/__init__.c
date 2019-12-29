@@ -70,17 +70,17 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
         return NRF_SUCCESS == sd_rand_application_vector_get(buffer, length);
 #endif
 
-    nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
-    nrf_rng_task_trigger(NRF_RNG_TASK_START);
+    nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
+    nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_START);
 
     for (uint32_t i = 0; i < length; i++) {
-        while (nrf_rng_event_get(NRF_RNG_EVENT_VALRDY) == 0);
-        nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
+        while (nrf_rng_event_check(NRF_RNG, NRF_RNG_EVENT_VALRDY) == 0);
+        nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
 
-        buffer[i] = nrf_rng_random_value_get();
+        buffer[i] = nrf_rng_random_value_get(NRF_RNG);
     }
 
-    nrf_rng_task_trigger(NRF_RNG_TASK_STOP);
+    nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_STOP);
 
     return true;
 }

@@ -133,9 +133,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
 
-    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
-    config.scl = scl->number;
-    config.sda = sda->number;
+    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
+
     // change freq. only if it's less than the default 400K
     if (frequency < 100000) {
         config.frequency = NRF_TWIM_FREQ_100K;
@@ -248,8 +247,10 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_TX(addr, (uint8_t*) data, xact_len);
+        uint32_t const flags = (stopBit ? 0 : NRFX_TWIM_FLAG_TX_NO_STOP);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data, xact_len, !stopBit)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, flags)) ) {
             break;
         }
 
@@ -274,8 +275,9 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_RX(addr, data, xact_len);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data, xact_len)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, 0)) ) {
             break;
         }
 

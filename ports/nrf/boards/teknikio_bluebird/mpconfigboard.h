@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +25,24 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+//https://github.com/Teknikio/TKInventionBuilderFramework
 
-#define MICROPY_HW_BOARD_NAME       "stm32f411ce-blackpill"
-#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                  (0x80000)
-#define FLASH_PAGE_SIZE             (0x4000)
+#include "nrfx/hal/nrf_gpio.h"
 
-#define BOARD_OSC_DIV 25
-#define BOARD_NO_VBUS_SENSE
+#define MICROPY_HW_BOARD_NAME       "Teknikio Bluebird"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
 
-// On-board flash
-// #define SPI_FLASH_MOSI_PIN          (&pin_PA07)
-// #define SPI_FLASH_MISO_PIN          (&pin_PA06)
-// #define SPI_FLASH_SCK_PIN           (&pin_PA05)
-// #define SPI_FLASH_CS_PIN            (&pin_PA04)
+#define MICROPY_HW_NEOPIXEL         (&pin_P0_26)
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)
 
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
+#define DEFAULT_SPI_BUS_SCK         (&pin_P1_15)
+#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_13)
+#define DEFAULT_SPI_BUS_MISO        (&pin_P1_14)
 
-#define AUTORESET_DELAY_MS 500
+#define DEFAULT_UART_BUS_RX         (&pin_P1_07)
+#define DEFAULT_UART_BUS_TX         (&pin_P1_08)
+
+#define BOARD_HAS_CRYSTAL 1  // according to the schematic we do
