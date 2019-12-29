@@ -166,11 +166,10 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
     const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
 
     if (pin->phys_port == 16) {
-        // configure GPIO16 as input with output register holding 0
+        // configure GPIO16 as input
         WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
         WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
         WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); // input
-        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1)); // out=0
         return;
     }
 
@@ -192,15 +191,6 @@ int pin_get(uint pin) {
 }
 
 void pin_set(uint pin, int value) {
-    if (pin == 16) {
-        int out_en = (pin_mode[pin] == GPIO_MODE_OUTPUT);
-        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
-        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
-        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | out_en);
-        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1) | value);
-        return;
-    }
-
     uint32_t enable = 0;
     uint32_t disable = 0;
     switch (pin_mode[pin]) {
@@ -223,6 +213,16 @@ void pin_set(uint pin, int value) {
                 disable = 1;
             }
             break;
+    }
+
+    if (pin == 16) {
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | enable);
+        if (value != -1) {
+            WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1) | value);
+        }
+        return;
     }
 
     enable <<= pin;
