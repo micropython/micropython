@@ -62,7 +62,10 @@ STATIC ledc_timer_config_t timer_cfg = {
     .duty_resolution = PWRES,
     .freq_hz = PWFREQ,
     .speed_mode = PWMODE,
-    .timer_num = PWTIMER
+    .timer_num = PWTIMER,
+    #ifdef LEDC_USE_REF_TICK
+    .clk_cfg = LEDC_USE_REF_TICK, // using REF_TICK to allow dynamic freq scaling
+    #endif
 };
 
 STATIC void pwm_init(void) {

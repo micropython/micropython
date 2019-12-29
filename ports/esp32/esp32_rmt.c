@@ -83,6 +83,9 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
     }
 
+    // TODO: provide an option to use REF_TICK (1Mhz) to enable low-power operation
+    // with dynamic frequency scaling.
+
     esp32_rmt_obj_t *self = m_new_obj_with_finaliser(esp32_rmt_obj_t);
     self->base.type = &esp32_rmt_type;
     self->channel_id = channel_id;

@@ -320,11 +320,12 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_bssid };
+    enum { ARG_ssid, ARG_password, ARG_bssid, ARG_listen_interval };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_listen_interval, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -332,6 +333,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     wifi_config_t wifi_sta_config = {{{0}}};
+    uint8_t ps_mode = WIFI_PS_MIN_MODEM;
 
     // configure any parameters that are given
     if (n_args > 1) {
@@ -353,8 +355,17 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             wifi_sta_config.sta.bssid_set = 1;
             memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
         }
+        if (args[ARG_listen_interval].u_int > 0) {
+            wifi_sta_config.sta.listen_interval = args[ARG_listen_interval].u_int;
+            ps_mode = WIFI_PS_MAX_MODEM;
+        } else if (args[ARG_listen_interval].u_int < 0) {
+            ps_mode = WIFI_PS_NONE;
+        }
+
+        // apply config
         ESP_EXCEPTIONS(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
+    esp_wifi_set_ps(ps_mode); // set power-save mode depending on listen_interval
 
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();

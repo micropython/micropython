@@ -366,6 +366,17 @@ Notes:
 
     p1 = Pin(4, Pin.OUT, None)
 
+Low-power operation
+-------------------
+
+See :ref:`esp32-lowpower <esp32-lowpower>` ::
+
+    import machine, network
+    machine.freq(80000000, min_freq=10000000)
+    wifi = network.WLAN(network.STA_IF)
+    ...
+    wifi.connect('SSID', 'PASSWD', listen_interval=3)
+
 RMT
 ---
 

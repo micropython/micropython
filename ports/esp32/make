@@ -1,0 +1,9 @@
+#! /usr/bin/bash
+export ESPIDF=/home/src/esp32/esp-idf-micropython
+export IDF_PATH=${ESPIDF}
+export PATH=/home/src/esp32/esp-idf-micropython/xtensa-esp32-elf/bin:${PATH}
+export BOARD=${BOARD:-GENERIC}
+export PORT=${PORT:-/dev/ttyUSB0}
+#CROSS_COMPILE = xtensa-esp32-elf-
+
+make -j4 "$@"

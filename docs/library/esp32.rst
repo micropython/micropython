@@ -9,6 +9,7 @@
 The ``esp32`` module contains functions and classes specifically aimed at
 controlling ESP32 modules.
 
+To adjust operating power see :ref:`esp32-lowpower <esp32-lowpower>`.
 
 Functions
 ---------

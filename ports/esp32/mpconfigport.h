@@ -248,6 +248,9 @@ void *esp_native_code_commit(void *, size_t, void *);
         mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
+        /* yield the processor for 1 tick or until notified. To allow auto-light-sleep mode \
+        // to kick-in this would have to be raised to 4 at least. */ \
+        ulTaskNotifyTake(pdFALSE, 1); \
         MP_THREAD_GIL_ENTER(); \
     } while (0);
 #else

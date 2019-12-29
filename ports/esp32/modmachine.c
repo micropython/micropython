@@ -65,31 +65,69 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     if (n_args == 0) {
         // get
         return mp_obj_new_int(esp_clk_cpu_freq());
-    } else {
-        // set
-        mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
-            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
+    }
+
+    // setting freq/sleep
+    enum {ARG_freq, ARG_min_freq, ARG_auto_light_sleep};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_freq, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_min_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_auto_light_sleep, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // validate frequency
+    mp_int_t freq = args[ARG_freq].u_int / 1000000;
+    if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
+    }
+    esp_pm_config_esp32_t pm;
+    pm.max_freq_mhz = freq;
+    pm.min_freq_mhz = freq;
+    pm.light_sleep_enable = false;
+
+    // check optional mininum frequency keyword argument
+    if (args[ARG_min_freq].u_int != 0) {
+        mp_int_t mf = args[ARG_min_freq].u_int / 1000000;
+        if (mf != 10 && mf != 20 && mf != 40 && mf != 80 && mf != 160 && mf != 240) {
+            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 10Mhz, 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         }
-        esp_pm_config_esp32_t pm;
-        pm.max_freq_mhz = freq;
-        pm.min_freq_mhz = freq;
-        pm.light_sleep_enable = false;
-        esp_err_t ret = esp_pm_configure(&pm);
-        if (ret != ESP_OK) {
+        pm.min_freq_mhz = mf;
+    }
+
+    #if 0
+    // commented-out because it is ineffective unless the calls to ulTaskNotifyTake in
+    // mphalport.c use a delay of 4 ticks minimum. Don't want to change those due to
+    // insufficiently explored side-effects and auto-light-sleep is not that usable in
+    // the current state anyway... leaving this in for future reference
+
+    // check optional auto-light-sleep keyword argument
+    if (args[ARG_auto_light_sleep].u_bool) {
+        pm.light_sleep_enable = true;
+    }
+    #endif
+
+    // apply new setting and check result
+    esp_err_t ret = esp_pm_configure(&pm);
+    if (ret != ESP_OK) {
+        if (ret == ESP_ERR_NOT_SUPPORTED) {
+            mp_raise_ValueError(MP_ERROR_TEXT("auto light-sleep not supported"));
+        } else {
+            mp_printf(&mp_plat_print, "esp_pm_configure ret=%d\n", ret);
             mp_raise_ValueError(NULL);
         }
-        while (esp_clk_cpu_freq() != freq * 1000000) {
-            vTaskDelay(1);
-        }
-        return mp_const_none;
     }
+    while (esp_clk_cpu_freq() != freq * 1000000) {
+        vTaskDelay(1);
+    }
+    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_freq_obj, 0, machine_freq);
 
 STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 

@@ -129,7 +129,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         }
         uart_config_t uartcfg = {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0
+            .rx_flow_ctrl_thresh = 0,
+            .use_ref_tick = 1,
         };
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
@@ -267,7 +268,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
+        .rx_flow_ctrl_thresh = 0,
+        .use_ref_tick = 1,
     };
 
     // create instance
