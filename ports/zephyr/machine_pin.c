@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include <zephyr.h>
-#include <gpio.h>
+#include <drivers/gpio.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"

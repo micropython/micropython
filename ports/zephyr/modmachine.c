@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <misc/reboot.h>
+#include <power/reboot.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"

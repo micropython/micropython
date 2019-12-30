@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 #include <zephyr.h>
-#include <misc/stack.h>
+#include <debug/stack.h>
 
 #include "py/runtime.h"
 
