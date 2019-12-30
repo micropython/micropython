@@ -44,6 +44,12 @@ You can exit with Ctrl+D which will also kill the shell (it will be restarted up
 connection).
 If the shell hangs, you can exit with Ctrl+L.
 
+When you want to load a larger piece of code, you can:
+
+1. Paste it in the raw mode of the REPL (like IPython's ``%cpaste``). Hit Ctrl+E, paste your code and then Ctrl+D.
+2. ``import`` from the filesystem works - you just have to configure ``sys.path`` accordingly, and you'll be able
+   to import python files.
+
 Features
 --------
 
