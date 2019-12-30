@@ -33,4 +33,8 @@
 extern const mp_obj_type_t zephyr_disk_access_type;
 #endif
 
+#ifdef CONFIG_FLASH_MAP
+extern const mp_obj_type_t zephyr_flash_area_type;
+#endif
+
 #endif // MICROPY_INCLUDED_ZEPHYR_MODZEPHYR_H

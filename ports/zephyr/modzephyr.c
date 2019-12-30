@@ -95,6 +95,9 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #ifdef CONFIG_DISK_ACCESS
     { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },
     #endif
+    #ifdef CONFIG_FLASH_MAP
+    { MP_ROM_QSTR(MP_QSTR_FlashArea), MP_ROM_PTR(&zephyr_flash_area_type) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
