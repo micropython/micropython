@@ -112,7 +112,7 @@ void pulsein_reset(void) {
     if ( nrfx_gpiote_is_init() ) {
         nrfx_gpiote_uninit();
     }
-    nrfx_gpiote_init();
+    nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
 
     memset(_objs, 0, sizeof(_objs));
 }

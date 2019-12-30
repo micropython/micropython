@@ -41,6 +41,18 @@
 
 static bool ejected[1];
 
+void usb_msc_mount(void) {
+    // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
+    // power the device, eject, unplug and plug it back in to get the drive.
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        ejected[i] = false;
+    }
+}
+
+void usb_msc_umount(void) {
+
+}
+
 // The root FS is always at the end of the list.
 static fs_user_mount_t* get_vfs(int lun) {
     // TODO(tannewt): Return the mount which matches the lun where 0 is the end
@@ -198,19 +210,34 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
 // - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) {
+    if (lun > 1) {
+        return false;
+    }
+    fs_user_mount_t* current_mount = get_vfs(lun);
+    if (current_mount == NULL) {
+        return false;
+    }
     if (load_eject) {
-        if (lun > 1) {
-            return false;
-        } else {
-            fs_user_mount_t* current_mount = get_vfs(lun);
-            if (current_mount == NULL) {
-                return false;
-            }
+        if (!start) {
+            // Eject but first flush.
             if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
                 return false;
             } else {
                 ejected[lun] = true;
             }
+        } else {
+            // We can only load if it hasn't been ejected.
+            return !ejected[lun];
+        }
+    } else {
+        if (!start) {
+            // Stop the unit but don't eject.
+            if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
+                return false;
+            }
+        } else {
+            // Start the unit, but only if not ejected.
+            return !ejected[lun];
         }
     }
 

@@ -308,9 +308,26 @@ STATIC void _refresh_display(displayio_display_obj_t* self) {
     displayio_display_core_finish_refresh(&self->core);
 }
 
+void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, int rotation){
+    bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
+    bool will_transposed = (rotation == 90 || rotation == 270);
+    if(transposed != will_transposed) {
+        int tmp = self->core.width;
+        self->core.width = self->core.height;
+        self->core.height = tmp;
+    }
+    displayio_display_core_set_rotation(&self->core, rotation);
+    supervisor_stop_terminal();
+    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self->core.current_group != NULL) {
+        displayio_group_update_transform(self->core.current_group, &self->core.transform);
+    }
+}
+
 uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self){
     return self->core.rotation;
 }
+
 
 bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
     if (!self->auto_refresh && !self->first_manual_refresh) {

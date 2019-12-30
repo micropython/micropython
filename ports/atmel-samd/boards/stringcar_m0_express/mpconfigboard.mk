@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8060
 USB_PRODUCT = "StringCar M0 Express"
@@ -22,4 +21,3 @@ CIRCUITPY_RTC = 0
 
 CFLAGS_INLINE_LIMIT = 60
 SUPEROPT_GC = 0
-

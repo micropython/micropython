@@ -88,6 +88,39 @@ STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
 #define BYTES_LEFT(self) (self->inbuf_length - self->inbuf_offset)
 #define CONSUME(self, n) (self->inbuf_offset += n)
 
+// http://id3.org/d3v2.3.0
+// http://id3.org/id3v2.3.0
+STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t* self) {
+    mp3file_update_inbuf(self);
+    if (BYTES_LEFT(self) < 10) {
+        return;
+    }
+    uint8_t *data = READ_PTR(self);
+    if (!(
+            data[0] == 'I' &&
+            data[1] == 'D' &&
+            data[2] == '3' &&
+            data[3] != 0xff &&
+            data[4] != 0xff &&
+            (data[5] & 0x1f) == 0 &&
+            (data[6] & 0x80) == 0 &&
+            (data[7] & 0x80) == 0 &&
+            (data[8] & 0x80) == 0 &&
+            (data[9] & 0x80) == 0)) {
+        return;
+    }
+    uint32_t size = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | (data[9]);
+    size += 10; // size excludes the "header" (but not the "extended header")
+    // First, deduct from size whatever is left in buffer
+    uint32_t to_consume = MIN(size, BYTES_LEFT(self));
+    CONSUME(self, to_consume);
+    size -= to_consume;
+
+    // Next, seek in the file after the header
+    f_lseek(&self->file->fp, f_tell(&self->file->fp) + size);
+    return;
+}
+
 /* If a sync word can be found, advance to it and return true.  Otherwise,
  * return false.
  */
@@ -106,7 +139,15 @@ STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t* self) {
 }
 
 STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t* self, MP3FrameInfo* fi) {
-    int err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+    int err;
+    do {
+        err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+        if (err == ERR_MP3_NONE) {
+           break;
+        }
+        CONSUME(self, 1);
+        mp3file_find_sync_word(self);
+    } while (!self->eof);
     return err == ERR_MP3_NONE;
 }
 
@@ -151,10 +192,13 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
     self->channel_count = fi.nChans;
     self->frame_buffer_size = fi.outputSamps*sizeof(int16_t);
 
+    if ((intptr_t)buffer & 1) {
+        buffer += 1; buffer_size -= 1;
+    }
     if (buffer_size >= 2 * self->frame_buffer_size) {
         self->len = buffer_size / 2 / self->frame_buffer_size * self->frame_buffer_size;
-        self->buffers[0] = buffer;
-        self->buffers[1] = buffer + self->len;
+        self->buffers[0] = (int16_t*)(void*)buffer;
+        self->buffers[1] = (int16_t*)(void*)buffer + self->len;
     } else {
         self->len = 2 * self->frame_buffer_size;
         self->buffers[0] = m_malloc(self->len, false);
@@ -218,7 +262,9 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t* self,
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
+    self->other_channel = -1;
     mp3file_update_inbuf(self);
+    mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
 }
 
@@ -227,30 +273,38 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
                                                         uint8_t channel,
                                                         uint8_t** bufptr,
                                                         uint32_t* buffer_length) {
+    if (!self->inbuf) {
+        return GET_BUFFER_ERROR;
+    }
     if (!single_channel) {
         channel = 0;
     }
 
-    uint16_t channel_read_count = self->channel_read_count[channel]++;
-    bool need_more_data = self->read_count++ == channel_read_count;
-
-    *bufptr = self->buffers[self->buffer_index] + channel;
+    *bufptr = (uint8_t*)(self->buffers[self->buffer_index] + channel);
     *buffer_length = self->frame_buffer_size;
 
-    if (need_more_data) {
-        self->buffer_index = !self->buffer_index;
-        int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    if (channel == self->other_channel) {
+        *bufptr = (uint8_t*)(self->buffers[self->other_buffer_index] + channel);
+        self->other_channel = -1;
+        return GET_BUFFER_MORE_DATA;
+    }
 
-        if (!mp3file_find_sync_word(self)) {
-            return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
-        }
-        int bytes_left = BYTES_LEFT(self);
-        uint8_t *inbuf = READ_PTR(self);
-        int err = MP3Decode(self->decoder, &inbuf, &bytes_left, buffer, 0);
-        CONSUME(self, BYTES_LEFT(self) - bytes_left);
-        if (err) {
-            return GET_BUFFER_DONE;
-        }
+    self->other_channel = 1-channel;
+    self->other_buffer_index = self->buffer_index;
+
+    self->buffer_index = !self->buffer_index;
+    int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+
+    mp3file_skip_id3v2(self);
+    if (!mp3file_find_sync_word(self)) {
+        return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
+    }
+    int bytes_left = BYTES_LEFT(self);
+    uint8_t *inbuf = READ_PTR(self);
+    int err = MP3Decode(self->decoder, &inbuf, &bytes_left, buffer, 0);
+    CONSUME(self, BYTES_LEFT(self) - bytes_left);
+    if (err) {
+        return GET_BUFFER_DONE;
     }
 
     return GET_BUFFER_MORE_DATA;

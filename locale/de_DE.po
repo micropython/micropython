@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-10 13:55-0600\n"
+"POT-Creation-Date: 2019-12-12 15:33-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -24,6 +24,19 @@ msgid ""
 msgstr ""
 "\n"
 "Der Code wurde ausgeführt. Warte auf reload.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"Please file an issue with the contents of your CIRCUITPY drive at \n"
+"https://github.com/adafruit/circuitpython/issues\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"To exit, please reset the board without "
+msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -294,7 +307,7 @@ msgid "Array values should be single bytes."
 msgstr "Array-Werte sollten aus Einzelbytes bestehen."
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running.\n"
+msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 
 #: main.c
@@ -404,6 +417,10 @@ msgstr "Pull up im Ausgabemodus nicht möglich"
 msgid "Cannot get temperature"
 msgstr "Kann Temperatur nicht holen"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "Kann nicht beite Kanäle auf dem gleichen Pin ausgeben"
@@ -447,6 +464,16 @@ msgstr "Kann nicht ohne MOSI-Pin schreiben."
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Schreiben von CharacteristicBuffer ist nicht vorgesehen"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython core code crashed hard. Whoops!\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"CircuitPython is in safe mode because you pressed the reset button during "
+"boot. Press again to exit safe mode.\n"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -509,8 +536,8 @@ msgid "Couldn't allocate second buffer"
 msgstr "Konnte second buffer nicht zuteilen"
 
 #: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler.\n"
-msgstr "Absturz in HardFault_Handler.\n"
+msgid "Crash into the HardFault_Handler."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -625,26 +652,16 @@ msgstr ""
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 
+#: supervisor/shared/safe_mode.c
+msgid "Failed to write internal flash."
+msgstr ""
+
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Datei existiert"
 
-#: ports/nrf/peripherals/nrf/nvm.c
-msgid "Flash erase failed"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash erase failed to start, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
+#: ports/nrf/common-hal/nvm/ByteArray.c
 msgid "Flash write failed"
-msgstr ""
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash write failed to start, err 0x%04x"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -823,17 +840,6 @@ msgstr "Länge muss ein int sein"
 msgid "Length must be non-negative"
 msgstr "Länge darf nicht negativ sein"
 
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Looks like our core CircuitPython code crashed hard. Whoops!\n"
-"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
-" with the contents of your CIRCUITPY drive and this message:\n"
-msgstr ""
-"Sieht aus, als wäre der CircuitPython-Kernel-Code abgestürzt. Uups!\n"
-"Bitte melde das Problem unter https://github.com/adafruit/circuitpython/"
-"issues\n"
-"mit dem Inhalt deines CIRCUITPY-Laufwerks und dieser Nachricht:\n"
-
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
 msgstr "MISO pin Initialisierung fehlgeschlagen"
@@ -848,14 +854,12 @@ msgid "Maximum x value when mirrored is %d"
 msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+msgid "MicroPython NLR jump failed. Likely memory corruption."
 msgstr ""
-"MicroPython-NLR-Sprung ist fehlgeschlagen. Wahrscheinlich "
-"Speicherbeschädigung.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error.\n"
-msgstr "Schwerwiegender MicroPython-Fehler\n"
+msgid "MicroPython fatal error."
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -923,6 +927,10 @@ msgstr "Kein Speicherplatz mehr verfügbar auf dem Gerät"
 #: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Keine solche Datei/Verzeichnis"
+
+#: supervisor/shared/safe_mode.c
+msgid "Nordic Soft Device failure assertion."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1110,17 +1118,8 @@ msgstr "Stream fehlt readinto() oder write() Methode."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting "
-"CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of "
-"your CIRCUITPY drive:\n"
+"Please increase the stack size if you know how, or if not:"
 msgstr ""
-"Der CircuitPython-Heap war beschädigt, weil der Stack zu klein war.\n"
-"Bitte erhöhe die stack size limits und drücke die Reset-Taste (nach Auswurf "
-"des CIRCUITPY-Laufwerks)\n"
-"Wenn du den Stack nicht geändert hast, melde bitte das Problem unter https://"
-"github.com/adafruit/circuitpython/issues\n"
-"mit dem Inhalt deines CIRCUITPY-Laufwerks.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1132,23 +1131,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
+"The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher, "
-"dass deine Stromversorgung genug Leistung für die gesamte Schaltung zur "
-"Verfügung stellt und drücke die Reset-Taste (nach Auswurf des CIRCUITPY-"
-"Laufwerks)\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The reset button was pressed while booting CircuitPython. Press again to "
-"exit safe mode.\n"
-msgstr ""
-"Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
-"erneut um den abgesicherten Modus zu verlassen. \n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1181,10 +1167,6 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Zum beenden, resette bitte das board ohne "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1262,6 +1244,10 @@ msgstr "Unerwarteter nrfx uuid-Typ"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Unknown reason."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1343,11 +1329,8 @@ msgstr ""
 "aus.\n"
 
 #: supervisor/shared/safe_mode.c
-msgid ""
-"You are running in safe mode which means something unanticipated happened.\n"
+msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
-"Sie laufen im abgesicherten Modus, was bedeutet, dass etwas Unerwartetes "
-"passiert ist.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -2737,6 +2720,9 @@ msgstr ""
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
 
+#~ msgid "Crash into the HardFault_Handler.\n"
+#~ msgstr "Absturz in HardFault_Handler.\n"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Daten sind zu groß für das advertisement packet"
 
@@ -2871,8 +2857,26 @@ msgstr ""
 #~ msgid "Invalid data pin"
 #~ msgstr "Ungültiger data pin"
 
+#~ msgid ""
+#~ "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+#~ " with the contents of your CIRCUITPY drive and this message:\n"
+#~ msgstr ""
+#~ "Sieht aus, als wäre der CircuitPython-Kernel-Code abgestürzt. Uups!\n"
+#~ "Bitte melde das Problem unter https://github.com/adafruit/circuitpython/"
+#~ "issues\n"
+#~ "mit dem Inhalt deines CIRCUITPY-Laufwerks und dieser Nachricht:\n"
+
 #~ msgid "Maximum PWM frequency is %dhz."
 #~ msgstr "Maximale PWM Frequenz ist %dHz"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+#~ msgstr ""
+#~ "MicroPython-NLR-Sprung ist fehlgeschlagen. Wahrscheinlich "
+#~ "Speicherbeschädigung.\n"
+
+#~ msgid "MicroPython fatal error.\n"
+#~ msgstr "Schwerwiegender MicroPython-Fehler\n"
 
 #~ msgid "Minimum PWM frequency is 1hz."
 #~ msgstr "Minimale PWM Frequenz ist %dHz"
@@ -2920,6 +2924,41 @@ msgstr ""
 #~ msgid "STA required"
 #~ msgstr "STA erforderlich"
 
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase stack size limits and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ "If you didn't change the stack, then file an issue here with the contents "
+#~ "of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Der CircuitPython-Heap war beschädigt, weil der Stack zu klein war.\n"
+#~ "Bitte erhöhe die stack size limits und drücke die Reset-Taste (nach "
+#~ "Auswurf des CIRCUITPY-Laufwerks)\n"
+#~ "Wenn du den Stack nicht geändert hast, melde bitte das Problem unter "
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+#~ "mit dem Inhalt deines CIRCUITPY-Laufwerks.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Please make sure your power supply "
+#~ "provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "Die Stromversorgung des Mikrocontrollers ist eingebrochen. Stelle sicher, "
+#~ "dass deine Stromversorgung genug Leistung für die gesamte Schaltung zur "
+#~ "Verfügung stellt und drücke die Reset-Taste (nach Auswurf des CIRCUITPY-"
+#~ "Laufwerks)\n"
+
+#~ msgid ""
+#~ "The reset button was pressed while booting CircuitPython. Press again to "
+#~ "exit safe mode.\n"
+#~ msgstr ""
+#~ "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
+#~ "erneut um den abgesicherten Modus zu verlassen. \n"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Zum beenden, resette bitte das board ohne "
+
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) existiert nicht"
 
@@ -2941,6 +2980,13 @@ msgstr ""
 
 #~ msgid "Voice index too high"
 #~ msgstr "Voice index zu hoch"
+
+#~ msgid ""
+#~ "You are running in safe mode which means something unanticipated "
+#~ "happened.\n"
+#~ msgstr ""
+#~ "Sie laufen im abgesicherten Modus, was bedeutet, dass etwas Unerwartetes "
+#~ "passiert ist.\n"
 
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"

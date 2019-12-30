@@ -163,10 +163,12 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
         .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
         .p_context = self,
-        .hwfc = NRF_UARTE_HWFC_DISABLED,
-        .parity = (parity == PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED,
         .baudrate = get_nrf_baud(baudrate),
-        .interrupt_priority = 7
+        .interrupt_priority = 7,
+        .hal_cfg = {
+            .hwfc = NRF_UARTE_HWFC_DISABLED,
+            .parity = (parity == PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
+        }
     };
 
     nrfx_uarte_uninit(self->uarte);

@@ -48,18 +48,19 @@ for c in sample_characters:
         all_characters += c
 if args.extra_characters:
     all_characters.extend(args.extra_characters)
+all_characters = "".join(sorted(set(all_characters)))
 filtered_characters = all_characters
 
 # Try to pre-load all of the glyphs. Misses will still be slow later.
-f.load_glyphs(set(all_characters))
+f.load_glyphs(set(ord(c) for c in all_characters))
 
 # Get each glyph.
-for c in all_characters:
-    g = f.get_glyph(ord(c))
-    if not g:
+for c in set(all_characters):
+    if ord(c) not in f._glyphs:
         print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
         continue
+    g = f.get_glyph(ord(c))
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
 

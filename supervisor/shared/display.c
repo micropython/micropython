@@ -81,6 +81,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     grid->pixel_width = width_in_tiles * grid->tile_width;
     grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
+    grid->full_change = true;
 
     common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
 }

@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/shared/safe_mode.h"
 
 #include "peripherals/nrf/nvm.h"
 
@@ -41,10 +42,6 @@
 #include "ble_drv.h"
 #include "nrf_sdm.h"
 #endif
-
-// defined in linker
-extern uint32_t __fatfs_flash_start_addr[];
-extern uint32_t __fatfs_flash_length[];
 
 #define NO_CACHE        0xffffffff
 
@@ -56,7 +53,7 @@ uint32_t _flash_page_addr = NO_CACHE;
 /* Internal Flash API
  *------------------------------------------------------------------*/
 static inline uint32_t lba2addr(uint32_t block) {
-    return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
 }
 
 void supervisor_flash_init(void) {
@@ -67,7 +64,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length - CIRCUITPY_INTERNAL_NVM_SIZE) / FILESYSTEM_BLOCK_SIZE ;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE ;
 }
 
 void supervisor_flash_flush(void) {
@@ -75,7 +72,9 @@ void supervisor_flash_flush(void) {
 
     // Skip if data is the same
     if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
-        nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache);
+        if (!nrf_nvm_safe_flash_page_write(_flash_page_addr, _flash_cache)) {
+            reset_into_safe_mode(FLASH_WRITE_FAIL);
+        }
     }
 }
 
@@ -120,4 +119,3 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
 void supervisor_flash_release_cache(void) {
 }
-

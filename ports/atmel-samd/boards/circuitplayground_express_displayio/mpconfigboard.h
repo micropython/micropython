@@ -22,16 +22,13 @@
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
 #define CALIBRATE_CRYSTALLESS 1
 
 // Explanation of how a user got into safe mode.
 #define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up"
+
+// Increase stack size slightly due to CPX library import nesting.
+#define CIRCUITPY_DEFAULT_STACK_SIZE  (4504)  // divisible by 8
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB02)
@@ -46,3 +43,5 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+#define MICROPY_PY_URE 0
