@@ -32,6 +32,10 @@
 #include "extmod/vfs_fat.h"
 #endif
 
+#if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+#include "extmod/vfs_lfs.h"
+#endif
+
 #if MICROPY_PY_UOS
 
 STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
@@ -53,6 +57,12 @@ STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
     #endif
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
+    #if MICROPY_VFS_LFS1
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
+    #endif
+    #if MICROPY_VFS_LFS2
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(uos_module_globals, uos_module_globals_table);
