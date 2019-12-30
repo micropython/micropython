@@ -125,6 +125,7 @@ const mcu_uart_rx_obj_t mcu_uart_rx_list[6] = {
 TIM_TypeDef * mcu_tim_banks[14] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, NULL, TIM9, TIM10,
                                     TIM11, NULL, NULL, NULL};
 
+//#define TIM(index, alt, channel, tim_pin)
 const mcu_tim_pin_obj_t mcu_tim_pin_list[44] = {
     TIM(2,1,1,&pin_PA00),
     TIM(5,2,1,&pin_PA00),

@@ -124,6 +124,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     uint16_t duty,
                                                     uint32_t frequency,
                                                     bool variable_frequency) {
+    mp_printf(&mp_plat_print, "Construct PWM\n");
     TIM_TypeDef * TIMx;
     uint8_t tim_num = sizeof(mcu_tim_pin_list)/sizeof(*mcu_tim_pin_list);
     bool tim_chan_taken = false;
@@ -194,6 +195,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     GPIO_InitStruct.Alternate = self->tim->altfn_index;
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
 
+    mp_printf(&mp_plat_print, "PWM Pin:%d Port:%d\n", pin->number, pin->port);
+
     tim_clock_enable(1<<(self->tim->tim_index - 1));
 
     //translate channel into handle value
@@ -202,6 +205,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     uint32_t prescaler = 0; //prescaler is 15 bit
     uint32_t period = 0; //period is 16 bit
     timer_get_optimal_divisors(&period, &prescaler,frequency,timer_get_source_freq(self->tim->tim_index));
+
+    mp_printf(&mp_plat_print, "Per:%d presc:%d\n", period, prescaler);
 
     //Timer init
     self->handle.Instance = TIMx;
