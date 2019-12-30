@@ -18,6 +18,8 @@ MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
 MICROPY_VFS_FAT ?= 1
+MICROPY_VFS_LFS1 ?= 0
+MICROPY_VFS_LFS2 ?= 1
 
 # Default target
 all:
