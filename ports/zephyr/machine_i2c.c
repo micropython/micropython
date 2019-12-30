@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include <zephyr.h>
-#include <i2c.h>
+#include <drivers/i2c.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
