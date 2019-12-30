@@ -401,8 +401,6 @@ a thread running a hook / callback).
 
           Don't push it too hard if you don't have to ;)
 
-TODOs: Python in interrupt contexts.
-
 Starting Python threads
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -479,3 +477,16 @@ else you need, based on kernel primitives, since you have access to everything.
     up(x)
 
     # now you'll see the prints
+
+Future TODOs
+------------
+
+* Python in interrupt contexts.
+* Optimize the threads list - use another mean of TLS (like stack-based) and perhaps something better
+  than a linked list, like an array with atomic indexing.
+* Type checking for functions and globals - parse function declarations and such from the kernel headers
+  and encode this information in the Python, providing function type checking, perhaps auto-suggestion
+  for arguments...
+
+  * This will also allow to use descriptors for globals accessing - instead of ``p64(some_global, 0)`` you could
+    just do ``some_global = 0`` and it'd figure the ``p64`` out.
