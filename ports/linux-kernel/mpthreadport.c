@@ -41,7 +41,7 @@
 #include "py/mpthread.h"
 #include "py/gc.h"
 
-typedef struct {
+typedef struct _thread {
     struct task_struct *owner;
     mp_state_thread_t *ts;
     void *arg; // thread Python args, a GC root pointer
@@ -84,42 +84,52 @@ void mp_thread_gc_others(void) {
     read_unlock(&threads_lock);
 }
 
-static thread_t *get_thread_for_current(bool remove) {
+thread_t *__get_thread_for_current(void) {
     read_lock(&threads_lock);
 
     thread_t *it;
-    bool found = false;
+    thread_t *found = NULL;
     list_for_each_entry(it, &threads, list) {
         if (it->owner == current) {
-            found = true;
+            found = it;
             break;
         }
     }
 
+    // okay to reference 'found' outside of the lock context - since this is the *current* thread, only current
+    // context can eventually kill it...
     read_unlock(&threads_lock);
 
-    if (!found) {
+    return found;
+}
+
+static thread_t *get_thread_for_current(void) {
+    thread_t *t = __get_thread_for_current();
+
+    if (t == NULL) {
         // shouldn't happen, really...
         die("can't find MP thread for current!");
     }
 
-    if (remove) {
-        write_lock(&threads_lock);
-        list_del(&it->list);
-        write_unlock(&threads_lock);
-    }
+    return t;
+}
 
-    // okay to reference 'it' outside of the lock context - since this is the *current* thread, only current
-    // context can eventually kill it...
-    return it;
+static thread_t *get_and_remove_thread(void) {
+    thread_t *t = get_thread_for_current();
+
+    write_lock(&threads_lock);
+    list_del(&t->list);
+    write_unlock(&threads_lock);
+
+    return t;
 }
 
 mp_state_thread_t *mp_thread_get_state(void) {
-    return get_thread_for_current(false)->ts;
+    return get_thread_for_current()->ts;
 }
 
 void mp_thread_set_state(void *state) {
-    get_thread_for_current(false)->ts = state;
+    get_thread_for_current()->ts = state;
 }
 
 // called by micropython core to signal that the thread is starting
@@ -175,7 +185,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
 }
 
 void mp_thread_finish(void) {
-    thread_t *t = get_thread_for_current(true);
+    thread_t *t = get_and_remove_thread();
     kfree(t);
 }
 

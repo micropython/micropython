@@ -56,6 +56,8 @@ static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {
     spin_unlock(m);
 }
 
+typedef struct _thread thread_t;
+thread_t *__get_thread_for_current(void);
 
 bool __register_new_thread(struct task_struct *k, void *arg, bool pythread, void *ts);
 
