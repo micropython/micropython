@@ -71,3 +71,5 @@
 #endif
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
+
+#define MICROPY_PY_TIME_TICKS          (1)

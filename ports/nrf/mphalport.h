@@ -33,6 +33,7 @@
 #include "nrf_gpio.h"
 #include "nrfx_config.h"
 
+
 typedef enum
 {
   HAL_OK       = 0x00,
@@ -41,12 +42,8 @@ typedef enum
   HAL_TIMEOUT  = 0x03
 } HAL_StatusTypeDef;
 
-static inline uint32_t hal_tick_fake(void) {
-    return 0;
-}
 
-#define mp_hal_ticks_ms hal_tick_fake // TODO: implement. Right now, return 0 always
-
+void rtc1_init_msec(void);
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);

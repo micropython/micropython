@@ -34,8 +34,25 @@
 #include "uart.h"
 #include "nrfx_errors.h"
 #include "nrfx_config.h"
+#include "nrfx_rtc.h"
 
-// this table converts from HAL_StatusTypeDef to POSIX errno
+nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
+
+void rtc1_init_msec(void) {
+    rtc1.p_reg->PRESCALER = 32;
+    rtc1.p_reg->TASKS_START = 1;
+}
+
+#if MICROPY_PY_TIME_TICKS
+mp_uint_t mp_hal_ticks_ms(void) {
+  return (mp_uint_t)rtc1.p_reg->COUNTER;
+}
+#else
+static inline mp_uint_t mp_hal_ticks_ms(void) {
+  return 0;
+}
+#endif
+
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
     [HAL_ERROR] = MP_EIO,

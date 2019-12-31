@@ -74,6 +74,8 @@
 #include "usb_cdc.h"
 #endif
 
+#include "mphalport.h"
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -123,6 +125,9 @@ soft_reset:
 
     readline_init0();
 
+#if MICROPY_PY_TIME_TICKS
+    rtc1_init_msec();
+#endif
 
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
