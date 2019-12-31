@@ -31,7 +31,12 @@
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include <linux/version.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0) // f3ac60671954c
 #include <linux/sched/task_stack.h>
+#else
+#include <linux/sched.h>
+#endif
 
 #include <net/sock.h>
 
