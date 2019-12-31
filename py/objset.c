@@ -564,6 +564,7 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
     .name = MP_QSTR_frozenset,
+    .flags = MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST,
     .print = set_print,
     .make_new = set_make_new,
     .unary_op = set_unary_op,

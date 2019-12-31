@@ -467,7 +467,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
     [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
     [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
-    // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
+    [MP_BINARY_OP_NOT_EQUAL] = MP_QSTR___ne__,
     [MP_BINARY_OP_CONTAINS] = MP_QSTR___contains__,
 
     // If an inplace method is not found a normal method will be used as a fallback
@@ -1100,7 +1100,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    uint16_t base_flags = 0;
+    uint16_t base_flags = MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);

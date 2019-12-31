@@ -558,6 +558,7 @@ const mp_obj_type_t mp_type_array = {
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
     .name = MP_QSTR_bytearray,
+    .flags = MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST,
     .print = array_print,
     .make_new = bytearray_make_new,
     .getiter = array_iterator_new,
