@@ -304,6 +304,11 @@ STATIC mp_obj_t kernel_ffi_kmalloc(mp_obj_t n) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_kmalloc_obj, kernel_ffi_kmalloc);
 
+STATIC mp_obj_t kernel_ffi_current(void) {
+    return mp_obj_new_int_from_uint((mp_uint_t)current);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(kernel_ffi_current_obj, kernel_ffi_current);
+
 #define MAX_CB_NARGS 10 // arbitrary, can increase this. works for stack arguments as well.
 
 STATIC size_t check_func_for_cb(mp_obj_t func, bool has_extra_first) {
@@ -852,6 +857,7 @@ STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_p64),    MP_ROM_PTR(&kernel_ffi_p64_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_kmalloc), MP_ROM_PTR(&kernel_ffi_kmalloc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_current), MP_ROM_PTR(&kernel_ffi_current_obj) },
 
 #ifdef CONFIG_KPROBES
     { MP_ROM_QSTR(MP_QSTR_kprobe), MP_ROM_PTR(&kernel_ffi_kprobe_obj) },
