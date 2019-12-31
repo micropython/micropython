@@ -470,7 +470,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
     [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
     [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
-    // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
+    [MP_BINARY_OP_NOT_EQUAL] = MP_QSTR___ne__,
     [MP_BINARY_OP_CONTAINS] = MP_QSTR___contains__,
 
     // If an inplace method is not found a normal method will be used as a fallback

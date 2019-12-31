@@ -681,6 +681,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
+mp_obj_t mp_obj_equal_bop(mp_obj_t o1, mp_obj_t o2, bool not_equal);
 
 static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_type(o, &mp_type_bool); } // returns true if o is bool, small int or long int
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);

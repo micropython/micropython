@@ -159,28 +159,25 @@ bool mp_obj_is_callable(mp_obj_t o_in) {
 // Furthermore, from the v3.4.2 code for object.c: "Practical amendments: If rich
 // comparison returns NotImplemented, == and != are decided by comparing the object
 // pointer."
-bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
-    // Float (and complex) NaN is never equal to anything, not even itself,
-    // so we must have a special check here to cover those cases.
-    if (o1 == o2
-        #if MICROPY_PY_BUILTINS_FLOAT
-        && !mp_obj_is_float(o1)
-        #endif
-        #if MICROPY_PY_BUILTINS_COMPLEX
-        && !mp_obj_is_type(o1, &mp_type_complex)
-        #endif
-        ) {
-        return true;
+mp_obj_t mp_obj_equal_bop(mp_obj_t o1, mp_obj_t o2, bool not_equal) {
+    mp_obj_t local_true = not_equal ? mp_const_false : mp_const_true;
+    mp_obj_t local_false = not_equal ? mp_const_true : mp_const_false;
+
+    // Shortcut for very common cases
+    if (o1 == o2 &&
+        (mp_obj_is_small_int(o1) || o1 == mp_const_none) ) {
+        return local_true;
     }
+
     if (o1 == mp_const_none || o2 == mp_const_none) {
-        return false;
+        return local_false;
     }
 
     // fast path for small ints
     if (mp_obj_is_small_int(o1)) {
         if (mp_obj_is_small_int(o2)) {
             // both SMALL_INT, and not equal if we get here
-            return false;
+            return local_false;
         } else {
             mp_obj_t temp = o2; o2 = o1; o1 = temp;
             // o2 is now the SMALL_INT, o1 is not
@@ -192,7 +189,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (mp_obj_is_str(o1)) {
         if (mp_obj_is_str(o2)) {
             // both strings, use special function
-            return mp_obj_str_equal(o1, o2);
+            return mp_obj_str_equal(o1, o2) ? local_true : local_false;
         } else {
             // a string is never equal to anything else
             goto str_cmp_err;
@@ -205,21 +202,41 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
         }
         #endif
-        return false;
+        return local_false;
     }
 
     // generic type, call binary_op(MP_BINARY_OP_EQUAL)
-    mp_obj_type_t *type = mp_obj_get_type(o1);
-    if (type->binary_op != NULL) {
-        mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
-        if (r != MP_OBJ_NULL) {
-            return r == mp_const_true ? true : false;
+    for (int pass = 0; pass < 2; pass++) {
+        mp_obj_type_t *type = mp_obj_get_type(o1);
+        if (type->binary_op != NULL) {
+            mp_binary_op_t op = not_equal ? MP_BINARY_OP_NOT_EQUAL : MP_BINARY_OP_EQUAL;
+            mp_obj_t r = type->binary_op(op, o1, o2);
+            if (r != MP_OBJ_NULL) {
+                return r;
+            }
+
+            // CPython is asymetric; it will try __eq__ if there is no
+            // __ne__ but not the other way around
+            if (not_equal) {
+                r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+                if (r != MP_OBJ_NULL) {
+                    return mp_obj_is_true(r) ? mp_const_false : mp_const_true;
+                }
+            }
         }
+
+        // Try the other way around if none of the above worked
+        mp_obj_t temp = o1;
+        o1 = o2;
+        o2 = temp;
     }
 
-    // equality not implemented, and objects are not the same object, so
-    // they are defined as not equal
-    return false;
+    // equality not implemented, so fall back to pointer conparison
+    return (o1 == o2) ? local_true : local_false;
+}
+
+bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
+    return mp_obj_is_true(mp_obj_equal_bop(o1, o2, false));
 }
 
 mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
