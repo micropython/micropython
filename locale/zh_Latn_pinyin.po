@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-13 13:44-0500\n"
+"POT-Creation-Date: 2020-01-01 17:29-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -593,6 +593,10 @@ msgstr "Yùqí %q"
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Yùqí fúwù"
@@ -1072,7 +1076,6 @@ msgid "Sample rate must be positive"
 msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"

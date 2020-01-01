@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-01 17:29-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -602,6 +602,10 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -1096,7 +1100,6 @@ msgid "Sample rate must be positive"
 msgstr "STA deve essere attiva"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""

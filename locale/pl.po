@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-13 13:44-0500\n"
+"POT-Creation-Date: 2020-01-01 17:29-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -592,6 +592,10 @@ msgstr "Oczekiwano %q"
 msgid "Expected a Characteristic"
 msgstr "Oczekiwano charakterystyki"
 
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -1067,7 +1071,6 @@ msgid "Sample rate must be positive"
 msgstr "Częstotliwość próbkowania musi być dodatnia"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Zbyt wysoka częstotliwość próbkowania. Musi być mniejsza niż %d"

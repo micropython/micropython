@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-01 17:29-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -597,6 +597,10 @@ msgstr "Esperado um"
 msgid "Expected a Characteristic"
 msgstr "Não é possível adicionar Característica."
 
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -1079,7 +1083,6 @@ msgid "Sample rate must be positive"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taxa de amostragem muito alta. Deve ser menor que %d"

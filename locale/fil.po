@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-01 17:29-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -602,6 +602,10 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -1086,7 +1090,6 @@ msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
