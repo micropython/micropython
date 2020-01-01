@@ -346,26 +346,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_s
 //|     Fills the entire buffer with the given color.
 //|
 
-
-// Pixelbuf Fill callable class
-
-typedef struct _pixelbuf_fill_t {
-    mp_obj_base_t base;
-} pixelbuf_fill_t;
-
-
-STATIC mp_obj_t pixelbuf_fill_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    pixelbuf_fill_t *o = m_new_obj(pixelbuf_fill_t);
-    o->base.type = type;
-    return MP_OBJ_FROM_PTR(o);
-}
-
-// calls show
-STATIC mp_obj_t pixelbuf_fill_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num_kw_array(n_args, n_kw, 2, 2, false);
-    mp_obj_t object = args[0];
-    mp_obj_t value = args[1];
-    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(object);
+STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
+    pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
 
     for (size_t offset = 0; offset < self->bytes; offset+= self->pixel_step) {
         pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? (self->rawbuf + offset) : NULL,
@@ -375,47 +357,7 @@ STATIC mp_obj_t pixelbuf_fill_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
         call_show(self_in);
     return mp_const_none;
 }
-
-const mp_obj_type_t pixelbuf_fill_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PixelBufFill,
-    .make_new = pixelbuf_fill_make_new,
-    .call = pixelbuf_fill_call,
-};
-
-STATIC const pixelbuf_fill_t pixelbuf_fill_singleton = {
-    .base = { &pixelbuf_fill_type },
-};
-
-
-// STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
-//     pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
-
-//     for (size_t offset = 0; offset < self->bytes; offset+= self->pixel_step) {
-//         pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? (self->rawbuf + offset) : NULL,
-//                            self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
-//     }
-//     if (self->auto_write)
-//         call_show(self_in);
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
-
-
-STATIC mp_obj_t pixelbuf_pixelbuf_obj_fill_get(mp_obj_t self_in) {
-    // pixelbuf_pixelbuf_obj_t *self = native_pixelbuf(self_in);
-    return MP_OBJ_FROM_PTR(&pixelbuf_fill_singleton);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_obj_fill_get_obj, pixelbuf_pixelbuf_obj_fill_get);
-
-const mp_obj_property_t pixelbuf_pixelbuf_fill_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pixelbuf_pixelbuf_obj_fill_get_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
 
 
 //|   .. method:: __getitem__(index)
