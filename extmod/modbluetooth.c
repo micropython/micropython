@@ -267,9 +267,7 @@ STATIC mp_obj_t bluetooth_ble_active(size_t n_args, const mp_obj_t *args) {
         // Boolean enable/disable argument supplied, set current state.
         if (mp_obj_is_true(args[1])) {
             int err = mp_bluetooth_init();
-            if (err != 0) {
-                mp_raise_OSError(err);
-            }
+            bluetooth_handle_errno(err);
         } else {
             mp_bluetooth_deinit();
         }
@@ -633,9 +631,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_write(mp_obj_t self_in, mp_obj_t value_handl
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     int err = mp_bluetooth_gatts_write(mp_obj_get_int(value_handle_in), bufinfo.buf, bufinfo.len);
-    if (err != 0) {
-        mp_raise_OSError(err);
-    }
+    bluetooth_handle_errno(err);
     return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gatts_write_obj, bluetooth_ble_gatts_write);
@@ -649,9 +645,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_notify(size_t n_args, const mp_obj_t *args) 
         mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
         size_t len = bufinfo.len;
         int err = mp_bluetooth_gatts_notify_send(conn_handle, value_handle, bufinfo.buf, &len);
-        if (err != 0) {
-            mp_raise_OSError(err);
-        }
+        bluetooth_handle_errno(err);
         return MP_OBJ_NEW_SMALL_INT(len);
     } else {
         int err = mp_bluetooth_gatts_notify(conn_handle, value_handle);
