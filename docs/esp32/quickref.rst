@@ -435,7 +435,7 @@ For low-level driving of a NeoPixel::
    ``NeoPixel`` object.
 
 
-Capacitive Touch
+Capacitive touch
 ----------------
 
 Use the ``TouchPad`` class in the ``machine`` module::
