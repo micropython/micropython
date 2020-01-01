@@ -49,7 +49,7 @@ Configuration
       (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
       address will be generated when the BLE interface is made active.
 
-    - ``'rxbuf'``: Set the size in bytes of the internal buffer used to store
+    - ``'rxbuf'``: Get/set the size in bytes of the internal buffer used to store
       incoming events.  This buffer is global to the entire BLE driver and so
       handles incoming data for all events, including all characteristics.
       Increasing this allows better handling of bursty incoming data (for
