@@ -69,6 +69,12 @@ typedef struct {
     ringbuf_t ringbuf;
 } mp_obj_bluetooth_ble_t;
 
+STATIC void bluetooth_handle_uninitialized(void) {
+    if (!mp_bluetooth_is_enabled()) {
+        mp_raise_msg(&mp_type_RuntimeError, "BLE not active");
+    }
+}
+
 // TODO: this seems like it could be generic?
 STATIC mp_obj_t bluetooth_handle_errno(int err) {
     if (err != 0) {
@@ -281,6 +287,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_active_obj, 1, 2, bluet
 STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     mp_obj_bluetooth_ble_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    bluetooth_handle_uninitialized();
+
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
@@ -363,6 +371,8 @@ STATIC mp_obj_t bluetooth_ble_irq(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_ValueError("invalid callback");
     }
 
+    bluetooth_handle_uninitialized();
+
     // Update the callback.
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t* o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
@@ -388,6 +398,8 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    bluetooth_handle_uninitialized();
 
     if (args[ARG_interval_us].u_obj == mp_const_none) {
         mp_bluetooth_gap_advertise_stop();
@@ -516,6 +528,8 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
     mp_obj_t iterable = mp_getiter(services_in, &iter_buf);
     mp_obj_t service_tuple_obj;
 
+    bluetooth_handle_uninitialized();
+
     mp_obj_tuple_t *result = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
 
     uint16_t **handles = m_new0(uint16_t*, len);
@@ -573,6 +587,8 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
         scan_duration_ms = mp_obj_get_int(args[3]);
     }
 
+    bluetooth_handle_uninitialized();
+
     int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms);
     return bluetooth_handle_errno(err);
 }
@@ -596,6 +612,9 @@ STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
             }
         }
     }
+
+    bluetooth_handle_uninitialized();
+
     return bluetooth_handle_errno(mp_bluetooth_gap_scan_start(duration_ms, interval_us, window_us));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 4, bluetooth_ble_gap_scan);
@@ -603,6 +622,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 4, blu
 
 STATIC mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_handle_in) {
     uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
+    bluetooth_handle_uninitialized();
     int err = mp_bluetooth_gap_disconnect(conn_handle);
     if (err == 0) {
         return mp_const_true;
@@ -621,6 +641,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_disconnect_obj, bluetooth_ble
 STATIC mp_obj_t bluetooth_ble_gatts_read(mp_obj_t self_in, mp_obj_t value_handle_in) {
     size_t len = 0;
     uint8_t* buf;
+    bluetooth_handle_uninitialized();
     mp_bluetooth_gatts_read(mp_obj_get_int(value_handle_in), &buf, &len);
     return mp_obj_new_bytes(buf, len);
 }
@@ -633,6 +654,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_write(mp_obj_t self_in, mp_obj_t value_handl
     if (err != 0) {
         mp_raise_OSError(err);
     }
+    bluetooth_handle_uninitialized();
     return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gatts_write_obj, bluetooth_ble_gatts_write);
@@ -640,6 +662,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gatts_write_obj, bluetooth_ble_ga
 STATIC mp_obj_t bluetooth_ble_gatts_notify(size_t n_args, const mp_obj_t *args) {
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t value_handle = mp_obj_get_int(args[2]);
+
+    bluetooth_handle_uninitialized();
 
     if (n_args == 4) {
         mp_buffer_info_t bufinfo = {0};
@@ -661,6 +685,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_set_buffer(size_t n_args, const mp_obj_t *ar
     mp_int_t value_handle = mp_obj_get_int(args[1]);
     mp_int_t len = mp_obj_get_int(args[2]);
     bool append = n_args >= 4 && mp_obj_is_true(args[3]);
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gatts_set_buffer(value_handle, len, append));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3, 4, bluetooth_ble_gatts_set_buffer);
@@ -673,6 +698,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3
 
 STATIC mp_obj_t bluetooth_ble_gattc_discover_services(mp_obj_t self_in, mp_obj_t conn_handle_in) {
     mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gattc_discover_primary_services(conn_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_discover_services_obj, bluetooth_ble_gattc_discover_services);
@@ -681,6 +707,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristics(size_t n_args, cons
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t start_handle = mp_obj_get_int(args[2]);
     mp_int_t end_handle = mp_obj_get_int(args[3]);
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gattc_discover_characteristics(conn_handle, start_handle, end_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_characteristics_obj, 4, 4, bluetooth_ble_gattc_discover_characteristics);
@@ -689,6 +716,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_descriptors(size_t n_args, const mp
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t start_handle = mp_obj_get_int(args[2]);
     mp_int_t end_handle = mp_obj_get_int(args[3]);
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gattc_discover_descriptors(conn_handle, start_handle, end_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_descriptors_obj, 4, 4, bluetooth_ble_gattc_discover_descriptors);
@@ -696,6 +724,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_descript
 STATIC mp_obj_t bluetooth_ble_gattc_read(mp_obj_t self_in, mp_obj_t conn_handle_in, mp_obj_t value_handle_in) {
     mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
     mp_int_t value_handle = mp_obj_get_int(value_handle_in);
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gattc_read(conn_handle, value_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gattc_read_obj, bluetooth_ble_gattc_read);
@@ -711,6 +740,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_write(size_t n_args, const mp_obj_t *args) {
     if (n_args == 5) {
         mode = mp_obj_get_int(args[4]);
     }
+    bluetooth_handle_uninitialized();
     return bluetooth_handle_errno(mp_bluetooth_gattc_write(conn_handle, value_handle, bufinfo.buf, &len, mode));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_write_obj, 4, 5, bluetooth_ble_gattc_write);
