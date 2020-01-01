@@ -293,6 +293,8 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                 mp_bluetooth_get_device_addr(addr);
                 return mp_obj_new_bytes(addr, MP_ARRAY_SIZE(addr));
             }
+            case MP_QSTR_rxbuf:
+                return mp_obj_new_int(self->ringbuf.size);
             default:
                 mp_raise_ValueError("unknown config param");
         }
