@@ -173,8 +173,8 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     stream starts at 0 or 1.
 
 
-The Ultra-Low-Power co-processor
---------------------------------
+Ultra-Low-Power co-processor
+----------------------------
 
 .. class:: ULP()
 
