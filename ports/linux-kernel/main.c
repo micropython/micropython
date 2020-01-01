@@ -241,7 +241,8 @@ void mp_print_printk(void *data, const char *str, size_t len) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    if (NULL == current_peer) {
+    // TODO: if atomic, buffer output, then send from another thread.
+    if (NULL == current_peer || in_atomic()) {
         mp_print_printk(NULL, str, len);
         return;
     }
