@@ -224,6 +224,24 @@ const mp_obj_property_t audiomp3_mp3file_channel_count_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: rms_level
+//|
+//|     The RMS audio level of a recently played moment of audio. (read only)
+//|
+STATIC mp_obj_t audiomp3_mp3file_obj_get_rms_level(mp_obj_t self_in) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_float(common_hal_audiomp3_mp3file_get_rms_level(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_rms_level_obj, audiomp3_mp3file_obj_get_rms_level);
+
+const mp_obj_property_t audiomp3_mp3file_rms_level_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_rms_level_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 
 STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods
@@ -236,6 +254,7 @@ STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiomp3_mp3file_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_bits_per_sample), MP_ROM_PTR(&audiomp3_mp3file_bits_per_sample_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel_count), MP_ROM_PTR(&audiomp3_mp3file_channel_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rms_level), MP_ROM_PTR(&audiomp3_mp3file_rms_level_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audiomp3_mp3file_locals_dict, audiomp3_mp3file_locals_dict_table);
 

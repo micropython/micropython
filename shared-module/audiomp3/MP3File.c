@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -338,4 +339,14 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t* self, bool si
     } else {
         *spacing = 1;
     }
+}
+
+float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t* self) {
+    float sumsq = 0.f;
+    // Assumes no DC component to the audio.  Is that a safe assumption?
+    int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    for(size_t i=0; i<self->frame_buffer_size / sizeof(int16_t); i++) {
+        sumsq += (float)buffer[i] * buffer[i];
+    }
+    return sqrtf(sumsq) / (self->frame_buffer_size / sizeof(int16_t));
 }

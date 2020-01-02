@@ -67,4 +67,6 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t* self, bool si
                                            bool* single_buffer, bool* samples_signed,
                                            uint32_t* max_buffer_length, uint8_t* spacing);
 
+float audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t* self);
+
 #endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H

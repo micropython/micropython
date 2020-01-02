@@ -45,5 +45,6 @@ uint32_t common_hal_audiomp3_mp3file_get_sample_rate(audiomp3_mp3file_obj_t* sel
 void common_hal_audiomp3_mp3file_set_sample_rate(audiomp3_mp3file_obj_t* self, uint32_t sample_rate);
 uint8_t common_hal_audiomp3_mp3file_get_bits_per_sample(audiomp3_mp3file_obj_t* self);
 uint8_t common_hal_audiomp3_mp3file_get_channel_count(audiomp3_mp3file_obj_t* self);
+float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
