@@ -241,7 +241,6 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
     check_exception();
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_jobject_t *self = self_in;
     mp_uint_t idx = mp_obj_get_int(index);

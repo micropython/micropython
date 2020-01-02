@@ -439,7 +439,6 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 #endif
 
 // This is used for both bytes and 8-bit strings. This is not used for unicode strings.
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
