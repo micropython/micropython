@@ -230,7 +230,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t 
     if (self->two_buffers)
         pixelbuf_recalculate_brightness(self);
     if (self->auto_write)
-        call_show(self_in);
+        pixelbuf_call_show(self_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_set_brightness_obj, pixelbuf_pixelbuf_obj_set_brightness);
@@ -253,7 +253,7 @@ void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self) {
     }
 }
 
-mp_obj_t call_show(mp_obj_t self_in) {
+mp_obj_t pixelbuf_call_show(mp_obj_t self_in) {
     mp_obj_t dest[2];
     mp_load_method(self_in, MP_QSTR_show, dest);
     return mp_call_method_n_kw(0, 0, dest);
@@ -412,7 +412,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 }
             }
             if (self->auto_write)
-                call_show(self_in);
+                pixelbuf_call_show(self_in);
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported
@@ -432,7 +432,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             pixelbuf_set_pixel(self->buf + offset, self->two_buffers ? self->rawbuf + offset : NULL,
                 self->brightness, value, &self->byteorder, self->byteorder.is_dotstar);
             if (self->auto_write)
-                call_show(self_in);
+                pixelbuf_call_show(self_in);
             return mp_const_none;
         }
     }

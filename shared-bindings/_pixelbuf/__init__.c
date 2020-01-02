@@ -99,7 +99,7 @@ STATIC mp_obj_t pixelbuf_fill(mp_obj_t pixelbuf_in, mp_obj_t value) {
                            pixelbuf->brightness, value, &pixelbuf->byteorder, pixelbuf->byteorder.is_dotstar);
     }
     if (pixelbuf->auto_write)
-        call_show(pixelbuf_in);
+        pixelbuf_call_show(pixelbuf_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_fill_obj, pixelbuf_fill);
