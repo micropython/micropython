@@ -64,12 +64,30 @@ STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
 STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(args[0]);
     bool wait = true;
+#ifdef MICROPY_PY_TIMEDLOCK
+    float timeout = -1.;
+#endif
     if (n_args > 1) {
         wait = mp_obj_get_int(args[1]);
-        // TODO support timeout arg
+#ifdef MICROPY_PY_TIMEDLOCK
+        if (n_args > 2) {
+            // TODO support timeout arg
+            // TODO check if timeout and wait are consistent
+            timeout = mp_obj_get_float(args[2]);
+        };
+#endif
     }
     MP_THREAD_GIL_EXIT();
-    int ret = mp_thread_mutex_lock(&self->mutex, wait);
+    int ret = 0;
+#ifdef MICROPY_PY_TIMEDLOCK
+    if (timeout < 0.) {
+#endif
+        ret = mp_thread_mutex_lock(&self->mutex, wait);
+#ifdef MICROPY_PY_TIMEDLOCK
+    } else if (timeout >= 0.) {
+        ret = mp_thread_mutex_lock_timed(&self->mutex, wait, timeout);
+    }
+#endif
     MP_THREAD_GIL_ENTER();
     if (ret == 0) {
         return mp_const_false;

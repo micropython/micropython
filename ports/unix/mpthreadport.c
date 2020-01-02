@@ -39,6 +39,11 @@
 #include <sched.h>
 #include <semaphore.h>
 
+#ifdef MICROPY_PY_TIMEDLOCK
+#include <math.h>
+#include <sys/time.h>
+#endif
+
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
     pthread_t id;           // system id of thread
@@ -270,6 +275,36 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     }
     return -ret;
 }
+
+#ifdef MICROPY_PY_TIMEDLOCK
+int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, int wait, float timeout) {
+    int ret;
+    struct timeval _timeval;
+    struct timezone _timezone;
+    gettimeofday(&_timeval, &_timezone);
+    uint32_t _timeout_nano = ((uint32_t) (1e9*timeout)) + 1000 * _timeval.tv_usec;
+    struct timespec _timespec = {
+            .tv_sec = _timeval.tv_sec + (time_t) (_timeout_nano / 1000000000),
+            .tv_nsec = _timeout_nano % 1000000000
+    };
+    if (wait) {
+        ret = pthread_mutex_timedlock(mutex, &_timespec);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == ETIMEDOUT) {
+            return 0;
+        }
+    } else {
+        ret = pthread_mutex_trylock(mutex);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == EBUSY) {
+            return 0;
+        }
+    }
+    return -ret;
+}
+#endif
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     pthread_mutex_unlock(mutex);
