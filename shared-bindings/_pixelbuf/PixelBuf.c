@@ -332,11 +332,11 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 
 //|   .. method:: show()
 //|
-//|     Does nothing unless subclassed.
+//|     Must be implemented in subclasses.
 //|
 
 STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
-    return mp_const_none;
+    mp_raise_NotImplementedError(NULL);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
