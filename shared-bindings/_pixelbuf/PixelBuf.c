@@ -66,7 +66,7 @@ extern const int32_t colorwheel(float pos);
 //|
 //|   :param ~int size: Number of pixelsx
 //|   :param ~bytearray buf: Bytearray in which to store pixel data
-//|   :param ~str byteorder: Byte order string (such as "BGR" or "DBGR")
+//|   :param ~str byteorder: Byte order string (such as "BGR" or "PBGR")
 //|   :param ~float brightness: Brightness (0 to 1.0, default 1.0)
 //|   :param ~bytearray rawbuf: Bytearray in which to store raw pixel data (before brightness adjustment)
 //|   :param ~int offset: Offset from start of buffer (default 0)
