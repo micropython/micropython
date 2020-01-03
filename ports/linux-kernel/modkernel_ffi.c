@@ -777,13 +777,13 @@ STATIC mp_obj_t kernel_ffi_ftrace(mp_obj_t target, mp_obj_t func) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ftrace_set_filter_ip add: %d", err));
     }
 
+    ft_obj->removed = false;
+
     err = register_ftrace_function(&ft_obj->ops);
     if (err) {
         ftrace_set_filter_ip(&ft_obj->ops, addr, 1, 0);
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "register_ftrace_function: %d", err));
     }
-
-    ft_obj->removed = false;
 
     return MP_OBJ_FROM_PTR(ft_obj);
 }
