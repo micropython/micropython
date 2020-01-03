@@ -221,6 +221,16 @@ long get_current_stack_limit(void) {
     return sp - end;
 }
 
+int DEBUG_printf(const char *fmt, ...) {
+    va_list args;
+
+    va_start(args, fmt);
+    const int ret = vprintk(fmt, args);
+    va_end(args);
+
+    return ret;
+}
+
 void NORETURN die(const char *msg) {
     char comm[sizeof(current->comm)];
     get_task_comm(comm, current);
