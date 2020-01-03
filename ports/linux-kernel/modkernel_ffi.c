@@ -694,6 +694,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_callback_obj, kernel_ffi_callback);
 
 typedef struct {
     mp_obj_base_t base;
+    // unlike what the docs of register_ftrace_function says, this can be allocated dynamically
+    // and freed later. ftrace code checks this struct's locations via core_kernel_data(), and if
+    // not core kernel then it is marked with FTRACE_OPS_FL_DYNAMIC and special care is taken
+    // to ensure it's okay to free this struct once unregister_ftrace_function has returned.
     struct ftrace_ops ops;
     mp_obj_t func;
     size_t nargs;
