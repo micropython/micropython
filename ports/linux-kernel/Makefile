@@ -80,6 +80,11 @@ $(STRUCT_LAYOUT_DIR)/all.py:
 	the instructions in the README to clone it"; echo; exit 1; fi
 	$(MAKE) -C $(STRUCT_LAYOUT_DIR) linux_all KDIR=$(KDIR)
 
+clean_struct_layout:
+	$(MAKE) -C $(STRUCT_LAYOUT_DIR) clean
+
+clean: clean_struct_layout
+
 $(BUILD)/frozen_content.c: $(STRUCT_LAYOUT_DIR)/all.py
 endif
 
