@@ -332,15 +332,8 @@ void set_stack_limit(void) {
     mp_stack_set_limit(get_current_stack_limit() - 500);
 }
 
-STATIC void set_stack_top_and_limit(void) {
-    mp_stack_ctrl_init();
-    set_stack_limit();
-}
-
 STATIC int run_python(struct socket *peer) {
     current_peer = peer;
-
-    set_stack_top_and_limit();
 
     (void)pyexec_friendly_repl();
 
@@ -357,7 +350,8 @@ STATIC int run_server(void *data) {
 
     // called first!
     mp_thread_init();
-    set_stack_top_and_limit();
+    mp_stack_ctrl_init();
+    set_stack_limit();
 
     gc_init(heap, heap + sizeof(heap));
     mp_init();
