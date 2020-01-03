@@ -163,6 +163,34 @@ STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
+STATIC mp_obj_t pyb_rtc_calibrate(size_t n_args, const mp_obj_t *args) {
+    uint32_t cal = system_rtc_clock_cali_proc();
+    uint32_t old_cal;
+    int64_t delta;
+    uint64_t now_us;
+    uint32_t rtc_ticks;
+
+    // If specified add the offset to the value returned by cali_proc()
+    if (n_args > 1) {
+	cal += (int)mp_obj_get_int(args[1]);
+    }
+
+    // Get the current microseconds since 2000 based on old calibration
+    system_rtc_mem_read(MEM_CAL_ADDR, &old_cal, sizeof(old_cal));
+    system_rtc_mem_read(MEM_DELTA_ADDR, &delta, sizeof(delta));
+    rtc_ticks = system_get_rtc_time();
+    now_us = (((uint64_t)rtc_ticks * old_cal) >> 12) + delta;
+
+    // Calculate the new delta based on the new calibration and update RTC
+    delta = now_us - (((uint64_t)rtc_ticks * cal) >> 12);
+    system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
+    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+
+    // Return the new total calibration value
+    return mp_obj_new_int(cal);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibrate_obj, 1, 2, pyb_rtc_calibrate);
+
 STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     uint8_t rtcram[MEM_USER_MAXLEN];
     uint32_t len;
@@ -254,6 +282,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
 STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_calibrate), MP_ROM_PTR(&pyb_rtc_calibrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&pyb_rtc_memory_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&pyb_rtc_alarm_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&pyb_rtc_alarm_left_obj) },
