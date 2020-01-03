@@ -171,6 +171,15 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
         }
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST: {
+            // First time pairing.
+            // 1. Either we or peer initiate the process
+            // 2. Peer asks for security parameters using BLE_GAP_EVT_SEC_PARAMS_REQUEST.
+            // 3. Pair Key exchange ("just works" implemented now; TODO key pairing)
+            // 4. Connection is secured: BLE_GAP_EVT_CONN_SEC_UPDATE
+            // 5. Long-term Keys exchanged: BLE_GAP_EVT_AUTH_STATUS
+
+            bonding_clear_keys(&self->bonding_keys);
+            self->ediv = EDIV_INVALID;
             ble_gap_sec_keyset_t keyset = {
                 .keys_own = {
                     .p_enc_key  = &self->bonding_keys.own_enc,
@@ -188,7 +197,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             };
 
             sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS,
-                                        &pairing_sec_params, &keyset);
+                                        self->is_central ? NULL : &pairing_sec_params,
+                                        &keyset);
             break;
         }
 
@@ -202,8 +212,9 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
-                // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
+                self->ediv = bonding_keys->own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
+                bonding_save_keys(self->is_central, self->conn_handle, &self->bonding_keys);
             } else {
                 self->pair_status = PAIR_NOT_PAIRED;
             }
@@ -216,14 +227,17 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // - Else return NULL --> Initiate key exchange
             ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
             (void) sec_info_request;
-            //if ( bond_load_keys(_role, sec_req->master_id.ediv, &bkeys) ) {
-            //sd_ble_gap_sec_info_reply(_conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
-            //
-            //_ediv = bkeys.own_enc.master_id.ediv;
-            // } else {
+            bond_keys bond_keys_t;
+            if ( bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys) ) {
+                sd_ble_gap_sec_info_reply(self->conn_handle
+                                          &self->bonding_keys.own_enc.enc_info,
+                                          &self->bonding_keys.peer_id.id_info,
+                                          NULL);
+                self->ediv = bond_keys.own_enc.master_id.ediv;
+            } else {
                 sd_ble_gap_sec_info_reply(self->conn_handle, NULL, NULL, NULL);
-            // }
-                break;
+            }
+            break;
         }
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
@@ -235,16 +249,22 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
             } else {
-                //if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
-                if (true) {  // TODO: no bonding yet
-                    // Initialize system attributes fresh.
-                    sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
-                }
+                uint8_t *sys_attr;
+                uint16_t sys_attr_len;
+                if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv, sys_attr, sys_attr_len)) {
+                    sd_ble_gatts_sys_attr_set(self->conn_handle, sys_attr, sys_attr_len, SVC_CONTEXT_FLAG);
                 // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
                 self->ediv = self->bonding_keys.own_enc.master_id.ediv;
+                } else {
+                    // No matching bonding found, so use fresh system attributes.
+                    sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
+                }
             }
             break;
         }
+
+        case BLE_GATTS_EVT_WRITE: {
+            if (self->pair_status == PAIR_PAIRED) &&
 
 
         default:
@@ -258,8 +278,7 @@ void bleio_connection_clear(bleio_connection_internal_t *self) {
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
-
-    memset(&self->bonding_keys, 0, sizeof(self->bonding_keys));
+    bonding_clear_keys(self);
 }
 
 bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {
@@ -480,7 +499,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
             default:
                 // TODO: sd_ble_gattc_descriptors_discover() can return things that are not descriptors,
                 // so ignore those.
-                // https://devzone.nordicsemi.com/f/nordic-q-a/49500/sd_ble_gattc_descriptors_discover-is-returning-attributes-that-are-not-descriptors
+                // htts:p//devzone.nordicsemi.com/f/nordic-q-a/49500/sd_ble_gattc_descriptors_discover-is-returning-attributes-that-are-not-descriptors
                 break;
         }
 

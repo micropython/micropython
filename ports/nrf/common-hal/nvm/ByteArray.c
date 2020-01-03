@@ -36,21 +36,17 @@ uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
-static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
+static bool write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
     // Write a whole page to flash, buffering it first and then erasing and rewriting
     // it since we can only clear a whole page at a time.
 
-    bool status;
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
-        status = nrf_nvm_safe_flash_page_write(page_addr, bytes);
+        return nrf_nvm_safe_flash_page_write(page_addr, bytes);
     } else {
         uint8_t buffer[FLASH_PAGE_SIZE];
         memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
         memcpy(buffer + offset, bytes, len);
-        status = nrf_nvm_safe_flash_page_write(page_addr, buffer);
-    }
-    if (!status) {
-        mp_raise_OSError_msg(translate("Flash write failed"));
+        return nrf_nvm_safe_flash_page_write(page_addr, buffer);
     }
 }
 
@@ -63,7 +59,9 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 
     while (len) {
         uint32_t write_len = MIN(len, FLASH_PAGE_SIZE - offset);
-        write_page(page_addr, offset, write_len, values);
+        if (!write_page(page_addr, offset, write_len, values)) {
+            return false;
+        }
         len -= write_len;
         values += write_len;
         page_addr += FLASH_PAGE_SIZE;

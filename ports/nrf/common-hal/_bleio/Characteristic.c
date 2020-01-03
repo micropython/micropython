@@ -82,6 +82,27 @@ STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_
     }
 }
 
+STATIC bool characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
+    bleio_characteristic_obj_t *self = (bleio_characteristic_obj_t *) param;
+    switch (ble_evt->header.evt_id) {
+        case BLE_GATTS_EVT_WRITE: {
+            // A client wrote to this server characteristic.
+            // If we are bonded, stored the CCCD value.
+            if (self->service != MP_OBJ_NULL) {
+                bleio_connection_obj_t *connection = self->service->connection;
+                uint16_t conn_handle = bleio_connection_get_conn_handle(connection);
+                if (conn_handle != BLE_CONN_HANDLE_INVALID &&
+                    connection->pairing_status == PAIR_PAIRED &&
+                    ble_evt->gatts_evt.params.write.handle == self->cccd_handle) {
+                    bonding_save_cccd_later(connection->is_central, conn_handle, connection->ediv);
+            }
+            break;
+        }
+    }
+
+    return true;
+}
+
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->service = service;
     self->uuid = uuid;
@@ -108,6 +129,8 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     if (initial_value_bufinfo != NULL) {
         common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
     }
+
+    ble_drv_add_event_handler(characteristic_on_ble_evt, self);
 }
 
 bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {

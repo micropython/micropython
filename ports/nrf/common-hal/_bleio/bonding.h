@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/nvm/ByteArray.h"
-
-#include "hal_flash.h"
-
-#include "supervisor/shared/stack.h"
-
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
-uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
-    return self->len;
-}
+#include "ble.h"
+#include "ble_drv.h"
+#include "shared-bindings/_bleio/__init__.h"
+#include "shared-bindings/_bleio/Adapter.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
-    // We don't use features that use any advanced NVMCTRL features so we can fake the descriptor
-    // whenever we need it instead of storing it long term.
-    struct flash_descriptor desc;
-    desc.dev.hw = NVMCTRL;
-    bool status = flash_write(&desc, (uint32_t) self->start_address + start_index, values, len) == ERR_NONE;
-    assert_heap_ok();
-    return status;
-}
+#define EDIV_INVALID (0xffff)
 
-// NVM memory is memory mapped so reading it is easy.
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values) {
-    memcpy(values, self->start_address + start_index, len);
-}
+void bonding_clear_keys(bonding_keys_t *bonding_keys);
+bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv);
+bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_keys);
+bool bonding_save_cccd_info_later(bool is_central, uint16_t conn_handle, uint16_t ediv, uint8_t *sys_attr, uint16_t sys_attr_len);
+bool bonding_save_keys(bool is_central, uint16_t conn_handle, bonding_keys_t *bonding_keys);

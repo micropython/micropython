@@ -50,6 +50,12 @@ STATIC sd_flash_operation_status_t sd_flash_operation_wait_until_done(void) {
 }
 #endif
 
+// The nRF52840 datasheet specifies a maximum of two writes to a flash
+// location before an erase is necessary, even if the write is all
+// ones (erased state).  So we can't avoid erases even if the page
+// appears to be already erased (all ones), unless we keep track of
+// writes to a page.
+
 bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
     #ifdef BLUETOOTH_SD
         uint8_t sd_en = 0;

@@ -36,6 +36,7 @@
 #include "py/objlist.h"
 
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/_bleio/bonding.h"
 #include "shared-module/_bleio/Address.h"
 #include "common-hal/_bleio/Service.h"
 
@@ -59,7 +60,7 @@ typedef struct {
     // EDIV: Encrypted Diversifier: Identifies LTK during legacy pairing.
     bonding_keys_t bonding_keys;
     uint16_t ediv;
-    pair_status_t pair_status;
+    volatile pair_status_t pair_status;
     uint8_t sec_status; // Internal security status.
     mp_obj_t connection_obj;
     ble_drv_evt_handler_entry_t handler_entry;
