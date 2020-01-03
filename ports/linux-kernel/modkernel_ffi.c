@@ -709,8 +709,15 @@ STATIC mp_obj_t ftrace_rm(mp_obj_t self_in) {
         // and if one calls us twice from 2 contexts... well...
         self->removed = true;
 
-        ftrace_set_filter_ip(&self->ops, self->orig->value - MCOUNT_INSN_SIZE, 1, 0);
-        unregister_ftrace_function(&self->ops);
+        int ret = unregister_ftrace_function(&self->ops);
+        if (ret) {
+            pr_warn("unregister_ftrace_function: %d\n", ret);
+        }
+
+        ret = ftrace_set_filter_ip(&self->ops, self->orig->value - MCOUNT_INSN_SIZE, 1, 0);
+        if (ret) {
+            pr_warn("ftrace_set_filter_ip remove: %d\n", ret);
+        }
     }
     return mp_const_none;
 }
@@ -767,7 +774,7 @@ STATIC mp_obj_t kernel_ffi_ftrace(mp_obj_t target, mp_obj_t func) {
 
     int err = ftrace_set_filter_ip(&ft_obj->ops, addr, 0, 0);
     if (err) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ftrace_set_filter_ip: %d", err));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "ftrace_set_filter_ip add: %d", err));
     }
 
     err = register_ftrace_function(&ft_obj->ops);
