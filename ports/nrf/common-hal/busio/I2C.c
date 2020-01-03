@@ -63,7 +63,7 @@ void i2c_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrf_twim_disable(twim_peripherals[i].twim.p_twim);
+        nrfx_twim_uninit(&twim_peripherals[i].twim);
         twim_peripherals[i].in_use = false;
     }
 }
@@ -150,13 +150,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     // About to init. If we fail after this point, common_hal_busio_i2c_deinit() will set in_use to false.
     self->twim_peripheral->in_use = true;
     nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-
-    // A soft reset doesn't uninit the driver so we might end up with a invalid state
-    if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_twim_uninit(&self->twim_peripheral->twim);
-        err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-    }
-
     if (err != NRFX_SUCCESS) {
         common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
