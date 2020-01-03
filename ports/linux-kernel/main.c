@@ -60,6 +60,8 @@
 #endif
 
 
+STATIC struct task_struct *server_thread;
+STATIC bool need_gc;
 STATIC char heap[1 << 23];
 
 void gc_collect(void) {
@@ -68,6 +70,10 @@ void gc_collect(void) {
         // 2. while the GC itself doesn't perform any non-atomic operations, it calls objects' finalizers,
         //    and they might (for example, the kprobe/ftrace finalizer calls the appropriate unregister
         //    function, and those 2 try to lock mutexes and call synchronize_rcu...)
+        // instead, we defer the GC operation to the server thread.
+        need_gc = true;
+        barrier();
+        send_sig(SIGINT, server_thread, 0);
         return;
     }
 
@@ -84,6 +90,20 @@ void gc_collect(void) {
 #endif
 
     gc_collect_end();
+}
+
+STATIC void run_gc_if_requested(void) {
+    flush_signals(current);
+
+    if (!need_gc) {
+        return;
+    }
+
+    need_gc = false;
+
+    pr_info("Deferred GC request detected\n");
+
+    gc_collect();
 }
 
 struct kernel_reader {
@@ -220,6 +240,7 @@ retry:
         // EOF
         return CHAR_CTRL_D;
     } else if(is_retry_errno(ret)) {
+        run_gc_if_requested();
         goto retry;
     } else {
         pr_warn("kernel_recvmsg: %d, killing connection\n", ret);
@@ -299,6 +320,8 @@ STATIC int run_server(void *data) {
     struct socket *sock = (struct socket*)data;
     int err;
 
+    allow_signal(SIGINT);
+
     // called first!
     mp_thread_init();
     set_stack_top_and_limit();
@@ -324,6 +347,7 @@ STATIC int run_server(void *data) {
             sock_release(peer);
             peer = NULL;
         } else if (is_retry_errno(err)) {
+            run_gc_if_requested();
             continue;
         } else if (err == -EINVAL) {
             // we'll get EINVAL after module exit shuts down the socket.
@@ -352,7 +376,6 @@ out:
     return 0;
 }
 
-STATIC struct task_struct *server_thread;
 STATIC struct socket *listener;
 
 STATIC int __init mpy_init_module(void) {
