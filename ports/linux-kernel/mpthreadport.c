@@ -139,7 +139,7 @@ void mp_thread_start(void) {
 }
 
 bool __register_new_thread(struct task_struct *k, void *arg, bool pythread, void *ts) {
-    thread_t *t = (thread_t*)kmalloc(sizeof(*t), GFP_KERNEL);
+    thread_t *t = (thread_t*)kmalloc(sizeof(*t), GFP_ATOMIC);
     if (!t) {
         if (pythread) {
             kthread_stop(k);
