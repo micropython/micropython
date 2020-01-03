@@ -36,21 +36,18 @@ typedef struct {
     size_t pixels;
     size_t bytes;
     size_t pixel_step;
-    pixelbuf_byteorder_obj_t byteorder;
+    pixelbuf_byteorder_details_t byteorder;
     mp_obj_t bytearray;
     mp_obj_t rawbytearray;
     mp_float_t brightness;
     bool two_buffers;
     size_t offset;
-    bool dotstar_mode;
     uint8_t *rawbuf;
     uint8_t *buf;
-    mp_obj_t write_function;
-    mp_obj_tuple_t *write_function_args;
     bool auto_write;
 } pixelbuf_pixelbuf_obj_t;
 
 void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self);
-void call_write_function(pixelbuf_pixelbuf_obj_t *self);
+mp_obj_t pixelbuf_call_show(mp_obj_t self_in);
 
 #endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
