@@ -68,7 +68,7 @@ void spi_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrf_spim_disable(spim_peripherals[i].spim.p_reg);
+        nrfx_spim_uninit(&spim_peripherals[i].spim);
     }
 }
 
@@ -160,13 +160,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     }
 
     nrfx_err_t err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
-
-    // A soft reset doesn't uninit the driver so we might end up with a invalid state
-    if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_spim_uninit(&self->spim_peripheral->spim);
-        err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
-    }
-
     if (err != NRFX_SUCCESS) {
         common_hal_busio_spi_deinit(self);
         mp_raise_OSError(MP_EIO);

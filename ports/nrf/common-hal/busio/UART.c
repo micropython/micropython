@@ -124,7 +124,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
 
 void uart_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
-        nrf_uarte_disable(nrfx_uartes[i].p_reg);
+        nrfx_uarte_uninit(&nrfx_uartes[i]);
     }
 }
 
@@ -171,7 +171,6 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         }
     };
 
-    nrfx_uarte_uninit(self->uarte);
     _VERIFY_ERR(nrfx_uarte_init(self->uarte, &config, uart_callback_irq));
 
     // Init buffer for rx
