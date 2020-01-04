@@ -444,7 +444,13 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
     } else {
         pr_err("exception in python callback\n");
         static const mp_print_t print = {NULL, mp_print_printk};
-        mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        if (nlr_push(&nlr) == 0) {
+            // this nice fella can itself raise exceptions, so wrap it.
+            mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            nlr_pop();
+        } else {
+            pr_err("double exception while printing previous exception\n");
+        }
         *call_ok = false;
     }
 
