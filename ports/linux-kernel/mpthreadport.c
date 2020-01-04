@@ -117,9 +117,10 @@ static thread_t *get_thread_for_current(void) {
 static thread_t *get_and_remove_thread(void) {
     thread_t *t = get_thread_for_current();
 
-    write_lock(&threads_lock);
+    unsigned long flags;
+    write_lock_irqsave(&threads_lock, flags);
     list_del(&t->list);
-    write_unlock(&threads_lock);
+    write_unlock_irqrestore(&threads_lock, flags);
 
     return t;
 }
@@ -153,9 +154,10 @@ bool __register_new_thread(struct task_struct *k, void *arg, bool pythread, void
     t->ts = (mp_state_thread_t*)ts; // may be NULL for pythreads, see mp_thread_gc_others
     t->arg = arg;
 
-    write_lock(&threads_lock);
+    unsigned long flags;
+    write_lock_irqsave(&threads_lock, flags);
     list_add_tail(&t->list, &threads);
-    write_unlock(&threads_lock);
+    write_unlock_irqrestore(&threads_lock, flags);
 
     return true;
 }
