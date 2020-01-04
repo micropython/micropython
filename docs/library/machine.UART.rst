@@ -4,8 +4,8 @@
 class UART -- duplex serial communication bus
 =============================================
 
-UART implements the standard UART/USART duplex serial communications protocol.  At
-the physical level it consists of 2 lines: RX and TX.  The unit of communication
+UART implements the standard UART/USART duplex serial communications protocol. At
+the physical level it consists of 2 lines: RX and TX. The unit of communication
 is a character (not to be confused with a string character) which can be 8 or 9
 bits wide.
 
@@ -19,7 +19,7 @@ UART objects can be created and initialised using::
 Supported parameters differ on a board:
 
 Pyboard: Bits can be 7, 8 or 9. Stop can be 1 or 2. With *parity=None*,
-only 8 and 9 bits are supported.  With parity enabled, only 7 and 8 bits
+only 8 and 9 bits are supported. With parity enabled, only 7 and 8 bits
 are supported.
 
 WiPy/CC3200: Bits can be 5, 6, 7, 8. Stop can be 1 or 2.
@@ -58,6 +58,9 @@ Methods
      - *rx* specifies the RX pin to use.
      - *txbuf* specifies the length in characters of the TX buffer.
      - *rxbuf* specifies the length in characters of the RX buffer.
+     - *timeout* specifies the time to wait for the first char (in ms).
+     - *timeout_char* specifies the time to wait between chars (in ms).
+     - *invert* specifies which lines to invert.
 
    On the WiPy only the following keyword-only parameter is supported:
 
@@ -74,8 +77,8 @@ Methods
 .. method:: UART.any()
 
    Returns an integer counting the number of characters that can be read without
-   blocking.  It will return 0 if there are no characters available and a positive
-   number if there are characters.  The method may return 1 even if there is more
+   blocking. It will return 0 if there are no characters available and a positive
+   number if there are characters. The method may return 1 even if there is more
    than one character available for reading.
 
    For more sophisticated querying of available characters use select.poll::
@@ -86,23 +89,26 @@ Methods
 
 .. method:: UART.read([nbytes])
 
-   Read characters.  If ``nbytes`` is specified then read at most that many bytes,
-   otherwise read as much data as possible.
+   Read characters. If ``nbytes`` is specified then read at most that many bytes,
+   otherwise read as much data as possible. It may return sooner if a timeout
+   is reached. The timeout is configurable in the contructor.
 
-   Return value: a bytes object containing the bytes read in.  Returns ``None``
+   Return value: a bytes object containing the bytes read in. Returns ``None``
    on timeout.
 
 .. method:: UART.readinto(buf[, nbytes])
 
-   Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-   that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
+   Read bytes into the ``buf``. If ``nbytes`` is specified then read at most
+   that many bytes. Otherwise, read at most ``len(buf)`` bytes. It may return sooner if a timeout
+   is reached. The timeout is configurable in the contructor.
 
    Return value: number of bytes read and stored into ``buf`` or ``None`` on
    timeout.
 
 .. method:: UART.readline()
 
-   Read a line, ending in a newline character.
+   Read a line, ending in a newline character. It may return sooner if a timeout
+   is reached. The timeout is configurable in the contructor.
 
    Return value: the line read or ``None`` on timeout.
 
