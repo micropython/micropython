@@ -68,6 +68,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_STACKLESS           (1)
 #define MICROPY_STACKLESS_STRICT    (1)
+#define MICROPY_NO_ALLOCA           (1)
 
 #ifdef INCLUDE_STRUCT_LAYOUT
 #define MICROPY_MODULE_FROZEN_MPY   (1)
@@ -85,11 +86,6 @@ typedef long mp_off_t;
 
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-// We need to provide a declaration/definition of alloca(), yet Linux doesn't have/use it.
-// We can force MPY out of it using MICROPY_NO_ALLOCA but I don't think it matters that
-// much. MPY doesn't use alloca() too often.
-#define alloca(n) __builtin_alloca(n)
 
 #include <generated/utsrelease.h> // for UTS_RELEASE
 
