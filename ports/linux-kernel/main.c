@@ -62,7 +62,7 @@
 
 STATIC struct task_struct *server_thread;
 STATIC bool need_gc;
-STATIC char heap[1 << 23];
+STATIC char heap[HEAP_SIZE];
 
 STATIC void get_regs(unsigned long regs[6]) {
     // generated code for this function is a bit weird. it stores these 6 registers

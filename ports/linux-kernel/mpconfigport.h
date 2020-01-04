@@ -27,6 +27,7 @@
 
 #include <linux/bitops.h> // will define BITS_PER_BYTE so mpconfig.h won't define it again.
 
+#define HEAP_SIZE (1 << 23)
 
 #define MICROPY_ENABLE_COMPILER     (1)
 #define MICROPY_PY_THREAD           (1)
@@ -37,7 +38,7 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_GC_ALLOC_THRESHOLD  (0)
+#define MICROPY_GC_ALLOC_THRESHOLD  (HEAP_SIZE >> 3) // 1/8 of the heap is a fair threshold
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
