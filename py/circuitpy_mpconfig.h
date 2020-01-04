@@ -328,7 +328,9 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
 #define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
 #define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
-#define CIRCUITPY_DISPLAY_LIMIT (2)
+#ifndef CIRCUITPY_DISPLAY_LIMIT
+#define CIRCUITPY_DISPLAY_LIMIT (1)
+#endif
 #else
 #define DISPLAYIO_MODULE
 #define FONTIO_MODULE

@@ -19,3 +19,10 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// Enable the use of 2 displays
+
+#define CIRCUITPY_DISPLAY_LIMIT (2)
+
+
+
