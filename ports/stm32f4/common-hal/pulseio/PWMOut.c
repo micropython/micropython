@@ -26,6 +26,7 @@
  */
 
 #include <stdint.h>
+#include <string.h> //add
 #include "py/runtime.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
@@ -88,6 +89,7 @@ STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
 }
 
 void pwmout_reset(void) {
+    mp_printf(&mp_plat_print, "reset\n");
     uint16_t never_reset_mask = 0x00;
     for(int i=0;i<TIM_BANK_ARRAY_LEN;i++) {
         if (!never_reset_tim[i]) {
@@ -131,9 +133,10 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     bool tim_taken_f_mismatch = false;
     bool var_freq_mismatch = false;
     bool first_time_setup = true;
+    mcu_tim_pin_obj_t l_tim = {0};
 
     for(uint i = 0; i < tim_num; i++) {
-        mcu_tim_pin_obj_t l_tim = mcu_tim_pin_list[i];
+        l_tim = mcu_tim_pin_list[i];
         uint8_t l_tim_index = l_tim.tim_index-1;
         uint8_t l_tim_channel = l_tim.channel_index-1;
 
@@ -187,6 +190,9 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         }
     }
 
+    mp_printf(&mp_plat_print, "X:%d Y:%d\n", TIMx, first_time_setup);
+
+//OG
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -194,63 +200,195 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = self->tim->altfn_index;
     HAL_GPIO_Init(pin_port(pin->port), &GPIO_InitStruct);
+    mp_printf(&mp_plat_print, "Good GPIO init\n");
+
+    // __HAL_RCC_GPIOA_CLK_ENABLE();
+    // /**TIM2 GPIO Configuration    
+    // PA1     ------> TIM2_CH2 
+    // */
+    // GPIO_InitTypeDef GPIO_InitStruct = {0};
+    // GPIO_InitStruct.Pin = GPIO_PIN_1;
+    // GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    // GPIO_InitStruct.Pull = GPIO_NOPULL;
+    // GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    // GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    // HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+
 
     mp_printf(&mp_plat_print, "PWM Pin:%d Port:%d\n", pin->number, pin->port);
 
+
+
+
+
+//OG
     tim_clock_enable(1<<(self->tim->tim_index - 1));
 
-    //translate channel into handle value
+    //__HAL_RCC_TIM2_CLK_ENABLE();
+
+    mp_printf(&mp_plat_print, "Good clock init\n");
+
+    
+
+//OG
+    // //translate channel into handle value
     self->channel = 4 * (self->tim->channel_index - 1);
 
-    uint32_t prescaler = 0; //prescaler is 15 bit
-    uint32_t period = 0; //period is 16 bit
-    timer_get_optimal_divisors(&period, &prescaler,frequency,timer_get_source_freq(self->tim->tim_index));
-
-    mp_printf(&mp_plat_print, "Per:%d presc:%d\n", period, prescaler);
-
-    //Timer init
-    self->handle.Instance = TIMx;
-    self->handle.Init.Period = period - 1;
-    self->handle.Init.Prescaler = prescaler - 1;
+    // uint32_t prescaler = 0; //prescaler is 15 bit
+    // uint32_t period = 0; //period is 16 bit
+    // timer_get_optimal_divisors(&period, &prescaler,frequency,timer_get_source_freq(self->tim->tim_index));
+    // //Timer init
+    self->handle.Instance = TIM2; //TIMx;
+    self->handle.Init.Period = 8749;//period - 1;
+    self->handle.Init.Prescaler = 0;//prescaler - 1;
     self->handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     self->handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    self->handle.Init.RepetitionCounter = 0;
-
+    self->handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    //self->handle.Init.RepetitionCounter = 0;
     //only run init if this is the first instance of this timer
-    if (first_time_setup) {
+    // if (first_time_setup) {
         if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
             mp_raise_ValueError(translate("Could not initialize timer"));
         }
+    // }
+
+    /* USER CODE END TIM2_Init 1 */
+    // TIM_HandleTypeDef htim2;
+    // htim2.Instance = TIM2;
+    // htim2.Init.Prescaler = 0;
+    // htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    // htim2.Init.Period = 8749;
+    // htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    // htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    // if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+    // {
+    // mp_raise_ValueError(translate("Could not start PWM1"));
+    // }
+
+//OG not needed
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&self->handle, &sMasterConfig) != HAL_OK)
+    {
+        mp_raise_ValueError(translate("Internal Error"));
     }
 
-    //Channel/PWM init
+//OG
+    // //Channel/PWM init
+    //memset(&(self->chan_handle), 0, sizeof(TIM_OC_InitTypeDef)); //doesn't seem to affect it
+    self->chan_handle.OCNPolarity = 0;
+    self->chan_handle.OCIdleState = 0;
+    self->chan_handle.OCNIdleState = 0;
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
-    self->chan_handle.Pulse = timer_get_internal_duty(duty, period);
-    self->chan_handle.OCPolarity = TIM_OCPOLARITY_LOW;
+    self->chan_handle.Pulse = 7000;
+    self->chan_handle.OCPolarity = TIM_OCPOLARITY_HIGH;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
-    self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
-    self->chan_handle.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
-    self->chan_handle.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
-    if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
+    //TIM_OC_InitTypeDef sConfigOC = self->chan_handle; 
+    mp_printf(&mp_plat_print, "Complete");
+    if (HAL_TIM_PWM_ConfigChannel(&self->handle, &(self->chan_handle), (uint32_t)self->channel) != HAL_OK) 
+    {
         mp_raise_ValueError(translate("Could not initialize channel"));
     }
-    if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_ValueError(translate("Could not start PWM"));
-    }
 
-    self->variable_frequency = variable_frequency;
-    self->frequency = frequency;
-    self->duty_cycle = duty;
-    self->period = period;
+    // TIM_OC_InitTypeDef sConfigOC = {0};
+    // sConfigOC.OCNPolarity = 0;
+    // sConfigOC.OCIdleState = 0;
+    // sConfigOC.OCNIdleState = 0;
+    // sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    // sConfigOC.Pulse = 7000;
+    // sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    // sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    // if (HAL_TIM_PWM_ConfigChannel(&self->handle, &sConfigOC, self->channel) != HAL_OK)
+    // {
+    //     mp_raise_ValueError(translate("Could not initialize channel"));
+    // }
+
+
+//OG    
+    // if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
+    //     mp_raise_ValueError(translate("Could not start PWM"));
+    // }
+//HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+HAL_TIM_PWM_Start(&self->handle, self->channel);
+
+
+mp_printf(&mp_plat_print, "Complete");
+    //                                  period, prescaler, timer_get_internal_duty(duty, period));
+    // mp_printf(&mp_plat_print, "SrcFreq: %d Per:%d presc:%d, doot:%d \n",timer_get_source_freq(self->tim->tim_index), 
+    //                                  period, prescaler, timer_get_internal_duty(duty, period));
+
+    // self->variable_frequency = variable_frequency;
+    // self->frequency = frequency;
+    // self->duty_cycle = duty;
+    // self->period = period;
+
+
+    //FULL REPLACE
+
+    // __HAL_RCC_TIM2_CLK_ENABLE();
+
+    // TIM_MasterConfigTypeDef sMasterConfig = {0};
+    // TIM_OC_InitTypeDef sConfigOC = {0};
+    // TIM_HandleTypeDef htim2;
+
+    // /* USER CODE BEGIN TIM2_Init 1 */
+
+    // /* USER CODE END TIM2_Init 1 */
+    // htim2.Instance = TIM2;
+    // htim2.Init.Prescaler = 0;
+    // htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    // htim2.Init.Period = 8749;
+    // htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    // htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    // if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+    // {
+    // mp_raise_ValueError(translate("Could not start PWM1"));
+    // }
+    // sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    // sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    // if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+    // {
+    // mp_raise_ValueError(translate("Could not start PWM2"));
+    // }
+    // sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    // sConfigOC.Pulse = 7000;
+    // sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    // sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    // if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+    // {
+    // mp_raise_ValueError(translate("Could not start PWM3"));
+    // }
+
+    // /* USER CODE BEGIN TIM2_Init 2 */
+
+    // /* USER CODE END TIM2_Init 2 */
+    // __HAL_RCC_GPIOA_CLK_ENABLE();
+    // /**TIM2 GPIO Configuration    
+    // PA1     ------> TIM2_CH2 
+    // */
+    // GPIO_InitTypeDef GPIO_InitStruct = {0};
+    // GPIO_InitStruct.Pin = GPIO_PIN_1;
+    // GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    // GPIO_InitStruct.Pull = GPIO_NOPULL;
+    // GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    // GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    // HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 
     return PWMOUT_OK;
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+    mp_printf(&mp_plat_print, "Deinited\n");
     return self->tim == mp_const_none;
 }
 
 void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
+    mp_printf(&mp_plat_print, "Deinit\n");
     if (common_hal_pulseio_pwmout_deinited(self)) {
         return;
     }
@@ -272,16 +410,19 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+    mp_printf(&mp_plat_print, "setduty\n");
     uint32_t internal_duty_cycle = timer_get_internal_duty(duty, self->period);
     __HAL_TIM_SET_COMPARE(&self->handle, self->channel, internal_duty_cycle);
     self->duty_cycle = duty;
 }
 
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+    mp_printf(&mp_plat_print, "getduty\n");
     return self->duty_cycle;
 }
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
+    mp_printf(&mp_plat_print, "setfreq\n");
     //don't halt setup for the same frequency
     if (frequency == self->frequency) return;
 
@@ -316,10 +457,12 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
 }
 
 uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+    mp_printf(&mp_plat_print, "getfreq\n");
     return self->frequency;
 }
 
 bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+    mp_printf(&mp_plat_print, "getvarfreq\n");
     return self->variable_frequency;
 }
 

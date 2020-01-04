@@ -10,7 +10,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DISP_CS), MP_ROM_PTR(&pin_PB12) },
     { MP_ROM_QSTR(MP_QSTR_DISP_DC), MP_ROM_PTR(&pin_PA08) },
     { MP_ROM_QSTR(MP_QSTR_DISP_RST), MP_ROM_PTR(&pin_PB10) },
-    { MP_ROM_QSTR(MP_QSTR_DISP_BL), MP_ROM_PTR(&pin_PB03) },			//what is this, backlight?
+    { MP_ROM_QSTR(MP_QSTR_DISP_BL), MP_ROM_PTR(&pin_PB03) }, //what is this, backlight?
 
     { MP_ROM_QSTR(MP_QSTR_BUZZ), MP_ROM_PTR(&pin_PB08) },
     { MP_ROM_QSTR(MP_QSTR_BTNA), MP_ROM_PTR(&pin_PB09) },
@@ -32,8 +32,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB07) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB06) },
-    // { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PC06) },	//these are wrong on Meowbit diagram.
-    // { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA03) },	//they cannot be used together (UART2 vs 6)
+    // { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PC06) },  //these are wrong on Meowbit diagram.
+    // { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA03) },  //they cannot be used together (UART2 vs 6)
     { MP_ROM_QSTR(MP_QSTR_NSS), MP_ROM_PTR(&pin_PA15) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PC12) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PC11) },

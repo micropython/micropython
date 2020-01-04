@@ -85,6 +85,11 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -Os -DNDEBUG
+   CFLAGS += -ggdb
+#   CFLAGS += -fno-inline -fno-ipa-sra
+  
+
+  #CFLAGS += -Os -DNDEBUG
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
