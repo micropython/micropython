@@ -293,7 +293,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(kernel_ffi_p64_obj, 1, 2, kernel_ffi_
 // kmalloc is a common operation, so a nicer API with exceptions and no messing with GFP_*
 // is required.
 STATIC mp_obj_t kernel_ffi_kmalloc(mp_obj_t n) {
-    mp_int_t value = mp_obj_int_get_uint_checked(n);
+    mp_uint_t value = mp_obj_int_get_uint_checked(n);
 
     void *p = kmalloc(value, GFP_KERNEL);
     if (!p) {
@@ -404,7 +404,7 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
             return 0;
         }
 
-        mp_stack_set_top(&ts); // need to include ts in root-pointer scan (for locals dic)
+        mp_stack_set_top(&ts); // need to include ts in root-pointer scan (for locals dict)
         set_stack_limit();
 
         // empty locals
