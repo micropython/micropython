@@ -22,7 +22,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#DEBUG = 1
+DEBUG = 1
 
 # Select the board to build for.
 ifeq ($(BOARD),)
@@ -85,11 +85,6 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -Os -DNDEBUG
-   CFLAGS += -ggdb
-#   CFLAGS += -fno-inline -fno-ipa-sra
-  
-
-  #CFLAGS += -Os -DNDEBUG
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
