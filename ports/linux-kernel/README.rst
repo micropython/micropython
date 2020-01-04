@@ -489,7 +489,8 @@ else you need, based on kernel primitives, since you have access to everything.
 Future TODOs
 ------------
 
-* Python in interrupt contexts.
+* Python in interrupt contexts. This already works, somewhat, but there are still some known possible races that
+  can e.g lead to a deadlock on a UP system.
 * Optimize the threads list - use another mean of TLS (like stack-based) and perhaps something better
   than a linked list, like an array with atomic indexing.
 * Type checking for functions and globals - parse function declarations and such from the kernel headers
