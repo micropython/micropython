@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "extmod/vfs_fat.h"
 
-#include "shared-module/audiomp3/MP3File.h"
+#include "shared-module/audiomp3/MP3Decoder.h"
 
 extern const mp_obj_type_t audiomp3_mp3file_type;
 

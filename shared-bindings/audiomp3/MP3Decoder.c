@@ -30,18 +30,16 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/audiomp3/MP3File.h"
+#include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audiomp3
 //|
-//| :class:`MP3` -- Load a mp3 file for audio playback
+//| :class:`MP3Decoder` -- Load a mp3 file for audio playback
 //| ========================================================
 //|
-//| A .mp3 file prepped for audio playback. Only mono and stereo files are supported. Samples must
-//| be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
-//| an internal buffer.
+//| An object that decodes MP3 files for playback on an audio device.
 //|
 //| .. class:: MP3(file[, buffer])
 //|
@@ -63,7 +61,7 @@
 //|     speaker_enable.switch_to_output(value=True)
 //|
 //|     data = open("cplay-16bit-16khz-64kbps.mp3", "rb")
-//|     mp3 = audiomp3.MP3File(data)
+//|     mp3 = audiomp3.MP3Decoder(data)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
@@ -270,7 +268,7 @@ STATIC const audiosample_p_t audiomp3_mp3file_proto = {
 
 const mp_obj_type_t audiomp3_mp3file_type = {
     { &mp_type_type },
-    .name = MP_QSTR_MP3File,
+    .name = MP_QSTR_MP3Decoder,
     .make_new = audiomp3_mp3file_make_new,
     .locals_dict = (mp_obj_dict_t*)&audiomp3_mp3file_locals_dict,
     .protocol = &audiomp3_mp3file_proto,
