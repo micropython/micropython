@@ -27,6 +27,11 @@ Example usage::
     sleep(10)
     print ctr.value
 
+Some use-cases for using a Counter are: counting motor shaft revolutions and deriving
+rotational velocity, measuring wind
+speed using an anemometer that produces N pulses per revolution, measuring rain using a
+tipping bucket.
+
 Availability of this class: esp32.
 
 Constructors
@@ -45,7 +50,7 @@ Constructors
 Methods
 -------
 
-.. method:: Counter.init(pin, direction=Counter.UP, edge=Counter.RISING, limit=None)
+.. method:: Counter.init(pin, direction=Counter.UP, edge=Counter.RISING, limit=None, reset=True)
 
    Initialise a counter by connecting it to an input pin. Optionally specify the
    counting direction and whether the rising or falling edge should be counted.
@@ -56,11 +61,14 @@ Methods
        it reaches the limit. This means that a limit of ``N`` produces the N+1 values 0..N.
        When counting down the register is set to the limit value at the next edge after it
        reaches zero.
+     - ``reset``: if True init resets the counter, else it leaves the current register value
+       unchanged which can be useful to preserve counts when an application restarts.
 
    ESP32 notes:
-     - the ESP32's counter units support additional features (e.g. a control
+     - Supports the following parameters: direction, edge, limit, and reset (**verify**).
+     - The ESP32's counter units support additional features (e.g. a control
        pin and intermediate trigger values) but these are currently not supported.
-     - when counting down the ESP32's hardware starts at zero, counts to a negative limit, then
+     - When counting down the ESP32's hardware starts at zero, counts to a negative limit, then
        resets back to zero. This class shifts the values such that the counter counts down 
        to zero from the limit, which is the more typical implementation on most microprocessors.
 
@@ -100,6 +108,8 @@ Methods
      than one power mode.
 
    ESP32 notes:
+   - The ESP32's 8 units with two channels each are exposed as 16 units such that ids
+     0 and 1 correspond to unit 0, ids 2 and 3 to unit 1, etc.
    - Supported triggers are ZERO and LIMIT.
    - The priority is ignored (**verify**).
    - For wake only machine.IDLE is supported.
@@ -110,20 +120,17 @@ Methods
 
    This method returns a callback object.
 
-Properties
-----------
+.. method:: Counter.value([x])
 
-.. property:: Counter.value
+   Reads or writes the current value of the counter.
 
-   The current value of the counter can be read and written using this property.
+.. method:: Counter.direction([x])
 
-.. property:: Counter.direction
+   Reads or changes the counting direction.
 
-   The counting direction can be changed using this property.
+.. method:: Counter.limit([x])
 
-.. property:: Counter.limit
-
-   The limit to which the counter counts up or from which it counts down.
+   Reads or changes the limit to which the counter counts up or from which it counts down.
 
 Constants
 ---------
