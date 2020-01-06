@@ -34,6 +34,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -851,8 +852,13 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         mp_obj_class_lookup(&lookup, self->base.type);
         meth_args = 3;
     }
-    if (member[0] == MP_OBJ_SENTINEL) {
-        return mp_obj_subscr(self->subobj[0], index, value);
+    if (member[0] == MP_OBJ_SENTINEL) { // native base subscr exists
+        mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
+        // return mp_obj_subscr(self->subobj[0], index, value, instance);
+        mp_obj_t ret = subobj_type->subscr(self_in, index, value);
+        // May have called port specific C code. Make sure it didn't mess up the heap.
+        assert_heap_ok();
+        return ret;
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw
