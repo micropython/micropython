@@ -43,6 +43,7 @@
 
 #if CIRCUITPY_BLEIO
 #include "supervisor/shared/bluetooth.h"
+#include "common-hal/_bleio/bonding.h"
 #endif
 
 static bool running_background_tasks = false;
@@ -68,6 +69,7 @@ void run_background_tasks(void) {
 
 #if CIRCUITPY_BLEIO
     supervisor_bluetooth_background();
+    bonding_background();
 #endif
 
     #if CIRCUITPY_DISPLAYIO

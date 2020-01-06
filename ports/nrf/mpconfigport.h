@@ -29,6 +29,7 @@
 #define NRF5_MPCONFIGPORT_H__
 
 #include "ble_drv.h"
+#include "common-hal/_bleio/bonding.h"
 
 #include "nrf_mbr.h"  // for MBR_SIZE
 #include "nrf_sdm.h"  // for SD_FLASH_SIZE
@@ -152,10 +153,10 @@
 #endif
 
 
-
-
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
+    queued_bonding_block_list_elt_t* queued_bonding_block_list; \
+
 
 #endif  // NRF5_MPCONFIGPORT_H__

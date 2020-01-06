@@ -33,6 +33,7 @@
 #include "shared-bindings/_bleio/Service.h"
 
 #include "common-hal/_bleio/Adapter.h"
+#include "common-hal/_bleio/bonding.h"
 
 STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;
@@ -92,9 +93,11 @@ STATIC bool characteristic_on_ble_evt(ble_evt_t *ble_evt, void *param) {
                 bleio_connection_obj_t *connection = self->service->connection;
                 uint16_t conn_handle = bleio_connection_get_conn_handle(connection);
                 if (conn_handle != BLE_CONN_HANDLE_INVALID &&
-                    connection->pairing_status == PAIR_PAIRED &&
-                    ble_evt->gatts_evt.params.write.handle == self->cccd_handle) {
-                    bonding_save_cccd_later(connection->is_central, conn_handle, connection->ediv);
+                    common_hal_bleio_connection_get_paired(connection) &&
+                    ble_evt->evt.gatts_evt.params.write.handle == self->cccd_handle) {
+                    bonding_save_cccd_info(
+                        connection->connection->is_central, conn_handle, connection->connection->ediv);
+                }
             }
             break;
         }

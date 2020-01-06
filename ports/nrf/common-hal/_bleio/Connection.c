@@ -47,6 +47,8 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
+#include "common-hal/_bleio/bonding.h"
+
 #define BLE_ADV_LENGTH_FIELD_SIZE   1
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
@@ -212,7 +214,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
-                self->ediv = bonding_keys->own_enc.master_id.ediv;
+                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
                 bonding_save_keys(self->is_central, self->conn_handle, &self->bonding_keys);
             } else {
@@ -227,13 +229,12 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // - Else return NULL --> Initiate key exchange
             ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
             (void) sec_info_request;
-            bond_keys bond_keys_t;
             if ( bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys) ) {
-                sd_ble_gap_sec_info_reply(self->conn_handle
+                sd_ble_gap_sec_info_reply(self->conn_handle,
                                           &self->bonding_keys.own_enc.enc_info,
                                           &self->bonding_keys.peer_id.id_info,
                                           NULL);
-                self->ediv = bond_keys.own_enc.master_id.ediv;
+                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
             } else {
                 sd_ble_gap_sec_info_reply(self->conn_handle, NULL, NULL, NULL);
             }
@@ -249,12 +250,10 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
             } else {
-                uint8_t *sys_attr;
-                uint16_t sys_attr_len;
-                if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv, sys_attr, sys_attr_len)) {
-                    sd_ble_gatts_sys_attr_set(self->conn_handle, sys_attr, sys_attr_len, SVC_CONTEXT_FLAG);
-                // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
-                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
+                // Does an sd_ble_gatts_sys_attr_set() with the stored values.
+                if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv)) {
+                    // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
+                    self->ediv = self->bonding_keys.own_enc.master_id.ediv;
                 } else {
                     // No matching bonding found, so use fresh system attributes.
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
@@ -262,10 +261,6 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             }
             break;
         }
-
-        case BLE_GATTS_EVT_WRITE: {
-            if (self->pair_status == PAIR_PAIRED) &&
-
 
         default:
             return false;
@@ -278,7 +273,7 @@ void bleio_connection_clear(bleio_connection_internal_t *self) {
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
-    bonding_clear_keys(self);
+    bonding_clear_keys(&self->bonding_keys);
 }
 
 bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {

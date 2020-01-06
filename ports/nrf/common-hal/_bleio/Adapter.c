@@ -32,6 +32,7 @@
 
 #include "ble.h"
 #include "ble_drv.h"
+#include "bonding.h"
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
@@ -669,4 +670,5 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
         bleio_connection_internal_t *connection = &connections[i];
         connection->connection_obj = mp_const_none;
     }
+    bonding_reset();
 }

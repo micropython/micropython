@@ -73,8 +73,6 @@ INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
 INC += -I./boards/$(BOARD)
-INC += -I./modules/ubluepy
-INC += -I./modules/ble
 INC += -I./nrfx
 INC += -I./nrfx/hal
 INC += -I./nrfx/mdk
@@ -156,6 +154,7 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	bluetooth/ble_drv.c \
+	common-hal/_bleio/bonding.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
