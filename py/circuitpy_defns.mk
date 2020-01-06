@@ -322,7 +322,7 @@ SRC_SHARED_MODULE_ALL = \
 	audiomixer/Mixer.c \
 	audiomixer/MixerVoice.c \
 	audiomp3/__init__.c \
-	audiomp3/MP3File.c \
+	audiomp3/MP3Decoder.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \

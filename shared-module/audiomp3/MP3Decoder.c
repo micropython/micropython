@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audiomp3/MP3File.h"
+#include "shared-bindings/audiomp3/MP3Decoder.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -34,7 +34,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "shared-module/audiomp3/MP3File.h"
+#include "shared-module/audiomp3/MP3Decoder.h"
 #include "supervisor/shared/translate.h"
 #include "lib/mp3/src/mp3common.h"
 
