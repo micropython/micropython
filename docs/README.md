@@ -25,6 +25,21 @@ In `micropython/docs`, build the docs:
 
 You'll find the index page at `micropython/docs/build/html/index.html`.
 
+Having readthedocs.org build the documentation
+----------------------------------------------
+
+If you would like to have docs for forks/branches hosted on GitHub, GitLab or
+BitBucket an alternative to building the docs locally is to sign up for a free
+https://readthedocs.org account. The rough steps to follow are:
+1. sign-up for an account, unless you already have one
+2. in your account settings: add GitHub as a connected service (assuming
+you have forked this repo on github)
+3. in your account projects: import your forked/cloned micropython repository
+into readthedocs
+4. in the project's versions: add the branches you are developing on or
+for which you'd like readthedocs to auto-generate docs whenever you
+push a change
+
 PDF manual generation
 ---------------------
 
