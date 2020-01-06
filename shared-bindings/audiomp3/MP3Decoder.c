@@ -37,7 +37,7 @@
 //| .. currentmodule:: audiomp3
 //|
 //| :class:`MP3Decoder` -- Load a mp3 file for audio playback
-//| ========================================================
+//| =========================================================
 //|
 //| An object that decodes MP3 files for playback on an audio device.
 //|
