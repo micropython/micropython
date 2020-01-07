@@ -324,7 +324,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     // deal with == and != for all types
     if (op == MP_BINARY_OP_EQUAL || op == MP_BINARY_OP_NOT_EQUAL) {
         // mp_obj_equal_bop supports a bunch of shortcuts
-        return mp_obj_equal_bop(lhs, rhs, op == MP_BINARY_OP_NOT_EQUAL);
+        return mp_obj_equal_bop(op, lhs, rhs);
     }
 
     // deal with exception_match for all types
