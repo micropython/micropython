@@ -55,6 +55,8 @@ Methods
    Initialise a counter by connecting it to an input pin. Optionally specify the
    counting direction and whether the rising or falling edge should be counted.
    Additional keyword parameters can customize the counter:
+     - ``pin``: the input pin, either a pin number (int), a pin name (str), or a Pin object
+       (note, however, that some ports may limit the choice, ESP32 in particular)
      - ``direction``: Counter.UP, Counter,DOWN
      - ``edge``: Counter.RISING, Counter.FALLING, Counter.BOTH
      - ``limit``: when counting up the register is reset to zero at the next edge after
@@ -65,6 +67,7 @@ Methods
        unchanged which can be useful to preserve counts when an application restarts.
 
    ESP32 notes:
+     - Only supports pin numbers for now.
      - Supports the following parameters: direction, edge, limit, and reset (**verify**).
      - The ESP32's counter units support additional features (e.g. a control
        pin and intermediate trigger values) but these are currently not supported.
