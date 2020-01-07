@@ -84,15 +84,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t miso_len = sizeof(mcu_spi_miso_list)/sizeof(*mcu_spi_miso_list);
     bool spi_taken = false;
 
-    //sck is not optional. MOSI and MISO are
+    //SCK is not optional. MOSI and MISO are
     for(uint i=0; i<sck_len;i++) {
         if (mcu_spi_sck_list[i].pin == sck) {
-            //if both mosi and miso exist, loop search normally
+            //if both MOSI and MISO exist, loop search normally
             if ((mosi != mp_const_none) && (miso != mp_const_none)) {
-                //mosi
+                //MOSI
                 for(uint j=0; j<mosi_len;j++) {
                     if (mcu_spi_mosi_list[j].pin == mosi) {
-                        //miso
+                        //MISO
                         for(uint k=0; k<miso_len;k++) {
                             if ((mcu_spi_miso_list[k].pin == miso) //everything needs the same index
                                 && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)
@@ -111,10 +111,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         }   
                     }
                 }
-            // if just miso, reduce search
+            // if just MISO, reduce search
             } else if (miso != mp_const_none) {
                 for(uint j=0; j<miso_len;j++) {
-                    if ((mcu_spi_miso_list[j].pin == miso) //only sck and miso need the same index
+                    if ((mcu_spi_miso_list[j].pin == miso) //only SCK and MISO need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[j].spi_index)) {
                         //keep looking if the SPI is taken, edge case
                         if(reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
@@ -128,10 +128,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         break;
                     }
                 }  
-            // if just mosi, reduce search
+            // if just MOSI, reduce search
             } else if (mosi != mp_const_none) {
                 for(uint j=0; j<mosi_len;j++) {
-                    if ((mcu_spi_mosi_list[j].pin == mosi) //only sck and mosi need the same index
+                    if ((mcu_spi_mosi_list[j].pin == mosi) //only SCK and MOSI need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)) {
                         //keep looking if the SPI is taken, edge case
                         if(reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
@@ -197,7 +197,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     
     self->handle.Instance = SPIx; 
     self->handle.Init.Mode = SPI_MODE_MASTER;
-    // Direction change only required for RX only, see RefMan RM0090:884
+    // Direction change only required for RX-only, see RefMan RM0090:884
     self->handle.Init.Direction = (self->mosi == NULL) ? SPI_CR1_RXONLY : SPI_DIRECTION_2LINES;
     self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
