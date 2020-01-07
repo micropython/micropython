@@ -66,16 +66,6 @@
 #define BOARD_BOOTCLOCKRUN_UART_CLK_ROOT 80000000UL
 #define BOARD_BOOTCLOCKRUN_USBPHY_CLK 0UL
 
-/*! @brief Usb1 PLL set for BOARD_BootClockRUN configuration.
- */
-//extern const clock_usb_pll_config_t usb1PllConfig_BOARD_BootClockRUN;
-/*! @brief Sys PLL for BOARD_BootClockRUN configuration.
- */
-//extern const clock_sys_pll_config_t sysPllConfig_BOARD_BootClockRUN;
-/*! @brief Enet PLL set for BOARD_BootClockRUN configuration.
- */
-//extern const clock_enet_pll_config_t enetPllConfig_BOARD_BootClockRUN;
-
 const clock_sys_pll_config_t sysPllConfig_BOARD_BootClockRUN = {
     .loopDivider = 1, /* PLL loop divider, Fout = Fin * ( 20 + loopDivider*2 + numerator / denominator ) */
     .numerator   = 0, /* 30 bit numerator of fractional loop divider */
@@ -90,6 +80,8 @@ const clock_enet_pll_config_t enetPllConfig_BOARD_BootClockRUN = {
     .enableClkOutput500M = true, /* Enable the PLL providing the ENET 500MHz reference clock */
     .src                 = 0,    /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
 };
+
+// Based on the hello_world example in the SDK
 void clocks_init(void) {
     /* Init RTC OSC clock frequency. */
     CLOCK_SetRtcXtalFreq(32768U);

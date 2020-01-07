@@ -33,16 +33,6 @@
 #define BOARD_XTAL32K_CLK_HZ                          32768U  /*!< Board xtal32k frequency in Hz */
 #define BOARD_BOOTCLOCKRUN_CORE_CLOCK             600000000U  /*!< Core clock frequency: 600000000Hz */
 
-/*! @brief Usb1 PLL set for BOARD_BootClockRUN configuration.
- */
-//extern const clock_usb_pll_config_t usb1PllConfig_BOARD_BootClockRUN;
-/*! @brief Sys PLL for BOARD_BootClockRUN configuration.
- */
-//extern const clock_sys_pll_config_t sysPllConfig_BOARD_BootClockRUN;
-/*! @brief Enet PLL set for BOARD_BootClockRUN configuration.
- */
-//extern const clock_enet_pll_config_t enetPllConfig_BOARD_BootClockRUN;
-
 const clock_arm_pll_config_t armPllConfig_BOARD_BootClockRUN =
     {
         .loopDivider = 100,                       /* PLL loop divider, Fout = Fin * 50 */
@@ -60,6 +50,8 @@ const clock_usb_pll_config_t usb1PllConfig_BOARD_BootClockRUN =
         .loopDivider = 0,                         /* PLL loop divider, Fout = Fin * 20 */
         .src = 0,                                 /* Bypass clock source, 0 - OSC 24M, 1 - CLK1_P and CLK1_N */
     };
+
+// Based on the hello_world example in the SDK
 void clocks_init(void) {
     /* Init RTC OSC clock frequency. */
     CLOCK_SetRtcXtalFreq(32768U);
