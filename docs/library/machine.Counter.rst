@@ -52,11 +52,12 @@ Methods
 
 .. method:: Counter.init(pin, direction=Counter.UP, edge=Counter.RISING, limit=None, reset=True)
 
-   Initialise a counter by connecting it to an input pin. Optionally specify the
+   Initialise a counter by connecting it to an input pin.
+   The input pin can be specified as a pin number (int), a pin name (str), or a Pin object
+   (however, some ports may limit the choice, the ESP32 in particular).
+   Optionally specify the
    counting direction and whether the rising or falling edge should be counted.
    Additional keyword parameters can customize the counter:
-     - ``pin``: the input pin, either a pin number (int), a pin name (str), or a Pin object
-       (note, however, that some ports may limit the choice, ESP32 in particular)
      - ``direction``: Counter.UP, Counter,DOWN
      - ``edge``: Counter.RISING, Counter.FALLING, Counter.BOTH
      - ``limit``: when counting up the register is reset to zero at the next edge after
