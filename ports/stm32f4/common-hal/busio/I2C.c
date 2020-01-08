@@ -66,20 +66,26 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     }
 }
 
-
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
 
     //match pins to I2C objects
     I2C_TypeDef * I2Cx;
-
     uint8_t sda_len = sizeof(mcu_i2c_sda_list)/sizeof(*mcu_i2c_sda_list);
     uint8_t scl_len = sizeof(mcu_i2c_scl_list)/sizeof(*mcu_i2c_scl_list);
+    bool i2c_taken = false;
+
     for(uint i=0; i<sda_len;i++) {
         if (mcu_i2c_sda_list[i].pin == sda) {
             for(uint j=0; j<scl_len;j++) {
                 if ((mcu_i2c_scl_list[j].pin == scl)
                     && (mcu_i2c_scl_list[j].i2c_index == mcu_i2c_sda_list[i].i2c_index)) {
+                    //keep looking if the I2C is taken, could be another SCL that works
+                    if(reserved_i2c[mcu_i2c_scl_list[i].i2c_index-1]) {
+                        i2c_taken = true;
+                        continue;
+                    }
+
                     self->scl = &mcu_i2c_scl_list[j];
                     self->sda = &mcu_i2c_sda_list[i];
                     break;
@@ -92,11 +98,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if(self->sda!=NULL && self->scl!=NULL ) {
         I2Cx = mcu_i2c_banks[self->sda->i2c_index-1];
     } else {
-        mp_raise_RuntimeError(translate("Invalid I2C pin selection"));
-    }
-
-    if(reserved_i2c[self->sda->i2c_index-1]) {
-        mp_raise_RuntimeError(translate("Hardware busy, try alternative pins"));
+        if (i2c_taken) {
+            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        } else {
+            mp_raise_ValueError(translate("Invalid I2C pin selection"));
+        }
     }
 
     //Start GPIO for each pin
