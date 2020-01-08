@@ -31,6 +31,7 @@
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
+#include "tick.h"
 #endif
 
 #include "nrf_rng.h"
@@ -66,8 +67,25 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
     uint8_t sd_en = 0;
     (void) sd_softdevice_is_enabled(&sd_en);
 
-    if (sd_en)
-        return NRF_SUCCESS == sd_rand_application_vector_get(buffer, length);
+    if (sd_en) {
+        while (length != 0) {
+            uint8_t available = 0;
+            sd_rand_application_bytes_available_get(&available);
+            if (available) {
+                uint32_t request = MIN(length, available);
+                uint32_t result = sd_rand_application_vector_get(buffer, request);
+                if (result != NRF_SUCCESS) {
+                    return false;
+                }
+                buffer += request;
+                length -= request;
+            } else {
+                RUN_BACKGROUND_TASKS;
+                tick_delay(500);
+            }
+        }
+        return true;
+    }
 #endif
 
     nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
