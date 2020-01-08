@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 17:29-0500\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,7 +66,8 @@ msgid "%q indices must be integers, not %s"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr ""
 
@@ -373,6 +374,10 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
@@ -585,7 +590,7 @@ msgid "Expected a %q"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
 msgstr ""
 
@@ -1300,6 +1305,10 @@ msgid ""
 "Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c

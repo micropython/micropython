@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 17:29-0500\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -68,7 +68,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "%d doit être >=1"
@@ -383,6 +384,10 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, fuzzy, c-format
@@ -600,7 +605,7 @@ msgid "Expected a %q"
 msgstr "Attendu un %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Une 'Characteristic' est attendue"
@@ -1352,6 +1357,10 @@ msgstr ""
 "Visitez learn.adafruit.com/category/circuitpython pour les guides.\n"
 "\n"
 "Pour lister les modules inclus, tapez `help(\"modules\")`.\n"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 17:29-0500\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -68,7 +68,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
 
@@ -377,6 +378,10 @@ msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein."
 msgid "Buffer must be at least length 1"
 msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
@@ -589,7 +594,7 @@ msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
 
@@ -1329,6 +1334,10 @@ msgstr ""
 "\n"
 "Um die integrierten Module aufzulisten, führe bitte `help(\"modules\")` "
 "aus.\n"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"

@@ -46,7 +46,7 @@ nrf_nvic_state_t nrf_nvic_state = { 0 };
 volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 __attribute__((aligned(4)))
-static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATTS_VAR_ATTR_LEN_MAX)];
 
 void ble_drv_reset() {
     // Linked list items will be gc'd.

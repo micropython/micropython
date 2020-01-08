@@ -108,3 +108,6 @@
 [submodule "lib/mp3"]
 	path = lib/mp3
 	url = https://github.com/adafruit/Adafruit_MP3
+[submodule "ports/mimxrt10xx/sdk"]
+	path = ports/mimxrt10xx/sdk
+	url = https://github.com/arturo182/MIMXRT10xx_SDK
