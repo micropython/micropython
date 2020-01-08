@@ -400,7 +400,7 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
         socket->peer_port = (mp_uint_t)port;
         memcpy(&socket->peer, addr, sizeof(socket->peer));
     }
-    // call user callback when receving packet
+    // schedule user callback when receving udp packet
     exec_user_callback(socket);
 }
 
