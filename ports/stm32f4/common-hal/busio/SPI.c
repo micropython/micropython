@@ -49,10 +49,6 @@ STATIC bool never_reset_spi[MAX_SPI];
 STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 
-//--------
-//STATICS
-//--------
-
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     //SPI2 and 3 are on PCLK1, if they exist. 
     #ifdef SPI2
@@ -89,10 +85,6 @@ STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, u
     *prescaler = 256;
     return SPI_BAUDRATEPRESCALER_256;
 }
-
-//--------
-//COMMON HAL
-//--------
 
 void spi_reset(void) {
     uint16_t never_reset_mask = 0x00;
@@ -282,6 +274,9 @@ bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self)) {
+        return;
+    }
     spi_clock_disable(1<<(self->sck->spi_index - 1));
     reserved_spi[self->sck->spi_index - 1] = false;
     never_reset_spi[self->sck->spi_index - 1] = false;
@@ -399,42 +394,66 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
 
 STATIC void spi_clock_enable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_ENABLE();
+    if (mask & 1<<0) {
+        __HAL_RCC_SPI1_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_ENABLE();
+    if (mask & 1<<1) {
+        __HAL_RCC_SPI2_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_ENABLE();
+    if (mask & 1<<2) {
+        __HAL_RCC_SPI3_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_ENABLE();
+    if (mask & 1<<3) {
+        __HAL_RCC_SPI4_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_ENABLE();
+    if (mask & 1<<4) {
+        __HAL_RCC_SPI5_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_ENABLE();
+    if (mask & 1<<5) {
+        __HAL_RCC_SPI6_CLK_ENABLE();
+    }
     #endif
 }
 
 STATIC void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_DISABLE();
+    if (mask & 1<<0) {
+        __HAL_RCC_SPI1_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_DISABLE();
+    if (mask & 1<<1) {
+        __HAL_RCC_SPI2_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_DISABLE();
+    if (mask & 1<<2) {
+        __HAL_RCC_SPI3_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_DISABLE();
+    if (mask & 1<<3) {
+        __HAL_RCC_SPI4_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_DISABLE();
+    if (mask & 1<<4) {
+        __HAL_RCC_SPI5_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_DISABLE();
+    if (mask & 1<<5) {
+        __HAL_RCC_SPI6_CLK_DISABLE();
+    }
     #endif
 }

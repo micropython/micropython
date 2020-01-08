@@ -43,10 +43,6 @@ STATIC bool never_reset_i2c[MAX_I2C];
 STATIC void i2c_clock_enable(uint8_t mask);
 STATIC void i2c_clock_disable(uint8_t mask);
 
-//--------
-//COMMON HAL
-//--------
-
 void i2c_reset(void) {
     uint16_t never_reset_mask = 0x00;
     for(int i=0;i<MAX_I2C;i++) {
@@ -56,7 +52,7 @@ void i2c_reset(void) {
             never_reset_mask |= 1<<i;
         }
     }
-    spi_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
+    i2c_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
@@ -97,6 +93,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         }
     }
 
+    //Note: clock reset must be before GPIO init, due to I2C soft reboot issue
+    i2c_clock_enable(1<<(self->sda->i2c_index - 1));
+    reserved_i2c[self->sda->i2c_index - 1] = true;
+
     //Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(sda->number);
@@ -113,9 +113,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
-    //Fix for HAL error caused by soft reboot GPIO init SDA pin voltage drop. See Eratta. 
-    //Must be in this exact spot or I2C will get stuck in infinite loop. 
-    //TODO: See git issue #2172
+    //still needed? 
     #ifdef I2C1
     __HAL_RCC_I2C1_FORCE_RESET();
     HAL_Delay(2);
@@ -126,30 +124,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     HAL_Delay(2);
     __HAL_RCC_I2C2_RELEASE_RESET();
     #endif
-    #ifdef I2C3
+    #ifdef I2C2
     __HAL_RCC_I2C3_FORCE_RESET();
     HAL_Delay(2);
     __HAL_RCC_I2C3_RELEASE_RESET();
-    #endif
-
-    //Keep separate so above hack can be cleanly replaced
-    #ifdef I2C1
-    if(I2Cx==I2C1) { 
-        reserved_i2c[0] = true;
-        __HAL_RCC_I2C1_CLK_ENABLE();
-    } 
-    #endif
-    #ifdef I2C2
-    if(I2Cx==I2C2) {
-        reserved_i2c[1] = true;
-        __HAL_RCC_I2C2_CLK_ENABLE(); 
-    }
-    #endif
-    #ifdef I2C3
-    if(I2Cx==I2C3) {
-        reserved_i2c[2] = true;
-        __HAL_RCC_I2C3_CLK_ENABLE(); 
-    }
     #endif
 
     self->handle.Instance = I2Cx;
@@ -171,7 +149,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
         if (self->handle.Instance == mcu_i2c_banks[i]) {
-            never_reset[i] = true;
+            never_reset_i2c[i] = true;
 
             never_reset_pin_number(self->scl->pin->port, self->scl->pin->number);
             never_reset_pin_number(self->sda->pin->port, self->scl->pin->number);
@@ -188,27 +166,11 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
-    #ifdef I2C1
-    if(self->handle.Instance==I2C1) {
-        never_reset[0] = false;
-        reserved_i2c[0] = false;
-        __HAL_RCC_I2C1_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef I2C2
-    if(self->handle.Instance==I2C2) {
-        never_reset[1] = false;
-        reserved_i2c[1] = false;
-        __HAL_RCC_I2C2_CLK_DISABLE(); 
-    }
-    #endif
-    #ifdef I2C3
-    if(self->handle.Instance==I2C3) {
-        never_reset[2] = false;
-        reserved_i2c[2] = false;
-        __HAL_RCC_I2C3_CLK_DISABLE(); 
-    }
-    #endif
+
+    i2c_clock_disable(1<<(self->sda->i2c_index - 1));
+    reserved_i2c[self->sda->i2c_index - 1] = false;
+    never_reset_i2c[self->sda->i2c_index - 1] = false;
+
     reset_pin_number(self->sda->pin->port,self->sda->pin->number);
     reset_pin_number(self->scl->pin->port,self->scl->pin->number);
     self->sda = mp_const_none;
@@ -258,14 +220,27 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
 }
 
 STATIC void i2c_clock_enable(uint8_t mask) {
+    //Note: hard reset required due to soft reboot issue. 
     #ifdef I2C1
-    if (mask & 1<<0) __HAL_RCC_I2C1_CLK_ENABLE();
+    if (mask & 1<<0) {
+        __HAL_RCC_I2C1_CLK_ENABLE();
+        __HAL_RCC_I2C1_FORCE_RESET();
+        __HAL_RCC_I2C1_RELEASE_RESET();
+    }
     #endif
     #ifdef I2C2
-    if (mask & 1<<1) __HAL_RCC_I2C2_CLK_ENABLE();
+    if (mask & 1<<1) {
+        __HAL_RCC_I2C2_CLK_ENABLE();
+        __HAL_RCC_I2C2_FORCE_RESET();
+        __HAL_RCC_I2C2_RELEASE_RESET();
+    }
     #endif
     #ifdef I2C3
-    if (mask & 1<<2) __HAL_RCC_I2C3_CLK_ENABLE();
+    if (mask & 1<<2) {
+        __HAL_RCC_I2C3_CLK_ENABLE();
+        __HAL_RCC_I2C3_FORCE_RESET();
+        __HAL_RCC_I2C3_RELEASE_RESET();
+    }
     #endif
 }
 

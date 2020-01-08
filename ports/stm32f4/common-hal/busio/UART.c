@@ -47,10 +47,6 @@ STATIC void uart_clock_enable(uint16_t mask);
 STATIC void uart_clock_disable(uint16_t mask);
 STATIC void uart_assign_irq(busio_uart_obj_t* self, USART_TypeDef* USARTx);
 
-//--------
-//STATICS
-//--------
-
 STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval,
                                             int uart_index, bool uart_taken) {
     if (pin_eval) {
@@ -65,10 +61,6 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eva
         }
     }
 }
-
-//--------
-//COMMON HAL
-//--------
 
 void uart_reset(void) {
     for (uint8_t i = 0; i < MAX_UART; i++) {
@@ -575,33 +567,53 @@ STATIC void uart_clock_disable(uint16_t mask) {
 
 STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef * USARTx) {
     #ifdef USART1
-    if (USARTx == USART1) self->irq = USART1_IRQn;
+    if (USARTx == USART1) {
+        self->irq = USART1_IRQn;
+    }
     #endif
     #ifdef USART2
-    if (USARTx == USART2) self->irq = USART2_IRQn;
+    if (USARTx == USART2) {
+        self->irq = USART2_IRQn;
+    }
     #endif
     #ifdef USART3
-    if (USARTx == USART3) self->irq = USART3_IRQn;
+    if (USARTx == USART3) {
+        self->irq = USART3_IRQn;
+    }
     #endif
     #ifdef UART4
-    if (USARTx == UART4) self->irq = UART4_IRQn;
+    if (USARTx == UART4) {
+        self->irq = UART4_IRQn;
+    }
     #endif
     #ifdef UART5
-    if (USARTx == UART5) self->irq = UART5_IRQn;
+    if (USARTx == UART5) {
+        self->irq = UART5_IRQn;
+    }
     #endif
     #ifdef USART6
-    if (USARTx == USART6) self->irq = USART6_IRQn;
+    if (USARTx == USART6) {
+        self->irq = USART6_IRQn;
+    }
     #endif
     #ifdef UART7
-    if (USARTx == UART7) self->irq = UART7_IRQn;
+    if (USARTx == UART7) {
+        self->irq = UART7_IRQn;
+    }
     #endif
     #ifdef UART8
-    if (USARTx == UART8) self->irq = UART8_IRQn;
+    if (USARTx == UART8) {
+        self->irq = UART8_IRQn;
+    }
     #endif
     #ifdef UART9
-    if (USARTx == UART9) self->irq = UART9_IRQn;
+    if (USARTx == UART9) {
+        self->irq = UART9_IRQn;
+    }
     #endif
     #ifdef UART10
-    if (USARTx == UART10) self->irq = UART10_IRQn;
+    if (USARTx == UART10) {
+        self->irq = UART10_IRQn;
+    }
     #endif
 }
