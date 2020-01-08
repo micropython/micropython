@@ -46,6 +46,11 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     } else if (mp_obj_is_float(o_in)) {
         return &mp_type_float;
     #endif
+    #if MICROPY_OBJ_IMMEDIATE_OBJS
+    } else if (mp_obj_is_immediate_obj(o_in)) {
+        static const mp_obj_type_t *const types[2] = {&mp_type_NoneType, &mp_type_bool};
+        return types[MP_OBJ_IMMEDIATE_OBJ_VALUE(o_in) & 1];
+    #endif
     } else {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;

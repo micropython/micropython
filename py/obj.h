@@ -263,12 +263,21 @@ typedef union _mp_rom_obj_t { uint64_t u64; struct { const void *lo, *hi; } u32;
 // Macros to create objects that are stored in ROM.
 
 #ifndef MP_ROM_NONE
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+#define MP_ROM_NONE mp_const_none
+#else
 #define MP_ROM_NONE MP_ROM_PTR(&mp_const_none_obj)
+#endif
 #endif
 
 #ifndef MP_ROM_FALSE
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+#define MP_ROM_FALSE mp_const_false
+#define MP_ROM_TRUE mp_const_true
+#else
 #define MP_ROM_FALSE MP_ROM_PTR(&mp_const_false_obj)
 #define MP_ROM_TRUE MP_ROM_PTR(&mp_const_true_obj)
+#endif
 #endif
 
 #ifndef MP_ROM_INT
@@ -622,17 +631,27 @@ extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
 
-// Constant objects, globally accessible
-// The macros are for convenience only
+// Constant objects, globally accessible: None, False, True
+// These should always be accessed via the below macros.
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+// None is even while False/True are odd so their types can be distinguished with 1 bit.
+#define mp_const_none MP_OBJ_NEW_IMMEDIATE_OBJ(0)
+#define mp_const_false MP_OBJ_NEW_IMMEDIATE_OBJ(1)
+#define mp_const_true MP_OBJ_NEW_IMMEDIATE_OBJ(3)
+#else
 #define mp_const_none (MP_OBJ_FROM_PTR(&mp_const_none_obj))
 #define mp_const_false (MP_OBJ_FROM_PTR(&mp_const_false_obj))
 #define mp_const_true (MP_OBJ_FROM_PTR(&mp_const_true_obj))
-#define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
-#define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
-#define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_none_t mp_const_none_obj;
 extern const struct _mp_obj_bool_t mp_const_false_obj;
 extern const struct _mp_obj_bool_t mp_const_true_obj;
+#endif
+
+// Constant objects, globally accessible: b'', (), Ellipsis, NotImplemented, GeneratorExit()
+// The below macros are for convenience only.
+#define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
+#define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
+#define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;

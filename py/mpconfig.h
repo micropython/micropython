@@ -113,6 +113,13 @@
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
 #endif
 
+// Whether to encode None/False/True as immediate objects instead of pointers to
+// real objects.  Reduces code size by a decent amount without hurting
+// performance, for all representations except D on some architectures.
+#ifndef MICROPY_OBJ_IMMEDIATE_OBJS
+#define MICROPY_OBJ_IMMEDIATE_OBJS (MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D)
+#endif
+
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
 
