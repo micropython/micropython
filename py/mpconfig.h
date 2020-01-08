@@ -70,25 +70,28 @@
 
 // A MicroPython object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
-//  - xxxx...xx10 : a qstr, bits 2 and above are the value
+//  - xxxx...x010 : a qstr, bits 3 and above are the value
+//  - xxxx...x110 : an immediate object, bits 3 and above are the value
 //  - xxxx...xx00 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_A (0)
 
 // A MicroPython object is a machine word having the following form:
 //  - xxxx...xx01 : a small int, bits 2 and above are the value
-//  - xxxx...xx11 : a qstr, bits 2 and above are the value
+//  - xxxx...x011 : a qstr, bits 3 and above are the value
+//  - xxxx...x111 : an immediate object, bits 3 and above are the value
 //  - xxxx...xxx0 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_B (1)
 
 // A MicroPython object is a machine word having the following form (called R):
 //  - iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int with 31-bit signed value
-//  - 01111111 1qqqqqqq qqqqqqqq qqqqq110 str with 20-bit qstr value
+//  - 01111111 1qqqqqqq qqqqqqqq qqqq0110 str with 19-bit qstr value
+//  - 01111111 10000000 00000000 ssss1110 immediate object with 4-bit value
 //  - s1111111 10000000 00000000 00000010 +/- inf
 //  - s1111111 1xxxxxxx xxxxxxxx xxxxx010 nan, x != 0
 //  - seeeeeee efffffff ffffffff ffffff10 30-bit fp, e != 0xff
 //  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
-// Str and float stored as O = R + 0x80800000, retrieved as R = O - 0x80800000.
-// This makes strs easier to encode/decode as they have zeros in the top 9 bits.
+// Str, immediate and float stored as O = R + 0x80800000, retrieved as R = O - 0x80800000.
+// This makes strs/immediates easier to encode/decode as they have zeros in the top 9 bits.
 // This scheme only works with 32-bit word size and float enabled.
 #define MICROPY_OBJ_REPR_C (2)
 
@@ -98,6 +101,7 @@
 //  - 01111111 11111000 00000000 00000000 00000000 00000000 00000000 00000000 normalised nan
 //  - 01111111 11111101 iiiiiiii iiiiiiii iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int
 //  - 01111111 11111110 00000000 00000000 qqqqqqqq qqqqqqqq qqqqqqqq qqqqqqq1 str
+//  - 01111111 11111111 ss000000 00000000 00000000 00000000 00000000 00000000 immediate object
 //  - 01111111 11111100 00000000 00000000 pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
 // Stored as O = R + 0x8004000000000000, retrieved as R = O - 0x8004000000000000.
 // This makes pointers have all zeros in the top 32 bits.
