@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/audiomp3/MP3File.h"
+#include "shared-bindings/audiomp3/MP3Decoder.h"
 
 //| :mod:`audiomp3` --- Support for MP3-compressed audio files
 //| ==========================================================
@@ -44,12 +44,12 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     MP3File
+//|     MP3Decoder
 //|
 
 STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiomp3) },
-    { MP_ROM_QSTR(MP_QSTR_MP3File), MP_ROM_PTR(&audiomp3_mp3file_type) },
+    { MP_ROM_QSTR(MP_QSTR_MP3Decoder), MP_ROM_PTR(&audiomp3_mp3file_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(audiomp3_module_globals, audiomp3_module_globals_table);
