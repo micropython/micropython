@@ -53,7 +53,7 @@
 #define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 #define mp_hal_pin_read(p)      ((((GPIO_TypeDef*)((p) & ~0xf))->IDR >> ((p) & 0xf)) & 1)
-#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
 
 void mp_hal_pin_config(uint32_t port_pin, uint32_t mode, uint32_t pull, uint32_t alt);
 void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed);
