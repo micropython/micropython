@@ -35,7 +35,35 @@
 
 displayio_fourwire_obj_t board_display_obj;
 
+typedef struct {
+    const uint32_t *config_data;
+    void *handoverHID;
+    void *handoverMSC;
+    const char *info_uf2;
+} UF2_BInfo;
+
+#define APP_START_ADDRESS 0x00004000
+#define UF2_BINFO ((UF2_BInfo *)(APP_START_ADDRESS - sizeof(UF2_BInfo)))
+
+#define CFG_DISPLAY_CFG0 39
+#define CFG_MAGIC0 0x1e9e10f1
+
 #define DELAY 0x80
+
+uint32_t lookupCfg(uint32_t key, uint32_t defl) {
+    const uint32_t *ptr = UF2_BINFO->config_data;
+    if (!ptr || (((uint32_t)ptr) & 3) || *ptr != CFG_MAGIC0) {
+        // no config data!
+    } else {
+        ptr += 4;
+        while (*ptr) {
+            if (*ptr == key)
+                return ptr[1];
+            ptr += 2;
+        }
+    }
+    return defl;
+}
 
 uint8_t display_init_sequence[] = {
     0x01, 0 | DELAY, 150, // SWRESET
@@ -63,8 +91,6 @@ uint8_t display_init_sequence[] = {
               0x2E, 0x2C, 0x29, 0x2D,
               0x2E, 0x2E, 0x37, 0x3F,
               0x00, 0x00, 0x02, 0x10,
-    0x2a, 3, 0x02, 0x00, 0x81, // _CASET XSTART = 2, XEND = 129
-    0x2b, 3, 0x02, 0x00, 0x81, // _RASET XSTART = 2, XEND = 129
     0x13, 0 | DELAY, 10, // _NORON
     0x29, 0 | DELAY, 100, // _DISPON
 };
@@ -83,14 +109,17 @@ void board_init(void) {
         &pin_PA17, // TFT_RST Reset
         60000000);
 
+    uint32_t cfg0 = lookupCfg(CFG_DISPLAY_CFG0, 0x000000);
+    uint32_t offX = (cfg0 >> 8) & 0xff;
+    uint32_t offY = (cfg0 >> 16) & 0xff;
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
         160, // Width (after rotation)
         128, // Height (after rotation)
-        0, // column start
-        0, // row start
+        offX, // column start
+        offY, // row start
         0, // rotation
         16, // Color depth
         false, // grayscale
