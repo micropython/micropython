@@ -236,6 +236,7 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/CharacteristicBuffer.c \
 	_bleio/Connection.c \
 	_bleio/Descriptor.c \
+	_bleio/PacketBuffer.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
 	analogio/AnalogIn.c \

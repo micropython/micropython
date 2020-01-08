@@ -3,9 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2019-2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include "nrf_soc.h"
 
-#include "shared-bindings/_bleio/Connection.h"
-#include "shared-bindings/_bleio/ScanResults.h"
-
-#define BLEIO_TOTAL_CONNECTION_COUNT 2
-
-extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
+#include "py/ringbuf.h"
+#include "shared-bindings/_bleio/Characteristic.h"
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t* advertising_data;
-    uint8_t* scan_response_data;
-    uint8_t* current_advertising_data;
-    bleio_scanresults_obj_t* scan_results;
-    mp_obj_t name;
-    mp_obj_tuple_t *connection_objs;
-    ble_drv_evt_handler_entry_t handler_entry;
-} bleio_adapter_obj_t;
+    bleio_characteristic_obj_t *characteristic;
+    // Ring buffer storing consecutive incoming values.
+    ringbuf_t ringbuf;
+    // Two outgoing buffers to alternate between. One will be queued for transmission by the SD and
+    // the other is waiting to be queued and can be extended.
+    uint8_t* outgoing[2];
+    uint16_t pending_size;
+    uint16_t conn_handle;
+    uint8_t pending_index;
+    uint8_t write_type;
+    bool client;
+    bool packet_queued;
+} bleio_packet_buffer_obj_t;
 
-void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
-void bleio_adapter_reset(bleio_adapter_obj_t* adapter);
-
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_ADAPTER_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_PACKETBUFFER_H

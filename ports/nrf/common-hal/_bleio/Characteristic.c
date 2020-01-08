@@ -154,7 +154,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);
             // Check to see if we need to notify or indicate any active connections.
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                bleio_connection_internal_t *connection = &connections[i];
+                bleio_connection_internal_t *connection = &bleio_connections[i];
                 uint16_t conn_handle = connection->conn_handle;
                 if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
                     continue;

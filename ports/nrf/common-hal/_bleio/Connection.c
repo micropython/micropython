@@ -85,6 +85,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_DISCONNECTED:
             break;
+
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
             ble_gap_phys_t const phys = {
                 .rx_phys = BLE_GAP_PHY_AUTO,
@@ -94,20 +95,45 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
         }
 
-        case BLE_GAP_EVT_PHY_UPDATE: // 0x22
+        case BLE_GAP_EVT_PHY_UPDATE: { // 0x22
             break;
+        }
 
         case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
             // SoftDevice will respond to a length update request.
             sd_ble_gap_data_length_update(self->conn_handle, NULL, NULL);
             break;
 
-        case BLE_GAP_EVT_DATA_LENGTH_UPDATE: // 0x24
+        case BLE_GAP_EVT_DATA_LENGTH_UPDATE: { // 0x24
             break;
+        }
 
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: {
-            // We only handle MTU of size BLE_GATT_ATT_MTU_DEFAULT.
-            sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATT_ATT_MTU_DEFAULT);
+            ble_gatts_evt_exchange_mtu_request_t *request =
+                    &ble_evt->evt.gatts_evt.params.exchange_mtu_request;
+
+            uint16_t new_mtu = BLE_GATTS_VAR_ATTR_LEN_MAX;
+            if (request->client_rx_mtu < new_mtu) {
+                new_mtu = request->client_rx_mtu;
+            }
+            if (new_mtu < BLE_GATT_ATT_MTU_DEFAULT) {
+                new_mtu = BLE_GATT_ATT_MTU_DEFAULT;
+            }
+            if (self->mtu > 0) {
+                new_mtu = self->mtu;
+            }
+
+            self->mtu = new_mtu;
+            sd_ble_gatts_exchange_mtu_reply(self->conn_handle, new_mtu);
+            break;
+        }
+
+
+        case BLE_GATTC_EVT_EXCHANGE_MTU_RSP: {
+            ble_gattc_evt_exchange_mtu_rsp_t *response =
+                    &ble_evt->evt.gattc_evt.params.exchange_mtu_rsp;
+
+            self->mtu = response->server_rx_mtu;
             break;
         }
 
@@ -319,8 +345,11 @@ STATIC bool discover_next_services(bleio_connection_internal_t* connection, uint
     m_discovery_successful = false;
     m_discovery_in_process = true;
 
-    check_nrf_error(sd_ble_gattc_primary_services_discover(connection->conn_handle,
-                                                           start_handle, service_uuid));
+    uint32_t nrf_err = NRF_ERROR_BUSY;
+    while (nrf_err == NRF_ERROR_BUSY) {
+        nrf_err = sd_ble_gattc_primary_services_discover(connection->conn_handle, start_handle, service_uuid);
+    }
+    check_nrf_error(nrf_err);
 
     // Wait for a discovery event.
     while (m_discovery_in_process) {
