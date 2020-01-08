@@ -47,13 +47,9 @@ STATIC void uart_clock_enable(uint16_t mask);
 STATIC void uart_clock_disable(uint16_t mask);
 STATIC void uart_assign_irq(busio_uart_obj_t* self, USART_TypeDef* USARTx);
 
-void uart_reset(void) {
-    for (uint8_t i = 0; i < MAX_UART; i++) {
-        reserved_uart[i] = false;
-        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
-    }
-    uart_clock_disable(ALL_UARTS);
-}
+//--------
+//STATICS
+//--------
 
 STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval,
                                             int uart_index, bool uart_taken) {
@@ -68,6 +64,18 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eva
             mp_raise_ValueError(translate("Invalid UART pin selection"));
         }
     }
+}
+
+//--------
+//COMMON HAL
+//--------
+
+void uart_reset(void) {
+    for (uint8_t i = 0; i < MAX_UART; i++) {
+        reserved_uart[i] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
+    }
+    uart_clock_disable(ALL_UARTS);
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t* self,

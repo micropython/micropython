@@ -44,6 +44,10 @@ STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
 STATIC void tim_clock_enable(uint16_t mask);
 STATIC void tim_clock_disable(uint16_t mask);
 
+//--------
+//STATICS
+//--------
+
 // Get the frequency (in Hz) of the source clock for the given timer.
 // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
 // If the APB prescaler is 1, then the timer clock is equal to its respective
@@ -87,6 +91,10 @@ STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
     }
 }
 
+//--------
+//COMMON HAL
+//--------
+
 void pwmout_reset(void) {
     uint16_t never_reset_mask = 0x00;
     for(int i=0;i<TIM_BANK_ARRAY_LEN;i++) {
@@ -98,25 +106,6 @@ void pwmout_reset(void) {
         }
     }
     tim_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
-}
-
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
-    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
-        if (mcu_tim_banks[i] == self->handle.Instance) {
-            never_reset_tim[i] = true;
-            never_reset_pin_number(self->tim->pin->port, self->tim->pin->number);
-            break;
-        }
-    }
-}
-
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
-    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
-        if (mcu_tim_banks[i] == self->handle.Instance) {
-            never_reset_tim[i] = false;
-            break;
-        }
-    }
 }
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -239,6 +228,25 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     self->period = period;
 
     return PWMOUT_OK;
+}
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
+        if (mcu_tim_banks[i] == self->handle.Instance) {
+            never_reset_tim[i] = true;
+            never_reset_pin_number(self->tim->pin->port, self->tim->pin->number);
+            break;
+        }
+    }
+}
+
+void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    for(size_t i = 0 ; i < TIM_BANK_ARRAY_LEN; i++) {
+        if (mcu_tim_banks[i] == self->handle.Instance) {
+            never_reset_tim[i] = false;
+            break;
+        }
+    }
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {

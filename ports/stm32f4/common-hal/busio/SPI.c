@@ -46,6 +46,10 @@ STATIC bool never_reset_spi[MAX_SPI];
 STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 
+//--------
+//STATICS
+//--------
+
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     //SPI2 and 3 are on PCLK1, if they exist. 
     #ifdef SPI2
@@ -57,11 +61,41 @@ STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     return HAL_RCC_GetPCLK2Freq();
 }
 
+STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
+    static const uint32_t baud_map[8][2] = {
+        {2,SPI_BAUDRATEPRESCALER_2},
+        {4,SPI_BAUDRATEPRESCALER_4},
+        {8,SPI_BAUDRATEPRESCALER_8},
+        {16,SPI_BAUDRATEPRESCALER_16},
+        {32,SPI_BAUDRATEPRESCALER_32},
+        {64,SPI_BAUDRATEPRESCALER_64},
+        {128,SPI_BAUDRATEPRESCALER_128},
+        {256,SPI_BAUDRATEPRESCALER_256}
+    };
+    size_t i = 0;
+    uint16_t divisor;
+    do {
+        divisor = baud_map[i][0];
+        if (baudrate >= (busclock/divisor)) {
+            *prescaler = divisor;
+            return baud_map[i][1];
+        }
+        i++;
+    } while (divisor != 256);
+    //only gets here if requested baud is lower than minimum
+    *prescaler = 256;
+    return SPI_BAUDRATEPRESCALER_256;
+}
+
+//--------
+//COMMON HAL
+//--------
+
 void spi_reset(void) {
     uint16_t never_reset_mask = 0x00;
     for(int i=0;i<MAX_SPI;i++) {
         if (!never_reset_spi[i]) {
-            reserved_spi[i] = 0x00;
+            reserved_spi[i] = false;
         } else {
             never_reset_mask |= 1<<i;
         }
@@ -200,32 +234,6 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     self->sck = mp_const_none;
     self->mosi = mp_const_none;
     self->miso = mp_const_none;
-}
-
-STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
-    static const uint32_t baud_map[8][2] = {
-        {2,SPI_BAUDRATEPRESCALER_2},
-        {4,SPI_BAUDRATEPRESCALER_4},
-        {8,SPI_BAUDRATEPRESCALER_8},
-        {16,SPI_BAUDRATEPRESCALER_16},
-        {32,SPI_BAUDRATEPRESCALER_32},
-        {64,SPI_BAUDRATEPRESCALER_64},
-        {128,SPI_BAUDRATEPRESCALER_128},
-        {256,SPI_BAUDRATEPRESCALER_256}
-    };
-    size_t i = 0;
-    uint16_t divisor;
-    do {
-        divisor = baud_map[i][0];
-        if (baudrate >= (busclock/divisor)) {
-            *prescaler = divisor;
-            return baud_map[i][1];
-        }
-        i++;
-    } while (divisor != 256);
-    //only gets here if requested baud is lower than minimum
-    *prescaler = 256;
-    return SPI_BAUDRATEPRESCALER_256;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
