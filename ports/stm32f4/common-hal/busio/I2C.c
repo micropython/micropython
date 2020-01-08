@@ -110,7 +110,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
-    //Note: clock reset must be before GPIO init, due to I2C soft reboot issue
+    //Note: due to I2C soft reboot issue, do not relocate clock init.
     i2c_clock_enable(1<<(self->sda->i2c_index - 1));
     reserved_i2c[self->sda->i2c_index - 1] = true;
 
