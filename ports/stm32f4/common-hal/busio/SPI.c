@@ -39,13 +39,12 @@
 // Note that any bugs introduced in this file can cause crashes at startup
 // for chips using external SPI flash.
 
-#define MAX_SPI 6 //TODO; replace this as part of periph cleanup
-#define ALL_CLOCKS 0xFF
-
 //arrays use 0 based numbering: SPI1 is stored at index 0
+#define MAX_SPI 6
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
 
+#define ALL_CLOCKS 0xFF
 STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 

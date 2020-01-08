@@ -40,6 +40,7 @@
 
 #define ALL_UARTS 0xFFFF
 
+//arrays use 0 based numbering: UART1 is stored at index 0
 STATIC bool reserved_uart[MAX_UART];
 int errflag; //Used to restart read halts
 

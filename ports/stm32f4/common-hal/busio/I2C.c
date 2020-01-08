@@ -35,6 +35,7 @@
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
+//arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 3
 STATIC bool reserved_i2c[MAX_I2C];
 STATIC bool never_reset_i2c[MAX_I2C];
@@ -93,10 +94,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         }
     }
 
-    //Note: clock reset must be before GPIO init, due to I2C soft reboot issue
-    i2c_clock_enable(1<<(self->sda->i2c_index - 1));
-    reserved_i2c[self->sda->i2c_index - 1] = true;
-
     //Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(sda->number);
@@ -113,22 +110,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Alternate = self->scl->altfn_index; 
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
-    //still needed? 
-    #ifdef I2C1
-    __HAL_RCC_I2C1_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C1_RELEASE_RESET();
-    #endif
-    #ifdef I2C2
-    __HAL_RCC_I2C2_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C2_RELEASE_RESET();
-    #endif
-    #ifdef I2C2
-    __HAL_RCC_I2C3_FORCE_RESET();
-    HAL_Delay(2);
-    __HAL_RCC_I2C3_RELEASE_RESET();
-    #endif
+    //Note: clock reset must be before GPIO init, due to I2C soft reboot issue
+    i2c_clock_enable(1<<(self->sda->i2c_index - 1));
+    reserved_i2c[self->sda->i2c_index - 1] = true;
 
     self->handle.Instance = I2Cx;
     self->handle.Init.ClockSpeed = 100000;
@@ -139,6 +123,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->handle.Init.OwnAddress2 = 0;
     self->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     self->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    self->handle.State = HAL_I2C_STATE_RESET;
     if(HAL_I2C_Init(&(self->handle)) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     }
