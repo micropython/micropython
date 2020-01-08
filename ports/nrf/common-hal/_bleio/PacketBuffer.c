@@ -65,6 +65,10 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
 }
 
 STATIC uint32_t queue_next_write(bleio_packet_buffer_obj_t *self) {
+    // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
+    // transmission (when packet_queued is true) and the other is `pending` and can still be
+    // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead
+    // of the lower level link and ATT layers.
     self->packet_queued = false;
     if (self->pending_size > 0) {
         uint16_t conn_handle = self->conn_handle;
@@ -311,7 +315,7 @@ uint16_t common_hal_bleio_packet_buffer_get_packet_size(bleio_packet_buffer_obj_
         }
     }
     if (connection->mtu == 0) {
-        mtu = 23;
+        mtu = BLE_GATT_ATT_MTU_DEFAULT;
     }
     if (self->characteristic->max_length > mtu) {
         mtu = self->characteristic->max_length;

@@ -37,6 +37,8 @@ typedef struct {
     bleio_characteristic_obj_t *characteristic;
     // Ring buffer storing consecutive incoming values.
     ringbuf_t ringbuf;
+    // Two outgoing buffers to alternate between. One will be queued for transmission by the SD and
+    // the other is waiting to be queued and can be extended.
     uint8_t* outgoing[2];
     uint16_t pending_size;
     uint16_t conn_handle;
