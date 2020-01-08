@@ -97,6 +97,16 @@ static NRF_PWM_Type* find_free_pwm (void) {
     return NULL;
 }
 
+static uint16_t* pixels_pattern_heap = NULL;
+static size_t pixels_pattern_heap_size = 0;
+static bool pattern_on_heap = false;
+// Called during reset_port() to free the pattern buffer
+void neopixel_write_reset(void) {
+    pixels_pattern_heap = NULL;
+    pixels_pattern_heap_size = 0;
+    pattern_on_heap = false;
+}
+
 uint64_t next_start_tick_ms = 0;
 uint32_t next_start_tick_us = 1000;
 
@@ -113,12 +123,8 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     // using DWT
 
 #define PATTERN_SIZE(numBytes) (numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t))
-
     uint32_t pattern_size = PATTERN_SIZE(numBytes);
     uint16_t* pixels_pattern = NULL;
-    static uint16_t* pixels_pattern_heap = NULL;
-    static size_t pixels_pattern_heap_size = 0;
-    bool pattern_on_heap = false;
 
     // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
     // Make it at least as big as PATTERN_SIZE(3), for one pixel of RGB data.
