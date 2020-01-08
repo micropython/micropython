@@ -141,7 +141,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
 
-            if (!pattern_on_heap || pixels_pattern_heap_size < pattern_size) {
+            if (pixels_pattern_heap_size < pattern_size) {
                 if (pattern_on_heap) {
                     m_free(pixels_pattern_heap);
                     pixels_pattern = NULL;
