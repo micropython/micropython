@@ -116,6 +116,8 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     uint32_t pattern_size = PATTERN_SIZE(numBytes);
     uint16_t* pixels_pattern = NULL;
+    static uint16_t* pixels_pattern_heap = NULL;
+    static size_t pixels_pattern_heap_size = 0;
     bool pattern_on_heap = false;
 
     // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
@@ -132,16 +134,29 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         } else {
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
-            if (sd_en) {
-                // If the soft device is enabled then we must use PWM to
-                // transmit. This takes a bunch of memory to do so raise an
-                // exception if we can't.
-                pixels_pattern = (uint16_t *) m_malloc(pattern_size, false);
-            } else {
-                pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
-            }
 
-            pattern_on_heap = true;
+            if (!pattern_on_heap || pixels_pattern_heap_size < pattern_size) {
+                if (pattern_on_heap) {
+                    m_free(pixels_pattern_heap);
+                    pixels_pattern = NULL;
+                    pixels_pattern_heap = NULL;
+                    pixels_pattern_heap_size = 0;
+                }
+
+                if (sd_en) {
+                    // If the soft device is enabled then we must use PWM to
+                    // transmit. This takes a bunch of memory to do so raise an
+                    // exception if we can't.
+                    pixels_pattern_heap = (uint16_t *) m_malloc(pattern_size, false);
+                } else {
+                    pixels_pattern_heap = (uint16_t *) m_malloc_maybe(pattern_size, false);
+                }
+                if (pixels_pattern_heap) {
+                    pattern_on_heap = true;
+                    pixels_pattern_heap_size = pattern_size;
+                }
+            }
+            pixels_pattern = pixels_pattern_heap;
         }
     }
 
@@ -222,10 +237,6 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // TODO: Check if disabling the device causes performance issues.
         nrf_pwm_disable(pwm);
         nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
-
-        if (pattern_on_heap) {
-            m_free(pixels_pattern);
-        }
 
     } // End of DMA implementation
     // ---------------------------------------------------------------------
