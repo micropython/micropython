@@ -31,7 +31,6 @@
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
-#include "tick.h"
 #endif
 
 #include "nrf_rng.h"
@@ -81,7 +80,6 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
                 length -= request;
             } else {
                 RUN_BACKGROUND_TASKS;
-                tick_delay(500);
             }
         }
         return true;
