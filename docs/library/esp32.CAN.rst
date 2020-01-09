@@ -14,9 +14,9 @@ Example usage (works without anything connected)::
 
     from machine import CAN
     can = CAN(0, extframe=True, mode=CAN.LOOPBACK, baudrate=CAN.BAUDRATE_500k)
-    can.setfilter(0, CAN.LIST16, 0, (123, 124, 125, 126))  # set a filter to receive messages with id=123, 124, 125 and 126
-    can.send([1,2,3], 123)   # send a message with id 123
-    can.recv()                  # receive message
+    dev.setfilter(0, CAN.FILTER_ADDRESS, [0x102, 0])  # set a filter to receive messages with id = 0x102
+    can.send([1,2,3], 0x102)   # send a message with id 123
+    can.recv()                 # receive message
 
 
 Constructors
@@ -45,7 +45,7 @@ Methods
      - *baudrate* is used to define a standard speed. If it is defined, the *prescaler*, *sjw*, *bs1*, *bs2*
        will be ignored. Standard speeds are 25, 50, 100, 125, 250, 500, 1000
      - *prescaler* is used to set the duration of 1 time quanta; the time quanta
-       will be the input clock (PCLK1, see :meth:`pyb.freq()`) divided by the prescaler
+       will be the input clock divided by the prescaler
      - *sjw* is the resynchronisation jump width in units of the time quanta;
        it can be 1, 2, 3, 4
      - *bs1* defines the location of the sample point in units of the time quanta;
@@ -293,25 +293,9 @@ Constants
 
    Possible states of the CAN controller returned from :meth:`~CAN.state()`.
 
-.. data:: CAN.LIST16 TODO:
-          CAN.MASK16
-          CAN.LIST32
-          CAN.MASK32
+.. data:: CAN.FILTER_RAW_SINGLE
+          CAN.FILTER_RAW_DUAL
+          CAN.FILTER_ADDRESS
 
    The operation mode of a filter used in :meth:`~CAN.setfilter()`.
 
-.. data:: CAN.ALERT_TX_IDLE
-          CAN.ALERT_TX_SUCCESS
-          CAN.ALERT_BELOW_ERR_WARN
-          CAN.ALERT_ERR_ACTIVE
-          CAN.ALERT_RECOVERY_IN_PROGRESS
-          CAN.ALERT_BUS_RECOVERED
-          CAN.ALERT_ARB_LOST
-          CAN.ALERT_ABOVE_ERR_WARN
-          CAN.ALERT_BUS_ERROR
-          CAN.ALERT_TX_FAILED
-          CAN.ALERT_RX_QUEUE_FULL
-          CAN.ALERT_ERR_PASS
-          CAN.ALERT_BUS_OFF
-
-   Possibile bit position of alert mask returned by :meth:`~CAN.get_alerts()`.
