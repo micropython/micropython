@@ -46,11 +46,11 @@ STATIC void i2c_clock_disable(uint8_t mask);
 
 void i2c_reset(void) {
     uint16_t never_reset_mask = 0x00;
-    for(int i=0;i<MAX_I2C;i++) {
+    for(int i = 0; i < MAX_I2C; i++) {
         if (!never_reset_i2c[i]) {
             reserved_i2c[i] = false;
         } else {
-            never_reset_mask |= 1<<i;
+            never_reset_mask |= 1 << i;
         }
     }
     i2c_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
@@ -61,17 +61,17 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     //match pins to I2C objects
     I2C_TypeDef * I2Cx;
-    uint8_t sda_len = sizeof(mcu_i2c_sda_list)/sizeof(*mcu_i2c_sda_list);
-    uint8_t scl_len = sizeof(mcu_i2c_scl_list)/sizeof(*mcu_i2c_scl_list);
+    uint8_t sda_len = sizeof(mcu_i2c_sda_list) / sizeof(*mcu_i2c_sda_list);
+    uint8_t scl_len = sizeof(mcu_i2c_scl_list) / sizeof(*mcu_i2c_scl_list);
     bool i2c_taken = false;
 
-    for(uint i=0; i<sda_len;i++) {
+    for (uint i = 0; i < sda_len; i++) {
         if (mcu_i2c_sda_list[i].pin == sda) {
-            for(uint j=0; j<scl_len;j++) {
+            for (uint j = 0; j < scl_len; j++) {
                 if ((mcu_i2c_scl_list[j].pin == scl)
                     && (mcu_i2c_scl_list[j].i2c_index == mcu_i2c_sda_list[i].i2c_index)) {
                     //keep looking if the I2C is taken, could be another SCL that works
-                    if(reserved_i2c[mcu_i2c_scl_list[i].i2c_index-1]) {
+                    if (reserved_i2c[mcu_i2c_scl_list[i].i2c_index - 1]) {
                         i2c_taken = true;
                         continue;
                     }
@@ -84,8 +84,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if(self->sda!=NULL && self->scl!=NULL ) {
-        I2Cx = mcu_i2c_banks[self->sda->i2c_index-1];
+    if (self->sda != NULL && self->scl != NULL ) {
+        I2Cx = mcu_i2c_banks[self->sda->i2c_index - 1];
     } else {
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -111,7 +111,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
     //Note: due to I2C soft reboot issue, do not relocate clock init.
-    i2c_clock_enable(1<<(self->sda->i2c_index - 1));
+    i2c_clock_enable(1 << (self->sda->i2c_index - 1));
     reserved_i2c[self->sda->i2c_index - 1] = true;
 
     self->handle.Instance = I2Cx;
@@ -124,7 +124,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     self->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     self->handle.State = HAL_I2C_STATE_RESET;
-    if(HAL_I2C_Init(&(self->handle)) != HAL_OK) {
+    if (HAL_I2C_Init(&(self->handle)) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     }
     claim_pin(sda);
@@ -132,7 +132,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
-    for (size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_i2c_banks); i++) {
         if (self->handle.Instance == mcu_i2c_banks[i]) {
             never_reset_i2c[i] = true;
 
@@ -152,7 +152,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_clock_disable(1<<(self->sda->i2c_index - 1));
+    i2c_clock_disable(1 << (self->sda->i2c_index - 1));
     reserved_i2c[self->sda->i2c_index - 1] = false;
     never_reset_i2c[self->sda->i2c_index - 1] = false;
 
@@ -163,7 +163,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    return HAL_I2C_IsDeviceReady(&(self->handle), (uint16_t)(addr<<1),2,2) == HAL_OK;
+    return HAL_I2C_IsDeviceReady(&(self->handle), (uint16_t)(addr << 1), 2, 2) == HAL_OK;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -195,13 +195,15 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr<<1), (uint8_t *)data, (uint16_t)len, 500);
+    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr << 1), 
+                                                        (uint8_t *)data, (uint16_t)len, 500);
     return result == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500) == HAL_OK ? 0 : MP_EIO;
+    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500) 
+                                    == HAL_OK ? 0 : MP_EIO;
 }
 
 STATIC void i2c_clock_enable(uint8_t mask) {
@@ -231,12 +233,18 @@ STATIC void i2c_clock_enable(uint8_t mask) {
 
 STATIC void i2c_clock_disable(uint8_t mask) {
     #ifdef I2C1
-    if (mask & 1<<0) __HAL_RCC_I2C1_CLK_DISABLE();
+    if (mask & 1<<0) {
+        __HAL_RCC_I2C1_CLK_DISABLE();
+    }
     #endif
     #ifdef I2C2
-    if (mask & 1<<1) __HAL_RCC_I2C2_CLK_DISABLE();
+    if (mask & 1<<1) {
+        __HAL_RCC_I2C2_CLK_DISABLE();
+    }
     #endif
     #ifdef I2C3
-    if (mask & 1<<2) __HAL_RCC_I2C3_CLK_DISABLE();
+    if (mask & 1<<2) {
+        __HAL_RCC_I2C3_CLK_DISABLE();
+    }
     #endif
 }
