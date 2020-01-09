@@ -6,14 +6,6 @@
 
 //#define MICROPY_HW_NEOPIXEL (&pin_PB22)
 
-// These are pins not to reset.
-// QSPI Data pins
-//#define MICROPY_PORT_A ( PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 )
-// QSPI CS, and QSPI SCK
-//#define MICROPY_PORT_B ( PORT_PB10 | PORT_PB11 | PORT_PB22 )
-//#define MICROPY_PORT_C ( 0 )
-//#define MICROPY_PORT_D ( 0 )
-
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0

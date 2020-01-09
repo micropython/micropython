@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2017 Artur Pacholec
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ */
+/*
+ * Copyright 2018 NXP
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include "boards/board.h"
@@ -54,16 +60,139 @@
 #include "fsl_gpio.h"
 #include "fsl_lpuart.h"
 
-void mpu_init(void)
-{
-	ARM_MPU_Disable();
+// Device memories must be accessed in order.
+#define DEVICE 2
+// Normal memory can have accesses reorder and prefetched.
+#define NORMAL 0
 
-	SCB_EnableDCache();
-	SCB_EnableICache();
+// Prevents instruction access.
+#define NO_EXECUTION 1
+#define EXECUTION 0
+
+// Shareable if the memory system manages coherency.
+#define NOT_SHAREABLE 0
+#define SHAREABLE 1
+
+//
+#define NOT_CACHEABLE 0
+#define CACHEABLE 1
+
+#define NOT_BUFFERABLE 0
+#define BUFFERABLE 1
+
+#define NO_SUBREGIONS 0
+
+extern uint32_t _ld_flash_size;
+
+extern uint8_t _ld_dtcm_bss_start;
+extern uint8_t _ld_dtcm_bss_end;
+extern uint8_t _ld_dtcm_data_destination;
+extern uint8_t _ld_dtcm_data_size;
+extern uint8_t _ld_dtcm_data_flash_copy;
+extern uint8_t _ld_itcm_destination;
+extern uint8_t _ld_itcm_size;
+extern uint8_t _ld_itcm_flash_copy;
+
+// This is called before RAM is setup! Be very careful what you do here.
+void SystemInitHook(void) {
+    // asm("bkpt");
+    /* Disable I cache and D cache */
+    if (SCB_CCR_IC_Msk == (SCB_CCR_IC_Msk & SCB->CCR))
+    {
+        SCB_DisableICache();
+    }
+    if (SCB_CCR_DC_Msk == (SCB_CCR_DC_Msk & SCB->CCR))
+    {
+        SCB_DisableDCache();
+    }
+    // Configure FlexRAM. The e is one block of ITCM (0b11) and DTCM (0b10). The rest is two OCRAM
+    // (0b01). We shift in zeroes for all unimplemented banks.
+    IOMUXC_GPR->GPR17 = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
+
+    // Switch from FlexRAM fuse config to the IOMUXC values.
+    IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL(1);
+
+    // Let the core know the TCM sizes changed.
+    uint32_t current_gpr14 = IOMUXC_GPR->GPR14;
+    current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK;
+    current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(0x6);
+    current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK;
+    current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(0x6);
+    IOMUXC_GPR->GPR14 = current_gpr14;
+
+    /* Disable MPU */
+    ARM_MPU_Disable();
+
+    // Copy all of the code to run from ITCM.
+    memcpy(&_ld_itcm_destination, &_ld_itcm_flash_copy, (size_t) &_ld_itcm_size);
+
+    // Copy all of the data to run from DTCM.
+    memcpy(&_ld_dtcm_data_destination, &_ld_dtcm_data_flash_copy, (size_t) &_ld_dtcm_data_size);
+
+    // Clear DTCM bss.
+    memset(&_ld_dtcm_bss_start, 0, (size_t) (&_ld_dtcm_bss_end - &_ld_dtcm_bss_start));
+
+    // The first number in RBAR is the region number. When searching for a policy, the region with
+    // the highest number wins. If none match, then the default policy set at enable applies.
+
+    // This is an undocumented region and is likely more registers.
+    MPU->RBAR = ARM_MPU_RBAR(8, 0xC0000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, DEVICE, NOT_SHAREABLE, NOT_CACHEABLE, NOT_BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512MB);
+
+    // This is the SEMC region where external RAM and 8+ flash would live. Disable for now, even though the EVKs have stuff here.
+    MPU->RBAR = ARM_MPU_RBAR(9, 0x80000000U);
+    MPU->RASR = ARM_MPU_RASR(NO_EXECUTION, ARM_MPU_AP_NONE, DEVICE, NOT_SHAREABLE, NOT_CACHEABLE, NOT_BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_1GB);
+
+    // FlexSPI2 is 0x70000000
+
+    // This the first 1MB of flash is the bootloader and CircuitPython read-only data.
+    MPU->RBAR = ARM_MPU_RBAR(10, 0x60000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_1MB);
+
+    // The remainder of flash is the fat filesystem which could have code on it too. Make sure that
+    // we set the region to the minimal size so that bad data doesn't get speculatively fetched.
+    // Thanks to Damien for the tip!
+    uint32_t region_size = ARM_MPU_REGION_SIZE_32B;
+    uint32_t filesystem_size = &_ld_filesystem_end - &_ld_filesystem_start;
+    while (filesystem_size > (1u << (region_size + 1))) {
+        region_size += 1;
+    }
+    // Mask out as much of the remainder as we can. For example on an 8MB flash, 7MB are for the
+    // filesystem. The region_size here must be a power of 2 so it is 8MB. Using the subregion mask
+    // we can ignore 1/8th size chunks. So, we ignore the last 1MB using the subregion.
+    uint32_t remainder = (1u << (region_size + 1)) - filesystem_size;
+    uint32_t subregion_size = (1u << (region_size + 1)) / 8;
+    uint16_t subregion_mask = 0xff00 >> (remainder / subregion_size);
+
+    MPU->RBAR = ARM_MPU_RBAR(11, 0x60100000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, (uint8_t) subregion_mask, region_size);
+
+    // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
+    // accidentally write the wrong value to 0x00000000 (aka NULL).
+    MPU->RBAR = ARM_MPU_RBAR(12, 0x00000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_32KB);
+
+    // This the DTCM.
+    MPU->RBAR = ARM_MPU_RBAR(13, 0x20000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_32KB);
+
+    // This is OCRAM.
+    MPU->RBAR = ARM_MPU_RBAR(14, 0x20200000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
+
+    // We steal 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
+    MPU->RBAR = ARM_MPU_RBAR(15, 0x20280000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, 0x80, ARM_MPU_REGION_SIZE_512KB);
+
+    /* Enable MPU */
+    ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
+
+    /* Enable I cache and D cache */
+    SCB_EnableDCache();
+    SCB_EnableICache();
 }
 
 safe_mode_t port_init(void) {
-    mpu_init();
     clocks_init();
 
     // Configure millisecond timer initialization.
@@ -129,7 +258,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    SNVS->LPGPR[0] = DBL_TAP_MAGIC;
     reset();
 }
 
@@ -137,23 +266,64 @@ void reset_cpu(void) {
     reset();
 }
 
-extern uint32_t _heap_start, _estack;
+extern uint32_t _ld_heap_start, _ld_heap_end, _ld_stack_top, _ld_stack_bottom;
 uint32_t *port_stack_get_limit(void) {
-    return &_heap_start;
+    return &_ld_heap_start;
 }
 
 uint32_t *port_stack_get_top(void) {
-    return &_estack;
+    return &_ld_stack_top;
 }
 
-extern uint32_t __bss_end__;
+uint32_t *port_heap_get_bottom(void) {
+    return &_ld_heap_start;
+}
+
+// Get heap top address
+uint32_t *port_heap_get_top(void) {
+    return &_ld_heap_end;
+}
+
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
-    __bss_end__ = value;
+    SNVS->LPGPR[1] = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return __bss_end__;
+    return SNVS->LPGPR[1];
+}
+
+/**
+ * \brief Default interrupt handler for unused IRQs.
+ */
+__attribute__((used)) void MemManage_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
+}
+
+/**
+ * \brief Default interrupt handler for unused IRQs.
+ */
+__attribute__((used)) void BusFault_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
+}
+
+/**
+ * \brief Default interrupt handler for unused IRQs.
+ */
+__attribute__((used)) void UsageFault_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
 }
 
 /**
@@ -166,3 +336,4 @@ __attribute__((used)) void HardFault_Handler(void)
         asm("nop;");
     }
 }
+
