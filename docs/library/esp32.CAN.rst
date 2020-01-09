@@ -43,7 +43,7 @@ Methods
      - if *extframe* is True then the bus uses extended identifiers in the frames
        (29 bits); otherwise it uses standard 11 bit identifiers
      - *baudrate* is used to define a standard speed. If it is defined, the *prescaler*, *sjw*, *bs1*, *bs2*
-       will be ignored. Standard speeds are available as CAN.BAUDRATE_*
+       will be ignored. Standard speeds are 25, 50, 100, 125, 250, 500, 1000
      - *prescaler* is used to set the duration of 1 time quanta; the time quanta
        will be the input clock (PCLK1, see :meth:`pyb.freq()`) divided by the prescaler
      - *sjw* is the resynchronisation jump width in units of the time quanta;
@@ -210,6 +210,24 @@ Methods
 .. method:: CAN.get_alerts()
 
    Read the alert status word directly from hardware.
+   In order to save space in the firmware, the constants for the result decoding are not included on the :mod:`machine.CAN` module. Add the ones that you need from the list below to your program.
+
+   The event codes are::
+
+    from micropython import const
+    CAN_ALERT_TX_IDLE                 = const(0x0001)
+    CAN_ALERT_TX_SUCCESS              = const(0x0002)
+    CAN_ALERT_BELOW_ERR_WARN          = const(0x0004)
+    CAN_ALERT_ERR_ACTIVE              = const(0x0008)
+    CAN_ALERT_RECOVERY_IN_PROGRESS    = const(0x0010)
+    CAN_ALERT_BUS_RECOVERED           = const(0x0020)
+    CAN_ALERT_ARB_LOST                = const(0x0040)
+    CAN_ALERT_ABOVE_ERR_WARN          = const(0x0080)
+    CAN_ALERT_BUS_ERROR               = const(0x0100)
+    CAN_ALERT_TX_FAILED               = const(0x0200)
+    CAN_ALERT_RX_QUEUE_FULL           = const(0x0400)
+    CAN_ALERT_ERR_PASS                = const(0x0800)
+    CAN_ALERT_BUS_OFF                 = const(0x1000)
    
 
 .. method:: CAN.rxcallback(fifo, fun) TODO: NOT YET IMPLEMENTED
