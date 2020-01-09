@@ -81,11 +81,6 @@ void mp_init(void) {
     MP_STATE_VM(mp_kbd_exception).args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
     #endif
 
-    // call port specific initialization if any
-#ifdef MICROPY_PORT_INIT_FUNC
-    MICROPY_PORT_INIT_FUNC;
-#endif
-
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
@@ -140,19 +135,24 @@ void mp_init(void) {
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
 
+    // call port specific initialization if any
+    #ifdef MICROPY_PORT_INIT_FUNC
+    MICROPY_PORT_INIT_FUNC;
+    #endif
+
     MP_THREAD_GIL_ENTER();
 }
 
 void mp_deinit(void) {
     MP_THREAD_GIL_EXIT();
 
+    // call port specific deinitialization if any
+    #ifdef MICROPY_PORT_DEINIT_FUNC
+    MICROPY_PORT_DEINIT_FUNC;
+    #endif
+
     //mp_obj_dict_free(&dict_main);
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
-
-    // call port specific deinitialization if any
-#ifdef MICROPY_PORT_DEINIT_FUNC
-    MICROPY_PORT_DEINIT_FUNC;
-#endif
 }
 
 mp_obj_t mp_load_name(qstr qst) {
