@@ -61,6 +61,7 @@
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_UERRNO           (1) // TODO add all kernel errnos?
 #define MICROPY_PY_STRUCT           (1)
