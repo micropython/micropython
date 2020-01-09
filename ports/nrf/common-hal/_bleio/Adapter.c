@@ -670,5 +670,4 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
         bleio_connection_internal_t *connection = &connections[i];
         connection->connection_obj = mp_const_none;
     }
-    bonding_reset();
 }

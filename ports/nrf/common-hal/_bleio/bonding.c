@@ -34,7 +34,7 @@
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/nvm/ByteArray.h"
 
-#include "nrf_nvmc.h"
+#include "nrf_soc.h"
 #include "sd_mutex.h"
 
 #include "bonding.h"
@@ -68,15 +68,17 @@ STATIC inline size_t compute_block_size(uint16_t data_length) {
 
 STATIC void erase_bonding_storage(void) {
     // Erase all pages in the bonding area.
-    BONDING_DEBUG_PRINTF("erase_bonding_storage()\n");
     for(uint32_t page_address = BONDING_PAGES_START_ADDR;
         page_address < BONDING_PAGES_END_ADDR;
         page_address += FLASH_PAGE_SIZE) {
-        nrf_nvmc_page_erase(page_address);
+        // Argument is page number, not address.
+        sd_flash_page_erase_sync(page_address / FLASH_PAGE_SIZE);
     }
     // Write marker words at the beginning and the end of the bonding area.
-    nrf_nvmc_write_word(BONDING_DATA_START_ADDR, BONDING_START_FLAG_ADDR);
-    nrf_nvmc_write_word(BONDING_DATA_END_ADDR, BONDING_END_FLAG_ADDR);
+    uint32_t flag = BONDING_START_FLAG;
+    sd_flash_write_sync((uint32_t *) BONDING_DATA_START_ADDR, &flag, 1);
+    flag = BONDING_END_FLAG;
+    sd_flash_write_sync((uint32_t *) BONDING_DATA_END_ADDR, &flag, 1);
     // First unused block is at the beginning.
     bonding_unused_block = (bonding_block_t *) BONDING_DATA_START_ADDR;
 }
@@ -135,7 +137,8 @@ STATIC bonding_block_t *find_block(bool is_central, bonding_block_type_t type, u
 // We don't change data_length, so we can still skip over this block.
 STATIC void invalidate_block(bonding_block_t *block) {
     BONDING_DEBUG_PRINTF("invalidate_block()\n");
-    nrf_nvmc_write_word((uint32_t) block, 0x00000000);
+    uint32_t zero = 0;
+    sd_flash_write_sync((uint32_t *) block, &zero, 1);
 }
 
 STATIC void queue_write_block(bool is_central, bonding_block_type_t type, uint16_t ediv, uint16_t conn_handle, uint8_t *data, uint16_t data_length) {
@@ -178,7 +181,7 @@ STATIC void write_block_header(bonding_block_t *block) {
         erase_bonding_storage();
     }
 
-    nrf_nvmc_write_words((uint32_t) bonding_unused_block, (uint32_t *) block, sizeof(bonding_block_t) / 4);
+    sd_flash_write_sync((uint32_t *) bonding_unused_block, (uint32_t *) block, sizeof(bonding_block_t) / 4);
 }
 
 // Write variable-length data at end of bonding block.
@@ -190,7 +193,7 @@ STATIC void write_block_data(uint8_t *data, uint16_t data_length) {
     while (1) {
         uint32_t word = 0xffffffff;
         memcpy(&word, data, data_length >= 4 ? 4 : data_length);
-        nrf_nvmc_write_word((uint32_t) flash_word_p, word);
+        sd_flash_write_sync(flash_word_p, &word, 1);
         if (data_length <= 4) {
             break;
         }
@@ -242,8 +245,9 @@ void bonding_clear_keys(bonding_keys_t *bonding_keys) {
     memset((uint8_t*) bonding_keys, 0, sizeof(bonding_keys_t));
 }
 
+// Call only when SD is enabled.
 void bonding_reset(void) {
-    BONDING_DEBUG_PRINTF("bonding_reset()\n");
+    MP_STATE_VM(queued_bonding_block_list) = NULL;
     sd_mutex_new(&queued_bonding_block_list_mutex);
     if (BONDING_START_FLAG != *((uint32_t *) BONDING_START_FLAG_ADDR) ||
         BONDING_END_FLAG != *((uint32_t *) BONDING_END_FLAG_ADDR)) {
@@ -256,18 +260,20 @@ void bonding_reset(void) {
 // Write bonding blocks to flash. These have been queued during event handlers.
 // We do one at a time, on each background call.
 void bonding_background(void) {
-
+    uint8_t sd_en = 0;
+    (void) sd_softdevice_is_enabled(&sd_en);
+    if (!sd_en) {
+        return;
+    }
     // Get block at front of list.
     sd_mutex_acquire_wait(&queued_bonding_block_list_mutex);
-    bonding_block_t *block = &(MP_STATE_VM(queued_bonding_block_list)->bonding_block);
+    bonding_block_t *block = (bonding_block_t *) MP_STATE_VM(queued_bonding_block_list);
     if (block) {
-        // Remove written block from front of list.
+        // Remove block from list.
         MP_STATE_VM(queued_bonding_block_list) = MP_STATE_VM(queued_bonding_block_list)->next_queued_block;
     }
     sd_mutex_release(&queued_bonding_block_list_mutex);
-
     if (!block) {
-        // No blocks in queue.
         return;
     }
 

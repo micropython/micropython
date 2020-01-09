@@ -133,7 +133,8 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
         common_hal_bleio_characteristic_set_value(self, initial_value_bufinfo);
     }
 
-    ble_drv_add_event_handler(characteristic_on_ble_evt, self);
+    self->handler_entry.next = NULL;
+////////////////    ble_drv_add_event_handler_entry(&self->handler_entry, characteristic_on_ble_evt, self);
 }
 
 bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
@@ -286,4 +287,9 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         check_nrf_error(err_code);
     }
 
+}
+
+void common_hal_bleio_characteristic_del(bleio_characteristic_obj_t *self) {
+    // Remove from event handler list, since the evt handler entry is built-in and not a heap object.
+    ble_drv_remove_event_handler(characteristic_on_ble_evt, self);
 }

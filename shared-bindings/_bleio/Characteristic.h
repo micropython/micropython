@@ -45,5 +45,6 @@ extern bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_li
 extern bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_characteristic_obj_t *self);
 extern void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor);
 extern void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate);
+extern void common_hal_bleio_characteristic_del(bleio_characteristic_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_CHARACTERISTIC_H

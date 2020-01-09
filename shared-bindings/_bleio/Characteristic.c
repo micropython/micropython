@@ -128,7 +128,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     }
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
 
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
+    // There may be some cleanup needed when a characteristic is gc'd, so enable finaliser.
+    bleio_characteristic_obj_t *characteristic = m_new_obj_with_finaliser(bleio_characteristic_obj_t);
     characteristic->base.type = &bleio_characteristic_type;
 
     // Range checking on max_length arg is done by the common_hal layer, because
@@ -292,8 +293,17 @@ STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_set_cccd_obj, 1, bleio_characteristic_set_cccd);
 
+// Cleanup on gc.
+STATIC mp_obj_t bleio_characteristic_del(mp_obj_t self_in) {
+    bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_bleio_characteristic_del(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_del_obj, bleio_characteristic_del);
+
 
 STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__),        MP_ROM_PTR(&bleio_characteristic_del_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_to_service), MP_ROM_PTR(&bleio_characteristic_add_to_service_obj) },
     { MP_ROM_QSTR(MP_QSTR_properties),     MP_ROM_PTR(&bleio_characteristic_properties_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),           MP_ROM_PTR(&bleio_characteristic_uuid_obj) },

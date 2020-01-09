@@ -94,6 +94,7 @@ void bleio_reset() {
         common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     }
     supervisor_start_bluetooth();
+    bonding_reset();
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter

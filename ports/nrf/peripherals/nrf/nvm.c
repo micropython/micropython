@@ -38,29 +38,62 @@
 #include "ble_drv.h"
 #include "nrf_sdm.h"
 
+STATIC bool sd_is_enabled(void) {
+    uint8_t sd_en = 0;
+    (void) sd_softdevice_is_enabled(&sd_en);
+    return sd_en;
+}
+
 STATIC void sd_flash_operation_start(void) {
     sd_flash_operation_status = SD_FLASH_OPERATION_IN_PROGRESS;
 }
 
 STATIC sd_flash_operation_status_t sd_flash_operation_wait_until_done(void) {
-    while (sd_flash_operation_status == SD_FLASH_OPERATION_IN_PROGRESS) {
-        sd_app_evt_wait();
+    // If the SD is not enabled, no events are generated, so just return immediately.
+    if (sd_is_enabled()) {
+        while (sd_flash_operation_status == SD_FLASH_OPERATION_IN_PROGRESS) {
+            sd_app_evt_wait();
+        }
+    } else {
+        sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
     }
     return sd_flash_operation_status;
+
 }
+
+bool sd_flash_page_erase_sync(uint32_t page_number) {
+    sd_flash_operation_start();
+    if (sd_flash_page_erase(page_number) != NRF_SUCCESS) {
+        return false;
+    }
+    if (sd_flash_operation_wait_until_done() == SD_FLASH_OPERATION_ERROR) {
+        return false;
+    }
+    return true;
+}
+
+bool sd_flash_write_sync(uint32_t *dest_words, uint32_t* src_words, uint32_t num_words) {
+    sd_flash_operation_start();
+    if (sd_flash_write(dest_words, src_words, num_words) != NRF_SUCCESS) {
+        return false;
+    }
+    if (sd_flash_operation_wait_until_done() == SD_FLASH_OPERATION_ERROR) {
+        return false;
+    }
+    return true;
+}
+
 #endif
 
 // The nRF52840 datasheet specifies a maximum of two writes to a flash
 // location before an erase is necessary, even if the write is all
 // ones (erased state).  So we can't avoid erases even if the page
 // appears to be already erased (all ones), unless we keep track of
-// writes to a page.
+// writes to a page.g
 
 bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
     #ifdef BLUETOOTH_SD
-        uint8_t sd_en = 0;
-        (void) sd_softdevice_is_enabled(&sd_en);
-        if (sd_en) {
+        if (sd_is_enabled()) {
             uint32_t err_code;
             sd_flash_operation_status_t status;
 

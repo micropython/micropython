@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Dan Halbert for Adafruit Industries
- * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+#ifndef MICROPY_INCLUDED_NRF_SD_MUTEX_H
+#define MICROPY_INCLUDED_NRF_SD_MUTEX_H
 
-#include "shared-bindings/_bleio/Attribute.h"
-#include "common-hal/_bleio/Descriptor.h"
-#include "shared-module/_bleio/Characteristic.h"
-#include "common-hal/_bleio/Service.h"
-#include "common-hal/_bleio/UUID.h"
+#include "nrf_soc.h"
 
-typedef struct _bleio_characteristic_obj {
-    mp_obj_base_t base;
-    // Will be MP_OBJ_NULL before being assigned to a Service.
-    bleio_service_obj_t *service;
-    bleio_uuid_obj_t *uuid;
-    mp_obj_t value;
-    uint16_t max_length;
-    bool fixed_length;
-    uint16_t handle;
-    bleio_characteristic_properties_t props;
-    bleio_attribute_security_mode_t read_perm;
-    bleio_attribute_security_mode_t write_perm;
-    bleio_descriptor_obj_t *descriptor_list;
-    ble_drv_evt_handler_entry_t handler_entry;
-    uint16_t user_desc_handle;
-    uint16_t cccd_handle;
-    uint16_t sccd_handle;
-} bleio_characteristic_obj_t;
+// Helpers for common usage of nrf_mutex.
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CHARACTERISTIC_H
+// Try to acquire a mutex right now. Raise exception if we can't get it.
+void sd_mutex_acquire_check(nrf_mutex_t* p_mutex);
+
+// Wait for a mutex to become available. Run VM background tasks while waiting.
+void sd_mutex_acquire_wait(nrf_mutex_t* p_mutex);
+
+// Wait for a mutex to become available.. Block VM while waiting.
+void sd_mutex_acquire_wait_no_vm(nrf_mutex_t* p_mutex);
+
+// Release a mutex, and raise exception on error.
+void sd_mutex_release_check(nrf_mutex_t* p_mutex);
+
+#endif // MICROPY_INCLUDED_NRF_SD_MUTEX_H
