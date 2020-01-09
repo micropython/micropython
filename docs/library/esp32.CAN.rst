@@ -87,7 +87,7 @@ Methods
    - ``CAN.BUS_OFF`` -- the controller is on but not participating in bus activity
      (TEC overflowed beyond 255).
    - ``CAN.RECOVERING`` -- the controller is under recover from bus-off state;
-   
+
 
 .. method:: CAN.info([list])
 
@@ -228,41 +228,7 @@ Methods
     CAN_ALERT_RX_QUEUE_FULL           = const(0x0400)
     CAN_ALERT_ERR_PASS                = const(0x0800)
     CAN_ALERT_BUS_OFF                 = const(0x1000)
-   
 
-.. method:: CAN.rxcallback(fifo, fun) TODO: NOT YET IMPLEMENTED
-
-   Register a function to be called when a message is accepted into a empty fifo:
-
-   - *fifo* is the receiving fifo.
-   - *fun* is the function to be called when the fifo becomes non empty.
-
-   The callback function takes two arguments the first is the can object it self the second is
-   a integer that indicates the reason for the callback.
-
-   +--------+------------------------------------------------+
-   | Reason |                                                |
-   +========+================================================+
-   | 0      | A message has been accepted into a empty FIFO. |
-   +--------+------------------------------------------------+
-   | 1      | The FIFO is full                               |
-   +--------+------------------------------------------------+
-   | 2      | A message has been lost due to a full FIFO     |
-   +--------+------------------------------------------------+
-
-   Example use of rxcallback::
-
-     def cb0(bus, reason):
-       print('cb0')
-       if reason == 0:
-           print('pending')
-       if reason == 1:
-           print('full')
-       if reason == 2:
-           print('overflow')
-
-     can = CAN(1, CAN.LOOPBACK)
-     can.rxcallback(0, cb0)
 
 Constants
 ---------
@@ -274,17 +240,6 @@ Constants
           CAN.LISTEN_ONLY
 
    The mode of the CAN bus used in :meth:`~CAN.init()`.
-
-.. data:: CAN.BAUDRATE_25k
-          CAN.BAUDRATE_50k
-          CAN.BAUDRATE_100k
-          CAN.BAUDRATE_125k
-          CAN.BAUDRATE_250k
-          CAN.BAUDRATE_500k
-          CAN.BAUDRATE_800k
-          CAN.BAUDRATE_1M
-
-   The baudrate of the CAN bus used in :meth:`~CAN.init()`.
 
 .. data:: CAN.STOPPED
           CAN.ERROR_ACTIVE
