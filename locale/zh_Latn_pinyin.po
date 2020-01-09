@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 17:29-0500\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -68,7 +68,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
 
@@ -377,6 +378,10 @@ msgstr "Huǎnchōng qū chángdù%d tài dà. Tā bìxū xiǎoyú%d"
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
@@ -589,7 +594,7 @@ msgid "Expected a %q"
 msgstr "Yùqí %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
@@ -1318,6 +1323,10 @@ msgstr ""
 "Qǐng fǎngwèn xuéxí. learn.Adafruit.com/category/circuitpython.\n"
 "\n"
 "Ruò yào liè chū nèizài de mókuài, qǐng qǐng zuò yǐxià `help(\"modules\")`.\n"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
