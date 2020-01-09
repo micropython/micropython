@@ -1,0 +1,29 @@
+COUNTER(21, running, value=0, limit=32767, dir=up, edge=rising, unit=0)
+COUNTER(21, deinitialized)
+COUNTER(21, running, value=0, limit=32767, dir=up, edge=rising, unit=0)
+COUNTER(21, deinitialized)
+Test with String
+Exception
+Test with Pin
+COUNTER(21, running, value=0, limit=100, dir=up, edge=rising, unit=0)
+PWM(22, freq=100, duty=50)
+COUNTER(21, running, value=16, limit=100, dir=up, edge=rising, unit=0) 16
+COUNTER(21, running, value=96, limit=100, dir=up, edge=rising, unit=0) 96
+COUNTER(21, running, value=6, limit=100, dir=up, edge=rising, unit=0) 6
+COUNTER(21, running, value=0, limit=100, dir=up, edge=rising, unit=0) 0
+COUNTER(21, running, value=10, limit=100, dir=up, edge=rising, unit=0) 10
+Exception
+COUNTER(21, running, value=10, limit=100, dir=up, edge=rising, unit=0) 10
+COUNTER(21, running, value=10, limit=100, dir=up, edge=rising, unit=0) 10
+COUNTER(21, running, value=30, limit=100, dir=up, edge=rising, unit=0) 30
+COUNTER(21, running, value=30, limit=200, dir=up, edge=rising, unit=0) 30
+COUNTER(21, running, value=40, limit=200, dir=up, edge=rising, unit=0) 40
+Test decr
+COUNTER(23, running, value=0, limit=32767, dir=up, edge=rising, unit=1) 0
+COUNTER(21, running, value=100, limit=100, dir=down, edge=both, unit=0) 100
+COUNTER(21, running, value=70, limit=100, dir=down, edge=both, unit=0) 70
+COUNTER(21, running, value=10, limit=100, dir=down, edge=both, unit=0) 10
+COUNTER(21, running, value=90, limit=100, dir=down, edge=both, unit=0) 90
+COUNTER(21, running, value=100, limit=100, dir=down, edge=both, unit=0) 100
+COUNTER(21, running, value=78, limit=100, dir=down, edge=both, unit=0) 78
+Exception

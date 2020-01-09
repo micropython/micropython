@@ -25,7 +25,7 @@ Example usage::
     from machine import Counter, Pin
     ctr = Counter(0, pin=4)
     sleep(10)
-    print ctr.value
+    print ctr.value()
 
 Some use-cases for using a Counter are: counting motor shaft revolutions and deriving
 rotational velocity, measuring wind
@@ -70,6 +70,8 @@ Methods
    ESP32 notes:
      - Only supports pin numbers for now.
      - Supports the following parameters: direction, edge, limit, and reset (**verify**).
+     - The ESP32's counter units support two channels, which really means two pin pairs, so one pin
+       could cause an increment and the other a decrement. Only one channel is currently suported.
      - The ESP32's counter units support additional features (e.g. a control
        pin and intermediate trigger values) but these are currently not supported.
      - When counting down the ESP32's hardware starts at zero, counts to a negative limit, then
@@ -127,14 +129,6 @@ Methods
 .. method:: Counter.value([x])
 
    Reads or writes the current value of the counter.
-
-.. method:: Counter.direction([x])
-
-   Reads or changes the counting direction.
-
-.. method:: Counter.limit([x])
-
-   Reads or changes the limit to which the counter counts up or from which it counts down.
 
 Constants
 ---------

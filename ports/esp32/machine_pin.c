@@ -124,12 +124,21 @@ STATIC void machine_pin_isr_handler(void *arg) {
     mp_hal_wake_main_task_from_isr();
 }
 
+// return the pin number given a pin number int, a string with the number, or
+// a Pin object
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
-    if (mp_obj_get_type(pin_in) != &machine_pin_type) {
-        mp_raise_ValueError("expecting a pin");
+    if (MP_OBJ_IS_SMALL_INT(pin_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(pin_in);
+    } else if (MP_OBJ_IS_STR(pin_in)) {
+        mp_raise_ValueError("named pins not yet supported");
+        return -1;
+    } else if (mp_obj_get_type(pin_in) == &machine_pin_type) {
+        machine_pin_obj_t *pin_obj = pin_in;
+        return pin_obj->id;
+    } else {
+        mp_raise_ValueError("expecting a pin number, string, or object");
+        return -1;
     }
-    machine_pin_obj_t *self = pin_in;
-    return self->id;
 }
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
