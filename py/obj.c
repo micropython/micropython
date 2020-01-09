@@ -38,11 +38,47 @@
 #include "py/stream.h" // for mp_obj_print
 
 const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
+    #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
+
+    if (mp_obj_is_obj(o_in)) {
+        const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
+        return o->type;
+    } else {
+        static const mp_obj_type_t *const types[] = {
+            NULL, &mp_type_int, &mp_type_str, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_NoneType, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_str, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_bool, &mp_type_int,
+        };
+        return types[(uintptr_t)o_in & 0xf];
+    }
+
+    #elif MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+
+    if (mp_obj_is_small_int(o_in)) {
+        return &mp_type_int;
+    } else if (mp_obj_is_obj(o_in)) {
+        const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
+        return o->type;
+    #if MICROPY_PY_BUILTINS_FLOAT
+    } else if ((((mp_uint_t)(o_in)) & 0xff800007) != 0x00000006) {
+        return &mp_type_float;
+    #endif
+    } else {
+        static const mp_obj_type_t *const types[] = {
+            &mp_type_str, &mp_type_NoneType, &mp_type_str, &mp_type_bool,
+        };
+        return types[((uintptr_t)o_in >> 3) & 3];
+    }
+
+    #else
+
     if (mp_obj_is_small_int(o_in)) {
         return &mp_type_int;
     } else if (mp_obj_is_qstr(o_in)) {
         return &mp_type_str;
-    #if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT && ( \
+        MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
     } else if (mp_obj_is_float(o_in)) {
         return &mp_type_float;
     #endif
@@ -55,6 +91,8 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;
     }
+
+    #endif
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
