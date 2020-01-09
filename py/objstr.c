@@ -320,7 +320,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
     // from now on we need lhs type and data, so extract them
-    mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
+    const mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
 
     // check for multiply
@@ -420,7 +420,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 
 // This is used for both bytes and 8-bit strings. This is not used for unicode strings.
 STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
@@ -1743,7 +1743,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 #if MICROPY_PY_BUILTINS_STR_PARTITION
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
     mp_check_self(mp_obj_is_str_or_bytes(self_in));
-    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (self_type != mp_obj_get_type(arg)) {
         bad_implicit_conversion(arg);
     }

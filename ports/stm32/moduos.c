@@ -111,7 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
-    mp_obj_type_t *type = mp_obj_get_type(stream);
+    const mp_obj_type_t *type = mp_obj_get_type(stream);
     return type == &pyb_uart_type
         #if MICROPY_HW_ENABLE_USB
         || type == &pyb_usb_vcp_type

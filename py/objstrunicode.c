@@ -176,7 +176,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 }
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
     assert(type == &mp_type_str);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
