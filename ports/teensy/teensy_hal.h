@@ -125,4 +125,4 @@ struct _pin_obj_t;
 #define mp_hal_pin_high(p) (((p)->gpio->PSOR) = (p)->pin_mask)
 #define mp_hal_pin_low(p)  (((p)->gpio->PCOR) = (p)->pin_mask)
 #define mp_hal_pin_read(p) (((p)->gpio->PDIR >> (p)->pin) & 1)
-#define mp_hal_pin_write(p, v)  (v == 1) ? mp_hal_pin_high(p) : mp_hal_pin_low(p)
+#define mp_hal_pin_write(p, v)  (((v) == 1) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
