@@ -27,6 +27,12 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
+.. function:: soft_reset()
+
+   Performs a soft reset of the interpreter, deleting all Python objects and
+   resetting the Python heap.  It tries to retain the method by which the user
+   is connected to the MicroPython REPL (eg serial, USB, Wifi).
+
 .. function:: reset_cause()
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
