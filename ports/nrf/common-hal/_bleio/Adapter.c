@@ -67,7 +67,7 @@ STATIC void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     reset_into_safe_mode(NORDIC_SOFT_DEVICE_ASSERT);
 }
 
-bleio_connection_internal_t connections[BLEIO_TOTAL_CONNECTION_COUNT];
+bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 // Linker script provided ram start.
 extern uint32_t _ram_start;
@@ -133,6 +133,15 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
+    // Set ATT_MTU so that the maximum MTU we can negotiate is up to the full characteristic size.
+    memset(&ble_conf, 0, sizeof(ble_conf));
+    ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
+    ble_conf.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATTS_VAR_ATTR_LEN_MAX;
+    err_code = sd_ble_cfg_set(BLE_CONN_CFG_GATT, &ble_conf, app_ram_start);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
+
     // Triple the GATT Server attribute size to accomodate both the CircuitPython built-in service
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
@@ -142,10 +151,25 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
-    // TODO set ATT_MTU so that the maximum MTU we can negotiate is higher than the default.
+    // Increase the number of vendor UUIDs supported. Apple uses a complete random number per
+    // service and characteristic.
+    memset(&ble_conf, 0, sizeof(ble_conf));
+    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 32; // Defaults to 10.
+    err_code = sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &ble_conf, app_ram_start);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
 
     // This sets app_ram_start to the minimum value needed for the settings set above.
     err_code = sd_ble_enable(&app_ram_start);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
+
+    // Turn on connection event extension so we can transmit for a longer period of time as needed.
+    ble_opt_t opt;
+    opt.common_opt.conn_evt_ext.enable = true;
+    err_code = sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt);
     if (err_code != NRF_SUCCESS) {
         return err_code;
     }
@@ -177,7 +201,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // total connection limit.
             bleio_connection_internal_t *connection;
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                connection = &connections[i];
+                connection = &bleio_connections[i];
                 if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
                     break;
                 }
@@ -189,6 +213,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
             connection->connection_obj = mp_const_none;
             connection->pair_status = PAIR_NOT_PAIRED;
+            connection->mtu = 0;
 
             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
             self->connection_objs = NULL;
@@ -216,7 +241,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // Find the connection that was disconnected.
             bleio_connection_internal_t *connection;
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                connection = &connections[i];
+                connection = &bleio_connections[i];
                 if (connection->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
                     break;
                 }
@@ -293,7 +318,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     // Add a handler for incoming peripheral connections.
     if (enabled) {
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-            bleio_connection_internal_t *connection = &connections[i];
+            bleio_connection_internal_t *connection = &bleio_connections[i];
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
         }
         bleio_adapter_reset_name(self);
@@ -497,14 +522,25 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 
     ble_drv_remove_event_handler(connect_on_ble_evt, &event_info);
 
-    if (event_info.conn_handle == BLE_CONN_HANDLE_INVALID) {
+    uint16_t conn_handle = event_info.conn_handle;
+    if (conn_handle == BLE_CONN_HANDLE_INVALID) {
         mp_raise_bleio_BluetoothError(translate("Failed to connect: timeout"));
     }
 
+    // Negotiate for better PHY, larger MTU and data lengths since we are the central. These are
+    // nice-to-haves so ignore any errors.
+    ble_gap_phys_t const phys = {
+        .rx_phys = BLE_GAP_PHY_AUTO,
+        .tx_phys = BLE_GAP_PHY_AUTO,
+    };
+    sd_ble_gap_phy_update(conn_handle, &phys);
+    sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX);
+    sd_ble_gap_data_length_update(conn_handle, NULL, NULL);
+
     // Make the connection object and return it.
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        bleio_connection_internal_t *connection = &connections[i];
-        if (connection->conn_handle == event_info.conn_handle) {
+        bleio_connection_internal_t *connection = &bleio_connections[i];
+        if (connection->conn_handle == conn_handle) {
             return bleio_connection_new_from_internal(connection);
         }
     }
@@ -628,7 +664,7 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
 
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self) {
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        bleio_connection_internal_t *connection = &connections[i];
+        bleio_connection_internal_t *connection = &bleio_connections[i];
         if (connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
             return true;
         }
@@ -643,7 +679,7 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     size_t total_connected = 0;
     mp_obj_t items[BLEIO_TOTAL_CONNECTION_COUNT];
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        bleio_connection_internal_t *connection = &connections[i];
+        bleio_connection_internal_t *connection = &bleio_connections[i];
         if (connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
             if (connection->connection_obj == mp_const_none) {
                 connection->connection_obj = bleio_connection_new_from_internal(connection);
@@ -658,7 +694,7 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
     gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void**)connections, sizeof(connections) / sizeof(size_t));
+    gc_collect_root((void**)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
@@ -666,7 +702,7 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     common_hal_bleio_adapter_stop_advertising(adapter);
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        bleio_connection_internal_t *connection = &connections[i];
+        bleio_connection_internal_t *connection = &bleio_connections[i];
         connection->connection_obj = mp_const_none;
     }
 }

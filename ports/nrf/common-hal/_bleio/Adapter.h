@@ -37,7 +37,7 @@
 
 #define BLEIO_TOTAL_CONNECTION_COUNT 2
 
-extern bleio_connection_internal_t connections[BLEIO_TOTAL_CONNECTION_COUNT];
+extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 typedef struct {
     mp_obj_base_t base;

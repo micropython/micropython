@@ -65,6 +65,7 @@ typedef struct {
     ble_drv_evt_handler_entry_t handler_entry;
     ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
+    uint16_t mtu;
 } bleio_connection_internal_t;
 
 typedef struct {
