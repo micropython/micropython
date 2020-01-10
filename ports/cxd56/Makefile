@@ -131,6 +131,7 @@ LDFLAGS = \
 	-o $(BUILD)/firmware.elf \
 	--start-group \
 	-u spresense_main \
+	-u board_timerhook \
 	$(BUILD)/libmpy.a \
 	$(SPRESENSE_SDK)/sdk/libs/libapps.a \
 	$(SPRESENSE_SDK)/sdk/libs/libsdk.a \
