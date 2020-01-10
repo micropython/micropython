@@ -253,6 +253,20 @@ See :ref:`machine.RTC <machine.RTC>` ::
           (using a custom handler), `RTC.init()` and `RTC.deinit()` are
           currently not supported.
 
+    # Recalibrate the RTC calculations without setting a new time
+    # Can be called frequently (every 1-5 seconds) to improve clock stability
+    rtc.calibrate() # recalibrates and returns the new value from
+                    # system_rtc_clock_cali_proc()
+
+    # The calibration function also accepts an offset that is used to 
+    # manipulate the time calculations. This can be used to "slew" the
+    # return values of rtc.datetime(). The internal calibration value
+    # is how many microseconds * 4096 an RTC tick takes, as measured by
+    # the high speed CPU XTAL. The nominal frequency of the built in R/C
+    # oscillator is 150kHz, or 6.667 us per tick.
+    rtc.calibrate(27)  # speed up rtc.datetime() by approx. 0.1%
+    rtc.calibrate(-54) # slow down rtc.datetime() by approx. 0.2%
+
 Deep-sleep mode
 ---------------
 
