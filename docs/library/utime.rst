@@ -227,3 +227,13 @@ Functions
       hardware also lacks battery-powered RTC, so returns number of seconds
       since last power-up or from other relative, hardware-specific point
       (e.g. reset).
+
+
+.. function:: adjtime([(secs, usecs)])
+
+   This function is only available in the esp32 port. It uses the API's
+   adjtime(3) function to "slew" the RTC by the given offset over some
+   time. If no offset is given the remaining offset from a previous call
+   is returned. During the adjustment the RTC remains monotonic but
+   appears to run slightly faster/slower. 
+
