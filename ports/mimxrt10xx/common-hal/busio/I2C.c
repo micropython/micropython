@@ -98,11 +98,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     LPI2C_MasterInit(self->i2c, &config, I2C_CLOCK_FREQ);
 
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
 //    if (!gpio_get_pin_level(sda->number) || !gpio_get_pin_level(scl->number)) {
 //        reset_pin_number(sda->number);
 //        reset_pin_number(scl->number);
 //        mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
 //    }
+#endif
 
     claim_pin(self->sda_pin->pin);
     claim_pin(self->scl_pin->pin);
