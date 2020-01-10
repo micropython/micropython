@@ -240,6 +240,66 @@ ESP32 specific ADC class method reference:
       - ``ADC.WIDTH_11BIT``: 11 bit data
       - ``ADC.WIDTH_12BIT``: 12 bit data - this is the default configuration
 
+DAC (digital to analog conversion)
+----------------------------------
+
+On the ESP32 DAC functionality is available on Pins 25 and 26. Note that, when creating
+the DAC object for a pin, the DAC value will be initialized at 0.
+
+Use the :ref:`machine.DAC <machine.DAC>` class::
+
+    from machine import DAC
+
+    dac = DAC(Pin(25))          # create DAC object on pin 25
+    dac.write(128)              # set the output voltage to 1.65V
+
+    dac.cosine_enable()         # enable the cosine generator
+    dac.frequency_set(7, 1)     # set the output frequency using the RTC clock divider and 
+                                # frequency steps for the CW generator, (7, 1) -> ~15 Hz
+    
+
+ESP32 specific DAC class method reference:
+
+.. method:: DAC.cosine_enable()
+
+    This method enables the cosine generator for the DAC.
+
+.. method:: DAC.cosine_disable()
+
+    This method disables the cosine generator for the DAC.
+
+.. method:: DAC.frequency_set(clk_8m_div, frequency_step)
+
+    This method sets the frequency of the cosine. The base is the 8 MHz RTC clock. The 
+    ``clk_8m_div`` divider must be between 0 and 7, and divides the clock down, while 
+    ``frequency_step`` adjusts the frequency as ``divided_clk x frequency_step / 65536``
+
+.. method:: DAC.scale_set(scale)
+
+    This method allows to scale the sine wave:
+
+    - 0 -> no scale
+    - 1 -> scale to 1/2
+    - 2 -> scale to 1/4
+    - 3 -> scale to 1/8
+
+.. method:: DAC.offset_set(offset)
+
+    This method allows to apply an offset. The range is from 0 to 255
+
+.. method:: DAC.invert_set(invert)
+
+    This method can invert the output pattern:
+
+    - 0 -> does not invert anything
+    - 1 -> inverts all bits
+    - 2 -> inverts MSB
+    - 3 -> inverts all bits except the MSB
+
+.. method:: DAC.frequency_get()
+
+    This method returns the current frequency in Hz.
+
 Software SPI bus
 ----------------
 
