@@ -268,11 +268,18 @@ ESP32 specific DAC class method reference:
 
     This method disables the cosine generator for the DAC.
 
-.. method:: DAC.frequency_set(clk_8m_div, frequency_step)
+.. method:: DAC.frequency_step(frequency_step)
 
-    This method sets the frequency of the cosine. The base is the 8 MHz RTC clock. The 
-    ``clk_8m_div`` divider must be between 0 and 7, and divides the clock down, while 
-    ``frequency_step`` adjusts the frequency as ``divided_clk x frequency_step / 65536``
+    This method sets the frequency steps of the CW generator. The base is the 8 MHz RTC clock. The 
+    ``frequency_step`` adjusts the frequency as ``rtc_clock x frequency_step / 65536``. The RTC
+    clock is by default 8 MHz, and can be divided down by ``DAC.rtc_clk_div``.
+
+.. method:: DAC.rtc_clk_div(clk_8m_div)
+    This method sets the RTC clock divider. This allows to achieve lower frequencies of the CW generator.
+    ``clk_8m_div`` is the divider and must be between 0 and 7.
+
+.. Warning::
+    Be cautious in changing this value as it might affect other peripherals that use the 8 MHz RTC clock!
 
 .. method:: DAC.scale_set(scale)
 

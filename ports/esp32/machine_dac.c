@@ -139,35 +139,36 @@ STATIC mp_obj_t mdac_cosine_disable(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mdac_cosine_disable_obj, mdac_cosine_disable);
 
 /*
- * Set frequency of internal CW generator common to both DAC channels
+ * Set frequency steps of internal CW generator common to both DAC channels
  *
- * clk_8m_div: 0b000 - 0b111
  * frequency_step: range 0x0001 - 0xFFFF
  *
  */
-STATIC mp_obj_t mdac_frequency_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_self,           MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_clk_8m_div,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_frequency_step, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 1} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mdac_obj_t *self = args[0].u_obj;
-    int clk_8m_div = args[1].u_int;
-    int frequency_step = args[2].u_int;
-    if (clk_8m_div < 0 || clk_8m_div > 0b111) mp_raise_ValueError("Cl_8m_div out of range");
+STATIC mp_obj_t mdac_frequency_step(mp_obj_t self_in, mp_obj_t frequency_step_in) {
+    mdac_obj_t *self = self_in;
+    int frequency_step = mp_obj_get_int(frequency_step_in);
     if (frequency_step < 1 || frequency_step > 0xffff) mp_raise_ValueError("Frequency_step out of range");
-    self->clk_8m_div = clk_8m_div;
     self->frequency_step = frequency_step;
-    REG_SET_FIELD(RTC_CNTL_CLK_CONF_REG, RTC_CNTL_CK8M_DIV_SEL, clk_8m_div);
     SET_PERI_REG_BITS(SENS_SAR_DAC_CTRL1_REG, SENS_SW_FSTEP, frequency_step, SENS_SW_FSTEP_S);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mdac_frequency_set_obj, 2, mdac_frequency_set);
+MP_DEFINE_CONST_FUN_OBJ_2(mdac_frequency_step_obj, mdac_frequency_step);
 
+/*
+ * Set the RTC 8 MHz clock divider. This can be dangerous if other code uses the 8 MHz clock.
+ * 
+ * clk_8m_div: range 0b000 - 0b111
+ */
+STATIC mp_obj_t mdac_rtc_clk_div(mp_obj_t self_in, mp_obj_t clk_8m_div_in) {
+    mdac_obj_t *self = self_in;
+    int clk_8m_div = mp_obj_get_int(clk_8m_div_in);
+    if (clk_8m_div < 0 || clk_8m_div > 0b111) mp_raise_ValueError("Cl_8m_div out of range");
+    self->clk_8m_div = clk_8m_div;
+    REG_SET_FIELD(RTC_CNTL_CLK_CONF_REG, RTC_CNTL_CK8M_DIV_SEL, clk_8m_div);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mdac_rtc_clk_div_obj, mdac_rtc_clk_div);
+    
 /*
  * Scale output of a DAC channel using two bit pattern:
  *
@@ -259,7 +260,8 @@ STATIC const mp_rom_map_elem_t mdac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mdac_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_cosine_enable), MP_ROM_PTR(&mdac_cosine_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_cosine_disable), MP_ROM_PTR(&mdac_cosine_disable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_frequency_set), MP_ROM_PTR(&mdac_frequency_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frequency_step), MP_ROM_PTR(&mdac_frequency_step_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rtc_clk_div), MP_ROM_PTR(&mdac_rtc_clk_div_obj) },
     { MP_ROM_QSTR(MP_QSTR_scale_set), MP_ROM_PTR(&mdac_scale_set_obj) },
     { MP_ROM_QSTR(MP_QSTR_offset_set), MP_ROM_PTR(&mdac_offset_set_obj) },
     { MP_ROM_QSTR(MP_QSTR_invert_set), MP_ROM_PTR(&mdac_invert_set_obj) },
