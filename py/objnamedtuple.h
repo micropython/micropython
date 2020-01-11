@@ -49,7 +49,6 @@ typedef struct _mp_obj_namedtuple_t {
 
 void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name);
-mp_obj_t namedtuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields);
 mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
