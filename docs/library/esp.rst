@@ -31,7 +31,7 @@ Functions
 
     The system enters the set sleep mode automatically when possible.
 
-.. function:: deepsleep(time=0)
+.. function:: deepsleep(time=0, /)
 
     **Note**: ESP8266 only - use `machine.deepsleep()` on ESP32
 
