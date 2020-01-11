@@ -360,22 +360,35 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
 
+//|   .. method:: erase_bonding()
+//|
+//|     Erase all bonding information stored in flash memory.
+STATIC mp_obj_t bleio_adapter_erase_bonding(mp_obj_t self_in) {
+    bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_bleio_adapter_erase_bonding(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_erase_bonding_obj, bleio_adapter_erase_bonding);
 
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&bleio_adapter_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&bleio_adapter_name_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_adapter_start_advertising_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_advertising),         MP_ROM_PTR(&bleio_adapter_stop_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start_advertising), MP_ROM_PTR(&bleio_adapter_start_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_advertising),  MP_ROM_PTR(&bleio_adapter_stop_advertising_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_scan), MP_ROM_PTR(&bleio_adapter_start_scan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_scan), MP_ROM_PTR(&bleio_adapter_stop_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_scan),  MP_ROM_PTR(&bleio_adapter_stop_scan_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&bleio_adapter_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&bleio_adapter_connect_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&bleio_adapter_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),   MP_ROM_PTR(&bleio_adapter_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_connections), MP_ROM_PTR(&bleio_adapter_connections_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_erase_bonding), MP_ROM_PTR(&bleio_adapter_erase_bonding_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict_table);

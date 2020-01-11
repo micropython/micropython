@@ -54,7 +54,7 @@
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
 static const ble_gap_sec_params_t pairing_sec_params = {
-    .bond = 0,
+    .bond = 1,
     .mitm = 0,
     .lesc = 0,
     .keypress = 0,
@@ -65,6 +65,13 @@ static const ble_gap_sec_params_t pairing_sec_params = {
     .kdist_own    = { .enc = 1, .id = 1},
     .kdist_peer   = { .enc = 1, .id = 1},
 };
+
+#define CONNECTION_DEBUG (1)
+#if CONNECTION_DEBUG
+  #define CONNECTION_DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+  #define CONNECTION_DEBUG_PRINTF(...)
+#endif
 
 static volatile bool m_discovery_in_process;
 static volatile bool m_discovery_successful;
@@ -86,7 +93,10 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_DISCONNECTED:
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_DISCONNECTED\n");
+            // Adapter.c does the work for this event.
             break;
+
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
             ble_gap_phys_t const phys = {
                 .rx_phys = BLE_GAP_PHY_AUTO,
@@ -173,10 +183,11 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
         }
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST: {
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_SEC_PARAMS_REQUEST\n");
             // First time pairing.
             // 1. Either we or peer initiate the process
             // 2. Peer asks for security parameters using BLE_GAP_EVT_SEC_PARAMS_REQUEST.
-            // 3. Pair Key exchange ("just works" implemented now; TODO key pairing)
+            // 3. Pair Key exchange ("just works" implemented now; TODO: out-of-band key pairing)
             // 4. Connection is secured: BLE_GAP_EVT_CONN_SEC_UPDATE
             // 5. Long-term Keys exchanged: BLE_GAP_EVT_AUTH_STATUS
 
@@ -205,43 +216,55 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         }
 
         case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_LESC_DHKEY_REQUEST\n");
             // TODO for LESC pairing:
             // sd_ble_gap_lesc_dhkey_reply(...);
             break;
 
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_AUTH_STATUS\n");
             // Pairing process completed
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
                 self->ediv = self->bonding_keys.own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
+                CONNECTION_DEBUG_PRINTF("PAIR_PAIRED\n");
                 bonding_save_keys(self->is_central, self->conn_handle, &self->bonding_keys);
             } else {
+                // Inform busy-waiter pairing has failed.
                 self->pair_status = PAIR_NOT_PAIRED;
+                CONNECTION_DEBUG_PRINTF("PAIR_NOT_PAIRED\n");
             }
             break;
         }
 
         case BLE_GAP_EVT_SEC_INFO_REQUEST: { // 0x14
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_SEC_INFO_REQUEST\n");
             // Peer asks for the stored keys.
             // - load key and return if bonded previously.
             // - Else return NULL --> Initiate key exchange
             ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
             (void) sec_info_request;
             if ( bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys) ) {
-                sd_ble_gap_sec_info_reply(self->conn_handle,
-                                          &self->bonding_keys.own_enc.enc_info,
-                                          &self->bonding_keys.peer_id.id_info,
-                                          NULL);
+                CONNECTION_DEBUG_PRINTF("keys found\n");
+                uint32_t err_code = sd_ble_gap_sec_info_reply(
+                    self->conn_handle,
+                    &self->bonding_keys.own_enc.enc_info,
+                    &self->bonding_keys.peer_id.id_info,
+                    NULL);
+                CONNECTION_DEBUG_PRINTF("sd_ble_gap_sec_info_reply err_code: %0lx\n", err_code);
                 self->ediv = self->bonding_keys.own_enc.master_id.ediv;
             } else {
+                CONNECTION_DEBUG_PRINTF("keys not found\n");
+                // We don't have stored keys. Ask for keys.
                 sd_ble_gap_sec_info_reply(self->conn_handle, NULL, NULL, NULL);
             }
             break;
         }
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_CONN_SEC_UPDATE\n");
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
                 // Security setup did not succeed:
@@ -250,12 +273,13 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
             } else {
-                // Does an sd_ble_gatts_sys_attr_set() with the stored values.
                 if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv)) {
-                    // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
-                    self->ediv = self->bonding_keys.own_enc.master_id.ediv;
+                    // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
+                    // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS with BLE_GAP_SEC_STATUS_SUCCESS.
+                    CONNECTION_DEBUG_PRINTF("did bonding_load_cccd_info()\n");
                 } else {
                     // No matching bonding found, so use fresh system attributes.
+                    CONNECTION_DEBUG_PRINTF("bonding_load_cccd_info() failed\n");
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
                 }
             }
@@ -263,8 +287,10 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         }
 
         default:
+            CONNECTION_DEBUG_PRINTF("Unhandled event: %04x\n", ble_evt->header.evt_id);
             return false;
     }
+    CONNECTION_DEBUG_PRINTF("Handled event: %04x\n", ble_evt->header.evt_id);
     return true;
 }
 

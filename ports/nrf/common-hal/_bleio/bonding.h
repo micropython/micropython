@@ -40,8 +40,12 @@
 #define BONDING_DEBUG (1)
 #if BONDING_DEBUG
   #define BONDING_DEBUG_PRINTF(...) printf(__VA_ARGS__)
+  #define BONDING_DEBUG_PRINT_BLOCK(block) bonding_print_block(block)
+  #define BONDING_DEBUG_PRINT_KEYS(keys) bonding_print_keys(keys)
 #else
   #define BONDING_DEBUG_PRINTF(...)
+  #define BONDING_DEBUG_PRINT_BLOCK(block)
+  #define BONDING_DEBUG_PRINT_KEYS(keys)
 #endif
 
 // Bonding data is stored in variable-length blocks consecutively in erased flash.
@@ -71,12 +75,13 @@ typedef struct {
 } bonding_block_t;
 
 // Bonding blocks that need to be written are stored in a linked list.
-typedef struct _queued_bonding_block_list_elt_t {
-    struct _queued_bonding_block_list_elt_t *next_queued_block;
-    bonding_block_t bonding_block;  // variable length, based on data_length.
-} queued_bonding_block_list_elt_t;
+typedef struct _queued_bonding_block_entry_t {
+    struct _queued_bonding_block_entry_t *next;
+    bonding_block_t block;          // variable length, based on data_length.
+} queued_bonding_block_entry_t;
 
 void bonding_background(void);
+void bonding_erase_storage(void);
 void bonding_reset(void);
 void bonding_clear_keys(bonding_keys_t *bonding_keys);
 bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv);
