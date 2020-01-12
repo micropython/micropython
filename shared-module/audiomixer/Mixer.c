@@ -295,6 +295,87 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     #endif
 }
 
+static void mix_one_voice(audiomixer_mixer_obj_t* self,
+        audiomixer_mixervoice_obj_t* voice, bool voices_active,
+        uint32_t* word_buffer, uint32_t length) {
+    uint32_t j = 0;
+    bool voice_done = voice->sample == NULL;
+    for (uint32_t i = 0; i < length; i++) {
+        if (!voice_done && j >= voice->buffer_length) {
+            if (!voice->more_data) {
+                if (voice->loop) {
+                    audiosample_reset_buffer(voice->sample, false, 0);
+                } else {
+                    voice->sample = NULL;
+                    voice_done = true;
+                }
+            }
+            if (!voice_done) {
+                // Load another buffer
+                audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
+                // Track length in terms of words.
+                voice->buffer_length /= sizeof(uint32_t);
+                voice->more_data = result == GET_BUFFER_MORE_DATA;
+                j = 0;
+            }
+        }
+        // First active voice gets copied over verbatim.
+        uint32_t sample_value;
+        if (voice_done) {
+            // Exit early if another voice already set all samples once.
+            if (voices_active) {
+                continue;
+            }
+            sample_value = 0;
+            if (!self->samples_signed) {
+                if (self->bits_per_sample == 8) {
+                    sample_value = 0x7f7f7f7f;
+                } else {
+                    sample_value = 0x7fff7fff;
+                }
+            }
+        } else {
+            sample_value = voice->remaining_buffer[j];
+        }
+
+        // apply the mixer level
+        if (!self->samples_signed) {
+            if (self->bits_per_sample == 8) {
+                sample_value = mult8unsigned(sample_value, voice->level);
+            } else {
+                sample_value = mult16unsigned(sample_value, voice->level);
+            }
+        } else {
+            if (self->bits_per_sample == 8) {
+                sample_value = mult8signed(sample_value, voice->level);
+            } else {
+                sample_value = mult16signed(sample_value, voice->level);
+            }
+        }
+
+        if (!voices_active) {
+            word_buffer[i] = sample_value;
+        } else {
+            if (self->bits_per_sample == 8) {
+                if (self->samples_signed) {
+                    word_buffer[i] = add8signed(word_buffer[i], sample_value);
+                } else {
+                    word_buffer[i] = add8unsigned(word_buffer[i], sample_value);
+                }
+            } else {
+                if (self->samples_signed) {
+                    word_buffer[i] = add16signed(word_buffer[i], sample_value);
+                } else {
+                    word_buffer[i] = add16unsigned(word_buffer[i], sample_value);
+                }
+            }
+        }
+        j++;
+    }
+    voice->buffer_length -= j;
+    voice->remaining_buffer += j;
+}
+
 audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* self,
                                                         bool single_channel,
                                                         uint8_t channel,
@@ -325,83 +406,7 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
         for (int32_t v = 0; v < self->voice_count; v++) {
             audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
 
-            uint32_t j = 0;
-            bool voice_done = voice->sample == NULL;
-            for (uint32_t i = 0; i < self->len / sizeof(uint32_t); i++) {
-                if (!voice_done && j >= voice->buffer_length) {
-                    if (!voice->more_data) {
-                        if (voice->loop) {
-                            audiosample_reset_buffer(voice->sample, false, 0);
-                        } else {
-                            voice->sample = NULL;
-                            voice_done = true;
-                        }
-                    }
-                    if (!voice_done) {
-                        // Load another buffer
-                        audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
-                        // Track length in terms of words.
-                        voice->buffer_length /= sizeof(uint32_t);
-                        voice->more_data = result == GET_BUFFER_MORE_DATA;
-                        j = 0;
-                    }
-                }
-                // First active voice gets copied over verbatim.
-                uint32_t sample_value;
-                if (voice_done) {
-                    // Exit early if another voice already set all samples once.
-                    if (voices_active) {
-                        continue;
-                    }
-                    sample_value = 0;
-                    if (!self->samples_signed) {
-                        if (self->bits_per_sample == 8) {
-                            sample_value = 0x7f7f7f7f;
-                        } else {
-                            sample_value = 0x7fff7fff;
-                        }
-                    }
-                } else {
-                    sample_value = voice->remaining_buffer[j];
-                }
-
-                // apply the mixer level
-            	if (!self->samples_signed) {
-                    if (self->bits_per_sample == 8) {
-                        sample_value = mult8unsigned(sample_value, voice->level);
-                    } else {
-                        sample_value = mult16unsigned(sample_value, voice->level);
-                    }
-                } else {
-                    if (self->bits_per_sample == 8) {
-                        sample_value = mult8signed(sample_value, voice->level);
-                    } else {
-                        sample_value = mult16signed(sample_value, voice->level);
-                    }
-                }
-
-                if (!voices_active) {
-                    word_buffer[i] = sample_value;
-                } else {
-                    if (self->bits_per_sample == 8) {
-                        if (self->samples_signed) {
-                            word_buffer[i] = add8signed(word_buffer[i], sample_value);
-                        } else {
-                            word_buffer[i] = add8unsigned(word_buffer[i], sample_value);
-                        }
-                    } else {
-                        if (self->samples_signed) {
-                            word_buffer[i] = add16signed(word_buffer[i], sample_value);
-                        } else {
-                            word_buffer[i] = add16unsigned(word_buffer[i], sample_value);
-                        }
-                    }
-                }
-                j++;
-            }
-            voice->buffer_length -= j;
-            voice->remaining_buffer += j;
-
+            mix_one_voice(self, voice, voices_active, word_buffer, self->len / sizeof(uint32_t));
             voices_active = true;
         }
 
