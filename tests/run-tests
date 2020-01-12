@@ -552,10 +552,11 @@ the last matching regex is used:
   run-tests -i async - exclude all, then include tests containg "async" anywhere
   run-tests -e '/big.+int' - include all, then exclude by regex
   run-tests -e async -i async_foo - include all, exclude async, yet still include async_foo
-Run-tests compares the MicroPython output of the test with expectations produced by running the test
-through CPython unless a <test>.exp file is found, in which case it is used for the expectations.
-If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the current directory
-with the MicroPython output and the expectations, respectively.
+When running tests, run-tests compares the MicroPython output of the test with the output
+produced by running the test through CPython unless a <test>.exp file is found, in which
+case it is used as comparison.
+If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the current
+directory with the MicroPython output and the expectations, respectively.
 ''')
     cmd_parser.add_argument('--target', default='unix', help='the target platform')
     cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
