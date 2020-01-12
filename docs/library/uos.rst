@@ -218,11 +218,19 @@ represented by VFS classes.
 Block devices
 -------------
 
-A block device is an object which implements the block protocol, which is a set
-of methods described below by the :class:`AbstractBlockDev` class.  A concrete
-implementation of this class will usually allow access to the memory-like
-functionality a piece of hardware (like flash memory).  A block device can be
-used by a particular filesystem driver to store the data for its filesystem.
+A block device is an object which implements the block protocol. This enables a
+device to support MicroPython filesystems. The physical hardware is represented
+by a user defined class. The :class:`AbstractBlockDev` class is a template for
+the design of such a class: MicroPython does not actually provide that class,
+but an actual block device class must implement the methods described below.
+
+A concrete implementation of this class will usually allow access to the
+memory-like functionality a piece of hardware (like flash memory). A block
+device can be formatted to any supported filesystem and mounted using ``uos``
+methods.
+
+See :ref:`filesystem` for example implementations of block devices using the
+two variants of the block protocol described below.
 
 .. _block-device-interface:
 
@@ -294,5 +302,7 @@ that the block device supports the extended interface.
             (*arg* is unused)
           - 6 -- erase a block, *arg* is the block number to erase
 
-See :ref:`filesystem` for example implementations of block devices using both
-protocols.
+Unless otherwise stated ``ioctl(op, arg)`` can return None. Consequently an
+implementation can ignore unused values of ``op``. As a minimum value 4 must be
+intercepted; for littlefs 6 must be intercepted and return 0. The need for
+others is hardware dependent.
