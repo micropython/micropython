@@ -29,7 +29,6 @@
 #define NRF5_MPCONFIGPORT_H__
 
 #include "ble_drv.h"
-#include "common-hal/_bleio/bonding.h"
 
 #include "nrf_mbr.h"  // for MBR_SIZE
 #include "nrf_sdm.h"  // for SD_FLASH_SIZE

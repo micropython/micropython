@@ -308,7 +308,6 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             } else {
                 if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv)) {
                     // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
-                    // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS with BLE_GAP_SEC_STATUS_SUCCESS.
                 } else {
                     // No matching bonding found, so use fresh system attributes.
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
@@ -553,7 +552,7 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
             default:
                 // TODO: sd_ble_gattc_descriptors_discover() can return things that are not descriptors,
                 // so ignore those.
-                // htts:p//devzone.nordicsemi.com/f/nordic-q-a/49500/sd_ble_gattc_descriptors_discover-is-returning-attributes-that-are-not-descriptors
+                // https://devzone.nordicsemi.com/f/nordic-q-a/49500/sd_ble_gattc_descriptors_discover-is-returning-attributes-that-are-not-descriptors
                 break;
         }
 

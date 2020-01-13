@@ -48,7 +48,6 @@ def copy_and_process(in_dir, out_dir):
             output_file_path = Path(out_dir, input_file_path.relative_to(in_dir))
 
             if file.endswith(".py"):
-                print(file)
                 if not output_file_path.parent.exists():
                     output_file_path.parent.mkdir(parents=True)
                 with input_file_path.open("r") as input, output_file_path.open("w") as output:
