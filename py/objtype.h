@@ -37,11 +37,6 @@ typedef struct _mp_obj_instance_t {
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_instance_t;
 
-// Flags for type behaviour
-#define TYPE_FLAG_IS_SUBCLASSED (0x0001)
-#define TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
-#define TYPE_FLAG_NO_EQUALITY_SHORTCUTS (0x0004)
-
 #if MICROPY_CPYTHON_COMPAT
 // this is needed for object.__new__
 mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_type_t **native_base);
