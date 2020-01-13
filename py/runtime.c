@@ -1372,8 +1372,10 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
         // create and return a new exception instance by calling o
         // TODO could have an option to disable traceback, then builtin exceptions (eg TypeError)
         // could have const instances in ROM which we return here instead
-        return mp_call_function_n_kw(o, 0, 0, NULL);
-    } else if (mp_obj_is_exception_instance(o)) {
+        o = mp_call_function_n_kw(o, 0, 0, NULL);
+    }
+
+    if (mp_obj_is_exception_instance(o)) {
         // o is an instance of an exception, so use it as the exception
         return o;
     } else {
