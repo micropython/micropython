@@ -748,6 +748,8 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in);
 // Will raise exception if value doesn't fit into mp_int_t
 mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in);
+// Will raise exception if value is negative or doesn't fit into mp_uint_t
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in);
 
 // exception
 #define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
