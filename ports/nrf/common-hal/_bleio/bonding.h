@@ -48,11 +48,12 @@
   #define BONDING_DEBUG_PRINT_KEYS(keys)
 #endif
 
-// Bonding data is stored in variable-length blocks consecutively in erased flash.
-// The blocks are 32-bit aligned, though the data may be any number of bytes.
-// You can hop through the blocks using the size field to find the next block.
-// When you hit a word that is all one's, you have reached the end of the blocks.
-// You can write a new block there.
+// Bonding data is stored in variable-length blocks consecutively in
+// erased flash (all 1's). The blocks are 32-bit aligned, though the
+// data may be any number of bytes.  We hop through the blocks using
+// the size field to find the next block.  When we hit a word that is
+// all 1's, we have reached the end of the blocks.  We can write a new
+// block there.
 
 typedef enum {
     BLOCK_INVALID = 0,      // Ignore this block
@@ -69,16 +70,10 @@ typedef struct {
     uint16_t conn_handle;          // Connection handle: used when a BLOCK_SYS_ATTR is queued to write.
                                    // Not used as a key, etc.
     uint16_t data_length;          // Length of data in bytes, including ediv, not including padding.
-    // 32-bit boundary here.
+    // End of block header. 32-bit boundary here.
     uint8_t data[];                // Rest of data in the block. Needs to be 32-bit aligned.
     // Block is padded to 32-bit alignment.
 } bonding_block_t;
-
-// Bonding blocks that need to be written are stored in a linked list.
-typedef struct _queued_bonding_block_entry_t {
-    struct _queued_bonding_block_entry_t *next;
-    bonding_block_t block;          // variable length, based on data_length.
-} queued_bonding_block_entry_t;
 
 void bonding_background(void);
 void bonding_erase_storage(void);
@@ -86,7 +81,5 @@ void bonding_reset(void);
 void bonding_clear_keys(bonding_keys_t *bonding_keys);
 bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv);
 bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_keys);
-void bonding_save_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv);
-void bonding_save_keys(bool is_central, uint16_t conn_handle, bonding_keys_t *bonding_keys);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H

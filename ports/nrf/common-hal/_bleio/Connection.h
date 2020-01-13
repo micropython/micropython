@@ -57,8 +57,8 @@ typedef struct {
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
-    // EDIV: Encrypted Diversifier: Identifies LTK during legacy pairing.
     bonding_keys_t bonding_keys;
+    // EDIV: Encrypted Diversifier: Identifies LTK during legacy pairing.
     uint16_t ediv;
     volatile pair_status_t pair_status;
     uint8_t sec_status; // Internal security status.
@@ -66,6 +66,13 @@ typedef struct {
     ble_drv_evt_handler_entry_t handler_entry;
     ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
+    // Request that CCCD info for this connection be saved.
+    volatile bool do_bond_cccds;
+    // Request that security key info for this connection be saved.
+    volatile bool do_bond_keys;
+    // Time of setting do_bond_ccds: we delay a bit to consolidate multiple CCCD changes
+    // into one write. Time is currently in ticks_ms.
+    uint64_t do_bond_cccds_request_time;
 } bleio_connection_internal_t;
 
 typedef struct {

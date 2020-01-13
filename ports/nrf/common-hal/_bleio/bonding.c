@@ -36,7 +36,6 @@
 #include "supervisor/shared/tick.h"
 
 #include "nrf_soc.h"
-#include "sd_mutex.h"
 
 #include "bonding.h"
 
@@ -56,9 +55,6 @@ const uint32_t BONDING_FLAG = ('1' | '0' << 8 | 'D' << 16 | 'B' << 24);
 
 // Save both system and user service info.
 #define SYS_ATTR_FLAGS      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
-
-STATIC nrf_mutex_t queued_bonding_block_entries_mutex;
-STATIC uint64_t block_queued_at_ticks_ms = 0;
 
 #if BONDING_DEBUG
 void bonding_print_block(bonding_block_t *block) {
@@ -80,7 +76,6 @@ STATIC size_t compute_block_size(uint16_t data_length) {
 }
 
 void bonding_erase_storage(void) {
-    BONDING_DEBUG_PRINTF("bonding_erase_storage()\n");
     // Erase all pages in the bonding area.
     for(uint32_t page_address = BONDING_PAGES_START_ADDR;
         page_address < BONDING_PAGES_END_ADDR;
@@ -125,7 +120,7 @@ STATIC bonding_block_t *next_block(bonding_block_t *block) {
 // Find the block with given is_central, type and ediv value.
 // If type == BLOCK_UNUSED, ediv is ignored and the the sole unused block at the end is returned.
 // If not found, return NULL.
-STATIC bonding_block_t *find_candidate_block(bool is_central, bonding_block_type_t type, uint16_t ediv) {
+STATIC bonding_block_t *find_existing_block(bool is_central, bonding_block_type_t type, uint16_t ediv) {
     bonding_block_t *block = NULL;
     while (1) {
         block = next_block(block);
@@ -149,7 +144,7 @@ STATIC bonding_block_t *find_candidate_block(bool is_central, bonding_block_type
 
 // Get an empty block large enough to store data_length data.
 STATIC bonding_block_t* find_unused_block(uint16_t data_length) {
-    bonding_block_t *unused_block = find_candidate_block(true, BLOCK_UNUSED, EDIV_INVALID);
+    bonding_block_t *unused_block = find_existing_block(true, BLOCK_UNUSED, EDIV_INVALID);
     // If no more room, erase all existing blocks and start over.
     if (!unused_block ||
         (uint8_t *) unused_block + compute_block_size(data_length) >= (uint8_t *) BONDING_DATA_END_ADDR) {
@@ -162,54 +157,8 @@ STATIC bonding_block_t* find_unused_block(uint16_t data_length) {
 // Set the header word to all 0's, to mark the block as invalid.
 // We don't change data_length, so we can still skip over this block.
 STATIC void invalidate_block(bonding_block_t *block) {
-    BONDING_DEBUG_PRINTF("invalidate_block()\n");
     uint32_t zero = 0;
     sd_flash_write_sync((uint32_t *) block, &zero, 1);
-}
-
-STATIC void queue_write_block(bool is_central, bonding_block_type_t type, uint16_t ediv, uint16_t conn_handle, uint8_t *data, uint16_t data_length) {
-    if (compute_block_size(data_length) > BONDING_DATA_END_ADDR - BONDING_DATA_START_ADDR) {
-        // Ridiculous size.
-        return;
-    }
-
-    // No heap available, so never mind. This might be called between VM instantiations.
-    if (!gc_alloc_possible()) {
-        return;
-    }
-    queued_bonding_block_entry_t* queued_entry =
-        m_malloc_maybe(sizeof(queued_bonding_block_entry_t) + data_length, false);
-
-    if (!queued_entry) {
-        // Failed to allocate. Not much we can do, since this might be during an evt handler.
-        return;
-    }
-
-    queued_entry->block.is_central = is_central;
-    queued_entry->block.type = type;
-    queued_entry->block.ediv = ediv;
-    queued_entry->block.conn_handle = conn_handle;
-    queued_entry->block.data_length = data_length;
-    if (data && data_length != 0) {
-        memcpy(&queued_entry->block.data, data, data_length);
-    }
-
-    // Note: blocks are added in LIFO order, for simplicity and speed.
-    // The assumption is that there won't be stale blocks on the
-    // list. The sys_attr blocks don't contain sys_attr data, just a
-    // request to store the latest value. The key blocks are assumed
-    // not to be superseded quickly.  If this assumption becomes
-    // invalid, the queue should be changed to FIFO.
-
-    // Add this new element to the front of the list.
-    sd_mutex_acquire_wait(&queued_bonding_block_entries_mutex);
-    queued_entry->next = MP_STATE_VM(queued_bonding_block_entries);
-    MP_STATE_VM(queued_bonding_block_entries) = queued_entry;
-    sd_mutex_release(&queued_bonding_block_entries_mutex);
-
-    // Remember when we last queued a block, so we avoid excesive
-    // sys_attr writes.
-    block_queued_at_ticks_ms = supervisor_ticks_ms64();
 }
 
 // Write bonding block header.
@@ -237,134 +186,109 @@ STATIC void write_block_data(bonding_block_t *dest_block, uint8_t *data, uint16_
     }
 }
 
-STATIC void write_sys_attr_block(bonding_block_t *block) {
+STATIC void write_sys_attr_block(bleio_connection_internal_t *connection) {
     uint16_t length = 0;
     // First find out how big a buffer we need, then fetch the data.
-    if(sd_ble_gatts_sys_attr_get(block->conn_handle, NULL, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
+    if(sd_ble_gatts_sys_attr_get(connection->conn_handle, NULL, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
         return;
     }
-
     uint8_t sys_attr[length];
-    if(sd_ble_gatts_sys_attr_get(block->conn_handle, sys_attr, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
+    if(sd_ble_gatts_sys_attr_get(connection->conn_handle, sys_attr, &length, SYS_ATTR_FLAGS) != NRF_SUCCESS) {
         return;
     }
-
-    // Now we know the data size.
-    block->data_length = length;
 
     // Is there an existing sys_attr block that matches the current sys_attr data?
-    bonding_block_t *candidate_block = find_candidate_block(block->is_central, block->type, block->ediv);
-    if (candidate_block) {
-        if (length == candidate_block->data_length &&
-            memcmp(sys_attr, candidate_block->data, block->data_length) == 0) {
-            BONDING_DEBUG_PRINTF("Identical sys_attr block already stored.\n");
+    bonding_block_t *existing_block =
+        find_existing_block(connection->is_central, BLOCK_SYS_ATTR, connection->ediv);
+    if (existing_block) {
+        if (length == existing_block->data_length &&
+            memcmp(sys_attr, existing_block->data, length) == 0) {
             // Identical block found. No need to store again.
             return;
         }
         // Data doesn't match. Invalidate block and store a new one.
-        invalidate_block(candidate_block);
+        invalidate_block(existing_block);
     }
 
+    bonding_block_t block_header = {
+        .is_central = connection->is_central,
+        .type = BLOCK_SYS_ATTR,
+        .ediv = connection->ediv,
+        .conn_handle = connection->conn_handle,
+        .data_length = length,
+    };
     bonding_block_t *new_block = find_unused_block(length);
-    write_block_header(new_block, block);
+    write_block_header(new_block, &block_header);
     write_block_data(new_block, sys_attr, length);
     return;
 }
 
-STATIC void write_keys_block(bonding_block_t *block) {
-    if (block->data_length != sizeof(bonding_keys_t)) {
-        // Bad length.
-        return;
-    }
+STATIC void write_keys_block(bleio_connection_internal_t *connection) {
+    uint16_t const ediv = connection->is_central
+        ? connection->bonding_keys.peer_enc.master_id.ediv
+        : connection->bonding_keys.own_enc.master_id.ediv;
 
     // Is there an existing keys block that matches?
-    bonding_block_t *candidate_block = find_candidate_block(block->is_central, block->type, block->ediv);
-    if (candidate_block) {
-        if (block->data_length == candidate_block->data_length &&
-            memcmp(block->data, candidate_block->data, block->data_length) == 0) {
-            BONDING_DEBUG_PRINTF("Identical keys block already stored.\n");
+    bonding_block_t *existing_block = find_existing_block(connection->is_central, BLOCK_KEYS, ediv);
+    if (existing_block) {
+        if (existing_block->data_length == sizeof(bonding_keys_t) &&
+            memcmp(existing_block->data, &connection->bonding_keys, sizeof(bonding_keys_t)) == 0) {
             // Identical block found. No need to store again.
             return;
         }
         // Data doesn't match. Invalidate block and store a new one.
-        invalidate_block(candidate_block);
+        invalidate_block(existing_block);
     }
 
-    bonding_keys_t *bonding_keys = (bonding_keys_t *) block->data;
-    block->ediv = block->is_central
-        ? bonding_keys->peer_enc.master_id.ediv
-        : bonding_keys->own_enc.master_id.ediv;
+    bonding_block_t block_header = {
+        .is_central = connection->is_central,
+        .type = BLOCK_KEYS,
+        .ediv = ediv,
+        .conn_handle = connection->conn_handle,
+        .data_length = sizeof(bonding_keys_t),
+    };
     bonding_block_t *new_block = find_unused_block(sizeof(bonding_keys_t));
-    write_block_header(new_block, block);
-    write_block_data(new_block, (uint8_t *) bonding_keys, sizeof(bonding_keys_t));
+    write_block_header(new_block, &block_header);
+    write_block_data(new_block, (uint8_t *) &connection->bonding_keys, sizeof(bonding_keys_t));
 }
-
 
 void bonding_clear_keys(bonding_keys_t *bonding_keys) {
     memset((uint8_t*) bonding_keys, 0, sizeof(bonding_keys_t));
 }
 
-// Call only when SD is enabled.
 void bonding_reset(void) {
-    MP_STATE_VM(queued_bonding_block_entries) = NULL;
-    sd_mutex_new(&queued_bonding_block_entries_mutex);
     if (BONDING_FLAG != *((uint32_t *) BONDING_START_FLAG_ADDR) ||
         BONDING_FLAG != *((uint32_t *) BONDING_END_FLAG_ADDR)) {
         bonding_erase_storage();
     }
 }
 
-// Write bonding blocks to flash. These have been queued during event handlers.
-// We do one at a time, on each background call.
+// Write bonding blocks to flash. Requests have been queued during evt handlers.
 void bonding_background(void) {
-    uint8_t sd_en = 0;
-    (void) sd_softdevice_is_enabled(&sd_en);
-    if (!sd_en) {
-        return;
-    }
+    // A paired connection will request that its keys and CCCD values be stored.
+    // The CCCD store  whenever a CCCD value is written.
+    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+        bleio_connection_internal_t *connection = &connections[i];
 
-    if (block_queued_at_ticks_ms == 0) {
-        // No writes have been queued yet.
-        return;
-    }
+        uint64_t current_ticks_ms = supervisor_ticks_ms64();
+        // Wait at least one second before saving CCCD, to consolidate
+        // writes that involve multiple CCCDs. For instance, for HID,
+        // three CCCD's are set in short succession by the HID client.
+        if (connection->do_bond_cccds &&
+            current_ticks_ms - connection->do_bond_cccds_request_time >= 1000) {
+            write_sys_attr_block(connection);
+            connection->do_bond_cccds = false;
+        }
 
-    // Wait at least one second before writing a block, to consolidate writes
-    // that will be duplicates.
-    uint64_t current_ticks_ms = supervisor_ticks_ms64();
-    if (current_ticks_ms - block_queued_at_ticks_ms < 1000) {
-        return;
-    }
-
-    // Get block at front of list.
-    bonding_block_t *block = NULL;
-    sd_mutex_acquire_wait(&queued_bonding_block_entries_mutex);
-    if (MP_STATE_VM(queued_bonding_block_entries)) {
-        block = &(MP_STATE_VM(queued_bonding_block_entries)->block);
-        // Remove entry from list.
-        MP_STATE_VM(queued_bonding_block_entries) = MP_STATE_VM(queued_bonding_block_entries)->next;
-    }
-    sd_mutex_release(&queued_bonding_block_entries_mutex);
-    if (!block) {
-        // List is empty.
-        return;
-    }
-
-    switch (block->type) {
-        case BLOCK_SYS_ATTR:
-            write_sys_attr_block(block);
-            break;
-
-        case BLOCK_KEYS:
-            write_keys_block(block);
-            break;
-
-        default:
-            break;
+        if (connection->do_bond_keys) {
+            write_keys_block(connection);
+            connection->do_bond_keys = false;
+        }
     }
 }
 
 bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv) {
-    bonding_block_t *block = find_candidate_block(is_central, BLOCK_SYS_ATTR, ediv);
+    bonding_block_t *block = find_existing_block(is_central, BLOCK_SYS_ATTR, ediv);
     if (block == NULL) {
         return false;
     }
@@ -374,7 +298,7 @@ bool bonding_load_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv
 }
 
 bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_keys) {
-    bonding_block_t *block = find_candidate_block(is_central, BLOCK_KEYS, ediv);
+    bonding_block_t *block = find_existing_block(is_central, BLOCK_KEYS, ediv);
     if (block == NULL) {
         return false;
     }
@@ -385,16 +309,4 @@ bool bonding_load_keys(bool is_central, uint16_t ediv, bonding_keys_t *bonding_k
 
     memcpy(bonding_keys, block->data, block->data_length);
     return true;
-}
-
-void bonding_save_cccd_info(bool is_central, uint16_t conn_handle, uint16_t ediv) {
-    BONDING_DEBUG_PRINTF("bonding_save_cccd_info()\n");
-    queue_write_block(is_central, BLOCK_SYS_ATTR, ediv, conn_handle, NULL, 0);
-}
-
-void bonding_save_keys(bool is_central, uint16_t conn_handle, bonding_keys_t *bonding_keys) {
-    uint16_t const ediv = is_central
-        ? bonding_keys->peer_enc.master_id.ediv
-        : bonding_keys->own_enc.master_id.ediv;
-    queue_write_block(is_central, BLOCK_KEYS, ediv, conn_handle, (uint8_t *) bonding_keys, sizeof(bonding_keys_t));
 }

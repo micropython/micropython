@@ -156,7 +156,6 @@
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
-    queued_bonding_block_entry_t* queued_bonding_block_entries; \
 
 
 #endif  // NRF5_MPCONFIGPORT_H__
