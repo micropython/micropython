@@ -30,7 +30,6 @@
 
 #include "py/runtime.h"
 #include "py/builtin.h"
-#include "py/objtype.h"
 
 #if MICROPY_PY_BUILTINS_SET
 
@@ -565,7 +564,7 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
     .name = MP_QSTR_frozenset,
-    .flags = TYPE_FLAG_NO_EQUALITY_SHORTCUTS,
+    .flags = MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS,
     .print = set_print,
     .make_new = set_make_new,
     .unary_op = set_unary_op,

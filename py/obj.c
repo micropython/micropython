@@ -210,7 +210,7 @@ mp_obj_t mp_obj_equal_bop(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
     // Shortcut for very common cases
     if (o1 == o2 &&
         (mp_obj_is_small_int(o1) ||
-	 ((mp_obj_get_type(o1)->flags & TYPE_FLAG_NO_EQUALITY_SHORTCUTS) == 0) )) {
+	 ((mp_obj_get_type(o1)->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) == 0) )) {
         return local_true;
     }
 
@@ -241,13 +241,13 @@ mp_obj_t mp_obj_equal_bop(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
 	// different type then we don't need to bother trying the
 	// comparison.
         if (type->binary_op != NULL &&
-	    ((type->flags & TYPE_FLAG_NO_EQUALITY_SHORTCUTS) ||
+	    ((type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) ||
 	     mp_obj_get_type(o2) == type)) {
             // CPython is asymetric; it will try __eq__ if there is no
             // __ne__ but not the other way around. If shortcuts are
 	    // used in this class we always use __eq__.
 	    if (op == MP_BINARY_OP_NOT_EQUAL &&
-		(type->flags & TYPE_FLAG_NO_EQUALITY_SHORTCUTS) != 0) {
+		(type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) != 0) {
 	        mp_obj_t r = type->binary_op(op, o1, o2);
                 if (r != MP_OBJ_NULL) {
                     return r;

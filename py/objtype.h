@@ -38,9 +38,9 @@ typedef struct _mp_obj_instance_t {
 } mp_obj_instance_t;
 
 // Flags for type behaviour
-#define TYPE_FLAG_IS_SUBCLASSED (0x0001)
-#define TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
-#define TYPE_FLAG_NO_EQUALITY_SHORTCUTS (0x0004)
+#define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
+#define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
+#define MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS (0x0004)
 
 #if MICROPY_CPYTHON_COMPAT
 // this is needed for object.__new__

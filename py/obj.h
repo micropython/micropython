@@ -555,6 +555,11 @@ struct _mp_obj_type_t {
     struct _mp_obj_dict_t *locals_dict;
 };
 
+// Flags for type behaviour
+#define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
+#define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
+#define MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS (0x0004)
+
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
 extern const mp_obj_type_t mp_type_object;
