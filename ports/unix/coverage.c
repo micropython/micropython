@@ -11,6 +11,7 @@
 #include "py/emit.h"
 #include "py/formatfloat.h"
 #include "py/ringbuf.h"
+#include "py/pairheap.h"
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
@@ -138,6 +139,35 @@ STATIC const mp_obj_type_t mp_type_stest_textio2 = {
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
 STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte*)"0123456789"};
+
+STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
+    return (uintptr_t)a < (uintptr_t)b;
+}
+
+// ops array contain operations: x>=0 means push(x), x<0 means delete(-x)
+STATIC void pairheap_test(size_t nops, int *ops) {
+    mp_pairheap_t node[8];
+    mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
+    printf("create:");
+    for (size_t i = 0; i < nops; ++i) {
+        if (ops[i] >= 0) {
+            heap = mp_pairheap_push(pairheap_lt, heap, &node[ops[i]]);
+        } else {
+            heap = mp_pairheap_delete(pairheap_lt, heap, &node[-ops[i]]);
+        }
+        if (mp_pairheap_is_empty(pairheap_lt, heap)) {
+            mp_printf(&mp_plat_print, " -");
+        } else {
+            mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);;
+        }
+    }
+    printf("\npop all:");
+    while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
+        mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);;
+        heap = mp_pairheap_pop(pairheap_lt, heap);
+    }
+    printf("\n");
+}
 
 // function to run extra tests for things that can't be checked by scripts
 STATIC mp_obj_t extra_coverage(void) {
@@ -512,6 +542,35 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf.iget = 0;
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+    }
+
+    // pairheap
+    {
+        mp_printf(&mp_plat_print, "# pairheap\n");
+
+        // Basic case.
+        int t0[] = {0, 2, 1, 3};
+        pairheap_test(MP_ARRAY_SIZE(t0), t0);
+
+        // All pushed in reverse order.
+        int t1[] = {7, 6, 5, 4, 3, 2, 1, 0};
+        pairheap_test(MP_ARRAY_SIZE(t1), t1);
+
+        // Basic deletion.
+        int t2[] = {1, -1, -1, 1, 2, -2, 2, 3, -3};
+        pairheap_test(MP_ARRAY_SIZE(t2), t2);
+
+        // Deletion of first child that has next node (the -3).
+        int t3[] = {1, 2, 3, 4, -1, -3};
+        pairheap_test(MP_ARRAY_SIZE(t3), t3);
+
+        // Deletion of node that's not first child (the -2).
+        int t4[] = {1, 2, 3, 4, -2};
+        pairheap_test(MP_ARRAY_SIZE(t4), t4);
+
+        // Deletion of node that's not first child and has children (the -3).
+        int t5[] = {3, 4, 5, 1, 2, -3};
+        pairheap_test(MP_ARRAY_SIZE(t5), t5);
     }
 
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
