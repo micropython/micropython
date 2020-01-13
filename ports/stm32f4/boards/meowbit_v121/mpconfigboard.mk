@@ -17,5 +17,5 @@ MCU_VARIANT = stm32f4
 MCU_SUB_VARIANT = stm32f401xe
 MCU_PACKAGE = 64
 CMSIS_MCU = STM32F401xE
-# LD_FILE = boards/STM32F401_boot.ld 
-LD_FILE = boards/STM32F401_fs.ld
+LD_FILE = boards/STM32F401_boot.ld 
+#LD_FILE = boards/STM32F401_fs.ld

@@ -105,6 +105,7 @@ void init_usb_hardware(void) {
 #endif
     
     /* Peripheral clock enable */
+    __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
     init_usb_vbus_sense();
