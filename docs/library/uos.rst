@@ -225,7 +225,7 @@ the design of such a class: MicroPython does not actually provide that class,
 but an actual block device class must implement the methods described below.
 
 A concrete implementation of this class will usually allow access to the
-memory-like functionality a piece of hardware (like flash memory). A block
+memory-like functionality of a piece of hardware (like flash memory). A block
 device can be formatted to any supported filesystem and mounted using ``uos``
 methods.
 
@@ -303,6 +303,6 @@ that the block device supports the extended interface.
           - 6 -- erase a block, *arg* is the block number to erase
 
 Unless otherwise stated ``ioctl(op, arg)`` can return None. Consequently an
-implementation can ignore unused values of ``op``. As a minimum value 4 must be
-intercepted; for littlefs 6 must be intercepted and return 0. The need for
-others is hardware dependent.
+implementation can ignore unused values of ``op``. As a minimum
+``ioctl(4, ...)`` must be intercepted; for littlefs ``ioctl(6, ...)`` must be
+intercepted and return 0. The need for others is hardware dependent.
