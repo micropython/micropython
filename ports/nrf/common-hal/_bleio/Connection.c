@@ -123,6 +123,17 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
         }
 
+        case BLE_GATTS_EVT_WRITE:
+            // A client wrote a value.
+            // If we are bonded and it's a CCCD (UUID 0x2902), store the CCCD value.
+            if (self->conn_handle != BLE_CONN_HANDLE_INVALID &&
+                self->pair_status == PAIR_PAIRED &&
+                ble_evt->evt.gatts_evt.params.write.uuid.type == BLE_UUID_TYPE_BLE &&
+                ble_evt->evt.gatts_evt.params.write.uuid.uuid == 0x2902) {
+                bonding_save_cccd_info(self->is_central, self->conn_handle, self->ediv);
+            }
+            break;
+
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
             break;
@@ -223,7 +234,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
             CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_AUTH_STATUS\n");
-            // Pairing process completed
+            // Key exchange completed.
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
@@ -264,8 +275,10 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
         }
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
-            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_CONN_SEC_UPDATE\n");
+            // We get this both on first-time pairing and on subsequent pairings using stored keys.
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+            CONNECTION_DEBUG_PRINTF("BLE_GAP_EVT_CONN_SEC_UPDATE, sm: %d, lv: %d\n",
+                                    conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
                 // Security setup did not succeed:
                 // mode 0, level 0 means no access
@@ -282,6 +295,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                     CONNECTION_DEBUG_PRINTF("bonding_load_cccd_info() failed\n");
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
                 }
+                self->pair_status = PAIR_PAIRED;
             }
             break;
         }

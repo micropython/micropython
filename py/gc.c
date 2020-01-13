@@ -464,6 +464,10 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+bool gc_alloc_possible(void) {
+    return MP_STATE_MEM(gc_pool_start) != 0;
+}
+
 // We place long lived objects at the end of the heap rather than the start. This reduces
 // fragmentation by localizing the heap churn to one portion of memory (the start of the heap.)
 void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
