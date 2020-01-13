@@ -35,6 +35,7 @@
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/Descriptor.h"
+#include "shared-bindings/_bleio/PacketBuffer.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/_bleio/ScanResults.h"
 #include "shared-bindings/_bleio/Service.h"
@@ -69,6 +70,7 @@
 //|     CharacteristicBuffer
 //|     Connection
 //|     Descriptor
+//|     PacketBuffer
 //|     ScanEntry
 //|     ScanResults
 //|     Service
@@ -140,8 +142,9 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Characteristic),       MP_ROM_PTR(&bleio_characteristic_type) },
     { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer), MP_ROM_PTR(&bleio_characteristic_buffer_type) },
     { MP_ROM_QSTR(MP_QSTR_Descriptor),           MP_ROM_PTR(&bleio_descriptor_type) },
+    { MP_ROM_QSTR(MP_QSTR_PacketBuffer),         MP_ROM_PTR(&bleio_packet_buffer_type) },
     { MP_ROM_QSTR(MP_QSTR_ScanEntry),            MP_ROM_PTR(&bleio_scanentry_type) },
-    { MP_ROM_QSTR(MP_QSTR_ScanResults),            MP_ROM_PTR(&bleio_scanresults_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanResults),          MP_ROM_PTR(&bleio_scanresults_type) },
     { MP_ROM_QSTR(MP_QSTR_Service),              MP_ROM_PTR(&bleio_service_type) },
     { MP_ROM_QSTR(MP_QSTR_UUID),                 MP_ROM_PTR(&bleio_uuid_type) },
 

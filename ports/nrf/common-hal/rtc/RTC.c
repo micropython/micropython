@@ -59,8 +59,8 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
 }
 
 void rtc_init(void) {
-    if (!nrf_clock_lf_is_running()) {
-        nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTART);
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
     }
     nrfx_rtc_counter_clear(&rtc_instance);
     nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);

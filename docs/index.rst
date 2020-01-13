@@ -43,6 +43,7 @@ Full Table of Contents
 
    ../README
    ../CONTRIBUTING
+   ../BUILDING
    ../CODE_OF_CONDUCT
    ../license.rst
 

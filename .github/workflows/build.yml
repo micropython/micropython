@@ -84,6 +84,7 @@ jobs:
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
         - "circuitplayground_express_displayio"
+        - "clue_nrf52840_express"
         - "cp32-m4"
         - "datalore_ip_m4"
         - "datum_distance"
@@ -101,6 +102,8 @@ jobs:
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
         - "feather_m4_express"
+        - "feather_mimxrt1011"
+        - "feather_mimxrt1062"
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
@@ -108,6 +111,7 @@ jobs:
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
+        - "imxrt1010_evk"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
         - "itsybitsy_nrf52840_express"
@@ -155,12 +159,15 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stringcar_m0_express"
+        - "teknikio_bluebird"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
+        - "xinabox_cc03"
+        - "xinabox_cs11"
 
     steps:
     - name: Set up Python 3.5
@@ -171,7 +178,7 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |

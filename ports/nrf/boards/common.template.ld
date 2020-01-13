@@ -16,7 +16,13 @@ MEMORY
     FLASH_FATFS (r) : ORIGIN = ${CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR}, LENGTH = ${CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE}
     FLASH_BOOTLOADER (rx) : ORIGIN = ${BOOTLOADER_START_ADDR}, LENGTH = ${BOOTLOADER_SIZE}
     FLASH_BOOTLOADER_SETTINGS (r) : ORIGIN = ${BOOTLOADER_SETTINGS_START_ADDR}, LENGTH = ${BOOTLOADER_SETTINGS_SIZE}
-    RAM (xrw)       : ORIGIN = 0x20004000, LENGTH = 0x03C000 /* 240 KiB */
+
+
+    /* 0x2000000 - RAM:ORIGIN is reserved for Softdevice */
+    /* SoftDevice 6.1.0 takes 0x7b78 bytes (30.86 kb) minimum with high ATT MTU. */
+    /* To measure the minimum required amount of memory for given configuration, set this number
+       high enough to work and then check the mutation of the value done by sd_ble_enable. */
+    RAM (xrw)       : ORIGIN = 0x20000000 + 32K, LENGTH = 256K - 32K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */

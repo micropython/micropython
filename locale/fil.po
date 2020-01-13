@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -66,7 +66,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indeks ay dapat integers, hindi %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
@@ -379,6 +380,10 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, fuzzy, c-format
@@ -396,11 +401,6 @@ msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -602,10 +602,14 @@ msgid "Expected a %q"
 msgstr "Umasa ng %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
+
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -750,6 +754,10 @@ msgstr ""
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
@@ -877,6 +885,10 @@ msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -977,11 +989,6 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1088,7 +1095,6 @@ msgid "Sample rate must be positive"
 msgstr "Sample rate ay dapat positibo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate ay masyadong mataas. Ito ay dapat hindi hiigit sa %d"
@@ -1335,6 +1341,10 @@ msgstr ""
 "\n"
 "Para makita ang listahan ng modules, `help(“modules”)`.\n"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
@@ -1474,8 +1484,7 @@ msgid "byte code not implemented"
 msgstr "byte code hindi pa implemented"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2171,7 +2180,7 @@ msgstr "walang module na '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "walang ganoon na attribute"
 
@@ -2353,11 +2362,6 @@ msgstr "puno na ang pila (overflow)"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "hindi mabasa ang attribute"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2664,10 +2668,6 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr ""
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
@@ -2902,6 +2902,11 @@ msgstr "zero step"
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Tanging bit maps na may 8 bit color o mas mababa ang supportado"
 
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr ""
+#~ "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Dapat true color (24 bpp o mas mataas) BMP lamang ang supportado %x"
 
@@ -3059,6 +3064,10 @@ msgstr "zero step"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position ay dapat 2-tuple"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "hindi mabasa ang attribute"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "row ay dapat packed at ang word nakahanay"

@@ -48,6 +48,9 @@ void check_nrf_error(uint32_t err_code) {
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
+        case BLE_ERROR_INVALID_CONN_HANDLE:
+            mp_raise_bleio_ConnectionError(translate("Not connected"));
+            return;
         default:
             mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
             break;

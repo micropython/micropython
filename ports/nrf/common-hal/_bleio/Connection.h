@@ -66,7 +66,7 @@ typedef struct {
     ble_drv_evt_handler_entry_t handler_entry;
     ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
-    // Request that CCCD info for this connection be saved.
+    uint16_t mtu;
     volatile bool do_bond_cccds;
     // Request that security key info for this connection be saved.
     volatile bool do_bond_keys;

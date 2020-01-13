@@ -1,10 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +25,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
+#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
 
+#include "common-hal/microcontroller/Pin.h"
+#include "fsl_common.h"
+#include "periph.h"
 #include "py/obj.h"
-#include "extmod/vfs_fat.h"
 
-#include "shared-module/audiomp3/MP3File.h"
+typedef struct {
+    mp_obj_base_t base;
+    LPSPI_Type *spi;
+    bool has_lock;
+    uint32_t baudrate;
+    const mcu_periph_obj_t *clock_pin;
+    const mcu_periph_obj_t *mosi_pin;
+    const mcu_periph_obj_t *miso_pin;
+} busio_spi_obj_t;
 
-extern const mp_obj_type_t audiomp3_mp3file_type;
-
-void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
-    pyb_file_obj_t* file, uint8_t *buffer, size_t buffer_size);
-
-void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t* self);
-bool common_hal_audiomp3_mp3file_deinited(audiomp3_mp3file_obj_t* self);
-uint32_t common_hal_audiomp3_mp3file_get_sample_rate(audiomp3_mp3file_obj_t* self);
-void common_hal_audiomp3_mp3file_set_sample_rate(audiomp3_mp3file_obj_t* self, uint32_t sample_rate);
-uint8_t common_hal_audiomp3_mp3file_get_bits_per_sample(audiomp3_mp3file_obj_t* self);
-uint8_t common_hal_audiomp3_mp3file_get_channel_count(audiomp3_mp3file_obj_t* self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_MP3FILE_H
+#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H

@@ -182,7 +182,10 @@ typedef long mp_off_t;
 
 // Remove some lesser-used functionality to make small builds fit.
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+//TODO: replace this with a rework of the FULL_BUILD system
+#if !defined(MICROPY_CPYTHON_COMPAT)
+	#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
@@ -193,7 +196,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 // Opposite setting is deliberate.
 #define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
@@ -326,7 +331,9 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
 #define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
 #define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
+#ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
+#endif
 #else
 #define DISPLAYIO_MODULE
 #define FONTIO_MODULE

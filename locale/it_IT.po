@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -66,7 +66,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "gli indici %q devono essere interi, non %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "slice del buffer devono essere della stessa lunghezza"
@@ -379,6 +380,10 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "Il buffer deve essere lungo almeno 1"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, fuzzy, c-format
@@ -397,11 +402,6 @@ msgstr "I byte devono essere compresi tra 0 e 255"
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "dotstar non può essere usato con %s"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -602,10 +602,14 @@ msgid "Expected a %q"
 msgstr "Atteso un %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
+
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -751,6 +755,10 @@ msgstr "bits per valore invalido"
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "periodo di cattura invalido. Zona valida: 1 - 500"
@@ -881,6 +889,10 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -982,11 +994,6 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "solo slice con step=1 (aka None) sono supportate"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1098,7 +1105,6 @@ msgid "Sample rate must be positive"
 msgstr "STA deve essere attiva"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
@@ -1338,6 +1344,10 @@ msgid ""
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
@@ -1479,8 +1489,7 @@ msgid "byte code not implemented"
 msgstr "byte code non implementato"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
+msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2174,7 +2183,7 @@ msgstr "nessun modulo chiamato '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "attributo inesistente"
 
@@ -2360,11 +2369,6 @@ msgstr "overflow della coda"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "attributo non leggibile"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2671,10 +2675,6 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr ""
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "numero di argomenti errato"
@@ -2706,6 +2706,10 @@ msgstr "zero step"
 
 #~ msgid "C-level assert"
 #~ msgstr "assert a livello C"
+
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "dotstar non può essere usato con %s"
 
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "non si può aggiungere servizi in Central mode"
@@ -2907,6 +2911,10 @@ msgstr "zero step"
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Sono supportate solo bitmap con colori a 8 bit o meno"
 
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr "solo slice con step=1 (aka None) sono supportate"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo BMP true color (24 bpp o superiore) sono supportati %x"
 
@@ -3043,6 +3051,10 @@ msgstr "zero step"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position deve essere una 2-tuple"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "attributo non leggibile"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "la riga deve essere compattata e allineata alla parola"

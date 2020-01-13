@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -68,7 +68,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
 
@@ -377,6 +378,10 @@ msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein."
 msgid "Buffer must be at least length 1"
 msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
@@ -394,11 +399,6 @@ msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Rufe super().__init__() vor dem Zugriff auf ein natives Objekt auf."
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Kann dotstar nicht mit %s verwenden"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -594,9 +594,13 @@ msgid "Expected a %q"
 msgstr "Erwartet ein(e) %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
+
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -742,6 +746,10 @@ msgstr "Ungültige Bits pro Wert"
 msgid "Invalid buffer size"
 msgstr "Ungültige Puffergröße"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Ungültiger Aufnahmezeitraum. Gültiger Bereich: 1 - 500"
@@ -870,6 +878,10 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr "Muss eine %q Unterklasse sein."
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Kein CCCD für diese Charakteristik"
@@ -974,10 +986,6 @@ msgstr ""
 "Nur monochrome, indizierte 4bpp oder 8bpp, und 16bpp oder größere BMPs "
 "unterstützt: %d bpp wurden gegeben"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample muss ein Vielfaches von 8 sein."
@@ -1080,7 +1088,6 @@ msgid "Sample rate must be positive"
 msgstr "Abtastrate muss positiv sein"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
@@ -1328,6 +1335,10 @@ msgstr ""
 "Um die integrierten Module aufzulisten, führe bitte `help(\"modules\")` "
 "aus.\n"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
@@ -1466,9 +1477,8 @@ msgid "byte code not implemented"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2155,7 +2165,7 @@ msgstr "Kein Modul mit dem Namen '%q'"
 msgid "no reset pin available"
 msgstr "kein Reset Pin verfügbar"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "kein solches Attribut"
 
@@ -2337,10 +2347,6 @@ msgstr "Warteschlangenüberlauf"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "rawbuf hat nicht die gleiche Größe wie buf"
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "readonly attribute"
-msgstr "Readonly-Attribut"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2650,10 +2656,6 @@ msgstr "value_count muss größer als 0 sein"
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr "write_args muss eine Liste, ein Tupel oder None sein"
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "falsche Anzahl an Argumenten"
@@ -2686,6 +2688,10 @@ msgstr ""
 
 #~ msgid "C-level assert"
 #~ msgstr "C-Level Assert"
+
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Kann dotstar nicht mit %s verwenden"
 
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Im Central mode können Dienste nicht hinzugefügt werden"
@@ -2991,6 +2997,10 @@ msgstr ""
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
+
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "erwarte DigitalInOut"
 
@@ -3043,6 +3053,9 @@ msgstr ""
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "Pin hat keine IRQ Fähigkeiten"
 
+#~ msgid "readonly attribute"
+#~ msgstr "Readonly-Attribut"
+
 #~ msgid "scan failed"
 #~ msgstr "Scan fehlgeschlagen"
 
@@ -3054,3 +3067,6 @@ msgstr ""
 
 #~ msgid "wifi_set_ip_info() failed"
 #~ msgstr "wifi_set_ip_info() fehlgeschlagen"
+
+#~ msgid "write_args must be a list, tuple, or None"
+#~ msgstr "write_args muss eine Liste, ein Tupel oder None sein"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-12 15:33-0800\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -68,7 +68,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
 msgstr "%q debe ser >= 1"
 
@@ -379,6 +380,10 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "Buffer debe ser de longitud 1 como minimo"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
@@ -396,11 +401,6 @@ msgstr "Bytes debe estar entre 0 y 255."
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "No se puede usar dotstar con %s"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -596,9 +596,13 @@ msgid "Expected a %q"
 msgstr "Se espera un %q"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
 msgstr "Se esperaba una Característica."
+
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -742,6 +746,10 @@ msgstr "Inválido bits por valor"
 msgid "Invalid buffer size"
 msgstr "Tamaño de buffer inválido"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Inválido periodo de captura. Rango válido: 1 - 500"
@@ -869,6 +877,10 @@ msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
 msgid "Must be a %q subclass."
 msgstr "Debe de ser una subclase de %q"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -970,11 +982,6 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "solo se admiten segmentos con step=1 (alias None)"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1082,7 +1089,6 @@ msgid "Sample rate must be positive"
 msgstr "Sample rate debe ser positivo"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
@@ -1326,6 +1332,10 @@ msgstr ""
 "\n"
 "Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
@@ -1464,9 +1474,8 @@ msgid "byte code not implemented"
 msgstr "codigo byte no implementado"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "byteorder no es instancia de ByteOrder (encontarmos un %s)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2155,7 +2164,7 @@ msgstr "ningún módulo se llama '%q'"
 msgid "no reset pin available"
 msgstr ""
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "no hay tal atributo"
 
@@ -2339,11 +2348,6 @@ msgstr "desbordamiento de cola(queue)"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "rawbuf no es el mismo tamaño que buf"
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "atributo no legible"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2649,10 +2653,6 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr ""
-
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "numero erroneo de argumentos"
@@ -2689,6 +2689,10 @@ msgstr "paso cero"
 #~ msgstr ""
 #~ "Intento de allocation de heap cuando la VM de MicroPython no estaba "
 #~ "corriendo.\n"
+
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "No se puede usar dotstar con %s"
 
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "No se pueden agregar servicio en modo Central"
@@ -2916,6 +2920,10 @@ msgstr "paso cero"
 #~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% "
 #~ "d bppdado"
 
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr "solo se admiten segmentos con step=1 (alias None)"
+
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo color verdadero (24 bpp o superior) BMP admitido %x"
 
@@ -3016,6 +3024,10 @@ msgstr "paso cero"
 #~ msgid "buffer too long"
 #~ msgstr "buffer demasiado largo"
 
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "byteorder no es instancia de ByteOrder (encontarmos un %s)"
+
 #~ msgid "can query only one param"
 #~ msgstr "puede consultar solo un param"
 
@@ -3091,6 +3103,10 @@ msgstr "paso cero"
 
 #~ msgid "position must be 2-tuple"
 #~ msgstr "posición debe ser 2-tuple"
+
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "atributo no legible"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "la fila debe estar empacada y la palabra alineada"

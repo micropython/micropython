@@ -30,18 +30,16 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/audiomp3/MP3File.h"
+#include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
 //| .. currentmodule:: audiomp3
 //|
-//| :class:`MP3` -- Load a mp3 file for audio playback
-//| ========================================================
+//| :class:`MP3Decoder` -- Load a mp3 file for audio playback
+//| =========================================================
 //|
-//| A .mp3 file prepped for audio playback. Only mono and stereo files are supported. Samples must
-//| be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
-//| an internal buffer.
+//| An object that decodes MP3 files for playback on an audio device.
 //|
 //| .. class:: MP3(file[, buffer])
 //|
@@ -63,7 +61,7 @@
 //|     speaker_enable.switch_to_output(value=True)
 //|
 //|     data = open("cplay-16bit-16khz-64kbps.mp3", "rb")
-//|     mp3 = audiomp3.MP3File(data)
+//|     mp3 = audiomp3.MP3Decoder(data)
 //|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
@@ -129,6 +127,37 @@ STATIC mp_obj_t audiomp3_mp3file_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomp3_mp3file___exit___obj, 4, 4, audiomp3_mp3file_obj___exit__);
 
+//|   .. attribute:: file
+//|
+//|     File to play back.
+//|
+STATIC mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return self->file;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_file_obj, audiomp3_mp3file_obj_get_file);
+
+STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    if (!MP_OBJ_IS_TYPE(file, &mp_type_fileio)) {
+        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+    }
+    common_hal_audiomp3_mp3file_set_file(self, file);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);
+
+const mp_obj_property_t audiomp3_mp3file_file_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_file_obj,
+              (mp_obj_t)&audiomp3_mp3file_set_file_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
+
 //|   .. attribute:: sample_rate
 //|
 //|     32 bit value that dictates how quickly samples are loaded into the DAC
@@ -193,6 +222,24 @@ const mp_obj_property_t audiomp3_mp3file_channel_count_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: rms_level
+//|
+//|     The RMS audio level of a recently played moment of audio. (read only)
+//|
+STATIC mp_obj_t audiomp3_mp3file_obj_get_rms_level(mp_obj_t self_in) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_float(common_hal_audiomp3_mp3file_get_rms_level(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_rms_level_obj, audiomp3_mp3file_obj_get_rms_level);
+
+const mp_obj_property_t audiomp3_mp3file_rms_level_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_rms_level_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 
 STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods
@@ -201,9 +248,11 @@ STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiomp3_mp3file___exit___obj) },
 
     // Properties
+    { MP_ROM_QSTR(MP_QSTR_file), MP_ROM_PTR(&audiomp3_mp3file_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiomp3_mp3file_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_bits_per_sample), MP_ROM_PTR(&audiomp3_mp3file_bits_per_sample_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel_count), MP_ROM_PTR(&audiomp3_mp3file_channel_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rms_level), MP_ROM_PTR(&audiomp3_mp3file_rms_level_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audiomp3_mp3file_locals_dict, audiomp3_mp3file_locals_dict_table);
 
@@ -219,7 +268,7 @@ STATIC const audiosample_p_t audiomp3_mp3file_proto = {
 
 const mp_obj_type_t audiomp3_mp3file_type = {
     { &mp_type_type },
-    .name = MP_QSTR_MP3File,
+    .name = MP_QSTR_MP3Decoder,
     .make_new = audiomp3_mp3file_make_new,
     .locals_dict = (mp_obj_dict_t*)&audiomp3_mp3file_locals_dict,
     .protocol = &audiomp3_mp3file_proto,

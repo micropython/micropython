@@ -136,6 +136,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_uarte.c \
 	drivers/src/nrfx_gpiote.c \
 	drivers/src/nrfx_rtc.c \
+	drivers/src/nrfx_nvmc.c \
 	)
 
 ifdef EXTERNAL_FLASH_DEVICES
@@ -166,7 +167,6 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
-	nrfx/hal/nrf_nvmc.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	peripherals/nrf/cache.c \
 	peripherals/nrf/clocks.c \

@@ -41,4 +41,8 @@ void init_usb_hardware(void);
 bool usb_enabled(void);
 void usb_init(void);
 
+// Propagate plug/unplug events to the MSC logic.
+void usb_msc_mount(void);
+void usb_msc_umount(void);
+
 #endif // MICROPY_INCLUDED_SUPERVISOR_USB_H

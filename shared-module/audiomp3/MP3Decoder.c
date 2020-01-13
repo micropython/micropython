@@ -25,17 +25,20 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/audiomp3/MP3File.h"
+#include "shared-bindings/audiomp3/MP3Decoder.h"
 
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "shared-module/audiomp3/MP3File.h"
+#include "shared-module/audiomp3/MP3Decoder.h"
 #include "supervisor/shared/translate.h"
 #include "lib/mp3/src/mp3common.h"
+
+#define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
 
 /** Fill the input buffer if it is less than half full.
  *
@@ -88,6 +91,39 @@ STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
 #define BYTES_LEFT(self) (self->inbuf_length - self->inbuf_offset)
 #define CONSUME(self, n) (self->inbuf_offset += n)
 
+// http://id3.org/d3v2.3.0
+// http://id3.org/id3v2.3.0
+STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t* self) {
+    mp3file_update_inbuf(self);
+    if (BYTES_LEFT(self) < 10) {
+        return;
+    }
+    uint8_t *data = READ_PTR(self);
+    if (!(
+            data[0] == 'I' &&
+            data[1] == 'D' &&
+            data[2] == '3' &&
+            data[3] != 0xff &&
+            data[4] != 0xff &&
+            (data[5] & 0x1f) == 0 &&
+            (data[6] & 0x80) == 0 &&
+            (data[7] & 0x80) == 0 &&
+            (data[8] & 0x80) == 0 &&
+            (data[9] & 0x80) == 0)) {
+        return;
+    }
+    uint32_t size = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | (data[9]);
+    size += 10; // size excludes the "header" (but not the "extended header")
+    // First, deduct from size whatever is left in buffer
+    uint32_t to_consume = MIN(size, BYTES_LEFT(self));
+    CONSUME(self, to_consume);
+    size -= to_consume;
+
+    // Next, seek in the file after the header
+    f_lseek(&self->file->fp, f_tell(&self->file->fp) + size);
+    return;
+}
+
 /* If a sync word can be found, advance to it and return true.  Otherwise,
  * return false.
  */
@@ -106,7 +142,15 @@ STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t* self) {
 }
 
 STATIC bool mp3file_get_next_frame_info(audiomp3_mp3file_obj_t* self, MP3FrameInfo* fi) {
-    int err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+    int err;
+    do {
+        err = MP3GetNextFrameInfo(self->decoder, fi, READ_PTR(self));
+        if (err == ERR_MP3_NONE) {
+            break;
+        }
+        CONSUME(self, 1);
+        mp3file_find_sync_word(self);
+    } while (!self->eof);
     return err == ERR_MP3_NONE;
 }
 
@@ -124,7 +168,6 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
     // than the two 4kB output buffers, except that the alignment allows to
     // never allocate that extra frame buffer.
 
-    self->file = file;
     self->inbuf_length = 2048;
     self->inbuf_offset = self->inbuf_length;
     self->inbuf = m_malloc(self->inbuf_length, false);
@@ -140,7 +183,46 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
                      translate("Couldn't allocate decoder"));
     }
 
+    if ((intptr_t)buffer & 1) {
+        buffer += 1; buffer_size -= 1;
+    }
+    if (buffer_size >= 2 * MAX_BUFFER_LEN) {
+        self->buffers[0] = (int16_t*)(void*)buffer;
+        self->buffers[1] = (int16_t*)(void*)(buffer + MAX_BUFFER_LEN);
+    } else {
+        self->buffers[0] = m_malloc(MAX_BUFFER_LEN, false);
+        if (self->buffers[0] == NULL) {
+            common_hal_audiomp3_mp3file_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate first buffer"));
+        }
+
+        self->buffers[1] = m_malloc(MAX_BUFFER_LEN, false);
+        if (self->buffers[1] == NULL) {
+            common_hal_audiomp3_mp3file_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate second buffer"));
+        }
+    }
+
+    common_hal_audiomp3_mp3file_set_file(self, file);
+}
+
+void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t* self, pyb_file_obj_t* file) {
+    self->file = file;
+    f_lseek(&self->file->fp, 0);
+    self->inbuf_offset = self->inbuf_length;
+    self->eof = 0;
+    self->other_channel = -1;
+    mp3file_update_inbuf(self);
     mp3file_find_sync_word(self);
+    // It **SHOULD** not be necessary to do this; the buffer should be filled
+    // with fresh content before it is returned by get_buffer().  The fact that
+    // this is necessary to avoid a glitch at the start of playback of a second
+    // track using the same decoder object means there's still a bug in
+    // get_buffer() that I didn't understand.
+    memset(self->buffers[0], 0, MAX_BUFFER_LEN);
+    memset(self->buffers[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
     if(!mp3file_get_next_frame_info(self, &fi)) {
         mp_raise_msg(&mp_type_RuntimeError,
@@ -150,30 +232,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
     self->sample_rate = fi.samprate;
     self->channel_count = fi.nChans;
     self->frame_buffer_size = fi.outputSamps*sizeof(int16_t);
-
-    if ((intptr_t)buffer & 1) {
-        buffer += 1; buffer_size -= 1;
-    }
-    if (buffer_size >= 2 * self->frame_buffer_size) {
-        self->len = buffer_size / 2 / self->frame_buffer_size * self->frame_buffer_size;
-        self->buffers[0] = (int16_t*)(void*)buffer;
-        self->buffers[1] = (int16_t*)(void*)buffer + self->len;
-    } else {
-        self->len = 2 * self->frame_buffer_size;
-        self->buffers[0] = m_malloc(self->len, false);
-        if (self->buffers[0] == NULL) {
-            common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate first buffer"));
-        }
-
-        self->buffers[1] = m_malloc(self->len, false);
-        if (self->buffers[1] == NULL) {
-            common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                         translate("Couldn't allocate second buffer"));
-        }
-    }
+    self->len = 2 * self->frame_buffer_size;
 }
 
 void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t* self) {
@@ -223,6 +282,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t* self,
     self->eof = 0;
     self->other_channel = -1;
     mp3file_update_inbuf(self);
+    mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
 }
 
@@ -238,7 +298,6 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
         channel = 0;
     }
 
-    *bufptr = (uint8_t*)(self->buffers[self->buffer_index] + channel);
     *buffer_length = self->frame_buffer_size;
 
     if (channel == self->other_channel) {
@@ -247,12 +306,14 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
         return GET_BUFFER_MORE_DATA;
     }
 
-    self->other_channel = 1-channel;
-    self->other_buffer_index = self->buffer_index;
 
     self->buffer_index = !self->buffer_index;
+    self->other_channel = 1-channel;
+    self->other_buffer_index = self->buffer_index;
     int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    *bufptr = (uint8_t*)buffer;
 
+    mp3file_skip_id3v2(self);
     if (!mp3file_find_sync_word(self)) {
         return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
     }
@@ -278,4 +339,14 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t* self, bool si
     } else {
         *spacing = 1;
     }
+}
+
+float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t* self) {
+    float sumsq = 0.f;
+    // Assumes no DC component to the audio.  Is that a safe assumption?
+    int16_t *buffer = (int16_t *)(void *)self->buffers[self->buffer_index];
+    for(size_t i=0; i<self->frame_buffer_size / sizeof(int16_t); i++) {
+        sumsq += (float)buffer[i] * buffer[i];
+    }
+    return sqrtf(sumsq) / (self->frame_buffer_size / sizeof(int16_t));
 }

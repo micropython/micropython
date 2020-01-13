@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "nrf_nvmc.h"
+#include "nrfx_nvmc.h"
 
 #define FLASH_PAGE_SIZE (4096)
 
@@ -129,7 +129,7 @@ bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
         }
     #endif
 
-    nrf_nvmc_page_erase(page_addr);
-    nrf_nvmc_write_bytes(page_addr, data, FLASH_PAGE_SIZE);
+    nrfx_nvmc_page_erase(page_addr);
+    nrfx_nvmc_bytes_write(page_addr, data, FLASH_PAGE_SIZE);
     return true;
 }
