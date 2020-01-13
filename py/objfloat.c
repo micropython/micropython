@@ -31,6 +31,7 @@
 
 #include "py/parsenum.h"
 #include "py/runtime.h"
+#include "py/objtype.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
@@ -186,6 +187,7 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
     .name = MP_QSTR_float,
+    .flags = TYPE_FLAG_NO_EQUALITY_SHORTCUTS,
     .print = float_print,
     .make_new = float_make_new,
     .unary_op = float_unary_op,

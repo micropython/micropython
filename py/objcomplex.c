@@ -30,6 +30,7 @@
 
 #include "py/parsenum.h"
 #include "py/runtime.h"
+#include "py/objtype.h"
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 
@@ -148,6 +149,7 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 const mp_obj_type_t mp_type_complex = {
     { &mp_type_type },
     .name = MP_QSTR_complex,
+    .flags = TYPE_FLAG_NO_EQUALITY_SHORTCUTS,
     .print = complex_print,
     .make_new = complex_make_new,
     .unary_op = complex_unary_op,

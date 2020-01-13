@@ -33,6 +33,7 @@
 #include "py/binary.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
+#include "py/objtype.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -558,6 +559,7 @@ const mp_obj_type_t mp_type_array = {
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
     .name = MP_QSTR_bytearray,
+    .flags = TYPE_FLAG_NO_EQUALITY_SHORTCUTS,
     .print = array_print,
     .make_new = bytearray_make_new,
     .getiter = array_iterator_new,

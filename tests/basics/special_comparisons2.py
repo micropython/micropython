@@ -1,7 +1,7 @@
 class E:
     def __repr__(self):
         return "E"
-    
+
     def __eq__(self, other):
         print('E eq', other)
         return 123
@@ -9,7 +9,7 @@ class E:
 class F:
     def __repr__(self):
         return "F"
-    
+
     def __ne__(self, other):
         print('F ne', other)
         return -456
@@ -17,9 +17,7 @@ class F:
 print(E() != F())
 print(F() != E())
 
-# Disabling tests of strings pending update to string comparisons
-# tests = (None, 0, 1, 'a')
-tests = (None, 0, 1)
+tests = (None, 0, 1, 'a')
 
 for val in tests:
     print('==== testing', val)
