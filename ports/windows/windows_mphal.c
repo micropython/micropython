@@ -141,7 +141,7 @@ typedef struct item_t {
     const char *seq;
 } item_t;
 
-// map virtual key codes to VT100 escape sequences
+// map virtual key codes to key sequences known by MicroPython's readline implementation
 STATIC item_t keyCodeMap[] = {
     {VK_UP, "[A"},
     {VK_DOWN, "[B"},
@@ -153,10 +153,19 @@ STATIC item_t keyCodeMap[] = {
     {0, ""} //sentinel
 };
 
+// likewise, but with Ctrl key down
+STATIC item_t ctrlKeyCodeMap[] = {
+    {VK_LEFT, "b"},
+    {VK_RIGHT, "f"},
+    {VK_DELETE, "d"},
+    {VK_BACK, "\x7F"},
+    {0, ""} //sentinel
+};
+
 STATIC const char *cur_esc_seq = NULL;
 
-STATIC int esc_seq_process_vk(int vk) {
-    for (item_t *p = keyCodeMap; p->vkey != 0; ++p) {
+STATIC int esc_seq_process_vk(WORD vk, bool ctrl_key_down) {
+    for (item_t *p = (ctrl_key_down ? ctrlKeyCodeMap : keyCodeMap); p->vkey != 0; ++p) {
         if (p->vkey == vk) {
             cur_esc_seq = p->seq;
             return 27; // ESC, start of escape sequence
@@ -194,13 +203,15 @@ int mp_hal_stdin_rx_chr(void) {
       if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
           continue;
       }
+      const bool ctrl_key_down = (rec.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
+                                 (rec.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED);
+      const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode, ctrl_key_down);
+      if (ret) {
+          return ret;
+      }
       const char c = rec.Event.KeyEvent.uChar.AsciiChar;
       if (c) { // plain ascii char, return it
           return c;
-      }
-      const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode);
-      if (ret) {
-          return ret;
       }
     }
 }
