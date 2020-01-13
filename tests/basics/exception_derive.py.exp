@@ -1,0 +1,6 @@
+GoodException __new__
+<class 'Dummy'> good message
+BadException __new__
+<class 'TypeError'> exceptions must derive from BaseException
+BadException __new__
+<class 'TypeError'> exceptions must derive from BaseException
