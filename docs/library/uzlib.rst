@@ -14,7 +14,7 @@ is not yet implemented.
 Functions
 ---------
 
-.. function:: decompress(data, wbits=0, bufsize=0)
+.. function:: decompress(data, wbits=0, bufsize=0, /)
 
    Return decompressed *data* as bytes. *wbits* is DEFLATE dictionary window
    size used during compression (8-15, the dictionary size is power of 2 of
@@ -23,7 +23,7 @@ Functions
    to be raw DEFLATE stream. *bufsize* parameter is for compatibility with
    CPython and is ignored.
 
-.. class:: DecompIO(stream, wbits=0)
+.. class:: DecompIO(stream, wbits=0, /)
 
    Create a `stream` wrapper which allows transparent decompression of
    compressed data in another *stream*. This allows to process compressed

@@ -103,7 +103,7 @@ For example:
     KeyboardInterrupt:
     >>>
 
-Paste Mode
+Paste mode
 ----------
 
 If you want to paste some code into your terminal window, the auto-indent feature
@@ -143,7 +143,7 @@ the auto-indent feature, and changes the prompt from ``>>>`` to ``===``. For exa
 Paste Mode allows blank lines to be pasted. The pasted text is compiled as if
 it were a file. Pressing Ctrl-D exits paste mode and initiates the compilation.
 
-Soft Reset
+Soft reset
 ----------
 
 A soft reset will reset the python interpreter, but tries not to reset the
@@ -196,7 +196,7 @@ So you can use the underscore to save the result in a variable. For example:
     15
     >>>
 
-Raw Mode
+Raw mode
 --------
 
 Raw mode is not something that a person would normally use. It is intended for

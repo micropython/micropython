@@ -455,7 +455,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         size_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
-        mp_obj_type_t *type = mp_obj_get_type(obj);
+        const mp_obj_type_t *type = mp_obj_get_type(obj);
 #if MICROPY_PY_BUILTINS_FLOAT
         if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)

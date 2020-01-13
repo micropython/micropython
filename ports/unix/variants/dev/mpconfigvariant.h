@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,7 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+#define MICROPY_REPL_EMACS_WORDS_MOVE (1)
+#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
 
-#include <mpconfigport.h>
-
-#undef MICROPY_STREAMS_NON_BLOCK
-#define MICROPY_STREAMS_NON_BLOCK (0)
-
-#undef MICROPY_PY_SYS_PLATFORM
-#define MICROPY_PY_SYS_PLATFORM "freedos"
-
-// djgpp dirent struct does not have d_ino field
-#undef _DIRENT_HAVE_D_INO
-
-#define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_PY_SYS_SETTRACE (1)

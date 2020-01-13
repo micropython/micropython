@@ -183,7 +183,7 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp
 
 // Special-case of index() which searches for mp_obj_t
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, const mp_obj_t *args) {
-    mp_obj_type_t *type = mp_obj_get_type(args[0]);
+    const mp_obj_type_t *type = mp_obj_get_type(args[0]);
     mp_obj_t value = args[1];
     size_t start = 0;
     size_t stop = len;
