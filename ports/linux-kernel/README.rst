@@ -169,6 +169,8 @@ value instead of reading.
 
     >>> p64(jiffies_64, 0)  # oh boy
 
+.. _access_structs:
+
 Access structs
 ^^^^^^^^^^^^^^
 
@@ -217,8 +219,43 @@ Now, working with it:
     next.comm = "this is longer than TASK_COMM_LEN"
     # ValueError: Buffer overflow!
 
+    # and NULL derefs
+    null_task = task_struct(0)  # you could get such a NULL pointer from a field in another struct.
+
+    null_task.comm
+    # ValueError: NULL deref! ...
+
 You can always ``int(..)`` any struct object to get its address.
 
+Dump structs nicely:
+
+.. code-block:: python
+
+    from struct_access import dump_struct
+    from kernel_ffi import current
+
+    t = task_struct(current())
+    dump_struct(t, 1)
+
+Will output::
+
+    thread_info = StructPtr(0xffff888006ea0000, Struct(128, 'thread_info', ...))
+        long unsigned int flags = 2147483648 0x80000000
+        u32 status = 0 0x0
+    long int state = 0 0x0
+    stack = Ptr(Void(), 0xffffc90000148000)
+    # ...
+
+The second argument is the number number of levels (or depth) to print:
+
+* ``0`` will print only the fields of given struct.
+* ``1`` will also print fields of contained structs and struct pointers
+* ``2`` will print the next level... And so on.
+
+Use it carefully - many structs in the kernel make use of unions containing both pointers and integers. If a union
+has a field overlayed by by an integer and a pointer, and currently the kernel uses it as an integer - and it has
+an invalid value as a pointer - it will nonetheless be dereferenced, possibly resulting in a crash. (You get only
+the minimal protections like presented above. See TODO below about safer dereferencing)
 
 You can also use the ``uctypes`` module.
 
@@ -511,3 +548,8 @@ Future TODOs
 
   * This will also allow to use descriptors for globals accessing - instead of ``p64(some_global, 0)`` you could
     just do ``some_global = 0`` and it'd figure the ``p64`` out.
+
+* Safer dereferencing - ``p8`` and all other dereference functions take no protective measures regarding invalid address
+  derefs. Structs accessing provides some safety (as presented in :ref:`access_structs`) but it could be taken further:
+  provide complete safety just like e.g ``copy_from_user`` does. This won't protect you from overriding valid
+  memory addresses you shouldn't be writing into, though :)
