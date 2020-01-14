@@ -35,19 +35,6 @@ _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
-/* Memory layout for internal flash storage configuration:
-
-    FLASH_ISR   .isr_vector
-
-    FLASH_TEXT  .text
-    FLASH_TEXT  .data
-
-    RAM         .data
-    RAM         .bss
-    RAM         .heap
-    RAM         .stack
-*/
-
 ENTRY(Reset_Handler)
 
 /* define output sections */
