@@ -37,6 +37,7 @@
 
 #define BOARD_OSC_DIV 12
 #define BOARD_NO_VBUS_SENSE
+#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB15)
