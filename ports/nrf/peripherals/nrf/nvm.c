@@ -89,7 +89,7 @@ bool sd_flash_write_sync(uint32_t *dest_words, uint32_t* src_words, uint32_t num
 // location before an erase is necessary, even if the write is all
 // ones (erased state).  So we can't avoid erases even if the page
 // appears to be already erased (all ones), unless we keep track of
-// writes to a page.g
+// writes to a page.
 
 bool nrf_nvm_safe_flash_page_write(uint32_t page_addr, uint8_t *data) {
     #ifdef BLUETOOTH_SD

@@ -92,6 +92,7 @@ void bonding_erase_storage(void) {
 // Given NULL to start or block address, return the address of the next valid block.
 // The last block returned is the unused block at the end.
 // Return NULL if we have run off the end of the bonding space.
+
 STATIC bonding_block_t *next_block(bonding_block_t *block) {
     while (1) {
         // Advance to next block.
@@ -126,10 +127,6 @@ STATIC bonding_block_t *find_existing_block(bool is_central, bonding_block_type_
         block = next_block(block);
         if (block == NULL) {
             return NULL;
-        }
-        if (block->type == BLOCK_INVALID) {
-            // Skip discarded blocks.
-            continue;
         }
         // If types match, and block is unused, just return it.
         // Otherwise check that is_central and ediv match.
