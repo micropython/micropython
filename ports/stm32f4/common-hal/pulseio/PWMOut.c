@@ -106,7 +106,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     uint32_t frequency,
                                                     bool variable_frequency) {
     TIM_TypeDef * TIMx;
-    uint8_t tim_num = sizeof(mcu_tim_pin_list) / sizeof(*mcu_tim_pin_list);
+    uint8_t tim_num = MP_ARRAY_SIZE(mcu_tim_pin_list);
     bool tim_chan_taken = false;
     bool tim_taken_f_mismatch = false;
     bool var_freq_mismatch = false;
@@ -324,63 +324,63 @@ bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self
 
 STATIC void tim_clock_enable(uint16_t mask) {
     #ifdef TIM1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_TIM1_CLK_ENABLE();
     }
     #endif
     #ifdef TIM2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_TIM2_CLK_ENABLE();
     }
     #endif
     #ifdef TIM3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_TIM3_CLK_ENABLE();
     }
     #endif
     #ifdef TIM4
-    if (mask & 1<<3) {
+    if (mask & (1 << 3)) {
         __HAL_RCC_TIM4_CLK_ENABLE();
     }
     #endif
     #ifdef TIM5
-    if (mask & 1<<4) {
+    if (mask & (1 << 4)) {
         __HAL_RCC_TIM5_CLK_ENABLE();
     }
     #endif
     //6 and 7 are reserved ADC timers
     #ifdef TIM8
-    if (mask & 1<<7) {
+    if (mask & (1 << 7)) {
         __HAL_RCC_TIM8_CLK_ENABLE();
     }
     #endif
     #ifdef TIM9
-    if (mask & 1<<8) {
+    if (mask & (1 << 8)) {
         __HAL_RCC_TIM9_CLK_ENABLE();
     }
     #endif
     #ifdef TIM10
-    if (mask & 1<<9) {
+    if (mask & (1 << 9)) {
         __HAL_RCC_TIM10_CLK_ENABLE();
     }
     #endif
     #ifdef TIM11
-    if (mask & 1<<10) {
+    if (mask & (1 << 10)) {
         __HAL_RCC_TIM11_CLK_ENABLE();
     }
     #endif
     #ifdef TIM12
-    if (mask & 1<<11) {
+    if (mask & (1 << 11)) {
         __HAL_RCC_TIM12_CLK_ENABLE();
     }
     #endif
     #ifdef TIM13
-    if (mask & 1<<12) {
+    if (mask & (1 << 12)) {
         __HAL_RCC_TIM13_CLK_ENABLE();
     }
     #endif
     #ifdef TIM14
-    if (mask & 1<<13) {
+    if (mask & (1 << 13)) {
         __HAL_RCC_TIM14_CLK_ENABLE();
     }
     #endif
@@ -388,63 +388,63 @@ STATIC void tim_clock_enable(uint16_t mask) {
 
 STATIC void tim_clock_disable(uint16_t mask) {
     #ifdef TIM1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_TIM1_CLK_DISABLE();
     }
     #endif
     #ifdef TIM2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_TIM2_CLK_DISABLE();
     }
     #endif
     #ifdef TIM3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_TIM3_CLK_DISABLE();
     }
     #endif
     #ifdef TIM4
-    if (mask & 1<<3) {
+    if (mask & (1 << 3)) {
         __HAL_RCC_TIM4_CLK_DISABLE();
     }
     #endif
     #ifdef TIM5
-    if (mask & 1<<4) {
+    if (mask & (1 << 4)) {
         __HAL_RCC_TIM5_CLK_DISABLE();
     }
     #endif
     //6 and 7 are reserved ADC timers
     #ifdef TIM8
-    if (mask & 1<<7) {
+    if (mask & (1 << 7)) {
         __HAL_RCC_TIM8_CLK_DISABLE();
     }
     #endif
     #ifdef TIM9
-    if (mask & 1<<8) {
+    if (mask & (1 << 8)) {
         __HAL_RCC_TIM9_CLK_DISABLE();
     }
     #endif
     #ifdef TIM10
-    if (mask & 1<<9) {
+    if (mask & (1 << 9)) {
         __HAL_RCC_TIM10_CLK_DISABLE();
     }
     #endif
     #ifdef TIM11
-    if (mask & 1<<10) {
+    if (mask & (1 << 10)) {
         __HAL_RCC_TIM11_CLK_DISABLE();
     }
     #endif
     #ifdef TIM12
-    if (mask & 1<<11) {
+    if (mask & (1 << 11)) {
         __HAL_RCC_TIM12_CLK_DISABLE();
     }
     #endif
     #ifdef TIM13
-    if (mask & 1<<12) {
+    if (mask & (1 << 12)) {
         __HAL_RCC_TIM13_CLK_DISABLE();
     }
     #endif
     #ifdef TIM14
-    if (mask & 1<<13) {
+    if (mask & (1 << 13)) {
         __HAL_RCC_TIM14_CLK_DISABLE();
     }
     #endif

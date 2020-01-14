@@ -79,8 +79,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
     //match pins to UART objects
     USART_TypeDef * USARTx;
 
-    uint8_t tx_len = sizeof(mcu_uart_tx_list) / sizeof(*mcu_uart_tx_list);
-    uint8_t rx_len = sizeof(mcu_uart_rx_list) / sizeof(*mcu_uart_rx_list);
+    uint8_t tx_len = MP_ARRAY_SIZE(mcu_uart_tx_list);
+    uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
     bool uart_taken = false;
     uint8_t uart_index = 0; //origin 0 corrected
 

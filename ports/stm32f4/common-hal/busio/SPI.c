@@ -104,9 +104,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     //match pins to SPI objects
     SPI_TypeDef * SPIx;
 
-    uint8_t sck_len = sizeof(mcu_spi_sck_list)/sizeof(*mcu_spi_sck_list);
-    uint8_t mosi_len = sizeof(mcu_spi_mosi_list)/sizeof(*mcu_spi_mosi_list);
-    uint8_t miso_len = sizeof(mcu_spi_miso_list)/sizeof(*mcu_spi_miso_list);
+    uint8_t sck_len = MP_ARRAY_SIZE(mcu_spi_sck_list);
+    uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
+    uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
     bool spi_taken = false;
 
     //SCK is not optional. MOSI and MISO are
@@ -393,32 +393,32 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
 
 STATIC void spi_clock_enable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_ENABLE();
     }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_SPI2_CLK_ENABLE();
     }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_SPI3_CLK_ENABLE();
     }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) {
+    if (mask & (1 << 3)) {
         __HAL_RCC_SPI4_CLK_ENABLE();
     }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) {
+    if (mask & (1 << 4)) {
         __HAL_RCC_SPI5_CLK_ENABLE();
     }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) {
+    if (mask & (1 << 5)) {
         __HAL_RCC_SPI6_CLK_ENABLE();
     }
     #endif
@@ -426,32 +426,32 @@ STATIC void spi_clock_enable(uint8_t mask) {
 
 STATIC void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_DISABLE();
     }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_SPI2_CLK_DISABLE();
     }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_SPI3_CLK_DISABLE();
     }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) {
+    if (mask & (1 << 3)) {
         __HAL_RCC_SPI4_CLK_DISABLE();
     }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) {
+    if (mask & (1 << 4)) {
         __HAL_RCC_SPI5_CLK_DISABLE();
     }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) {
+    if (mask & (1 << 5)) {
         __HAL_RCC_SPI6_CLK_DISABLE();
     }
     #endif

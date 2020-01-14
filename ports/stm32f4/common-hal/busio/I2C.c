@@ -61,8 +61,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     //match pins to I2C objects
     I2C_TypeDef * I2Cx;
-    uint8_t sda_len = sizeof(mcu_i2c_sda_list) / sizeof(*mcu_i2c_sda_list);
-    uint8_t scl_len = sizeof(mcu_i2c_scl_list) / sizeof(*mcu_i2c_scl_list);
+    uint8_t sda_len = MP_ARRAY_SIZE(mcu_i2c_sda_list);
+    uint8_t scl_len = MP_ARRAY_SIZE(mcu_i2c_scl_list);
     bool i2c_taken = false;
 
     for (uint i = 0; i < sda_len; i++) {
@@ -137,7 +137,7 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
             never_reset_i2c[i] = true;
 
             never_reset_pin_number(self->scl->pin->port, self->scl->pin->number);
-            never_reset_pin_number(self->sda->pin->port, self->scl->pin->number);
+            never_reset_pin_number(self->sda->pin->port, self->sda->pin->number);
             break;
         }
     }
@@ -209,21 +209,21 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
 STATIC void i2c_clock_enable(uint8_t mask) {
     //Note: hard reset required due to soft reboot issue. 
     #ifdef I2C1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_I2C1_CLK_ENABLE();
         __HAL_RCC_I2C1_FORCE_RESET();
         __HAL_RCC_I2C1_RELEASE_RESET();
     }
     #endif
     #ifdef I2C2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_I2C2_CLK_ENABLE();
         __HAL_RCC_I2C2_FORCE_RESET();
         __HAL_RCC_I2C2_RELEASE_RESET();
     }
     #endif
     #ifdef I2C3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_I2C3_CLK_ENABLE();
         __HAL_RCC_I2C3_FORCE_RESET();
         __HAL_RCC_I2C3_RELEASE_RESET();
@@ -233,17 +233,17 @@ STATIC void i2c_clock_enable(uint8_t mask) {
 
 STATIC void i2c_clock_disable(uint8_t mask) {
     #ifdef I2C1
-    if (mask & 1<<0) {
+    if (mask & (1 << 0)) {
         __HAL_RCC_I2C1_CLK_DISABLE();
     }
     #endif
     #ifdef I2C2
-    if (mask & 1<<1) {
+    if (mask & (1 << 1)) {
         __HAL_RCC_I2C2_CLK_DISABLE();
     }
     #endif
     #ifdef I2C3
-    if (mask & 1<<2) {
+    if (mask & (1 << 2)) {
         __HAL_RCC_I2C3_CLK_DISABLE();
     }
     #endif
