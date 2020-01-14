@@ -115,6 +115,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
 
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_PULLDOWN);
@@ -132,6 +133,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
+#endif
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
 

@@ -40,20 +40,13 @@
 
 #define ALL_UARTS 0xFFFF
 
+//arrays use 0 based numbering: UART1 is stored at index 0
 STATIC bool reserved_uart[MAX_UART];
 int errflag; //Used to restart read halts
 
 STATIC void uart_clock_enable(uint16_t mask);
 STATIC void uart_clock_disable(uint16_t mask);
 STATIC void uart_assign_irq(busio_uart_obj_t* self, USART_TypeDef* USARTx);
-
-void uart_reset(void) {
-    for (uint8_t i = 0; i < MAX_UART; i++) {
-        reserved_uart[i] = false;
-        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
-    }
-    uart_clock_disable(ALL_UARTS);
-}
 
 STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval,
                                             int uart_index, bool uart_taken) {
@@ -70,6 +63,14 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eva
     }
 }
 
+void uart_reset(void) {
+    for (uint8_t i = 0; i < MAX_UART; i++) {
+        reserved_uart[i] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
+    }
+    uart_clock_disable(ALL_UARTS);
+}
+
 void common_hal_busio_uart_construct(busio_uart_obj_t* self,
         const mcu_pin_obj_t* tx, const mcu_pin_obj_t* rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
@@ -78,8 +79,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
     //match pins to UART objects
     USART_TypeDef * USARTx;
 
-    uint8_t tx_len = sizeof(mcu_uart_tx_list)/sizeof(*mcu_uart_tx_list);
-    uint8_t rx_len = sizeof(mcu_uart_rx_list)/sizeof(*mcu_uart_rx_list);
+    uint8_t tx_len = MP_ARRAY_SIZE(mcu_uart_tx_list);
+    uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
     bool uart_taken = false;
     uint8_t uart_index = 0; //origin 0 corrected
 
@@ -567,33 +568,53 @@ STATIC void uart_clock_disable(uint16_t mask) {
 
 STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef * USARTx) {
     #ifdef USART1
-    if (USARTx == USART1) self->irq = USART1_IRQn;
+    if (USARTx == USART1) {
+        self->irq = USART1_IRQn;
+    }
     #endif
     #ifdef USART2
-    if (USARTx == USART2) self->irq = USART2_IRQn;
+    if (USARTx == USART2) {
+        self->irq = USART2_IRQn;
+    }
     #endif
     #ifdef USART3
-    if (USARTx == USART3) self->irq = USART3_IRQn;
+    if (USARTx == USART3) {
+        self->irq = USART3_IRQn;
+    }
     #endif
     #ifdef UART4
-    if (USARTx == UART4) self->irq = UART4_IRQn;
+    if (USARTx == UART4) {
+        self->irq = UART4_IRQn;
+    }
     #endif
     #ifdef UART5
-    if (USARTx == UART5) self->irq = UART5_IRQn;
+    if (USARTx == UART5) {
+        self->irq = UART5_IRQn;
+    }
     #endif
     #ifdef USART6
-    if (USARTx == USART6) self->irq = USART6_IRQn;
+    if (USARTx == USART6) {
+        self->irq = USART6_IRQn;
+    }
     #endif
     #ifdef UART7
-    if (USARTx == UART7) self->irq = UART7_IRQn;
+    if (USARTx == UART7) {
+        self->irq = UART7_IRQn;
+    }
     #endif
     #ifdef UART8
-    if (USARTx == UART8) self->irq = UART8_IRQn;
+    if (USARTx == UART8) {
+        self->irq = UART8_IRQn;
+    }
     #endif
     #ifdef UART9
-    if (USARTx == UART9) self->irq = UART9_IRQn;
+    if (USARTx == UART9) {
+        self->irq = UART9_IRQn;
+    }
     #endif
     #ifdef UART10
-    if (USARTx == UART10) self->irq = UART10_IRQn;
+    if (USARTx == UART10) {
+        self->irq = UART10_IRQn;
+    }
     #endif
 }
