@@ -57,7 +57,8 @@ When you want to load a larger piece of code, you can:
 Features
 --------
 
-The Python interpreter allows quick testing and prototyping with kernel APIs.
+The Python interpreter allows quick testing and prototyping with kernel APIs. The ``kernel_ffi`` builtin module
+provides many of the APIs available in this port.
 
 Kernel symbols
 ^^^^^^^^^^^^^^
@@ -66,7 +67,14 @@ Upon access, any name that doesn't exist globally will be searched using ``find_
 (exported symbols). If not found, an attempt will be made at ``kallsyms_lookup_name``, which
 covers unexported symbols as well.
 
-If found in any of them, the result is a ``Symbol`` object, which:
+If you don't need/want the automatic binding of globals to kernel symbols, you can disable it
+with ``kernel_ffi.auto_globals(False)``. It can be enabled back at any time.
+
+You can also resolve symbols with ``kernel_ffi.symbol(name)``. It's also useful for symbol names which
+are not valid Python identifiers, thus they can't loaded as globals (for example - LTO symbols often have
+dots in their names. They can be accessed only using ``symbol``).
+
+Accessing either via globals or with ``symbol`` returns a ``Symbol`` object, which:
 
 * Can be called as if it was a function; Don't use on non functions though, as you'll probably
   crash.
@@ -75,7 +83,7 @@ If found in any of them, the result is a ``Symbol`` object, which:
 Access kernel memory
 ^^^^^^^^^^^^^^^^^^^^
 
-The ``kernel_ffi`` module provides the following helpers:
+``kernel_ffi`` provides the following helpers:
 
 ``str(p)`` - Reads a null terminated string from memory into a Python ``str``..
 
