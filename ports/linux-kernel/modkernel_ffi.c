@@ -159,22 +159,56 @@ STATIC sym_obj_t *make_new_sym(qstr name, unsigned long value, bool exported) {
     return _symbol_make_new(&mp_type_symbol, name, value, exported);
 }
 
-mp_obj_t mp_lazy_load_global(qstr qst) {
-    size_t l;
-    const char *s = qstr_data(qst, &l); // it's null terminated.
+STATIC bool auto_globals = true;
 
+STATIC mp_obj_t kernel_ffi_auto_globals(mp_obj_t enable) {
+    auto_globals = mp_obj_is_true(enable);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_auto_globals_obj, kernel_ffi_auto_globals);
+
+STATIC unsigned long __resolve_symbol(const char *name, bool *is_exported) {
     // TODO what about module symbols? is it legit? does it keep a reference to the owner?
-    unsigned long value = (unsigned long)__symbol_get(s);
+    unsigned long value = (unsigned long)__symbol_get(name);
+
     if (value) {
-        return make_new_sym(qst, value, true);
+        *is_exported = true;
+        return value;
     }
 
-    value = kallsyms_lookup_name(s);
+    *is_exported = false;
+    // symbol value, or 0 if not found.
+    return kallsyms_lookup_name(name);
+}
+
+STATIC mp_obj_t resolve_symbol(mp_obj_t name) {
+    bool is_exported;
+    // mp_obj_str_get_str gives it null terminated.
+    unsigned long value = __resolve_symbol(mp_obj_str_get_str(name), &is_exported);
     if (value) {
-        return make_new_sym(qst, value, false);
+        return make_new_sym(mp_obj_str_get_qstr(name), value, is_exported);
     }
 
     return MP_OBJ_NULL;
+}
+
+STATIC mp_obj_t kernel_ffi_symbol(mp_obj_t name) {
+    mp_obj_t sym = resolve_symbol(name);
+    if (MP_OBJ_NULL == sym) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError, "kernel symbol '%s' not found",
+            mp_obj_str_get_str(name)));
+    }
+
+    return sym;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_symbol_obj, kernel_ffi_symbol);
+
+mp_obj_t mp_lazy_load_global(qstr qst) {
+    if (!auto_globals) {
+        return MP_OBJ_NULL;
+    }
+
+    return resolve_symbol(MP_OBJ_NEW_QSTR(qst));
 }
 
 STATIC const char *get_ptr(mp_obj_t obj) {
@@ -531,7 +565,8 @@ STATIC unsigned long resolve_target(mp_obj_t target) {
     if (mp_obj_is_int(target)) {
         addr = mp_obj_int_get_uint_checked(target);
     } else if (mp_obj_is_str(target)) {
-        addr = kallsyms_lookup_name(mp_obj_str_get_str(target));
+        bool is_exported;
+        addr = __resolve_symbol(mp_obj_str_get_str(target), &is_exported);
         if (0 == addr) {
             mp_raise_ValueError("target symbol not found");
         }
@@ -862,6 +897,9 @@ STATIC unsigned long callback_handler(unsigned long arg1, unsigned long arg2, un
 
 STATIC const mp_rom_map_elem_t kernel_ffi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_kernel_ffi) },
+
+    { MP_ROM_QSTR(MP_QSTR_auto_globals), MP_ROM_PTR(&kernel_ffi_auto_globals_obj) },
+    { MP_ROM_QSTR(MP_QSTR_symbol), MP_ROM_PTR(&kernel_ffi_symbol_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Symbol), MP_ROM_PTR(&mp_type_symbol) },
 
