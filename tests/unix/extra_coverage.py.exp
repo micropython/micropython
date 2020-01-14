@@ -54,6 +54,10 @@ data
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
+1
+2
+OverflowError: overflow converting long int to machine word
+OverflowError: overflow converting long int to machine word
 Warning: test
 # format float
 ?

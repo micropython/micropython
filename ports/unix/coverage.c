@@ -334,6 +334,29 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+
+        // mp_obj_int_get_uint_checked with non-negative small-int
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
+
+        // mp_obj_int_get_uint_checked with non-negative big-int
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(2)));
+
+        // mp_obj_int_get_uint_checked with negative small-int (should raise exception)
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(-1));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // mp_obj_int_get_uint_checked with negative big-int (should raise exception)
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(-2));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
     }
 
     // warning
