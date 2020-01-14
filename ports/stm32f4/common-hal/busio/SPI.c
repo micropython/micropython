@@ -39,13 +39,12 @@
 // Note that any bugs introduced in this file can cause crashes at startup
 // for chips using external SPI flash.
 
-#define MAX_SPI 6 //TODO; replace this as part of periph cleanup
-#define ALL_CLOCKS 0xFF
-
 //arrays use 0 based numbering: SPI1 is stored at index 0
+#define MAX_SPI 6
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
 
+#define ALL_CLOCKS 0xFF
 STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 
@@ -60,13 +59,39 @@ STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
     return HAL_RCC_GetPCLK2Freq();
 }
 
+STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
+    static const uint32_t baud_map[8][2] = {
+        {2,SPI_BAUDRATEPRESCALER_2},
+        {4,SPI_BAUDRATEPRESCALER_4},
+        {8,SPI_BAUDRATEPRESCALER_8},
+        {16,SPI_BAUDRATEPRESCALER_16},
+        {32,SPI_BAUDRATEPRESCALER_32},
+        {64,SPI_BAUDRATEPRESCALER_64},
+        {128,SPI_BAUDRATEPRESCALER_128},
+        {256,SPI_BAUDRATEPRESCALER_256}
+    };
+    size_t i = 0;
+    uint16_t divisor;
+    do {
+        divisor = baud_map[i][0];
+        if (baudrate >= (busclock/divisor)) {
+            *prescaler = divisor;
+            return baud_map[i][1];
+        }
+        i++;
+    } while (divisor != 256);
+    //only gets here if requested baud is lower than minimum
+    *prescaler = 256;
+    return SPI_BAUDRATEPRESCALER_256;
+}
+
 void spi_reset(void) {
     uint16_t never_reset_mask = 0x00;
-    for(int i=0;i<MAX_SPI;i++) {
+    for (int i = 0; i < MAX_SPI; i++) {
         if (!never_reset_spi[i]) {
-            reserved_spi[i] = 0x00;
+            reserved_spi[i] = false;
         } else {
-            never_reset_mask |= 1<<i;
+            never_reset_mask |= 1 << i;
         }
     }
     spi_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
@@ -79,26 +104,26 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     //match pins to SPI objects
     SPI_TypeDef * SPIx;
 
-    uint8_t sck_len = sizeof(mcu_spi_sck_list)/sizeof(*mcu_spi_sck_list);
-    uint8_t mosi_len = sizeof(mcu_spi_mosi_list)/sizeof(*mcu_spi_mosi_list);
-    uint8_t miso_len = sizeof(mcu_spi_miso_list)/sizeof(*mcu_spi_miso_list);
+    uint8_t sck_len = MP_ARRAY_SIZE(mcu_spi_sck_list);
+    uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
+    uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
     bool spi_taken = false;
 
     //SCK is not optional. MOSI and MISO are
-    for (uint i=0; i<sck_len;i++) {
+    for (uint i = 0; i < sck_len; i++) {
         if (mcu_spi_sck_list[i].pin == sck) {
             //if both MOSI and MISO exist, loop search normally
             if ((mosi != mp_const_none) && (miso != mp_const_none)) {
                 //MOSI
-                for (uint j=0; j<mosi_len;j++) {
+                for (uint j = 0; j < mosi_len; j++) {
                     if (mcu_spi_mosi_list[j].pin == mosi) {
                         //MISO
-                        for (uint k=0; k<miso_len;k++) {
+                        for (uint k = 0; k < miso_len; k++) {
                             if ((mcu_spi_miso_list[k].pin == miso) //everything needs the same index
                                 && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)
                                 && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[k].spi_index)) {
                                 //keep looking if the SPI is taken, edge case
-                                if (reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
+                                if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
                                     spi_taken = true;
                                     continue;
                                 }
@@ -113,11 +138,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 }
             // if just MISO, reduce search
             } else if (miso != mp_const_none) {
-                for (uint j=0; j<miso_len;j++) {
+                for (uint j = 0; j < miso_len; j++) {
                     if ((mcu_spi_miso_list[j].pin == miso) //only SCK and MISO need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[j].spi_index)) {
                         //keep looking if the SPI is taken, edge case
-                        if (reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
+                        if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
@@ -130,11 +155,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 }  
             // if just MOSI, reduce search
             } else if (mosi != mp_const_none) {
-                for (uint j=0; j<mosi_len;j++) {
+                for (uint j = 0; j < mosi_len; j++) {
                     if ((mcu_spi_mosi_list[j].pin == mosi) //only SCK and MOSI need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)) {
                         //keep looking if the SPI is taken, edge case
-                        if (reserved_spi[mcu_spi_sck_list[i].spi_index-1]) {
+                        if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
@@ -153,10 +178,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if ( (self->sck!=NULL && self->mosi!=NULL && self->miso != NULL) ||
-        (self->sck!=NULL && self->mosi!=NULL && miso == mp_const_none) ||
-        (self->sck!=NULL && self->miso!=NULL && mosi == mp_const_none)) {
-        SPIx = mcu_spi_banks[self->sck->spi_index-1];
+    if ( (self->sck != NULL && self->mosi != NULL && self->miso != NULL) ||
+        (self->sck != NULL && self->mosi != NULL && miso == mp_const_none) ||
+        (self->sck != NULL && self->miso != NULL && mosi == mp_const_none)) {
+        SPIx = mcu_spi_banks[self->sck->spi_index - 1];
     } else {
         if (spi_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -192,7 +217,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
     }
 
-    spi_clock_enable(1<<(self->sck->spi_index - 1));
+    spi_clock_enable(1 << (self->sck->spi_index - 1));
     reserved_spi[self->sck->spi_index - 1] = true;
     
     self->handle.Instance = SPIx; 
@@ -212,7 +237,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     {
         mp_raise_ValueError(translate("SPI Init Error"));
     }
-    self->baudrate = (get_busclock(SPIx)/16);
+    self->baudrate = (get_busclock(SPIx) / 16);
     self->prescaler = 16;
     self->polarity = 0;
     self->phase = 0;
@@ -228,7 +253,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    for (size_t i = 0 ; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
         if (mcu_spi_banks[i] == self->handle.Instance) {
             never_reset_spi[i] = true;
             never_reset_pin_number(self->sck->pin->port, self->sck->pin->number);
@@ -248,6 +273,9 @@ bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self)) {
+        return;
+    }
     spi_clock_disable(1<<(self->sck->spi_index - 1));
     reserved_spi[self->sck->spi_index - 1] = false;
     never_reset_spi[self->sck->spi_index - 1] = false;
@@ -262,32 +290,6 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     self->sck = mp_const_none;
     self->mosi = mp_const_none;
     self->miso = mp_const_none;
-}
-
-STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
-    static const uint32_t baud_map[8][2] = {
-        {2,SPI_BAUDRATEPRESCALER_2},
-        {4,SPI_BAUDRATEPRESCALER_4},
-        {8,SPI_BAUDRATEPRESCALER_8},
-        {16,SPI_BAUDRATEPRESCALER_16},
-        {32,SPI_BAUDRATEPRESCALER_32},
-        {64,SPI_BAUDRATEPRESCALER_64},
-        {128,SPI_BAUDRATEPRESCALER_128},
-        {256,SPI_BAUDRATEPRESCALER_256}
-    };
-    size_t i = 0;
-    uint16_t divisor;
-    do {
-        divisor = baud_map[i][0];
-        if (baudrate >= (busclock/divisor)) {
-            *prescaler = divisor;
-            return baud_map[i][1];
-        }
-        i++;
-    } while (divisor != 256);
-    //only gets here if requested baud is lower than minimum
-    *prescaler = 256;
-    return SPI_BAUDRATEPRESCALER_256;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
@@ -391,42 +393,66 @@ uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
 
 STATIC void spi_clock_enable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_ENABLE();
+    if (mask & (1 << 0)) {
+        __HAL_RCC_SPI1_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_ENABLE();
+    if (mask & (1 << 1)) {
+        __HAL_RCC_SPI2_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_ENABLE();
+    if (mask & (1 << 2)) {
+        __HAL_RCC_SPI3_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_ENABLE();
+    if (mask & (1 << 3)) {
+        __HAL_RCC_SPI4_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_ENABLE();
+    if (mask & (1 << 4)) {
+        __HAL_RCC_SPI5_CLK_ENABLE();
+    }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_ENABLE();
+    if (mask & (1 << 5)) {
+        __HAL_RCC_SPI6_CLK_ENABLE();
+    }
     #endif
 }
 
 STATIC void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
-    if (mask & 1<<0) __HAL_RCC_SPI1_CLK_DISABLE();
+    if (mask & (1 << 0)) {
+        __HAL_RCC_SPI1_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI2
-    if (mask & 1<<1) __HAL_RCC_SPI2_CLK_DISABLE();
+    if (mask & (1 << 1)) {
+        __HAL_RCC_SPI2_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI3
-    if (mask & 1<<2) __HAL_RCC_SPI3_CLK_DISABLE();
+    if (mask & (1 << 2)) {
+        __HAL_RCC_SPI3_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI4
-    if (mask & 1<<3) __HAL_RCC_SPI4_CLK_DISABLE();
+    if (mask & (1 << 3)) {
+        __HAL_RCC_SPI4_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI5
-    if (mask & 1<<4) __HAL_RCC_SPI5_CLK_DISABLE();
+    if (mask & (1 << 4)) {
+        __HAL_RCC_SPI5_CLK_DISABLE();
+    }
     #endif
     #ifdef SPI6
-    if (mask & 1<<5) __HAL_RCC_SPI6_CLK_DISABLE();
+    if (mask & (1 << 5)) {
+        __HAL_RCC_SPI6_CLK_DISABLE();
+    }
     #endif
 }
