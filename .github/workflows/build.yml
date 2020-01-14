@@ -144,6 +144,7 @@ jobs:
         - "pyruler"
         - "robohatmm1_m4"
         - "sam32"
+        - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
         - "snekboard"
