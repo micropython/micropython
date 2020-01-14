@@ -1041,10 +1041,12 @@ STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pn
 }
 
 STATIC void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    #if MICROPY_CPYTHON_COMPAT
     if (comp->scope_cur->kind != SCOPE_FUNCTION) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'return' outside function");
         return;
     }
+    #endif
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // no argument to 'return', so return None
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
