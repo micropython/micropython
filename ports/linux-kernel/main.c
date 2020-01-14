@@ -61,6 +61,12 @@
 #include "mpthreadport.h"
 #endif
 
+#define DEFAULT_SERVER_ADDR "0.0.0.0:9999"
+
+static char *server_addr = DEFAULT_SERVER_ADDR;
+module_param(server_addr, charp, 0400);
+MODULE_PARM_DESC(server_addr, "MicroPython server address (ip:port). Default is " DEFAULT_SERVER_ADDR);
+
 
 STATIC struct task_struct *server_thread;
 STATIC bool need_gc;
@@ -405,6 +411,27 @@ out:
     return 0;
 }
 
+STATIC int parse_listen_addr(struct sockaddr_in *sin) {
+    uint8_t ip[4];
+    if (4 != sscanf(server_addr, "%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3])) {
+        return -EINVAL;
+    }
+    sin->sin_addr.s_addr = htonl((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3]);
+
+    const char *colon = strchr(server_addr, ':');
+    if (!colon) {
+        return -EINVAL;
+    }
+
+    int ret = kstrtou16(colon + 1, 10, &sin->sin_port);
+    if (ret) {
+        return ret;
+    }
+    sin->sin_port = htons(sin->sin_port);
+
+    return 0;
+}
+
 STATIC struct socket *listener;
 
 STATIC int __init mpy_init_module(void) {
@@ -419,6 +446,17 @@ STATIC int __init mpy_init_module(void) {
     pr_info("CONFIG_FUNCTION_TRACER missing, kernel_ffi.ftrace will not be availale\n");
 #endif
 
+    struct sockaddr_in bind_addr;
+    bind_addr.sin_family = AF_INET;
+    err = parse_listen_addr(&bind_addr);
+    if (err < 0) {
+        pr_err("parsing given server_addr '%s' failed\n", server_addr);
+        goto out;
+    }
+    // new kernels have %pISp which prints a "sockaddr_in", but e.g 3.10 doesn't have it yet
+    // so print the port separately.
+    pr_info("server will listen on %pI4:%hd\n", &bind_addr.sin_addr.s_addr, ntohs(bind_addr.sin_port));
+
     err = sock_create_kern(&init_net, AF_INET, SOCK_STREAM, 0, &sock);
     if (err < 0) {
         pr_warn("sock_create_kern: %d\n", err);
@@ -431,11 +469,6 @@ STATIC int __init mpy_init_module(void) {
         pr_warn("kernel_setsockopt(SO_REUSEADDR): %d\n", err);
     }
 
-    struct sockaddr_in bind_addr = {
-        .sin_family = AF_INET,
-        .sin_addr = {0},
-        .sin_port = htons(9999),
-    };
     err = kernel_bind(sock, (struct sockaddr *)&bind_addr,
             sizeof(bind_addr));
     if (err < 0) {

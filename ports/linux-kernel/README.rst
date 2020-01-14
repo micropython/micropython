@@ -32,7 +32,11 @@ You can pass the ``KDIR`` variable to ``make`` to build against a specific kerne
 Using it
 --------
 
-The exposed interface is a Python REPL. After being loaded, the module creates a server listening on ``0.0.0.0:9999``.
+The exposed interface is a Python REPL. After being loaded, the module creates a server listening locally. The default
+address the server binds on is ``0.0.0.0:9999``. If you want to change the default (in order to restrict access on a
+specific network interface, or if you just want to change the port) you can pass ``server_addr=ip:port`` when
+calling ``insmod``, for example ``insmod mpy.ko server_addr=127.0.0.1:1234``. For further access restriction you can
+use ``iptables`` to filter access on the bound port.
 
 The following ``socat`` command will start a full interactive shell:
 
