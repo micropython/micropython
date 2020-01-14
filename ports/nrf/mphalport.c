@@ -48,7 +48,7 @@ mp_uint_t mp_hal_ticks_ms(void) {
   return (mp_uint_t)rtc1.p_reg->COUNTER;
 }
 #else
-static inline mp_uint_t mp_hal_ticks_ms(void) {
+mp_uint_t mp_hal_ticks_ms(void) {
   return 0;
 }
 #endif
@@ -86,8 +86,7 @@ int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(board_stdio_uart));
-        }
-        __WFI();
+    __WFI();
     }
 
     return 0;

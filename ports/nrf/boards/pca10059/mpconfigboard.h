@@ -37,6 +37,7 @@
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
 #define MICROPY_PY_RANDOM_HW_RNG    (1)
+#define MICROPY_PY_TIME_TICKS       (1)
 
 #define MICROPY_HW_USB_CDC          (1)
 
@@ -71,5 +72,3 @@
 #endif
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
-
-#define MICROPY_PY_TIME_TICKS          (1)
