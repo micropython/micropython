@@ -125,6 +125,7 @@ jobs:
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"
+        - "openbook_m4"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
