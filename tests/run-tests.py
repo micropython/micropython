@@ -782,7 +782,7 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf")
+    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf", "linux-kernel")
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
