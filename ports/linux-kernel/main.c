@@ -343,7 +343,17 @@ void set_stack_limit(void) {
 STATIC int run_python(struct socket *peer) {
     current_peer = peer;
 
-    (void)pyexec_friendly_repl();
+    while (1) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
 
     current_peer = NULL;
 
