@@ -73,6 +73,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
