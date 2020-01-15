@@ -302,7 +302,12 @@ that the block device supports the extended interface.
             (*arg* is unused)
           - 6 -- erase a block, *arg* is the block number to erase
 
-Unless otherwise stated ``ioctl(op, arg)`` can return None. Consequently an
-implementation can ignore unused values of ``op``. As a minimum
-``ioctl(4, ...)`` must be intercepted; for littlefs ``ioctl(6, ...)`` must be
-intercepted and return 0. The need for others is hardware dependent.
+       As a minimum ``ioctl(4, ...)`` must be intercepted; for littlefs
+       ``ioctl(6, ...)`` must also be intercepted. The need for others is
+       hardware dependent.
+
+       Unless otherwise stated ``ioctl(op, arg)`` can return ``None``.
+       Consequently an implementation can ignore unused values of ``op``. Where
+       ``op`` is intercepted, the return value for operations 4 and 5 are as
+       detailed above. Other operations should return 0 on success and non-zero
+       for failure, with the value returned being an ``OSError`` errno code.
