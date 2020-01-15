@@ -154,6 +154,61 @@ class TelnetToSerial:
             return n_waiting
 
 
+class SocketToSerial:
+    def __init__(self, ip, port, read_timeout=None):
+        import socket
+        self.sock = socket.create_connection((ip, port))
+        self.sock.setblocking(0)
+        self.read_timeout = read_timeout
+        from collections import deque
+        self.fifo = deque()
+
+    def __del__(self):
+        self.close()
+
+    def _read_noblocking(self):
+        try:
+            return self.sock.recv(1024)
+        except BlockingIOError:
+            return b''
+
+    def close(self):
+        # may be called from __del__ even if __init__ failed, so handle partially-created object
+        if hasattr(self, "sock"):
+            self.sock.close()
+
+    def read(self, size=1):
+        while len(self.fifo) < size:
+            timeout_count = 0
+            data = self._read_noblocking()
+            if len(data):
+                self.fifo.extend(data)
+                timeout_count = 0
+            else:
+                time.sleep(0.25)
+                if self.read_timeout is not None and timeout_count > 4 * self.read_timeout:
+                    break
+                timeout_count += 1
+
+        data = b''
+        while len(data) < size and len(self.fifo) > 0:
+            data += bytes([self.fifo.popleft()])
+        return data
+
+    def write(self, data):
+        self.sock.send(data)
+        return len(data)
+
+    def inWaiting(self):
+        n_waiting = len(self.fifo)
+        if not n_waiting:
+            data = self._read_noblocking()
+            self.fifo.extend(data)
+            return len(data)
+        else:
+            return n_waiting
+
+
 class ProcessToSerial:
     "Execute a process and emulate serial connection using its stdin/stdout."
 
@@ -261,6 +316,9 @@ class Pyboard:
             self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
             self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
+        elif device.startswith("socket:"):
+            ip, port = device[len("socket:"):].split(':')
+            self.serial = SocketToSerial(ip, int(port), read_timeout=10)
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
