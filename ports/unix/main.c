@@ -647,6 +647,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    const char *inspect_env = getenv("MICROPYINSPECT");
+    if (inspect_env && inspect_env[0] != '\0') {
+        inspect = true;
+    }
     if (ret == NOTHING_EXECUTED || inspect) {
         if (isatty(0)) {
             prompt_read_history();
