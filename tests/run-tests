@@ -553,7 +553,14 @@ class append_filter(argparse.Action):
 def main():
     cmd_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='Run and manage tests for MicroPython.',
+        description='''Run and manage tests for MicroPython.
+
+When running tests, run-tests compares the MicroPython output of the test with the output
+produced by running the test through CPython unless a <test>.exp file is found, in which
+case it is used as comparison.
+If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the current
+directory with the MicroPython output and the expectations, respectively.
+''',
         epilog='''\
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
@@ -570,7 +577,7 @@ the last matching regex is used:
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('-e', '--exclude', action=append_filter, metavar='REGEX', dest='filters', help='exclude test by regex on path/name.py')
     cmd_parser.add_argument('-i', '--include', action=append_filter, metavar='REGEX', dest='filters', help='include test by regex on path/name.py')
-    cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
+    cmd_parser.add_argument('--write-exp', action='store_true', help='use CPython to generate .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--list-tests', action='store_true', help='list tests instead of running them')
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
