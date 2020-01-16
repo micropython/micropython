@@ -24,34 +24,32 @@ Functions
    :meth:`~usocket.socket.accept()` on a non-SSL listening server socket.
 
    Parameters:
+
    - ``server_side``: creates a server connection if True, else client connection. A
      server connection requires a ``keyfile`` and a ``certfile``.
    - ``cert_reqs``: specifies the level of certificate checking to be performed.
-     CERT_NONE: in client mode accept just about any cert, in server mode do not
-     request a cert from the client. CERT_OPTIONAL: in client mode behaves the
-     same as CERT_REQUIRED and in server mode requests an optional cert from the client
-     for authentication. CERT_REQUIRED: in client mode validates the server's cert and
-     in server mode requires the client to send a cert for authentication. Note that
-     ussl does not actually support client authentication.
    - ``ca_certs``: root certificates to use for certificate checking.
    - ``server_hostname``: specifies the hostname of the server for verification purposes
      as well for SNI (Server Name Identification).
-   - ``do_handshake``: initiates the TLS handshake if set to True, otherwise (???).
+   - ``do_handshake``: if True, initiates the TLS handshake and waits for its completion;
+     if False, proceeds without handshake and performs is with the first write making it
+     non-blocking if asyncio is used, see git commit 9c7c082.
 
    Depending on the underlying module implementation in a particular
    `MicroPython port`, some or all keyword arguments above may be not supported.
 
-.. warning::
-
-   Some implementations of ``ussl`` module do NOT validate server certificates,
-   which makes an SSL connection established prone to man-in-the-middle attacks.
-
    ESP32 implementation notes:
+
    - The esp32 implementation does not support cert_reqs: it never validates certs!
    - The esp32 implementation supports key-exchange and bidirectional authentication
      using Pre-Shared Keys. Use KW options ``psk_ident=<identity hint>`` and
      ``psk_key=binascii.unhexlify(b'<key in hex>')``. PSK ciphers are only supported
      for client-side connections. See below for more info about PSK ciphers.
+
+.. warning::
+
+   Some implementations of ``ussl`` module do NOT validate server certificates,
+   which makes an SSL connection established prone to man-in-the-middle attacks.
 
 Exceptions
 ----------
@@ -68,6 +66,14 @@ Constants
           ussl.CERT_REQUIRED
 
     Supported values for *cert_reqs* parameter.
+
+    - CERT_NONE: in client mode accept just about any cert, in server mode do not
+      request a cert from the client.
+    - CERT_OPTIONAL: in client mode behaves the same as CERT_REQUIRED and in server
+      mode requests an optional cert from the client for authentication.
+    - CERT_REQUIRED: in client mode validates the server's cert and
+      in server mode requires the client to send a cert for authentication. Note that
+      ussl does not actually support client authentication.
 
 Pre-Shared Key (PSK) cipher suites
 ----------------------------------
@@ -88,8 +94,8 @@ malicious server does not divulge the password. Plus the server is also
 authenticated to the client.
 
 To use PSK:
-- Generate a random hex string (generating an MD5 or SHA on some random
-  data is one way to do this)
+
+- Generate a random hex string (generating an MD5 on some random data is one way to do this)
 - Come up with a string id for your client and configure your server to accept the id/key pair
 - In ``ussl.wrap_socket`` use ``psk_ident`` and ``psk_key`` to set the id/key combo
 - When the handshake with the server is performed it uses the id/key combo to authenticate the
