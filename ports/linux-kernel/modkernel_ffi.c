@@ -152,6 +152,14 @@ STATIC mp_obj_t symbol_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t symbol_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    // special case of equality - if we reached here, then lhs_in != rhs_in (pointer wise).
+    // we'll check their ->value.
+    if (mp_obj_is_symbol(rhs_in) && op == MP_BINARY_OP_EQUAL) {
+        return ((sym_obj_t*)MP_OBJ_TO_PTR(lhs_in))->value == ((sym_obj_t*)MP_OBJ_TO_PTR(rhs_in))->value ?
+            mp_const_true : mp_const_false;
+    }
+
+    // otherwise, fall to generic op, and pass integral value of symbol.
     return mp_binary_op(op, mp_obj_new_int_from_uint(((sym_obj_t*)MP_OBJ_TO_PTR(lhs_in))->value), rhs_in);
 }
 
