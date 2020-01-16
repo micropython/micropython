@@ -30,9 +30,9 @@
 void bleio_reset(void);
 
 typedef struct {
-  ble_gap_enc_key_t own_enc;
-  ble_gap_enc_key_t peer_enc;
-  ble_gap_id_key_t peer_id;
+    ble_gap_enc_key_t own_enc;
+    ble_gap_enc_key_t peer_enc;
+    ble_gap_id_key_t peer_id;
 } bonding_keys_t;
 
 // We assume variable length data.

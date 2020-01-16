@@ -32,6 +32,7 @@
 
 #include "ble.h"
 #include "ble_drv.h"
+#include "bonding.h"
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
@@ -248,6 +249,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             }
             ble_drv_remove_event_handler(connection_on_ble_evt, connection);
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
+            connection->pair_status = PAIR_NOT_PAIRED;
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t* obj = connection->connection_obj;
                 obj->connection = NULL;
@@ -690,6 +692,10 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     }
     self->connection_objs = mp_obj_new_tuple(total_connected, items);
     return self->connection_objs;
+}
+
+void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
+    bonding_erase_storage();
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
