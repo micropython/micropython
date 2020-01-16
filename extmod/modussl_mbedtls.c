@@ -59,6 +59,8 @@ typedef struct _mp_obj_ssl_socket_t {
 struct ssl_args {
     mp_arg_val_t key;
     mp_arg_val_t cert;
+    mp_arg_val_t psk_ident;
+    mp_arg_val_t psk_key;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
     mp_arg_val_t do_handshake;
@@ -121,12 +123,29 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     o->base.type = &ussl_socket_type;
     o->sock = sock;
 
+    if ((args->psk_ident.u_obj != mp_const_none || args->psk_key.u_obj != mp_const_none) &&
+            (args->cert.u_obj != mp_const_none || args->key.u_obj != mp_const_none)) {
+        mp_raise_ValueError("cannot have cert&key and psk_ident&psk_key");
+    }
+    uint8_t psk_mode = args->psk_ident.u_obj != mp_const_none;
+    if (psk_mode) {
+        if (args->server_side.u_bool) {
+            mp_raise_ValueError("PSK ciphers only supported for client connections");
+        }
+    }
+
     int ret;
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
-    mbedtls_x509_crt_init(&o->cacert);
-    mbedtls_x509_crt_init(&o->cert);
-    mbedtls_pk_init(&o->pkey);
+    if (psk_mode) {
+        memset(&o->cacert, 0, sizeof(o->cacert));
+        memset(&o->cert, 0, sizeof(o->cert));
+        memset(&o->pkey, 0, sizeof(o->pkey));
+    } else {
+        mbedtls_x509_crt_init(&o->cacert);
+        mbedtls_x509_crt_init(&o->cert);
+        mbedtls_pk_init(&o->pkey);
+    }
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4)
@@ -148,7 +167,18 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    if (psk_mode) {
+        const char *ident = mp_obj_str_get_str(args->psk_ident.u_obj);
+        size_t key_len;
+        const byte *key = (const byte*)mp_obj_str_get_data(args->psk_key.u_obj, &key_len);
+        //if (key_len > MBEDTLS_PSK_MAX_LEN) {
+        ret = mbedtls_ssl_conf_psk(&o->conf, key, key_len, (const unsigned char *)ident, strlen(ident));
+        if (ret != 0) {
+            goto cleanup;
+        }
+    } else {
+        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    }
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -206,9 +236,11 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     return o;
 
 cleanup:
-    mbedtls_pk_free(&o->pkey);
-    mbedtls_x509_crt_free(&o->cert);
-    mbedtls_x509_crt_free(&o->cacert);
+    if (psk_mode) {
+        mbedtls_pk_free(&o->pkey);
+        mbedtls_x509_crt_free(&o->cert);
+        mbedtls_x509_crt_free(&o->cacert);
+    }
     mbedtls_ssl_free(&o->ssl);
     mbedtls_ssl_config_free(&o->conf);
     mbedtls_ctr_drbg_free(&o->ctr_drbg);
@@ -221,6 +253,7 @@ cleanup:
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
         mp_raise_ValueError("invalid cert");
     } else {
+        printf("mbedtls error: -%x\n", -ret);
         mp_raise_OSError(MP_EIO);
     }
 }
@@ -348,6 +381,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_psk_ident, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_psk_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
