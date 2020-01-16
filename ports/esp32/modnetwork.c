@@ -619,6 +619,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         ESP_EXCEPTIONS(tcpip_adapter_set_hostname(self->if_id, s));
                         break;
                     }
+                    case QS(MP_QSTR_max_connection): {
+                        req_if = WIFI_IF_AP;
+                        cfg.ap.max_connection = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
