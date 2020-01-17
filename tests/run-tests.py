@@ -832,6 +832,8 @@ the last matching regex is used:
                     "inlineasm",
                     "qemu-arm",
                 )
+            elif args.target == 'linux-kernel':
+                test_dirs += ('linux-kernel', )
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
