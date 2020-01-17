@@ -167,10 +167,10 @@ STATIC sym_obj_t *make_new_sym(qstr name, unsigned long value, bool exported) {
     return _symbol_make_new(&mp_type_symbol, name, value, exported);
 }
 
-STATIC bool auto_globals = true;
+bool kernel_ffi_auto_globals_enabled = true;
 
 STATIC mp_obj_t kernel_ffi_auto_globals(mp_obj_t enable) {
-    auto_globals = mp_obj_is_true(enable);
+    kernel_ffi_auto_globals_enabled = mp_obj_is_true(enable);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_auto_globals_obj, kernel_ffi_auto_globals);
@@ -212,7 +212,7 @@ STATIC mp_obj_t kernel_ffi_symbol(mp_obj_t name) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(kernel_ffi_symbol_obj, kernel_ffi_symbol);
 
 mp_obj_t mp_lazy_load_global(qstr qst) {
-    if (!auto_globals) {
+    if (!kernel_ffi_auto_globals_enabled) {
         return MP_OBJ_NULL;
     }
 

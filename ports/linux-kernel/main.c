@@ -47,6 +47,7 @@
 #include <string.h>
 
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -66,6 +67,11 @@
 static char *server_addr = DEFAULT_SERVER_ADDR;
 module_param(server_addr, charp, 0400);
 MODULE_PARM_DESC(server_addr, "MicroPython server address (ip:port). Default is " DEFAULT_SERVER_ADDR);
+
+static bool tests_mode = false;
+module_param(tests_mode, bool, 0400);
+MODULE_PARM_DESC(tests_mode, "Run in tests mode (used when running MicroPython's tests). This mainly resets the interpreter"
+                             " state between REPLs");
 
 
 STATIC struct task_struct *server_thread;
@@ -362,9 +368,16 @@ STATIC int run_python(struct socket *peer) {
 
 STATIC int run_server(void *data) {
     struct socket *sock = (struct socket*)data;
-    int err;
+    struct socket *peer = NULL;
+    int err = 0; // gcc whines about it being possibly uninitialized, though it really can't be...
 
     allow_signal(SIGINT);
+
+soft_reboot:
+    if (tests_mode) {
+        // disabled by default for the tests.
+        kernel_ffi_auto_globals_enabled = false;
+    }
 
     // called first!
     mp_thread_init();
@@ -384,11 +397,22 @@ STATIC int run_server(void *data) {
 
     pr_info("server is up\n");
 
-    struct socket *peer;
     while (!kthread_should_stop()) {
-        err = kernel_accept(sock, &peer, 0);
+        if (!peer) {
+            err = kernel_accept(sock, &peer, 0);
+        }
+
         if (0 == err) {
             run_python(peer);
+            if (tests_mode && peer->sk->sk_state == TCP_ESTABLISHED) {
+                // if in tests mode - don't close the connection. MicroPython's tests send an EOF and expect
+                // the state to reset, but the connection remains open (simpler this way, I guess).
+                // however, if the socket is closed (e.g we called kernel_sock_shutdown) then continue normally
+                // and stop it.
+                current_peer = peer;
+                break;
+            }
+
             sock_release(peer);
             peer = NULL;
         } else if (is_retry_errno(err)) {
@@ -411,12 +435,24 @@ STATIC int run_server(void *data) {
     pr_info("done!\n");
 
 out:
-    // module exit function will kill the socket
-
-    pr_info("server stopped\n");
+    // module exit function will kill the listener socket
 
     mp_deinit();
     mp_thread_finish();
+
+    if (tests_mode) {
+        if (!kthread_should_stop()) {
+            mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
+            pr_info("emulating soft reboot");
+            goto soft_reboot;
+        } else if (peer) {
+            // wasn't closed earlier, so do it now.
+            sock_release(peer);
+            peer = NULL;
+        }
+    }
+
+    pr_info("server stopped\n");
 
     return 0;
 }
