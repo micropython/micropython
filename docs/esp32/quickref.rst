@@ -359,11 +359,25 @@ Notes:
   To further reduce power consumption it is possible to disable the internal pullups::
 
     p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
-    
+
   After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
   it is an output pin) via::
-    
+
     p1 = Pin(4, Pin.OUT, None)
+
+RMT
+---
+
+The RMT is ESP32-specific and allows generation of accurate digital pulses with
+12.5ns resolution.  See :ref:`esp32.RMT <esp32.RMT>` for details.  Usage is::
+
+    import esp32
+    from machine import Pin
+
+    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
+    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
+    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 OneWire driver
 --------------

@@ -21,8 +21,11 @@ implementation and the best practices to use them.
 
    glossary.rst
    repl.rst
+   mpyfiles.rst
    isr_rules.rst
    speed_python.rst
    constrained.rst
    packages.rst
    asm_thumb2_index.rst
+   filesystem.rst
+   pyboard.py.rst

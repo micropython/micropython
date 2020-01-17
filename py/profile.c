@@ -875,10 +875,16 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->qstr_opname = MP_QSTR_RETURN_VALUE;
             break;
 
-        case MP_BC_RAISE_VARARGS:
-            unum = *ip++;
-            instruction->qstr_opname = MP_QSTR_RAISE_VARARGS;
-            instruction->arg = unum;
+        case MP_BC_RAISE_LAST:
+            instruction->qstr_opname = MP_QSTR_RAISE_LAST;
+            break;
+
+        case MP_BC_RAISE_OBJ:
+            instruction->qstr_opname = MP_QSTR_RAISE_OBJ;
+            break;
+
+        case MP_BC_RAISE_FROM:
+            instruction->qstr_opname = MP_QSTR_RAISE_FROM;
             break;
 
         case MP_BC_YIELD_VALUE:

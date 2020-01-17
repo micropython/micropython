@@ -92,7 +92,7 @@ Methods
 
    Force a software restart of the CAN controller without resetting its
    configuration.
-   
+
    If the controller enters the bus-off state then it will no longer participate
    in bus activity.  If the controller is not configured to automatically restart
    (see :meth:`~CAN.init()`) then this method can be used to trigger a restart,

@@ -43,8 +43,9 @@ def accept_conn(listen_sock):
     ws = uwebsocket.websocket(cl, True)
     ws = _webrepl._webrepl(ws)
     cl.setblocking(False)
-    # notify REPL on socket incoming data
-    cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
+    # notify REPL on socket incoming data (ESP32/ESP8266-only)
+    if hasattr(uos, 'dupterm_notify'):
+        cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
     uos.dupterm(ws)
 
 

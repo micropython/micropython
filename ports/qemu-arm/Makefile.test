@@ -13,8 +13,7 @@ $(BUILD)/genhdr/tests.h:
 	(cd $(TOP)/tests; ./run-tests --target=qemu-arm --write-exp)
 	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
 
-$(BUILD)/tinytest.o:
-	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
+$(BUILD)/lib/tinytest/tinytest.o: CFLAGS += -DNO_FORKING
 
 $(BUILD)/firmware-test.elf: $(LDSCRIPT) $(ALL_OBJ_TEST)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_TEST) $(LIBS)

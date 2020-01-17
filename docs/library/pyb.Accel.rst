@@ -19,7 +19,7 @@ Constructors
 .. class:: pyb.Accel()
 
    Create and return an accelerometer object.
-   
+
 Methods
 -------
 

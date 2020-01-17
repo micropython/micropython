@@ -2,16 +2,8 @@ ValueError -1
 ValueError 0
 UART 1
 UART 2
-UART 3
-UART 4
 ValueError 5
 UART 6
-ValueError 7
-UART XA
-UART XB
-UART YA
-UART YB
-ValueError Z
 UART(1, baudrate=9600, bits=8, parity=None, stop=1, flow=0, timeout=0, timeout_char=3, rxbuf=64)
 UART(1, baudrate=2400, bits=8, parity=None, stop=1, flow=0, timeout=0, timeout_char=7, rxbuf=64)
 0

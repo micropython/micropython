@@ -24,14 +24,15 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
 #include "py/runtime.h"
 #include "py/smallint.h"
-#include "py/emitglue.h"
-#include "py/bc.h"
+#include "py/nativeglue.h"
+#include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -210,8 +211,50 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     return false;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    return mp_obj_new_float((mp_float_t)f);
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    return mp_obj_new_float((mp_float_t)d);
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    return (float)mp_obj_get_float(o);
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    return (double)mp_obj_get_float(o);
+}
+
+#else
+
+STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+    (void)f;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+    (void)d;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+    (void)o;
+    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+}
+
+#endif
+
 // these must correspond to the respective enum in runtime0.h
-const void *const mp_fun_table[MP_F_NUMBER_OF] = {
+const mp_fun_table_t mp_fun_table = {
     &mp_const_none_obj,
     &mp_const_false_obj,
     &mp_const_true_obj,
@@ -270,6 +313,37 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     #else
     NULL,
     #endif
+    // Additional entries for dynamic runtime, starts at index 50
+    memset,
+    memmove,
+    gc_realloc,
+    mp_printf,
+    mp_vprintf,
+    mp_raise_msg,
+    mp_obj_get_type,
+    mp_obj_new_str,
+    mp_obj_new_bytes,
+    mp_obj_new_bytearray_by_ref,
+    mp_obj_new_float_from_f,
+    mp_obj_new_float_from_d,
+    mp_obj_get_float_to_f,
+    mp_obj_get_float_to_d,
+    mp_get_buffer_raise,
+    mp_get_stream_raise,
+    &mp_plat_print,
+    &mp_type_type,
+    &mp_type_str,
+    &mp_type_list,
+    &mp_type_dict,
+    &mp_type_fun_builtin_0,
+    &mp_type_fun_builtin_1,
+    &mp_type_fun_builtin_2,
+    &mp_type_fun_builtin_3,
+    &mp_type_fun_builtin_var,
+    &mp_stream_read_obj,
+    &mp_stream_readinto_obj,
+    &mp_stream_unbuffered_readline_obj,
+    &mp_stream_write_obj,
 };
 
 #endif // MICROPY_EMIT_NATIVE

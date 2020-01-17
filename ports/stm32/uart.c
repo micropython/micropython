@@ -247,6 +247,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             UARTx = USART4;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
+            #elif defined(STM32L0)
+            UARTx = USART4;
+            irqn = USART4_5_IRQn;
+            __HAL_RCC_USART4_CLK_ENABLE();
             #else
             UARTx = UART4;
             irqn = UART4_IRQn;
@@ -273,6 +277,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #if defined(STM32F0)
             UARTx = USART5;
             irqn = USART3_8_IRQn;
+            __HAL_RCC_USART5_CLK_ENABLE();
+            #elif defined(STM32L0)
+            UARTx = USART5;
+            irqn = USART4_5_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
             #else
             UARTx = UART5;

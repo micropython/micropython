@@ -30,9 +30,10 @@
 #include <assert.h>
 
 #include "py/reader.h"
-#include "py/emitglue.h"
+#include "py/nativeglue.h"
 #include "py/persistentcode.h"
 #include "py/bc0.h"
+#include "py/objstr.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -145,7 +146,15 @@ STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
 
 #include "py/parsenum.h"
 
+STATIC int read_byte(mp_reader_t *reader);
+STATIC size_t read_uint(mp_reader_t *reader, byte **out);
+
 #if MICROPY_EMIT_MACHINE_CODE
+
+typedef struct _reloc_info_t {
+    mp_reader_t *reader;
+    mp_uint_t *const_table;
+} reloc_info_t;
 
 #if MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
@@ -177,6 +186,52 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
         asm_thumb_rewrite_mov(pc, val); // movw
     }
     #endif
+}
+
+void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
+    // Relocate native code
+    reloc_info_t *ri = ri_in;
+    uint8_t op;
+    uintptr_t *addr_to_adjust = NULL;
+    while ((op = read_byte(ri->reader)) != 0xff) {
+        if (op & 1) {
+            // Point to new location to make adjustments
+            size_t addr = read_uint(ri->reader, NULL);
+            if ((addr & 1) == 0) {
+                // Point to somewhere in text
+                addr_to_adjust = &((uintptr_t*)text)[addr >> 1];
+            } else {
+                // Point to somewhere in rodata
+                addr_to_adjust = &((uintptr_t*)ri->const_table[1])[addr >> 1];
+            }
+        }
+        op >>= 1;
+        uintptr_t dest;
+        size_t n = 1;
+        if (op <= 5) {
+            if (op & 1) {
+                // Read in number of adjustments to make
+                n = read_uint(ri->reader, NULL);
+            }
+            op >>= 1;
+            if (op == 0) {
+                // Destination is text
+                dest = reloc_text;
+            } else {
+                // Destination is rodata (op=1) or bss (op=1 if no rodata, else op=2)
+                dest = ri->const_table[op];
+            }
+        } else if (op == 6) {
+            // Destination is mp_fun_table itself
+            dest = (uintptr_t)&mp_fun_table;
+        } else {
+            // Destination is an entry in mp_fun_table
+            dest = ((uintptr_t*)&mp_fun_table)[op - 7];
+        }
+        while (n--) {
+            *addr_to_adjust++ += dest;
+        }
+    }
 }
 
 #endif
@@ -340,6 +395,9 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
                     // Generic 16-bit link
                     dest[0] = qst & 0xff;
                     dest[1] = (qst >> 8) & 0xff;
+                } else if ((off & 3) == 3) {
+                    // Generic, aligned qstr-object link
+                    *(mp_obj_t*)dest = MP_OBJ_NEW_QSTR(qst);
                 } else {
                     // Architecture-specific link
                     arch_link_qstr(dest, (off & 3) == 2, qst);
@@ -380,9 +438,18 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
         // Allocate constant table
         size_t n_alloc = prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code;
+        #if MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             ++n_alloc; // additional entry for mp_fun_table
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
+                ++n_alloc; // additional entry for rodata
+            }
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERBSS) {
+                ++n_alloc; // additional entry for BSS
+            }
         }
+        #endif
+
         const_table = m_new(mp_uint_t, n_alloc);
         mp_uint_t *ct = const_table;
 
@@ -395,7 +462,22 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         #if MICROPY_EMIT_MACHINE_CODE
         if (kind != MP_CODE_BYTECODE) {
             // Populate mp_fun_table entry
-            *ct++ = (mp_uint_t)(uintptr_t)mp_fun_table;
+            *ct++ = (mp_uint_t)(uintptr_t)&mp_fun_table;
+
+            // Allocate and load rodata if needed
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRODATA) {
+                size_t size = read_uint(reader, NULL);
+                uint8_t *rodata = m_new(uint8_t, size);
+                read_bytes(reader, rodata, size);
+                *ct++ = (uintptr_t)rodata;
+            }
+
+            // Allocate BSS if needed
+            if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERBSS) {
+                size_t size = read_uint(reader, NULL);
+                uint8_t *bss = m_new0(uint8_t, size);
+                *ct++ = (uintptr_t)bss;
+            }
         }
         #endif
 
@@ -411,6 +493,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     // Create raw_code and return it
     mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
     if (kind == MP_CODE_BYTECODE) {
+        // Assign bytecode to raw code object
         mp_emit_glue_assign_bytecode(rc, fun_data,
             #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             fun_data_len,
@@ -423,10 +506,18 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
+        // Relocate and commit code to executable address space
+        reloc_info_t ri = {reader, const_table};
         #if defined(MP_PLAT_COMMIT_EXEC)
-        fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len);
+        void *opt_ri = (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRELOC) ? &ri : NULL;
+        fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
+        #else
+        if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
+            mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
+        }
         #endif
 
+        // Assign native code to raw code object
         mp_emit_glue_assign_native(rc, kind,
             fun_data, fun_data_len, const_table,
             #if MICROPY_PERSISTENT_CODE_SAVE
@@ -450,9 +541,11 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
         mp_raise_ValueError("incompatible .mpy file");
     }
-    if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE
-        && MPY_FEATURE_DECODE_ARCH(header[2]) != MPY_FEATURE_ARCH) {
-        mp_raise_ValueError("incompatible .mpy arch");
+    if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
+        byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
+        if (!MPY_FEATURE_ARCH_TEST(arch)) {
+            mp_raise_ValueError("incompatible .mpy arch");
+        }
     }
     qstr_window_t qw;
     qw.idx = 0;
@@ -624,7 +717,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
             save_prelude_qstrs(print, qstr_window, ip_info);
         } else {
             // Save basic scope info for viper and asm
-            mp_print_uint(print, rc->scope_flags);
+            mp_print_uint(print, rc->scope_flags & MP_SCOPE_FLAG_ALL_SIG);
             prelude.n_pos_args = 0;
             prelude.n_kwonly_args = 0;
             if (rc->kind == MP_CODE_NATIVE_ASM) {

@@ -314,7 +314,7 @@ class RawCode(object):
                 print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
             for i in range(len(self.objs)):
                 if self.objs[i] is MPFunTable:
-                    print('    mp_fun_table,')
+                    print('    &mp_fun_table,')
                 elif type(self.objs[i]) is float:
                     print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
                     print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
@@ -474,6 +474,9 @@ class RawCodeNative(RawCode):
                 assert 0
 
     def freeze(self, parent_name):
+        if self.prelude[2] & ~0x0f:
+            raise FreezeError('unable to freeze code with relocations')
+
         self.freeze_children(parent_name)
 
         # generate native code data
@@ -691,7 +694,10 @@ def read_mpy(filename):
                 raise Exception('native architecture mismatch')
         config.mp_small_int_bits = header[3]
         qstr_win = QStrWindow(qw_size)
-        return read_raw_code(f, qstr_win)
+        rc = read_raw_code(f, qstr_win)
+        rc.mpy_source_file = filename
+        rc.qstr_win_size = qw_size
+        return rc
 
 def dump_mpy(raw_codes):
     for rc in raw_codes:
@@ -711,6 +717,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#include "py/objint.h"')
     print('#include "py/objstr.h"')
     print('#include "py/emitglue.h"')
+    print('#include "py/nativeglue.h"')
     print()
 
     print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE != %u' % config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
@@ -788,6 +795,55 @@ def freeze_mpy(base_qstrs, raw_codes):
         print('    &raw_code_%s,' % rc.escaped_name)
     print('};')
 
+def merge_mpy(raw_codes, output_file):
+    assert len(raw_codes) <= 31 # so var-uints all fit in 1 byte
+    merged_mpy = bytearray()
+
+    if len(raw_codes) == 1:
+        with open(raw_codes[0].mpy_source_file, 'rb') as f:
+            merged_mpy.extend(f.read())
+    else:
+        header = bytearray(5)
+        header[0] = ord('M')
+        header[1] = config.MPY_VERSION
+        header[2] = (config.native_arch << 2
+            | config.MICROPY_PY_BUILTINS_STR_UNICODE << 1
+            | config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
+        header[3] = config.mp_small_int_bits
+        header[4] = 32 # qstr_win_size
+        merged_mpy.extend(header)
+
+        bytecode = bytearray()
+        bytecode_len = 6 + len(raw_codes) * 4 + 2
+        bytecode.append(bytecode_len << 2) # kind and length
+        bytecode.append(0b00000000) # signature prelude
+        bytecode.append(0b00001000) # size prelude
+        bytecode.extend(b'\x00\x01') # MP_QSTR_
+        bytecode.extend(b'\x00\x01') # MP_QSTR_
+        for idx in range(len(raw_codes)):
+            bytecode.append(0x32) # MP_BC_MAKE_FUNCTION
+            bytecode.append(idx) # index raw code
+            bytecode.extend(b'\x34\x00') # MP_BC_CALL_FUNCTION, 0 args
+        bytecode.extend(b'\x51\x63') # MP_BC_LOAD_NONE, MP_BC_RETURN_VALUE
+
+        bytecode.append(0) # n_obj
+        bytecode.append(len(raw_codes)) # n_raw_code
+
+        merged_mpy.extend(bytecode)
+
+        for rc in raw_codes:
+            with open(rc.mpy_source_file, 'rb') as f:
+                f.read(4) # skip header
+                read_uint(f) # skip qstr_win_size
+                data = f.read() # read rest of mpy file
+                merged_mpy.extend(data)
+
+    if output_file is None:
+        sys.stdout.buffer.write(merged_mpy)
+    else:
+        with open(output_file, 'wb') as f:
+            f.write(merged_mpy)
+
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='A tool to work with MicroPython .mpy files.')
@@ -795,12 +851,16 @@ def main():
         help='dump contents of files')
     cmd_parser.add_argument('-f', '--freeze', action='store_true',
         help='freeze files')
+    cmd_parser.add_argument('--merge', action='store_true',
+        help='merge multiple .mpy files into one')
     cmd_parser.add_argument('-q', '--qstr-header',
         help='qstr header file to freeze against')
     cmd_parser.add_argument('-mlongint-impl', choices=['none', 'longlong', 'mpz'], default='mpz',
         help='long-int implementation used by target (default mpz)')
     cmd_parser.add_argument('-mmpz-dig-size', metavar='N', type=int, default=16,
         help='mpz digit size used by target (default 16)')
+    cmd_parser.add_argument('-o', '--output', default=None,
+        help='output file')
     cmd_parser.add_argument('files', nargs='+',
         help='input .mpy files')
     args = cmd_parser.parse_args()
@@ -834,6 +894,8 @@ def main():
         except FreezeError as er:
             print(er, file=sys.stderr)
             sys.exit(1)
+    elif args.merge:
+        merged_mpy = merge_mpy(raw_codes, args.output)
 
 if __name__ == '__main__':
     main()

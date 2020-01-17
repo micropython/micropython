@@ -269,7 +269,7 @@ outer_dispatch_loop:
             MICROPY_VM_HOOK_INIT
 
             // If we have exception to inject, now that we finish setting up
-            // execution context, raise it. This works as if RAISE_VARARGS
+            // execution context, raise it. This works as if MP_BC_RAISE_OBJ
             // bytecode was executed.
             // Injecting exc into yield from generator is a special case,
             // handled by MP_BC_YIELD_FROM itself

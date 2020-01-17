@@ -28,13 +28,17 @@
 
 // The first four must fit in 8 bits, see emitbc.c
 // The remaining must fit in 16 bits, see scope.h
+#define MP_SCOPE_FLAG_ALL_SIG      (0x0f)
 #define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_VARARGS      (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
 #define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
 #define MP_SCOPE_FLAG_HASCONSTS    (0x20) // used only if native emitter enabled
-#define MP_SCOPE_FLAG_VIPERRET_POS    (6) // 3 bits used for viper return type
+#define MP_SCOPE_FLAG_VIPERRET_POS    (6) // 3 bits used for viper return type, to pass from compiler to native emitter
+#define MP_SCOPE_FLAG_VIPERRELOC   (0x10) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_VIPERRODATA  (0x20) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_VIPERBSS     (0x40) // used only when loading viper from .mpy
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)
@@ -151,61 +155,5 @@ typedef enum {
     MP_BINARY_OP_NOT_IN,
     MP_BINARY_OP_IS_NOT,
 } mp_binary_op_t;
-
-typedef enum {
-    MP_F_CONST_NONE_OBJ = 0,
-    MP_F_CONST_FALSE_OBJ,
-    MP_F_CONST_TRUE_OBJ,
-    MP_F_CONVERT_OBJ_TO_NATIVE,
-    MP_F_CONVERT_NATIVE_TO_OBJ,
-    MP_F_NATIVE_SWAP_GLOBALS,
-    MP_F_LOAD_NAME,
-    MP_F_LOAD_GLOBAL,
-    MP_F_LOAD_BUILD_CLASS,
-    MP_F_LOAD_ATTR,
-    MP_F_LOAD_METHOD,
-    MP_F_LOAD_SUPER_METHOD,
-    MP_F_STORE_NAME,
-    MP_F_STORE_GLOBAL,
-    MP_F_STORE_ATTR,
-    MP_F_OBJ_SUBSCR,
-    MP_F_OBJ_IS_TRUE,
-    MP_F_UNARY_OP,
-    MP_F_BINARY_OP,
-    MP_F_BUILD_TUPLE,
-    MP_F_BUILD_LIST,
-    MP_F_BUILD_MAP,
-    MP_F_BUILD_SET,
-    MP_F_STORE_SET,
-    MP_F_LIST_APPEND,
-    MP_F_STORE_MAP,
-    MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
-    MP_F_NATIVE_CALL_FUNCTION_N_KW,
-    MP_F_CALL_METHOD_N_KW,
-    MP_F_CALL_METHOD_N_KW_VAR,
-    MP_F_NATIVE_GETITER,
-    MP_F_NATIVE_ITERNEXT,
-    MP_F_NLR_PUSH,
-    MP_F_NLR_POP,
-    MP_F_NATIVE_RAISE,
-    MP_F_IMPORT_NAME,
-    MP_F_IMPORT_FROM,
-    MP_F_IMPORT_ALL,
-    MP_F_NEW_SLICE,
-    MP_F_UNPACK_SEQUENCE,
-    MP_F_UNPACK_EX,
-    MP_F_DELETE_NAME,
-    MP_F_DELETE_GLOBAL,
-    MP_F_MAKE_CLOSURE_FROM_RAW_CODE,
-    MP_F_ARG_CHECK_NUM_SIG,
-    MP_F_SETUP_CODE_STATE,
-    MP_F_SMALL_INT_FLOOR_DIVIDE,
-    MP_F_SMALL_INT_MODULO,
-    MP_F_NATIVE_YIELD_FROM,
-    MP_F_SETJMP,
-    MP_F_NUMBER_OF,
-} mp_fun_kind_t;
-
-extern const void *const mp_fun_table[MP_F_NUMBER_OF];
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME0_H

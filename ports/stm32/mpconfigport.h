@@ -366,6 +366,10 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_PY_LWIP_REENTER irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_LWIP_EXIT    restore_irq_pri(irq_state);
 
+// Bluetooth calls must run at a raised IRQ priority
+#define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_PY_LWIP_EXIT
+
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
 

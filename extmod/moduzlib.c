@@ -122,6 +122,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     return o->decomp.dest - (byte*)buf;
 }
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -129,11 +130,13 @@ STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
 };
 
 STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
+#endif
 
 STATIC const mp_stream_p_t decompio_stream_p = {
     .read = decompio_read,
 };
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_obj_type_t decompio_type = {
     { &mp_type_type },
     .name = MP_QSTR_DecompIO,
@@ -141,6 +144,7 @@ STATIC const mp_obj_type_t decompio_type = {
     .protocol = &decompio_stream_p,
     .locals_dict = (void*)&decompio_locals_dict,
 };
+#endif
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_obj_t data = args[0];
@@ -201,6 +205,7 @@ error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uzlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
@@ -213,6 +218,7 @@ const mp_obj_module_t mp_module_uzlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_uzlib_globals,
 };
+#endif
 
 // Source files #include'd here to make sure they're compiled in
 // only if module is enabled by config setting.

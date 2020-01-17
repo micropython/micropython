@@ -28,13 +28,13 @@ Methods
 .. method:: RTC.datetime([datetimetuple])
 
    Get or set the date and time of the RTC.
-   
+
    With no arguments, this method returns an 8-tuple with the current
    date and time.  With 1 argument (being an 8-tuple) it sets the date
    and time (and ``subseconds`` is reset to 255).
-   
+
    The 8-tuple has the following format:
-   
+
        (year, month, day, weekday, hours, minutes, seconds, subseconds)
 
    ``weekday`` is 1-7 for Monday through Sunday.
