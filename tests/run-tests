@@ -384,8 +384,6 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
         elif args.target == 'nrf':
             skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
-            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
-            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
             skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
             skip_tests.add('micropython/opt_level.py')      # no support for line numbers
             skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
