@@ -613,6 +613,8 @@ the last matching regex is used:
                 # Generate expected output files for qemu run.
                 # This list should match the test_dirs tuple in tinytest-codegen.py.
                 test_dirs += ('float', 'inlineasm', 'qemu-arm',)
+            elif args.target == 'linux-kernel':
+                test_dirs += ('linux-kernel', )
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
