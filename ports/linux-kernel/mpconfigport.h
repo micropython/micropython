@@ -62,6 +62,9 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1) // used in some tests, e.g misc/non_compliant.py
+#define MICROPY_PY_ALL_SPECIAL_METHODS (1) // used in some tests, e.g basics/class_notimpl.py
+#define MICROPY_PY_SYS_MAXSIZE      (1) // used in some tests, e.g basics/int_big1.py
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_UERRNO           (1) // TODO add all kernel errnos?
 #define MICROPY_PY_STRUCT           (1)
