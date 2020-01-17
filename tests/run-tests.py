@@ -474,7 +474,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # linux-kernel is compiled with MICROPY_STACKLESS_STRICT so it's not allowed.
             skip_tests.add('micropython/heapalloc_inst_call.py')
             skip_tests.add('micropython/heapalloc_yield_from.py')
-
+            # these 3 require MICROPY_PY_SYS_STDFILES (use sys.print_exception into a buffer)
+            skip_tests.add('micropython/heapalloc_traceback.py')
+            skip_tests.add('micropython/emg_exc.py')
+            skip_tests.add('misc/print_exception.py')
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
