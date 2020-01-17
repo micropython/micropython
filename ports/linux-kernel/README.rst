@@ -535,6 +535,22 @@ else you need, based on kernel primitives, since you have access to everything.
 
     # now you'll see the prints
 
+Tests
+-----
+
+The MicroPython test suite (including a few tests for this port features) can be run.
+
+Load the module with the parameter ``tests_mode=1``, e.g::
+
+    # insmod mpy.ko tests_mode=1
+
+Then use ``run-tests``::
+
+    $ cd /path/to/micropython/tests
+    $ ./run-tests --target linux-kernel --device socket:IP:port
+
+It was tested on kernels: 5.0.0, more to be added...
+
 Future TODOs
 ------------
 
