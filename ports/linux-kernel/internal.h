@@ -33,4 +33,6 @@ void mp_print_printk(void *data, const char *str, size_t len);
 
 void set_stack_limit(void);
 
+extern bool kernel_ffi_auto_globals_enabled;
+
 #endif // MICROPY_INCLUDED_LINUX_KERNEL_INTERNAL_H
