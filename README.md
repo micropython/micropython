@@ -4,6 +4,10 @@
 
 See also [Micropython + LittlevGL](https://blog.littlevgl.com/2019-02-20/micropython-bindings) blog post.
 
+For questions and discussions - please use the forum: https://forum.littlevgl.com/c/micropython
+
+Original micropython README: https://github.com/micropython/micropython/blob/master/README.md
+
 ## Build Instructions
 
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python`
