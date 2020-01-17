@@ -468,6 +468,13 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     skip_tests.add(t)
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
+        elif args.target == 'linux-kernel':
+            # next 2 tests lock the heap and perform operations that lead to allocations (which will now
+            # use the stack instead)
+            # linux-kernel is compiled with MICROPY_STACKLESS_STRICT so it's not allowed.
+            skip_tests.add('micropython/heapalloc_inst_call.py')
+            skip_tests.add('micropython/heapalloc_yield_from.py')
+
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
