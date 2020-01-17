@@ -1,7 +1,7 @@
-import utime
 try:
+    import utime
     utime.sleep_ms
-except AttributeError:
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
