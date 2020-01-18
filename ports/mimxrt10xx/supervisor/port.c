@@ -83,28 +83,38 @@
 #define NO_SUBREGIONS 0
 
 extern uint32_t _ld_flash_size;
+extern uint32_t _ld_stack_top;
 
-extern uint8_t _ld_dtcm_bss_start;
-extern uint8_t _ld_dtcm_bss_end;
-extern uint8_t _ld_dtcm_data_destination;
-extern uint8_t _ld_dtcm_data_size;
-extern uint8_t _ld_dtcm_data_flash_copy;
-extern uint8_t _ld_itcm_destination;
-extern uint8_t _ld_itcm_size;
-extern uint8_t _ld_itcm_flash_copy;
+extern uint32_t __isr_vector[];
 
-// This is called before RAM is setup! Be very careful what you do here.
-void SystemInitHook(void) {
-    // asm("bkpt");
+extern uint32_t _ld_ocram_bss_start;
+extern uint32_t _ld_ocram_bss_size;
+extern uint32_t _ld_ocram_data_destination;
+extern uint32_t _ld_ocram_data_size;
+extern uint32_t _ld_ocram_data_flash_copy;
+extern uint32_t _ld_dtcm_bss_start;
+extern uint32_t _ld_dtcm_bss_size;
+extern uint32_t _ld_dtcm_data_destination;
+extern uint32_t _ld_dtcm_data_size;
+extern uint32_t _ld_dtcm_data_flash_copy;
+extern uint32_t _ld_itcm_destination;
+extern uint32_t _ld_itcm_size;
+extern uint32_t _ld_itcm_flash_copy;
+
+extern void main(void);
+
+// This replaces the Reset_Handler in startup_*.S and SystemInit in system_*.c.
+__attribute__((used, naked)) void Reset_Handler(void) {
+    __disable_irq();
+    SCB->VTOR = (uint32_t) &__isr_vector;
+    __set_MSP((uint32_t) &_ld_stack_top);
+
     /* Disable I cache and D cache */
-    if (SCB_CCR_IC_Msk == (SCB_CCR_IC_Msk & SCB->CCR))
-    {
-        SCB_DisableICache();
-    }
-    if (SCB_CCR_DC_Msk == (SCB_CCR_DC_Msk & SCB->CCR))
-    {
-        SCB_DisableDCache();
-    }
+    SCB_DisableICache();
+    SCB_DisableDCache();
+
+    // Changing the FlexRAM must happen here where the stack is empty. If it is in a function call,
+    // then the return will jump to an invalid address.
     // Configure FlexRAM. The e is one block of ITCM (0b11) and DTCM (0b10). The rest is two OCRAM
     // (0b01). We shift in zeroes for all unimplemented banks.
     IOMUXC_GPR->GPR17 = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
@@ -120,17 +130,35 @@ void SystemInitHook(void) {
     current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(0x6);
     IOMUXC_GPR->GPR14 = current_gpr14;
 
+    #if ((__FPU_PRESENT == 1) && (__FPU_USED == 1))
+      SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));    /* set CP10, CP11 Full Access */
+    #endif /* ((__FPU_PRESENT == 1) && (__FPU_USED == 1)) */
+
+    /* Disable Watchdog Power Down Counter */
+    WDOG1->WMCR &= ~WDOG_WMCR_PDE_MASK;
+    WDOG2->WMCR &= ~WDOG_WMCR_PDE_MASK;
+
+    /* Watchdog disable */
+    WDOG1->WCR &= ~WDOG_WCR_WDE_MASK;
+    WDOG2->WCR &= ~WDOG_WCR_WDE_MASK;
+    RTWDOG->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
+    RTWDOG->TOVAL = 0xFFFF;
+    RTWDOG->CS = (uint32_t) ((RTWDOG->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+
+    /* Disable Systick which might be enabled by bootrom */
+    if (SysTick->CTRL & SysTick_CTRL_ENABLE_Msk)
+    {
+        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+    }
+
     /* Disable MPU */
     ARM_MPU_Disable();
 
-    // Copy all of the code to run from ITCM.
-    memcpy(&_ld_itcm_destination, &_ld_itcm_flash_copy, (size_t) &_ld_itcm_size);
-
-    // Copy all of the data to run from DTCM.
-    memcpy(&_ld_dtcm_data_destination, &_ld_dtcm_data_flash_copy, (size_t) &_ld_dtcm_data_size);
-
-    // Clear DTCM bss.
-    memset(&_ld_dtcm_bss_start, 0, (size_t) (&_ld_dtcm_bss_end - &_ld_dtcm_bss_start));
+    // Copy all of the code to run from ITCM. Do this while the MPU is disabled because we write
+    // protect it.
+    for (uint32_t i = 0; i < ((size_t) &_ld_itcm_size) / 4; i++) {
+        (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
+    }
 
     // The first number in RBAR is the region number. When searching for a policy, the region with
     // the highest number wins. If none match, then the default policy set at enable applies.
@@ -187,9 +215,32 @@ void SystemInitHook(void) {
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
 
-    /* Enable I cache and D cache */
+    /* We're done mucking with memory so enable I cache and D cache */
     SCB_EnableDCache();
     SCB_EnableICache();
+
+    // Copy all of the data to run from DTCM.
+    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_data_size) / 4; i++) {
+        (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
+    }
+
+    // Clear DTCM bss.
+    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_bss_size) / 4; i++) {
+        (&_ld_dtcm_bss_start)[i] = 0;
+    }
+
+    // Copy all of the data to run from OCRAM.
+    for (uint32_t i = 0; i < ((size_t) &_ld_ocram_data_size) / 4; i++) {
+        (&_ld_ocram_data_destination)[i] = (&_ld_ocram_data_flash_copy)[i];
+    }
+
+    // Clear OCRAM bss.
+    for (uint32_t i = 0; i < ((size_t) &_ld_ocram_bss_size) / 4; i++) {
+        (&_ld_ocram_bss_start)[i] = 0;
+    }
+
+    __enable_irq();
+    main();
 }
 
 safe_mode_t port_init(void) {

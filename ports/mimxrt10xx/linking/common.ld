@@ -30,7 +30,9 @@ MEMORY
     ITCM (x)              : ORIGIN = 0x00000000, LENGTH = 32K
 }
 
-__RAM_VECTOR_TABLE_SIZE_BYTES = 0;
+__data_start__ = 0;
+__data_end__ = 0;
+_start = 0;
 
 SECTIONS
 {
@@ -81,31 +83,28 @@ SECTIONS
     .data :
     {
         . = ALIGN(4);
-        _sidata = .;
-        __data_start__ = .;     /* create a global symbol at data start */
-
         *(.data*)               /* .data* sections */
         *flexspi_nor_flash_ops.o(.text*)
         *fsl_flexspi.o(.text*)
         . = ALIGN(4);
-
-        __data_end__ = .;       /* define a global symbol at data end */
     } > OCRAM AT> FLASH_TEXT
+    _ld_ocram_data_destination = ADDR(.data);
+    _ld_ocram_data_flash_copy = LOADADDR(.data);
+    _ld_ocram_data_size = SIZEOF(.data);
 
     /* Uninitialized data section */
     .bss :
     {
         . = ALIGN(4);
-        __bss_start__ = .;
 
         *(.bss*)
         *(COMMON)
 
         . = ALIGN(4);
-        __bss_end__ = .;
-        _ld_heap_start = .;
-        PROVIDE(end = .);
     } > OCRAM
+    _ld_ocram_bss_start = ADDR(.bss);
+    _ld_ocram_bss_size = SIZEOF(.bss);
+    _ld_heap_start = _ld_ocram_bss_start + _ld_ocram_bss_size;
     _ld_heap_end = ORIGIN(OCRAM) + LENGTH(OCRAM);
 
     .itcm :
@@ -141,7 +140,7 @@ SECTIONS
         . = ALIGN(4);
     } > DTCM AT> DTCM
     _ld_dtcm_bss_start = ADDR(.dtcm_bss);
-    _ld_dtcm_bss_end = ADDR(.dtcm_bss) + SIZEOF(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
 
     .stack :
     {
@@ -150,9 +149,6 @@ SECTIONS
         . += _ld_default_stack_size;
     } > DTCM
     _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
-    _estack = _ld_stack_top;
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-ASSERT(__data_end__ <= ORIGIN(FLASH_TEXT) + LENGTH(FLASH_TEXT), "region FLASH_TEXT overflowed with text and data")

@@ -84,24 +84,10 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
-  #CFLAGS += -flto -flto-partition=none
+  # CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-inline -fno-ipa-sra
 else
-  # -finline-limit can shrink the image size.
-  # -finline-limit=80 or so is similar to not having it on.
-  # There is no simple default value, though.
-
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
-      CFLAGS_INLINE_LIMIT = 50
-    endif
-  endif
-
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
-  endif
   #CFLAGS += -flto -flto-partition=none
 endif
 
@@ -116,12 +102,8 @@ CFLAGS += \
 	-DCPU_$(CHIP_VARIANT) \
 	-DDEBUG \
 	-DIMXRT10XX \
-	-DXIP_EXTERNAL_FLASH=1 \
-	-DXIP_BOOT_HEADER_ENABLE=1 \
-	-D__START=main \
 	-Os -g3 -Wno-unused-parameter \
-	-ffunction-sections -fdata-sections -fstack-usage \
-	-D__STARTUP_CLEAR_BSS
+	-ffunction-sections -fdata-sections -fstack-usage
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 

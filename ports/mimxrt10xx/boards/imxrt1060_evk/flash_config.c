@@ -13,12 +13,8 @@
 #define FSL_COMPONENT_ID "platform.drivers.xip_device"
 #endif
 
-#if defined(XIP_BOOT_HEADER_ENABLE) && (XIP_BOOT_HEADER_ENABLE == 1)
-#if defined(__CC_ARM) || defined(__ARMCC_VERSION) || defined(__GNUC__)
-    __attribute__((section(".boot_hdr.ivt")))
-#elif defined(__ICCARM__)
-#pragma location=".boot_hdr.ivt"
-#endif
+__attribute__((section(".boot_hdr.ivt")))
+
 /*************************************
  *  IVT Data
  *************************************/
@@ -33,11 +29,7 @@ const ivt image_vector_table = {
   IVT_RSVD                            /* Reserved = 0 */
 };
 
-#if defined(__CC_ARM) || defined(__ARMCC_VERSION) || defined(__GNUC__)
-    __attribute__((section(".boot_hdr.boot_data")))
-#elif defined(__ICCARM__)
-#pragma location=".boot_hdr.boot_data"
-#endif
+__attribute__((section(".boot_hdr.boot_data")))
 /*************************************
  *  Boot Data
  *************************************/
@@ -49,12 +41,7 @@ const BOOT_DATA_T boot_data = {
 };
 #endif
 
-#if defined(__CC_ARM) || defined(__ARMCC_VERSION) || defined(__GNUC__)
 __attribute__((section(".boot_hdr.conf")))
-#elif defined(__ICCARM__)
-#pragma location = ".boot_hdr.conf"
-#endif
-
 // Values copied from https://github.com/PaulStoffregen/cores/blob/ddb23fa5d97dac763bc06e11b9b41f026bd51f0a/teensy4/bootdata.c#L39
 const flexspi_nor_config_t qspiflash_config = {
     .memConfig =
