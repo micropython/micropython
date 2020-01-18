@@ -162,10 +162,10 @@ void SystemInitHook(void) {
     // we can ignore 1/8th size chunks. So, we ignore the last 1MB using the subregion.
     uint32_t remainder = (1u << (region_size + 1)) - filesystem_size;
     uint32_t subregion_size = (1u << (region_size + 1)) / 8;
-    uint16_t subregion_mask = 0xff00 >> (remainder / subregion_size);
+    uint8_t subregion_mask = (0xff00 >> (remainder / subregion_size)) & 0xff;
 
     MPU->RBAR = ARM_MPU_RBAR(11, 0x60100000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, (uint8_t) subregion_mask, region_size);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, subregion_mask, region_size);
 
     // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
     // accidentally write the wrong value to 0x00000000 (aka NULL).
