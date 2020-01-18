@@ -357,6 +357,8 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
 	modonewire.c \
 	modbluetooth_nimble.c \
 	example/example.c \
+	libs/libGSM.c \
+	modgsm.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
