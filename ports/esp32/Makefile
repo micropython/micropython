@@ -40,8 +40,8 @@ include $(TOP)/py/py.mk
 
 GIT_SUBMODULES = lib/berkeley-db-1.xx
 
-PORT ?= /dev/ttyUSB0
-BAUD ?= 460800
+PORT ?= /dev/ttyS39
+BAUD ?= 115200
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
@@ -356,6 +356,7 @@ SRC_C = \
 EXTMOD_SRC_C = $(addprefix extmod/,\
 	modonewire.c \
 	modbluetooth_nimble.c \
+	example/example.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
