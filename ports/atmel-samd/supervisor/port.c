@@ -331,6 +331,14 @@ uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
+}
+
 // Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.
 #ifdef SAMD21
 uint32_t* safe_word = (uint32_t*) (HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
