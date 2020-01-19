@@ -40,6 +40,7 @@
 #include "netif/ppp/pppapi.h"
 //#include "lwip/port/lwipopts.h"
 #include "lwip/opt.h"
+#include "lwip/dns.h"
 
 #include "libs/libGSM.h"
 #include "py/runtime.h"
@@ -806,10 +807,17 @@ static void pppos_client_task()
 
 		// === Connect to the Internet ===========================
 		pppapi_set_default(ppp);
-		pppapi_set_auth(ppp, PPPAUTHTYPE_PAP, PPP_User, PPP_Pass);
-		//pppapi_set_auth(ppp, PPPAUTHTYPE_NONE, PPP_User, PPP_Pass);
+		pppapi_set_auth(ppp, PPPAUTHTYPE_NONE, PPP_User, PPP_Pass);
 
 		pppapi_connect(ppp, 0);
+		if (debug) ESP_LOGI(TAG, "Setting up DNS");
+
+		ip_addr_t dnsserver;
+		IP_ADDR4(&dnsserver, 8,8,8,8);
+		dns_setserver(0, &dnsserver);
+		IP_ADDR4(&dnsserver, 8,8,4,4);
+		dns_setserver(1, &dnsserver);
+
 		// =======================================================
 		gstat = 1;
 
