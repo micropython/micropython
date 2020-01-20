@@ -140,8 +140,6 @@ static inline uint32_t pack8(uint32_t val) {
     return ((val & 0xff000000) >> 16) | ((val & 0xff00) >> 8);
 }
 
-#define LIKELY(x) (__builtin_expect(!!(x), 1))
-#define UNLIKELY(x) (__builtin_expect(!!(x), 0))
 static void mix_one_voice(audiomixer_mixer_obj_t* self,
         audiomixer_mixervoice_obj_t* voice, bool voices_active,
         uint32_t* word_buffer, uint32_t length) {
@@ -172,8 +170,8 @@ static void mix_one_voice(audiomixer_mixer_obj_t* self,
 
         // First active voice gets copied over verbatim.
         if (!voices_active) {
-            if (LIKELY(self->bits_per_sample == 16)) {
-                if (LIKELY(self->samples_signed)) {
+            if (MP_LIKELY(self->bits_per_sample == 16)) {
+                if (MP_LIKELY(self->samples_signed)) {
                     for (uint32_t i = 0; i<n; i++) {
                         uint32_t v = src[i];
                         word_buffer[i] = mult16signed(v, level);
@@ -190,7 +188,7 @@ static void mix_one_voice(audiomixer_mixer_obj_t* self,
                 uint16_t *hsrc = (uint16_t*)src;
                 for (uint32_t i = 0; i<n*2; i++) {
                     uint32_t word = unpack8(hsrc[i]);
-                    if (LIKELY(!self->samples_signed)) {
+                    if (MP_LIKELY(!self->samples_signed)) {
                         word = tosigned16(word);
                     }
                     word = mult16signed(word, level);
@@ -198,8 +196,8 @@ static void mix_one_voice(audiomixer_mixer_obj_t* self,
                 }
             }
         } else {
-            if (LIKELY(self->bits_per_sample == 16)) {
-                if (LIKELY(self->samples_signed)) {
+            if (MP_LIKELY(self->bits_per_sample == 16)) {
+                if (MP_LIKELY(self->samples_signed)) {
                     for (uint32_t i = 0; i<n; i++) {
                         uint32_t word = src[i];
                         word_buffer[i] = add16signed(mult16signed(word, level), word_buffer[i]);
@@ -216,7 +214,7 @@ static void mix_one_voice(audiomixer_mixer_obj_t* self,
                 uint16_t *hsrc = (uint16_t*)src;
                 for (uint32_t i = 0; i<n*2; i++) {
                     uint32_t word = unpack8(hsrc[i]);
-                    if (LIKELY(!self->samples_signed)) {
+                    if (MP_LIKELY(!self->samples_signed)) {
                         word = tosigned16(word);
                     }
                     word = mult16signed(word, level);
