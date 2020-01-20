@@ -74,17 +74,21 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PG12) },
   { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PF04) },
   { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_PG13) },
-  { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_PG14) },
-  { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PG09) },
+  { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_PG14) }, //USART6 TX
+  { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PG09) }, //USART6 RX
   { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA01) },
   { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PC01) },
   { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PC03) },
   { MP_ROM_QSTR(MP_QSTR_A3), MP_ROM_PTR(&pin_PC04) },
   { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_PC05) }, //alt PB09, see F401ZG-DISCO manual
   { MP_ROM_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_PB00) }, //alt PB10, see F401ZG-DISCO manual
+  { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB10) },
+  { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB09) },
   { MP_ROM_QSTR(MP_QSTR_LED1), MP_ROM_PTR(&pin_PE00) },
   { MP_ROM_QSTR(MP_QSTR_LED2), MP_ROM_PTR(&pin_PE01) },
   { MP_ROM_QSTR(MP_QSTR_LED3), MP_ROM_PTR(&pin_PE02) },
   { MP_ROM_QSTR(MP_QSTR_LED4), MP_ROM_PTR(&pin_PE03) },
+
+  { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

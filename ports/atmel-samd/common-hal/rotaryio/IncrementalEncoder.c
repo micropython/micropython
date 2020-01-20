@@ -35,7 +35,7 @@
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
     const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
-    if (!pin_a->has_extint || !pin_a->has_extint) {
+    if (!pin_a->has_extint || !pin_b->has_extint) {
         mp_raise_RuntimeError(translate("Both pins must support hardware interrupts"));
     }
 

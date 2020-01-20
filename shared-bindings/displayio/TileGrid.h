@@ -36,6 +36,8 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         mp_obj_t pixel_shader, uint16_t width, uint16_t height,
         uint16_t tile_width, uint16_t tile_height, uint16_t x, uint16_t y, uint8_t default_tile);
 
+bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t* self);
+void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t* self, bool hidden);
 mp_int_t common_hal_displayio_tilegrid_get_x(displayio_tilegrid_t *self);
 void common_hal_displayio_tilegrid_set_x(displayio_tilegrid_t *self, mp_int_t x);
 mp_int_t common_hal_displayio_tilegrid_get_y(displayio_tilegrid_t *self);

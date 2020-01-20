@@ -154,11 +154,12 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|      within spec for the SAMD21.
 //|
 //|   .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
-//|      and 8MHz. 16MHz and 32MHz are also available, but only on the first
-//|      `busio.SPI` object you create. Two more ``busio.SPI`` objects can be created, but they are restricted
-//|      to 8MHz maximum. This is a hardware restriction: there is only one high-speed SPI peripheral.
+//|      and 8MHz.
 //|      If you pick a a baudrate other than one of these, the nearest lower
 //|      baudrate will be chosen, with a minimum of 125kHz.
+//|      Two SPI objects may be created, except on the Circuit Playground Bluefruit,
+//|      which allows only one (to allow for an additional I2C object).
+//|
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {
@@ -244,7 +245,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
     int32_t start = args[ARG_start].u_int;
-    uint32_t length = bufinfo.len;
+    size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     if (length == 0) {
@@ -288,7 +289,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
     int32_t start = args[ARG_start].u_int;
-    uint32_t length = bufinfo.len;
+    size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     if (length == 0) {
@@ -337,13 +338,13 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
     int32_t out_start = args[ARG_out_start].u_int;
-    uint32_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
     int32_t in_start = args[ARG_in_start].u_int;
-    uint32_t in_length = buf_in_info.len;
+    size_t in_length = buf_in_info.len;
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
 
     if (out_length != in_length) {

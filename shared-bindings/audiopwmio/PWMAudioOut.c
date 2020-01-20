@@ -166,7 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 
 //|     Plays the sample once when loop=False and continuously when loop=True.
 //|     Does not block. Use `playing` to block.
 //|
-//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiocore.Mixer`.
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
 //|
 //|     The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
 //|     resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit

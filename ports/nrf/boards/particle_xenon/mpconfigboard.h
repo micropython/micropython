@@ -29,7 +29,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "Particle Xenon"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "Particle Xenon"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P1_12)
 
@@ -52,12 +51,6 @@
 #define SPI_FLASH_SCK_PIN &pin_P0_19
 #define SPI_FLASH_CS_PIN &pin_P0_17
 #endif
-
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
-// TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
-
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define BOARD_HAS_CRYSTAL 1
 

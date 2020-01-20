@@ -33,8 +33,17 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
+
 #if CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#include "supervisor/shared/bluetooth.h"
+#include "common-hal/_bleio/bonding.h"
 #endif
 
 static bool running_background_tasks = false;
@@ -54,9 +63,17 @@ void run_background_tasks(void) {
 #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_background();
 #endif
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_background();
+#endif
+
+#if CIRCUITPY_BLEIO
+    supervisor_bluetooth_background();
+    bonding_background();
+#endif
 
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
     running_background_tasks = false;
 

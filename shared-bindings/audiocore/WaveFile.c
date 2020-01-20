@@ -39,13 +39,16 @@
 //| ========================================================
 //|
 //| A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
-//| be 8 bit unsigned or 16 bit signed.
+//| be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
+//| an internal buffer.
 //|
-//| .. class:: WaveFile(file)
+//| .. class:: WaveFile(file[, buffer])
 //|
 //|   Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|   :param typing.BinaryIO file: Already opened wave file
+//|   :param bytearray buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 512 byte buffers are allocated internally.
+//|
 //|
 //|   Playing a wave file from flash::
 //|
@@ -69,15 +72,23 @@
 //|     print("stopped")
 //|
 STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
 
     audioio_wavefile_obj_t *self = m_new_obj(audioio_wavefile_obj_t);
     self->base.type = &audioio_wavefile_type;
-    if (MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
-        common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]));
-    } else {
+    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
+    uint8_t *buffer = NULL;
+    size_t buffer_size = 0;
+    if (n_args >= 2) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+        buffer = bufinfo.buf;
+        buffer_size = bufinfo.len;
+    }
+    common_hal_audioio_wavefile_construct(self, MP_OBJ_TO_PTR(args[0]),
+                                          buffer, buffer_size);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -195,9 +206,21 @@ STATIC const mp_rom_map_elem_t audioio_wavefile_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_wavefile_locals_dict, audioio_wavefile_locals_dict_table);
 
+STATIC const audiosample_p_t audioio_wavefile_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_audiosample)
+    .sample_rate = (audiosample_sample_rate_fun)common_hal_audioio_wavefile_get_sample_rate,
+    .bits_per_sample = (audiosample_bits_per_sample_fun)common_hal_audioio_wavefile_get_bits_per_sample,
+    .channel_count = (audiosample_channel_count_fun)common_hal_audioio_wavefile_get_channel_count,
+    .reset_buffer = (audiosample_reset_buffer_fun)audioio_wavefile_reset_buffer,
+    .get_buffer = (audiosample_get_buffer_fun)audioio_wavefile_get_buffer,
+    .get_buffer_structure = (audiosample_get_buffer_structure_fun)audioio_wavefile_get_buffer_structure,
+};
+
+
 const mp_obj_type_t audioio_wavefile_type = {
     { &mp_type_type },
     .name = MP_QSTR_WaveFile,
     .make_new = audioio_wavefile_make_new,
     .locals_dict = (mp_obj_dict_t*)&audioio_wavefile_locals_dict,
+    .protocol = &audioio_wavefile_proto,
 };

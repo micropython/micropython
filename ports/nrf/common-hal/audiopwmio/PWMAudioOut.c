@@ -64,23 +64,25 @@ STATIC uint32_t calculate_pwm_parameters(uint32_t sample_rate, uint32_t *top_out
 }
 
 STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
-        if(!active_audio[i]) {
+    for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
+        if (!active_audio[i]) {
             active_audio[i] = self;
             break;
         }
     }
 }
 STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
-    for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
-        if(active_audio[i] == self)
+    for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
+        if (active_audio[i] == self) {
             active_audio[i] = NULL;
+        }
     }
 }
 
 void audiopwmout_reset() {
-    for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++)
+    for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         active_audio[i] = NULL;
+    }
 }
 
 STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
@@ -95,27 +97,28 @@ STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
         return;
     }
-    uint32_t num_samples = buffer_length / self->bytes_per_sample / self->spacing;
+    uint32_t num_samples = buffer_length / self->bytes_per_sample / self->sample_channel_count;
+    uint16_t *end_dev_buffer = dev_buffer + 2 * num_samples;
 
-    if(self->bytes_per_sample == 1) {
+    if (self->bytes_per_sample == 1) {
         uint8_t offset = self->signed_to_unsigned ? 0x80 : 0;
         uint16_t scale = self->scale;
-        for(uint32_t i=0; i<buffer_length/self->spacing; i++) {
+        while (dev_buffer < end_dev_buffer) {
             uint8_t rawval = (*buffer++ + offset);
             uint16_t val = (uint16_t)(((uint32_t)rawval * (uint32_t)scale) >> 8);
             *dev_buffer++ = val;
-            if(self->spacing == 1)
+            if (self->sample_channel_count == 1)
                 *dev_buffer++ = val;
         }
     } else {
         uint16_t offset = self->signed_to_unsigned ? 0x8000 : 0;
         uint16_t scale = self->scale;
         uint16_t *buffer16 = (uint16_t*)buffer;
-        for(uint32_t i=0; i<buffer_length/2/self->spacing; i++) {
+        while (dev_buffer < end_dev_buffer) {
             uint16_t rawval = (*buffer16++ + offset);
             uint16_t val = (uint16_t)((rawval * (uint32_t)scale) >> 16);
             *dev_buffer++ = val;
-            if(self->spacing == 1)
+            if (self->sample_channel_count == 1)
                 *dev_buffer++ = val;
         }
     }
@@ -124,30 +127,30 @@ STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
 
     if (self->loop && get_buffer_result == GET_BUFFER_DONE) {
         audiosample_reset_buffer(self->sample, false, 0);
-    } else if(get_buffer_result == GET_BUFFER_DONE) {
+    } else if (get_buffer_result == GET_BUFFER_DONE) {
         self->pwm->SHORTS = NRF_PWM_SHORT_SEQEND0_STOP_MASK | NRF_PWM_SHORT_SEQEND1_STOP_MASK;
         self->stopping = true;
     }
 }
 
 STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
-    if(!common_hal_audiopwmio_pwmaudioout_get_playing(self))
+    if (!common_hal_audiopwmio_pwmaudioout_get_playing(self))
         return;
-    if(self->stopping) {
+    if (self->stopping) {
         bool stopped =
             (self->pwm->EVENTS_SEQEND[0] || !self->pwm->EVENTS_SEQSTARTED[0]) &&
             (self->pwm->EVENTS_SEQEND[1] || !self->pwm->EVENTS_SEQSTARTED[1]);
-        if(stopped)
+        if (stopped)
             self->pwm->TASKS_STOP = 1;
-    } else if(!self->paused && !self->single_buffer) {
-        if(self->pwm->EVENTS_SEQSTARTED[0]) fill_buffers(self, 1);
-        if(self->pwm->EVENTS_SEQSTARTED[1]) fill_buffers(self, 0);
+    } else if (!self->paused && !self->single_buffer) {
+        if (self->pwm->EVENTS_SEQSTARTED[0]) fill_buffers(self, 1);
+        if (self->pwm->EVENTS_SEQSTARTED[1]) fill_buffers(self, 0);
     }
 }
 
 void audiopwmout_background() {
-    for(size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
-        if(!active_audio[i]) continue;
+    for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
+        if (!active_audio[i]) continue;
         audiopwmout_background_obj(active_audio[i]);
     }
 }
@@ -157,7 +160,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* s
     assert_pin_free(left_channel);
     assert_pin_free(right_channel);
     self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL);
-    if(!self->pwm) {
+    if (!self->pwm) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
 
@@ -172,7 +175,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* s
     self->pwm->PSEL.OUT[0] = self->left_channel_number = left_channel->number;
     claim_pin(left_channel);
 
-    if(right_channel)
+    if (right_channel)
     {
         self->pwm->PSEL.OUT[2] = self->right_channel_number = right_channel->number;
         claim_pin(right_channel);
@@ -192,12 +195,14 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t* self
     if (common_hal_audiopwmio_pwmaudioout_deinited(self)) {
         return;
     }
+    deactivate_audiopwmout_obj(self);
+
     // TODO: ramp the pwm down from quiescent value to 0
     self->pwm->ENABLE = 0;
 
-    if(self->left_channel_number)
+    if (self->left_channel_number)
         reset_pin_number(self->left_channel_number);
-    if(self->right_channel_number)
+    if (self->right_channel_number)
         reset_pin_number(self->right_channel_number);
 
     pwmout_free_channel(self->pwm, 0);
@@ -220,22 +225,21 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->loop = loop;
 
     uint32_t sample_rate = audiosample_sample_rate(sample);
-    uint32_t max_sample_rate = 62500;
-    if (sample_rate > max_sample_rate) {
-        mp_raise_ValueError_varg(translate("Sample rate too high. It must be less than %d"), max_sample_rate);
-    }
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
 
     uint32_t max_buffer_length;
+    uint8_t spacing;
     audiosample_get_buffer_structure(sample, /* single channel */ false,
         &self->single_buffer, &self->signed_to_unsigned, &max_buffer_length,
-        &self->spacing);
-    if(max_buffer_length > UINT16_MAX) {
+        &spacing);
+    self->sample_channel_count = audiosample_channel_count(sample);
+
+    if (max_buffer_length > UINT16_MAX) {
         mp_raise_ValueError_varg(translate("Buffer length %d too big. It must be less than %d"), max_buffer_length, UINT16_MAX);
     }
     self->buffer_length = (uint16_t)max_buffer_length;
     self->buffers[0] = m_malloc(self->buffer_length * 2 * sizeof(uint16_t), false);
-    if(!self->single_buffer)
+    if (!self->single_buffer)
         self->buffers[1] = m_malloc(self->buffer_length * 2 * sizeof(uint16_t), false);
 
 
@@ -247,16 +251,18 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->pwm->LOOP = 1;
     audiosample_reset_buffer(self->sample, false, 0);
     activate_audiopwmout_obj(self);
+    self->stopping = false;
+    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
     fill_buffers(self, 0);
     self->pwm->SEQ[1].PTR = self->pwm->SEQ[0].PTR;
     self->pwm->SEQ[1].CNT = self->pwm->SEQ[0].CNT;
     self->pwm->EVENTS_SEQSTARTED[0] = 0;
     self->pwm->EVENTS_SEQSTARTED[1] = 0;
+    self->pwm->EVENTS_SEQEND[0] = 0;
+    self->pwm->EVENTS_SEQEND[1] = 0;
     self->pwm->EVENTS_STOPPED = 0;
-    self->pwm->SHORTS = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
     self->pwm->TASKS_SEQSTART[0] = 1;
     self->playing = true;
-    self->stopping = false;
     self->paused = false;
 }
 
@@ -274,7 +280,7 @@ void common_hal_audiopwmio_pwmaudioout_stop(audiopwmio_pwmaudioout_obj_t* self) 
 }
 
 bool common_hal_audiopwmio_pwmaudioout_get_playing(audiopwmio_pwmaudioout_obj_t* self) {
-    if(!self->paused && self->pwm->EVENTS_STOPPED) {
+    if (!self->paused && self->pwm->EVENTS_STOPPED) {
         self->playing = false;
         self->pwm->EVENTS_STOPPED = 0;
     }

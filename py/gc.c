@@ -53,9 +53,6 @@
 // detect untraced object still in use
 #define CLEAR_ON_SWEEP (0)
 
-#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
-#define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
-
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
 // 0b01 = HEAD -- head of a chain of blocks
@@ -208,13 +205,6 @@ void gc_unlock(void) {
 bool gc_is_locked(void) {
     return MP_STATE_MEM(gc_lock_depth) != 0;
 }
-
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
@@ -474,6 +464,10 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+bool gc_alloc_possible(void) {
+    return MP_STATE_MEM(gc_pool_start) != 0;
+}
+
 // We place long lived objects at the end of the heap rather than the start. This reduces
 // fragmentation by localizing the heap churn to one portion of memory (the start of the heap.)
 void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
@@ -509,7 +503,6 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
         gc_collect();
         collected = 1;
         GC_ENTER();
-        collected = true;
     }
     #endif
 
@@ -678,6 +671,9 @@ void gc_free(void *ptr) {
     if (ptr == NULL) {
         GC_EXIT();
     } else {
+        if (MP_STATE_MEM(gc_pool_start) == 0) {
+            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));
         size_t block = BLOCK_FROM_PTR(ptr);

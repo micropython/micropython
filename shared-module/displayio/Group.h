@@ -42,18 +42,22 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     displayio_group_child_t* children;
+    displayio_buffer_transform_t absolute_transform;
+    displayio_area_t dirty_area; // Catch all for changed area
     int16_t x;
     int16_t y;
     uint16_t scale;
     uint16_t size;
     uint16_t max_size;
-    bool item_removed;
-    bool in_group;
-    displayio_buffer_transform_t absolute_transform;
-    displayio_area_t dirty_area; // Catch all for changed area
+    bool item_removed :1;
+    bool in_group :1;
+    bool hidden :1;
+    bool hidden_by_parent :1;
+    uint8_t padding :4;
 } displayio_group_t;
 
 void displayio_group_construct(displayio_group_t* self, displayio_group_child_t* child_array, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y);
+void displayio_group_set_hidden_by_parent(displayio_group_t *self, bool hidden);
 bool displayio_group_get_previous_area(displayio_group_t *group, displayio_area_t* area);
 bool displayio_group_fill_area(displayio_group_t *group, const _displayio_colorspace_t* colorspace, const displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
 void displayio_group_update_transform(displayio_group_t *group, const displayio_buffer_transform_t* parent_transform);

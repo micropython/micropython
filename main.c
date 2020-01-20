@@ -69,6 +69,11 @@
 #include "shared-module/board/__init__.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -199,7 +204,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
 
 bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
         serial_write("\n");
         if (autoreload_is_enabled()) {
@@ -253,12 +258,13 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     bool serial_connected_before_animation = false;
+    #if CIRCUITPY_DISPLAYIO
+    bool refreshed_epaper_display = false;
+    #endif
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
         if (reload_requested) {
             reload_requested = false;
             return true;
@@ -289,6 +295,13 @@ bool run_code_py(safe_mode_t safe_mode) {
             serial_connected_at_start = false;
         }
         serial_connected_before_animation = serial_connected();
+
+        // Refresh the ePaper display if we have one. That way it'll show an error message.
+        #if CIRCUITPY_DISPLAYIO
+        if (!refreshed_epaper_display) {
+            refreshed_epaper_display = maybe_refresh_epaperdisplay();
+        }
+        #endif
 
         tick_rgb_status_animation(&animation);
     }
@@ -429,6 +442,10 @@ int __attribute__((used)) main(void) {
     // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();
 
+    #if CIRCUITPY_BLEIO
+    supervisor_start_bluetooth();
+    #endif
+
     // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
@@ -465,9 +482,13 @@ void gc_collect(void) {
     displayio_gc_collect();
     #endif
 
+    #if CIRCUITPY_BLEIO
+    common_hal_bleio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 

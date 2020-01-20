@@ -76,7 +76,8 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb.git
-	branch = develop
+	branch = master
+	fetchRecurseSubmodules = false
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
@@ -98,3 +99,15 @@
 [submodule "ports/stm32f4/stm32f4"]
 	path = ports/stm32f4/stm32f4
 	url = https://github.com/adafruit/stm32f4.git
+[submodule "ports/cxd56/spresense-exported-sdk"]
+	path = ports/cxd56/spresense-exported-sdk
+	url = https://github.com/sonydevworld/spresense-exported-sdk.git
+[submodule "frozen/Adafruit_CircuitPython_SD"]
+	path = frozen/Adafruit_CircuitPython_SD
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SD.git
+[submodule "lib/mp3"]
+	path = lib/mp3
+	url = https://github.com/adafruit/Adafruit_MP3
+[submodule "ports/mimxrt10xx/sdk"]
+	path = ports/mimxrt10xx/sdk
+	url = https://github.com/arturo182/MIMXRT10xx_SDK

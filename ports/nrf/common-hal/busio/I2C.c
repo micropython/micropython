@@ -28,13 +28,12 @@
  */
 
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
 #include "nrfx_twim.h"
-#include "nrf_gpio.h"
-
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
@@ -64,7 +63,7 @@ void i2c_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrf_twim_disable(twim_peripherals[i].twim.p_twim);
+        nrfx_twim_uninit(&twim_peripherals[i].twim);
         twim_peripherals[i].in_use = false;
     }
 }
@@ -107,7 +106,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(twim_peripherals); i++) {
         if (!twim_peripherals[i].in_use) {
             self->twim_peripheral = &twim_peripherals[i];
-            self->twim_peripheral->in_use = true;
+            // Mark it as in_use later after other validation is finished.
             break;
         }
     }
@@ -116,9 +115,27 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
 
-    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
-    config.scl = scl->number;
-    config.sda = sda->number;
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
+    // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
+    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_PULLDOWN);
+
+    common_hal_mcu_delay_us(10);
+
+    nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_NOPULL);
+
+    // We must pull up within 3us to achieve 400khz.
+    common_hal_mcu_delay_us(3);
+
+    if (!nrf_gpio_pin_read(sda->number) || !nrf_gpio_pin_read(scl->number)) {
+        reset_pin_number(sda->number);
+        reset_pin_number(scl->number);
+        mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
+    }
+#endif
+
+    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
 
     // change freq. only if it's less than the default 400K
     if (frequency < 100000) {
@@ -132,14 +149,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     claim_pin(sda);
     claim_pin(scl);
 
+    // About to init. If we fail after this point, common_hal_busio_i2c_deinit() will set in_use to false.
+    self->twim_peripheral->in_use = true;
     nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-
-    // A soft reset doesn't uninit the driver so we might end up with a invalid state
-    if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_twim_uninit(&self->twim_peripheral->twim);
-        err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-    }
-
     if (err != NRFX_SUCCESS) {
         common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
@@ -152,8 +164,9 @@ bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
-    if (common_hal_busio_i2c_deinited(self))
+    if (common_hal_busio_i2c_deinited(self)) {
         return;
+    }
 
     nrfx_twim_uninit(&self->twim_peripheral->twim);
 
@@ -229,8 +242,10 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_TX(addr, (uint8_t*) data, xact_len);
+        uint32_t const flags = (stopBit ? 0 : NRFX_TWIM_FLAG_TX_NO_STOP);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data, xact_len, !stopBit)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, flags)) ) {
             break;
         }
 
@@ -255,8 +270,9 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_RX(addr, data, xact_len);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data, xact_len)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, 0)) ) {
             break;
         }
 

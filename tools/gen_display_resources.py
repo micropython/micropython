@@ -48,18 +48,19 @@ for c in sample_characters:
         all_characters += c
 if args.extra_characters:
     all_characters.extend(args.extra_characters)
+all_characters = "".join(sorted(set(all_characters)))
 filtered_characters = all_characters
 
 # Try to pre-load all of the glyphs. Misses will still be slow later.
-f.load_glyphs(set(all_characters))
+f.load_glyphs(set(ord(c) for c in all_characters))
 
 # Get each glyph.
-for c in all_characters:
-    g = f.get_glyph(ord(c))
-    if not g:
+for c in set(all_characters):
+    if ord(c) not in f._glyphs:
         print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
         continue
+    g = f.get_glyph(ord(c))
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
 
@@ -102,12 +103,14 @@ _displayio_color_t terminal_colors[2] = {
     {
         .rgb888 = 0x000000,
         .rgb565 = 0x0000,
-        .luma = 0x00
+        .luma = 0x00,
+        .chroma = 0
     },
     {
         .rgb888 = 0xffffff,
         .rgb565 = 0xffff,
-        .luma = 0xff
+        .luma = 0xff,
+        .chroma = 0
     },
 };
 
@@ -137,7 +140,8 @@ displayio_tilegrid_t supervisor_terminal_text_grid = {{
     .tiles = NULL,
     .partial_change = false,
     .full_change = false,
-    .first_draw = true,
+    .hidden = false,
+    .hidden_by_parent = false,
     .moved = false,
     .inline_tiles = false,
     .in_group = true

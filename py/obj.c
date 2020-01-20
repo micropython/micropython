@@ -63,6 +63,9 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
+    #ifdef RUN_BACKGROUND_TASKS
+    RUN_BACKGROUND_TASKS;
+    #endif
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -486,6 +489,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(base);
+
     if (type->subscr != NULL) {
         mp_obj_t ret = type->subscr(base, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
@@ -493,7 +497,6 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         if (ret != MP_OBJ_NULL) {
             return ret;
         }
-        // TODO: call base classes here?
     }
     if (value == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {

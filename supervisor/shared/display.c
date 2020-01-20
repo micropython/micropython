@@ -81,6 +81,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     grid->pixel_width = width_in_tiles * grid->tile_width;
     grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
+    grid->full_change = true;
 
     common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
 }
@@ -151,37 +152,49 @@ _displayio_color_t blinka_colors[7] = {
         .rgb888 = 0x000000,
         .rgb565 = 0x0000,
         .luma = 0x00,
+        .chroma = 0,
         .transparent = true
     },
     {
         .rgb888 = 0x8428bc,
         .rgb565 = 0x7889,
-        .luma = 0xff // We cheat the luma here. It is actually 0x60
+        .luma = 0xff, // We cheat the luma here. It is actually 0x60
+        .hue = 184,
+        .chroma = 148
     },
     {
         .rgb888 = 0xff89bc,
         .rgb565 = 0xB8FC,
-        .luma = 0xb5
+        .luma = 0xb5,
+        .hue = 222,
+        .chroma = 118
     },
     {
         .rgb888 = 0x7beffe,
         .rgb565 = 0x9F86,
-        .luma = 0xe0
+        .luma = 0xe0,
+        .hue = 124,
+        .chroma = 131
     },
     {
         .rgb888 = 0x51395f,
         .rgb565 = 0x0D5A,
-        .luma = 0x47
+        .luma = 0x47,
+        .hue = 185,
+        .chroma = 38
     },
     {
         .rgb888 = 0xffffff,
         .rgb565 = 0xffff,
-        .luma = 0xff
+        .luma = 0xff,
+        .chroma = 0
     },
     {
         .rgb888 = 0x0736a0,
         .rgb565 = 0xf501,
-        .luma = 0x44
+        .luma = 0x44,
+        .hue = 147,
+        .chroma = 153
     },
 };
 
@@ -210,7 +223,8 @@ displayio_tilegrid_t blinka_sprite = {
     .tiles = 0,
     .partial_change = false,
     .full_change = false,
-    .first_draw = true,
+    .hidden = false,
+    .hidden_by_parent = false,
     .moved = false,
     .inline_tiles = true,
     .in_group = true
@@ -230,5 +244,7 @@ displayio_group_t circuitpython_splash = {
     .max_size = 2,
     .children = splash_children,
     .item_removed = false,
-    .in_group = false
+    .in_group = false,
+    .hidden = false,
+    .hidden_by_parent = false
 };

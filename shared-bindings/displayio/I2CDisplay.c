@@ -95,6 +95,21 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
     return self;
 }
 
+//|   .. method:: reset()
+//|
+//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|     is available.
+//|
+STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
+    displayio_i2cdisplay_obj_t *self = self_in;
+
+    if (!common_hal_displayio_i2cdisplay_reset(self)) {
+        mp_raise_RuntimeError(translate("no reset pin available"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_obj_reset);
+
 //|   .. method:: send(command, data)
 //|
 //|     Sends the given command value followed by the full set of data. Display state, such as
@@ -111,14 +126,12 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_ob
 
     // Wait for display bus to be available.
     while (!common_hal_displayio_i2cdisplay_begin_transaction(self)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
     uint8_t full_command[bufinfo.len + 1];
     full_command[0] = command;
     memcpy(full_command + 1, ((uint8_t*) bufinfo.buf), bufinfo.len);
-    common_hal_displayio_i2cdisplay_send(self, true, full_command, bufinfo.len + 1);
+    common_hal_displayio_i2cdisplay_send(self, DISPLAY_COMMAND, CHIP_SELECT_UNTOUCHED, full_command, bufinfo.len + 1);
     common_hal_displayio_i2cdisplay_end_transaction(self);
 
     return mp_const_none;
@@ -126,6 +139,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_ob
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_i2cdisplay_send_obj, displayio_i2cdisplay_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_i2cdisplay_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_i2cdisplay_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_i2cdisplay_send_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_i2cdisplay_locals_dict, displayio_i2cdisplay_locals_dict_table);

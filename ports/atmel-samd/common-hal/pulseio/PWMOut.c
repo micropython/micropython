@@ -135,6 +135,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     bool variable_frequency) {
     self->pin = pin;
     self->variable_frequency = variable_frequency;
+    self->duty_cycle = duty;
 
     if (pin->timer[0].index >= TC_INST_NUM &&
         pin->timer[1].index >= TCC_INST_NUM
@@ -322,6 +323,13 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+    // Store the unadjusted duty cycle. It turns out the the process of adjusting and calculating
+    // the duty cycle here and reading it back is lossy - the value will decay over time.
+    // Track it here so that if frequency is changed we can use this value to recalculate the
+    // proper duty cycle.
+    // See https://github.com/adafruit/circuitpython/issues/2086 for more details
+    self->duty_cycle = duty;
+
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
         uint16_t adjusted_duty = tc_periods[t->index] * duty / 0xffff;
@@ -415,7 +423,6 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
             break;
         }
     }
-    uint16_t old_duty = common_hal_pulseio_pwmout_get_duty_cycle(self);
     if (t->is_tc) {
         Tc* tc = tc_insts[t->index];
         uint8_t old_divisor = tc->COUNT16.CTRLA.bit.PRESCALER;
@@ -450,7 +457,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         #endif
     }
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, old_duty);
+    common_hal_pulseio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
 uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {

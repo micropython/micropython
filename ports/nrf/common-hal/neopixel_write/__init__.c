@@ -130,7 +130,17 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         if (pattern_size <= sizeof(one_pixel)) {
             pixels_pattern = (uint16_t *) one_pixel;
         } else {
-            pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
+            uint8_t sd_en = 0;
+            (void) sd_softdevice_is_enabled(&sd_en);
+            if (sd_en) {
+                // If the soft device is enabled then we must use PWM to
+                // transmit. This takes a bunch of memory to do so raise an
+                // exception if we can't.
+                pixels_pattern = (uint16_t *) m_malloc(pattern_size, false);
+            } else {
+                pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
+            }
+
             pattern_on_heap = true;
         }
     }
@@ -200,9 +210,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // But we have to wait for the flag to be set.
         while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-#endif
+            RUN_BACKGROUND_TASKS;
         }
 
         // Before leave we clear the flag for the event.

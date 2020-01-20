@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-31 16:30-0500\n"
+"POT-Creation-Date: 2020-01-07 14:31-0800\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -24,6 +24,19 @@ msgid ""
 msgstr ""
 "\n"
 "Fin d'éxecution du code. En attente de recharge.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"Please file an issue with the contents of your CIRCUITPY drive at \n"
+"https://github.com/adafruit/circuitpython/issues\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"To exit, please reset the board without "
+msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -54,8 +67,9 @@ msgstr "index %q hors gamme"
 msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
-#: shared-bindings/displayio/Group.c shared-bindings/displayio/Shape.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "%d doit être >=1"
@@ -122,6 +136,10 @@ msgstr "'%s' l'entier %d n'est pas dans la gamme %d..%d"
 #, fuzzy, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' l'entier 0x%x ne correspond pas au masque 0x%x"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr ""
 
 #: py/obj.c
 #, c-format
@@ -221,12 +239,12 @@ msgstr "pow() non supporté avec 3 arguments"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canal d'interruptions matérielles est déjà utilisé"
 
-#: shared-bindings/bleio/Address.c
+#: shared-bindings/_bleio/Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "L'adresse doit être longue de %d octets"
 
-#: shared-bindings/bleio/Address.c
+#: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
 msgstr ""
 
@@ -266,6 +284,10 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr ""
+
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Fonctionnalité AnalogOut non supportée"
@@ -292,9 +314,8 @@ msgid "Array values should be single bytes."
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
 #: supervisor/shared/safe_mode.c
-msgid "Attempted heap allocation when MicroPython VM not running.\n"
+msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
-"Tentative d'allocation de tas alors que la VM MicroPython ne tourne pas.\n"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -307,6 +328,10 @@ msgid ""
 msgstr ""
 "Auto-chargement activé. Copiez simplement les fichiers en USB pour les "
 "lancer ou entrez sur REPL pour le désactiver.\n"
+
+#: shared-module/displayio/Display.c
+msgid "Below minimum frame rate"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -332,10 +357,23 @@ msgstr "La luminosité doit être entre 0 et 255"
 msgid "Brightness not adjustable"
 msgstr "Luminosité non-ajustable"
 
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
+msgstr ""
+
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is not a bytearray."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+msgid "Buffer is too small"
+msgstr ""
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
@@ -346,13 +384,17 @@ msgstr ""
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, fuzzy, c-format
 msgid "Bus pin %d is already in use"
 msgstr "La broche %d du bus est déjà utilisée"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 #, fuzzy
 msgid "Byte buffer must be 16 bytes."
 msgstr "Le tampon d'octets doit être de 16 octets."
@@ -365,13 +407,8 @@ msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Can not use dotstar with %s"
-msgstr "Impossible d'utiliser 'dotstar' avec %s"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "Can't set CCCD for local Characteristic"
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
@@ -387,6 +424,10 @@ msgstr "Ne peut être tiré ('pull') en mode 'output'"
 #, fuzzy
 msgid "Cannot get temperature"
 msgstr "Impossible de lire la température"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
@@ -429,17 +470,19 @@ msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
 msgid "Cannot write without MOSI pin."
 msgstr "Impossible d'écrire sans broche MOSI."
 
-#: shared-bindings/bleio/Service.c
-msgid "Characteristic UUID doesn't match Service UUID"
-msgstr "L'UUID de 'Characteristic' ne correspond pas à l'UUID du Service"
-
-#: ports/nrf/common-hal/bleio/Service.c
-msgid "Characteristic already in use by another Service."
-msgstr "'Characteristic' déjà en utilisation par un autre service"
-
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr "Ecriture sur 'CharacteristicBuffer' non fournie"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython core code crashed hard. Whoops!\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"CircuitPython is in safe mode because you pressed the reset button during "
+"boot. Press again to exit safe mode.\n"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -466,6 +509,12 @@ msgstr ""
 msgid "Command must be an int between 0 and 255"
 msgstr "La commande doit être un entier entre 0 et 255"
 
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr ""
+
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr ""
@@ -474,26 +523,31 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/UUID.c
-#, c-format
-msgid "Could not decode ble_uuid, err 0x%04x"
-msgstr "Impossible de décoder le 'ble_uuid', err 0x%04x"
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate decoder"
+msgstr ""
+
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate first buffer"
 msgstr "Impossible d'allouer le 1er tampon"
 
-#: shared-module/audiocore/Mixer.c shared-module/audiocore/WaveFile.c
+#: shared-module/audiomp3/MP3File.c
+msgid "Couldn't allocate input buffer"
+msgstr ""
+
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3File.c
 msgid "Couldn't allocate second buffer"
 msgstr "Impossible d'allouer le 2e tampon"
 
 #: supervisor/shared/safe_mode.c
-msgid "Crash into the HardFault_Handler.\n"
-msgstr "Plantage vers le 'HardFault_Handler'.\n"
+msgid "Crash into the HardFault_Handler."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -509,7 +563,7 @@ msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Un bloc de données doit suivre un bloc de format"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Données trop volumineuses pour un paquet de diffusion"
 
@@ -517,7 +571,16 @@ msgstr "Données trop volumineuses pour un paquet de diffusion"
 msgid "Destination capacity is smaller than destination_length."
 msgstr "La capacité de destination est plus petite que 'destination_length'."
 
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
+msgid "Display must have a 16 bit colorspace."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
@@ -541,18 +604,27 @@ msgstr "Erreur dans l'expression régulière"
 msgid "Expected a %q"
 msgstr "Attendu un %q"
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Une 'Characteristic' est attendue"
 
-#: shared-bindings/bleio/Characteristic.c shared-bindings/bleio/Descriptor.c
-#: shared-bindings/bleio/Service.c
+#: shared-bindings/_pixelbuf/__init__.c
+msgid "Expected a PixelBuf instance"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Service.c
 #, fuzzy
 msgid "Expected a UUID"
 msgstr "Un UUID est attendu"
 
-#: shared-bindings/bleio/Central.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
 msgstr ""
 
@@ -570,16 +642,6 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Echec de l'obtention de mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Service.c
-#, fuzzy, c-format
-msgid "Failed to add characteristic, err 0x%04x"
-msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to add service, err 0x%04x"
-msgstr "Echec de l'ajout de service, err 0x%04x"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Echec de l'allocation du tampon RX"
@@ -590,132 +652,34 @@ msgstr "Echec de l'allocation du tampon RX"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
 
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, fuzzy
-msgid "Failed to change softdevice state"
-msgstr "Echec de la modification de l'état du périphérique"
-
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, c-format
-msgid "Failed to configure advertising, err 0x%04x"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Central.c
+#: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Scanner.c
-#, fuzzy, c-format
-msgid "Failed to continue scanning, err 0x%04x"
-msgstr "Impossible de poursuivre le scan, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-#, fuzzy
-msgid "Failed to discover services"
-msgstr "Echec de la découverte de services"
-
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, fuzzy
-msgid "Failed to get local address"
-msgstr "Echec de l'obtention de l'adresse locale"
-
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, fuzzy
-msgid "Failed to get softdevice state"
-msgstr "Echec de l'obtention de l'état du périphérique"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "Failed to notify or indicate attribute value, err 0x%04x"
+#: shared-module/audiomp3/MP3File.c
+msgid "Failed to parse MP3 file"
 msgstr ""
-"Impossible de notifier ou d'indiquer la valeur de l'attribut, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read CCCD value, err 0x%04x"
-msgstr "Impossible de lire la valeur 'CCCD', err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "Failed to read attribute value, err 0x%04x"
-msgstr "Impossible de lire la valeur de l'attribut, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to read gatts value, err 0x%04x"
-msgstr "Impossible de lire la valeur de 'gatts', err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/UUID.c
-#, fuzzy, c-format
-msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-msgstr "Echec de l'ajout de l'UUID du fournisseur, err 0x%04x"
 
 #: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Impossible de libérer mutex, err 0x%04x"
 
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, c-format
-msgid "Failed to set device name, err 0x%04x"
+#: supervisor/shared/safe_mode.c
+msgid "Failed to write internal flash."
 msgstr ""
-
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to start advertising, err 0x%04x"
-msgstr "Impossible de commencer à diffuser, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Central.c
-#, c-format
-msgid "Failed to start connecting, error 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Scanner.c
-#, fuzzy, c-format
-msgid "Failed to start scanning, err 0x%04x"
-msgstr "Impossible de commencer à scanner, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Peripheral.c
-#, fuzzy, c-format
-msgid "Failed to stop advertising, err 0x%04x"
-msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, c-format
-msgid "Failed to write CCCD, err 0x%04x"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to write attribute value, err 0x%04x"
-msgstr "Impossible d'écrire la valeur de l'attribut, err 0x%04x"
-
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#, fuzzy, c-format
-msgid "Failed to write gatts value, err 0x%04x"
-msgstr "Impossible d'écrire la valeur de 'gatts', err 0x%04x"
 
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Le fichier existe"
 
-#: ports/nrf/peripherals/nrf/nvm.c
-msgid "Flash erase failed"
-msgstr "L'effacement de la flash a échoué"
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash erase failed to start, err 0x%04x"
-msgstr "Echec du démarrage de l'effacement de la flash, err 0x%04x"
-
-#: ports/nrf/peripherals/nrf/nvm.c
+#: ports/nrf/common-hal/nvm/ByteArray.c
 msgid "Flash write failed"
 msgstr "L'écriture de la flash échoué"
-
-#: ports/nrf/peripherals/nrf/nvm.c
-#, c-format
-msgid "Flash write failed to start, err 0x%04x"
-msgstr "Echec du démarrage de l'écriture de la flash, err 0x%04x"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -727,6 +691,7 @@ msgid "Function requires lock"
 msgstr "La fonction nécessite un verrou"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -758,6 +723,14 @@ msgstr "Taille de tampon incorrecte"
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -786,11 +759,15 @@ msgstr "Bits par valeur invalides"
 msgid "Invalid buffer size"
 msgstr "Longueur de tampon invalide"
 
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide: 1 à 500"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Invalid channel count"
 msgstr "Nombre de canaux invalide"
@@ -841,11 +818,23 @@ msgstr "Broches invalides"
 msgid "Invalid polarity"
 msgstr "Polarité invalide"
 
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr ""
+
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
 msgstr "Mode de lancement invalide."
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-module/_bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Invalid voice count"
 msgstr "Nombre de voix invalide"
@@ -874,17 +863,6 @@ msgstr "La longueur doit être un nombre entier"
 msgid "Length must be non-negative"
 msgstr "La longueur ne doit pas être négative"
 
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Looks like our core CircuitPython code crashed hard. Whoops!\n"
-"Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
-" with the contents of your CIRCUITPY drive and this message:\n"
-msgstr ""
-"On dirait que notre code CircuitPython a durement planté. Oups !\n"
-"Merci de remplir un ticket sur https://github.com/adafruit/circuitpython/"
-"issues\n"
-"avec le contenu de votre lecteur CIRCUITPY et ce message:\n"
-
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
 msgstr "Echec de l'init. de la broche MISO"
@@ -899,12 +877,12 @@ msgid "Maximum x value when mirrored is %d"
 msgstr "La valeur max. de x est %d lors d'une opération miroir"
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
-msgstr "Saut MicroPython NLR a échoué. Corruption de mémoire possible.\n"
+msgid "MicroPython NLR jump failed. Likely memory corruption."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "MicroPython fatal error.\n"
-msgstr "Erreur fatale de MicroPython.\n"
+msgid "MicroPython fatal error."
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -914,7 +892,11 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Negative step not supported"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
 
@@ -960,6 +942,10 @@ msgstr ""
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
 
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "No space left on device"
 msgstr "Il n'y a plus d'espace libre sur le périphérique"
@@ -968,8 +954,12 @@ msgstr "Il n'y a plus d'espace libre sur le périphérique"
 msgid "No such file/directory"
 msgstr "Fichier/dossier introuvable"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: supervisor/shared/safe_mode.c
+msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "Not connected"
 msgstr "Non connecté"
@@ -1006,15 +996,9 @@ msgstr ""
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
-"Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d bpp "
-"given"
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
 msgstr ""
-"Seul les BMP monochromes, 8bit indexé et 16bit sont supportés: %d bpp fourni"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Only slices with step=1 (aka None) are supported"
-msgstr "seuls les slices avec 'step=1' (cad 'None') sont supportées"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1057,6 +1041,10 @@ msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr ""
+
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
@@ -1091,6 +1079,10 @@ msgstr "Système de fichier en lecture seule"
 msgid "Read-only object"
 msgstr "Objet en lecture seule"
 
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Canal droit non supporté"
@@ -1107,20 +1099,23 @@ msgstr "Mode sans-échec! Auto-chargement désactivé.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec! Le code sauvegardé n'est pas éxecuté.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "Sample rate must be positive"
 msgstr "Le taux d'échantillonage doit être positif"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1135,11 +1130,6 @@ msgstr "Tranche et valeur de tailles différentes"
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Tranches non supportées"
-
-#: ports/nrf/common-hal/bleio/Adapter.c
-#, c-format
-msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
-msgstr "Assertion en mode 'soft-device', id: 0x%08lX, pc: 0x%08lX"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1156,17 +1146,8 @@ msgstr "Il manque une méthode readinto() ou write() au flux."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
-"Please increase stack size limits and press reset (after ejecting "
-"CIRCUITPY).\n"
-"If you didn't change the stack, then file an issue here with the contents of "
-"your CIRCUITPY drive:\n"
+"Please increase the stack size if you know how, or if not:"
 msgstr ""
-"Le tas (heap) de CircuitPython a été corrompu parce que la pile était trop "
-"petite.\n"
-"Augmentez la limite de taille de la pile et appuyez sur 'reset' (après avoir "
-"éjecté CIRCUITPY).\n"
-"Si vous n'avez pas modifié la pile, merci de remplir un ticket avec le "
-"contenu  de votre lecteur CIRCUITPY :\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1175,40 +1156,26 @@ msgid ""
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
-"The microcontroller's power dipped. Please make sure your power supply "
-"provides\n"
+"The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"L'alimentation du microcontroleur a chuté. Merci de vérifier que votre "
-"alimentation fournit\n"
-"suffisamment de puissance pour l'ensemble du circuit et appuyez sur "
-"'reset' (après avoir éjecté CIRCUITPY).\n"
 
-#: supervisor/shared/safe_mode.c
-msgid ""
-"The reset button was pressed while booting CircuitPython. Press again to "
-"exit safe mode.\n"
-msgstr ""
-"Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
-"Appuyer de nouveau pour quitter de le mode sans-échec.\n"
-
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
 msgstr ""
 "Le 'bits_per_sample' de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
 msgstr "Le canal de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
 msgstr "L'échantillonage de l'échantillon ne correspond pas à celui du mixer"
 
-#: shared-module/audiocore/Mixer.c
+#: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Le signe de l'échantillon ne correspond pas à celui du mixer"
 
@@ -1216,21 +1183,17 @@ msgstr "Le signe de l'échantillon ne correspond pas à celui du mixer"
 msgid "Tile height must exactly divide bitmap height"
 msgstr "La hauteur de la tuile doit diviser exactement la hauteur de l'image"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
-
-#: supervisor/shared/safe_mode.c
-msgid "To exit, please reset the board without "
-msgstr "Pour quitter, redémarrez la carte SVP sans "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1242,6 +1205,7 @@ msgid "Too many display busses"
 msgstr "Trop de bus d'affichage"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
 msgid "Too many displays"
 msgstr "Trop d'affichages"
 
@@ -1261,16 +1225,16 @@ msgstr "USB occupé"
 msgid "USB Error"
 msgstr "Erreur USB"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
 msgstr ""
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgstr ""
 "La chaîne UUID n'est pas au format 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 "la valeur de l'UUID n'est pas une chaîne de caractères, un entier ou un "
@@ -1303,10 +1267,29 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 msgid "Unable to write to nvm."
 msgstr "Impossible d'écrire sur la mémoire non-volatile."
 
-#: ports/nrf/common-hal/bleio/UUID.c
+#: ports/nrf/common-hal/_bleio/UUID.c
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Unknown reason."
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1314,11 +1297,17 @@ msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr ""
 "Pas de correspondance du nombres d'éléments à droite (attendu %d, obtenu %d)"
 
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Débit non supporté"
 
-#: shared-module/displayio/Display.c
+#: shared-module/displayio/display_core.c
 #, fuzzy
 msgid "Unsupported display bus type"
 msgstr "Type de bus d'affichage non supporté"
@@ -1335,14 +1324,20 @@ msgstr "Opération non supportée"
 msgid "Unsupported pull value."
 msgstr "Valeur de tirage 'pull' non supportée."
 
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
-
-#: shared-module/audiocore/Mixer.c
-msgid "Voice index too high"
-msgstr "Index de la voix trop grand"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -1363,12 +1358,13 @@ msgstr ""
 "\n"
 "Pour lister les modules inclus, tapez `help(\"modules\")`.\n"
 
-#: supervisor/shared/safe_mode.c
-#, fuzzy
-msgid ""
-"You are running in safe mode which means something unanticipated happened.\n"
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
 msgstr ""
-"Vous êtes en mode sans-échec ce qui signifie qu'un imprévu est survenu.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "You are in safe mode: something unanticipated happened.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -1433,10 +1429,6 @@ msgstr "tableau/octets requis à droite"
 msgid "attributes not supported yet"
 msgstr "attribut pas encore supporté"
 
-#: ports/nrf/common-hal/bleio/Characteristic.c
-msgid "bad GATT role"
-msgstr "mauvais rôle GATT"
-
 #: py/builtinevex.c
 msgid "bad compile mode"
 msgstr "mauvais mode de compilation"
@@ -1465,7 +1457,7 @@ msgstr "bits doivent être 7, 8 ou 9"
 msgid "bits must be 8"
 msgstr "les bits doivent être 8"
 
-#: shared-bindings/audiocore/Mixer.c
+#: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
 msgid "bits_per_sample must be 8 or 16"
 msgstr "'bits_per_sample' doivent être 8 ou 16"
@@ -1511,9 +1503,8 @@ msgid "byte code not implemented"
 msgstr "bytecode non implémenté"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "byteorder is not an instance of ByteOrder (got a %s)"
-msgstr "'byteorder' n'est pas une instance de ByteOrder (reçu un %s)"
+msgid "byteorder is not a string"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1702,10 +1693,6 @@ msgstr "ne peut pas réaliser un import relatif"
 msgid "casting"
 msgstr "typage"
 
-#: shared-bindings/bleio/Service.c
-msgid "characteristics includes an object that is not a Characteristic"
-msgstr "'characteristics' inclut un objet qui n'est pas une 'Characteristic'"
-
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr "tampon de caractères trop petit"
@@ -1861,7 +1848,7 @@ msgstr "argument(s) nommé(s) supplémentaire(s) donné(s)"
 msgid "extra positional arguments given"
 msgstr "argument(s) positionnel(s) supplémentaire(s) donné(s)"
 
-#: shared-bindings/audiocore/WaveFile.c
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3File.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
@@ -1991,7 +1978,7 @@ msgstr "l'argument 2 de int() doit être >=2 et <=36"
 msgid "integer required"
 msgstr "entier requis"
 
-#: shared-bindings/bleio/Peripheral.c shared-bindings/bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr ""
@@ -2089,6 +2076,10 @@ msgstr "label redéfini"
 msgid "length argument not allowed for this type"
 msgstr "argument 'length' non-permis pour ce type"
 
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr ""
+
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr "Les parties gauches et droites doivent être compatibles"
@@ -2116,6 +2107,12 @@ msgstr "tampon trop petit"
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
 msgstr "erreur de domaine math"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2162,11 +2159,6 @@ msgstr "doit utiliser un argument nommé pour une fonction key"
 msgid "name '%q' is not defined"
 msgstr "nom '%q' non défini"
 
-#: shared-bindings/bleio/Peripheral.c
-#, fuzzy
-msgid "name must be a string"
-msgstr "les noms doivent être des chaînes de caractère"
-
 #: py/runtime.c
 msgid "name not defined"
 msgstr "nom non défini"
@@ -2209,16 +2201,17 @@ msgstr "pas de lien trouvé pour nonlocal"
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
 
-#: py/runtime.c shared-bindings/_pixelbuf/__init__.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
+msgstr ""
+
+#: py/runtime.c
 msgid "no such attribute"
 msgstr "pas de tel attribut"
 
-#: shared-bindings/bleio/Peripheral.c
-msgid "non-Service found in services"
-msgstr ""
-
-#: ports/nrf/common-hal/bleio/Central.c
-msgid "non-UUID found in service_uuids"
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
 
 #: py/compile.c
@@ -2238,7 +2231,7 @@ msgstr "argument non-nommé après */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "argument non-nommé après argument nommé"
 
-#: shared-bindings/bleio/UUID.c
+#: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "n'est pas un UUID 128 bits"
 
@@ -2305,6 +2298,14 @@ msgstr "chaîne de longueur impaire"
 #, fuzzy
 msgid "offset out of bounds"
 msgstr "adresse hors limites"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2394,11 +2395,6 @@ msgstr "dépassement de file"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "rawbuf is not the same size as buf"
 msgstr "'rawbuf' n'est pas de la même taille que 'buf'"
-
-#: shared-bindings/_pixelbuf/__init__.c
-#, fuzzy
-msgid "readonly attribute"
-msgstr "attribut en lecture seule"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2544,15 +2540,11 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
-#: shared-bindings/time/__init__.c
-msgid "time.struct_time() takes exactly 1 argument"
-msgstr "time.struct_time() prend exactement 1 argument"
-
 #: shared-bindings/busio/UART.c
-msgid "timeout >100 (units are now seconds, not msecs)"
-msgstr "timeout >100 (exprimé en secondes, pas en ms)"
+msgid "timeout must be 0.0-100.0 seconds"
+msgstr ""
 
-#: shared-bindings/bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
 msgid "timeout must be >= 0.0"
 msgstr "'timeout' doit être >=0.0"
@@ -2707,13 +2699,9 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
-#: shared-bindings/bleio/Scanner.c
+#: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "write_args must be a list, tuple, or None"
-msgstr "'write_args' doit être une liste, un tuple ou 'None'"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
@@ -2748,6 +2736,14 @@ msgstr "'step' nul"
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "L'adresse n'est pas longue de %d octets ou est d'un format erroné"
 
+#~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
+#~ msgstr ""
+#~ "Tentative d'allocation de tas alors que la VM MicroPython ne tourne pas.\n"
+
+#, c-format
+#~ msgid "Can not use dotstar with %s"
+#~ msgstr "Impossible d'utiliser 'dotstar' avec %s"
+
 #~ msgid "Can't add services in Central mode"
 #~ msgstr "Impossible d'ajouter des services en mode Central"
 
@@ -2772,6 +2768,18 @@ msgstr "'step' nul"
 #~ msgid "Cannot update i/f status"
 #~ msgstr "le status i/f ne peut être mis à jour"
 
+#~ msgid "Characteristic UUID doesn't match Service UUID"
+#~ msgstr "L'UUID de 'Characteristic' ne correspond pas à l'UUID du Service"
+
+#~ msgid "Characteristic already in use by another Service."
+#~ msgstr "'Characteristic' déjà en utilisation par un autre service"
+
+#~ msgid "Could not decode ble_uuid, err 0x%04x"
+#~ msgstr "Impossible de décoder le 'ble_uuid', err 0x%04x"
+
+#~ msgid "Crash into the HardFault_Handler.\n"
+#~ msgstr "Plantage vers le 'HardFault_Handler'.\n"
+
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Données trop volumineuses pour le paquet de diffusion"
 
@@ -2792,8 +2800,20 @@ msgstr "'step' nul"
 #~ msgstr "Echec de l'obtention de mutex"
 
 #, fuzzy
+#~ msgid "Failed to add characteristic, err 0x%04x"
+#~ msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
+
+#, fuzzy
 #~ msgid "Failed to add service"
 #~ msgstr "Echec de l'ajout de service"
+
+#, fuzzy
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "Echec de l'ajout de service, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to change softdevice state"
+#~ msgstr "Echec de la modification de l'état du périphérique"
 
 #, fuzzy
 #~ msgid "Failed to connect:"
@@ -2804,16 +2824,51 @@ msgstr "'step' nul"
 #~ msgstr "Impossible de poursuivre le scan"
 
 #, fuzzy
+#~ msgid "Failed to continue scanning, err 0x%04x"
+#~ msgstr "Impossible de poursuivre le scan, err 0x%04x"
+
+#, fuzzy
 #~ msgid "Failed to create mutex"
 #~ msgstr "Echec de la création de mutex"
+
+#, fuzzy
+#~ msgid "Failed to discover services"
+#~ msgstr "Echec de la découverte de services"
+
+#, fuzzy
+#~ msgid "Failed to get local address"
+#~ msgstr "Echec de l'obtention de l'adresse locale"
+
+#, fuzzy
+#~ msgid "Failed to get softdevice state"
+#~ msgstr "Echec de l'obtention de l'état du périphérique"
 
 #, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
 #~ msgstr "Impossible de notifier la valeur de l'attribut. status: 0x%08lX"
 
+#~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
+#~ msgstr ""
+#~ "Impossible de notifier ou d'indiquer la valeur de l'attribut, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to read CCCD value, err 0x%04x"
+#~ msgstr "Impossible de lire la valeur 'CCCD', err 0x%04x"
+
 #, fuzzy
 #~ msgid "Failed to read attribute value, err %0x04x"
 #~ msgstr "Impossible de lire la valeur de l'attribut. status: 0x%08lX"
+
+#~ msgid "Failed to read attribute value, err 0x%04x"
+#~ msgstr "Impossible de lire la valeur de l'attribut, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to read gatts value, err 0x%04x"
+#~ msgstr "Impossible de lire la valeur de 'gatts', err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
+#~ msgstr "Echec de l'ajout de l'UUID du fournisseur, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to release mutex"
@@ -2824,12 +2879,41 @@ msgstr "'step' nul"
 #~ msgstr "Echec du démarrage de la diffusion"
 
 #, fuzzy
+#~ msgid "Failed to start advertising, err 0x%04x"
+#~ msgstr "Impossible de commencer à diffuser, err 0x%04x"
+
+#, fuzzy
 #~ msgid "Failed to start scanning"
 #~ msgstr "Impossible de commencer à scanner"
 
 #, fuzzy
+#~ msgid "Failed to start scanning, err 0x%04x"
+#~ msgstr "Impossible de commencer à scanner, err 0x%04x"
+
+#, fuzzy
 #~ msgid "Failed to stop advertising"
 #~ msgstr "Echec de l'arrêt de diffusion"
+
+#, fuzzy
+#~ msgid "Failed to stop advertising, err 0x%04x"
+#~ msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to write attribute value, err 0x%04x"
+#~ msgstr "Impossible d'écrire la valeur de l'attribut, err 0x%04x"
+
+#, fuzzy
+#~ msgid "Failed to write gatts value, err 0x%04x"
+#~ msgstr "Impossible d'écrire la valeur de 'gatts', err 0x%04x"
+
+#~ msgid "Flash erase failed"
+#~ msgstr "L'effacement de la flash a échoué"
+
+#~ msgid "Flash erase failed to start, err 0x%04x"
+#~ msgstr "Echec du démarrage de l'effacement de la flash, err 0x%04x"
+
+#~ msgid "Flash write failed to start, err 0x%04x"
+#~ msgstr "Echec du démarrage de l'écriture de la flash, err 0x%04x"
 
 #~ msgid "Function requires lock."
 #~ msgstr "La fonction nécessite un verrou."
@@ -2846,8 +2930,24 @@ msgstr "'step' nul"
 #~ msgid "Invalid data pin"
 #~ msgstr "Broche de données invalide"
 
+#~ msgid ""
+#~ "Looks like our core CircuitPython code crashed hard. Whoops!\n"
+#~ "Please file an issue at https://github.com/adafruit/circuitpython/issues\n"
+#~ " with the contents of your CIRCUITPY drive and this message:\n"
+#~ msgstr ""
+#~ "On dirait que notre code CircuitPython a durement planté. Oups !\n"
+#~ "Merci de remplir un ticket sur https://github.com/adafruit/circuitpython/"
+#~ "issues\n"
+#~ "avec le contenu de votre lecteur CIRCUITPY et ce message:\n"
+
 #~ msgid "Maximum PWM frequency is %dhz."
 #~ msgstr "La fréquence de PWM maximale est %dHz"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
+#~ msgstr "Saut MicroPython NLR a échoué. Corruption de mémoire possible.\n"
+
+#~ msgid "MicroPython fatal error.\n"
+#~ msgstr "Erreur fatale de MicroPython.\n"
 
 #~ msgid "Minimum PWM frequency is 1hz."
 #~ msgstr "La fréquence de PWM minimale est 1Hz"
@@ -2870,6 +2970,17 @@ msgstr "'step' nul"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Seules les bitmaps de 8bits par couleur ou moins sont supportées"
+
+#~ msgid ""
+#~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
+#~ "bpp given"
+#~ msgstr ""
+#~ "Seul les BMP monochromes, 8bit indexé et 16bit sont supportés: %d bpp "
+#~ "fourni"
+
+#, fuzzy
+#~ msgid "Only slices with step=1 (aka None) are supported"
+#~ msgstr "seuls les slices avec 'step=1' (cad 'None') sont supportées"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Seul les BMP 24bits ou plus sont supportés %x"
@@ -2895,8 +3006,47 @@ msgstr "'step' nul"
 #~ msgid "STA required"
 #~ msgstr "'STA' requis"
 
+#~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
+#~ msgstr "Assertion en mode 'soft-device', id: 0x%08lX, pc: 0x%08lX"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase stack size limits and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ "If you didn't change the stack, then file an issue here with the contents "
+#~ "of your CIRCUITPY drive:\n"
+#~ msgstr ""
+#~ "Le tas (heap) de CircuitPython a été corrompu parce que la pile était "
+#~ "trop petite.\n"
+#~ "Augmentez la limite de taille de la pile et appuyez sur 'reset' (après "
+#~ "avoir éjecté CIRCUITPY).\n"
+#~ "Si vous n'avez pas modifié la pile, merci de remplir un ticket avec le "
+#~ "contenu  de votre lecteur CIRCUITPY :\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "The microcontroller's power dipped. Please make sure your power supply "
+#~ "provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "L'alimentation du microcontroleur a chuté. Merci de vérifier que votre "
+#~ "alimentation fournit\n"
+#~ "suffisamment de puissance pour l'ensemble du circuit et appuyez sur "
+#~ "'reset' (après avoir éjecté CIRCUITPY).\n"
+
+#~ msgid ""
+#~ "The reset button was pressed while booting CircuitPython. Press again to "
+#~ "exit safe mode.\n"
+#~ msgstr ""
+#~ "Le bouton 'reset' a été appuyé pendant le démarrage de CircuitPython. "
+#~ "Appuyer de nouveau pour quitter de le mode sans-échec.\n"
+
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Pour quitter, redémarrez la carte SVP sans "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) n'existe pas"
@@ -2917,8 +3067,25 @@ msgstr "'step' nul"
 #~ msgstr ""
 #~ "Utilisez 'esptool' pour effacer la flash et recharger Python à la place"
 
+#~ msgid "Voice index too high"
+#~ msgstr "Index de la voix trop grand"
+
+#, fuzzy
+#~ msgid ""
+#~ "You are running in safe mode which means something unanticipated "
+#~ "happened.\n"
+#~ msgstr ""
+#~ "Vous êtes en mode sans-échec ce qui signifie qu'un imprévu est survenu.\n"
+
+#~ msgid "bad GATT role"
+#~ msgstr "mauvais rôle GATT"
+
 #~ msgid "buffer too long"
 #~ msgstr "tampon trop long"
+
+#, c-format
+#~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
+#~ msgstr "'byteorder' n'est pas une instance de ByteOrder (reçu un %s)"
 
 #~ msgid "can query only one param"
 #~ msgstr "ne peut demander qu'un seul paramètre"
@@ -2934,6 +3101,10 @@ msgstr "'step' nul"
 
 #~ msgid "can't set STA config"
 #~ msgstr "impossible de régler la config de 'STA'"
+
+#~ msgid "characteristics includes an object that is not a Characteristic"
+#~ msgstr ""
+#~ "'characteristics' inclut un objet qui n'est pas une 'Characteristic'"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "soit 'pos', soit 'kw' est permis en argument"
@@ -2978,6 +3149,10 @@ msgstr "'step' nul"
 #~ msgstr ""
 #~ "l'allocation de mémoire a échoué en allouant %u octets pour un code natif"
 
+#, fuzzy
+#~ msgid "name must be a string"
+#~ msgstr "les noms doivent être des chaînes de caractère"
+
 #~ msgid "not a valid ADC Channel: %d"
 #~ msgstr "canal ADC non valide : %d"
 
@@ -2988,6 +3163,10 @@ msgstr "'step' nul"
 #~ msgid "position must be 2-tuple"
 #~ msgstr "position doit être un 2-tuple"
 
+#, fuzzy
+#~ msgid "readonly attribute"
+#~ msgstr "attribut en lecture seule"
+
 #~ msgid "scan failed"
 #~ msgstr "échec du scan"
 
@@ -2996,6 +3175,12 @@ msgstr "'step' nul"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "indice de tuile hors limites"
+
+#~ msgid "time.struct_time() takes exactly 1 argument"
+#~ msgstr "time.struct_time() prend exactement 1 argument"
+
+#~ msgid "timeout >100 (units are now seconds, not msecs)"
+#~ msgstr "timeout >100 (exprimé en secondes, pas en ms)"
 
 #~ msgid "too many arguments"
 #~ msgstr "trop d'arguments"
@@ -3008,3 +3193,6 @@ msgstr "'step' nul"
 
 #~ msgid "wifi_set_ip_info() failed"
 #~ msgstr "wifi_set_ip_info() a échoué"
+
+#~ msgid "write_args must be a list, tuple, or None"
+#~ msgstr "'write_args' doit être une liste, un tuple ou 'None'"

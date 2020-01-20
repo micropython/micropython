@@ -28,10 +28,11 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/proto.h"
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "ports/stm32/font_petme128_8x8.h"
+#include "font_petme128_8x8.h"
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
@@ -46,6 +47,7 @@ typedef uint32_t (*getpixel_t)(const mp_obj_framebuf_t*, int, int);
 typedef void (*fill_rect_t)(const mp_obj_framebuf_t *, int, int, int, int, uint32_t);
 
 typedef struct _mp_framebuf_p_t {
+    MP_PROTOCOL_HEAD
     setpixel_t setpixel;
     getpixel_t getpixel;
     fill_rect_t fill_rect;
@@ -227,13 +229,13 @@ STATIC void gs8_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int 
 }
 
 STATIC mp_framebuf_p_t formats[] = {
-    [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
-    [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
-    [FRAMEBUF_GS2_HMSB] = {gs2_hmsb_setpixel, gs2_hmsb_getpixel, gs2_hmsb_fill_rect},
-    [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
-    [FRAMEBUF_GS8] = {gs8_setpixel, gs8_getpixel, gs8_fill_rect},
-    [FRAMEBUF_MHLSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
-    [FRAMEBUF_MHMSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
+    [FRAMEBUF_MVLSB] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
+    [FRAMEBUF_RGB565] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
+    [FRAMEBUF_GS2_HMSB] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) gs2_hmsb_setpixel, gs2_hmsb_getpixel, gs2_hmsb_fill_rect},
+    [FRAMEBUF_GS4_HMSB] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
+    [FRAMEBUF_GS8] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) gs8_setpixel, gs8_getpixel, gs8_fill_rect},
+    [FRAMEBUF_MHLSB] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
+    [FRAMEBUF_MHMSB] = {MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuf) mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {

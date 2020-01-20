@@ -76,6 +76,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError(translate("Invalid pins"));
     }
 
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     gpio_set_pin_function(sda->number, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_function(scl->number, GPIO_PIN_FUNCTION_OFF);
@@ -98,6 +99,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
+#endif
+
     gpio_set_pin_function(sda->number, sda_pinmux);
     gpio_set_pin_function(scl->number, scl_pinmux);
 
@@ -116,6 +119,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
+        common_hal_busio_i2c_deinit(self);
         mp_raise_ValueError(translate("Unsupported baudrate"));
     }
 

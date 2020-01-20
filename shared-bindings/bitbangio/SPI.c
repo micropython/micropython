@@ -275,13 +275,13 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     mp_buffer_info_t buf_out_info;
     mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
     int32_t out_start = args[ARG_out_start].u_int;
-    uint32_t out_length = buf_out_info.len;
+    size_t out_length = buf_out_info.len;
     normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
 
     mp_buffer_info_t buf_in_info;
     mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
     int32_t in_start = args[ARG_in_start].u_int;
-    uint32_t in_length = buf_in_info.len;
+    size_t in_length = buf_in_info.len;
     normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
 
     if (out_length != in_length) {

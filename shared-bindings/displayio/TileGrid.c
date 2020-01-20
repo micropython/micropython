@@ -144,6 +144,30 @@ static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
+//|   .. attribute:: hidden
+//|
+//|     True when the TileGrid is hidden. This may be False even when a part of a hidden Group.
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_hidden(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_get_hidden(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_hidden_obj, displayio_tilegrid_obj_get_hidden);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden_obj) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    common_hal_displayio_tilegrid_set_hidden(self, mp_obj_is_true(hidden_obj));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_hidden_obj, displayio_tilegrid_obj_set_hidden);
+
+const mp_obj_property_t displayio_tilegrid_hidden_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_hidden_obj,
+              (mp_obj_t)&displayio_tilegrid_set_hidden_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 //|   .. attribute:: x
 //|
@@ -368,6 +392,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
 
 STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     // Properties
+    { MP_ROM_QSTR(MP_QSTR_hidden), MP_ROM_PTR(&displayio_tilegrid_hidden_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&displayio_tilegrid_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&displayio_tilegrid_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },

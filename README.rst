@@ -78,7 +78,7 @@ If you'd like to use the term "CircuitPython" and Blinka for your product here i
 * Your product is supported by the primary
   `"adafruit/circuitpython" <https://github.com/adafruit/circuitpython>`_ repo. This way we can
   update any custom code as we update the CircuitPython internals.
-* Your product is listed on `circuitpython.org <https:/circuitpython.org>`__ (source
+* Your product is listed on `circuitpython.org <https://circuitpython.org>`__ (source
   `here <https://github.com/adafruit/circuitpython-org/>`_). This is to ensure that a user of your
   product can always download the latest version of CircuitPython from the standard place.
 * Your product has a user accessible USB plug which appears as a CIRCUITPY drive when plugged in.

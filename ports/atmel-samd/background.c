@@ -28,6 +28,7 @@
 #include "audio_dma.h"
 #include "tick.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include "py/runtime.h"
@@ -44,6 +45,23 @@ bool stack_ok_so_far = true;
 
 static bool running_background_tasks = false;
 
+#ifdef MONITOR_BACKGROUND_TASKS
+// PB03 is physical pin "SCL" on the Metro M4 express
+// so you can't use this code AND an i2c peripheral
+// at the same time unless you change this
+STATIC void start_background_task(void) {
+    REG_PORT_DIRSET1 = (1<<3);
+    REG_PORT_OUTSET1 = (1<<3);
+}
+
+STATIC void finish_background_task(void) {
+    REG_PORT_OUTCLR1 = (1<<3);
+}
+#else
+STATIC void start_background_task(void) {}
+STATIC void finish_background_task(void) {}
+#endif
+
 void background_tasks_reset(void) {
     running_background_tasks = false;
 }
@@ -53,14 +71,17 @@ void run_background_tasks(void) {
     if (running_background_tasks) {
         return;
     }
+
+    start_background_task();
+
     assert_heap_ok();
     running_background_tasks = true;
 
-    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
+    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
     audio_dma_background();
     #endif
     #if CIRCUITPY_DISPLAYIO
-    displayio_refresh_displays();
+    displayio_background();
     #endif
 
     #if CIRCUITPY_NETWORK
@@ -71,9 +92,10 @@ void run_background_tasks(void) {
     running_background_tasks = false;
     assert_heap_ok();
 
-    last_finished_tick = ticks_ms;
+    last_finished_tick = supervisor_ticks_ms64();
+    finish_background_task();
 }
 
 bool background_tasks_ok(void) {
-    return ticks_ms - last_finished_tick < 1000;
+    return supervisor_ticks_ms64() - last_finished_tick < 1000;
 }

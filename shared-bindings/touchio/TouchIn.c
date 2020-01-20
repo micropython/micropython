@@ -68,10 +68,11 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     // 1st argument is the pin
     mp_obj_t pin_obj = args[0];
     assert_pin(pin_obj, false);
+    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
+    assert_pin_free(pin);
 
     touchio_touchin_obj_t *self = m_new_obj(touchio_touchin_obj_t);
     self->base.type = &touchio_touchin_type;
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
     common_hal_touchio_touchin_construct(self, pin);
 
     return (mp_obj_t) self;

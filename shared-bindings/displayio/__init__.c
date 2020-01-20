@@ -33,6 +33,7 @@
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/Display.h"
+#include "shared-bindings/displayio/EPaperDisplay.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
@@ -60,6 +61,7 @@
 //|     Bitmap
 //|     ColorConverter
 //|     Display
+//|     EPaperDisplay
 //|     FourWire
 //|     Group
 //|     I2CDisplay
@@ -75,7 +77,7 @@
 //|
 //|   Releases any actively used displays so their busses and pins can be used again. This will also
 //|   release the builtin display on boards that have one. You will need to reinitialize it yourself
-//|   afterwards.
+//|   afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
 //|
 //|   Use this once in your code.py if you initialize a display. Place it right before the
 //|   initialization so the display is active as long as possible.
@@ -91,6 +93,7 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_ColorConverter), MP_ROM_PTR(&displayio_colorconverter_type) },
     { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&displayio_display_type) },
+    { MP_ROM_QSTR(MP_QSTR_EPaperDisplay), MP_ROM_PTR(&displayio_epaperdisplay_type) },
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },

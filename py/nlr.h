@@ -36,33 +36,45 @@
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
 #if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
-#define MICROPY_NLR_SETJMP (0)
 // A lot of nlr-related things need different treatment on Windows
-#if defined(_WIN32) || defined(__CYGWIN__)
-#define MICROPY_NLR_OS_WINDOWS 1
-#else
-#define MICROPY_NLR_OS_WINDOWS 0
-#endif
-#if defined(__i386__)
-    #define MICROPY_NLR_X86 (1)
-    #define MICROPY_NLR_NUM_REGS (6)
-#elif defined(__x86_64__)
-    #define MICROPY_NLR_X64 (1)
-    #if MICROPY_NLR_OS_WINDOWS
+    #if defined(_WIN32) || defined(__CYGWIN__)
+        #define MICROPY_NLR_OS_WINDOWS 1
+    #else
+        #define MICROPY_NLR_OS_WINDOWS 0
+    #endif
+    #if defined(__i386__)
+        #define MICROPY_NLR_X86 (1)
+        #define MICROPY_NLR_NUM_REGS (6)
+    #elif defined(__x86_64__)
+        #define MICROPY_NLR_X64 (1)
+        #if MICROPY_NLR_OS_WINDOWS
+            #define MICROPY_NLR_NUM_REGS (10)
+        #else
+            #define MICROPY_NLR_NUM_REGS (8)
+        #endif
+    #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
+        #define MICROPY_NLR_THUMB (1)
+        #if defined(__SOFTFP__)
+            #define MICROPY_NLR_NUM_REGS (10)
+        #else
+            // With hardware FP registers s16-s31 are callee save so in principle
+            // should be saved and restored by the NLR code.  gcc only uses s16-s21
+            // so only save/restore those as an optimisation.
+            #define MICROPY_NLR_NUM_REGS (10 + 6)
+        #endif
+    #elif defined(__xtensa__)
+        #define MICROPY_NLR_XTENSA (1)
         #define MICROPY_NLR_NUM_REGS (10)
     #else
-        #define MICROPY_NLR_NUM_REGS (8)
-    #endif
-#elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
-    #define MICROPY_NLR_THUMB (1)
-    #define MICROPY_NLR_NUM_REGS (10)
-#elif defined(__xtensa__)
-    #define MICROPY_NLR_XTENSA (1)
-    #define MICROPY_NLR_NUM_REGS (10)
-#else
-    #define MICROPY_NLR_SETJMP (1)
+        #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
+    #endif
 #endif
+
+// If MICROPY_NLR_SETJMP is not defined above -  define/disable it here
+
+#if !defined(MICROPY_NLR_SETJMP)
+    #define MICROPY_NLR_SETJMP (0)
 #endif
 
 #if MICROPY_NLR_SETJMP

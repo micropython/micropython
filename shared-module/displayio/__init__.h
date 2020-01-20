@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
 
 #include "shared-bindings/displayio/Display.h"
+#include "shared-bindings/displayio/EPaperDisplay.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
@@ -39,14 +40,17 @@ typedef struct {
         displayio_i2cdisplay_obj_t i2cdisplay_bus;
         displayio_parallelbus_obj_t parallel_bus;
     };
-    displayio_display_obj_t display;
+    union {
+        displayio_display_obj_t display;
+        displayio_epaperdisplay_obj_t epaper_display;
+    };
 } primary_display_t;
 
 extern primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
 extern displayio_group_t circuitpython_splash;
 
-void displayio_refresh_displays(void);
+void displayio_background(void);
 void reset_displays(void);
 void displayio_gc_collect(void);
 

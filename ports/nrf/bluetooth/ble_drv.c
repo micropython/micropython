@@ -38,18 +38,28 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
+#include "supervisor/shared/bluetooth.h"
+
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 // Flag indicating progress of internal flash operation.
-sd_flash_operation_status_t sd_flash_operation_status;
+volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 __attribute__((aligned(4)))
-static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATTS_VAR_ATTR_LEN_MAX)];
 
 void ble_drv_reset() {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+}
+
+void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t* entry, ble_drv_evt_handler_t func, void *param) {
+    entry->next = MP_STATE_VM(ble_drv_evt_handler_entries);
+    entry->param = param;
+    entry->func = func;
+
+    MP_STATE_VM(ble_drv_evt_handler_entries) = entry;
 }
 
 void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
@@ -64,11 +74,7 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
 
     // Add a new handler to the front of the list
     ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
-    handler->next = MP_STATE_VM(ble_drv_evt_handler_entries);
-    handler->param = param;
-    handler->func = func;
-
-    MP_STATE_VM(ble_drv_evt_handler_entries) = handler;
+    ble_drv_add_event_handler_entry(handler, func, param);
 }
 
 void ble_drv_remove_event_handler(ble_drv_evt_handler_t func, void *param) {
@@ -127,10 +133,26 @@ void SD_EVT_IRQHandler(void) {
             break;
         }
 
+        ble_evt_t* event = (ble_evt_t *)m_ble_evt_buf;
+        #if CIRCUITPY_VERBOSE_BLE
+        mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
+        #endif
+
+        if (supervisor_bluetooth_hook(event)) {
+            continue;
+        }
+
         ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+        bool done = false;
         while (it != NULL) {
-            it->func((ble_evt_t *)m_ble_evt_buf, it->param);
+            done = it->func(event, it->param) || done;
             it = it->next;
         }
+        #if CIRCUITPY_VERBOSE_BLE
+        if (event->header.evt_id == BLE_GATTS_EVT_WRITE) {
+            ble_gatts_evt_write_t* write_evt = &event->evt.gatts_evt.params.write;
+            mp_printf(&mp_plat_print, "Write to: UUID(0x%04x) handle %x of length %d auth %x\n", write_evt->uuid.uuid, write_evt->handle, write_evt->len, write_evt->auth_required);
+        }
+        #endif
     }
 }

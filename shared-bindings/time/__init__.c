@@ -85,9 +85,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
-        mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
+        return namedtuple_make_new(type, n_args, args, kw_args);
     }
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
@@ -99,16 +99,17 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 //|
 //|   Structure used to capture a date and time. Note that it takes a tuple!
 //|
-//|   :param Tuple[tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst] time_tuple: Tuple of time info.
-//|     * the year, 2017 for example
-//|     * the month, range [1, 12]
-//|     * the day of the month, range [1, 31]
-//|     * the hour, range [0, 23]
-//|     * the minute, range [0, 59]
-//|     * the second, range [0, 61]
-//|     * the day of the week, range [0, 6], Monday is 0
-//|     * the day of the year, range [1, 366], -1 indicates not known
-//|     * 1 when in daylight savings, 0 when not, -1 if unknown.
+//|   :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
+//|
+//|     * ``tm_year``: the year, 2017 for example
+//|     * ``tm_month``: the month, range [1, 12]
+//|     * ``tm_mday``: the day of the month, range [1, 31]
+//|     * ``tm_hour``: the hour, range [0, 23]
+//|     * ``tm_minute``: the minute, range [0, 59]
+//|     * ``tm_sec``: the second, range [0, 61]
+//|     * ``tm_wday``: the day of the week, range [0, 6], Monday is 0
+//|     * ``tm_yday``: the day of the year, range [1, 366], -1 indicates not known
+//|     * ``tm_isdst``: 1 when in daylight savings, 0 when not, -1 if unknown.
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
@@ -235,9 +236,16 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return rtc_get_time_source_time();
     }
 
-    mp_int_t secs = mp_obj_int_get_checked(args[0]);
-    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
+    mp_obj_t arg = args[0];
+    if (mp_obj_is_float(arg)) {
+        arg = mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    }
+
+    mp_int_t secs = mp_obj_get_int(arg);
+
+    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_epoch_to_struct_time(secs, &tm);
@@ -269,8 +277,9 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
         mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
-    if (mp_obj_get_int(elem[0]) < 2000)
+    if (mp_obj_get_int(elem[0]) < 2000) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));

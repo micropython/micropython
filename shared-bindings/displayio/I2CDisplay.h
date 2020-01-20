@@ -28,6 +28,8 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_I2CDISPLAY_H
 
 #include "shared-module/displayio/I2CDisplay.h"
+
+#include "shared-bindings/displayio/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 
 extern const mp_obj_type_t displayio_i2cdisplay_type;
@@ -37,9 +39,12 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
 
 void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self);
 
+bool common_hal_displayio_i2cdisplay_reset(mp_obj_t self);
+bool common_hal_displayio_i2cdisplay_bus_free(mp_obj_t self);
+
 bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t self);
 
-void common_hal_displayio_i2cdisplay_send(mp_obj_t self, bool command, uint8_t *data, uint32_t data_length);
+void common_hal_displayio_i2cdisplay_send(mp_obj_t self, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length);
 
 void common_hal_displayio_i2cdisplay_end_transaction(mp_obj_t self);
 

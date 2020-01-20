@@ -67,14 +67,30 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
     self->bitmap = bitmap;
     self->pixel_shader = pixel_shader;
     self->in_group = false;
-    self->first_draw = true;
+    self->hidden = false;
+    self->hidden_by_parent = false;
+    self->previous_area.x1 = 0xffff;
+    self->previous_area.x2 = self->previous_area.x1;
     self->flip_x = false;
     self->flip_y = false;
     self->transpose_xy = false;
 }
 
+
+bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t* self) {
+    return self->hidden;
+}
+
+void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t* self, bool hidden) {
+    self->hidden = hidden;
+}
+
+void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden) {
+    self->hidden_by_parent = hidden;
+}
+
 bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t* area) {
-    if (self->first_draw) {
+    if (self->previous_area.x1 == self->previous_area.x2) {
         return false;
     }
     displayio_area_copy(&self->previous_area, area);
@@ -138,12 +154,10 @@ void displayio_tilegrid_update_transform(displayio_tilegrid_t *self,
     self->in_group = absolute_transform != NULL;
     self->absolute_transform = absolute_transform;
     if (absolute_transform != NULL) {
-        self->moved = !self->first_draw;
+        self->moved = true;
 
         _update_current_x(self);
         _update_current_y(self);
-    } else {
-        self->first_draw = true;
     }
 }
 
@@ -155,7 +169,7 @@ void common_hal_displayio_tilegrid_set_x(displayio_tilegrid_t *self, mp_int_t x)
         return;
     }
 
-    self->moved = !self->first_draw;
+    self->moved = true;
 
     self->x = x;
     if (self->absolute_transform != NULL) {
@@ -170,7 +184,7 @@ void common_hal_displayio_tilegrid_set_y(displayio_tilegrid_t *self, mp_int_t y)
     if (self->y == y) {
         return;
     }
-    self->moved = !self->first_draw;
+    self->moved = true;
     self->y = y;
     if (self->absolute_transform != NULL) {
         _update_current_y(self);
@@ -207,7 +221,7 @@ uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint1
 
 void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index) {
     if (tile_index >= self->tiles_in_bitmap) {
-        mp_raise_ValueError(translate("Tile value out of bounds"));
+        mp_raise_ValueError(translate("Tile index out of bounds"));
     }
     uint8_t* tiles = self->tiles;
     if (self->inline_tiles) {
@@ -306,6 +320,11 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
         return false;
     }
 
+    bool hidden = self->hidden || self->hidden_by_parent;
+    if (hidden) {
+        return false;
+    }
+
     displayio_area_t overlap;
     if (!displayio_area_compute_overlap(area, &self->current_area, &overlap)) {
         return false;
@@ -377,12 +396,16 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
     }
 
     uint8_t pixels_per_byte = 8 / colorspace->depth;
-    for (int16_t y = start_y; y < end_y; y++) {
-        int16_t row_start = start + (y - start_y + y_shift) * y_stride; // in pixels
-        int16_t local_y = y / self->absolute_transform->scale;
-        for (int16_t x = start_x; x < end_x; x++) {
+
+    displayio_input_pixel_t input_pixel;
+    displayio_output_pixel_t output_pixel;
+
+    for (input_pixel.y = start_y; input_pixel.y < end_y; ++input_pixel.y) {
+        int16_t row_start = start + (input_pixel.y - start_y + y_shift) * y_stride; // in pixels
+        int16_t local_y = input_pixel.y / self->absolute_transform->scale;
+        for (input_pixel.x = start_x; input_pixel.x < end_x; ++input_pixel.x) {
             // Compute the destination pixel in the buffer and mask based on the transformations.
-            int16_t offset = row_start + (x - start_x + x_shift) * x_stride; // in pixels
+            int16_t offset = row_start + (input_pixel.x - start_x + x_shift) * x_stride; // in pixels
 
             // This is super useful for debugging out of range accesses. Uncomment to use.
             // if (offset < 0 || offset >= (int32_t) displayio_area_size(area)) {
@@ -393,41 +416,43 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             if ((mask[offset / 32] & (1 << (offset % 32))) != 0) {
                 continue;
             }
-            int16_t local_x = x / self->absolute_transform->scale;
+            int16_t local_x = input_pixel.x / self->absolute_transform->scale;
             uint16_t tile_location = ((local_y / self->tile_height + self->top_left_y) % self->height_in_tiles) * self->width_in_tiles + (local_x / self->tile_width + self->top_left_x) % self->width_in_tiles;
-            uint8_t tile = tiles[tile_location];
-            uint16_t tile_x = (tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
-            uint16_t tile_y = (tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
+            input_pixel.tile = tiles[tile_location];
+            input_pixel.tile_x = (input_pixel.tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
+            input_pixel.tile_y = (input_pixel.tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
 
-            uint32_t value = 0;
+            //uint32_t value = 0;
+            output_pixel.pixel = 0;
+            input_pixel.pixel = 0;
+
             // We always want to read bitmap pixels by row first and then transpose into the destination
             // buffer because most bitmaps are row associated.
             if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
-                value = common_hal_displayio_bitmap_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_bitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
-                value = common_hal_displayio_shape_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_shape_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
-                value = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, tile_x, tile_y);
+                input_pixel.pixel = common_hal_displayio_ondiskbitmap_get_pixel(self->bitmap, input_pixel.tile_x, input_pixel.tile_y);
             }
-
-            uint32_t pixel;
-            bool opaque = true;
+            
+            output_pixel.opaque = true;
             if (self->pixel_shader == mp_const_none) {
-                pixel = value;
+                output_pixel.pixel = input_pixel.pixel;
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
-                opaque = displayio_palette_get_color(self->pixel_shader, colorspace, value, &pixel);
+                output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
             } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
-                opaque = displayio_colorconverter_convert(self->pixel_shader, colorspace, value, &pixel);
+                displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
             }
-            if (!opaque) {
+            if (!output_pixel.opaque) {
                 // A pixel is transparent so we haven't fully covered the area ourselves.
                 full_coverage = false;
             } else {
                 mask[offset / 32] |= 1 << (offset % 32);
                 if (colorspace->depth == 16) {
-                    *(((uint16_t*) buffer) + offset) = pixel;
+                    *(((uint16_t*) buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
-                    *(((uint8_t*) buffer) + offset) = pixel;
+                    *(((uint8_t*) buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {
                     // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
                     if (!colorspace->pixels_in_byte_share_row) {
@@ -443,9 +468,10 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                     }
                     uint8_t shift = (offset % pixels_per_byte) * colorspace->depth;
                     if (colorspace->reverse_pixels_in_byte) {
+                        // Reverse the shift by subtracting it from the leftmost shift.
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
-                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= pixel << shift;
+                    ((uint8_t*)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
         }
@@ -454,14 +480,17 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
 }
 
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
-    if (self->moved || self->first_draw) {
+    bool first_draw = self->previous_area.x1 == self->previous_area.x2;
+    bool hidden = self->hidden || self->hidden_by_parent;
+    if (!first_draw && hidden) {
+        self->previous_area.x2 = self->previous_area.x1;
+    } else if (self->moved || first_draw) {
         displayio_area_copy(&self->current_area, &self->previous_area);
     }
 
     self->moved = false;
     self->full_change = false;
     self->partial_change = false;
-    self->first_draw = false;
     if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_palette_type)) {
         displayio_palette_finish_refresh(self->pixel_shader);
     } else if (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type)) {
@@ -480,7 +509,17 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
 }
 
 displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *self, displayio_area_t* tail) {
-    if (self->moved && !self->first_draw) {
+    bool first_draw = self->previous_area.x1 == self->previous_area.x2;
+    bool hidden = self->hidden || self->hidden_by_parent;
+    // Check hidden first because it trumps all other changes.
+    if (hidden) {
+        if (!first_draw) {
+            self->previous_area.next = tail;
+            return &self->previous_area;
+        } else {
+            return tail;
+        }
+    } else if (self->moved && !first_draw) {
         displayio_area_union(&self->previous_area, &self->current_area, &self->dirty_area);
         if (displayio_area_size(&self->dirty_area) <= 2U * self->pixel_width * self->pixel_height) {
             self->dirty_area.next = tail;
@@ -511,7 +550,7 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
          displayio_palette_needs_refresh(self->pixel_shader)) ||
         (MP_OBJ_IS_TYPE(self->pixel_shader, &displayio_colorconverter_type) &&
          displayio_colorconverter_needs_refresh(self->pixel_shader));
-    if (self->full_change || self->first_draw) {
+    if (self->full_change || first_draw) {
         self->current_area.next = tail;
         return &self->current_area;
     }

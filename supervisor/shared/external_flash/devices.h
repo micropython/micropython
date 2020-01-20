@@ -66,7 +66,7 @@ typedef struct {
     bool single_status_byte: 1;
 } external_flash_device;
 
-// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
+// Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. It's on the SAMD21
 // Xplained board.
 // Datasheet: https://www.adestotech.com/wp-content/uploads/doc8715.pdf
 #define AT25DF081A {\
@@ -74,6 +74,26 @@ typedef struct {
     .start_up_time_us = 10000, \
     .manufacturer_id = 0x1f, \
     .memory_type = 0x45, \
+    .capacity = 0x01, \
+    .max_clock_speed_mhz = 85, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
+// Settings for the Adesto Tech AT25SF161-SSHD-T 2MiB SPI flash
+// for the StringCar M0 (SAMD21) Express board.
+// Source: https://www.digikey.com/product-detail/en/adesto-technologies/AT25SF161-SDHD-T/1265-1230-1-ND/
+// Datasheet: https://www.adestotech.com/wpo-content/uploads/jDS-AT25SF161_046.pdf
+#define AT25SF161 {\
+    .total_size = (1 << 21), /* 2 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x1f, \
+    .memory_type = 0x86, \
     .capacity = 0x01, \
     .max_clock_speed_mhz = 85, \
     .quad_enable_bit_mask = 0x00, \
@@ -100,6 +120,24 @@ typedef struct {
     .supports_qspi = true, \
     .supports_qspi_writes = true, \
     .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
+// Settings for the Gigadevice GD25Q32C 4MiB SPI flash.
+// Datasheet: http://www.elm-tech.com/en/products/spi-flash-memory/gd25q32/gd25q32.pdf
+#define GD25Q32C {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc8, \
+    .memory_type = 0x40, \
+    .capacity = 0x16, \
+    .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = true, \
     .single_status_byte = false, \
 }
 
@@ -252,6 +290,23 @@ typedef struct {
     .start_up_time_us = 5000, \
     .manufacturer_id = 0xef, \
     .memory_type = 0x70, \
+    .capacity = 0x16, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+}
+
+// Settings for the Winbond W25Q32JV-IQ 4MiB SPI flash.
+// Datasheet: https://www.mouser.com/datasheet/2/949/w25q32jv_revg_03272018_plus-1489806.pdf
+#define W25Q32JV_IQ {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
     .capacity = 0x16, \
     .max_clock_speed_mhz = 133, \
     .quad_enable_bit_mask = 0x02, \
@@ -423,5 +478,23 @@ typedef struct {
     .supports_qspi_writes = false, \
     .write_status_register_split = false, \
     .single_status_byte = false, \
+}
+
+// Settings for the ISSI IS25LP128F 16MiB SPI flash.
+// Datasheet: http://www.issi.com/WW/pdf/25LP-WP128F.pdf
+#define IS25LP128F {\
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x9d, \
+    .memory_type = 0x60, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
 }
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

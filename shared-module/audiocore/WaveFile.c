@@ -46,7 +46,9 @@ struct wave_format_chunk {
 };
 
 void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
-                                           pyb_file_obj_t* file) {
+                                           pyb_file_obj_t* file,
+                                           uint8_t *buffer,
+                                           size_t buffer_size) {
     // Load the wave
     self->file = file;
     uint8_t chunk_header[16];
@@ -84,7 +86,6 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
     }
     // Get the sample_rate
     self->sample_rate = format.sample_rate;
-    self->len = 256;
     self->channel_count = format.num_channels;
     self->bits_per_sample = format.bits_per_sample;
 
@@ -111,21 +112,31 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
 
     // Try to allocate two buffers, one will be loaded from file and the other
     // DMAed to DAC.
-    self->buffer = m_malloc(self->len, false);
-    if (self->buffer == NULL) {
-        common_hal_audioio_wavefile_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate first buffer"));
-    }
+    if (buffer_size) {
+        self->len = buffer_size / 2;
+        self->buffer = buffer;
+        self->second_buffer = buffer + self->len;
+    } else {
+        self->len = 256;
+        self->buffer = m_malloc(self->len, false);
+        if (self->buffer == NULL) {
+            common_hal_audioio_wavefile_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate first buffer"));
+        }
 
-    self->second_buffer = m_malloc(self->len, false);
-    if (self->second_buffer == NULL) {
-        common_hal_audioio_wavefile_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate second buffer"));
+        self->second_buffer = m_malloc(self->len, false);
+        if (self->second_buffer == NULL) {
+            common_hal_audioio_wavefile_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError,
+                         translate("Couldn't allocate second buffer"));
+        }
     }
 }
 
 void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self) {
     self->buffer = NULL;
+    self->second_buffer = NULL;
 }
 
 bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self) {
@@ -205,7 +216,7 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* 
         } else {
             *buffer = self->buffer;
         }
-        if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK) {
+        if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK || length_read != num_bytes_to_load) {
             return GET_BUFFER_ERROR;
         }
         self->bytes_remaining -= length_read;

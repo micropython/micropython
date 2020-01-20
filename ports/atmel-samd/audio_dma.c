@@ -35,19 +35,43 @@
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
+#if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
+
 static audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 
 // This cannot be in audio_dma_state because it's volatile.
 static volatile bool audio_dma_pending[AUDIO_DMA_CHANNEL_COUNT];
 
-uint8_t find_free_audio_dma_channel(void) {
+static bool audio_dma_allocated[AUDIO_DMA_CHANNEL_COUNT];
+
+uint8_t audio_dma_allocate_channel(void) {
     uint8_t channel;
     for (channel = 0; channel < AUDIO_DMA_CHANNEL_COUNT; channel++) {
-        if (!dma_channel_enabled(channel)) {
+        if (!audio_dma_allocated[channel]) {
+            audio_dma_allocated[channel] = true;
             return channel;
         }
     }
-    return channel;
+    return channel; // i.e., return failure
+}
+
+void audio_dma_free_channel(uint8_t channel) {
+    assert(channel < AUDIO_DMA_CHANNEL_COUNT);
+    assert(audio_dma_allocated[channel]);
+    audio_dma_disable_channel(channel);
+    audio_dma_allocated[channel] = false;
+}
+
+void audio_dma_disable_channel(uint8_t channel) {
+    if (channel >= AUDIO_DMA_CHANNEL_COUNT)
+        return;
+    dma_disable_channel(channel);
+}
+
+void audio_dma_enable_channel(uint8_t channel) {
+    if (channel >= AUDIO_DMA_CHANNEL_COUNT)
+        return;
+    dma_enable_channel(channel);
 }
 
 void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer_length,
@@ -153,7 +177,7 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
                               bool output_signed,
                               uint32_t output_register_address,
                               uint8_t dma_trigger_source) {
-    uint8_t dma_channel = find_free_audio_dma_channel();
+    uint8_t dma_channel = audio_dma_allocate_channel();
     if (dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
         return AUDIO_DMA_DMA_BUSY;
     }
@@ -252,16 +276,20 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     }
 
     dma_configure(dma_channel, dma_trigger_source, true);
-    dma_enable_channel(dma_channel);
+    audio_dma_enable_channel(dma_channel);
 
     return AUDIO_DMA_OK;
 }
 
 void audio_dma_stop(audio_dma_t* dma) {
-    dma_disable_channel(dma->dma_channel);
-    disable_event_channel(dma->event_channel);
-    MP_STATE_PORT(playing_audio)[dma->dma_channel] = NULL;
-
+    uint8_t channel = dma->dma_channel;
+    if (channel < AUDIO_DMA_CHANNEL_COUNT) {
+        audio_dma_disable_channel(channel);
+        disable_event_channel(dma->event_channel);
+        MP_STATE_PORT(playing_audio)[channel] = NULL;
+        audio_dma_state[channel] = NULL;
+        audio_dma_free_channel(dma->dma_channel);
+    }
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
@@ -290,7 +318,8 @@ void audio_dma_reset(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_state[i] = NULL;
         audio_dma_pending[i] = false;
-        dma_disable_channel(i);
+        audio_dma_allocated[i] = false;
+        audio_dma_disable_channel(i);
         dma_descriptor(i)->BTCTRL.bit.VALID = false;
         MP_STATE_PORT(playing_audio)[i] = NULL;
     }
@@ -333,3 +362,4 @@ void audio_dma_background(void) {
         audio_dma_pending[i] = false;
     }
 }
+#endif

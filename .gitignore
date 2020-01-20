@@ -65,6 +65,8 @@ TAGS
 *~
 
 *.DS_Store
+**/*.DS_Store
+*.icloud
 
 # POEdit mo files
 ####################

@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
 USB_PID = 0x8028
 USB_PRODUCT = "pIRKey M0"
@@ -26,6 +25,8 @@ CIRCUITPY_SMALL_BUILD = 1
 SUPEROPT_GC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
+# FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote
+
+CFLAGS_BOARD = --param max-inline-insns-auto=12

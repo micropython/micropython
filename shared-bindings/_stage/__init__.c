@@ -30,6 +30,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Display.h"
 #include "shared-module/_stage/__init__.h"
+#include "shared-module/displayio/display_core.h"
 #include "Layer.h"
 #include "Text.h"
 
@@ -95,22 +96,8 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         scale = mp_obj_get_int(args[7]);
     }
 
-    while (!displayio_display_begin_transaction(display)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
-    }
-    displayio_area_t area;
-    area.x1 = x0;
-    area.y1 = y0;
-    area.x2 = x1;
-    area.y2 = y1;
-    displayio_display_set_region_to_update(display, &area);
-
-    display->send(display->bus, true, &display->write_ram_command, 1);
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
                  display, scale);
-    displayio_display_end_transaction(display);
 
     return mp_const_none;
 }

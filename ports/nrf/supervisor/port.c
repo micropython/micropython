@@ -38,7 +38,8 @@
 
 #include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/bleio/__init__.h"
+#include "common-hal/_bleio/__init__.h"
+#include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
@@ -49,6 +50,10 @@
 #include "tick.h"
 
 #include "shared-bindings/rtc/__init__.h"
+
+#ifdef CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/I2SOut.h"
+#endif
 
 #ifdef CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
@@ -79,6 +84,10 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_ANALOGIO
+    analogin_init();
+#endif
+
     #if CIRCUITPY_RTC
     rtc_init();
     #endif
@@ -98,9 +107,14 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 
-#ifdef CIRCUITPY_AUDIOPWMIO
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
+#endif
+
+#if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
 #endif
+
 
 #if CIRCUITPY_PULSEIO
     pwmout_reset();
@@ -130,6 +144,14 @@ void reset_to_bootloader(void) {
 
 void reset_cpu(void) {
     NVIC_SystemReset();
+}
+
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
 }
 
 extern uint32_t _ebss;

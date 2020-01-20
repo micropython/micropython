@@ -32,49 +32,35 @@
 #include "shared-bindings/pulseio/PWMOut.h"
 
 #include "shared-module/displayio/area.h"
-
-typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
-typedef void (*display_bus_send)(mp_obj_t bus, bool command, uint8_t *data, uint32_t data_length);
-typedef void (*display_bus_end_transaction)(mp_obj_t bus);
+#include "shared-module/displayio/display_core.h"
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t bus;
-    displayio_group_t *current_group;
-    uint64_t last_refresh;
-    display_bus_begin_transaction begin_transaction;
-    display_bus_send send;
-    display_bus_end_transaction end_transaction;
+    displayio_display_core_t core;
     union {
         digitalio_digitalinout_obj_t backlight_inout;
         pulseio_pwmout_obj_t backlight_pwm;
     };
     uint64_t last_backlight_refresh;
-    displayio_buffer_transform_t transform;
-    displayio_area_t area;
+    uint64_t last_refresh_call;
     mp_float_t current_brightness;
-    uint16_t width;
-    uint16_t height;
-    _displayio_colorspace_t colorspace;
-    int16_t colstart;
-    int16_t rowstart;
     uint16_t brightness_command;
+    uint16_t native_frames_per_second;
+    uint16_t native_ms_per_frame;
     uint8_t set_column_command;
     uint8_t set_row_command;
     uint8_t write_ram_command;
-    bool refresh;
-    bool single_byte_bounds;
+    bool auto_refresh;
+    bool first_manual_refresh;
     bool data_as_commands;
     bool auto_brightness;
     bool updating_backlight;
-    bool full_refresh; // New group means we need to refresh the whole display.
 } displayio_display_obj_t;
 
-void displayio_display_start_refresh(displayio_display_obj_t* self);
-const displayio_area_t* displayio_display_get_refresh_areas(displayio_display_obj_t *self);
-bool displayio_display_fill_area(displayio_display_obj_t *self, displayio_area_t* area, uint32_t* mask, uint32_t *buffer);
-void displayio_display_update_backlight(displayio_display_obj_t* self);
-bool displayio_display_clip_area(displayio_display_obj_t *self, const displayio_area_t* area, displayio_area_t* clipped);
+void displayio_display_background(displayio_display_obj_t* self);
 void release_display(displayio_display_obj_t* self);
+void reset_display(displayio_display_obj_t* self);
+
+void displayio_display_collect_ptrs(displayio_display_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_DISPLAY_H

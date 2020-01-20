@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8019
 USB_PRODUCT = "CircuitPlayground Express with Crickit libraries"
@@ -14,9 +13,10 @@ EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
 # Turn off features and optimizations for Crickit build to make room for additional frozen libs.
 LONGINT_IMPL = NONE
 CIRCUITPY_DISPLAYIO = 0
-CIRCUITPY_PIXELBUF = 0
 CIRCUITPY_FREQUENCYIO = 0
+CIRCUITPY_GAMEPAD = 0
 CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_PIXELBUF = 0
 
 SUPEROPT_GC = 0
 CFLAGS_INLINE_LIMIT = 55

@@ -52,6 +52,10 @@ void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t 
     self->colors[palette_index].rgb888 = color;
     self->colors[palette_index].luma = displayio_colorconverter_compute_luma(color);
     self->colors[palette_index].rgb565 = displayio_colorconverter_compute_rgb565(color);
+
+    uint8_t chroma = displayio_colorconverter_compute_chroma(color);
+    self->colors[palette_index].chroma = chroma;
+    self->colors[palette_index].hue = displayio_colorconverter_compute_hue(color);
     self->needs_refresh = true;
 }
 
@@ -64,7 +68,19 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
         return false; // returns opaque
     }
 
-    if (colorspace->grayscale) {
+    if (colorspace->tricolor) {
+        uint8_t luma = self->colors[palette_index].luma;
+        *color = luma >> (8 - colorspace->depth);
+        // Chroma 0 means the color is a gray and has no hue so never color based on it.
+        if (self->colors[palette_index].chroma  <= 16) {
+            if (!colorspace->grayscale) {
+                *color = 0;
+            }
+            return true;
+        }
+        uint8_t pixel_hue = self->colors[palette_index].hue;
+        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, color);
+    } else if (colorspace->grayscale) {
         *color = self->colors[palette_index].luma >> (8 - colorspace->depth);
     } else {
         *color = self->colors[palette_index].rgb565;

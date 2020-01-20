@@ -256,6 +256,9 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     self->pwm = NULL;
 
     pwmout_free_channel(pwm, self->channel);
+
+    reset_pin_number(self->pin_number);
+    self->pin_number = NO_PIN;
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {

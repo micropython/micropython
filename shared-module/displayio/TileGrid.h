@@ -43,7 +43,7 @@ typedef struct {
     uint16_t pixel_width;
     uint16_t pixel_height;
     uint16_t bitmap_width_in_tiles;;
-    uint8_t tiles_in_bitmap;
+    uint16_t tiles_in_bitmap;
     uint16_t width_in_tiles;
     uint16_t height_in_tiles;
     uint16_t tile_width;
@@ -55,16 +55,20 @@ typedef struct {
     displayio_area_t dirty_area; // Stored as a relative area until the refresh area is fetched.
     displayio_area_t previous_area; // Stored as an absolute area.
     displayio_area_t current_area; // Stored as an absolute area so it applies across frames.
-    bool partial_change;
-    bool full_change;
-    bool first_draw;
-    bool moved;
-    bool inline_tiles;
-    bool in_group;
-    bool flip_x;
-    bool flip_y;
-    bool transpose_xy;
+    bool partial_change :1;
+    bool full_change :1;
+    bool moved :1;
+    bool inline_tiles :1;
+    bool in_group :1;
+    bool flip_x :1;
+    bool flip_y :1;
+    bool transpose_xy  :1;
+    bool hidden :1;
+    bool hidden_by_parent :1;
+    uint8_t padding :6;
 } displayio_tilegrid_t;
+
+void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden);
 
 // Updating the screen is a three stage process.
 

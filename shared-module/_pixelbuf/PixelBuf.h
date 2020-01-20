@@ -42,9 +42,9 @@
 #define DOTSTAR_GET_BRIGHTNESS(value) ((value & 0b00011111) / 31.0)
 #define DOTSTAR_LED_START_FULL_BRIGHT 0xFF
 
-void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_t *item, pixelbuf_byteorder_obj_t *byteorder, bool dotstar);
-mp_obj_t *pixelbuf_get_pixel(uint8_t *buf, pixelbuf_byteorder_obj_t *byteorder, bool dotstar);
-mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_obj_t *byteorder, uint8_t step, bool dotstar);
-void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_obj_t *byteorder);
+void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_t *item, pixelbuf_byteorder_details_t *byteorder, bool dotstar);
+mp_obj_t *pixelbuf_get_pixel(uint8_t *buf, pixelbuf_byteorder_details_t *byteorder, bool dotstar);
+mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_details_t *byteorder, uint8_t step, mp_int_t slice_step, bool dotstar);
+void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_details_t *byteorder);
 
 #endif
