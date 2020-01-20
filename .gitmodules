@@ -30,3 +30,6 @@
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
+[submodule "lib/nxp_driver"]
+	path = lib/nxp_driver
+	url = https://github.com/hathach/nxp_driver.git
