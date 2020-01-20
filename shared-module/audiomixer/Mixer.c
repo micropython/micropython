@@ -140,7 +140,7 @@ static inline uint32_t pack8(uint32_t val) {
     return ((val & 0xff000000) >> 16) | ((val & 0xff00) >> 8);
 }
 
-static void mix_one_voice(audiomixer_mixer_obj_t* self,
+static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
         audiomixer_mixervoice_obj_t* voice, bool voices_active,
         uint32_t* word_buffer, uint32_t length) {
     bool voice_done = voice->sample == NULL;
@@ -270,7 +270,7 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
         for (int32_t v = 0; v < self->voice_count; v++) {
             audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
 
-            mix_one_voice(self, voice, voices_active, word_buffer, length);
+            mix_down_one_voice(self, voice, voices_active, word_buffer, length);
             voices_active = true;
         }
 
