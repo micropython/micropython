@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import argparse
 import collections
+import inspect
 import re
 import struct
 import sys
@@ -67,7 +68,6 @@ __DFU_INTERFACE = 0
 
 # Python 3 deprecated getargspec in favour of getfullargspec, but
 # Python 2 doesn't have the latter, so detect which one to use
-import inspect
 getargspec = getattr(inspect, 'getfullargspec', inspect.getargspec)
 
 if 'length' in getargspec(usb.util.get_string).args:
@@ -82,9 +82,17 @@ else:
 
 def find_dfu_cfg_descr(descr):
     if len(descr) == 9 and descr[0] == 9 and descr[1] == _DFU_DESCRIPTOR_TYPE:
-        nt = collections.namedtuple('CfgDescr',
-            ['bLength', 'bDescriptorType', 'bmAttributes',
-            'wDetachTimeOut', 'wTransferSize', 'bcdDFUVersion'])
+        nt = collections.namedtuple(
+            'CfgDescr',
+            [
+                'bLength',
+                'bDescriptorType',
+                'bmAttributes',
+                'wDetachTimeOut',
+                'wTransferSize',
+                'bcdDFUVersion'
+            ]
+        )
         return nt(*struct.unpack('<BBBHHH', bytearray(descr)))
     return None
 
@@ -96,7 +104,7 @@ def init():
     if not devices:
         raise ValueError('No DFU device found')
     if len(devices) > 1:
-        raise ValueError("Multiple DFU devices found")
+        raise ValueError('Multiple DFU devices found')
     __dev = devices[0]
     __dev.set_configuration()
 
@@ -141,57 +149,56 @@ def get_status():
     """Get the status of the last operation."""
     stat = __dev.ctrl_transfer(0xA1, __DFU_GETSTATUS, 0, __DFU_INTERFACE,
                                6, 20000)
-    # print (__DFU_STAT[stat[4]], stat)
     return stat[4]
 
 
 def mass_erase():
-    """Performs a MASS erase (i.e. erases the entire device."""
+    """Performs a MASS erase (i.e. erases the entire device)."""
     # Send DNLOAD with first byte=0x41
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE,
-                        "\x41", __TIMEOUT)
+                        '\x41', __TIMEOUT)
 
     # Execute last command
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: erase failed")
+        raise Exception('DFU: erase failed')
 
     # Check command state
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: erase failed")
+        raise Exception('DFU: erase failed')
 
 
 def page_erase(addr):
     """Erases a single page."""
     if __verbose:
-        print("Erasing page: 0x%x..." % (addr))
+        print('Erasing page: 0x%x...' % (addr))
 
     # Send DNLOAD with first byte=0x41 and page address
-    buf = struct.pack("<BI", 0x41, addr)
+    buf = struct.pack('<BI', 0x41, addr)
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: erase failed")
+        raise Exception('DFU: erase failed')
 
     # Check command state
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
 
-        raise Exception("DFU: erase failed")
+        raise Exception('DFU: erase failed')
 
 
 def set_address(addr):
     """Sets the address for the next operation."""
     # Send DNLOAD with first byte=0x21 and page address
-    buf = struct.pack("<BI", 0x21, addr)
+    buf = struct.pack('<BI', 0x21, addr)
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: set address failed")
+        raise Exception('DFU: set address failed')
 
     # Check command state
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: set address failed")
+        raise Exception('DFU: set address failed')
 
 
 def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
@@ -206,28 +213,28 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
 
     while xfer_bytes < xfer_total:
         if __verbose and xfer_count % 512 == 0:
-            print ("Addr 0x%x %dKBs/%dKBs..." % (xfer_base + xfer_bytes,
-                                                 xfer_bytes // 1024,
-                                                 xfer_total // 1024))
+            print('Addr 0x%x %dKBs/%dKBs...' % (xfer_base + xfer_bytes,
+                                                xfer_bytes // 1024,
+                                                xfer_total // 1024))
         if progress and xfer_count % 2 == 0:
             progress(progress_addr, xfer_base + xfer_bytes - progress_addr,
                      progress_size)
 
         # Set mem write address
-        set_address(xfer_base+xfer_bytes)
+        set_address(xfer_base + xfer_bytes)
 
         # Send DNLOAD with fw data
-        chunk = min(__cfg_descr.wTransferSize, xfer_total-xfer_bytes)
+        chunk = min(__cfg_descr.wTransferSize, xfer_total - xfer_bytes)
         __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE,
                             buf[xfer_bytes:xfer_bytes + chunk], __TIMEOUT)
 
         # Execute last command
         if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-            raise Exception("DFU: write memory failed")
+            raise Exception('DFU: write memory failed')
 
         # Check command state
         if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-            raise Exception("DFU: write memory failed")
+            raise Exception('DFU: write memory failed')
 
         xfer_count += 1
         xfer_bytes += chunk
@@ -241,27 +248,26 @@ def write_page(buf, xfer_offset):
     xfer_base = 0x08000000
 
     # Set mem write address
-    set_address(xfer_base+xfer_offset)
+    set_address(xfer_base + xfer_offset)
 
     # Send DNLOAD with fw data
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: write memory failed")
+        raise Exception('DFU: write memory failed')
 
     # Check command state
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: write memory failed")
+        raise Exception('DFU: write memory failed')
 
     if __verbose:
-        print ("Write: 0x%x " % (xfer_base + xfer_offset))
+        print('Write: 0x%x ' % (xfer_base + xfer_offset))
 
 
 def exit_dfu():
     """Exit DFU mode, and start running the program."""
-
-    # set jump address
+    # Set jump address
     set_address(0x08000000)
 
     # Send DNLOAD with 0 length to exit DFU
@@ -271,7 +277,7 @@ def exit_dfu():
     try:
         # Execute last command
         if get_status() != __DFU_STATE_DFU_MANIFEST:
-            print("Failed to reset device")
+            print('Failed to reset device')
 
         # Release device
         usb.util.dispose_resources(__dev)
@@ -288,6 +294,7 @@ def consume(fmt, data, names):
     """Parses the struct defined by `fmt` from `data`, stores the parsed fields
     into a named tuple using `names`. Returns the named tuple, and the data
     with the struct stripped off."""
+
     size = struct.calcsize(fmt)
     return named(struct.unpack(fmt, data[:size]), names), data[size:]
 
@@ -306,14 +313,14 @@ def read_dfu_file(filename):
     """Reads a DFU file, and parses the individual elements from the file.
     Returns an array of elements. Each element is a dictionary with the
     following keys:
-        num     - The element index
+        num     - The element index.
         address - The address that the element data should be written to.
-        size    - The size of the element ddata.
+        size    - The size of the element data.
         data    - The element data.
     If an error occurs while parsing the file, then None is returned.
     """
 
-    print("File: {}".format(filename))
+    print('File: {}'.format(filename))
     with open(filename, 'rb') as fin:
         data = fin.read()
     crc = compute_crc(data[:-4])
@@ -322,25 +329,25 @@ def read_dfu_file(filename):
     # Decode the DFU Prefix
     #
     # <5sBIB
-    #   <   little endian
+    #   <   little endian           Endianness
     #   5s  char[5]     signature   "DfuSe"
     #   B   uint8_t     version     1
-    #   I   uint32_t    size        Size of the DFU file (not including suffix)
+    #   I   uint32_t    size        Size of the DFU file (without suffix)
     #   B   uint8_t     targets     Number of targets
     dfu_prefix, data = consume('<5sBIB', data,
                                'signature version size targets')
-    print ("    %(signature)s v%(version)d, image size: %(size)d, "
-           "targets: %(targets)d" % dfu_prefix)
+    print('    %(signature)s v%(version)d, image size: %(size)d, '
+          'targets: %(targets)d' % dfu_prefix)
     for target_idx in range(dfu_prefix['targets']):
         # Decode the Image Prefix
         #
         # <6sBI255s2I
-        #   <   little endian
+        #   <       little endian           Endianness
         #   6s      char[6]     signature   "Target"
         #   B       uint8_t     altsetting
-        #   I       uint32_t    named       bool indicating if a name was used
-        #   255s    char[255]   name        name of the target
-        #   I       uint32_t    size        size of image (not incl prefix)
+        #   I       uint32_t    named       Bool indicating if a name was used
+        #   255s    char[255]   name        Name of the target
+        #   I       uint32_t    size        Size of image (without prefix)
         #   I       uint32_t    elements    Number of elements in the image
         img_prefix, data = consume('<6sBI255s2I', data,
                                    'signature altsetting named name '
@@ -355,12 +362,15 @@ def read_dfu_file(filename):
               % img_prefix)
 
         target_size = img_prefix['size']
-        target_data, data = data[:target_size], data[target_size:]
+        target_data = data[:target_size]
+        data = data[target_size:]
         for elem_idx in range(img_prefix['elements']):
             # Decode target prefix
-            #   <   little endian
-            #   I   uint32_t    element address
-            #   I   uint32_t    element size
+            #
+            # <2I
+            #   <   little endian           Endianness
+            #   I   uint32_t    element     Address
+            #   I   uint32_t    element     Size
             elem_prefix, target_data = consume('<2I', target_data, 'addr size')
             elem_prefix['num'] = elem_idx
             print('      %(num)d, address: 0x%(addr)08x, size: %(size)d'
@@ -372,27 +382,29 @@ def read_dfu_file(filename):
             elements.append(elem_prefix)
 
         if len(target_data):
-            print("target %d PARSE ERROR" % target_idx)
+            print('target %d PARSE ERROR' % target_idx)
 
     # Decode DFU Suffix
-    #   <   little endian
-    #   H   uint16_t    device  Firmware version
+    #
+    # <4H3sBI
+    #   <   little endian           Endianness
+    #   H   uint16_t    device      Firmware version
     #   H   uint16_t    product
     #   H   uint16_t    vendor
-    #   H   uint16_t    dfu     0x11a   (DFU file format version)
-    #   3s  char[3]     ufd     'UFD'
-    #   B   uint8_t     len     16
-    #   I   uint32_t    crc32
+    #   H   uint16_t    dfu         0x11a   (DFU file format version)
+    #   3s  char[3]     ufd         "UFD"
+    #   B   uint8_t     len         16
+    #   I   uint32_t    crc32       Checksum
     dfu_suffix = named(struct.unpack('<4H3sBI', data[:16]),
                        'device product vendor dfu ufd len crc')
-    print ('    usb: %(vendor)04x:%(product)04x, device: 0x%(device)04x, '
-           'dfu: 0x%(dfu)04x, %(ufd)s, %(len)d, 0x%(crc)08x' % dfu_suffix)
+    print('    usb: %(vendor)04x:%(product)04x, device: 0x%(device)04x, '
+          'dfu: 0x%(dfu)04x, %(ufd)s, %(len)d, 0x%(crc)08x' % dfu_suffix)
     if crc != dfu_suffix['crc']:
-        print("CRC ERROR: computed crc32 is 0x%08x" % crc)
+        print('CRC ERROR: computed crc32 is 0x%08x' % crc)
         return
     data = data[16:]
     if data:
-        print("PARSE ERROR")
+        print('PARSE ERROR')
         return
 
     return elements
@@ -411,11 +423,12 @@ class FilterDFU(object):
 
 
 def get_dfu_devices(*args, **kwargs):
-    """Returns a list of USB device which are currently in DFU mode.
-    Additional filters (like idProduct and idVendor) can be passed in to
-    refine the search.
+    """Returns a list of USB devices which are currently in DFU mode.
+    Additional filters (like idProduct and idVendor) can be passed in
+    to refine the search.
     """
-    # convert to list for compatibility with newer pyusb
+
+    # Convert to list for compatibility with newer PyUSB
     return list(usb.core.find(*args, find_all=True,
                               custom_match=FilterDFU(), **kwargs))
 
@@ -423,12 +436,13 @@ def get_dfu_devices(*args, **kwargs):
 def get_memory_layout(device):
     """Returns an array which identifies the memory layout. Each entry
     of the array will contain a dictionary with the following keys:
-        addr        - Address of this memory segment
+        addr        - Address of this memory segment.
         last_addr   - Last address contained within the memory segment.
-        size        - size of the segment, in bytes
-        num_pages   - number of pages in the segment
-        page_size   - size of each page, in bytes
+        size        - Size of the segment, in bytes.
+        num_pages   - Number of pages in the segment.
+        page_size   - Size of each page, in bytes.
     """
+
     cfg = device[0]
     intf = cfg[(0, 0)]
     mem_layout_str = get_string(device, intf.iInterface)
@@ -450,7 +464,7 @@ def get_memory_layout(device):
             size = num_pages * page_size
             last_addr = addr + size - 1
             result.append(named((addr, last_addr, size, num_pages, page_size),
-                          "addr last_addr size num_pages page_size"))
+                          'addr last_addr size num_pages page_size'))
             addr += size
     return result
 
@@ -459,16 +473,16 @@ def list_dfu_devices(*args, **kwargs):
     """Prints a lits of devices detected in DFU mode."""
     devices = get_dfu_devices(*args, **kwargs)
     if not devices:
-        print("No DFU capable devices found")
+        print('No DFU capable devices found')
         return
     for device in devices:
-        print("Bus {} Device {:03d}: ID {:04x}:{:04x}"
+        print('Bus {} Device {:03d}: ID {:04x}:{:04x}'
               .format(device.bus, device.address,
                       device.idVendor, device.idProduct))
         layout = get_memory_layout(device)
-        print("Memory Layout")
+        print('Memory Layout')
         for entry in layout:
-            print("    0x{:x} {:2d} pages of {:3d}K bytes"
+            print('    0x{:x} {:2d} pages of {:3d}K bytes'
                   .format(entry['addr'], entry['num_pages'],
                           entry['page_size'] // 1024))
 
@@ -514,15 +528,15 @@ def cli_progress(addr, offset, size):
     """Prints a progress report suitable for use on the command line."""
     width = 25
     done = offset * width // size
-    print("\r0x{:08x} {:7d} [{}{}] {:3d}% "
+    print('\r0x{:08x} {:7d} [{}{}] {:3d}% '
           .format(addr, size, '=' * done, ' ' * (width - done),
-                  offset * 100 // size), end="")
+                  offset * 100 // size), end='')
     try:
         sys.stdout.flush()
     except OSError:
-        pass # Ignore Windows CLI "WinError 87" on Python 3.6
+        pass    # Ignore Windows CLI "WinError 87" on Python 3.6
     if offset == size:
-        print("")
+        print('')
 
 
 def main():
@@ -530,29 +544,28 @@ def main():
     global __verbose
     # Parse CMD args
     parser = argparse.ArgumentParser(description='DFU Python Util')
-    #parser.add_argument("path", help="file path")
     parser.add_argument(
-        "-l", "--list",
-        help="list available DFU devices",
-        action="store_true",
+        '-l', '--list',
+        help='list available DFU devices',
+        action='store_true',
         default=False
     )
     parser.add_argument(
-        "-m", "--mass-erase",
-        help="mass erase device",
-        action="store_true",
+        '-m', '--mass-erase',
+        help='mass erase device',
+        action='store_true',
         default=False
     )
     parser.add_argument(
-        "-u", "--upload",
-        help="read file from DFU device",
-        dest="path",
+        '-u', '--upload',
+        help='read file from DFU device',
+        dest='path',
         default=False
     )
     parser.add_argument(
-        "-v", "--verbose",
-        help="increase output verbosity",
-        action="store_true",
+        '-v', '--verbose',
+        help='increase output verbosity',
+        action='store_true',
         default=False
     )
     args = parser.parse_args()
@@ -566,21 +579,21 @@ def main():
     init()
 
     if args.mass_erase:
-        print ("Mass erase...")
+        print('Mass erase...')
         mass_erase()
 
     if args.path:
         elements = read_dfu_file(args.path)
         if not elements:
             return
-        print("Writing memory...")
+        print('Writing memory...')
         write_elements(elements, args.mass_erase, progress=cli_progress)
 
-        print("Exiting DFU...")
+        print('Exiting DFU...')
         exit_dfu()
         return
 
-    print("No command specified")
+    print('No command specified')
 
 if __name__ == '__main__':
     main()
