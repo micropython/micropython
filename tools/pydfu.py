@@ -127,8 +127,8 @@ def init():
         status = get_status()
         if status == __DFU_STATE_DFU_IDLE:
             break
-        elif (status == __DFU_STATE_DFU_DOWNLOAD_IDLE or
-              status == __DFU_STATE_DFU_UPLOAD_IDLE):
+        elif (status == __DFU_STATE_DFU_DOWNLOAD_IDLE
+            or status == __DFU_STATE_DFU_UPLOAD_IDLE):
             abort_request()
         else:
             clr_status()
@@ -136,8 +136,7 @@ def init():
 
 def abort_request():
     """Sends an abort request."""
-    __dev.ctrl_transfer(0x21, __DFU_ABORT, 0, __DFU_INTERFACE,
-                        None, __TIMEOUT)
+    __dev.ctrl_transfer(0x21, __DFU_ABORT, 0, __DFU_INTERFACE, None, __TIMEOUT)
 
 
 def clr_status():
