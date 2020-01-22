@@ -161,7 +161,7 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
 
-    #if MICROPY_PY_THREAD
+    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
 
