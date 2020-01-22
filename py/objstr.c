@@ -910,7 +910,7 @@ STATIC bool istype(char ch) {
 }
 
 STATIC bool arg_looks_integer(mp_obj_t arg) {
-    return mp_obj_is_type(arg, &mp_type_bool) || mp_obj_is_int(arg);
+    return mp_obj_is_bool(arg) || mp_obj_is_int(arg);
 }
 
 STATIC bool arg_looks_numeric(mp_obj_t arg) {
