@@ -468,7 +468,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 0;
     } else if (obj == mp_const_true) {
         return 1;
-    } else if (mp_obj_is_type(obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(obj, &mp_type_int)) {
         return mp_obj_int_get_truncated(obj);
     } else if (mp_obj_is_str(obj)) {
         // pointer to the string (it's probably constant though!)
