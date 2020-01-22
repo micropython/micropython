@@ -68,8 +68,9 @@ STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
 }
 
 STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
-    //duty cycle is duty/0xFFFF fraction x (number of pulses per period)
-    return (duty*period) / ((1 << 16) - 1);
+    //duty cycle is (0xFFFF - duty)/0xFFFF fraction x (number of pulses per period)
+    //Note that pulses are inverted, so duty cycle is inverted
+    return ((0xFFFF - duty)*period) / ((1 << 16) - 1);
 }
 
 STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler, 
