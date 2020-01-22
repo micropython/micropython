@@ -111,15 +111,13 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     bool tim_taken_f_mismatch = false;
     bool var_freq_mismatch = false;
     bool first_time_setup = true;
-    mcu_tim_pin_obj_t l_tim = {0};
 
     for (uint i = 0; i < tim_num; i++) {
-        l_tim = mcu_tim_pin_list[i];
-        uint8_t l_tim_index = l_tim.tim_index - 1;
-        uint8_t l_tim_channel = l_tim.channel_index - 1;
+        uint8_t l_tim_index = mcu_tim_pin_list[i].tim_index - 1;
+        uint8_t l_tim_channel = mcu_tim_pin_list[i].channel_index - 1;
 
         //if pin is same
-        if (l_tim.pin == pin) {
+        if (mcu_tim_pin_list[i].pin == pin) {
             //check if the timer has a channel active
             if (reserved_tim[l_tim_index] != 0) {
                 //is it the same channel? (or all channels reserved by a var-freq)
@@ -140,7 +138,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 first_time_setup = false; //skip setting up the timer
             }
             //No problems taken, so set it up
-            self->tim = &l_tim;
+            self->tim = &mcu_tim_pin_list[i]; 
             break;
         }
     }
