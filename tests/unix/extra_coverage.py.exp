@@ -115,6 +115,14 @@ create: 1 1 1 1 1
 pop all: 1 3 4
 create: 3 3 3 1 1 1
 pop all: 1 2 4 5
+# mp_obj_is_type
+1 1
+0 0
+1 1
+1 1
+0 0
+1 1
+# end coverage.c
 0123456789 b'0123456789'
 7300
 7300

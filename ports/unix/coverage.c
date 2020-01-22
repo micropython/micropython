@@ -16,6 +16,8 @@
 #include "py/binary.h"
 #include "py/bc.h"
 
+// expected output of this file is found in extra_coverage.py.exp
+
 #if defined(MICROPY_UNIX_COVERAGE)
 
 // stream testing object
@@ -539,7 +541,7 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf.iput = 0;
         ringbuf.iget = 0;
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
-        
+
         // Two-byte get from ringbuf with one byte available.
         ringbuf.iput = 0;
         ringbuf.iget = 0;
@@ -575,6 +577,25 @@ STATIC mp_obj_t extra_coverage(void) {
         int t5[] = {3, 4, 5, 1, 2, -3};
         pairheap_test(MP_ARRAY_SIZE(t5), t5);
     }
+
+    // mp_obj_is_type and derivatives
+    {
+        mp_printf(&mp_plat_print, "# mp_obj_is_type\n");
+
+        // mp_obj_is_bool accepts only booleans
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_bool(mp_const_true), mp_obj_is_bool(mp_const_false));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_bool(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_bool(mp_const_none));
+
+        // mp_obj_is_integer accepts ints and booleans
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+
+        // mp_obj_is_int accepts small int and object ints
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+    }
+
+    mp_printf(&mp_plat_print, "# end coverage.c\n");
 
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
     s->base.type = &mp_type_stest_fileio;
