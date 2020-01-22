@@ -721,7 +721,8 @@ bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
-static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_type(o, &mp_type_bool); } // returns true if o is bool, small int or long int
+static inline bool mp_obj_is_bool(mp_const_obj_t o) { return (o == MP_ROM_FALSE) || (o == MP_ROM_TRUE) || mp_obj_is_type(o, &mp_type_bool); } // returns true if o is bool
+static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_bool(o); } // returns true if o is bool, small int or long int
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
@@ -812,6 +813,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
+mp_obj_t mp_obj_dict_copy(mp_obj_t self_in);
 static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
     return &((mp_obj_dict_t*)MP_OBJ_TO_PTR(dict))->map;
 }
