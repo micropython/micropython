@@ -122,7 +122,7 @@ STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
 
 STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #if MICROPY_ROM_TEXT_COMPRESSION
-    if (o->args->len == 1 && mp_obj_is_type(o->args->items[0], &mp_type_str)) {
+    if (o->args->len == 1 && mp_obj_is_exact_type(o->args->items[0], &mp_type_str)) {
         mp_obj_str_t *o_str = MP_OBJ_TO_PTR(o->args->items[0]);
         if (MP_IS_COMPRESSED_ROM_STRING(o_str->data)) {
             byte *buf = m_new_maybe(byte, MP_MAX_UNCOMPRESSED_TEXT_LEN + 1);

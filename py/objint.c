@@ -232,7 +232,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         // A small int; get the integer value to format.
         num = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        assert(mp_obj_is_type(self_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(self_in, &mp_type_int));
         // Not a small int.
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;

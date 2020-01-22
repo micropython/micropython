@@ -743,15 +743,29 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 // check for more specific object types.
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
-#define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+// don't use mp_obj_is_exact_type directly; use mp_obj_is_type which provides additional safety checks.
+// use the former only if you need to bypass these checks (because you've already checked everything else)
+#define mp_obj_is_exact_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type == (t)))
+
+// Type checks are split to a separate, constant result macro. This is so it doesn't hinder the compilers's
+// optimizations (other tricks like using ({ expr; exper; }) or (exp, expr, expr) in mp_obj_is_type() result
+// in missed optimizations)
+#define mp_type_assert_not_bool_int_str_nonetype(t) (         \
+     MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_bool),          \
+     MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_int),           \
+     MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_str),           \
+     MP_STATIC_ASSERT_NOT_MSC((t) != &mp_type_NoneType),      \
+     1)
+
+#define mp_obj_is_type(o, t) (mp_type_assert_not_bool_int_str_nonetype(t) && mp_obj_is_exact_type(o, t))
 #if MICROPY_OBJ_IMMEDIATE_OBJS
 // bool's are immediates, not real objects, so test for the 2 possible values.
 #define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
 #else
-#define mp_obj_is_bool(o) mp_obj_is_type(o, &mp_type_bool)
+#define mp_obj_is_bool(o) mp_obj_is_exact_type(o, &mp_type_bool)
 #endif
-#define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
-#define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
+#define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_exact_type(o, &mp_type_int))
+#define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_exact_type(o, &mp_type_str))
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
 #define mp_obj_is_dict_or_ordereddict(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == mp_obj_dict_make_new)
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))

@@ -2144,7 +2144,7 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
 qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
     if (mp_obj_is_qstr(self_in)) {
         return MP_OBJ_QSTR_VALUE(self_in);
-    } else if (mp_obj_is_type(self_in, &mp_type_str)) {
+    } else if (mp_obj_is_exact_type(self_in, &mp_type_str)) {
         mp_obj_str_t *self = MP_OBJ_TO_PTR(self_in);
         return qstr_from_strn((char *)self->data, self->len);
     } else {

@@ -91,7 +91,7 @@ mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // This particular routine should only be called for the mpz representation of the int.
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
     size_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
@@ -113,7 +113,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
@@ -181,7 +181,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
     } else {
-        assert(mp_obj_is_type(lhs_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(lhs_in, &mp_type_int));
         zlhs = &((mp_obj_int_t *)MP_OBJ_TO_PTR(lhs_in))->mpz;
     }
 
@@ -189,7 +189,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (mp_obj_is_small_int(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
-    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t *)MP_OBJ_TO_PTR(rhs_in))->mpz;
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
@@ -447,7 +447,7 @@ mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return mpz_as_float(&self->mpz);
 }
