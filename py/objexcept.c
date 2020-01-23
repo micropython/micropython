@@ -304,17 +304,19 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     */
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
-    return mp_obj_new_exception_args(exc_type, 0, NULL);
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
 }
 
 // "Optimized" version for common(?) case of having 1 exception arg
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    return mp_obj_new_exception_args(exc_type, 1, &arg);
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
-    return exc_type->make_new(exc_type, n_args, 0, args);
+    return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
