@@ -31,6 +31,7 @@
 #include <sys/time.h>
 
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
 
@@ -160,7 +161,9 @@ int mp_hal_stdin_rx_chr(void) {
     } else {
         main_term:;
 #endif
+        MP_THREAD_GIL_EXIT();
         int ret = read(0, &c, 1);
+        MP_THREAD_GIL_ENTER();
         if (ret == 0) {
             c = 4; // EOF, ctrl-D
         } else if (c == '\n') {
@@ -173,7 +176,9 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    MP_THREAD_GIL_EXIT();
     int ret = write(1, str, len);
+    MP_THREAD_GIL_ENTER();
     mp_uos_dupterm_tx_strn(str, len);
     (void)ret; // to suppress compiler warning
 }
