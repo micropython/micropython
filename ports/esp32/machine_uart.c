@@ -48,12 +48,17 @@ typedef struct _machine_uart_obj_t {
     int8_t cts;
     uint16_t txbuf;
     uint16_t rxbuf;
-    uint16_t timeout;       // timeout waiting for first char (in ms)
-    uint16_t timeout_char;  // timeout waiting between chars (in ms)
-    uint32_t invert;        // lines to invert
+    uint16_t timeout;             // timeout waiting for first char (in ms)
+    uint16_t timeout_char;        // timeout waiting between chars (in ms)
+    uint32_t invert;              // lines to invert
+    uint8_t uart_mode;            // UART mode
+    uint8_t flow_ctrl;            // hardware flow control
+    uint8_t rx_flow_ctrl_thresh;  // hardware flow control RTS threshold
 } machine_uart_obj_t;
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
+STATIC const char *_uart_mode_name[] = {"UART", "RS485_HALF_DUPLEX", "IRDA", "RS485_COLLISION_DETECT", "RS485_APP_CTRL"};
+STATIC const char *_flow_ctrl_name[] = {"DISABLE", "RTS", "CTS", "CTS_RTS"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
@@ -62,9 +67,9 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     uart_get_baudrate(self->uart_num, &baudrate);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u, uart_mode=%s, flow_ctrl=%s, rx_flow_ctrl_thresh=%d",
         self->uart_num, baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
+        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char, _uart_mode_name[self->uart_mode], _flow_ctrl_name[self->flow_ctrl], self->rx_flow_ctrl_thresh);
     if (self->invert) {
         mp_printf(print, ", invert=");
         uint32_t invert_mask = self->invert;
@@ -97,7 +102,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_uart_mode, ARG_flow_ctrl, ARG_rx_flow_ctrl_thresh };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -112,6 +117,9 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_uart_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_MODE_UART} },
+        { MP_QSTR_flow_ctrl, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HW_FLOWCTRL_DISABLE} },
+        { MP_QSTR_rx_flow_ctrl_thresh, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -243,6 +251,59 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
+
+    // set mode
+    switch (args[ARG_uart_mode].u_int) {
+        case 0:
+            uart_set_mode(self->uart_num, UART_MODE_UART);
+            self->uart_mode = 0;
+            break;
+        case 1:
+            uart_set_mode(self->uart_num, UART_MODE_RS485_HALF_DUPLEX);
+            self->uart_mode = 1;
+            break;
+        case 2:
+            uart_set_mode(self->uart_num, UART_MODE_IRDA);
+            self->uart_mode = 2;
+            break;
+        case 3:
+            uart_set_mode(self->uart_num, UART_MODE_RS485_COLLISION_DETECT);
+            self->uart_mode = 3;
+            break;
+        case 4:
+            uart_set_mode(self->uart_num, UART_MODE_RS485_APP_CTRL);
+            self->uart_mode = 4;
+            break;
+        default:
+            mp_raise_ValueError("invalid UART mode");
+            break;
+    }
+
+    // set hardware flow control threshold (RTS)
+    self->rx_flow_ctrl_thresh = args[ARG_rx_flow_ctrl_thresh].u_int;
+
+    // set hardware flow control
+    switch (args[ARG_flow_ctrl].u_int) {
+        case 0:
+            uart_set_hw_flow_ctrl(self->uart_num, UART_HW_FLOWCTRL_DISABLE, self->rx_flow_ctrl_thresh);
+            self->flow_ctrl= 0;
+            break;
+        case 1:
+            uart_set_hw_flow_ctrl(self->uart_num, UART_HW_FLOWCTRL_RTS, self->rx_flow_ctrl_thresh);
+            self->flow_ctrl= 1;
+            break;
+        case 2:
+            uart_set_hw_flow_ctrl(self->uart_num, UART_HW_FLOWCTRL_CTS, self->rx_flow_ctrl_thresh);
+            self->flow_ctrl= 2;
+            break;
+        case 3:
+            uart_set_hw_flow_ctrl(self->uart_num, UART_HW_FLOWCTRL_CTS_RTS, self->rx_flow_ctrl_thresh);
+            self->flow_ctrl= 3;
+            break;
+        default:
+            mp_raise_ValueError("invalid flow control");
+            break;
+    }
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -283,6 +344,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->rxbuf = 256; // IDF minimum
     self->timeout = 0;
     self->timeout_char = 0;
+    self->uart_mode = UART_MODE_UART;
+    self->flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
 
     switch (uart_num) {
         case UART_NUM_0:
