@@ -64,7 +64,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
     if (!MP_OBJ_IS_TYPE(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_ValueError(translate("Expected a UUID"));
+        mp_raise_TypeError(translate("Expected a UUID"));
     }
 
     const bool is_secondary = args[ARG_secondary].u_bool;
@@ -136,7 +136,7 @@ const mp_obj_property_t bleio_service_secondary_obj = {
 //|   .. attribute:: uuid
 //|
 //|     The UUID of this service. (read-only)
-//|     
+//|
 //|     Will be ``None`` if the 128-bit UUID for this service is not known.
 //|
 STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {

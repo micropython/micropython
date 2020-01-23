@@ -159,11 +159,11 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 }
 
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_list_t *self = mp_instance_cast_to_native_base(self_in, &mp_type_list);
     if (value == MP_OBJ_NULL) {
         // delete
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
                 mp_raise_NotImplementedError(NULL);
@@ -179,12 +179,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_const_none;
         }
 #endif
-        mp_obj_t args[2] = {self_in, index};
+        mp_obj_t args[2] = {self, index};
         list_pop(2, args);
         return mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-        mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
@@ -201,7 +200,6 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else {
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
-            mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             size_t value_len; mp_obj_t *value_items;
             mp_obj_get_array(value, &value_len, &value_items);
             mp_bound_slice_t slice_out;
@@ -230,7 +228,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_const_none;
         }
 #endif
-        mp_obj_list_store(self_in, index, value);
+        mp_obj_list_store(self, index, value);
         return mp_const_none;
     }
 }

@@ -122,7 +122,16 @@ else
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
+
   CFLAGS += -flto -flto-partition=none
+
+  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
+  endif
+
+  ifdef CFLAGS_BOARD
+    CFLAGS += $(CFLAGS_BOARD)
+  endif
 endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
@@ -148,7 +157,7 @@ endif
 
 
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
@@ -224,7 +233,7 @@ SRC_C = \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
-	lib/tinyusb/src/portable/microchip/$(CHIP_FAMILY)/dcd_$(CHIP_FAMILY).c \
+	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
@@ -292,12 +301,17 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
+# There may be duplicates between SRC_COMMON_HAL_EXPANDED and SRC_SHARED_MODULE_EXPANDED,
+# because a few modules have files both in common-hal/ and shared-modules/.
+# Doing a $(sort ...) removes duplicates as part of sorting.
+SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
+
+
 SRC_S = supervisor/$(CHIP_FAMILY)_cpu.s
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
 ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
@@ -310,10 +324,10 @@ SRC_QSTR_PREPROCESSOR += peripherals/samd/$(CHIP_FAMILY)/clocks.c
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(CC) -o $@ $(LDFLAGS) $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"

@@ -1,4 +1,3 @@
-LD_FILE = boards/samd51x20-bootloader-external-flash.ld
 # Adafruit
 USB_VID = 0x239A
 # Allocated for Winterbloom Sol
@@ -6,6 +5,7 @@ USB_VID = 0x239A
 USB_PID = 0x8062
 USB_PRODUCT = "Sol"
 USB_MANUFACTURER = "Winterbloom"
+USB_INTERFACE_NAME = "Sol"
 
 CHIP_VARIANT = SAMD51J20A
 CHIP_FAMILY = samd51

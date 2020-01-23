@@ -37,12 +37,11 @@ typedef struct {
 } pixelbuf_rgbw_t;
 
 typedef struct {
-    mp_obj_base_t base;
-    qstr name;
     uint8_t bpp;
     pixelbuf_rgbw_t byteorder;
     bool has_white;
-    bool has_luminosity;
-} pixelbuf_byteorder_obj_t;
+    bool is_dotstar;
+    mp_obj_t *order;
+} pixelbuf_byteorder_details_t;
 
 #endif // CIRCUITPYTHON_PIXELBUF_TYPES_H

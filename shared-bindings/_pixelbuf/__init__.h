@@ -29,9 +29,7 @@
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
-STATIC void pixelbuf_byteorder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 const int32_t colorwheel(float pos);
-const mp_obj_type_t pixelbuf_byteorder_type;
 extern void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes);
 
 #endif //CP_SHARED_BINDINGS_PIXELBUF_INIT_H

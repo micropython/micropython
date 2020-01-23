@@ -67,7 +67,7 @@ mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, const
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)mp_proto_get(QSTR_protocol_spi, s);
     spi_p->init(s, n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -75,7 +75,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
     mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)mp_proto_get(QSTR_protocol_spi, s);
     if (spi_p->deinit != NULL) {
         spi_p->deinit(s);
     }
@@ -85,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
 STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
     mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)mp_proto_get(QSTR_protocol_spi, s);
     spi_p->transfer(s, len, src, dest);
 }
 
@@ -268,6 +268,7 @@ STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, con
 }
 
 const mp_machine_spi_p_t mp_machine_soft_spi_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_spi)
     .init = mp_machine_soft_spi_init,
     .deinit = NULL,
     .transfer = mp_machine_soft_spi_transfer,

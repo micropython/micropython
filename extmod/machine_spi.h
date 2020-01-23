@@ -27,11 +27,13 @@
 #define MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
 
 #include "py/obj.h"
+#include "py/proto.h"
 #include "py/mphal.h"
 #include "drivers/bus/spi.h"
 
 // SPI protocol
 typedef struct _mp_machine_spi_p_t {
+    MP_PROTOCOL_HEAD
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
     void (*deinit)(mp_obj_base_t *obj); // can be NULL
     void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);

@@ -67,13 +67,13 @@ PLATFORM := $(firstword $(subst _, ,$(shell uname -s 2>/dev/null)))
 
 ifeq ($(PLATFORM),Darwin)
   # macOS
-  MKSPK = $(SPRESENSE_SDK)/sdk/tools/macos/mkspk
+  MKSPK = mkspk/mkspk
 else ifeq ($(PLATFORM),Linux)
   # Linux
-  MKSPK = $(SPRESENSE_SDK)/sdk/tools/linux/mkspk
+  MKSPK = mkspk/mkspk
 else
   # Cygwin/MSYS2
-  MKSPK = $(SPRESENSE_SDK)/sdk/tools/windows/mkspk.exe
+  MKSPK = mkspk/mkspk.exe
 endif
 
 SERIAL ?= /dev/ttyUSB0
@@ -131,6 +131,7 @@ LDFLAGS = \
 	-o $(BUILD)/firmware.elf \
 	--start-group \
 	-u spresense_main \
+	-u board_timerhook \
 	$(BUILD)/libmpy.a \
 	$(SPRESENSE_SDK)/sdk/libs/libapps.a \
 	$(SPRESENSE_SDK)/sdk/libs/libsdk.a \
@@ -200,7 +201,10 @@ $(BUILD)/firmware.elf: $(BUILD)/libmpy.a
 	$(ECHO) "LD $@"
 	$(Q)$(LD) $(LDFLAGS)
 
-$(BUILD)/firmware.spk: $(BUILD)/firmware.elf
+$(MKSPK):
+	$(MAKE) -C mkspk
+
+$(BUILD)/firmware.spk: $(BUILD)/firmware.elf $(MKSPK)
 	$(ECHO) "Creating $@"
 	$(MKSPK) -c 2 $(BUILD)/firmware.elf nuttx $(BUILD)/firmware.spk
 

@@ -35,6 +35,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/display_core.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
 
 #include <stdint.h>
@@ -113,7 +114,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
-            never_reset_pin_number(backlight_pin->number);
+            common_hal_never_reset_pin(backlight_pin);
         } else {
             self->backlight_pwm.base.type = &pulseio_pwmout_type;
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
@@ -307,13 +308,30 @@ STATIC void _refresh_display(displayio_display_obj_t* self) {
     displayio_display_core_finish_refresh(&self->core);
 }
 
+void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, int rotation){
+    bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
+    bool will_transposed = (rotation == 90 || rotation == 270);
+    if(transposed != will_transposed) {
+        int tmp = self->core.width;
+        self->core.width = self->core.height;
+        self->core.height = tmp;
+    }
+    displayio_display_core_set_rotation(&self->core, rotation);
+    supervisor_stop_terminal();
+    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self->core.current_group != NULL) {
+        displayio_group_update_transform(self->core.current_group, &self->core.transform);
+    }
+}
+
 uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self){
     return self->core.rotation;
 }
 
+
 bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
     if (!self->auto_refresh && !self->first_manual_refresh) {
-        uint64_t current_time = ticks_ms;
+        uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
         if (current_ms_since_real_refresh > maximum_ms_per_real_frame) {
@@ -327,7 +345,7 @@ bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_
         }
         uint32_t remaining_time = target_ms_per_frame - (current_ms_since_real_refresh % target_ms_per_frame);
         // We're ahead of the game so wait until we align with the frame rate.
-        while (ticks_ms - self->last_refresh_call < remaining_time) {
+        while (supervisor_ticks_ms64() - self->last_refresh_call < remaining_time) {
             RUN_BACKGROUND_TASKS;
         }
     }
@@ -350,20 +368,20 @@ STATIC void _update_backlight(displayio_display_obj_t* self) {
     if (!self->auto_brightness || self->updating_backlight) {
         return;
     }
-    if (ticks_ms - self->last_backlight_refresh < 100) {
+    if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
         return;
     }
     // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
     // should account for ambient light when possible.
     common_hal_displayio_display_set_brightness(self, 1.0);
 
-    self->last_backlight_refresh = ticks_ms;
+    self->last_backlight_refresh = supervisor_ticks_ms64();
 }
 
 void displayio_display_background(displayio_display_obj_t* self) {
     _update_backlight(self);
 
-    if (self->auto_refresh && (ticks_ms - self->core.last_refresh) > self->native_ms_per_frame) {
+    if (self->auto_refresh && (supervisor_ticks_ms64() - self->core.last_refresh) > self->native_ms_per_frame) {
         _refresh_display(self);
     }
 }

@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/objnamedtuple.h"
+#include "py/objtype.h"
 
 #include "supervisor/shared/translate.h"
 

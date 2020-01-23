@@ -33,6 +33,7 @@
 #include "shared-bindings/_bleio/Service.h"
 
 #include "common-hal/_bleio/Adapter.h"
+#include "common-hal/_bleio/bonding.h"
 
 STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;
@@ -46,8 +47,8 @@ STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_hand
     if (err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING) {
         // CCCD is not set, so say that neither Notify nor Indicate is enabled.
         cccd = 0;
-    } else if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to read CCCD value, err 0x%04x"), err_code);
+    } else {
+        check_nrf_error(err_code);
     }
 
     return cccd;
@@ -78,7 +79,7 @@ STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_
         }
 
         // Some real error has occurred.
-        mp_raise_OSError_msg_varg(translate("Failed to notify or indicate attribute value, err 0x%04x"), err_code);
+        check_nrf_error(err_code);
     }
 }
 
@@ -154,7 +155,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);
             // Check to see if we need to notify or indicate any active connections.
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                bleio_connection_internal_t *connection = &connections[i];
+                bleio_connection_internal_t *connection = &bleio_connections[i];
                 uint16_t conn_handle = connection->conn_handle;
                 if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
                     continue;
@@ -213,11 +214,7 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
         .max_len = descriptor->max_length,
     };
 
-    uint32_t err_code = sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle);
-
-    if (err_code != NRF_SUCCESS) {
-        mp_raise_OSError_msg_varg(translate("Failed to add descriptor, err 0x%04x"), err_code);
-    }
+    check_nrf_error(sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle));
 
     descriptor->next = self->descriptor_list;
     self->descriptor_list = descriptor;
@@ -225,11 +222,11 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
     if (self->cccd_handle == BLE_GATT_HANDLE_INVALID) {
-        mp_raise_ValueError(translate("No CCCD for this Characteristic"));
+        mp_raise_bleio_BluetoothError(translate("No CCCD for this Characteristic"));
     }
 
     if (!common_hal_bleio_service_get_is_remote(self->service)) {
-        mp_raise_ValueError(translate("Can't set CCCD on local Characteristic"));
+        mp_raise_bleio_RoleError(translate("Can't set CCCD on local Characteristic"));
     }
 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
@@ -261,7 +258,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
         }
 
         // Some real error occurred.
-        mp_raise_OSError_msg_varg(translate("Failed to write CCCD, err 0x%04x"), err_code);
+        check_nrf_error(err_code);
     }
 
 }

@@ -90,6 +90,7 @@ STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, in
 }
 
 STATIC const mp_stream_p_t iobase_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = iobase_read,
     .write = iobase_write,
     .ioctl = iobase_ioctl,
@@ -185,6 +186,7 @@ STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
 STATIC const mp_stream_p_t bufwriter_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .write = bufwriter_write,
 };
 

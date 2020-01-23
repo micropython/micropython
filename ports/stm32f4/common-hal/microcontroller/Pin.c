@@ -26,10 +26,16 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "supervisor/shared/rgb_led_status.h"
 
 #include "py/mphal.h"
 #include "stm32f4/pins.h"
 #include "stm32f4xx_hal.h"
+
+#ifdef MICROPY_HW_NEOPIXEL
+bool neopixel_in_use;
+#endif
 
 #if MCU_PACKAGE == 144
     #define GPIO_PORT_COUNT 7
@@ -40,7 +46,11 @@
 #elif MCU_PACKAGE == 64
     #define GPIO_PORT_COUNT 3
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
+#elif MCU_PACKAGE == 48
+    #define GPIO_PORT_COUNT 3
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
 #endif
+
 
 STATIC uint16_t claimed_pins[GPIO_PORT_COUNT];
 STATIC uint16_t never_reset_pins[GPIO_PORT_COUNT];
@@ -53,6 +63,10 @@ void reset_all_pins(void) {
     for (uint8_t i = 0; i < GPIO_PORT_COUNT; i++) {
         HAL_GPIO_DeInit(ports[i], ~never_reset_pins[i]);
     }
+
+    #ifdef MICROPY_HW_NEOPIXEL
+    neopixel_in_use = false;
+    #endif
 }
 
 // Mark pin as free and return it to a quiescent state.
@@ -60,21 +74,40 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     if (pin_port == 0x0F) {
         return;
     }
-
-    // Clear claimed bit.
+    // Clear claimed bit & reset
     claimed_pins[pin_port] &= ~(1<<pin_number);
-    // Reset the pin
     HAL_GPIO_DeInit(ports[pin_port], 1<<pin_number);
-}
 
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin_port == MICROPY_HW_NEOPIXEL->port && pin_number == MICROPY_HW_NEOPIXEL->number) {
+        neopixel_in_use = false;
+        rgb_led_status_init();
+        return;
+    }
+    #endif
+}
 
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     never_reset_pins[pin_port] |= 1<<pin_number;
 }
 
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+    never_reset_pin_number(pin->port, pin->number);
+}
+
+void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    reset_pin_number(pin->port, pin->number);
+}
+
 void claim_pin(const mcu_pin_obj_t* pin) {
     // Set bit in claimed_pins bitmask.
     claimed_pins[pin->port] |= 1<<pin->number;
+
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        neopixel_in_use = true;
+    }
+    #endif
 }
 
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
@@ -82,6 +115,12 @@ bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        return !neopixel_in_use;
+    }
+    #endif
+
     return pin_number_is_free(pin->port, pin->number);
 }
 

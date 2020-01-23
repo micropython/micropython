@@ -30,6 +30,7 @@
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/Device.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/tick.h"
 #include "tusb.h"
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
@@ -46,8 +47,8 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
     }
 
     // Wait until interface is ready, timeout = 2 seconds
-    uint64_t end_ticks = ticks_ms + 2000;
-    while ( (ticks_ms < end_ticks) && !tud_hid_ready() ) {
+    uint64_t end_ticks = supervisor_ticks_ms64() + 2000;
+    while ( (supervisor_ticks_ms64() < end_ticks) && !tud_hid_ready() ) {
         RUN_BACKGROUND_TASKS;
     }
 

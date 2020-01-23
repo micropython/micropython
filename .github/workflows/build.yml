@@ -73,6 +73,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
@@ -84,6 +85,7 @@ jobs:
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
         - "circuitplayground_express_displayio"
+        - "clue_nrf52840_express"
         - "cp32-m4"
         - "datalore_ip_m4"
         - "datum_distance"
@@ -101,6 +103,8 @@ jobs:
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
         - "feather_m4_express"
+        - "feather_mimxrt1011"
+        - "feather_mimxrt1062"
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
@@ -108,6 +112,7 @@ jobs:
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
+        - "imxrt1010_evk"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
         - "itsybitsy_nrf52840_express"
@@ -122,6 +127,8 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "ohs2020_badge"
+        - "openbook_m4"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
@@ -130,6 +137,7 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
+        - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
@@ -138,10 +146,11 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
-        - "robohatmm1_m0"
         - "robohatmm1_m4"
         - "sam32"
+        - "seeeduino_xiao"
         - "serpente"
+        - "shirtty"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
@@ -151,15 +160,19 @@ jobs:
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
         - "spresense"
+        - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stringcar_m0_express"
+        - "teknikio_bluebird"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
+        - "xinabox_cc03"
+        - "xinabox_cs11"
 
     steps:
     - name: Set up Python 3.5
@@ -170,7 +183,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2018q2-1~xenial1_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb
+        wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -191,7 +205,7 @@ jobs:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
     - name: Upload to S3
-      run: aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -200,7 +214,7 @@ jobs:
       run: |
         pip install uritemplate
     - name: Upload to Release
-      run: python3 -u upload_release_files.py
+      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
       working-directory: tools
       env:
         UPLOAD_URL: ${{ github.event.release.upload_url }}

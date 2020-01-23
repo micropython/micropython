@@ -31,6 +31,7 @@
 #include "py/gc.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
@@ -48,8 +49,8 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     gc_never_free(self->bus);
 
     self->frequency = baudrate;
-    self->polarity = common_hal_busio_spi_get_polarity(spi);
-    self->phase = common_hal_busio_spi_get_phase(spi);
+    self->polarity = 0;
+    self->phase = 0;
 
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
@@ -61,12 +62,12 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
         self->reset.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
-        never_reset_pin_number(reset->number);
+        common_hal_never_reset_pin(reset);
         common_hal_displayio_fourwire_reset(self);
     }
 
-    never_reset_pin_number(command->number);
-    never_reset_pin_number(chip_select->number);
+    common_hal_never_reset_pin(command);
+    common_hal_never_reset_pin(chip_select);
 }
 
 void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
@@ -74,9 +75,9 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
         common_hal_busio_spi_deinit(self->bus);
     }
 
-    reset_pin_number(self->command.pin->number);
-    reset_pin_number(self->chip_select.pin->number);
-    reset_pin_number(self->reset.pin->number);
+    common_hal_reset_pin(self->command.pin);
+    common_hal_reset_pin(self->chip_select.pin);
+    common_hal_reset_pin(self->reset.pin);
 }
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {

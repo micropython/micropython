@@ -30,13 +30,14 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
 #include "shared-bindings/_bleio/UUID.h"
 #include "shared-bindings/util.h"
 
 STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
-        mp_raise_ValueError(translate("Not connected"));
+        mp_raise_bleio_ConnectionError(translate("Not connected"));
     }
 }
 
@@ -83,7 +84,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
     }
 
     if (!MP_OBJ_IS_TYPE(characteristic, &bleio_characteristic_type)) {
-        mp_raise_ValueError(translate("Expected a Characteristic"));
+        mp_raise_TypeError(translate("Expected a Characteristic"));
     }
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
@@ -151,9 +152,6 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     raise_error_if_not_connected(self);
-    if (!common_hal_bleio_characteristic_buffer_connected(self)) {
-        mp_raise_ValueError(translate("Not connected"));
-    }
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
         mp_uint_t flags = arg;
@@ -232,6 +230,7 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] =
 STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
 
 STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = bleio_characteristic_buffer_read,
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,

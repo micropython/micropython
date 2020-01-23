@@ -25,7 +25,7 @@
  */
 
 #include "nrfx.h"
-#include "nrf_nvmc.h"
+#include "nrfx_nvmc.h"
 
 void nrf_peripherals_power_init(void) {
     // Set GPIO reference voltage to 3.3V if it isn't already. REGOUT0 will get reset to 0xfffffff
@@ -33,7 +33,7 @@ void nrf_peripherals_power_init(void) {
     // This matters only when "high voltage mode" is enabled, which is true on the PCA10059,
     // and might be true on other boards.
     if (NRF_UICR->REGOUT0 == 0xffffffff) {
-        nrf_nvmc_write_word((uint32_t) &NRF_UICR->REGOUT0, UICR_REGOUT0_VOUT_3V3 << UICR_REGOUT0_VOUT_Pos);
+        nrfx_nvmc_word_write((uint32_t) &NRF_UICR->REGOUT0, UICR_REGOUT0_VOUT_3V3 << UICR_REGOUT0_VOUT_Pos);
         // Must reset to make enable change.
         NVIC_SystemReset();
     }

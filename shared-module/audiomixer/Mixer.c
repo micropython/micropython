@@ -76,6 +76,14 @@ uint32_t common_hal_audiomixer_mixer_get_sample_rate(audiomixer_mixer_obj_t* sel
     return self->sample_rate;
 }
 
+uint8_t common_hal_audiomixer_mixer_get_channel_count(audiomixer_mixer_obj_t* self) {
+    return self->channel_count;
+}
+
+uint8_t common_hal_audiomixer_mixer_get_bits_per_sample(audiomixer_mixer_obj_t* self) {
+    return self->bits_per_sample;
+}
+
 bool common_hal_audiomixer_mixer_get_playing(audiomixer_mixer_obj_t* self) {
     for (uint8_t v = 0; v < self->voice_count; v++) {
         if (common_hal_audiomixer_mixervoice_get_playing(MP_OBJ_TO_PTR(self->voice[v]))) {
