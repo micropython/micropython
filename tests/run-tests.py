@@ -424,9 +424,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
 
-    # Some tests shouldn't be run on a PC
-    if args.target == "unix":
-        # unix build does not have the GIL so can't run thread mutation tests
+    # these builds do not have the GIL so they can't run thread mutation tests
+    if args.target in ('unix', 'linux-kernel'):
         for t in tests:
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
