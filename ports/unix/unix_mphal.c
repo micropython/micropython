@@ -41,6 +41,11 @@
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
+        #if MICROPY_PY_THREAD_GIL
+        // Since signals can occur at any time, we may not be holding the GIL when
+        // this callback is called, so it is not safe to raise an exception here
+        #error "MICROPY_ASYNC_KBD_INTR and MICROPY_PY_THREAD_GIL are not compatible"
+        #endif
         mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
         sigemptyset(&mask);
