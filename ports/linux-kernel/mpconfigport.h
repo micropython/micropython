@@ -77,6 +77,9 @@
 #define MICROPY_STACKLESS           (1)
 #define MICROPY_STACKLESS_STRICT    (1)
 #define MICROPY_NO_ALLOCA           (1)
+#define MICROPY_PY_UTIME_MP_HAL     (1)
+#define MICROPY_PY_UTIME            (1)
+
 
 #ifdef INCLUDE_STRUCT_LAYOUT
 #define MICROPY_MODULE_FROZEN_MPY   (1)
