@@ -127,6 +127,8 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	extmod/machine_mem.c \
 	extmod/moductypes.c \
+	modutime.c \
+	extmod/utime_mphal.c \
 	modkernel_ffi.c \
 	modmachine.c
 
