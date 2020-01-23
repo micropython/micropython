@@ -40,7 +40,7 @@
 //#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
 
 // On-board flash
-// #define SPI_FLASH_MOSI_PIN          (&pin_PB15)
-// #define SPI_FLASH_MISO_PIN          (&pin_PB14)
-// #define SPI_FLASH_SCK_PIN           (&pin_PB13)
-// #define SPI_FLASH_CS_PIN            (&pin_PB01)
+#define SPI_FLASH_MOSI_PIN          (&pin_PB15)
+#define SPI_FLASH_MISO_PIN          (&pin_PB14)
+#define SPI_FLASH_SCK_PIN           (&pin_PB13)
+#define SPI_FLASH_CS_PIN            (&pin_PB01)
