@@ -285,7 +285,12 @@ void mp_unix_mark_exec(void);
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #else
-#define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
+#define MP_PLAT_PRINT_STRN(str, len) do { \
+    MP_THREAD_GIL_EXIT(); \
+    ssize_t ret = write(1, str, len); \
+    MP_THREAD_GIL_ENTER(); \
+    (void)ret; \
+} while (0)
 #endif
 
 #ifdef __linux__
