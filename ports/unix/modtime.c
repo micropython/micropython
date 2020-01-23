@@ -117,10 +117,16 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     }
     RAISE_ERRNO(res, errno);
     #else
-    // TODO: Handle EINTR
-    MP_THREAD_GIL_EXIT();
-    sleep(mp_obj_get_int(arg));
-    MP_THREAD_GIL_ENTER();
+    int seconds = mp_obj_get_int(arg);
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        seconds = sleep(seconds);
+        MP_THREAD_GIL_ENTER();
+        if (seconds == 0) {
+            break;
+        }
+        mp_handle_pending(true);
+    }
     #endif
     return mp_const_none;
 }

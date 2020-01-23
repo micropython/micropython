@@ -94,11 +94,8 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
-    MP_THREAD_GIL_EXIT();
-    mp_int_t r = read(o->fd, buf, size);
-    MP_THREAD_GIL_ENTER();
-    if (r == -1) {
-        int err = errno;
+    ssize_t r;
+    MP_HAL_RETRY_SYSCALL(r, read(o->fd, buf, size), {
         // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
         // timed out, and need to convert that to ETIMEDOUT.
         if (err == EAGAIN && o->blocking) {
@@ -107,17 +104,14 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 
         *errcode = err;
         return MP_STREAM_ERROR;
-    }
-    return r;
+    });
+    return (mp_uint_t)r;
 }
 
 STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
-    MP_THREAD_GIL_EXIT();
-    mp_int_t r = write(o->fd, buf, size);
-    MP_THREAD_GIL_ENTER();
-    if (r == -1) {
-        int err = errno;
+    ssize_t r;
+    MP_HAL_RETRY_SYSCALL(r, write(o->fd, buf, size), {
         // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
         // timed out, and need to convert that to ETIMEDOUT.
         if (err == EAGAIN && o->blocking) {
@@ -126,8 +120,8 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
         *errcode = err;
         return MP_STREAM_ERROR;
-    }
-    return r;
+    });
+    return (mp_uint_t)r;
 }
 
 STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
@@ -166,16 +160,29 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
-    MP_THREAD_GIL_EXIT();
-    int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
-    MP_THREAD_GIL_ENTER();
-    int err = errno;
-    if (r == -1 && self->blocking && err == EINPROGRESS) {
-        // EINPROGRESS on a blocking socket means the operation timed out
-        err = MP_ETIMEDOUT;
+
+    // special case of PEP 475 to retry only if blocking so we can't use
+    // MP_HAL_RETRY_SYSCALL() here
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
+        MP_THREAD_GIL_ENTER();
+        if (r == -1) {
+            int err = errno;
+            if (self->blocking) {
+                if (err == EINTR) {
+                    mp_handle_pending(true);
+                    continue;
+                }
+                // EINPROGRESS on a blocking socket means the operation timed out
+                if (err == EINPROGRESS) {
+                    err = MP_ETIMEDOUT;
+                }
+            }
+            mp_raise_OSError(err);
+        }
+        return mp_const_none;
     }
-    RAISE_ERRNO(r, err);
-    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
@@ -207,15 +214,14 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     //struct sockaddr_storage addr;
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
-    MP_THREAD_GIL_EXIT();
-    int fd = accept(self->fd, (struct sockaddr *)&addr, &addr_len);
-    MP_THREAD_GIL_ENTER();
-    int err = errno;
-    if (fd == -1 && self->blocking && err == EAGAIN) {
+    int fd;
+    MP_HAL_RETRY_SYSCALL(fd, accept(self->fd, (struct sockaddr *)&addr, &addr_len), {
         // EAGAIN on a blocking socket means the operation timed out
-        err = MP_ETIMEDOUT;
-    }
-    RAISE_ERRNO(fd, err);
+        if (self->blocking && err == EAGAIN) {
+            err = MP_ETIMEDOUT;
+        }
+        mp_raise_OSError(err);
+    });
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = MP_OBJ_FROM_PTR(socket_new(fd));
@@ -238,11 +244,8 @@ STATIC mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
     }
 
     byte *buf = m_new(byte, sz);
-    MP_THREAD_GIL_EXIT();
-    int out_sz = recv(self->fd, buf, sz, flags);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(out_sz, errno);
-
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, recv(self->fd, buf, sz, flags), mp_raise_OSError(err));
     mp_obj_t ret = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
     m_del(char, buf, sz);
     return ret;
@@ -262,11 +265,9 @@ STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     socklen_t addr_len = sizeof(addr);
 
     byte *buf = m_new(byte, sz);
-    MP_THREAD_GIL_EXIT();
-    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr *)&addr, &addr_len);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(out_sz, errno);
-
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, recvfrom(self->fd, buf, sz, flags, (struct sockaddr *)&addr, &addr_len),
+        mp_raise_OSError(err));
     mp_obj_t buf_o = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
     m_del(char, buf, sz);
 
@@ -291,11 +292,9 @@ STATIC mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-    MP_THREAD_GIL_EXIT();
-    int out_sz = send(self->fd, bufinfo.buf, bufinfo.len, flags);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(out_sz, errno);
-
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, send(self->fd, bufinfo.buf, bufinfo.len, flags),
+        mp_raise_OSError(err));
     return MP_OBJ_NEW_SMALL_INT(out_sz);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
@@ -313,12 +312,9 @@ STATIC mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo, addr_bi;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     mp_get_buffer_raise(dst_addr, &addr_bi, MP_BUFFER_READ);
-    MP_THREAD_GIL_EXIT();
-    int out_sz = sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
-        (struct sockaddr *)addr_bi.buf, addr_bi.len);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(out_sz, errno);
-
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
+        (struct sockaddr *)addr_bi.buf, addr_bi.len), mp_raise_OSError(err));
     return MP_OBJ_NEW_SMALL_INT(out_sz);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendto_obj, 3, 4, socket_sendto);

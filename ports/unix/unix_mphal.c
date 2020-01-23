@@ -165,10 +165,9 @@ int mp_hal_stdin_rx_chr(void) {
 main_term:;
     #endif
 
-    MP_THREAD_GIL_EXIT();
     unsigned char c;
-    int ret = read(STDIN_FILENO, &c, 1);
-    MP_THREAD_GIL_ENTER();
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
     if (ret == 0) {
         c = 4; // EOF, ctrl-D
     } else if (c == '\n') {
@@ -178,11 +177,9 @@ main_term:;
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    MP_THREAD_GIL_EXIT();
-    int ret = write(STDOUT_FILENO, str, len);
-    MP_THREAD_GIL_ENTER();
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
     mp_uos_dupterm_tx_strn(str, len);
-    (void)ret; // to suppress compiler warning
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
