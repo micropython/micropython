@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -102,12 +103,8 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     }
 
     const char *fname = mp_obj_str_get_str(fid);
-    MP_THREAD_GIL_EXIT();
-    int fd = open(fname, mode_x | mode_rw, 0644);
-    MP_THREAD_GIL_ENTER();
-    if (fd == -1) {
-        mp_raise_OSError(errno);
-    }
+    int fd;
+    MP_HAL_RETRY_SYSCALL(fd, open(fname, mode_x | mode_rw, 0644), mp_raise_OSError(err));
     o->fd = fd;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -139,14 +136,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vfs_posix_file___exit___obj, 4, 4, vf
 STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
-    MP_THREAD_GIL_EXIT();
-    mp_int_t r = read(o->fd, buf, size);
-    MP_THREAD_GIL_ENTER();
-    if (r == -1) {
-        *errcode = errno;
+    ssize_t r;
+    MP_HAL_RETRY_SYSCALL(r, read(o->fd, buf, size), {
+        *errcode = err;
         return MP_STREAM_ERROR;
-    }
-    return r;
+    });
+    return (mp_uint_t)r;
 }
 
 STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
@@ -158,46 +153,33 @@ STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t 
         return size;
     }
     #endif
-    MP_THREAD_GIL_EXIT();
-    mp_int_t r = write(o->fd, buf, size);
-    MP_THREAD_GIL_ENTER();
-    while (r == -1 && errno == EINTR) {
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-            nlr_raise(obj);
-        }
-        MP_THREAD_GIL_EXIT();
-        r = write(o->fd, buf, size);
-        MP_THREAD_GIL_ENTER();
-    }
-    if (r == -1) {
-        *errcode = errno;
+    ssize_t r;
+    MP_HAL_RETRY_SYSCALL(r, write(o->fd, buf, size), {
+        *errcode = err;
         return MP_STREAM_ERROR;
-    }
-    return r;
+    });
+    return (mp_uint_t)r;
 }
 
 STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
     switch (request) {
-        case MP_STREAM_FLUSH:
-            MP_THREAD_GIL_EXIT();
-            int ret = fsync(o->fd);
-            MP_THREAD_GIL_ENTER();
-            if (ret == -1) {
-                if (errno == EINVAL
+        case MP_STREAM_FLUSH: {
+            int ret;
+            MP_HAL_RETRY_SYSCALL(ret, fsync(o->fd), {
+                if (err == EINVAL
                     && (o->fd == STDIN_FILENO || o->fd == STDOUT_FILENO || o->fd == STDERR_FILENO)) {
                     // fsync(stdin/stdout/stderr) may fail with EINVAL, but don't propagate that
                     // error out.  Because data is not buffered by us, and stdin/out/err.flush()
                     // should just be a no-op.
                     return 0;
                 }
-                *errcode = errno;
+                *errcode = err;
                 return MP_STREAM_ERROR;
-            }
+            });
             return 0;
+        }
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             MP_THREAD_GIL_EXIT();
