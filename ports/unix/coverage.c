@@ -387,6 +387,9 @@ STATIC mp_obj_t extra_coverage(void) {
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
+
+        // call mp_obj_new_exception_args (it's a part of the public C API and not used in the core)
+        mp_obj_print_exception(&mp_plat_print, mp_obj_new_exception_args(&mp_type_ValueError, 0, NULL));
     }
 
     // warning
