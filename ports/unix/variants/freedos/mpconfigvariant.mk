@@ -4,7 +4,7 @@ STRIP = i586-pc-msdosdjgpp-strip
 
 SIZE = i586-pc-msdosdjgpp-size
 
-CFLAGS_EXTRA = \
+CFLAGS += \
 	-DMICROPY_NLR_SETJMP \
 	-Dtgamma=gamma \
 	-DMICROPY_EMIT_X86=0 \

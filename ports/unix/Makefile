@@ -40,7 +40,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -91,7 +91,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
