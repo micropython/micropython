@@ -27,6 +27,7 @@
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 
 #include <sys/time.h>
 #include <windows.h>
@@ -194,10 +195,14 @@ int mp_hal_stdin_rx_chr(void) {
 
     // poll until key which we handle is pressed
     assure_stdin_handle();
+    BOOL status;
     DWORD num_read;
     INPUT_RECORD rec;
     for (;;) {
-      if (!ReadConsoleInput(std_in, &rec, 1, &num_read) || !num_read) {
+      MP_THREAD_GIL_EXIT();
+      status = ReadConsoleInput(std_in, &rec, 1, &num_read)
+      MP_THREAD_GIL_ENTER();
+      if (!status || !num_read) {
           return CHAR_CTRL_C; // EOF, ctrl-D
       }
       if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
@@ -217,7 +222,9 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    MP_THREAD_GIL_EXIT();
     write(1, str, len);
+    MP_THREAD_GIL_ENTER();
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
