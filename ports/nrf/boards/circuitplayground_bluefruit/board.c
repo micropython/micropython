@@ -28,6 +28,7 @@
 #include "mpconfigboard.h"
 #include "py/obj.h"
 #include "peripherals/nrf/pins.h"
+#include "supervisor/shared/board.h"
 
 #include "nrf_gpio.h"
 
@@ -47,4 +48,6 @@ void reset_board(void) {
                  NRF_GPIO_PIN_S0S1,
                  NRF_GPIO_PIN_NOSENSE);
     nrf_gpio_pin_write(POWER_SWITCH_PIN->number, false);
+
+    board_reset_user_neopixels();
 }

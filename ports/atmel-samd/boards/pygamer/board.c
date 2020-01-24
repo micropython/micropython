@@ -31,6 +31,7 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "supervisor/shared/board.h"
 #include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
@@ -118,4 +119,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    board_reset_user_neopixels();
 }
