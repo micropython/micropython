@@ -9,9 +9,10 @@ class OneWireError(Exception):
 
 class OneWire:
     SEARCH_ROM = const(0xf0)
+    ALARM_SEARCH = const(0xEC)
     MATCH_ROM = const(0x55)
     SKIP_ROM = const(0xcc)
-
+    
     def __init__(self, pin):
         self.pin = pin
         self.pin.init(pin.OPEN_DRAIN, pin.PULL_UP)
@@ -46,23 +47,25 @@ class OneWire:
         self.reset()
         self.writebyte(MATCH_ROM)
         self.write(rom)
-
-    def scan(self):
+        
+    # Scan bus roms or alarm roms. Argument <cmd> shall take SERCH_ROM (default) or ALARM_SEARCH constants.
+    def scan(self, cmd=SEARCH_ROM):
         devices = []
         diff = 65
         rom = False
         for i in range(0xff):
-            rom, diff = self._search_rom(rom, diff)
+            rom, diff = self._search_rom(rom, diff, cmd)
             if rom:
                 devices += [rom]
             if diff == 0:
                 break
         return devices
-
-    def _search_rom(self, l_rom, diff):
+    
+    # Search bus roms or alarm roms. Argument <cmd> shall take SERCH_ROM (default) or ALARM_SEARCH constants.
+    def _search_rom(self, l_rom, diff, cmd=SEARCH_ROM)
         if not self.reset():
             return None, 0
-        self.writebyte(SEARCH_ROM)
+        self.writebyte(cmd)
         if not l_rom:
             l_rom = bytearray(8)
         rom = bytearray(8)
