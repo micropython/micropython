@@ -253,7 +253,7 @@ STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
 
 #endif
 
-// these must correspond to the respective enum in runtime0.h
+// these must correspond to the respective enum in nativeglue.h
 const mp_fun_table_t mp_fun_table = {
     mp_const_none,
     mp_const_false,
