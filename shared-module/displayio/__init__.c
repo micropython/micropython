@@ -16,6 +16,9 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/memory.h"
 
+#include "supervisor/spi_flash_api.h"
+#include "py/mpconfig.h"
+
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
 // Check for recursive calls to displayio_background.
@@ -100,8 +103,8 @@ void reset_displays(void) {
                         continue;
                     }
                 #endif
-                #if BOARD_INTERNAL_SPI
-                    if (original_spi == common_hal_board_get_internal_spi()) {
+                #ifdef BOARD_USE_INTERNAL_SPI
+                    if (original_spi == (mp_obj_t)(&spi)) {
                         continue;
                     }
                 #endif

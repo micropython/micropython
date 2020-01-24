@@ -296,7 +296,6 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
-#define BOARD_INTERNAL_SPI (defined(SHOW_FLASH_SPI))
 
 // I2C and SPI are always allocated off the heap.
 

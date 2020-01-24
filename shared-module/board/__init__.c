@@ -29,8 +29,6 @@
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
-#include "supervisor/spi_flash_api.h"
-
 #if CIRCUITPY_BUSIO
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
@@ -88,15 +86,6 @@ mp_obj_t common_hal_board_create_spi(void) {
     common_hal_busio_spi_construct(self, clock, mosi, miso);
     spi_singleton = (mp_obj_t)self;
     return spi_singleton;
-}
-#endif
-
-#if BOARD_INTERNAL_SPI
-//Provide a reference to the internal SPI, if required. 
-mp_obj_t common_hal_board_get_internal_spi(void) {
-    //TODO: can we change the name of this without having to change every instance of spi in every
-    //flash file? 
-    return (mp_obj_t)(&spi);
 }
 #endif
 
