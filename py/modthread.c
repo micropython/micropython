@@ -249,7 +249,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
         }
     }
 
-    // copy agross the positional arguments
+    // copy across the positional arguments
     th_args->n_args = pos_args_len;
     memcpy(th_args->args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
 
