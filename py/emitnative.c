@@ -2774,6 +2774,7 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
                 // Found active handler, get its PC
                 ASM_MOV_REG_PCREL(emit->as, REG_RET, e->label);
                 ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_PC(emit), REG_RET);
+                break;
             }
         }
     }
