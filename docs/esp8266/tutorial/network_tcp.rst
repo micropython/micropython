@@ -118,5 +118,6 @@ that contains a table with the state of all the GPIO pins::
                 break
         rows = ['<tr><td>%s</td><td>%d</td></tr>' % (str(p), p.value()) for p in pins]
         response = html % '\n'.join(rows)
+        cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl.send(response)
         cl.close()
