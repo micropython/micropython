@@ -31,14 +31,18 @@
 
 #ifdef USER_NEOPIXELS_PIN
 
+// The maximum number of user neopixels right now is 10, on Circuit Playgrounds.
+// PyBadge and PyGamer have max 5
+#define USER_NEOPIXELS_MAX_COUNT 10
+
 void board_reset_user_neopixels(void) {
     // Turn off on-board NeoPixel string
-    uint8_t empty[30] = { 0 };
+    uint8_t empty[USER_NEOPIXELS_MAX_COUNT * 3] = { 0 };
     digitalio_digitalinout_obj_t neopixel_pin;
     common_hal_digitalio_digitalinout_construct(&neopixel_pin, USER_NEOPIXELS_PIN);
     common_hal_digitalio_digitalinout_switch_to_output(&neopixel_pin, false,
         DRIVE_MODE_PUSH_PULL);
-    common_hal_neopixel_write(&neopixel_pin, empty, 30);
+    common_hal_neopixel_write(&neopixel_pin, empty, USER_NEOPIXELS_MAX_COUNT * 3);
     common_hal_digitalio_digitalinout_deinit(&neopixel_pin);
 }
 
