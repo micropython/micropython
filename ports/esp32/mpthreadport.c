@@ -92,7 +92,7 @@ mp_state_thread_t *mp_thread_get_state(void) {
     return pvTaskGetThreadLocalStoragePointer(NULL, 1);
 }
 
-void mp_thread_set_state(void *state) {
+void mp_thread_set_state(mp_state_thread_t *state) {
     vTaskSetThreadLocalStoragePointer(NULL, 1, state);
 }
 
