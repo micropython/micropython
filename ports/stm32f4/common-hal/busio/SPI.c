@@ -428,31 +428,43 @@ STATIC void spi_clock_disable(uint8_t mask) {
     #ifdef SPI1
     if (mask & (1 << 0)) {
         __HAL_RCC_SPI1_CLK_DISABLE();
+        __HAL_RCC_SPI1_FORCE_RESET();
+        __HAL_RCC_SPI1_RELEASE_RESET();
     }
     #endif
     #ifdef SPI2
     if (mask & (1 << 1)) {
         __HAL_RCC_SPI2_CLK_DISABLE();
+        __HAL_RCC_SPI2_FORCE_RESET();
+        __HAL_RCC_SPI2_RELEASE_RESET();
     }
     #endif
     #ifdef SPI3
     if (mask & (1 << 2)) {
         __HAL_RCC_SPI3_CLK_DISABLE();
+        __HAL_RCC_SPI3_FORCE_RESET();
+        __HAL_RCC_SPI3_RELEASE_RESET();
     }
     #endif
     #ifdef SPI4
     if (mask & (1 << 3)) {
         __HAL_RCC_SPI4_CLK_DISABLE();
+        __HAL_RCC_SPI4_FORCE_RESET();
+        __HAL_RCC_SPI4_RELEASE_RESET();
     }
     #endif
     #ifdef SPI5
     if (mask & (1 << 4)) {
         __HAL_RCC_SPI5_CLK_DISABLE();
+        __HAL_RCC_SPI5_FORCE_RESET();
+        __HAL_RCC_SPI5_RELEASE_RESET();
     }
     #endif
     #ifdef SPI6
     if (mask & (1 << 5)) {
         __HAL_RCC_SPI6_CLK_DISABLE();
+        __HAL_RCC_SPI6_FORCE_RESET();
+        __HAL_RCC_SPI6_RELEASE_RESET();
     }
     #endif
 }

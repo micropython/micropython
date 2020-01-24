@@ -100,6 +100,11 @@ void reset_displays(void) {
                         continue;
                     }
                 #endif
+                #if BOARD_INTERNAL_SPI
+                    if (original_spi == common_hal_board_get_internal_spi()) {
+                        continue;
+                    }
+                #endif
                 memcpy(&fourwire->inline_bus, original_spi, sizeof(busio_spi_obj_t));
                 fourwire->bus = &fourwire->inline_bus;
                 // Check for other displays that use the same spi bus and swap them too.
