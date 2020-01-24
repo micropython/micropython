@@ -32,7 +32,7 @@ typedef pyb_mutex_t mp_thread_mutex_t;
 void mp_thread_init(void);
 void mp_thread_gc_others(void);
 
-static inline void mp_thread_set_state(void *state) {
+static inline void mp_thread_set_state(struct _mp_state_thread_t *state) {
     pyb_thread_set_local(state);
 }
 
