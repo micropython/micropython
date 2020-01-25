@@ -1,6 +1,6 @@
+/build-*
 /mpy-cross
 /mpy-cross.static
 /mpy-cross.static.exe
 /mpy-cross.static-raspbian
-/build-*
 /pitools
