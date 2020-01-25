@@ -214,13 +214,24 @@ mp_obj_t mp_obj_equal_bop(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         return local_true;
     }
 
+    bool is_str_1 = mp_obj_is_str(o1);
+    bool is_str_2 = mp_obj_is_str(o2);
+
     // fast path for strings
-    if (mp_obj_is_str(o1)) {
+    if (is_str_1 && is_str_2) {
         if (mp_obj_is_str(o2)) {
             // both strings, use special function
             return mp_obj_str_equal(o1, o2) ? local_true : local_false;
         } else {
-            goto skip_one_pass;
+            if ((is_str_1 || is_str_2) &&
+                (mp_obj_is_type(o1, &mp_type_bytes) || mp_obj_is_type(o2, &mp_type_bytes))) {
+                #if MICROPY_PY_STR_BYTES_CMP_WARN
+                mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
+                #endif
+                return local_false;
+            } else {
+                goto skip_one_pass;
+            }
         }
     }
 
