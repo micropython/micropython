@@ -30,6 +30,5 @@
 #include "common-hal/digitalio/DigitalInOut.h"
 
 const int32_t colorwheel(float pos);
-extern void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes);
 
 #endif //CP_SHARED_BINDINGS_PIXELBUF_INIT_H
