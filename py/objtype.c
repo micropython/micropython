@@ -187,14 +187,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     return;
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
-                    mp_obj_t obj_obj;
-                    if (obj != NULL && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
-                        // If we're dealing with native base class, then it applies to native sub-object
-                        obj_obj = obj->subobj[0];
-                    } else {
-                        obj_obj = MP_OBJ_FROM_PTR(obj);
-                    }
-                    mp_convert_member_lookup(obj_obj, type, elem->value, lookup->dest);
+                    mp_convert_member_lookup(MP_OBJ_FROM_PTR(obj), type, elem->value, lookup->dest);
                 }
 #if DEBUG_PRINT
                 printf("mp_obj_class_lookup: Returning: ");
