@@ -284,3 +284,7 @@ void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught NLR %p\n", val);
     exit(1);
 }
+
+void serial_write(const char* text) {
+    printf("%s", text);
+}
