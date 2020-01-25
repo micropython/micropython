@@ -22,7 +22,8 @@ jobs:
         python-version: 3.5
     - name: Install deps
       run: |
-        sudo apt-get install -y gettext librsvg2-bin
+        sudo apt-get install -y eatmydata
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
         pip install requests sh click setuptools cpp-coveralls Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
     - name: Versions
       run: |
@@ -65,6 +66,27 @@ jobs:
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
+
+    - name: Build mpy-cross.static-raspbian
+      run: make -C mpy-cross -j2 -f Makefile.static-raspbian
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-raspbian
+        path: mpy-cross/mpy-cross.static-raspbian
+
+    - name: Build mpy-cross.static
+      run: make -C mpy-cross -j2 -f Makefile.static
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-amd64-linux
+        path: mpy-cross/mpy-cross.static
+
+    - name: Build mpy-cross.static-mingw
+      run: make -C mpy-cross -j2 -f Makefile.static-mingw
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-x64-windows
+        path: mpy-cross/mpy-cross.static.exe
 
   build-arm:
     runs-on: ubuntu-16.04
