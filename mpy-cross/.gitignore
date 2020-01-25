@@ -1,4 +1,6 @@
-mpy-cross{,.exe}
-mpy-cross.static{,.exe}
-build-*
-pitools
+/mpy-cross
+/mpy-cross.static
+/mpy-cross.static.exe
+/mpy-cross.static-raspbian
+/build-*
+/pitools
