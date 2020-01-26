@@ -9,9 +9,15 @@ By default the port will be built for the host machine:
 
     $ make
 
+If the host is a 64-bit machine and you get 'no such file or directory' errors, you need to install 32-bit support first:
+
+    $ sudo apt install gcc-multilib
+
 To run the executable and get a basic working REPL do:
 
     $ make run
+
+**Note:** On WSL1 (Windows Subsystem for Linux) this will fail with 'exec format error'. To remedy, follow [these instructions](https://stackoverflow.com/questions/42120938/exec-format-error-32-bit-executable-windows-subsystem-for-linux/49405605#49405605).
 
 ## Building for an STM32 MCU
 
