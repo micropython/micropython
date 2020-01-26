@@ -6,6 +6,8 @@ from micropython import const
 _CONVERT = const(0x44)
 _RD_SCRATCH = const(0xbe)
 _WR_SCRATCH = const(0x4e)
+_COPY_SCRATCH = const(0x48)
+_RECALL_E2_SCRATCH = const(0xB8)
 
 class DS18X20:
     def __init__(self, onewire):
@@ -17,7 +19,7 @@ class DS18X20:
     
     def alarm(self):
         return [rom for rom in self.ow.scan(self.ow.ALARM_SEARCH)]
-    
+   
     def convert_temp(self):
         self.ow.reset(True)
         self.ow.writebyte(self.ow.SKIP_ROM)
@@ -37,7 +39,19 @@ class DS18X20:
         self.ow.select_rom(rom)
         self.ow.writebyte(_WR_SCRATCH)
         self.ow.write(buf)
-
+    
+    # Copy Th, Tl, Conf Register (bytes 2, 3 and 4) to EEPROM
+    def copy_scratch()
+        self.ow.reset(True)
+        self.ow.writebyte(self.ow.SKIP_ROM)
+        self.ow.writebyte(_COPY_SCRATCH)
+        
+    # Recall the alarm Trigger Th, Tl, Conf Register (bytes 2, 3 and 4) to Scratchpad    
+    def recall_scratch()
+        self.ow.reset(True)
+        self.ow.writebyte(self.ow.SKIP_ROM)
+        self.ow.writebyte(_RECALL_E2_SCRATCH)
+        
     def read_temp(self, rom):
         buf = self.read_scratch(rom)
         if rom[0] == 0x10:
