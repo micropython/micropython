@@ -62,7 +62,7 @@ class OneWire:
         return devices
     
     # Search bus roms or alarm roms. Argument <cmd> shall take SERCH_ROM (default) or ALARM_SEARCH constants.
-    def _search_rom(self, l_rom, diff, cmd=SEARCH_ROM)
+    def _search_rom(self, l_rom, diff, cmd=SEARCH_ROM):
         if not self.reset():
             return None, 0
         self.writebyte(cmd)
