@@ -41,15 +41,15 @@ class DS18X20:
         self.ow.write(buf)
     
     # Copy Th, Tl, Conf Register (bytes 2, 3 and 4) to EEPROM
-    def copy_scratch():
+    def copy_scratch(self, rom):
         self.ow.reset(True)
-        self.ow.writebyte(self.ow.SKIP_ROM)
+        self.ow.select_rom(rom)
         self.ow.writebyte(_COPY_SCRATCH)
         
     # Recall the alarm Trigger Th, Tl, Conf Register (bytes 2, 3 and 4) to Scratchpad    
-    def recall_scratch():
+    def recall_scratch(self, rom):
         self.ow.reset(True)
-        self.ow.writebyte(self.ow.SKIP_ROM)
+        self.ow.select_rom(rom)
         self.ow.writebyte(_RECALL_E2_SCRATCH)
         
     def read_temp(self, rom):
