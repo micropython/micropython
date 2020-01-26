@@ -15,8 +15,8 @@ class DS18X20:
     def scan(self):
         return [rom for rom in self.ow.scan() if rom[0] in (0x10, 0x22, 0x28)]
     
-    def alarm(self)
-        return [rom for rom in self.ow.scan(ow.ALARM_SEARCH)]
+    def alarm(self):
+        return [rom for rom in self.ow.scan(self.ow.ALARM_SEARCH)]
     
     def convert_temp(self):
         self.ow.reset(True)
