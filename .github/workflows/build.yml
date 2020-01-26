@@ -88,6 +88,33 @@ jobs:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
 
+  mpy-cross-mac:
+    runs-on: macos-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Install deps
+      run: |
+        brew link --force gettext
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: CircuitPython version
+      run: git describe --dirty --always --tags
+    - name: Build mpy-cross
+      run: make -C mpy-cross -j2
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross-macos-catalina
+        path: mpy-cross/mpy-cross
+
   build-arm:
     runs-on: ubuntu-16.04
     needs: test
