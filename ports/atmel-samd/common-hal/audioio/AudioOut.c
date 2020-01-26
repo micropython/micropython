@@ -397,15 +397,22 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
     if (self->right_channel == &pin_PA02) {
         right_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
     }
-    result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
-                                      false /* output unsigned */,
-                                      left_channel_reg,
-                                      left_channel_trigger);
-    if (right_channel_reg != 0 && result == AUDIO_DMA_OK) {
-        result = audio_dma_setup_playback(&self->right_dma, sample, loop, true, 1,
+    if(right_channel_reg == left_channel_reg + 2 && audiosample_bits_per_sample(sample) == 16) {
+        result = audio_dma_setup_playback(&self->left_dma, sample, loop, false, 0,
                                           false /* output unsigned */,
-                                          right_channel_reg,
-                                          right_channel_trigger);
+                                          left_channel_reg,
+                                          left_channel_trigger);
+    } else {
+        result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
+                                          false /* output unsigned */,
+                                          left_channel_reg,
+                                          left_channel_trigger);
+        if (right_channel_reg != 0 && result == AUDIO_DMA_OK) {
+            result = audio_dma_setup_playback(&self->right_dma, sample, loop, true, 1,
+                                              false /* output unsigned */,
+                                              right_channel_reg,
+                                              right_channel_trigger);
+        }
     }
     #endif
     if (result != AUDIO_DMA_OK) {
