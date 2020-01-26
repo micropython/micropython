@@ -134,8 +134,32 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     byte *in = bufinfo.buf;
 
+	size_t vstrlen = bufinfo.len % 4;
+	if (vstrlen != 0)
+	{
+		if ((flags & BINASCIILIB_NOPADDING) == 0 || vstrlen == 1)
+		{
+			mp_raise_ValueError("incorrect padding");
+		}
+		vstrlen += (bufinfo.len / 4) * 3;
+	}
+	else
+	{
+		vstrlen = (bufinfo.len / 4) * 3 + 1;
+		if (bufinfo.len > 3 && (flags & BINASCIILIB_NOPADDING) == 0)
+		{
+			if (in[bufinfo.len - 1] == '=')
+			{
+				vstrlen--;
+				if (in[bufinfo.len - 2] == '=')
+				{
+					vstrlen--;
+				}
+			}
+		}
+	}
     vstr_t vstr;
-    vstr_init(&vstr, (bufinfo.len / 4) * 3 + 1); // Potentially over-allocate
+    vstr_init(&vstr, vstrlen);
     byte *out = (byte *)vstr.buf;
 
     uint16_t shift = 0;
