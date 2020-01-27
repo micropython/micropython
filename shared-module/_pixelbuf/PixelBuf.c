@@ -68,6 +68,7 @@ void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size
         }
     }
     // Call set_brightness so that it can allocate a second buffer if needed.
+    self->brightness = 1.0;
     common_hal__pixelbuf_pixelbuf_set_brightness(MP_OBJ_FROM_PTR(self), brightness);
 
     // Turn on auto_write. We don't want to do it with the above brightness call.
@@ -106,6 +107,12 @@ mp_float_t common_hal__pixelbuf_pixelbuf_get_brightness(mp_obj_t self_in) {
 
 void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t brightness) {
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
+    // Skip out if the brightness is already set. The default of self->brightness is 1.0. So, this
+    // also prevents the pre_brightness_buffer allocation when brightness is set to 1.0 again.
+    mp_float_t change = brightness - self->brightness;
+    if (-0.001 < change && change < 0.001) {
+        return;
+    }
     self->brightness = brightness;
     size_t pixel_len = self->pixel_count * self->bytes_per_pixel;
     if (self->pre_brightness_buffer == NULL) {
