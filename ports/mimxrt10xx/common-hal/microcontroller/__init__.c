@@ -72,10 +72,10 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
         }
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.
-        _bootloader_dbl_tap = DBL_TAP_MAGIC;
+        SNVS->LPGPR[0] = DBL_TAP_MAGIC;
     } else {
         // Set up the default.
-        _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
+        SNVS->LPGPR[0] = DBL_TAP_MAGIC_QUICK_BOOT;
     }
     if (runmode == RUNMODE_SAFE_MODE) {
         safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
@@ -229,6 +229,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_B1_13), MP_ROM_PTR(&pin_GPIO_AD_B1_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_B1_14), MP_ROM_PTR(&pin_GPIO_AD_B1_14) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_AD_B1_15), MP_ROM_PTR(&pin_GPIO_AD_B1_15) },
+    #ifdef MIMXRT1062_SERIES
     { MP_ROM_QSTR(MP_QSTR_GPIO_B0_00), MP_ROM_PTR(&pin_GPIO_B0_00) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_B0_01), MP_ROM_PTR(&pin_GPIO_B0_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_B0_02), MP_ROM_PTR(&pin_GPIO_B0_02) },
@@ -261,6 +262,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO_B1_13), MP_ROM_PTR(&pin_GPIO_B1_13) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_B1_14), MP_ROM_PTR(&pin_GPIO_B1_14) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_B1_15), MP_ROM_PTR(&pin_GPIO_B1_15) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B0_00), MP_ROM_PTR(&pin_GPIO_SD_B0_00) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B0_01), MP_ROM_PTR(&pin_GPIO_SD_B0_01) },
     { MP_ROM_QSTR(MP_QSTR_GPIO_SD_B0_02), MP_ROM_PTR(&pin_GPIO_SD_B0_02) },

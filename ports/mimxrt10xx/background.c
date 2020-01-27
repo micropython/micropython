@@ -34,6 +34,7 @@
 
 #include "py/runtime.h"
 #include "shared-module/network/__init__.h"
+#include "supervisor/linker.h"
 #include "supervisor/shared/stack.h"
 
 // TODO
@@ -51,7 +52,7 @@ void background_tasks_reset(void) {
     running_background_tasks = false;
 }
 
-void run_background_tasks(void) {
+void PLACE_IN_ITCM(run_background_tasks)(void) {
     // Don't call ourselves recursively.
     if (running_background_tasks) {
         return;
