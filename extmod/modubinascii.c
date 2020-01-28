@@ -104,9 +104,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
 
 
 enum Base64Flags {
-	BINASCIILIB_ADD_CR = 1,
+	BINASCIILIB_ADD_NEWLINE = 1,
 	BINASCIILIB_URL = 2,
 	BINASCIILIB_NOPADDING = 4,
+	BINASCIILIB_STRICT = 8
 };
 
 // If ch is a character in the base64 alphabet, and is not a pad character, then
@@ -129,7 +130,7 @@ static int mod_binascii_sextet(byte ch) {
 }
 
 mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
-	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_CR;
+	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_NEWLINE;
 	mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     byte *in = bufinfo.buf;
@@ -137,7 +138,7 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
 	size_t vstrlen = bufinfo.len % 4;
 	if (vstrlen != 0)
 	{
-		if ((flags & BINASCIILIB_NOPADDING) == 0 || vstrlen == 1)
+		if (((flags & BINASCIILIB_NOPADDING) == 0 || vstrlen == 1) && (flags & BINASCIILIB_STRICT))
 		{
 			mp_raise_ValueError("incorrect padding");
 		}
@@ -176,7 +177,9 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
 
         int sextet = mod_binascii_sextet(in[i]);
         if (sextet == -1) {
-            continue;
+			if (flags & BINASCIILIB_STRICT)
+				mp_raise_ValueError("incorrect data");
+			continue;
         }
         hadpad = false;
         shift = (shift << 6) | sextet;
@@ -198,7 +201,7 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_a2b_base64_obj, 1, 2, mod_binascii_a2b_base64);
 
 mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
-	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_CR;
+	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_NEWLINE;
 
 	mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -214,7 +217,7 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
 		}
 	}
 	vstrlen += (bufinfo.len / 3) * 4;
-	if (flags & BINASCIILIB_ADD_CR)
+	if (flags & BINASCIILIB_ADD_NEWLINE)
 		vstrlen++;
     vstr_init_len(&vstr, vstrlen);
 
@@ -245,7 +248,7 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
     out = (byte*)vstr.buf;
-	for (mp_uint_t j = vstr.len - ((flags & BINASCIILIB_ADD_CR) ? 1 : 0); j--;) {
+	for (mp_uint_t j = vstr.len - ((flags & BINASCIILIB_ADD_NEWLINE) ? 1 : 0); j--;) {
         if (*out < 26) {
             *out += 'A';
         } else if (*out < 52) {
@@ -261,7 +264,7 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
         }
         out++;
     }
-	if (flags & BINASCIILIB_ADD_CR)
+	if (flags & BINASCIILIB_ADD_NEWLINE)
 		*out = '\n';
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
@@ -290,9 +293,10 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_ADD_CR), MP_ROM_INT(BINASCIILIB_ADD_CR) },
+	{ MP_ROM_QSTR(MP_QSTR_ADD_NEWLINE), MP_ROM_INT(BINASCIILIB_ADD_NEWLINE) },
 	{ MP_ROM_QSTR(MP_QSTR_URL), MP_ROM_INT(BINASCIILIB_URL) },
 	{ MP_ROM_QSTR(MP_QSTR_NOPADDING), MP_ROM_INT(BINASCIILIB_NOPADDING) },
+	{ MP_ROM_QSTR(MP_QSTR_STRICT), MP_ROM_INT(BINASCIILIB_STRICT) },
     #if MICROPY_PY_UBINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
     #endif
