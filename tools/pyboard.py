@@ -567,7 +567,7 @@ def main():
         # do filesystem commands, if given
         if args.filesystem:
             filesystem_command(pyb, args.files)
-            args.files.clear()
+            del args.files[:]
 
         # run the command, if given
         if args.command is not None:
