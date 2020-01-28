@@ -60,6 +60,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P0), MP_ROM_PTR(&pin_PA00) },
     { MP_ROM_QSTR(MP_QSTR_P3), MP_ROM_PTR(&pin_PB00) },
 
-    { MP_ROM_QSTR(MP_QSTR_INTERNAL_SPI), MP_ROM_PTR(&spi) },
+    { MP_ROM_QSTR(MP_QSTR_INTERNAL_SPI), MP_ROM_PTR(&supervisor_flash_spi_bus) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

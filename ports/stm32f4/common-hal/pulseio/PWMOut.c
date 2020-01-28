@@ -68,9 +68,9 @@ STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
 }
 
 STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
-    //duty cycle is (0xFFFF - duty)/0xFFFF fraction x (number of pulses per period)
+    //duty cycle is duty/0xFFFF fraction x (number of pulses per period)
     //Note that pulses are inverted, so duty cycle is inverted
-    return ((0xFFFF - duty)*period) / ((1 << 16) - 1);
+    return (duty*period) / ((1 << 16) - 1);
 }
 
 STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler, 
@@ -203,7 +203,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     //Channel/PWM init
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
     self->chan_handle.Pulse = timer_get_internal_duty(duty, period);
-    self->chan_handle.OCPolarity = TIM_OCPOLARITY_LOW;
+    self->chan_handle.OCPolarity = TIM_OCPOLARITY_HIGH;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
     self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
     self->chan_handle.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
