@@ -59,7 +59,7 @@ struct _emit_inline_asm_t {
     qstr *label_lookup;
 };
 
-STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, const char *msg) {
+STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, _mp_rom_error_text msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }
 
