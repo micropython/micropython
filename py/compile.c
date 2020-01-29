@@ -197,7 +197,7 @@ STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
+STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, mp_rom_error_text_t msg) {
     // only register the error if there has been no other error
     if (comp->compile_error == MP_OBJ_NULL) {
         comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);

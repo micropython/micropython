@@ -1500,7 +1500,7 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
         "memory allocation failed, allocating %u bytes", (uint)num_bytes);
 }
 
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1508,7 +1508,7 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
     }
 }
 
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list args;
     va_start(args, fmt);
     mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
@@ -1516,11 +1516,11 @@ NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, 
     nlr_raise(exc);
 }
 
-NORETURN void mp_raise_ValueError(const char *msg) {
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
 
-NORETURN void mp_raise_TypeError(const char *msg) {
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
@@ -1528,7 +1528,7 @@ NORETURN void mp_raise_OSError(int errno_) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
 }
 
-NORETURN void mp_raise_NotImplementedError(const char *msg) {
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
