@@ -51,8 +51,6 @@ safe_mode_t port_init(void) {
 
     tick_init();
 
-    board_init();
-
     return NO_SAFE_MODE;
 }
 
