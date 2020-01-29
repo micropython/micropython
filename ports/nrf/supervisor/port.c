@@ -143,6 +143,14 @@ void reset_cpu(void) {
     NVIC_SystemReset();
 }
 
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
+}
+
 uint32_t *port_stack_get_limit(void) {
     return &_ebss;
 }

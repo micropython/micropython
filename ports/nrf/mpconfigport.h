@@ -152,10 +152,9 @@
 #endif
 
 
-
-
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
+
 
 #endif  // NRF5_MPCONFIGPORT_H__

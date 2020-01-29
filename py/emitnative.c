@@ -459,6 +459,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             type_sig |= (emit->local_vtype[i] & 0xf) << (i * 4 + 4);
         }
 
+        #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wcast-align"
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
