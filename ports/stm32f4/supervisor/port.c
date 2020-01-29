@@ -50,7 +50,6 @@ safe_mode_t port_init(void) {
     stm32f4_peripherals_gpio_init();
 
     tick_init();
-    board_init(); 
 
     return NO_SAFE_MODE;
 }

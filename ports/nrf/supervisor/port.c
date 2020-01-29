@@ -92,9 +92,6 @@ safe_mode_t port_init(void) {
     rtc_init();
     #endif
 
-    // Will do usb_init() if chip supports USB.
-    board_init();
-
     return NO_SAFE_MODE;
 }
 
