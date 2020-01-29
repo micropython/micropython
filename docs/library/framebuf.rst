@@ -1,4 +1,4 @@
-:mod:`framebuf` --- Frame buffer manipulation
+:mod:`framebuf` --- frame buffer manipulation
 =============================================
 
 .. module:: framebuf
@@ -28,7 +28,7 @@ For example::
 Constructors
 ------------
 
-.. class:: FrameBuffer(buffer, width, height, format, stride=width)
+.. class:: FrameBuffer(buffer, width, height, format, stride=width, /)
 
     Construct a FrameBuffer object.  The parameters are:
 

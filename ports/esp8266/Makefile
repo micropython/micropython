@@ -39,7 +39,7 @@ PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
 FLASH_SIZE ?= detect
-CROSS_COMPILE = xtensa-lx106-elf-
+CROSS_COMPILE ?= xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
 INC += -I.

@@ -1,5 +1,5 @@
-The MicroPython language
-========================
+MicroPython language and implementation
+=======================================
 
 MicroPython aims to implement the Python 3.4 standard (with selected
 features from later versions) with respect to language syntax, and most
@@ -21,6 +21,7 @@ implementation and the best practices to use them.
 
    glossary.rst
    repl.rst
+   mpyfiles.rst
    isr_rules.rst
    speed_python.rst
    constrained.rst

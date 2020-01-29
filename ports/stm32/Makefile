@@ -95,6 +95,15 @@ CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
+# Configure for nan-boxing object model if requested
+ifeq ($(NANBOX),1)
+CFLAGS += -DMP_CONFIGFILE='"mpconfigport_nanbox.h"'
+ifneq ($(MICROPY_FLOAT_IMPL),none)
+MICROPY_FLOAT_IMPL = double
+endif
+endif
+
+# Configure floating point support
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
 else

@@ -70,6 +70,7 @@
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_INFO           (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
@@ -96,6 +97,7 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPILE (MICROPY_ENABLE_COMPILER)
@@ -279,7 +281,7 @@ struct _mp_bluetooth_nimble_root_pointers_t;
     \
     mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]; \
     \
-    struct _soft_timer_entry_t *soft_timer_head; \
+    struct _soft_timer_entry_t *soft_timer_heap; \
     \
     /* pointers to all Timer objects (if they have been created) */ \
     struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]; \
@@ -301,15 +303,18 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((uint32_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
+// Assume that if we already defined the obj repr then we also defined these items
+#ifndef MICROPY_OBJ_REPR
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
-
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
+#endif
+
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)

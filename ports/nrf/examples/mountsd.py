@@ -4,7 +4,7 @@ Example for pca10040 / nrf52832 to show how mount
 and list a sdcard connected over SPI.
 
 
-Direct wireing on SD card (SPI):
+Direct wiring on SD card (SPI):
    ______________________________
   |                              \
   |             9.    | NC    |   \

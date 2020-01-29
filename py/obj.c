@@ -37,19 +37,62 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
-mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
+const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
+    #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
+
+    if (mp_obj_is_obj(o_in)) {
+        const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
+        return o->type;
+    } else {
+        static const mp_obj_type_t *const types[] = {
+            NULL, &mp_type_int, &mp_type_str, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_NoneType, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_str, &mp_type_int,
+            NULL, &mp_type_int, &mp_type_bool, &mp_type_int,
+        };
+        return types[(uintptr_t)o_in & 0xf];
+    }
+
+    #elif MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+
     if (mp_obj_is_small_int(o_in)) {
-        return (mp_obj_type_t*)&mp_type_int;
-    } else if (mp_obj_is_qstr(o_in)) {
-        return (mp_obj_type_t*)&mp_type_str;
+        return &mp_type_int;
+    } else if (mp_obj_is_obj(o_in)) {
+        const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
+        return o->type;
     #if MICROPY_PY_BUILTINS_FLOAT
+    } else if ((((mp_uint_t)(o_in)) & 0xff800007) != 0x00000006) {
+        return &mp_type_float;
+    #endif
+    } else {
+        static const mp_obj_type_t *const types[] = {
+            &mp_type_str, &mp_type_NoneType, &mp_type_str, &mp_type_bool,
+        };
+        return types[((uintptr_t)o_in >> 3) & 3];
+    }
+
+    #else
+
+    if (mp_obj_is_small_int(o_in)) {
+        return &mp_type_int;
+    } else if (mp_obj_is_qstr(o_in)) {
+        return &mp_type_str;
+    #if MICROPY_PY_BUILTINS_FLOAT && ( \
+        MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
     } else if (mp_obj_is_float(o_in)) {
-        return (mp_obj_type_t*)&mp_type_float;
+        return &mp_type_float;
+    #endif
+    #if MICROPY_OBJ_IMMEDIATE_OBJS
+    } else if (mp_obj_is_immediate_obj(o_in)) {
+        static const mp_obj_type_t *const types[2] = {&mp_type_NoneType, &mp_type_bool};
+        return types[MP_OBJ_IMMEDIATE_OBJ_VALUE(o_in) & 1];
     #endif
     } else {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
-        return (mp_obj_type_t*)o->type;
+        return o->type;
     }
+
+    #endif
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
@@ -65,7 +108,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
         return;
     }
 #endif
-    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
         type->print((mp_print_t*)print, o_in, kind);
     } else {
@@ -119,7 +162,7 @@ bool mp_obj_is_true(mp_obj_t arg) {
             return 1;
         }
     } else {
-        mp_obj_type_t *type = mp_obj_get_type(arg);
+        const mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(MP_UNARY_OP_BOOL, arg);
             if (result != MP_OBJ_NULL) {
@@ -139,7 +182,7 @@ bool mp_obj_is_true(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    mp_call_fun_t call = mp_obj_get_type(o_in)->call;
+    const mp_call_fun_t call = mp_obj_get_type(o_in)->call;
     if (call != mp_obj_instance_call) {
         return call != NULL;
     }
@@ -209,7 +252,7 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     }
 
     // generic type, call binary_op(MP_BINARY_OP_EQUAL)
-    mp_obj_type_t *type = mp_obj_get_type(o1);
+    const mp_obj_type_t *type = mp_obj_get_type(o1);
     if (type->binary_op != NULL) {
         mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
         if (r != MP_OBJ_NULL) {
@@ -451,7 +494,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         GET_STR_LEN(o_in, l);
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {
-        mp_obj_type_t *type = mp_obj_get_type(o_in);
+        const mp_obj_type_t *type = mp_obj_get_type(o_in);
         if (type->unary_op != NULL) {
             return type->unary_op(MP_UNARY_OP_LEN, o_in);
         } else {
@@ -461,7 +504,7 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 }
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(base);
+    const mp_obj_type_t *type = mp_obj_get_type(base);
     if (type->subscr != NULL) {
         mp_obj_t ret = type->subscr(base, index, value);
         if (ret != MP_OBJ_NULL) {
@@ -506,7 +549,7 @@ mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
 }
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
     if (type->buffer_p.get_buffer == NULL) {
         return false;
     }

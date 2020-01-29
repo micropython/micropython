@@ -82,6 +82,7 @@ The :mod:`network` module::
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
 A useful function for connecting to your local WiFi network is::
@@ -365,6 +366,20 @@ Notes:
 
     p1 = Pin(4, Pin.OUT, None)
 
+RMT
+---
+
+The RMT is ESP32-specific and allows generation of accurate digital pulses with
+12.5ns resolution.  See :ref:`esp32.RMT <esp32.RMT>` for details.  Usage is::
+
+    import esp32
+    from machine import Pin
+
+    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
+    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
+    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
+
 OneWire driver
 --------------
 
@@ -421,7 +436,7 @@ For low-level driving of a NeoPixel::
    ``NeoPixel`` object.
 
 
-Capacitive Touch
+Capacitive touch
 ----------------
 
 Use the ``TouchPad`` class in the ``machine`` module::

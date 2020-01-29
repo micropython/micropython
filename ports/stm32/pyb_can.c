@@ -442,7 +442,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     enum { ARG_fifo, ARG_list, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_fifo,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_list,    MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_list,    MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -563,7 +563,7 @@ STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self, mp_obj_t bank_in) {
     #endif
 
     for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(self, f, can2_start_bank);
+        can_clearfilter(MP_OBJ_TO_PTR(self), f, can2_start_bank);
     }
     return mp_const_none;
 }

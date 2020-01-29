@@ -60,7 +60,6 @@
 #define ASM_X86_REG_ARG_2 ASM_X86_REG_ECX
 #define ASM_X86_REG_ARG_3 ASM_X86_REG_EDX
 #define ASM_X86_REG_ARG_4 ASM_X86_REG_EBX
-#define ASM_X86_REG_ARG_5 ASM_X86_REG_ESI
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned
@@ -129,7 +128,6 @@ void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define REG_ARG_2 ASM_X86_REG_ARG_2
 #define REG_ARG_3 ASM_X86_REG_ARG_3
 #define REG_ARG_4 ASM_X86_REG_ARG_4
-#define REG_ARG_5 ASM_X86_REG_ARG_5
 
 // caller-save, so can be used as temporaries
 #define REG_TEMP0 ASM_X86_REG_EAX

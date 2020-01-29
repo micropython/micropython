@@ -1,3 +1,5 @@
+.. _cmodules:
+
 MicroPython external C modules
 ==============================
 
@@ -16,6 +18,10 @@ more sense to keep this external to the main MicroPython repository.
 
 This chapter describes how to compile such external modules into the
 MicroPython executable or firmware image.
+
+An alternative approach is to use :ref:`natmod` which allows writing custom C
+code that is placed in a .mpy file, which can be imported dynamically in to
+a running MicroPython system without the need to recompile the main firmware.
 
 
 Structure of an external C module
@@ -48,7 +54,7 @@ A MicroPython user C module is a directory with the following files:
   See below for full usage example.
 
 
-Basic Example
+Basic example
 -------------
 
 This simple module named ``example`` provides a single function

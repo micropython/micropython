@@ -47,7 +47,7 @@ MICROPY_VFS_FAT ?= 0
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I../..

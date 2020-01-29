@@ -56,8 +56,8 @@ void board_sleep(int value);
 #define MICROPY_HW_FLASH_LATENCY    (FLASH_LATENCY_3)
 
 // There is an external 32kHz oscillator
-#define RTC_ASYNCH_PREDIV           (0)
-#define RTC_SYNCH_PREDIV            (0x7fff)
+#define RTC_ASYNCH_PREDIV           (3)
+#define RTC_SYNCH_PREDIV            (0x1fff)
 #define MICROPY_HW_RTC_USE_BYPASS   (1)
 #define MICROPY_HW_RTC_USE_US       (1)
 #define MICROPY_HW_RTC_USE_CALOUT   (1)

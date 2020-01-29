@@ -252,7 +252,7 @@ STATIC const char *cyw43_async_event_name_table[89] = {
 
 STATIC void cyw43_dump_async_event(const cyw43_async_event_t *ev) {
     printf("[% 8d] ASYNC(%04x,",
-        mp_hal_ticks_ms(),
+        (int)mp_hal_ticks_ms(),
         (unsigned int)ev->flags
     );
     if (ev->event_type < MP_ARRAY_SIZE(cyw43_async_event_name_table)

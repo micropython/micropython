@@ -411,6 +411,22 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     }
 }
 
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
+    if (mp_obj_is_small_int(self_in)) {
+        if (MP_OBJ_SMALL_INT_VALUE(self_in) >= 0) {
+            return MP_OBJ_SMALL_INT_VALUE(self_in);
+        }
+    } else {
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_uint_t value;
+        if (mpz_as_uint_checked(&self->mpz, &value)) {
+            return value;
+        }
+    }
+
+    mp_raise_msg(&mp_type_OverflowError, "overflow converting long int to machine word");
+}
+
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_int));

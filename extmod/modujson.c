@@ -96,7 +96,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     stack.len = 0;
     stack.items = NULL;
     mp_obj_t stack_top = MP_OBJ_NULL;
-    mp_obj_type_t *stack_top_type = NULL;
+    const mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
     S_NEXT(s);
     for (;;) {

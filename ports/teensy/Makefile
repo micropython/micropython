@@ -20,10 +20,10 @@ endif
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 $(info Using ARDUINO toolchain)
-CROSS_COMPILE = $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
+CROSS_COMPILE ?= $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
 else
 $(info Using toolchain from PATH)
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 endif
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__

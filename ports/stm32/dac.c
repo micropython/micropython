@@ -229,7 +229,7 @@ STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // parse args

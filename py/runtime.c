@@ -34,6 +34,7 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
+#include "py/objtype.h"
 #include "py/objmodule.h"
 #include "py/objgenerator.h"
 #include "py/smallint.h"
@@ -79,11 +80,6 @@ void mp_init(void) {
     MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
     MP_STATE_VM(mp_kbd_exception).args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
     #endif
-
-    // call port specific initialization if any
-#ifdef MICROPY_PORT_INIT_FUNC
-    MICROPY_PORT_INIT_FUNC;
-#endif
 
     #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
@@ -139,19 +135,24 @@ void mp_init(void) {
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
 
+    // call port specific initialization if any
+    #ifdef MICROPY_PORT_INIT_FUNC
+    MICROPY_PORT_INIT_FUNC;
+    #endif
+
     MP_THREAD_GIL_ENTER();
 }
 
 void mp_deinit(void) {
     MP_THREAD_GIL_EXIT();
 
+    // call port specific deinitialization if any
+    #ifdef MICROPY_PORT_DEINIT_FUNC
+    MICROPY_PORT_DEINIT_FUNC;
+    #endif
+
     //mp_obj_dict_free(&dict_main);
     //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
-
-    // call port specific deinitialization if any
-#ifdef MICROPY_PORT_DEINIT_FUNC
-    MICROPY_PORT_DEINIT_FUNC;
-#endif
 }
 
 mp_obj_t mp_load_name(qstr qst) {
@@ -275,7 +276,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         }
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
-        mp_obj_type_t *type = mp_obj_get_type(arg);
+        const mp_obj_type_t *type = mp_obj_get_type(arg);
         if (type->unary_op != NULL) {
             mp_obj_t result = type->unary_op(op, arg);
             if (result != MP_OBJ_NULL) {
@@ -559,7 +560,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 
     // generic binary_op supplied by type
-    mp_obj_type_t *type;
+    const mp_obj_type_t *type;
 generic_binary_op:
     type = mp_obj_get_type(lhs);
     if (type->binary_op != NULL) {
@@ -635,7 +636,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
     DEBUG_OP_printf("calling function %p(n_args=" UINT_FMT ", n_kw=" UINT_FMT ", args=%p)\n", fun_in, n_args, n_kw, args);
 
     // get the type
-    mp_obj_type_t *type = mp_obj_get_type(fun_in);
+    const mp_obj_type_t *type = mp_obj_get_type(fun_in);
 
     // do the call
     if (type->call != NULL) {
@@ -1038,9 +1039,11 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
                 || m_type == &mp_type_fun_builtin_1
                 || m_type == &mp_type_fun_builtin_2
                 || m_type == &mp_type_fun_builtin_3
-                || m_type == &mp_type_fun_builtin_var)) {
+                || m_type == &mp_type_fun_builtin_var)
+            && type != &mp_type_object) {
             // we extracted a builtin method without a first argument, so we must
             // wrap this function in a type checker
+            // Note that object will do its own checking so shouldn't be wrapped.
             dest[0] = mp_obj_new_checked_fun(type, member);
         } else
         #endif
@@ -1064,7 +1067,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     dest[1] = MP_OBJ_NULL;
 
     // get the type
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // look for built-in names
 #if MICROPY_CPYTHON_COMPAT
@@ -1135,7 +1138,7 @@ void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catc
 
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
-    mp_obj_type_t *type = mp_obj_get_type(base);
+    const mp_obj_type_t *type = mp_obj_get_type(base);
     if (type->attr != NULL) {
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
         type->attr(base, attr, dest);
@@ -1155,7 +1158,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
-    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
 
     // Check for native getiter which is the identity.  We handle this case explicitly
     // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
@@ -1163,13 +1166,13 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
         return o_in;
     }
 
-    // if caller did not provide a buffer then allocate one on the heap
-    if (iter_buf == NULL) {
-        iter_buf = m_new_obj(mp_obj_iter_buf_t);
-    }
-
     // check for native getiter (corresponds to __iter__)
     if (type->getiter != NULL) {
+        if (iter_buf == NULL && type->getiter != mp_obj_instance_getiter) {
+            // if caller did not provide a buffer then allocate one on the heap
+            // mp_obj_instance_getiter is special, it will allocate only if needed
+            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        }
         mp_obj_t iter = type->getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
             return iter;
@@ -1181,6 +1184,10 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     mp_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
     if (dest[0] != MP_OBJ_NULL) {
         // __getitem__ exists, create and return an iterator
+        if (iter_buf == NULL) {
+            // if caller did not provide a buffer then allocate one on the heap
+            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        }
         return mp_obj_new_getitem_iter(dest, iter_buf);
     }
 
@@ -1196,7 +1203,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
 // may also raise StopIteration()
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
-    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
@@ -1221,7 +1228,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
 // may raise other exceptions
 mp_obj_t mp_iternext(mp_obj_t o_in) {
     MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
-    mp_obj_type_t *type = mp_obj_get_type(o_in);
+    const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
         return type->iternext(o_in);
     } else {
@@ -1256,7 +1263,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
 // TODO: Unclear what to do with StopIterarion exception here.
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
     if (type == &mp_type_gen_instance) {
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);

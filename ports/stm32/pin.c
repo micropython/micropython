@@ -329,7 +329,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
+        { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
@@ -418,7 +418,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_MODE_IT_RISING | GPIO_MODE_IT_FALLING} },
         { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
     };

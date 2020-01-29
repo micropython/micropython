@@ -1,6 +1,6 @@
 .. _speed_python:
 
-Maximising MicroPython Speed
+Maximising MicroPython speed
 ============================
 
 .. contents::
@@ -40,7 +40,7 @@ the best algorithm is employed. This is a topic for textbooks rather than for a
 MicroPython guide but spectacular performance gains can sometimes be achieved
 by adopting algorithms known for their efficiency.
 
-RAM Allocation
+RAM allocation
 ~~~~~~~~~~~~~~
 
 To design efficient MicroPython code it is necessary to have an understanding of the
@@ -69,7 +69,7 @@ example, objects which support stream interface (e.g., file or UART) provide ``r
 method which allocates new buffer for read data, but also a ``readinto()`` method
 to read data into an existing buffer.
 
-Floating Point
+Floating point
 ~~~~~~~~~~~~~~
 
 Some MicroPython ports allocate floating point numbers on heap. Some other ports

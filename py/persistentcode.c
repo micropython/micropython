@@ -34,6 +34,7 @@
 #include "py/persistentcode.h"
 #include "py/bc0.h"
 #include "py/objstr.h"
+#include "py/mpthread.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -821,15 +822,21 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 
 STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     int fd = (intptr_t)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t ret = write(fd, str, len);
+    MP_THREAD_GIL_ENTER();
     (void)ret;
 }
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
+    MP_THREAD_GIL_EXIT();
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    MP_THREAD_GIL_ENTER();
     mp_print_t fd_print = {(void*)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(rc, &fd_print);
+    MP_THREAD_GIL_EXIT();
     close(fd);
+    MP_THREAD_GIL_ENTER();
 }
 
 #else

@@ -66,7 +66,7 @@ Tuple address format for ``socket`` module:
 Functions
 ---------
 
-.. function:: socket(af=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP)
+.. function:: socket(af=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, /)
 
    Create a new socket using the given address family, socket type and
    protocol number. Note that specifying *proto* in most cases is not
@@ -79,7 +79,7 @@ Functions
         # Create DGRAM UDP socket
         socket(AF_INET, SOCK_DGRAM)
 
-.. function:: getaddrinfo(host, port, af=0, type=0, proto=0, flags=0)
+.. function:: getaddrinfo(host, port, af=0, type=0, proto=0, flags=0, /)
 
    Translate the host/port argument into a sequence of 5-tuples that contain all the 
    necessary arguments for creating a socket connected to that service. Arguments
@@ -293,7 +293,7 @@ Methods
    * ``sock.setblocking(True)`` is equivalent to ``sock.settimeout(None)``
    * ``sock.setblocking(False)`` is equivalent to ``sock.settimeout(0)``
 
-.. method:: socket.makefile(mode='rb', buffering=0)
+.. method:: socket.makefile(mode='rb', buffering=0, /)
 
    Return a file object associated with the socket. The exact returned type depends on the arguments
    given to makefile(). The support is limited to binary modes only ('rb', 'wb', and 'rwb').

@@ -365,7 +365,7 @@ STATIC mp_obj_t pyb_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_flash_writeblocks_obj, 3, 4, pyb_flash_writeblocks);
 
 STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
-    pyb_flash_obj_t *self = self_in;
+    pyb_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT: {

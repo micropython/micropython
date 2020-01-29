@@ -243,7 +243,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (ret == mp_const_none || ret == MP_OBJ_STOP_ITERATION) {
                 return MP_OBJ_STOP_ITERATION;
             } else {
-                nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_StopIteration, ret));
             }
 
         case MP_VM_RETURN_YIELD:

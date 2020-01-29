@@ -65,7 +65,7 @@ const char * nrfx_error_code_lookup(uint32_t err_code);
 #define mp_hal_pin_high(p)       nrf_gpio_pin_set(p->pin)
 #define mp_hal_pin_low(p)        nrf_gpio_pin_clear(p->pin)
 #define mp_hal_pin_read(p)       (nrf_gpio_pin_dir_get(p->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? nrf_gpio_pin_out_read(p->pin) : nrf_gpio_pin_read(p->pin)
-#define mp_hal_pin_write(p, v)   do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_write(p, v)   ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
 #define mp_hal_pin_od_low(p)     mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)    mp_hal_pin_high(p)
 #define mp_hal_pin_open_drain(p) nrf_gpio_cfg_input(p->pin, NRF_GPIO_PIN_NOPULL)

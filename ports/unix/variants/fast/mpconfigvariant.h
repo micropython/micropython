@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,13 @@
  * THE SOFTWARE.
  */
 
-// select nan-boxing object model
-#define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_D)
+// This config file is intended to configure artificially fast uPy build for
+// synthetic benchmarking, at the expense of features supported and memory
+// usage. This config is not intended to be used in production.
 
-// native emitters don't work with nan-boxing
-#define MICROPY_EMIT_X86 (0)
-#define MICROPY_EMIT_X64 (0)
-#define MICROPY_EMIT_THUMB (0)
-#define MICROPY_EMIT_ARM (0)
+#define MICROPY_PY___FILE__ (0)
+// 91 is a magic number proposed by @dpgeorge, which make pystone run ~ at tie
+// with CPython 3.4.
+#define MICROPY_MODULE_DICT_SIZE (91)
 
-#include <stdint.h>
-
-typedef int64_t mp_int_t;
-typedef uint64_t mp_uint_t;
-#define UINT_FMT "%llu"
-#define INT_FMT "%lld"
-
-#include <mpconfigport.h>
+#include "variants/DEV/mpconfigvariant.h"

@@ -64,7 +64,9 @@ long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t dummy = write(STDERR_FILENO, str, len);
+    MP_THREAD_GIL_ENTER();
     mp_uos_dupterm_tx_strn(str, len);
     (void)dummy;
 }
