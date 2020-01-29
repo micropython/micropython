@@ -104,7 +104,7 @@ void reset_displays(void) {
                     }
                 #endif
                 #ifdef BOARD_USE_INTERNAL_SPI
-                    if (original_spi == (mp_obj_t)(&spi)) {
+                    if (original_spi == (mp_obj_t)(&supervisor_flash_spi_bus)) {
                         continue;
                     }
                 #endif

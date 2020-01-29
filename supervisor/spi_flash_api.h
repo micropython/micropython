@@ -33,7 +33,7 @@
 
 #include "shared-bindings/busio/SPI.h"
 
-extern busio_spi_obj_t spi; //Used to share SPI bus on some boards
+extern busio_spi_obj_t supervisor_flash_spi_bus; //Used to share SPI bus on some boards
 
 // This API is implemented for both normal SPI peripherals and QSPI peripherals.
 

@@ -74,7 +74,7 @@ uint8_t display_init_sequence[] = {
 void board_init(void) {
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
-    busio_spi_obj_t *internal_spi = &spi;
+    busio_spi_obj_t *internal_spi = &supervisor_flash_spi_bus;
     common_hal_displayio_fourwire_construct(bus,
         internal_spi,
         &pin_PA08, // Command or data
