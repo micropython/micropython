@@ -49,7 +49,7 @@
 //|   as part of remote Services.
 //|
 
-//|   .. method:: add_to_service(service, uuid, *, properties=0, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=None)
+//|   .. method:: add_to_service(service, uuid, *, properties=0, read_perm=Attribute.OPEN, write_perm=Attribute.OPEN, max_length=20, fixed_length=False, initial_value=None)
 //|
 //|     Create a new Characteristic object, and add it to this Service.
 //|
