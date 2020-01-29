@@ -11,7 +11,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DISP_CS), MP_ROM_PTR(&pin_PB12) },
     { MP_ROM_QSTR(MP_QSTR_DISP_DC), MP_ROM_PTR(&pin_PA08) },
     { MP_ROM_QSTR(MP_QSTR_DISP_RST), MP_ROM_PTR(&pin_PB10) },
-    { MP_ROM_QSTR(MP_QSTR_DISP_BL), MP_ROM_PTR(&pin_PB03) }, //what is this, backlight?
+    { MP_ROM_QSTR(MP_QSTR_DISP_BL), MP_ROM_PTR(&pin_PB03) },
 
     { MP_ROM_QSTR(MP_QSTR_BUZZ), MP_ROM_PTR(&pin_PB08) },
     { MP_ROM_QSTR(MP_QSTR_BTNA), MP_ROM_PTR(&pin_PB09) },
