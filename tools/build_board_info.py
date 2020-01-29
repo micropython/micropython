@@ -18,6 +18,7 @@ BIN = ('bin',)
 UF2 = ('uf2',)
 BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
+HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
 
 # Default extensions
@@ -26,7 +27,7 @@ extension_by_port = {
     "atmel-samd": UF2,
     "stm32f4": BIN,
     "cxd56": SPK,
-    "mimxrt10xx": UF2,
+    "mimxrt10xx": HEX_UF2,
 }
 
 # Per board overrides

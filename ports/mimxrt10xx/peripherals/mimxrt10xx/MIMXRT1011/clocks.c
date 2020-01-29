@@ -129,19 +129,6 @@ void clocks_init(void) {
     CLOCK_DisableClock(kCLOCK_Pit);
     /* Set PERCLK_PODF. */
     CLOCK_SetDiv(kCLOCK_PerclkDiv, 1);
-    /* In SDK projects, external flash (configured by FLEXSPI) will be initialized by dcd.
-     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI clock source in SDK projects) will be left
-     * unchanged. Note: If another clock source is selected for FLEXSPI, user may want to avoid changing that clock as
-     * well.*/
-#if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1))
-    /* Disable Flexspi clock gate. */
-    CLOCK_DisableClock(kCLOCK_FlexSpi);
-    /* Set FLEXSPI_PODF. */
-    CLOCK_SetDiv(kCLOCK_FlexspiDiv, 3);
-    /* Set Flexspi clock source. */
-    CLOCK_SetMux(kCLOCK_FlexspiMux, 0);
-    CLOCK_SetMux(kCLOCK_FlexspiSrcMux, 0);
-#endif
     /* Disable ADC_ACLK_EN clock gate. */
     CCM->CSCMR2 &= ~CCM_CSCMR2_ADC_ACLK_EN_MASK;
     /* Set ADC_ACLK_PODF. */
@@ -219,24 +206,6 @@ void clocks_init(void) {
     CLOCK_InitSysPfd(kCLOCK_Pfd2, 18);
     /* Init System pfd3. */
     CLOCK_InitSysPfd(kCLOCK_Pfd3, 18);
-    /* In SDK projects, external flash (configured by FLEXSPI) will be initialized by dcd.
-     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI clock source in SDK projects) will be left
-     * unchanged. Note: If another clock source is selected for FLEXSPI, user may want to avoid changing that clock as
-     * well.*/
-#if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1))
-    /* Init Usb1 PLL. */
-    CLOCK_InitUsb1Pll(&usb1PllConfig_BOARD_BootClockRUN);
-    /* Init Usb1 pfd0. */
-    CLOCK_InitUsb1Pfd(kCLOCK_Pfd0, 22);
-    /* Init Usb1 pfd1. */
-    CLOCK_InitUsb1Pfd(kCLOCK_Pfd1, 16);
-    /* Init Usb1 pfd2. */
-    CLOCK_InitUsb1Pfd(kCLOCK_Pfd2, 17);
-    /* Init Usb1 pfd3. */
-    CLOCK_InitUsb1Pfd(kCLOCK_Pfd3, 18);
-    /* Disable Usb1 PLL output for USBPHY1. */
-    CCM_ANALOG->PLL_USB1 &= ~CCM_ANALOG_PLL_USB1_EN_USB_CLKS_MASK;
-#endif
     /* DeInit Audio PLL. */
     CLOCK_DeinitAudioPll();
     /* Bypass Audio PLL. */

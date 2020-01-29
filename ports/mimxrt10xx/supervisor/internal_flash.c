@@ -166,11 +166,13 @@ void supervisor_flash_init(void) {
     }
     __enable_irq();
 
+    SCB_EnableDCache();
+
     init_done = true;
 }
 
 static inline uint32_t lba2addr(uint32_t block) {
-    return ((uint32_t)__fatfs_flash_start_addr) + block * FILESYSTEM_BLOCK_SIZE;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -178,7 +180,7 @@ uint32_t supervisor_flash_get_block_size(void) {
 }
 
 uint32_t supervisor_flash_get_block_count(void) {
-    return ((uint32_t) __fatfs_flash_length) / FILESYSTEM_BLOCK_SIZE;
+    return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE;
 }
 
 void supervisor_flash_flush(void) {
@@ -191,20 +193,20 @@ void supervisor_flash_flush(void) {
 
         __disable_irq();
         status = flexspi_nor_flash_erase_sector(FLEXSPI, sector_addr);
+        __enable_irq();
         if (status != kStatus_Success) {
             printf("Page erase failure %ld!\r\n", status);
             return;
         }
-        __enable_irq();
 
         for (int i = 0; i < SECTOR_SIZE / FLASH_PAGE_SIZE; ++i) {
             __disable_irq();
             status = flexspi_nor_flash_page_program(FLEXSPI, sector_addr + i * FLASH_PAGE_SIZE, (void *)_flash_cache + i * FLASH_PAGE_SIZE);
+            __enable_irq();
             if (status != kStatus_Success) {
                 printf("Page program failure %ld!\r\n", status);
                 return;
             }
-            __enable_irq();
         }
 
         DCACHE_CleanInvalidateByRange(_flash_page_addr, SECTOR_SIZE);

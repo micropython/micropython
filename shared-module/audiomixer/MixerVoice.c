@@ -34,7 +34,7 @@
 
 void common_hal_audiomixer_mixervoice_construct(audiomixer_mixervoice_obj_t *self) {
     self->sample = NULL;
-    self->level = ((1 << 15) - 1);
+    self->level = 1 << 15;
 }
 
 void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t* self, audiomixer_mixer_obj_t *parent) {
@@ -42,11 +42,11 @@ void common_hal_audiomixer_mixervoice_set_parent(audiomixer_mixervoice_obj_t* se
 }
 
 float common_hal_audiomixer_mixervoice_get_level(audiomixer_mixervoice_obj_t* self) {
-	return ((float) self->level / ((1 << 15) - 1));
+	return ((float) self->level / (1 << 15));
 }
 
 void common_hal_audiomixer_mixervoice_set_level(audiomixer_mixervoice_obj_t* self, float level) {
-	self->level = level * ((1 << 15)-1);
+	self->level = level * (1 << 15);
 }
 
 void common_hal_audiomixer_mixervoice_play(audiomixer_mixervoice_obj_t* self, mp_obj_t sample, bool loop) {

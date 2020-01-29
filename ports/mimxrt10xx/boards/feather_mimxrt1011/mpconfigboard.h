@@ -1,18 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Feather MIMXRT1011"
 #define MICROPY_HW_MCU_NAME "IMXRT1011DAE5A"
 
-//TODO
-//#define MICROPY_HW_LED_STATUS   (&pin_PA27)
-
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO_SD_05)
-
-// These are pins not to reset.
-// QSPI Data pins
-//#define MICROPY_PORT_A ( PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 )
-// QSPI CS, and QSPI SCK
-//#define MICROPY_PORT_B ( PORT_PB10 | PORT_PB11 | PORT_PB22 )
-//#define MICROPY_PORT_C ( 0 )
-//#define MICROPY_PORT_D ( 0 )
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code

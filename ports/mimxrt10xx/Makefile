@@ -71,6 +71,7 @@ INC += \
 	-Isdk/CMSIS/Include \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
+	-Isdk/devices/$(CHIP_FAMILY)/xip \
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
@@ -83,24 +84,10 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
-  #CFLAGS += -flto -flto-partition=none
+  # CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-inline -fno-ipa-sra
 else
-  # -finline-limit can shrink the image size.
-  # -finline-limit=80 or so is similar to not having it on.
-  # There is no simple default value, though.
-
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
-      CFLAGS_INLINE_LIMIT = 50
-    endif
-  endif
-
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
-  endif
   #CFLAGS += -flto -flto-partition=none
 endif
 
@@ -114,14 +101,15 @@ CFLAGS += \
 	-mfpu=fpv5-sp-d16 \
 	-DCPU_$(CHIP_VARIANT) \
 	-DDEBUG \
-	-DXIP_EXTERNAL_FLASH=1 \
-	-DXIP_BOOT_HEADER_ENABLE=1 \
-	-D__START=main \
+	-DIMXRT10XX \
 	-Os -g3 -Wno-unused-parameter \
-	-ffunction-sections -fdata-sections -fstack-usage \
-	-D__STARTUP_CLEAR_BSS
+	-ffunction-sections -fdata-sections -fstack-usage
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
+
+LD_SCRIPT_FLAG := -Wl,-T,
+
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib $(addprefix $(LD_SCRIPT_FLAG), $(LD_FILES)) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc -lnosys -lm
 
 # Use toolchain libm if we're not using our own.
@@ -154,6 +142,7 @@ SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
 SRC_C = \
 	background.c \
 	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/flash_config.c \
 	boards/$(BOARD)/pins.c \
 	fatfs_port.c \
 	lib/mp-readline/readline.c \
@@ -231,19 +220,22 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
-all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 
-$(BUILD)/firmware.elf: $(LD_FILE) $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out $<,$^) -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--start-group $(LIBS) -Wl,--end-group
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .interrupts -j .text -j .ARM.exidx -j .data $^ $@
+	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(STEPECHO) "Create $@"
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $^
+
+$(BUILD)/firmware.hex: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O ihex -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $< $@
 
 include $(TOP)/py/mkrules.mk
 
