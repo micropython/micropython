@@ -3,5 +3,9 @@ b''
 b'Zm9v\n'
 b'Zm9v'
 b'Zm9veA=='
+b'Zm8'
 b'Zm9v'
 b'\xff\xe6'
+ValueError
+ValueError
+ValueError
