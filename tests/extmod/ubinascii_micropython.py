@@ -13,3 +13,11 @@ print(a)
 
 # zero length buffer
 print(binascii.hexlify(b'', b':'))
+
+# base64 extensions
+print(binascii.b2a_base64(b"foo",binascii.ADD_NEWLINE))
+print(binascii.b2a_base64(b"foo",0))
+print(binascii.b2a_base64(b"foox",binascii.URL))
+print(binascii.b2a_base64(b"foo",binascii.URL | binascii.NOPADDING))
+
+print(binascii.a2b_base64(b"_-a",binascii.URL | binascii.NOPADDING))
