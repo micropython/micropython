@@ -207,31 +207,33 @@ mp_obj_t mp_obj_equal_bop(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
     mp_obj_t local_false = (op == MP_BINARY_OP_NOT_EQUAL) ? mp_const_true : mp_const_false;
     int pass_number = 0;
 
+    bool o2_shortcut = !(mp_obj_is_obj(o2) &&
+                         (((mp_obj_base_t*)MP_OBJ_TO_PTR(o2))->type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS));
+
     // Shortcut for very common cases
-    if (o1 == o2 &&
-        (mp_obj_is_small_int(o1) ||
-	 ((mp_obj_get_type(o1)->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) == 0) )) {
+    if (o1 == o2 && o2_shortcut) {
         return local_true;
     }
 
     bool is_str_1 = mp_obj_is_str(o1);
     bool is_str_2 = mp_obj_is_str(o2);
 
-    // fast path for strings
+    // fast paths for strings
     if (is_str_1 && is_str_2) {
-        if (mp_obj_is_str(o2)) {
-            // both strings, use special function
-            return mp_obj_str_equal(o1, o2) ? local_true : local_false;
+        // both strings, use special function
+        return mp_obj_str_equal(o1, o2) ? local_true : local_false;
+    } else if ((is_str_1 || is_str_2) &&
+               (mp_obj_is_type(o1, &mp_type_bytes) || mp_obj_is_type(o2, &mp_type_bytes))) {
+        // One object is a string and the other is a bytes, which has a special warning
+        #if MICROPY_PY_STR_BYTES_CMP_WARN
+        mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
+        #endif
+        return local_false;
+    } else if (is_str_1) {
+        if (o2_shortcut) {
+            return local_false;
         } else {
-            if ((is_str_1 || is_str_2) &&
-                (mp_obj_is_type(o1, &mp_type_bytes) || mp_obj_is_type(o2, &mp_type_bytes))) {
-                #if MICROPY_PY_STR_BYTES_CMP_WARN
-                mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
-                #endif
-                return local_false;
-            } else {
-                goto skip_one_pass;
-            }
+            goto skip_one_pass;
         }
     }
 
@@ -241,43 +243,43 @@ mp_obj_t mp_obj_equal_bop(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
             // both SMALL_INT, and not equal if we get here
             return local_false;
         } else {
-	    goto skip_one_pass;
+            goto skip_one_pass;
         }
     }
 
     // generic type, call binary_op(MP_BINARY_OP_EQUAL)
     while (pass_number < 2) {
         const mp_obj_type_t *type = mp_obj_get_type(o1);
-	// If shortcuts are allowed and the other object is a
-	// different type then we don't need to bother trying the
-	// comparison.
+        // If shortcuts are allowed and the other object is a
+        // different type then we don't need to bother trying the
+        // comparison.
         if (type->binary_op != NULL &&
-	    ((type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) ||
-	     mp_obj_get_type(o2) == type)) {
+            ((type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) ||
+             mp_obj_get_type(o2) == type)) {
             // CPython is asymetric; it will try __eq__ if there is no
             // __ne__ but not the other way around. If shortcuts are
-	    // used in this class we always use __eq__.
-	    if (op == MP_BINARY_OP_NOT_EQUAL &&
-		(type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS) != 0) {
-	        mp_obj_t r = type->binary_op(op, o1, o2);
+            // used in this class we always use __eq__.
+            if (op == MP_BINARY_OP_NOT_EQUAL &&
+                (type->flags & MP_TYPE_FLAG_NO_EQUALITY_SHORTCUTS)) {
+                mp_obj_t r = type->binary_op(op, o1, o2);
                 if (r != MP_OBJ_NULL) {
                     return r;
                 }
-	    }
+            }
 
-	    mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
-	        if (op == MP_BINARY_OP_EQUAL) {
-		    return r;
-		} else {
-	            return mp_obj_is_true(r) ? mp_const_false : mp_const_true;
-		}
+                if (op == MP_BINARY_OP_EQUAL) {
+                    return r;
+                } else {
+                    return mp_obj_is_true(r) ? mp_const_false : mp_const_true;
+                }
             }
         }
 
     skip_one_pass:
         // Try the other way around if none of the above worked
-	pass_number++;
+        pass_number++;
         mp_obj_t temp = o1;
         o1 = o2;
         o2 = temp;
