@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -505,11 +505,8 @@ msgstr "Jednostka zegara w użyciu"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Kolumny muszą być typu digitalio.DigitalInOut"
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Komenda musi być int pomiędzy 0 a 255"
 
@@ -653,10 +650,6 @@ msgstr "Oczekiwano %q"
 msgid "Expected a Characteristic"
 msgstr "Oczekiwano charakterystyki"
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -684,11 +677,11 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nie udało się uzyskać blokady, błąd 0x$04x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nie udała się alokacja bufora RX"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1141,10 +1134,6 @@ msgstr "Odmowa dostępu"
 msgid "Pin does not have ADC capabilities"
 msgstr "Nóżka nie obsługuje ADC"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr "Piksel poza granicami bufora"
-
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Oraz moduły w systemie plików\n"
@@ -1193,10 +1182,6 @@ msgstr "Brak obsługi RTC"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Range out of bounds"
-msgstr "Zakres poza granicami"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1616,11 +1601,6 @@ msgstr "bits_per_sample musi być 8 lub 16"
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr "skok poza zakres"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr "buf zbyt mały. Wymagane %d bajtów"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2513,10 +2493,6 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 msgid "queue overflow"
 msgstr "przepełnienie kolejki"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr "rawbuf nie jest tej samej wielkości co buf"
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relatywny import"
@@ -2749,16 +2725,6 @@ msgstr "zła specyfikacja konwersji %c"
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "zły kod formatowania '%c' dla obiektu typu '%s'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "zły kod foratowania '%c' dla obiektu typu 'float'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "zły kod formatowania '%c' dla obiektu typu 'str'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3009,6 +2975,12 @@ msgstr "zerowy krok"
 #~ msgid "Only slices with step=1 (aka None) are supported"
 #~ msgstr "Wspierane są tylko fragmenty z step=1 (albo None)"
 
+#~ msgid "Pixel beyond bounds of buffer"
+#~ msgstr "Piksel poza granicami bufora"
+
+#~ msgid "Range out of bounds"
+#~ msgstr "Zakres poza granicami"
+
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 
@@ -3064,6 +3036,10 @@ msgstr "zerowy krok"
 #~ msgstr "zła rola GATT"
 
 #, c-format
+#~ msgid "buf is too small. need %d bytes"
+#~ msgstr "buf zbyt mały. Wymagane %d bajtów"
+
+#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "byteorder musi być typu ByteOrder (jest %s)"
 
@@ -3077,6 +3053,9 @@ msgstr "zerowy krok"
 #~ msgid "name must be a string"
 #~ msgstr "nazwa musi być łańcuchem"
 
+#~ msgid "rawbuf is not the same size as buf"
+#~ msgstr "rawbuf nie jest tej samej wielkości co buf"
+
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "obiekt typu innego niż Service w services"
 
@@ -3088,6 +3067,14 @@ msgstr "zerowy krok"
 
 #~ msgid "timeout >100 (units are now seconds, not msecs)"
 #~ msgstr "timeout > 100 (jednostkami są sekundy)"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr "zły kod foratowania '%c' dla obiektu typu 'float'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr "zły kod formatowania '%c' dla obiektu typu 'str'"
 
 #~ msgid "write_args must be a list, tuple, or None"
 #~ msgstr "write_args musi być listą, krotką lub None"

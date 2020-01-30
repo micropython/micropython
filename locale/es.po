@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -508,11 +508,8 @@ msgstr "Clock unit está siendo utilizado"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Entrada de columna debe ser digitalio.DigitalInOut"
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Command debe estar entre 0 y 255."
 
@@ -656,10 +653,6 @@ msgstr "Se espera un %q"
 msgid "Expected a Characteristic"
 msgstr "Se esperaba una Característica."
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -687,11 +680,11 @@ msgstr "Fallo enviando comando"
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "No se puede adquirir el mutex, status: 0x%08lX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Ha fallado la asignación del buffer RX"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1150,10 +1143,6 @@ msgstr "Permiso denegado"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin no tiene capacidad ADC"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr "Pixel beyond bounds of buffer"
-
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1204,11 +1193,6 @@ msgstr "RTC no soportado en esta placa"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Range out of bounds"
-msgstr "address fuera de límites"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1633,11 +1617,6 @@ msgstr "bits_per_sample debe ser 8 ó 16"
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr "El argumento de chr() no esta en el rango(256)"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr "buf es demasiado pequeño. necesita %d bytes"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2542,10 +2521,6 @@ msgstr "pow() con 3 argumentos requiere enteros"
 msgid "queue overflow"
 msgstr "desbordamiento de cola(queue)"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr "rawbuf no es el mismo tamaño que buf"
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "import relativo"
@@ -2780,16 +2755,6 @@ msgstr "especificador de conversión %c desconocido"
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "codigo format desconocido '%c' para el typo de objeto '%s'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "codigo format desconocido '%c' para el typo de objeto 'float'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "codigo format desconocido '%c' para objeto de tipo 'str'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3143,6 +3108,13 @@ msgstr "paso cero"
 #~ msgid "Pins not valid for SPI"
 #~ msgstr "Pines no válidos para SPI"
 
+#~ msgid "Pixel beyond bounds of buffer"
+#~ msgstr "Pixel beyond bounds of buffer"
+
+#, fuzzy
+#~ msgid "Range out of bounds"
+#~ msgstr "address fuera de límites"
+
 #~ msgid "STA must be active"
 #~ msgstr "STA debe estar activo"
 
@@ -3221,6 +3193,10 @@ msgstr "paso cero"
 
 #~ msgid "bad GATT role"
 #~ msgstr "mal GATT role"
+
+#, c-format
+#~ msgid "buf is too small. need %d bytes"
+#~ msgstr "buf es demasiado pequeño. necesita %d bytes"
 
 #~ msgid "buffer too long"
 #~ msgstr "buffer demasiado largo"
@@ -3305,6 +3281,9 @@ msgstr "paso cero"
 #~ msgid "position must be 2-tuple"
 #~ msgstr "posición debe ser 2-tuple"
 
+#~ msgid "rawbuf is not the same size as buf"
+#~ msgstr "rawbuf no es el mismo tamaño que buf"
+
 #, fuzzy
 #~ msgid "readonly attribute"
 #~ msgstr "atributo no legible"
@@ -3332,6 +3311,14 @@ msgstr "paso cero"
 
 #~ msgid "unknown config param"
 #~ msgstr "parámetro config desconocido"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr "codigo format desconocido '%c' para el typo de objeto 'float'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr "codigo format desconocido '%c' para objeto de tipo 'str'"
 
 #~ msgid "unknown status param"
 #~ msgstr "status param desconocido"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -506,11 +506,8 @@ msgstr "Shǐyòng shízhōng dānwèi"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr "Mìnglìng bìxū wèi 0-255"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
 
@@ -654,10 +651,6 @@ msgstr "Yùqí %q"
 msgid "Expected a Characteristic"
 msgstr "Yùqí de tèdiǎn"
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Yùqí fúwù"
@@ -685,11 +678,11 @@ msgstr "Fāsòng mìnglìng shībài."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Wúfǎ huòdé mutex, err 0x%04x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Fēnpèi RX huǎnchōng shībài"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1146,10 +1139,6 @@ msgstr "Quánxiàn bèi jùjué"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin méiyǒu ADC nénglì"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
-
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
@@ -1198,10 +1187,6 @@ msgstr "Cǐ bǎn bù zhīchí RTC"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Range out of bounds"
-msgstr "Fànwéi chāochū biānjiè"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1625,11 +1610,6 @@ msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr "fēnzhī bùzài fànwéi nèi"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr "huǎnchōng tài xiǎo. Xūyào%d zì jié"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2525,10 +2505,6 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 msgid "queue overflow"
 msgstr "duìliè yìchū"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr "yuánshǐ huǎnchōng qū hé huǎnchōng qū de dàxiǎo bùtóng"
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "xiāngduì dǎorù"
@@ -2763,16 +2739,6 @@ msgstr "wèizhī de zhuǎnhuàn biāozhù %c"
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
 
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "lèixíng 'float' duìxiàng wèizhī de géshì dàimǎ '%c'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "lèixíng 'str' duìxiàng wèizhī de géshì dàimǎ '%c'"
-
 #: py/compile.c
 msgid "unknown type"
 msgstr "wèizhī lèixíng"
@@ -2887,6 +2853,9 @@ msgstr "líng bù"
 
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
+
+#~ msgid "Command must be 0-255"
+#~ msgstr "Mìnglìng bìxū wèi 0-255"
 
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
@@ -3060,6 +3029,12 @@ msgstr "líng bù"
 #~ msgid "Only slices with step=1 (aka None) are supported"
 #~ msgstr "Jǐn zhīchí 1 bù qiēpiàn"
 
+#~ msgid "Pixel beyond bounds of buffer"
+#~ msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
+
+#~ msgid "Range out of bounds"
+#~ msgstr "Fànwéi chāochū biānjiè"
+
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
 
@@ -3117,6 +3092,10 @@ msgstr "líng bù"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
 
 #, c-format
+#~ msgid "buf is too small. need %d bytes"
+#~ msgstr "huǎnchōng tài xiǎo. Xūyào%d zì jié"
+
+#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "zì jié bùshì zì jié xù shílì (yǒu %s)"
 
@@ -3131,6 +3110,9 @@ msgstr "líng bù"
 
 #~ msgid "name must be a string"
 #~ msgstr "míngchēng bìxū shì yīgè zìfú chuàn"
+
+#~ msgid "rawbuf is not the same size as buf"
+#~ msgstr "yuánshǐ huǎnchōng qū hé huǎnchōng qū de dàxiǎo bùtóng"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
@@ -3149,6 +3131,14 @@ msgstr "líng bù"
 
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr "lèixíng 'float' duìxiàng wèizhī de géshì dàimǎ '%c'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr "lèixíng 'str' duìxiàng wèizhī de géshì dàimǎ '%c'"
 
 #~ msgid "unsupported bitmap type"
 #~ msgstr "bù zhīchí de bitmap lèixíng"
