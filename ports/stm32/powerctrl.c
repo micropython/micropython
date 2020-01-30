@@ -381,6 +381,11 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32F7)
+    // Enable overdrive to reach 216MHz (if needed)
+    HAL_PWREx_EnableOverDrive();
+    #endif
+
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
