@@ -27,7 +27,6 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
-#include "lib/utils/interrupt_char.h"
 #include "pendsv.h"
 #include "irq.h"
 

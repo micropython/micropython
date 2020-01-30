@@ -20,9 +20,6 @@
 #include <misc/printk.h>
 #include "zephyr_getchar.h"
 
-extern int mp_interrupt_char;
-void mp_keyboard_interrupt(void);
-
 static struct k_sem uart_sem;
 #define UART_BUFSIZE 256
 static uint8_t uart_ringbuf[UART_BUFSIZE];
@@ -35,7 +32,7 @@ static int console_irq_input_hook(uint8_t ch)
         printk("UART buffer overflow - char dropped\n");
         return 1;
     }
-    if (ch == mp_interrupt_char) {
+    if (ch == MP_STATE_VM(interrupt_char)) {
         mp_keyboard_interrupt();
         return 1;
     } else {

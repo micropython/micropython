@@ -32,7 +32,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
 #include "lib/utils/mpirq.h"
 #include "uart.h"
 #include "irq.h"
@@ -806,7 +805,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 int data = self->uartx->DR; // clears UART_FLAG_RXNE
                 #endif
                 data &= self->char_mask;
-                if (self->attached_to_repl && data == mp_interrupt_char) {
+                if (self->attached_to_repl && data == MP_STATE_VM(interrupt_char)) {
                     // Handle interrupt coming in on a UART REPL
                     pendsv_kbd_intr();
                 } else {

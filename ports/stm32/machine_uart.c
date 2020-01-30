@@ -32,7 +32,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
 #include "lib/utils/mpirq.h"
 #include "uart.h"
 #include "irq.h"

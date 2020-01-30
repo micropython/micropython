@@ -73,6 +73,8 @@ void mp_init(void) {
 #endif
 
     #if MICROPY_KBD_EXCEPTION
+    // Disable intercepting any interrupt character
+    MP_STATE_VM(interrupt_char) = -1;
     // initialise the exception object for raising KeyboardInterrupt
     MP_STATE_VM(mp_kbd_exception).base.type = &mp_type_KeyboardInterrupt;
     MP_STATE_VM(mp_kbd_exception).traceback_alloc = 0;

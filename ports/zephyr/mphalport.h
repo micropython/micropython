@@ -1,5 +1,4 @@
 #include <zephyr.h>
-#include "lib/utils/interrupt_char.h"
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return SYS_CLOCK_HW_CYCLES_TO_NS(k_cycle_get_32()) / 1000;

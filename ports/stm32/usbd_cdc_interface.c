@@ -41,8 +41,7 @@
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
 
-#include "py/obj.h"
-#include "lib/utils/interrupt_char.h"
+#include "py/runtime.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_USB
@@ -267,7 +266,7 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
 
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
-        if (cdc->attached_to_repl && mp_interrupt_char != -1 && *src == mp_interrupt_char) {
+        if (cdc->attached_to_repl && MP_STATE_VM(interrupt_char) != -1 && *src == MP_STATE_VM(interrupt_char)) {
             pendsv_kbd_intr();
         } else {
             uint16_t next_put = (cdc->rx_buf_put + 1) & (USBD_CDC_RX_DATA_SIZE - 1);

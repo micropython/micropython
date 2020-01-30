@@ -19,6 +19,9 @@
 #include "user_interface.h"
 #include "esp_mphal.h"
 
+#include "py/runtime.h"
+#include "lib/utils/pyexec.h"
+
 // seems that this is missing in the Espressif SDK
 #define FUNC_U0RXD 0
 
@@ -42,7 +45,6 @@ static ringbuf_t uart_ringbuf = {uart_ringbuf_array, sizeof(uart_ringbuf_array),
 static void uart0_rx_intr_handler(void *para);
 
 void soft_reset(void);
-void mp_keyboard_interrupt(void);
 
 /******************************************************************************
  * FunctionName : uart_config
@@ -178,8 +180,14 @@ static void uart0_rx_intr_handler(void *para) {
             // For efficiency, when connected to dupterm we put incoming chars
             // directly on stdin_ringbuf, rather than going via uart_ringbuf
             if (uart_attached_to_dupterm) {
-                if (RcvChar == mp_interrupt_char) {
-                    mp_keyboard_interrupt();
+                if (RcvChar == MP_STATE_VM(interrupt_char)) {
+                    // inline version of mp_keyboard_interrupt();
+                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+                    #if MICROPY_ENABLE_SCHEDULER
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+                        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+                    }
+                    #endif
                 } else {
                     ringbuf_put(&stdin_ringbuf, RcvChar);
                 }
@@ -284,9 +292,6 @@ void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
 
 // Task-based UART interface
 
-#include "py/obj.h"
-#include "lib/utils/pyexec.h"
-
 #if MICROPY_REPL_EVENT_DRIVEN
 void uart_task_handler(os_event_t *evt) {
     if (pyexec_repl_active) {
@@ -302,7 +307,7 @@ void uart_task_handler(os_event_t *evt) {
 
     int c, ret = 0;
     while ((c = ringbuf_get(&stdin_ringbuf)) >= 0) {
-        if (c == mp_interrupt_char) {
+        if (c == MP_STATE_VM(interrupt_char)) {
             mp_keyboard_interrupt();
         }
         ret = pyexec_event_repl_process_char(c);

@@ -33,7 +33,6 @@
 #include "py/objarray.h"
 #include "py/stream.h"
 #include "extmod/misc.h"
-#include "lib/utils/interrupt_char.h"
 
 #if MICROPY_PY_OS_DUPTERM
 
@@ -131,7 +130,7 @@ int mp_uos_dupterm_rx_chr(void) {
             } else {
                 // read 1 byte
                 nlr_pop();
-                if (buf[0] == mp_interrupt_char) {
+                if (buf[0] == MP_STATE_VM(interrupt_char)) {
                     // Signal keyboard interrupt to be raised as soon as the VM resumes
                     mp_keyboard_interrupt();
                     return -2;

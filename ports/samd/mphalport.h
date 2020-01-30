@@ -30,7 +30,8 @@
 
 extern volatile uint32_t systick_ms;
 
-void mp_hal_set_interrupt_char(int c);
+#define mp_hal_set_interrupt_char mp_hal_set_interrupt_char_samd
+void mp_hal_set_interrupt_char_samd(int c);
 
 static inline mp_uint_t mp_hal_ticks_ms(void) { return systick_ms; }
 static inline mp_uint_t mp_hal_ticks_us(void) { return systick_ms * 1000; }

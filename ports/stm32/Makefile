@@ -142,7 +142,6 @@ SRC_LIB = $(addprefix lib/,\
 	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
 	utils/mpirq.c \
 	)

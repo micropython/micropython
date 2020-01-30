@@ -192,7 +192,6 @@ SRC_LIB += $(addprefix lib/,\
 	mp-readline/readline.c \
 	utils/pyexec.c \
 	utils/sys_stdio_mphal.c \
-	utils/interrupt_char.c \
 	timeutils/timeutils.c \
 	)
 

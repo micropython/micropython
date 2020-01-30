@@ -91,7 +91,7 @@ BOOL WINAPI console_sighandler(DWORD evt) {
     return FALSE;
 }
 
-void mp_hal_set_interrupt_char(char c) {
+void mp_hal_set_interrupt_char_windows(char c) {
     assure_stdin_handle();
     if (c == CHAR_CTRL_C) {
         DWORD mode;

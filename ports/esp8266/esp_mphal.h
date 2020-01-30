@@ -25,10 +25,7 @@
  */
 
 #include "py/ringbuf.h"
-#include "lib/utils/interrupt_char.h"
 #include "xtirq.h"
-
-void mp_keyboard_interrupt(void);
 
 struct _mp_print_t;
 // Structure for UART-only output via mp_printf()
@@ -54,7 +51,6 @@ __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
 }
 
 void mp_hal_delay_us(uint32_t);
-void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
 
 #define UART_TASK_ID 0

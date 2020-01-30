@@ -40,6 +40,3 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 
     return tb * 1000000 / TBFREQ;
 }
-
-static inline void mp_hal_set_interrupt_char(char c) {
-}

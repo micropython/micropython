@@ -140,7 +140,6 @@ SECTIONS
         *lib/utils/sys_stdio_mphal.o*(.literal*, .text*)
         *lib/utils/pyexec.o*(.literal*, .text*)
         *lib/utils/stdout_helpers.o*(.literal*, .text*)
-        *lib/utils/interrupt_char.o*(.literal.mp_hal_set_interrupt_char, .text.mp_hal_set_interrupt_char)
         *drivers/bus/*.o(.literal* .text*)
 
         build-*/main.o(.literal* .text*)

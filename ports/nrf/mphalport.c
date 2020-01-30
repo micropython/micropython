@@ -47,12 +47,6 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
-#if !MICROPY_KBD_EXCEPTION
-void mp_hal_set_interrupt_char(int c) {
-
-}
-#endif
-
 #if !MICROPY_PY_BLE_NUS
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;

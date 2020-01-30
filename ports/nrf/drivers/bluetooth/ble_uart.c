@@ -30,7 +30,6 @@
 #include "ble_uart.h"
 #include "ringbuffer.h"
 #include "mphalport.h"
-#include "lib/utils/interrupt_char.h"
 
 #if MICROPY_PY_BLE_NUS
 
@@ -159,7 +158,7 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
         } else if (ble_uart_char_rx.handle == attr_handle) {
             for (uint16_t i = 0; i < length; i++) {
                 #if MICROPY_KBD_EXCEPTION
-                if (data[i] == mp_interrupt_char) {
+                if (data[i] == MP_STATE_VM(interrupt_char)) {
                     mp_keyboard_interrupt();
                     m_rx_ring_buffer.start = 0;
                     m_rx_ring_buffer.end = 0;

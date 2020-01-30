@@ -33,7 +33,6 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
 SRC_LIB = $(addprefix lib/,\
-	utils/interrupt_char.c \
 	utils/stdout_helpers.c \
 	utils/pyexec.c \
 	mp-readline/readline.c \

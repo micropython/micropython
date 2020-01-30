@@ -49,7 +49,7 @@ STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
     uart->int_clr.rxfifo_tout = 1;
     while (uart->status.rxfifo_cnt) {
         uint8_t c = uart->fifo.rw_byte;
-        if (c == mp_interrupt_char) {
+        if (c == MP_STATE_VM(interrupt_char)) {
             // inline version of mp_keyboard_interrupt();
             MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
             #if MICROPY_ENABLE_SCHEDULER

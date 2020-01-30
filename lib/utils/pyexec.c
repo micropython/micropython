@@ -101,12 +101,16 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
 
         // execute code
+        #if MICROPY_KBD_EXCEPTION
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+        #endif
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
         mp_call_function_0(module_fun);
+        #if MICROPY_KBD_EXCEPTION
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        #endif
         nlr_pop();
         ret = 1;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -114,8 +118,10 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
     } else {
         // uncaught exception
+        #if MICROPY_KBD_EXCEPTION
         // FIXME it could be that an interrupt happens just before we disable it here
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        #endif
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);

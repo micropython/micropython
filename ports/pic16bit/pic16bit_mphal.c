@@ -29,8 +29,6 @@
 #include "py/mphal.h"
 #include "board.h"
 
-static int interrupt_char;
-
 void mp_hal_init(void) {
     MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
@@ -46,10 +44,6 @@ void mp_hal_delay_ms(mp_uint_t ms) {
         for (volatile int j = 0; j < 5000; j++) {
         }
     }
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    interrupt_char = c;
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {

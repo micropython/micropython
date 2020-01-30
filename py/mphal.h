@@ -54,6 +54,10 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
 #endif
 
+#ifndef mp_hal_set_interrupt_char
+#define mp_hal_set_interrupt_char mp_set_interrupt_char
+#endif
+
 #ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms);
 #endif

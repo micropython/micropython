@@ -67,6 +67,11 @@ void mp_deinit(void);
 void mp_handle_pending(void);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
+#if MICROPY_KBD_EXCEPTION
+void mp_set_interrupt_char(int c);
+void mp_keyboard_interrupt(void);
+#endif
+
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
