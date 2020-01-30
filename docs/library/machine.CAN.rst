@@ -1,19 +1,20 @@
-.. currentmodule:: esp32
-.. _esp32.CAN:
+.. currentmodule:: machine
+.. _machine.CAN:
 
 class CAN -- controller area network communication bus
 ======================================================
 
 CAN implements the standard CAN communications protocol.  At
 the physical level it consists of 2 lines: RX and TX.  Note that
-to connect the ESP32 to a CAN bus you must use a CAN transceiver
-to convert the CAN logic signals from the ESP32 to the correct
+to connect the microcontroller to a CAN bus you must use a CAN transceiver
+to convert the CAN logic signals from the microcontroller to the correct
 voltage levels on the bus.
 
 Example usage (works without anything connected)::
 
     from machine import CAN
-    can = CAN(0, extframe=True, mode=CAN.LOOPBACK, baudrate=CAN.BAUDRATE_500k)
+    BAUDRATE_500k = 500
+    can = CAN(0, extframe=True, mode=CAN.LOOPBACK, baudrate=BAUDRATE_500k)
     dev.setfilter(0, CAN.FILTER_ADDRESS, [0x102, 0])  # set a filter to receive messages with id = 0x102
     can.send([1,2,3], 0x102)   # send a message with id 123
     can.recv()                 # receive message

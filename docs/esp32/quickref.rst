@@ -328,19 +328,18 @@ pins can be used for SCL and SDA.  The driver is accessed via the
 CAN bus
 -------
 
-See :ref:`esp32.CAN <esp32.CAN>` ::
+See :ref:`machine.CAN <machine.CAN>` ::
 
 The CAN driver is based on hardware implementation.  
 Any available output-capablepins can be used for SCL and SDA.  
 The driver is accessed via the :ref:`machine.CAN <machine.CAN>` class::
 
     from machine import CAN
-
-    # construct a CAN bus
-    bus = CAN(0, extframe=True, mode=CAN.LOOPBACK, baudrate=CAN.BAUDRATE_500k)
-    
-    bus.send([0,1,2,3], 0x86) #Send the message
-    bus.recv()                #Read the message sent
+    BAUDRATE_500k = 500
+    can = CAN(0, extframe=True, mode=CAN.LOOPBACK, baudrate=BAUDRATE_500k)
+    dev.setfilter(0, CAN.FILTER_ADDRESS, [0x102, 0])  # set a filter to receive messages with id = 0x102
+    can.send([1,2,3], 0x102)   # send a message with id 123
+    can.recv()                 # receive message
  
 
 Real time clock (RTC)
