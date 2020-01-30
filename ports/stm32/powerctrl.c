@@ -44,6 +44,13 @@
 extern uint32_t _estack[];
 #define BL_STATE ((uint32_t*)&_estack)
 
+static inline void powerctrl_disable_hsi_if_unused(void) {
+    #if !MICROPY_HW_CLK_USE_HSI && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+    // Disable HSI if it's not used to save a little bit of power
+    __HAL_RCC_HSI_DISABLE();
+    #endif
+}
+
 NORETURN void powerctrl_mcu_reset(void) {
     BL_STATE[1] = 1; // invalidate bootloader address
     #if __DCACHE_PRESENT == 1
@@ -154,6 +161,8 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
     if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK) {
         return -MP_EIO;
     }
+
+    powerctrl_disable_hsi_if_unused();
 
     return 0;
 }
@@ -389,6 +398,8 @@ void powerctrl_enter_stop_mode(void) {
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
     }
     #endif
+
+    powerctrl_disable_hsi_if_unused();
 
     #if defined(STM32F7)
     if (RCC->DCKCFGR2 & RCC_DCKCFGR2_CK48MSEL) {
