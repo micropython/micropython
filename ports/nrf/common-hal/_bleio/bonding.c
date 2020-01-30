@@ -267,14 +267,15 @@ void bonding_background(void) {
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
 
-        uint64_t current_ticks_ms = supervisor_ticks_ms64();
         // Wait at least one second before saving CCCD, to consolidate
         // writes that involve multiple CCCDs. For instance, for HID,
         // three CCCD's are set in short succession by the HID client.
-        if (connection->do_bond_cccds &&
-            current_ticks_ms - connection->do_bond_cccds_request_time >= 1000) {
-            write_sys_attr_block(connection);
-            connection->do_bond_cccds = false;
+        if (connection->do_bond_cccds) {
+            uint64_t current_ticks_ms = supervisor_ticks_ms64();
+            if (current_ticks_ms - connection->do_bond_cccds_request_time >= 1000) {
+                write_sys_attr_block(connection);
+                connection->do_bond_cccds = false;
+            }
         }
 
         if (connection->do_bond_keys) {

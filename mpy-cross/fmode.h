@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Radomir Dopieralski
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_WINDOWS_FMODE_H
+#define MICROPY_INCLUDED_WINDOWS_FMODE_H
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
+// Treat files opened by open() as binary. No line ending translation is done.
+void set_fmode_binary(void);
 
-#include "shared-bindings/displayio/Display.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "py/obj.h"
+// Treat files opened by open() as text.
+// When reading from the file \r\n will be converted to \n.
+// When writing to the file \n will be converted into \r\n.
+void set_fmode_text(void);
 
-#define TRANSPARENT (0x1ff8)
-
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
-        mp_obj_t *layers, size_t layers_size,
-        uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display,
-        uint8_t scale, uint16_t background);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE
+#endif // MICROPY_INCLUDED_WINDOWS_FMODE_H

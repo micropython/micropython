@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Radomir Dopieralski
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
+#include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "shared-bindings/displayio/Display.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "py/obj.h"
+void stm32f4_peripherals_gpio_init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
 
-#define TRANSPARENT (0x1ff8)
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
+    never_reset_pin_number(2,14); //PC14 OSC32_IN
+    never_reset_pin_number(2,15); //PC15 OSC32_OUT
+    never_reset_pin_number(0,13); //PA13 SWDIO
+    never_reset_pin_number(0,14); //PA14 SWCLK
+}
 
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
-        mp_obj_t *layers, size_t layers_size,
-        uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display,
-        uint8_t scale, uint16_t background);
+//LEDs are inverted on F411 DISCO
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+}
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE
+

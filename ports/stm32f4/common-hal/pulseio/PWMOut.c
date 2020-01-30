@@ -113,12 +113,12 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     bool first_time_setup = true;
 
     for (uint i = 0; i < tim_num; i++) {
-        mcu_tim_pin_obj_t l_tim = mcu_tim_pin_list[i];
-        uint8_t l_tim_index = l_tim.tim_index - 1;
-        uint8_t l_tim_channel = l_tim.channel_index - 1;
+        const mcu_tim_pin_obj_t * l_tim = &mcu_tim_pin_list[i];
+        uint8_t l_tim_index = l_tim->tim_index - 1;
+        uint8_t l_tim_channel = l_tim->channel_index - 1;
 
         //if pin is same
-        if (l_tim.pin == pin) {
+        if (l_tim->pin == pin) {
             //check if the timer has a channel active
             if (reserved_tim[l_tim_index] != 0) {
                 //is it the same channel? (or all channels reserved by a var-freq)
@@ -139,7 +139,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 first_time_setup = false; //skip setting up the timer
             }
             //No problems taken, so set it up
-            self->tim = &l_tim;
+            self->tim = l_tim; 
             break;
         }
     }
@@ -203,11 +203,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     //Channel/PWM init
     self->chan_handle.OCMode = TIM_OCMODE_PWM1;
     self->chan_handle.Pulse = timer_get_internal_duty(duty, period);
-    self->chan_handle.OCPolarity = TIM_OCPOLARITY_LOW;
+    self->chan_handle.OCPolarity = TIM_OCPOLARITY_HIGH;
     self->chan_handle.OCFastMode = TIM_OCFAST_DISABLE;
-    self->chan_handle.OCNPolarity = TIM_OCNPOLARITY_LOW; // needed for TIM1 and TIM8
-    self->chan_handle.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
-    self->chan_handle.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
         mp_raise_ValueError(translate("Could not initialize channel"));
     }

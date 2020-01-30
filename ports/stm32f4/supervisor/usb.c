@@ -58,7 +58,6 @@ STATIC void init_usb_vbus_sense(void) {
 #endif
 }
 
-
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management. 
 
@@ -106,6 +105,7 @@ void init_usb_hardware(void) {
 #endif
     
     /* Peripheral clock enable */
+    __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
     init_usb_vbus_sense();

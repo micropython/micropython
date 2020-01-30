@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Radomir Dopieralski
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F401XE_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F401XE_PERIPH_H
 
-#include "shared-bindings/displayio/Display.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "py/obj.h"
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[3];
 
-#define TRANSPARENT (0x1ff8)
+extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[5];
+extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
-        mp_obj_t *layers, size_t layers_size,
-        uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display,
-        uint8_t scale, uint16_t background);
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[4];
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[9];
+extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[9];
+extern const mcu_spi_miso_obj_t mcu_spi_miso_list[8];
+extern const mcu_spi_nss_obj_t mcu_spi_nss_list[9];
+
+//UART
+extern USART_TypeDef * mcu_uart_banks[MAX_UART];
+extern bool mcu_uart_has_usart[MAX_UART];
+
+extern const mcu_uart_tx_obj_t mcu_uart_tx_list[6];
+extern const mcu_uart_rx_obj_t mcu_uart_rx_list[6];
+
+//Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 44
+TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
+
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F401XE_PERIPH_H

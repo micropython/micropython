@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Radomir Dopieralski
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
+//Micropython setup
 
-#include "shared-bindings/displayio/Display.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "py/obj.h"
+#define MICROPY_HW_BOARD_NAME       "MEOWBIT"
+#define MICROPY_HW_MCU_NAME         "STM32F401xE"
 
-#define TRANSPARENT (0x1ff8)
+#define FLASH_SIZE                  (0x80000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
-        mp_obj_t *layers, size_t layers_size,
-        uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display,
-        uint8_t scale, uint16_t background);
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE
+#define BOARD_OSC_DIV 12
+#define BOARD_NO_VBUS_SENSE
+#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
+#define BOARD_USE_INTERNAL_SPI
+
+// On-board flash
+#define SPI_FLASH_MOSI_PIN          (&pin_PB15)
+#define SPI_FLASH_MISO_PIN          (&pin_PB14)
+#define SPI_FLASH_SCK_PIN           (&pin_PB13)
+#define SPI_FLASH_CS_PIN            (&pin_PB01)
