@@ -145,21 +145,15 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         if (!compile_only) {
             // execute it
             mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
         }
 
-        mp_hal_set_interrupt_char(-1);
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING);
         nlr_pop();
         return 0;
 
     } else {
         // uncaught exception
-        mp_hal_set_interrupt_char(-1);
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_CANCEL_PENDING);
         return handle_uncaught_exception(nlr.ret_val);
     }
 }

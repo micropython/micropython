@@ -109,7 +109,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #endif
         mp_call_function_0(module_fun);
         #if MICROPY_KBD_EXCEPTION
-        mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING);
         #endif
         nlr_pop();
         ret = 1;
@@ -119,8 +119,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     } else {
         // uncaught exception
         #if MICROPY_KBD_EXCEPTION
-        // FIXME it could be that an interrupt happens just before we disable it here
-        mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_CANCEL_PENDING);
         #endif
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {

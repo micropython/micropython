@@ -68,6 +68,8 @@ void mp_handle_pending(void);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_KBD_EXCEPTION
+#define MP_INTERRUPT_CHAR_DISABLE_AND_CANCEL_PENDING (-1)
+#define MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING (-2)
 void mp_set_interrupt_char(int c);
 void mp_keyboard_interrupt(void);
 #endif
