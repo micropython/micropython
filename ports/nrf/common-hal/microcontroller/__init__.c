@@ -37,8 +37,10 @@
 #include "shared-bindings/microcontroller/Processor.h"
 
 #include "supervisor/filesystem.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/safe_mode.h"
 #include "nrfx_glue.h"
+#include "nrf_nvic.h"
 
 // This routine should work even when interrupts are disabled. Used by OneWire
 // for precise timing.
@@ -46,10 +48,38 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     NRFX_DELAY_US(delay);
 }
 
+static volatile uint32_t nesting_count = 0;
+static uint8_t is_nested_critical_region;
+static uint8_t sd_is_enabled = false;
 void common_hal_mcu_disable_interrupts() {
+    sd_softdevice_is_enabled(&sd_is_enabled);
+    if (sd_is_enabled) {
+        sd_nvic_critical_region_enter(&is_nested_critical_region);
+    } else {
+        __disable_irq();
+        __DMB();
+        nesting_count++;
+    }
 }
 
 void common_hal_mcu_enable_interrupts() {
+    // Don't check here if SD is enabled, because we'll crash if interrupts
+    // were turned off and sd_softdevice_is_enabled is called.
+    if (sd_is_enabled) {
+        sd_nvic_critical_region_exit(is_nested_critical_region);
+    } else {
+        if (nesting_count == 0) {
+            // This is very very bad because it means there was mismatched disable/enables so we
+            // crash.
+            reset_into_safe_mode(HARD_CRASH);
+        }
+        nesting_count--;
+        if (nesting_count > 0) {
+            return;
+        }
+        __DMB();
+        __enable_irq();
+    }
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {

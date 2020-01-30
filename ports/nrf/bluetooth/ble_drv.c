@@ -145,6 +145,9 @@ void SD_EVT_IRQHandler(void) {
         ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
         bool done = false;
         while (it != NULL) {
+            #if CIRCUITPY_VERBOSE_BLE
+            // mp_printf(&mp_plat_print, "  calling handler: 0x%08lx, param: 0x%08lx\n", it->func-1, it->param);
+            #endif
             done = it->func(event, it->param) || done;
             it = it->next;
         }
