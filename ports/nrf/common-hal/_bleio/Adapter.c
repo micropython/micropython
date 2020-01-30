@@ -437,6 +437,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
         .active = active
     };
     uint32_t err_code;
+    vm_used_ble = true;
     err_code = sd_ble_gap_scan_start(&scan_params, sd_data);
 
     if (err_code != NRF_SUCCESS) {
@@ -511,6 +512,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_drv_add_event_handler(connect_on_ble_evt, &event_info);
     event_info.done = false;
 
+    vm_used_ble = true;
     uint32_t err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_CUSTOM);
 
     if (err_code != NRF_SUCCESS) {
@@ -615,6 +617,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         return err_code;
     }
 
+    vm_used_ble = true;
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -709,6 +712,11 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
+        // Disconnect all connections with Python state cleanly. Keep any supervisor-only connections.
+        if (connection->connection_obj != mp_const_none &&
+            connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            common_hal_bleio_connection_disconnect(connection);
+        }
         connection->connection_obj = mp_const_none;
     }
 }
