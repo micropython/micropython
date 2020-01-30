@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -511,11 +511,8 @@ msgstr "Unità di clock in uso"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "I byte devono essere compresi tra 0 e 255"
@@ -663,10 +660,6 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -695,11 +688,11 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1165,10 +1158,6 @@ msgstr "Permesso negato"
 msgid "Pin does not have ADC capabilities"
 msgstr "Il pin non ha capacità di ADC"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr ""
-
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1219,11 +1208,6 @@ msgstr "RTC non supportato su questa scheda"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Range out of bounds"
-msgstr "indirizzo fuori limite"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1647,11 +1631,6 @@ msgstr "i bit devono essere 7, 8 o 9"
 #, fuzzy
 msgid "branch not in range"
 msgstr "argomento di chr() non è in range(256)"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2563,10 +2542,6 @@ msgstr "pow() con 3 argomenti richiede interi"
 msgid "queue overflow"
 msgstr "overflow della coda"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr ""
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "importazione relativa"
@@ -2802,16 +2777,6 @@ msgstr "specificatore di conversione %s sconosciuto"
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "codice di formattaione '%c' sconosciuto per oggetto di tipo '%s'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'float'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'str'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3134,6 +3099,10 @@ msgstr "zero step"
 #~ msgid "Pins not valid for SPI"
 #~ msgstr "Pin non validi per SPI"
 
+#, fuzzy
+#~ msgid "Range out of bounds"
+#~ msgstr "indirizzo fuori limite"
+
 #~ msgid "STA must be active"
 #~ msgstr "STA deve essere attiva"
 
@@ -3271,6 +3240,15 @@ msgstr "zero step"
 
 #~ msgid "unknown config param"
 #~ msgstr "parametro di configurazione sconosciuto"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr ""
+#~ "codice di formattazione '%c' sconosciuto per oggetto di tipo 'float'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'str'"
 
 #~ msgid "unknown status param"
 #~ msgstr "prametro di stato sconosciuto"

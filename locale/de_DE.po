@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -506,11 +506,8 @@ msgstr "Clock unit wird benutzt"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Spalteneintrag muss digitalio.DigitalInOut sein"
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr "Der Befehl muss zwischen 0 und 255 liegen"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Der Befehl muss ein int zwischen 0 und 255 sein"
 
@@ -654,10 +651,6 @@ msgstr "Erwartet ein(e) %q"
 msgid "Expected a Characteristic"
 msgstr "Characteristic wird erwartet"
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Ein Service wird erwartet"
@@ -685,11 +678,11 @@ msgstr "Kommando nicht gesendet."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Mutex konnte nicht akquiriert werden. Status: 0x%04x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Konnte keinen RX Buffer allozieren"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1151,10 +1144,6 @@ msgstr "Zugang verweigert"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin hat keine ADC Funktionalität"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr "Pixel außerhalb der Puffergrenzen"
-
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "und alle Module im Dateisystem \n"
@@ -1205,10 +1194,6 @@ msgstr "Eine RTC wird auf diesem Board nicht unterstützt"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Range out of bounds"
-msgstr "Bereich außerhalb der Grenzen"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1636,11 +1621,6 @@ msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr "Zweig ist außerhalb der Reichweite"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr "buf ist zu klein. brauche %d Bytes"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2541,10 +2521,6 @@ msgstr ""
 msgid "queue overflow"
 msgstr "Warteschlangenüberlauf"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr "rawbuf hat nicht die gleiche Größe wie buf"
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relativer Import"
@@ -2784,16 +2760,6 @@ msgstr ""
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr ""
 
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr ""
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr ""
-
 #: py/compile.c
 msgid "unknown type"
 msgstr "unbekannter Typ"
@@ -2920,6 +2886,9 @@ msgstr ""
 
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Characteristic wird bereits von einem anderen Dienst verwendet."
+
+#~ msgid "Command must be 0-255"
+#~ msgstr "Der Befehl muss zwischen 0 und 255 liegen"
 
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Konnte ble_uuid nicht decodieren. Status: 0x%04x"
@@ -3122,6 +3091,12 @@ msgstr ""
 #~ msgid "Pins not valid for SPI"
 #~ msgstr "Pins nicht gültig für SPI"
 
+#~ msgid "Pixel beyond bounds of buffer"
+#~ msgstr "Pixel außerhalb der Puffergrenzen"
+
+#~ msgid "Range out of bounds"
+#~ msgstr "Bereich außerhalb der Grenzen"
+
 #~ msgid "STA must be active"
 #~ msgstr "STA muss aktiv sein"
 
@@ -3192,6 +3167,10 @@ msgstr ""
 #~ "Sie laufen im abgesicherten Modus, was bedeutet, dass etwas Unerwartetes "
 #~ "passiert ist.\n"
 
+#, c-format
+#~ msgid "buf is too small. need %d bytes"
+#~ msgstr "buf ist zu klein. brauche %d Bytes"
+
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"
 
@@ -3250,6 +3229,9 @@ msgstr ""
 
 #~ msgid "pin does not have IRQ capabilities"
 #~ msgstr "Pin hat keine IRQ Fähigkeiten"
+
+#~ msgid "rawbuf is not the same size as buf"
+#~ msgstr "rawbuf hat nicht die gleiche Größe wie buf"
 
 #~ msgid "readonly attribute"
 #~ msgstr "Readonly-Attribut"

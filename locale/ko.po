@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -506,11 +506,8 @@ msgstr ""
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "명령은 0에서 255 사이의 정수(int) 여야합니다"
 
@@ -654,10 +651,6 @@ msgstr "%q 이 예상되었습니다."
 msgid "Expected a Characteristic"
 msgstr "특성(Characteristic)이 예상되었습니다."
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -685,11 +678,11 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1140,10 +1133,6 @@ msgstr ""
 msgid "Pin does not have ADC capabilities"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr ""
-
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr ""
@@ -1191,10 +1180,6 @@ msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Range out of bounds"
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c
@@ -1612,11 +1597,6 @@ msgstr "bits_per_sample은 8 또는 16이어야합니다."
 
 #: py/emitinlinethumb.c
 msgid "branch not in range"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
 msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
@@ -2508,10 +2488,6 @@ msgstr ""
 msgid "queue overflow"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr ""
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr ""
@@ -2742,16 +2718,6 @@ msgstr ""
 #: py/objstr.c
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr ""
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
 msgstr ""
 
 #: py/compile.c

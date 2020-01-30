@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -507,11 +507,8 @@ msgstr "Unidade de Clock em uso"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Os bytes devem estar entre 0 e 255."
@@ -658,10 +655,6 @@ msgstr "Esperado um"
 msgid "Expected a Characteristic"
 msgstr "Não é possível adicionar Característica."
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -690,11 +683,11 @@ msgstr "Falha ao enviar comando."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Falha ao alocar buffer RX"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1151,10 +1144,6 @@ msgstr "Permissão negada"
 msgid "Pin does not have ADC capabilities"
 msgstr "O pino não tem recursos de ADC"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr ""
-
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1203,10 +1192,6 @@ msgstr "O RTC não é suportado nesta placa"
 
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Range out of bounds"
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c
@@ -1628,11 +1613,6 @@ msgstr "bits devem ser 8"
 #, fuzzy
 msgid "branch not in range"
 msgstr "Calibração está fora do intervalo"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2525,10 +2505,6 @@ msgstr ""
 msgid "queue overflow"
 msgstr "estouro de fila"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr ""
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr ""
@@ -2761,16 +2737,6 @@ msgstr ""
 #: py/objstr.c
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr ""
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
 msgstr ""
 
 #: py/compile.c

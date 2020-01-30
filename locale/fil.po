@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-18 11:56-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -510,11 +510,8 @@ msgstr "Clock unit ginagamit"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
@@ -663,10 +660,6 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -695,11 +688,11 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Nabigo sa pag kuha ng mutex, status: 0x%08lX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Nabigong ilaan ang RX buffer"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
@@ -1156,10 +1149,6 @@ msgstr "Walang pahintulot"
 msgid "Pin does not have ADC capabilities"
 msgstr "Ang pin ay walang kakayahan sa ADC"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr ""
-
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
@@ -1210,11 +1199,6 @@ msgstr "Hindi supportado ang RTC sa board na ito"
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Range out of bounds"
-msgstr "wala sa sakop ang address"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1642,11 +1626,6 @@ msgstr "bits_per_sample ay dapat 8 o 16"
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr "branch wala sa range"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2556,10 +2535,6 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 msgid "queue overflow"
 msgstr "puno na ang pila (overflow)"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr ""
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relative import"
@@ -2795,16 +2770,6 @@ msgstr "hindi alam ang conversion specifier na %c"
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3123,6 +3088,10 @@ msgstr "zero step"
 #~ msgid "Pins not valid for SPI"
 #~ msgstr "Mali ang pins para sa SPI"
 
+#, fuzzy
+#~ msgid "Range out of bounds"
+#~ msgstr "wala sa sakop ang address"
+
 #~ msgid "STA must be active"
 #~ msgstr "Dapat aktibo ang STA"
 
@@ -3284,6 +3253,15 @@ msgstr "zero step"
 
 #~ msgid "unknown config param"
 #~ msgstr "hindi alam na config param"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr ""
+#~ "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"
 
 #~ msgid "unknown status param"
 #~ msgstr "hindi alam na status param"
