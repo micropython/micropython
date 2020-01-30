@@ -44,6 +44,13 @@
 extern uint32_t _estack[];
 #define BL_STATE ((uint32_t*)&_estack)
 
+static inline void powerctrl_disable_hsi_if_unused(void) {
+    #if !MICROPY_HW_CLK_USE_HSI && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+    // Disable HSI if it's not used to save a little bit of power
+    __HAL_RCC_HSI_DISABLE();
+    #endif
+}
+
 NORETURN void powerctrl_mcu_reset(void) {
     BL_STATE[1] = 1; // invalidate bootloader address
     #if __DCACHE_PRESENT == 1
@@ -94,9 +101,11 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
     if (need_pllsai) {
         // Configure PLLSAI at 48MHz for those peripherals that need this freq
-        const uint32_t pllsain = 192;
+        // (calculation assumes it can get an integral value of PLLSAIN)
+        const uint32_t pllm = (RCC->PLLCFGR >> RCC_PLLCFGR_PLLM_Pos) & 0x3f;
         const uint32_t pllsaip = 4;
         const uint32_t pllsaiq = 2;
+        const uint32_t pllsain = 48 * pllsaip * pllm / (HSE_VALUE / 1000000);
         RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
             | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
             | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
@@ -152,6 +161,8 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
     if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK) {
         return -MP_EIO;
     }
+
+    powerctrl_disable_hsi_if_unused();
 
     return 0;
 }
@@ -370,6 +381,11 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32F7)
+    // Enable overdrive to reach 216MHz (if needed)
+    HAL_PWREx_EnableOverDrive();
+    #endif
+
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
@@ -387,6 +403,8 @@ void powerctrl_enter_stop_mode(void) {
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
     }
     #endif
+
+    powerctrl_disable_hsi_if_unused();
 
     #if defined(STM32F7)
     if (RCC->DCKCFGR2 & RCC_DCKCFGR2_CK48MSEL) {

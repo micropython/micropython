@@ -158,7 +158,7 @@ mp_state_thread_t *mp_thread_get_state(void) {
     return (mp_state_thread_t*)pthread_getspecific(tls_key);
 }
 
-void mp_thread_set_state(void *state) {
+void mp_thread_set_state(mp_state_thread_t *state) {
     pthread_setspecific(tls_key, state);
 }
 
