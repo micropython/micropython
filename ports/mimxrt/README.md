@@ -1,7 +1,7 @@
 Port of MicroPython to NXP iMX RT 10xx
 ======================================
 
-Currently supports Teensy 4.0.
+Currently supports Teensy 4.0 and the i.MX RT1010 EVK board.
 
 Features:
   - REPL over USB VCP
