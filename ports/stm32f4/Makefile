@@ -22,7 +22,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-DEBUG = 1
+# DEBUG = 1
 
 # Select the board to build for.
 ifeq ($(BOARD),)
@@ -85,8 +85,13 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -Os -DNDEBUG
+  CFLAGS += -ggdb
   # TODO: Test with -flto
   ### CFLAGS += -flto
+endif
+
+ifndef BOOTLOADER_OFFSET
+	BOOTLOADER_OFFSET := 0x8000000
 endif
 
 C_DEFS = -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(CMSIS_MCU)
@@ -256,7 +261,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
 include $(TOP)/py/mkrules.mk
 

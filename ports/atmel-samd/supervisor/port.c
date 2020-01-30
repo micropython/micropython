@@ -232,9 +232,6 @@ safe_mode_t port_init(void) {
     // Reset everything into a known state before board_init.
     reset_port();
 
-    // Init the board last so everything else is ready
-    board_init();
-
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
         return BROWNOUT;

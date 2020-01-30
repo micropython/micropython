@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,40 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+//Micropython setup
 
-#include "py/mpconfig.h"
+#define MICROPY_HW_BOARD_NAME       "MEOWBIT"
+#define MICROPY_HW_MCU_NAME         "STM32F401xE"
 
-#ifdef STM32F401xE
-#define STM32_FLASH_SIZE 0x80000 //512KiB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+#define FLASH_SIZE                  (0x80000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-#ifdef STM32F411xE
-#define STM32_FLASH_SIZE 0x80000 //512KiB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-#ifdef STM32F412Zx
-#define STM32_FLASH_SIZE 0x100000 //1MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+#define BOARD_OSC_DIV 12
+#define BOARD_NO_VBUS_SENSE
+#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
+#define BOARD_USE_INTERNAL_SPI
 
-#ifdef STM32F405xx
-#define STM32_FLASH_SIZE 0x100000 //1MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
-
-#define STM32_FLASH_OFFSET 0x8000000 //All STM32 chips map to this flash location
-
-#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
-#define INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS (INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE)
-
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
-
-#endif  // MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
+// On-board flash
+#define SPI_FLASH_MOSI_PIN          (&pin_PB15)
+#define SPI_FLASH_MISO_PIN          (&pin_PB14)
+#define SPI_FLASH_SCK_PIN           (&pin_PB13)
+#define SPI_FLASH_CS_PIN            (&pin_PB01)

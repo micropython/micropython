@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries LLC
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "supervisor/shared/external_flash/devices.h"
+void stm32f4_peripherals_gpio_init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
 
-#include "shared-bindings/busio/SPI.h"
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
+    never_reset_pin_number(2,14); //PC14 OSC32_IN
+    never_reset_pin_number(2,15); //PC15 OSC32_OUT
+    never_reset_pin_number(0,13); //PA13 SWDIO
+    never_reset_pin_number(0,14); //PA14 SWCLK
+}
 
-extern busio_spi_obj_t supervisor_flash_spi_bus; //Used to share SPI bus on some boards
+//LEDs are inverted on F411 DISCO
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+}
 
-// This API is implemented for both normal SPI peripherals and QSPI peripherals.
 
-bool spi_flash_command(uint8_t command);
-bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length);
-bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length);
-bool spi_flash_sector_command(uint8_t command, uint32_t address);
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length);
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length);
-void spi_flash_init(void);
-void spi_flash_init_device(const external_flash_device* device);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SPI_FLASH_H

@@ -76,6 +76,7 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     }
     // Clear claimed bit & reset
     claimed_pins[pin_port] &= ~(1<<pin_number);
+    never_reset_pins[pin_port] &= ~(1<<pin_number);
     HAL_GPIO_DeInit(ports[pin_port], 1<<pin_number);
 
     #ifdef MICROPY_HW_NEOPIXEL

@@ -256,9 +256,6 @@ safe_mode_t port_init(void) {
     // Reset everything into a known state before board_init.
     reset_port();
 
-    // Init the board last so everything else is ready
-    board_init();
-
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
     }
