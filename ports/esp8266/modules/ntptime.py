@@ -10,6 +10,7 @@ except:
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
 
+# The NTP host can be configured at runtime by doing: ntptime.host = 'myhost.org'
 host = "pool.ntp.org"
 
 def time():
