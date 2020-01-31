@@ -255,7 +255,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     #endif
 }
 
-bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
+bool sdram_test(bool fast) {
     uint8_t const pattern = 0xaa;
     uint8_t const antipattern = 0x55;
     uint8_t *const mem_base = (uint8_t*)sdram_start();
@@ -265,7 +265,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
         *mem_base = i;
         if (*mem_base != i) {
             printf("data bus lines test failed! data (%d)\n", i);
-            __asm__ volatile ("BKPT");
+            return false;
         }
     }
 
@@ -275,7 +275,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
         mem_base[i] = pattern;
         if (mem_base[i] != pattern) {
             printf("address bus lines test failed! address (%p)\n", &mem_base[i]);
-            __asm__ volatile ("BKPT");
+            return false;
         }
     }
 
@@ -284,7 +284,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
     for (uint32_t i = 1; i < MICROPY_HW_SDRAM_SIZE; i <<= 1) {
         if (mem_base[i] != pattern) {
             printf("address bus overlap %p\n", &mem_base[i]);
-            __asm__ volatile ("BKPT");
+            return false;
         }
     }
 
@@ -294,7 +294,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool fast) {
             mem_base[i] = pattern;
             if (mem_base[i] != pattern) {
                 printf("address bus test failed! address (%p)\n", &mem_base[i]);
-                __asm__ volatile ("BKPT");
+                return false;
             }
         }
     } else {
