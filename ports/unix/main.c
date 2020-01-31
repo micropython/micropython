@@ -307,7 +307,9 @@ STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
 "Options:\n"
+#if MICROPY_DEBUG_PRINTERS
 "-v : verbose (trace various operations); can be multiple\n"
+#endif
 "-O[N] : apply bytecode optimizations of level N\n"
 "\n"
 "Implementation specific options (-X):\n", argv[0]
