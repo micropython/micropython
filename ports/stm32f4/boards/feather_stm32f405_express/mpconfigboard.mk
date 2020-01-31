@@ -9,12 +9,12 @@ EXTERNAL_FLASH_DEVICE_COUNT = 1
 EXTERNAL_FLASH_DEVICES = GD25Q16C
 LONGINT_IMPL = MPZ
 
-BOOTLOADER_OFFSET = 0x8010000
-
 MCU_SERIES = m4
 MCU_VARIANT = stm32f4
 MCU_SUB_VARIANT = stm32f405xx
 MCU_PACKAGE = 64
 CMSIS_MCU = STM32F405xx
-LD_FILE = boards/STM32F405_boot.ld # use for bootloader (external fs only)
-# LD_FILE = boards/STM32F405_fs.ld # use for internal filesystem
+
+LD_FS = boards/STM32F405_fs.ld # Default to internal FS
+LD_BOOT = boards/STM32F405_boot.ld # UF2 boot option
+UF2_OFFSET = 0x8010000

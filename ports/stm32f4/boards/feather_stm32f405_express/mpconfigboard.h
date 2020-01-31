@@ -41,7 +41,9 @@
 #define SPI_FLASH_CS_PIN            (&pin_PA15)
 
 // Bootloader only
-#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
+#ifdef UF2_BOOTLOADER_ENABLED
+    #define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
+#endif
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB07)
