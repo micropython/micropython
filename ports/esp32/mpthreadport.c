@@ -202,7 +202,7 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 
 #ifdef MICROPY_PY_THREAD_TIMEDLOCK
 int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, mp_float_t timeout) {
-    return (pdTRUE == xSemaphoreTake(mutex->handle, 1000 * wait / portTICK_PERIOD_MS));
+    return (pdTRUE == xSemaphoreTake(mutex->handle, 1000 * timeout / portTICK_PERIOD_MS));
 }
 #endif
 
