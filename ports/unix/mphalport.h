@@ -29,8 +29,8 @@
 #define CHAR_CTRL_C (3)
 #endif
 
-#define mp_hal_set_interrupt_char mp_hal_set_interrupt_char_unix
-void mp_hal_set_interrupt_char_unix(char c);
+#define mp_hal_set_interrupt_char mp_hal_set_interrupt_char_port
+void mp_hal_set_interrupt_char_port(char c);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed
 void mp_hal_stdio_mode_raw(void);
