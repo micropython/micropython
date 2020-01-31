@@ -307,6 +307,7 @@ STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
 "Options:\n"
+"-i : enable inspection via REPL after running command/module/file\n"
 #if MICROPY_DEBUG_PRINTERS
 "-v : verbose (trace various operations); can be multiple\n"
 #endif
