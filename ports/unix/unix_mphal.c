@@ -86,6 +86,7 @@ void mp_hal_set_interrupt_char_port(char c) {
         sigaction(SIGINT, &sa, NULL);
         #endif
     }
+    mp_set_interrupt_char(c);
 }
 
 #if MICROPY_USE_READLINE == 1

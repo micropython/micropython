@@ -104,6 +104,7 @@ void mp_hal_set_interrupt_char_port(char c) {
         mode &= ~ENABLE_PROCESSED_INPUT;
         SetConsoleMode(std_in, mode);
     }
+    mp_set_interrupt_char(c);
 }
 
 void mp_hal_move_cursor_back(uint pos) {
