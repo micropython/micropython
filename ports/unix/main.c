@@ -305,7 +305,7 @@ STATIC int do_str(const char *str) {
 
 STATIC int usage(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+"usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
 "Options:\n"
 "-i : enable inspection via REPL after running command/module/file\n"
 #if MICROPY_DEBUG_PRINTERS
