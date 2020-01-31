@@ -18,3 +18,4 @@ CMSIS_MCU = STM32F405xx
 LD_FS = boards/STM32F405_fs.ld # Default to internal FS
 LD_BOOT = boards/STM32F405_boot.ld # UF2 boot option
 UF2_OFFSET = 0x8010000
+
