@@ -232,9 +232,6 @@ safe_mode_t port_init(void) {
     // Reset everything into a known state before board_init.
     reset_port();
 
-    // Init the board last so everything else is ready
-    board_init();
-
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
         return BROWNOUT;
@@ -329,6 +326,14 @@ uint32_t *port_stack_get_limit(void) {
 
 uint32_t *port_stack_get_top(void) {
     return &_estack;
+}
+
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
 }
 
 // Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.

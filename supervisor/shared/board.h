@@ -1,9 +1,9 @@
 /*
- * This file is part of the Circuit Python project, https://github.com/adafruit/circuitpython
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Roy Hooper
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef CIRCUITPYTHON_PIXELBUF_TYPES_H
-#define CIRCUITPYTHON_PIXELBUF_TYPES_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_BOARD_H
+#define MICROPY_INCLUDED_SUPERVISOR_BOARD_H
 
-//| :orphan:
+#include "py/mpconfig.h"
 
-typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t w;
-} pixelbuf_rgbw_t;
+#ifdef USER_NEOPIXELS_PIN
 
-typedef struct {
-    uint8_t bpp;
-    pixelbuf_rgbw_t byteorder;
-    bool has_white;
-    bool is_dotstar;
-    mp_obj_t *order;
-} pixelbuf_byteorder_details_t;
+void board_reset_user_neopixels(void);
 
-#endif // CIRCUITPYTHON_PIXELBUF_TYPES_H
+#endif
+
+#endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H

@@ -32,6 +32,7 @@
 
 #include "ble.h"
 #include "ble_drv.h"
+#include "bonding.h"
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
@@ -248,6 +249,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             }
             ble_drv_remove_event_handler(connection_on_ble_evt, connection);
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
+            connection->pair_status = PAIR_NOT_PAIRED;
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t* obj = connection->connection_obj;
                 obj->connection = NULL;
@@ -435,6 +437,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
         .active = active
     };
     uint32_t err_code;
+    vm_used_ble = true;
     err_code = sd_ble_gap_scan_start(&scan_params, sd_data);
 
     if (err_code != NRF_SUCCESS) {
@@ -509,6 +512,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_drv_add_event_handler(connect_on_ble_evt, &event_info);
     event_info.done = false;
 
+    vm_used_ble = true;
     uint32_t err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_CUSTOM);
 
     if (err_code != NRF_SUCCESS) {
@@ -613,6 +617,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         return err_code;
     }
 
+    vm_used_ble = true;
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -692,6 +697,10 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     return self->connection_objs;
 }
 
+void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
+    bonding_erase_storage();
+}
+
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
     gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
     gc_collect_root((void**)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
@@ -703,6 +712,11 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
+        // Disconnect all connections with Python state cleanly. Keep any supervisor-only connections.
+        if (connection->connection_obj != mp_const_none &&
+            connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            common_hal_bleio_connection_disconnect(connection);
+        }
         connection->connection_obj = mp_const_none;
     }
 }

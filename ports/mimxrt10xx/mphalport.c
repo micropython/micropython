@@ -49,7 +49,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-#ifdef MIMXRT1011_SERIES
+#if defined(MIMXRT1011_SERIES) || defined(MIMXRT1021_SERIES)
     SDK_DelayAtLeastUs(delay, SystemCoreClock);
 #else
     SDK_DelayAtLeastUs(delay);

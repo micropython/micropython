@@ -200,7 +200,7 @@ mp_obj_t mp_load_build_class(void) {
     return MP_OBJ_FROM_PTR(&mp_builtin___build_class___obj);
 }
 
-void mp_store_name(qstr qst, mp_obj_t obj) {
+void PLACE_IN_ITCM(mp_store_name)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
@@ -211,7 +211,7 @@ void mp_delete_name(qstr qst) {
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
-void mp_store_global(qstr qst, mp_obj_t obj) {
+void PLACE_IN_ITCM(mp_store_global)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
@@ -283,7 +283,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects
@@ -641,7 +641,7 @@ mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args) {
 #if !MICROPY_STACKLESS
 STATIC
 #endif
-void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
+void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
     if (have_self) {

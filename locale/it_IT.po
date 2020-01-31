@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-07 14:31-0800\n"
+"POT-Creation-Date: 2020-01-29 17:27-0800\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -274,6 +274,7 @@ msgstr "Tutti i timer per questo pin sono in uso"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
@@ -284,6 +285,12 @@ msgstr "Tutti i timer utilizzati"
 msgid "Already advertising."
 msgstr ""
 
+#: ports/cxd56/common-hal/analogio/AnalogIn.c
+msgid "AnalogIn not supported on given pin"
+msgstr ""
+
+#: ports/cxd56/common-hal/analogio/AnalogOut.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "funzionalità AnalogOut non supportata"
@@ -297,6 +304,7 @@ msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut non supportato sul pin scelto"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
 msgstr "Another send è gia activato"
 
@@ -412,6 +420,7 @@ msgid "Cannot delete values"
 msgstr "Impossibile cancellare valori"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
 msgstr "non si può tirare quando nella modalita output"
@@ -442,6 +451,8 @@ msgid "Cannot remount '/' when USB is active."
 msgstr "Non è possibile rimontare '/' mentre l'USB è attiva."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Impossibile resettare nel bootloader poiché nessun bootloader è presente."
@@ -461,6 +472,10 @@ msgstr "Impossibile trasferire senza i pin MOSI e MISO."
 #: extmod/moductypes.c
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossibile ricavare la grandezza scalare di sizeof inequivocabilmente"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Cannot vary frequency on a timer that is already in use"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -496,11 +511,8 @@ msgstr "Unità di clock in uso"
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/I2CDisplay.c
-msgid "Command must be 0-255"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "I byte devono essere compresi tra 0 e 255"
@@ -519,30 +531,66 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
-#: shared-module/audiomp3/MP3File.c
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not initialize channel"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not initialize timer"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not re-init channel"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not re-init timer"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not restart PWM"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Could not start PWM"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Could not start interrupt, RX busy"
+msgstr ""
+
+#: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3File.c
+#: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate first buffer"
 msgstr "Impossibile allocare il primo buffer"
 
-#: shared-module/audiomp3/MP3File.c
+#: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3File.c
+#: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate second buffer"
 msgstr "Impossibile allocare il secondo buffer"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
+msgstr ""
+
+#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+msgid "DAC Channel Init Error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+msgid "DAC Device Init Error"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -572,6 +620,10 @@ msgstr "La capacità di destinazione è più piccola di destination_length."
 msgid "Device in use"
 msgstr ""
 
+#: ports/cxd56/common-hal/digitalio/DigitalInOut.c
+msgid "DigitalInOut not supported on given pin"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 msgid "Display must have a 16 bit colorspace."
 msgstr ""
@@ -588,6 +640,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "Canale EXTINT già in uso"
 
@@ -606,10 +659,6 @@ msgstr "Atteso un %q"
 #, fuzzy
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
-
-#: shared-bindings/_pixelbuf/__init__.c
-msgid "Expected a PixelBuf instance"
-msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -639,11 +688,13 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Impossibile leggere valore dell'attributo. status: 0x%02x"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
 msgstr "Impossibile allocare buffer RX"
 
+#: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
@@ -657,7 +708,7 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: shared-module/audiomp3/MP3File.c
+#: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
 msgstr ""
 
@@ -674,12 +725,12 @@ msgstr ""
 msgid "File exists"
 msgstr "File esistente"
 
-#: ports/nrf/common-hal/nvm/ByteArray.c
-msgid "Flash write failed"
-msgstr "Impostazione di Flash fallito"
-
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
@@ -696,9 +747,21 @@ msgstr ""
 msgid "Group full"
 msgstr "Gruppo pieno"
 
+#: ports/stm32f4/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/SPI.c
+msgid "Hardware busy, try alternative pins"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Hardware in use, try alternative pins"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "operazione I/O su file chiuso"
+
+#: ports/stm32f4/common-hal/busio/I2C.c
+msgid "I2C Init Error"
+msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
@@ -728,19 +791,45 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Internal define error"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
 msgstr "Pin %q non valido"
 
+#: ports/stm32f4/common-hal/analogio/AnalogIn.c
+msgid "Invalid ADC Unit value"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "File BMP non valido"
 
+#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+msgid "Invalid DAC pin supplied"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/I2C.c
+msgid "Invalid I2C pin selection"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c
+#: ports/cxd56/common-hal/pulseio/PWMOut.c
 #: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frequenza PWM non valida"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm32f4/common-hal/busio/SPI.c
+msgid "Invalid SPI pin selection"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Invalid UART pin selection"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Invalid argument"
@@ -750,7 +839,7 @@ msgstr "Argomento non valido"
 msgid "Invalid bits per value"
 msgstr "bits per valore invalido"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "lunghezza del buffer non valida"
@@ -780,6 +869,14 @@ msgstr "File non valido"
 msgid "Invalid format chunk size"
 msgstr ""
 
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Invalid frequency supplied"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Invalid memory access."
+msgstr ""
+
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
 msgstr "Numero di bit non valido"
@@ -806,7 +903,9 @@ msgstr "Pin non valido per il canale destro"
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
@@ -838,6 +937,10 @@ msgstr "Tipo di servizio non valido"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "File wave non valido"
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Invalid word/bit length"
+msgstr ""
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -885,8 +988,16 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Il ritardo di avvio del microfono deve essere nell'intervallo tra 0.0 e 1.0"
 
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "Missing MISO or MOSI Pin"
+msgstr ""
+
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -898,6 +1009,7 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#: ports/stm32f4/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Nessun DAC sul chip"
 
@@ -906,11 +1018,23 @@ msgstr "Nessun DAC sul chip"
 msgid "No DMA channel found"
 msgstr "Nessun canale DMA trovato"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "No MISO Pin"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "No MOSI Pin"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/stm32f4/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Nessun pin RX"
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/stm32f4/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Nessun pin TX"
 
@@ -938,6 +1062,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Nessun supporto hardware sul pin"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "No more timers available on this pin."
+msgstr ""
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1014,18 +1142,21 @@ msgstr ""
 "frequenza PWM frequency non è scrivibile quando variable_frequency è "
 "impostato nel costruttore a False."
 
+#: ports/stm32f4/common-hal/displayio/ParallelBus.c
+msgid "ParallelBus not yet supported"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Permission denied"
 msgstr "Permesso negato"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
+#: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
+#: ports/stm32f4/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Il pin non ha capacità di ADC"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Pixel beyond bounds of buffer"
-msgstr ""
 
 #: py/builtinhelp.c
 #, fuzzy
@@ -1049,6 +1180,23 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+msgid "PulseIn not yet supported"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PulseOut.c
+msgid "PulseOut not yet supported"
+msgstr ""
+
+#: ports/stm32f4/common-hal/os/__init__.c
+msgid "RNG DeInit Error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/os/__init__.c
+msgid "RNG Init Error"
+msgstr ""
+
+#: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "calibrazione RTC non supportata su questa scheda"
@@ -1057,10 +1205,9 @@ msgstr "calibrazione RTC non supportata su questa scheda"
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportato su questa scheda"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, fuzzy
-msgid "Range out of bounds"
-msgstr "indirizzo fuori limite"
+#: ports/stm32f4/common-hal/os/__init__.c
+msgid "Random number generation error"
+msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1098,6 +1245,14 @@ msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necessitano un pull-up"
+
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "SPI Init Error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/SPI.c
+msgid "SPI Re-initialization error"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
@@ -1139,6 +1294,10 @@ msgstr "La dimensione dello stack deve essere almeno 256"
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Metodi mancanti readinto() o write() allo stream."
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "Supply at least one UART pin"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1212,6 +1371,26 @@ msgstr "Traceback (chiamata più recente per ultima):\n"
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
 msgstr "Tupla o struct_time richiesto come argomento"
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "UART Buffer allocation error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "UART De-init error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "UART Init Error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "UART Re-init error"
+msgstr ""
+
+#: ports/stm32f4/common-hal/busio/UART.c
+msgid "UART write error"
+msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1295,7 +1474,7 @@ msgid ""
 "declined or ignored."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "baudrate non supportato"
 
@@ -1452,11 +1631,6 @@ msgstr "i bit devono essere 7, 8 o 9"
 #, fuzzy
 msgid "branch not in range"
 msgstr "argomento di chr() non è in range(256)"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-#, c-format
-msgid "buf is too small. need %d bytes"
-msgstr ""
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -1823,7 +1997,7 @@ msgstr "argomento nominato aggiuntivo fornito"
 msgid "extra positional arguments given"
 msgstr "argomenti posizonali extra dati"
 
-#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3File.c
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
 msgstr ""
@@ -1934,6 +2108,7 @@ msgid "incorrect padding"
 msgstr "padding incorretto"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "indice fuori intervallo"
@@ -2338,6 +2513,7 @@ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader deve essere displayio.Palette o displayio.ColorConverter"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop sun un PulseIn vuoto"
@@ -2365,10 +2541,6 @@ msgstr "pow() con 3 argomenti richiede interi"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "overflow della coda"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "rawbuf is not the same size as buf"
-msgstr ""
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2547,7 +2719,8 @@ msgstr "tupla/lista ha la lunghezza sbagliata"
 msgid "tuple/list required on RHS"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 
@@ -2604,16 +2777,6 @@ msgstr "specificatore di conversione %s sconosciuto"
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
 msgstr "codice di formattaione '%c' sconosciuto per oggetto di tipo '%s'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'float'"
-msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'float'"
-
-#: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type 'str'"
-msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'str'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -2869,6 +3032,9 @@ msgstr "zero step"
 #~ msgid "Flash erase failed to start, err 0x%04x"
 #~ msgstr "Iniziamento di Cancellamento di Flash fallito, err 0x%04x"
 
+#~ msgid "Flash write failed"
+#~ msgstr "Impostazione di Flash fallito"
+
 #~ msgid "Flash write failed to start, err 0x%04x"
 #~ msgstr "Iniziamento di Impostazione di Flash dallito, err 0x%04x"
 
@@ -2932,6 +3098,10 @@ msgstr "zero step"
 
 #~ msgid "Pins not valid for SPI"
 #~ msgstr "Pin non validi per SPI"
+
+#, fuzzy
+#~ msgid "Range out of bounds"
+#~ msgstr "indirizzo fuori limite"
 
 #~ msgid "STA must be active"
 #~ msgstr "STA deve essere attiva"
@@ -3070,6 +3240,15 @@ msgstr "zero step"
 
 #~ msgid "unknown config param"
 #~ msgstr "parametro di configurazione sconosciuto"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'float'"
+#~ msgstr ""
+#~ "codice di formattazione '%c' sconosciuto per oggetto di tipo 'float'"
+
+#, c-format
+#~ msgid "unknown format code '%c' for object of type 'str'"
+#~ msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'str'"
 
 #~ msgid "unknown status param"
 #~ msgstr "prametro di stato sconosciuto"

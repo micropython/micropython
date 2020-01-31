@@ -57,6 +57,8 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
+#include "boards/board.h"
+
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -424,6 +426,9 @@ int __attribute__((used)) main(void) {
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
     filesystem_init(safe_mode == NO_SAFE_MODE, false);
+
+    // displays init after filesystem, since they could share the flash SPI
+    board_init(); 
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();

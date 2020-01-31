@@ -1,0 +1,6 @@
+PROG=mpy-cross.static.exe
+CROSS_COMPILE = x86_64-w64-mingw32-
+BUILD=build-static-mingw
+STATIC_BUILD=1
+
+include mpy-cross.mk

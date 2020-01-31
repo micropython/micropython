@@ -48,13 +48,15 @@ extern void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const c
 extern uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len);
 
 extern void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo);
-void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self);
+extern void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self);
 
-mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active);
-void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self);
+extern mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active);
+extern void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self);
 
-bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);
-mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self);
-mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout);
+extern bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);
+extern mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self);
+extern mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout);
+
+extern void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_ADAPTER_H

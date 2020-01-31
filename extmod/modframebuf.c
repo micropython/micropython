@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/objtype.h"
 #include "py/proto.h"
 
 #if MICROPY_PY_FRAMEBUF
@@ -304,9 +305,18 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, cons
     return MP_OBJ_FROM_PTR(o);
 }
 
+STATIC const mp_obj_type_t mp_type_framebuf;
+
+// Helper to ensure we have the native super class instead of a subclass.
+static mp_obj_framebuf_t* native_framebuf(mp_obj_t framebuf_obj) {
+    mp_obj_t native_framebuf = mp_instance_cast_to_native_base(framebuf_obj, &mp_type_framebuf);
+    mp_obj_assert_native_inited(native_framebuf);
+    return MP_OBJ_TO_PTR(native_framebuf);
+}
+
 STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_framebuf_t *self = native_framebuf(self_in);
     bufinfo->buf = self->buf;
     bufinfo->len = self->stride * self->height * (self->format == FRAMEBUF_RGB565 ? 2 : 1);
     bufinfo->typecode = 'B'; // view framebuf as bytes
@@ -314,7 +324,7 @@ STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
 }
 
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_framebuf_t *self = native_framebuf(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
     formats[self->format].fill_rect(self, 0, 0, self->width, self->height, col);
     return mp_const_none;
@@ -324,7 +334,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(framebuf_fill_obj, framebuf_fill);
 STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t width = mp_obj_get_int(args[3]);
@@ -338,7 +348,7 @@ STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_fill_rect_obj, 6, 6, framebuf_fill_rect);
 
 STATIC mp_obj_t framebuf_pixel(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     if (0 <= x && x < self->width && 0 <= y && y < self->height) {
@@ -357,7 +367,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_pixel_obj, 3, 4, framebuf_pi
 STATIC mp_obj_t framebuf_hline(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t w = mp_obj_get_int(args[3]);
@@ -372,7 +382,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_hline_obj, 5, 5, framebuf_hl
 STATIC mp_obj_t framebuf_vline(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t h = mp_obj_get_int(args[3]);
@@ -387,7 +397,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_vline_obj, 5, 5, framebuf_vl
 STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t w = mp_obj_get_int(args[3]);
@@ -406,7 +416,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rec
 STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     mp_int_t x1 = mp_obj_get_int(args[1]);
     mp_int_t y1 = mp_obj_get_int(args[2]);
     mp_int_t x2 = mp_obj_get_int(args[3]);
@@ -470,8 +480,8 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(args[1]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
+    mp_obj_framebuf_t *source = native_framebuf(args[1]);
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
     mp_int_t key = -1;
@@ -513,7 +523,7 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_blit_obj, 4, 5, framebuf_blit);
 
 STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ystep_in) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_framebuf_t *self = native_framebuf(self_in);
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
     int sx, y, xend, yend, dx, dy;
@@ -546,7 +556,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(framebuf_scroll_obj, framebuf_scroll);
 
 STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
     // extract arguments
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf_t *self = native_framebuf(args[0]);
     const char *str = mp_obj_str_get_str(args[1]);
     mp_int_t x0 = mp_obj_get_int(args[2]);
     mp_int_t y0 = mp_obj_get_int(args[3]);

@@ -102,7 +102,7 @@ uint32_t next_start_tick_us = 1000;
 
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
-    // feature from the NRF25. However this technique implies to
+    // feature from the NRF52. However this technique implies to
     // generate a pattern and store it on the memory. The actual
     // memory used in bytes corresponds to the following formula:
     //              totalMem = numBytes*8*2+(2*2)
@@ -113,22 +113,28 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     // using DWT
 
 #define PATTERN_SIZE(numBytes) (numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t))
+// Allocate PWM space for up to STACK_PIXELS on the stack, to avoid malloc'ing.
+// We may need to write to the status neopixel or to Circuit Playground NeoPixels
+// when we cannot malloc, between VM instantiations.
+// We need space for at least 10 pixels for Circuit Playground, but let's choose 24
+// to handle larger NeoPixel rings without malloc'ing.
+#define STACK_PIXELS 24
 
     uint32_t pattern_size = PATTERN_SIZE(numBytes);
     uint16_t* pixels_pattern = NULL;
     bool pattern_on_heap = false;
 
-    // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
-    // Make it at least as big as PATTERN_SIZE(3), for one pixel of RGB data.
+    // Use the stack to store STACK_PIXEL's worth of PWM data. uint32_t to ensure alignment.
+    // It is 3*STACK_PIXELS to handle RGB.
     // PATTERN_SIZE is a multiple of 4, so we don't need round up to make sure one_pixel is large enough.
-    uint32_t one_pixel[PATTERN_SIZE(3)/sizeof(uint32_t)];
+    uint32_t stack_pixels[PATTERN_SIZE(3 * STACK_PIXELS) / sizeof(uint32_t)];
 
     NRF_PWM_Type* pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (pattern_size <= sizeof(one_pixel)) {
-            pixels_pattern = (uint16_t *) one_pixel;
+        if (pattern_size <= sizeof(stack_pixels)) {
+            pixels_pattern = (uint16_t *) stack_pixels;
         } else {
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
