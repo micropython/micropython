@@ -15,6 +15,7 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/bc.h"
+#include "py/mphal.h"
 
 // expected output of this file is found in extra_coverage.py.exp
 
@@ -452,6 +453,34 @@ STATIC mp_obj_t extra_coverage(void) {
     // scheduler
     {
         mp_printf(&mp_plat_print, "# scheduler\n");
+
+        // setting the keyboard interrupt and raising it during mp_handle_pending
+        mp_keyboard_interrupt();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_handle_pending();
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // calling mp_hal_set_interrupt_char
+        mp_hal_set_interrupt_char(1);
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING);
+
+        // calling mp_hal_set_interrupt_char with a pending exception (to be raised)
+        mp_keyboard_interrupt();
+        if (nlr_push(&nlr) == 0) {
+            mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING);
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // calling mp_hal_set_interrupt_char with a pending exception (to be cancelled)
+        mp_keyboard_interrupt();
+        mp_hal_set_interrupt_char(MP_INTERRUPT_CHAR_DISABLE_AND_CANCEL_PENDING);
+        mp_handle_pending();
 
         // lock scheduler
         mp_sched_lock();

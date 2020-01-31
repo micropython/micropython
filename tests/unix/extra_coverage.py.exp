@@ -70,6 +70,8 @@ Warning: test
 # VM
 2 1
 # scheduler
+KeyboardInterrupt: 
+KeyboardInterrupt: 
 sched(0)=1
 sched(1)=1
 sched(2)=1
