@@ -29,7 +29,9 @@
 #define MICROPY_HW_BOARD_NAME       "STM32F4_DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32F407VG"
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x4000)
+
+#define BOARD_NO_VBUS_SENSE
 
 #define BOARD_OSC_DIV 8
