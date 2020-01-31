@@ -19,14 +19,13 @@ MEMORY
 
 
     /* 0x2000000 - RAM:ORIGIN is reserved for Softdevice */
-    /* SoftDevice 6.1.0 takes 0x7b78 bytes (30.86 kb) minimum with high ATT MTU. */
+    /* SoftDevice 6.1.0 with 5 connections and various increases takes just under 64kiB.
     /* To measure the minimum required amount of memory for given configuration, set this number
        high enough to work and then check the mutation of the value done by sd_ble_enable. */
-    RAM (xrw)       : ORIGIN = 0x20000000 + 32K, LENGTH = 256K - 32K
+    RAM (xrw)       : ORIGIN = 0x20000000 + 64K, LENGTH = 256K - 64K
 }
 
-/* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 40K;
+/* produce a link error if there is not this amount of RAM available */
 _minimum_heap_size = 0;
 
 /* top end of the stack */
@@ -125,7 +124,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + _minimum_stack_size;
+        . = . + ${CIRCUITPY_DEFAULT_STACK_SIZE};
         . = ALIGN(4);
     } >RAM
 

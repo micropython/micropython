@@ -108,6 +108,9 @@ STATIC uint32_t ble_stack_enable(void) {
 
     ble_cfg_t ble_conf;
     ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
+    // Each additional connection costs:
+    // about 3700-4300 bytes when .hvn_tx_queue_size is 1
+    // about 9000 bytes when .hvn_tx_queue_size is 10
     ble_conf.conn_cfg.params.gap_conn_cfg.conn_count = BLEIO_TOTAL_CONNECTION_COUNT;
     // Event length here can influence throughput so perhaps make multiple connection profiles
     // available.
@@ -118,9 +121,12 @@ STATIC uint32_t ble_stack_enable(void) {
     }
 
     memset(&ble_conf, 0, sizeof(ble_conf));
+    // adv_set_count must be == 1 for S140. Cannot be increased.
     ble_conf.gap_cfg.role_count_cfg.adv_set_count = 1;
-    ble_conf.gap_cfg.role_count_cfg.periph_role_count = 2;
-    ble_conf.gap_cfg.role_count_cfg.central_role_count = 1;
+    // periph_role_count costs 1232 bytes for 2 to 3, then ~1840 for each further increment.
+    ble_conf.gap_cfg.role_count_cfg.periph_role_count = 4;
+    // central_role_count costs 648 bytes for 1 to 2, then ~1250 for each further increment.
+    ble_conf.gap_cfg.role_count_cfg.central_role_count = 4;
     err_code = sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -128,7 +134,10 @@ STATIC uint32_t ble_stack_enable(void) {
 
     memset(&ble_conf, 0, sizeof(ble_conf));
     ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
-    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = MAX_TX_IN_PROGRESS;
+    // Each increment to hvn_tx_queue_size costs 2064 bytes.
+    // DevZone recommends not setting this directly, but instead changing gap_conn_cfg.event_length.
+    // However, we are setting connection extension, so this seems to make sense.
+    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = 9;
     err_code = sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -143,10 +152,11 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
-    // Triple the GATT Server attribute size to accomodate both the CircuitPython built-in service
+    // Increase the GATT Server attribute size to accomodate both the CircuitPython built-in service
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
-    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 3;
+    // Each increment to the BLE_GATTS_ATTR_TAB_SIZE_DEFAULT multiplier costs 1408 bytes.
+    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 5;
     err_code = sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -155,7 +165,8 @@ STATIC uint32_t ble_stack_enable(void) {
     // Increase the number of vendor UUIDs supported. Apple uses a complete random number per
     // service and characteristic.
     memset(&ble_conf, 0, sizeof(ble_conf));
-    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 32; // Defaults to 10.
+    // Each additional vs_uuid_count costs 16 bytes.
+    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 75; // Defaults to 10.
     err_code = sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;

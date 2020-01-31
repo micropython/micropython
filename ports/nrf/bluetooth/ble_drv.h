@@ -33,8 +33,6 @@
 
 #include "ble.h"
 
-#define MAX_TX_IN_PROGRESS 10
-
 #ifndef BLE_GATT_ATT_MTU_DEFAULT
     #define BLE_GATT_ATT_MTU_DEFAULT GATT_MTU_SIZE_DEFAULT
 #endif
