@@ -17,7 +17,7 @@ MEMORY
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
 
-/* Define tho top end of the stack.  The stack is full descending so begins just
+/* Define the top end of the stack.  The stack is full descending so begins just
    above last byte of RAM.  Note that EABI requires the stack to be 8-byte
    aligned for a call. */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
@@ -104,5 +104,4 @@ SECTIONS
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
 
