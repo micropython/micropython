@@ -504,6 +504,13 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32H7)
+    // Enable PLL3 for USB
+    RCC->CR |= RCC_CR_PLL3ON;
+    while (!(RCC->CR & RCC_CR_PLL3RDY)) {
+    }
+    #endif
+
     #if defined(STM32L4)
     // Enable PLLSAI1 for peripherals that use it
     RCC->CR |= RCC_CR_PLLSAI1ON;
