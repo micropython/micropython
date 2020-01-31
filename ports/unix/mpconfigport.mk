@@ -14,6 +14,9 @@ MICROPY_PY_BTREE = 1
 # _thread module using pthreads
 MICROPY_PY_THREAD = 1
 
+# Enable timed locks
+MICROPY_PY_THREAD_TIMEDLOCK = 1
+
 # Subset of CPython termios module
 MICROPY_PY_TERMIOS = 1
 
@@ -22,9 +25,6 @@ MICROPY_PY_SOCKET = 1
 
 # ffi module requires libffi (libffi-dev Debian package)
 MICROPY_PY_FFI = 0
-
-# Enable timed locks
-MICROPY_PY_TIMEDLOCK = 1
 
 # ussl module requires one of the TLS libraries below
 MICROPY_PY_USSL = 1

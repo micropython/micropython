@@ -123,6 +123,7 @@
 #define MICROPY_PY_THREAD                   (1)
 #define MICROPY_PY_THREAD_GIL               (1)
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
+#define MICROPY_PY_THREAD_TIMEDLOCK         (1)
 
 // extended modules
 #define MICROPY_PY_UCTYPES                  (1)

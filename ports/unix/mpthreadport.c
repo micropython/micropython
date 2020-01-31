@@ -39,7 +39,7 @@
 #include <sched.h>
 #include <semaphore.h>
 
-#ifdef MICROPY_PY_TIMEDLOCK
+#ifdef MICROPY_PY_THREAD_TIMEDLOCK
 #include <math.h>
 #include <sys/time.h>
 #endif
@@ -276,8 +276,8 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     return -ret;
 }
 
-#ifdef MICROPY_PY_TIMEDLOCK
-int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, int wait, float timeout) {
+#ifdef MICROPY_PY_THREAD_TIMEDLOCK
+int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, mp_float_t timeout) {
     int ret;
     struct timeval _timeval;
     struct timezone _timezone;
@@ -287,7 +287,7 @@ int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, int wait, float timeout
             .tv_sec = _timeval.tv_sec + (time_t) (_timeout_nano / 1000000000),
             .tv_nsec = _timeout_nano % 1000000000
     };
-    if (wait) {
+    if (timeout >= 0.) {
         ret = pthread_mutex_timedlock(mutex, &_timespec);
         if (ret == 0) {
             return 1;

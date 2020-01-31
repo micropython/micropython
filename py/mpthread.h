@@ -45,8 +45,8 @@ void mp_thread_start(void);
 void mp_thread_finish(void);
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
-#ifdef MICROPY_PY_TIMEDLOCK
-int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, int wait, float timeout);
+#ifdef MICROPY_PY_THREAD_TIMEDLOCK
+int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, mp_float_t timeout);
 #endif
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 

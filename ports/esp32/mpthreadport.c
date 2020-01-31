@@ -200,6 +200,12 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     return (pdTRUE == xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0));
 }
 
+#ifdef MICROPY_PY_THREAD_TIMEDLOCK
+int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, mp_float_t timeout) {
+    return (pdTRUE == xSemaphoreTake(mutex->handle, 1000 * wait / portTICK_PERIOD_MS));
+}
+#endif
+
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     xSemaphoreGive(mutex->handle);
 }
