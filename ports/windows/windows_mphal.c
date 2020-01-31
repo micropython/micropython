@@ -25,7 +25,7 @@
  */
 
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 
