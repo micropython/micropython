@@ -15,26 +15,7 @@ print(a)
 print(binascii.hexlify(b'', b':'))
 
 # base64 extensions
-print(binascii.b2a_base64(b"foo",binascii.ADD_NEWLINE))
-print(binascii.b2a_base64(b"foo",0))
-print(binascii.b2a_base64(b"foox",binascii.URL))
-print(binascii.b2a_base64(b"fo",binascii.URL | binascii.NOPADDING))
-print(binascii.b2a_base64(b"foo",binascii.URL | binascii.NOPADDING))
+print(binascii.b2a_base64(b"foo", newline=True))
+print(binascii.b2a_base64(b"foo", newline=False))
 
-print(binascii.a2b_base64(b"_-a",binascii.URL | binascii.NOPADDING))
-
-try:
-    print(binascii.a2b_base64(b'a', binascii.URL | binascii.NOPADDING | binascii.STRICT))
-except ValueError:
-    print("ValueError")
-
-try:
-    print(binascii.a2b_base64(b'abc', binascii.STRICT))
-except ValueError:
-    print("ValueError")
-
-try:
-    print(binascii.a2b_base64(b'abc!', binascii.STRICT))
-except ValueError:
-    print("ValueError")
 
