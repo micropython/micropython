@@ -349,6 +349,4 @@ void mp_unix_mark_exec(void);
 #include <stdio.h>
 #endif
 
-#define MODULE_NUMPY_ENABLED (1)
-
 #endif // MICROPY_UNIX_MINIMAL
