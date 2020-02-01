@@ -319,7 +319,6 @@ const mp_obj_module_t mp_module_ubinascii = {
     .globals = (mp_obj_dict_t*)&mp_module_binascii_globals,
 };
 
-#endif //MICROPY_PY_UBINASCII
 
 STATIC mp_obj_t mod_base64_standard_b64decode(mp_obj_t arg) {
 	return base64_decode(arg, NULL, false, false);
@@ -396,3 +395,5 @@ const mp_obj_module_t mp_module_ubase64 = {
 	.base = { &mp_type_module },
 	.globals = (mp_obj_dict_t*)&mp_module_base64_globals,
 };
+
+#endif //MICROPY_PY_UBINASCII
