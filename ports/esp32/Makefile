@@ -134,6 +134,12 @@ INC += -I$(TOP)/lib/netutils
 INC += -I$(TOP)/lib/timeutils
 INC += -I$(BUILD)
 
+# define INC_XTENSA and INC_NEWLIB to control the order of inclusion
+INC_XTENSA =
+
+INC_NEWLIB = -I$(ESPCOMP)/newlib/platform_include
+INC_NEWLIB += -I$(ESPCOMP)/newlib/include
+
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/console
@@ -147,8 +153,8 @@ INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
+# INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
+# INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_ringbuf/include
@@ -184,8 +190,10 @@ INC_ESPCOMP += -I$(ESPCOMP)/esp_wifi/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps/sntp
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include/esp_supplicant
-INC_ESPCOMP += -I$(ESPCOMP)/xtensa/include
-INC_ESPCOMP += -I$(ESPCOMP)/xtensa/esp32/include
+# INC_ESPCOMP += -I$(ESPCOMP)/xtensa/include
+# INC_ESPCOMP += -I$(ESPCOMP)/xtensa/esp32/include
+INC_XTENSA += -I$(ESPCOMP)/xtensa/include
+INC_XTENSA += -I$(ESPCOMP)/xtensa/esp32/include
 ifeq ($(CONFIG_BT_NIMBLE_ENABLED),y)
 INC_ESPCOMP += -I$(ESPCOMP)/bt/include
 INC_ESPCOMP += -I$(ESPCOMP)/bt/common/osi/include
@@ -256,8 +264,9 @@ CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfie
 	-Wno-error=unused-variable -Wno-error=deprecated-declarations \
 	-DESP_PLATFORM
 
+# add INC_XTENSA BEFORE INC_NEWLIB
 CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
-CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
+CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_XTENSA) $(INC_NEWLIB)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -I$(BOARD_DIR)
@@ -267,7 +276,8 @@ CFLAGS += -DMICROPY_ESP_IDF_4=1
 endif
 
 # this is what ESPIDF uses for c++ compilation
-CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)
+# do not add INC_NEWLIB
+CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP) $(INC_XTENSA)
 
 LDFLAGS = -nostdlib -Map=$(@:.elf=.map) --cref
 LDFLAGS += --gc-sections -static -EL
@@ -458,7 +468,7 @@ $(BUILD)/$(ESPCOMP)/freertos/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
-$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
+$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) $(INC_XTENSA) $(INC_NEWLIB) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
 ESPIDF_FREERTOS_O = \
 	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/freertos/*.c)) \
 	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/freertos/*.S)) \
