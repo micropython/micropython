@@ -487,10 +487,10 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
 #if MICROPY_PY_THREAD
     bool created = false;
 
+    // this needs to remain on my stack, so can't move to a separate function.
+    mp_state_thread_t ts;
     if (NULL == __get_thread_for_current()) {
         // temporarily, add current context as a thread.
-        // this needs to remain on my stack, so can't move to a separate function.
-        mp_state_thread_t ts;
         if (!register_new_context(&ts)) {
             pr_err("failed to register thread context, skipping call\n");
             return 0;
