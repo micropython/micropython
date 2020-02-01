@@ -124,7 +124,7 @@ static int8_t mod_binascii_sextet(byte ch, const char *ext) {
 STATIC const char standardBase64Ext[] = { '+', '/' };
 STATIC const char urlBase64Ext[] = { '-', '_' };
 
-STATIC mp_obj_t base64_decode(mp_obj_t *arg, const char* ext, bool noPadding, bool validate) {
+STATIC mp_obj_t base64_decode(mp_obj_t arg, const char* ext, bool noPadding, bool validate) {
 
 	mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -351,7 +351,7 @@ STATIC const mp_arg_t base64_b64Xcode_args[] = {
 	{ MP_QSTR_validate, MP_ARG_BOOL, { .u_bool = false } }
 };
 
-STATIC const char *_mod_base64_getext(mp_obj_t *arg){
+STATIC const char *_mod_base64_getext(mp_obj_t arg){
 	if (arg != MP_ROM_NONE){
 		mp_buffer_info_t bufinfo;
 		mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
