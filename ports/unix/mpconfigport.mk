@@ -24,7 +24,7 @@ MICROPY_PY_TERMIOS = 1
 MICROPY_PY_SOCKET = 1
 
 # ffi module requires libffi (libffi-dev Debian package)
-MICROPY_PY_FFI = 0
+MICROPY_PY_FFI = 1
 
 # ussl module requires one of the TLS libraries below
 MICROPY_PY_USSL = 1
