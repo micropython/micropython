@@ -352,7 +352,7 @@ STATIC const mp_arg_t base64_b64Xcode_args[] = {
 };
 
 STATIC const char *_mod_base64_getext(mp_obj_t arg){
-	if (arg != MP_ROM_NONE){
+	if (arg != mp_const_none){
 		mp_buffer_info_t bufinfo;
 		mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
 		if (bufinfo.len < 2)
