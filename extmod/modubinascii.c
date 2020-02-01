@@ -121,10 +121,10 @@ static int8_t mod_binascii_sextet(byte ch, const char *ext) {
     }
 }
 
-static const char standardBase64Ext[] = { '+', '/' };
-static const char urlBase64Ext[] = { '-', '_' };
+STATIC const char standardBase64Ext[] = { '+', '/' };
+STATIC const char urlBase64Ext[] = { '-', '_' };
 
-mp_obj_t base64_decode(mp_obj_t *arg, const char* ext, bool noPadding, bool validate) {
+STATIC mp_obj_t base64_decode(mp_obj_t *arg, const char* ext, bool noPadding, bool validate) {
 
 	mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -191,7 +191,7 @@ mp_obj_t base64_decode(mp_obj_t *arg, const char* ext, bool noPadding, bool vali
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
-mp_obj_t base64_encode(mp_obj_t arg, const char *ext, bool newLine, bool noPadding) {
+STATIC mp_obj_t base64_encode(mp_obj_t arg, const char *ext, bool newLine, bool noPadding) {
 
 	mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -262,18 +262,18 @@ mp_obj_t base64_encode(mp_obj_t arg, const char *ext, bool newLine, bool noPaddi
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
-mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
+STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
 	return base64_decode(arg, NULL, false, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
 STATIC const mp_arg_t b2a_base64_args[] = {
 	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
 	{ MP_QSTR_newline, MP_ARG_BOOL, { .u_bool = true } }
 };
 
-mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+STATIC mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
 	bool newline = true;
 
 	if (nargs > 1 || map->used > 0) {
@@ -284,7 +284,7 @@ mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *m
 	return base64_encode(args[0], NULL, newline, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
 #include "uzlib/tinf.h"
@@ -321,29 +321,29 @@ const mp_obj_module_t mp_module_ubinascii = {
 
 #endif //MICROPY_PY_UBINASCII
 
-mp_obj_t mod_base64_standard_b64decode(mp_obj_t arg) {
+STATIC mp_obj_t mod_base64_standard_b64decode(mp_obj_t arg) {
 	return base64_decode(arg, NULL, false, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64decode_obj, mod_base64_standard_b64decode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64decode_obj, mod_base64_standard_b64decode);
 
-mp_obj_t mod_base64_standard_b64encode(mp_obj_t arg) {
+STATIC mp_obj_t mod_base64_standard_b64encode(mp_obj_t arg) {
 	return base64_encode(arg, NULL, false, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64encode_obj, mod_base64_standard_b64encode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64encode_obj, mod_base64_standard_b64encode);
 
-mp_obj_t mod_base64_urlsafe_b64decode(mp_obj_t arg) {
+STATIC mp_obj_t mod_base64_urlsafe_b64decode(mp_obj_t arg) {
 	return base64_decode(arg, urlBase64Ext, false, true);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64decode_obj, mod_base64_urlsafe_b64decode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64decode_obj, mod_base64_urlsafe_b64decode);
 
-mp_obj_t mod_base64_urlsafe_b64encode(mp_obj_t arg) {
+STATIC mp_obj_t mod_base64_urlsafe_b64encode(mp_obj_t arg) {
 	return base64_encode(arg, urlBase64Ext, false, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64encode_obj, mod_base64_urlsafe_b64encode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64encode_obj, mod_base64_urlsafe_b64encode);
 
 STATIC const mp_arg_t base64_b64Xcode_args[] = {
 	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
@@ -351,7 +351,7 @@ STATIC const mp_arg_t base64_b64Xcode_args[] = {
 	{ MP_QSTR_validate, MP_ARG_BOOL, { .u_bool = false } }
 };
 
-const char *_mod_base64_getext(mp_obj_t *arg){
+STATIC const char *_mod_base64_getext(mp_obj_t *arg){
 	if (arg != MP_ROM_NONE){
 		mp_buffer_info_t bufinfo;
 		mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -362,23 +362,23 @@ const char *_mod_base64_getext(mp_obj_t *arg){
 	return NULL;
 }
 
-mp_obj_t mod_base64_b64decode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+STATIC mp_obj_t mod_base64_b64decode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
 	mp_arg_val_t outargs[3];
 	mp_arg_parse_all(nargs, args, map, 3, base64_b64Xcode_args, outargs);
 	const char* ext = _mod_base64_getext(outargs[1].u_obj);
 	return base64_decode(outargs[0].u_obj, ext, false, outargs[2].u_bool);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64decode_obj, 1, mod_base64_b64decode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64decode_obj, 1, mod_base64_b64decode);
 
-mp_obj_t mod_base64_b64encode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+STATIC mp_obj_t mod_base64_b64encode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
 	mp_arg_val_t outargs[2];
 	mp_arg_parse_all(nargs, args, map, 2, base64_b64Xcode_args, outargs);
 	const char* ext = _mod_base64_getext(outargs[1].u_obj);
 	return base64_encode(outargs[0].u_obj, ext, false, false);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64encode_obj, 1, mod_base64_b64encode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64encode_obj, 1, mod_base64_b64encode);
 
 STATIC const mp_rom_map_elem_t mp_module_base64_globals_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubase64) },
