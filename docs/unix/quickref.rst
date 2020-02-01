@@ -8,7 +8,7 @@ Command line options
 
 Usage::
 
-    micropython [ -i ] [ -O<level> ] [ -v ] [ -X <option> ] [ -c <command> | -m <module> | <script> ] [ <args> ]
+    micropython [ -h ] [ -i ] [ -O<level> ] [ -v ] [ -X <option> ] [ -c <command> | -m <module> | <script> ] [ <args> ]
 
 
 Invocation options:
@@ -37,6 +37,10 @@ interactive REPL mode.
 
 
 General options:
+
+.. option:: -h
+
+    Prints a help message containing the command line usage and exits.
 
 .. option:: -i
 
