@@ -173,6 +173,7 @@
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
+#define MICROPY_PY_LVGL                     (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -209,6 +210,15 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
+extern const struct _mp_obj_module_t mp_module_lvgl;
+
+#if MICROPY_PY_LVGL
+#define MICROPY_PORT_LVGL_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
+
+#else
+#define MICROPY_PORT_LVGL_DEF
+#endif
 
 #if MICROPY_PY_STM
 #define STM_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
@@ -241,6 +251,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+    MICROPY_PORT_LVGL_DEF \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
 
 // extra constants
@@ -251,6 +262,12 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     STM_BUILTIN_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
+
+#if MICROPY_PY_LVGL
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#else
+#define LV_ROOTS
+#endif
 
 #if MICROPY_SSL_MBEDTLS
 #define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
@@ -266,6 +283,8 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
+    LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     \
     mp_obj_t pyb_hid_report_desc; \
