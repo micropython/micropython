@@ -102,58 +102,50 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
 
-
-enum Base64Flags {
-	BINASCIILIB_ADD_NEWLINE = 1,
-	BINASCIILIB_URL = 2,
-	BINASCIILIB_NOPADDING = 4,
-	BINASCIILIB_STRICT = 8
-};
-
 // If ch is a character in the base64 alphabet, and is not a pad character, then
 // the corresponding integer between 0 and 63, inclusively, is returned.
 // Otherwise, -1 is returned.
-static int mod_binascii_sextet(byte ch) {
+static int8_t mod_binascii_sextet(byte ch, const char *ext) {
     if (ch >= 'A' && ch <= 'Z') {
         return ch - 'A';
     } else if (ch >= 'a' && ch <= 'z') {
         return ch - 'a' + 26;
     } else if (ch >= '0' && ch <= '9') {
         return ch - '0' + 52;
-    } else if (ch == '+' || ch == '-') {
+    } else if (ch == ext[0]) {
         return 62;
-    } else if (ch == '/' || ch == '_') {
+    } else if (ch == ext[1]) {
         return 63;
     } else {
         return -1;
     }
 }
 
-mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
-	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_NEWLINE;
+static const char standardBase64Ext[] = { '+', '/' };
+static const char urlBase64Ext[] = { '-', '_' };
+
+mp_obj_t base64_decode(mp_obj_t *arg, const char* ext, bool noPadding, bool validate) {
+
 	mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
     byte *in = bufinfo.buf;
 
+	if (ext == NULL)
+		ext = standardBase64Ext;
+
 	size_t vstrlen = bufinfo.len % 4;
-	if (vstrlen != 0)
-	{
-		if (((flags & BINASCIILIB_NOPADDING) == 0 || vstrlen == 1) && (flags & BINASCIILIB_STRICT))
-		{
+	if (vstrlen != 0) {
+		if ((!noPadding || vstrlen == 1) && (validate)) {
 			mp_raise_ValueError("incorrect padding");
 		}
 		vstrlen += (bufinfo.len / 4) * 3;
 	}
-	else
-	{
+	else {
 		vstrlen = (bufinfo.len / 4) * 3 + 1;
-		if (bufinfo.len > 3 && (flags & BINASCIILIB_NOPADDING) == 0)
-		{
-			if (in[bufinfo.len - 1] == '=')
-			{
+		if (bufinfo.len > 3 && !noPadding) {
+			if (in[bufinfo.len - 1] == '=') {
 				vstrlen--;
-				if (in[bufinfo.len - 2] == '=')
-				{
+				if (in[bufinfo.len - 2] == '=') {
 					vstrlen--;
 				}
 			}
@@ -173,11 +165,12 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
                 break;
             }
             hadpad = true;
+			continue;
         }
 
-        int sextet = mod_binascii_sextet(in[i]);
+        int8_t sextet = mod_binascii_sextet(in[i], ext);
         if (sextet == -1) {
-			if (flags & BINASCIILIB_STRICT)
+			if (validate)
 				mp_raise_ValueError("incorrect data");
 			continue;
         }
@@ -191,25 +184,25 @@ mp_obj_t mod_binascii_a2b_base64(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    if (nbits && (flags & BINASCIILIB_NOPADDING) == 0) {
+    if (nbits && !noPadding) {
         mp_raise_ValueError("incorrect padding");
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_a2b_base64_obj, 1, 2, mod_binascii_a2b_base64);
-
-mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
-	uint8_t flags = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : BINASCIILIB_ADD_NEWLINE;
+mp_obj_t base64_encode(mp_obj_t arg, const char *ext, bool newLine, bool noPadding) {
 
 	mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+
+	if (ext == NULL)
+		ext = standardBase64Ext;
 
     vstr_t vstr;
 	size_t vstrlen = bufinfo.len % 3;
 	if (vstrlen > 0){
-		if (flags & BINASCIILIB_NOPADDING){
+		if (noPadding){
 			vstrlen++;
 		}
 		else {
@@ -217,7 +210,7 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
 		}
 	}
 	vstrlen += (bufinfo.len / 3) * 4;
-	if (flags & BINASCIILIB_ADD_NEWLINE)
+	if (newLine)
 		vstrlen++;
     vstr_init_len(&vstr, vstrlen);
 
@@ -239,16 +232,16 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
         }
         else {
             *out++ = (in[0] & 0x03) << 4;
-            if(!(flags & BINASCIILIB_NOPADDING))
+            if(!noPadding)
 				*out++ = 64;
 		}
-		if (!(flags & BINASCIILIB_NOPADDING))
+		if (!noPadding)
 			*out = 64;
 	}
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
     out = (byte*)vstr.buf;
-	for (mp_uint_t j = vstr.len - ((flags & BINASCIILIB_ADD_NEWLINE) ? 1 : 0); j--;) {
+	for (mp_uint_t j = vstr.len - (newLine ? 1 : 0); j--;) {
         if (*out < 26) {
             *out += 'A';
         } else if (*out < 52) {
@@ -256,20 +249,42 @@ mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
         } else if (*out < 62) {
             *out += '0' - 52;
         } else if (*out == 62) {
-			*out = (flags & BINASCIILIB_URL) ? '-' : '+';
-        } else if (*out == 63) {
-			*out = (flags & BINASCIILIB_URL) ? '_' : '/';
+			*out = ext[0];
+		} else if (*out == 63) {
+			*out = ext[1];
         } else {
             *out = '=';
         }
         out++;
     }
-	if (flags & BINASCIILIB_ADD_NEWLINE)
+	if (newLine)
 		*out = '\n';
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_b2a_base64_obj, 1, 2, mod_binascii_b2a_base64);
+mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
+	return base64_decode(arg, NULL, false, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
+
+STATIC const mp_arg_t b2a_base64_args[] = {
+	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
+	{ MP_QSTR_newline, MP_ARG_BOOL, { .u_bool = true } }
+};
+
+mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+	bool newline = true;
+
+	if (nargs > 1 || map->used > 0) {
+		mp_arg_val_t outargs[MP_ARRAY_SIZE(b2a_base64_args)];
+		mp_arg_parse_all(nargs, args, map, MP_ARRAY_SIZE(b2a_base64_args), b2a_base64_args, outargs);
+		newline = outargs[1].u_bool;
+	}
+	return base64_encode(args[0], NULL, newline, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
 #include "uzlib/tinf.h"
@@ -284,7 +299,6 @@ mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_binascii_crc32);
 #endif
 
-
 #if MICROPY_PY_UBINASCII
 
 STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
@@ -293,10 +307,6 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_ADD_NEWLINE), MP_ROM_INT(BINASCIILIB_ADD_NEWLINE) },
-	{ MP_ROM_QSTR(MP_QSTR_URL), MP_ROM_INT(BINASCIILIB_URL) },
-	{ MP_ROM_QSTR(MP_QSTR_NOPADDING), MP_ROM_INT(BINASCIILIB_NOPADDING) },
-	{ MP_ROM_QSTR(MP_QSTR_STRICT), MP_ROM_INT(BINASCIILIB_STRICT) },
     #if MICROPY_PY_UBINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
     #endif
@@ -310,3 +320,79 @@ const mp_obj_module_t mp_module_ubinascii = {
 };
 
 #endif //MICROPY_PY_UBINASCII
+
+mp_obj_t mod_base64_standard_b64decode(mp_obj_t arg) {
+	return base64_decode(arg, NULL, false, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64decode_obj, mod_base64_standard_b64decode);
+
+mp_obj_t mod_base64_standard_b64encode(mp_obj_t arg) {
+	return base64_encode(arg, NULL, false, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_standard_b64encode_obj, mod_base64_standard_b64encode);
+
+mp_obj_t mod_base64_urlsafe_b64decode(mp_obj_t arg) {
+	return base64_decode(arg, urlBase64Ext, false, true);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64decode_obj, mod_base64_urlsafe_b64decode);
+
+mp_obj_t mod_base64_urlsafe_b64encode(mp_obj_t arg) {
+	return base64_encode(arg, urlBase64Ext, false, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mod_base64_urlsafe_b64encode_obj, mod_base64_urlsafe_b64encode);
+
+STATIC const mp_arg_t base64_b64Xcode_args[] = {
+	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
+	{ MP_QSTR_altchars, MP_ARG_OBJ, { .u_rom_obj = MP_ROM_NONE } },
+	{ MP_QSTR_validate, MP_ARG_BOOL, { .u_bool = false } }
+};
+
+const char *_mod_base64_getext(mp_obj_t *arg){
+	if (arg != MP_ROM_NONE){
+		mp_buffer_info_t bufinfo;
+		mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+		if (bufinfo.len < 2)
+			mp_raise_ValueError("incorrect data");
+		return bufinfo.buf;
+	}
+	return NULL;
+}
+
+mp_obj_t mod_base64_b64decode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+	mp_arg_val_t outargs[3];
+	mp_arg_parse_all(nargs, args, map, 3, base64_b64Xcode_args, outargs);
+	const char* ext = _mod_base64_getext(outargs[1].u_obj);
+	return base64_decode(outargs[0].u_obj, ext, false, outargs[2].u_bool);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64decode_obj, 1, mod_base64_b64decode);
+
+mp_obj_t mod_base64_b64encode(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+	mp_arg_val_t outargs[2];
+	mp_arg_parse_all(nargs, args, map, 2, base64_b64Xcode_args, outargs);
+	const char* ext = _mod_base64_getext(outargs[1].u_obj);
+	return base64_encode(outargs[0].u_obj, ext, false, false);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_base64_b64encode_obj, 1, mod_base64_b64encode);
+
+STATIC const mp_rom_map_elem_t mp_module_base64_globals_table[] = {
+	{ MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubase64) },
+	{ MP_ROM_QSTR(MP_QSTR_urlsafe_b64encode), MP_ROM_PTR(&mod_base64_urlsafe_b64encode_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_urlsafe_b64decode), MP_ROM_PTR(&mod_base64_urlsafe_b64decode_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_standard_b64encode), MP_ROM_PTR(&mod_base64_standard_b64encode_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_standard_b64decode), MP_ROM_PTR(&mod_base64_standard_b64decode_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_b64encode), MP_ROM_PTR(&mod_base64_b64encode_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_b64decode), MP_ROM_PTR(&mod_base64_b64decode_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(mp_module_base64_globals, mp_module_base64_globals_table);
+
+const mp_obj_module_t mp_module_ubase64 = {
+	.base = { &mp_type_module },
+	.globals = (mp_obj_dict_t*)&mp_module_base64_globals,
+};

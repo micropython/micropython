@@ -27,20 +27,14 @@ Functions
    Convert hexadecimal data to binary representation. Returns bytes string.
    (i.e. inverse of hexlify)
 
-.. function:: a2b_base64(data, [flags])
+.. function:: a2b_base64(data)
 
    Decode base64-encoded data, ignoring invalid characters in the input.
    Conforms to `RFC 2045 s.6.8 <https://tools.ietf.org/html/rfc2045#section-6.8>`_.
    Returns a bytes object.
 
-.. function:: b2a_base64(data, [flags])
+.. function:: b2a_base64(data, newline=True)
 
    Encode binary data in base64 format, as in `RFC 3548
    <https://tools.ietf.org/html/rfc3548.html>`_. Returns the encoded data
-   followed by a newline character, as a bytes object.
-
-   Flags ( default: 1)::
-      ubinascii.ADD_NEWLINE: 1 - Appends a '/n'
-      ubinascii.URL: 2 - Uses '+','_' in encoding
-      ubinascii.NOPADDING: 4 - supresses '=' end padding
-      ubinascii.STRICT: 8 - dont allow invalid characters or padding length
+   followed by a newline character if *newline* is true, as a bytes object.
