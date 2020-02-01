@@ -262,18 +262,18 @@ STATIC mp_obj_t base64_encode(mp_obj_t arg, const char *ext, bool newLine, bool 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
-STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
+mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
 	return base64_decode(arg, NULL, false, false);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
+MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
 STATIC const mp_arg_t b2a_base64_args[] = {
 	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
 	{ MP_QSTR_newline, MP_ARG_BOOL, { .u_bool = true } }
 };
 
-STATIC mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
+mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
 	bool newline = true;
 
 	if (nargs > 1 || map->used > 0) {
@@ -284,7 +284,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_m
 	return base64_encode(args[0], NULL, newline, false);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
 #include "uzlib/tinf.h"
