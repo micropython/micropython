@@ -419,7 +419,7 @@ STATIC const mp_obj_type_t kprobe_type = {
     .locals_dict = (void*)&kprobe_locals_dict,
 };
 
-STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
+STATIC unsigned long call_py_func_threaded(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
     unsigned long arg1, unsigned long arg2, unsigned long arg3,
     unsigned long arg4, unsigned long arg5, unsigned long arg6,
     unsigned long arg7, unsigned long arg8, unsigned long arg9,
@@ -433,30 +433,6 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
     if (has_first) {
         args[0] = first_arg;
     }
-
-#if MICROPY_PY_THREAD
-    bool created = false;
-
-    if (NULL == __get_thread_for_current()) {
-        // temporarily, add current context as a thread.
-        // this needs to remain on my stack, so can't move to a separate function.
-        mp_state_thread_t ts;
-        if (!register_new_context(&ts)) {
-            pr_err("failed to register thread context, skipping call\n");
-            return 0;
-        }
-
-        mp_stack_set_top(&ts); // need to include ts in root-pointer scan (for locals dict)
-        set_stack_limit();
-
-        // empty locals
-        mp_locals_set(mp_obj_new_dict(0));
-        // use globals from main context
-        mp_globals_set(mp_state_ctx.thread.dict_globals);
-
-        created = true;
-    }
-#endif
 
     if (nlr_push(&nlr) == 0) {
         assert(nargs <= MP_ARRAY_SIZE(args));
@@ -495,6 +471,45 @@ STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp
         }
         *call_ok = false;
     }
+
+    return ret;
+}
+
+// wraps call_py_threaded in thread code.
+// this sets the "top of the stack" for the new python "thread" so it's easier to have it separate
+// from rest of the code.
+STATIC unsigned long call_py_func(mp_obj_t func, size_t nargs, bool *call_ok, mp_obj_t first_arg,
+    unsigned long arg1, unsigned long arg2, unsigned long arg3,
+    unsigned long arg4, unsigned long arg5, unsigned long arg6,
+    unsigned long arg7, unsigned long arg8, unsigned long arg9,
+    unsigned long arg10) {
+
+#if MICROPY_PY_THREAD
+    bool created = false;
+
+    if (NULL == __get_thread_for_current()) {
+        // temporarily, add current context as a thread.
+        // this needs to remain on my stack, so can't move to a separate function.
+        mp_state_thread_t ts;
+        if (!register_new_context(&ts)) {
+            pr_err("failed to register thread context, skipping call\n");
+            return 0;
+        }
+
+        mp_stack_set_top(&ts); // need to include ts in root-pointer scan (for locals dict)
+        set_stack_limit();
+
+        // empty locals
+        mp_locals_set(mp_obj_new_dict(0));
+        // use globals from main context
+        mp_globals_set(mp_state_ctx.thread.dict_globals);
+
+        created = true;
+    }
+#endif
+
+    unsigned long ret = call_py_func_threaded(func, nargs, call_ok, first_arg, arg1, arg2, arg3, arg4, arg5,
+        arg6, arg7, arg8, arg9, arg10);
 
 #if MICROPY_PY_THREAD
     if (created) {
