@@ -31,28 +31,23 @@
 #if MICROPY_KBD_EXCEPTION
 
 void mp_set_interrupt_char(int c) {
+    MP_STATE_VM(interrupt_char) = c;
     if (c < 0) {
-        // Disable intercepting any interrupt character
-        MP_STATE_VM(interrupt_char) = c;
-        // Deal with any pending exceptions (raise or cancel)
+        // Interrupt char disabled, deal with any pending exceptions (raise or cancel).
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
         if (obj != MP_OBJ_NULL) {
             MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
             #if MICROPY_ENABLE_SCHEDULER
-            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
             if (!mp_sched_num_pending()) {
                 MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
             }
-            MICROPY_END_ATOMIC_SECTION(atomic_state);
             #endif
-            if (c == MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING) {
-                nlr_raise(obj);
-            }
         }
-    } else {
-        // Enable intercepting the given interrupt character
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        MP_STATE_VM(interrupt_char) = c;
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        if (obj != MP_OBJ_NULL && c == MP_INTERRUPT_CHAR_DISABLE_AND_RAISE_PENDING) {
+            nlr_raise(obj);
+        }
     }
 }
 
