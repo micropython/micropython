@@ -268,19 +268,25 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t arg) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
+#if MICROPY_PY_UBINASCII
+// conditional to avoid QSTR being included
 STATIC const mp_arg_t b2a_base64_args[] = {
 	{ MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED, { .u_rom_obj = MP_ROM_NONE } },
 	{ MP_QSTR_newline, MP_ARG_BOOL, { .u_bool = true } }
 };
 
+#endif
+
 mp_obj_t mod_binascii_b2a_base64(size_t nargs, const mp_obj_t *args, mp_map_t *map) {
 	bool newline = true;
 
+#if MICROPY_PY_UBINASCII
 	if (nargs > 1 || map->used > 0) {
 		mp_arg_val_t outargs[MP_ARRAY_SIZE(b2a_base64_args)];
 		mp_arg_parse_all(nargs, args, map, MP_ARRAY_SIZE(b2a_base64_args), b2a_base64_args, outargs);
 		newline = outargs[1].u_bool;
 	}
+#endif
 	return base64_encode(args[0], NULL, newline, false);
 }
 
