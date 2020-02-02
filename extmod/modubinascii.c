@@ -355,7 +355,7 @@ STATIC const char *_mod_base64_getext(mp_obj_t arg){
 		mp_buffer_info_t bufinfo;
 		mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
 		if (bufinfo.len < 2)
-			mp_raise_ValueError("incorrect data");
+			mp_raise_msg(&mp_type_AssertionError, "incorrect data");
 		return bufinfo.buf;
 	}
 	return NULL;

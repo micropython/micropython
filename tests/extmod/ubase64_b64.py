@@ -42,3 +42,8 @@ try:
     print(base64.b64decode(b"Zm9", validate=True))
 except ValueError:
     print("ValueError")
+
+try:
+    print(base64.b64encode(b"foo", altchars=b"["))
+except AssertionError:
+    print("AssertionError")
