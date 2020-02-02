@@ -49,7 +49,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_P0_14, &pin_P0_15, mp_const_none);
+    common_hal_busio_spi_construct(spi, &pin_P0_11, &pin_P0_12, mp_const_none);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -81,7 +81,7 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_P0_02,  // backlight pin
+        NULL,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
         true, // auto_brightness
