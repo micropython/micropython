@@ -1,4 +1,4 @@
-# test timed _thread lock object using a single thread
+# test timed _thread lock object using multiple threads
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 try:
@@ -27,7 +27,8 @@ time.sleep(.1)
 start = time.time()
 lock.acquire(1, 2.5)
 stop = time.time()
-print(stop - start > 2)
+print((stop - start) > 2)
+print((stop - start) < 3)
 
 # wait for threads to finish
 lock.acquire()

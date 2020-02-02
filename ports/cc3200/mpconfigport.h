@@ -110,6 +110,7 @@
 #define MICROPY_PY_UERRNO_ERRORCODE                 (0)
 #define MICROPY_PY_THREAD                           (1)
 #define MICROPY_PY_THREAD_GIL                       (1)
+#define MICROPY_PY_THREAD_LOCK_TIMEOUT              (1)
 #define MICROPY_PY_UBINASCII                        (0)
 #define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)

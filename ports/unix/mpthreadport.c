@@ -39,7 +39,7 @@
 #include <sched.h>
 #include <semaphore.h>
 
-#ifdef MICROPY_PY_THREAD_TIMEDLOCK
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
 #include <math.h>
 #include <sys/time.h>
 #endif
@@ -258,41 +258,47 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     pthread_mutex_init(mutex, NULL);
 }
 
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_ms) {
     int ret;
-    if (wait) {
+    if (timeout_ms < 0) {
         ret = pthread_mutex_lock(mutex);
         if (ret == 0) {
             return 1;
         }
-    } else {
+    } else if (timeout_ms == 0) {
         ret = pthread_mutex_trylock(mutex);
         if (ret == 0) {
             return 1;
         } else if (ret == EBUSY) {
             return 0;
         }
-    }
-    return -ret;
-}
-
-#ifdef MICROPY_PY_THREAD_TIMEDLOCK
-int mp_thread_mutex_lock_timed(mp_thread_mutex_t *mutex, mp_float_t timeout) {
-    int ret;
-    struct timeval _timeval;
-    struct timezone _timezone;
-    gettimeofday(&_timeval, &_timezone);
-    uint32_t _timeout_nano = ((uint32_t) (1e9*timeout)) + 1000 * _timeval.tv_usec;
-    struct timespec _timespec = {
-            .tv_sec = _timeval.tv_sec + (time_t) (_timeout_nano / 1000000000),
-            .tv_nsec = _timeout_nano % 1000000000
-    };
-    if (timeout >= 0.) {
+    } else /* if (timeout_ms > 0) */ {
+        struct timeval _timeval;
+        struct timezone _timezone;
+        gettimeofday(&_timeval, &_timezone);
+        uint32_t _timeout_sec = timeout_ms / 1000;
+        uint32_t _timeout_nano = 1000000 * (timeout_ms % 1000) + 1000 * _timeval.tv_usec;
+        struct timespec _timespec = {
+                .tv_sec = _timeout_sec + _timeval.tv_sec + (_timeout_nano / 1000000000),
+                .tv_nsec = _timeout_nano % 1000000000
+        };
         ret = pthread_mutex_timedlock(mutex, &_timespec);
         if (ret == 0) {
             return 1;
         } else if (ret == ETIMEDOUT) {
             return 0;
+        }
+    }
+    return -ret;
+}
+#else
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+    int ret;
+    if (wait) {
+        ret = pthread_mutex_lock(mutex);
+        if (ret == 0) {
+            return 1;
         }
     } else {
         ret = pthread_mutex_trylock(mutex);
