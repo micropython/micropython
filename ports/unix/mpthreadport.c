@@ -259,26 +259,26 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
 }
 
 #ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
-int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_ms) {
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us) {
     int ret;
-    if (timeout_ms < 0) {
+    if (timeout_us < 0) {
         ret = pthread_mutex_lock(mutex);
         if (ret == 0) {
             return 1;
         }
-    } else if (timeout_ms == 0) {
+    } else if (timeout_us == 0) {
         ret = pthread_mutex_trylock(mutex);
         if (ret == 0) {
             return 1;
         } else if (ret == EBUSY) {
             return 0;
         }
-    } else /* if (timeout_ms > 0) */ {
+    } else /* if (timeout_us > 0) */ {
         struct timeval _timeval;
         struct timezone _timezone;
         gettimeofday(&_timeval, &_timezone);
-        uint32_t _timeout_sec = timeout_ms / 1000;
-        uint32_t _timeout_nano = 1000000 * (timeout_ms % 1000) + 1000 * _timeval.tv_usec;
+        uint32_t _timeout_sec = timeout_us / 1000000;
+        uint32_t _timeout_nano = 1000 * (timeout_us % 1000000 + _timeval.tv_usec);
         struct timespec _timespec = {
                 .tv_sec = _timeout_sec + _timeval.tv_sec + (_timeout_nano / 1000000000),
                 .tv_nsec = _timeout_nano % 1000000000

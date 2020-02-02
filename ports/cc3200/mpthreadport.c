@@ -170,9 +170,9 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
 // if we are not within an interrupt context and interrupts are enabled.
 
 #ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
-int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_ms) {
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us) {
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
-        int ret = xSemaphoreTake(mutex->handle, timeout_ms < 0 ? portMAX_DELAY : timeout_ms / portTICK_PERIOD_MS);
+        int ret = xSemaphoreTake(mutex->handle, timeout_us < 0 ? portMAX_DELAY : timeout_us / portTICK_PERIOD_MS / 1000);
         return ret == pdTRUE;
     } else {
         return 1;
