@@ -63,13 +63,38 @@ STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
 STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(args[0]);
     bool wait = true;
+    int timeout_us = -1;
     if (n_args > 1) {
         wait = mp_obj_get_int(args[1]);
-        // TODO support timeout arg
+        if (n_args > 2) {
+            // Timeout is a float as in CPython
+            // For boards that do not have builtin float one can pass the timeout in us
+#if MICROPY_PY_BUILTINS_FLOAT
+            // timeout is a float in CPython
+            timeout_us = (int) (1000000 * mp_obj_get_float(args[2]));
+#else
+            // timeout is an integer us if no floats
+            timeout_us = mp_obj_get_int(args[2]);
+#endif
+            if (!wait && timeout_us >= 0) {
+                mp_raise_ValueError("can't specify a timeout for a non-blocking call");
+            }
+        };
     }
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
     MP_THREAD_GIL_EXIT();
-    int ret = mp_thread_mutex_lock(&self->mutex, wait);
+    int ret = mp_thread_mutex_lock_timeout(&self->mutex, wait ? timeout_us : 0);
     MP_THREAD_GIL_ENTER();
+#else
+    int ret = 0;
+    if (timeout_us < 0) {
+        MP_THREAD_GIL_EXIT();
+        ret = mp_thread_mutex_lock(&self->mutex, wait);
+        MP_THREAD_GIL_ENTER();
+    } else if (timeout_us >= 0) {
+        mp_raise_ValueError("timeout not supported");
+    }
+#endif
     if (ret == 0) {
         return mp_const_false;
     } else if (ret == 1) {

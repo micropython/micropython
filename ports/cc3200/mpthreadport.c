@@ -169,6 +169,16 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
 // To allow hard interrupts to work with threading we only take/give the semaphore
 // if we are not within an interrupt context and interrupts are enabled.
 
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us) {
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
+        int ret = xSemaphoreTake(mutex->handle, timeout_us < 0 ? portMAX_DELAY : timeout_us / portTICK_PERIOD_MS / 1000);
+        return ret == pdTRUE;
+    } else {
+        return 1;
+    }
+}
+#else
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         int ret = xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
@@ -177,6 +187,7 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
         return 1;
     }
 }
+#endif
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {

@@ -39,6 +39,11 @@
 #include <sched.h>
 #include <semaphore.h>
 
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+#include <math.h>
+#include <sys/time.h>
+#endif
+
 #include "shared/runtime/gchelper.h"
 
 // Some platforms don't have SIGRTMIN but if we do have it, use it to avoid
@@ -293,6 +298,41 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     pthread_mutex_init(mutex, NULL);
 }
 
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us) {
+    int ret;
+    if (timeout_us < 0) {
+        ret = pthread_mutex_lock(mutex);
+        if (ret == 0) {
+            return 1;
+        }
+    } else if (timeout_us == 0) {
+        ret = pthread_mutex_trylock(mutex);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == EBUSY) {
+            return 0;
+        }
+    } else /* if (timeout_us > 0) */ {
+        struct timeval _timeval;
+        struct timezone _timezone;
+        gettimeofday(&_timeval, &_timezone);
+        uint32_t _timeout_sec = timeout_us / 1000000;
+        uint32_t _timeout_nano = 1000 * (timeout_us % 1000000 + _timeval.tv_usec);
+        struct timespec _timespec = {
+                .tv_sec = _timeout_sec + _timeval.tv_sec + (_timeout_nano / 1000000000),
+                .tv_nsec = _timeout_nano % 1000000000
+        };
+        ret = pthread_mutex_timedlock(mutex, &_timespec);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == ETIMEDOUT) {
+            return 0;
+        }
+    }
+    return -ret;
+}
+#else
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     int ret;
     if (wait) {
@@ -310,6 +350,7 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     }
     return -ret;
 }
+#endif
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     pthread_mutex_unlock(mutex);

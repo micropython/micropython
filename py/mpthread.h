@@ -44,7 +44,12 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size);
 void mp_thread_start(void);
 void mp_thread_finish(void);
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
+#ifdef MICROPY_PY_THREAD_LOCK_TIMEOUT
+int mp_thread_mutex_lock_timeout(mp_thread_mutex_t *mutex, int timeout_us);
+#define mp_thread_mutex_lock(mutex, wait) mp_thread_mutex_lock_timeout(mutex, wait ? -1 : 0 )
+#else
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
+#endif
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 
 #endif // MICROPY_PY_THREAD
