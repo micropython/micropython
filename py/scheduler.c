@@ -56,7 +56,9 @@ void mp_set_interrupt_char(int c) {
     }
 }
 
+// This function may be called asynchronously at any time so only do the bare minimum.
 void mp_keyboard_interrupt(void) {
+    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
