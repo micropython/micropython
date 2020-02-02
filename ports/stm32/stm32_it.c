@@ -415,8 +415,10 @@ void OTG_HS_WKUP_IRQHandler(void) {
 
   OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
+  #if !defined(STM32H7)
   /* Clear EXTI pending Bit*/
   __HAL_USB_HS_EXTI_CLEAR_FLAG();
+  #endif
 
     IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }

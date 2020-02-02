@@ -391,7 +391,7 @@ STATIC void pre_process_options(int argc, char **argv) {
 #endif
                 } else {
 invalid_arg:
-                    printf("Invalid option\n");
+                    fprintf(stderr, "Invalid option\n");
                     exit(usage(argv));
                 }
                 a++;
@@ -709,6 +709,6 @@ uint mp_import_stat(const char *path) {
 #endif
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught NLR %p\n", val);
+    fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }
