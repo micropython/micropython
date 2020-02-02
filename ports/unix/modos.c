@@ -180,6 +180,41 @@ STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 
+STATIC mp_obj_t mod_os_putenv(mp_obj_t key_in, mp_obj_t value_in) {
+    const char *key = mp_obj_str_get_str(key_in);
+    const char *value = mp_obj_str_get_str(value_in);
+    int ret;
+
+    #if _WIN32
+    ret = _putenv_s(key, value);
+    #else
+    ret = setenv(key, value, 1);
+    #endif
+
+    if (ret == -1) {
+        mp_raise_OSError(errno);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mod_os_putenv_obj, mod_os_putenv);
+
+STATIC mp_obj_t mod_os_unsetenv(mp_obj_t key_in) {
+    const char *key = mp_obj_str_get_str(key_in);
+    int ret;
+
+    #if _WIN32
+    ret = _putenv_s(key, "");
+    #else
+    ret = unsetenv(key);
+    #endif
+
+    if (ret == -1) {
+        mp_raise_OSError(errno);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_os_unsetenv_obj, mod_os_unsetenv);
+
 STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     // TODO: Accept mode param
     const char *path = mp_obj_str_get_str(path_in);
@@ -283,6 +318,8 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mod_os_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mod_os_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mod_os_putenv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mod_os_unsetenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
     #if MICROPY_PY_OS_DUPTERM
