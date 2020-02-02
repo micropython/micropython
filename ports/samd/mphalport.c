@@ -40,7 +40,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
 
 void mp_hal_set_interrupt_char_samd(int c) {
     mp_set_interrupt_char(c);
-    tud_cdc_set_wanted_char(c);
+    tud_cdc_set_wanted_char(c < 0 ? -1 : c);
 }
 
 #endif
