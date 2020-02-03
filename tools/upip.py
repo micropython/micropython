@@ -182,8 +182,11 @@ def install_pkg(pkg_spec, install_path):
     packages = data["releases"][latest_ver]
     del data
     gc.collect()
-    assert len(packages) == 1
-    package_url = packages[0]["url"]
+    idx = -1
+    for i in range(len(packages)):
+        if packages[i]["python_version"] == "source":
+            idx = i
+    package_url = packages[idx]["url"]
     print("Installing %s %s from %s" % (pkg_spec, latest_ver, package_url))
     package_fname = op_basename(package_url)
     f1 = url_open(package_url)
@@ -195,6 +198,7 @@ def install_pkg(pkg_spec, install_path):
         f1.close()
     del f3
     del f2
+    del idx
     gc.collect()
     return meta
 
