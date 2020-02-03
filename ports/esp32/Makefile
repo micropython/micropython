@@ -147,8 +147,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_ringbuf/include
@@ -240,6 +238,9 @@ INC_ESPCOMP += -I$(ESPCOMP)/nimble/esp-hci/include
 endif
 endif
 
+INC_NEWLIB += -I$(ESPCOMP)/newlib/platform_include
+INC_NEWLIB += -I$(ESPCOMP)/newlib/include
+
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
@@ -257,7 +258,7 @@ CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfie
 	-DESP_PLATFORM
 
 CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
-CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
+CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_NEWLIB)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -I$(BOARD_DIR)
@@ -458,7 +459,7 @@ $(BUILD)/$(ESPCOMP)/freertos/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
-$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
+$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) $(INC_NEWLIB) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
 ESPIDF_FREERTOS_O = \
 	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/freertos/*.c)) \
 	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/freertos/*.S)) \
