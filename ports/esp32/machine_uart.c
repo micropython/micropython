@@ -149,6 +149,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         uart_get_baudrate(self->uart_num, &baudrate);
     }
 
+    uart_hw_flowcontrol_t flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
     uart_set_pin(self->uart_num, args[ARG_tx].u_int, args[ARG_rx].u_int, args[ARG_rts].u_int, args[ARG_cts].u_int);
     if (args[ARG_tx].u_int != UART_PIN_NO_CHANGE) {
         self->tx = args[ARG_tx].u_int;
@@ -160,11 +161,14 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_rts].u_int != UART_PIN_NO_CHANGE) {
         self->rts = args[ARG_rts].u_int;
+        flow_ctrl |= UART_HW_FLOWCTRL_RTS;
     }
 
     if (args[ARG_cts].u_int != UART_PIN_NO_CHANGE) {
         self->cts = args[ARG_cts].u_int;
+        flow_ctrl |= UART_HW_FLOWCTRL_CTS;
     }
+    uart_set_hw_flow_ctrl(self->uart_num, flow_ctrl, 1); 
 
     // set data bits
     switch (args[ARG_bits].u_int) {
