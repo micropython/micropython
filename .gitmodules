@@ -114,3 +114,6 @@
 [submodule "frozen/Adafruit_CircuitPython_Register"]
 	path = frozen/Adafruit_CircuitPython_Register
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
+[submodule "extmod/ulab"]
+	path = extmod/ulab
+	url = https://github.com/adafruit/circuitpython-ulab

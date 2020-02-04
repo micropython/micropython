@@ -62,6 +62,12 @@ ifndef CIRCUITPY_SAMD
 CIRCUITPY_SAMD = 1
 endif
 
+ifndef MICROPY_PY_ULAB
+ifneq ($(CIRCUITPY_SMALL_BUILD),1)
+MICROPY_PY_ULAB = 1
+endif
+endif
+
 endif # samd51
 
 INTERNAL_LIBM = 1

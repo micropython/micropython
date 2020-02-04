@@ -49,7 +49,7 @@
 //|   first sample will be for channel 1, the second sample will be for channel two, the third for
 //|   channel 1 and so on.
 //|
-//|   :param array buffer: An `array.array` with samples
+//|   :param array.array buffer: An `array.array` with samples
 //|   :param int channel_count: The number of channels in the buffer
 //|   :param int sample_rate: The desired playback sample rate
 //|
