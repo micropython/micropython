@@ -119,7 +119,7 @@ ifndef LD_FILE
         BOOTLOADER_OFFSET = $(UF2_OFFSET)
         CFLAGS += -DUF2_BOOTLOADER_ENABLED
     else
-        LD_FILE = $(LD_FS)
+        LD_FILE = $(LD_DEFAULT)
     endif
 endif
 
