@@ -26,11 +26,11 @@
 
 # Select the board to build for.
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
+	$(error You must provide a BOARD parameter)
 else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
+	ifeq ($(wildcard boards/$(BOARD)/.),)
+		$(error Invalid BOARD specified)
+	endif
 endif
 
 # If the build directory is not given, make it reflect the board name.
@@ -80,19 +80,16 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
-  # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+	CFLAGS += -ggdb
+	# You may want to enable these flags to make setting breakpoints easier.
+	CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -Os -DNDEBUG
-  CFLAGS += -ggdb
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
+	CFLAGS += -Os -DNDEBUG
+	CFLAGS += -ggdb
+	# TODO: Test with -flto
+	### CFLAGS += -flto
 endif
 
-ifndef BOOTLOADER_OFFSET
-	BOOTLOADER_OFFSET := 0x8000000
-endif
 
 C_DEFS = -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(CMSIS_MCU)
 
@@ -114,6 +111,22 @@ CFLAGS += \
 
 # TODO: check this
 CFLAGS += -D__START=main
+
+#need both command and valid file to use uf2 bootloader
+ifndef LD_FILE
+    ifneq ($(and $(UF2_BOOTLOADER),$(LD_BOOT)),)
+        LD_FILE = $(LD_BOOT)
+        BOOTLOADER_OFFSET = $(UF2_OFFSET)
+        CFLAGS += -DUF2_BOOTLOADER_ENABLED
+    else
+        LD_FILE = $(LD_DEFAULT)
+    endif
+endif
+
+# Add bootloader specific items
+ifndef BOOTLOADER_OFFSET
+	BOOTLOADER_OFFSET := 0x8000000
+endif
 
 LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
@@ -210,12 +223,12 @@ SRC_S = \
 	boards/startup_$(MCU_SUB_VARIANT).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 
 ifneq ($(FROZEN_MPY_DIR),)

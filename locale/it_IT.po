@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-03 23:41-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1862,8 +1862,8 @@ msgstr ""
 "il buffer del colore deve esseer di 3 byte (RGB) o 4 byte (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
-msgstr "il buffer del colore deve essere un buffer o un int"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2870,7 +2870,6 @@ msgstr "zero step"
 #~ msgid "C-level assert"
 #~ msgstr "assert a livello C"
 
-#, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "dotstar non può essere usato con %s"
 
@@ -3166,6 +3165,9 @@ msgstr "zero step"
 #~ msgid "can't set STA config"
 #~ msgstr "impossibile impostare le configurazioni della STA"
 
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "il buffer del colore deve essere un buffer o un int"
+
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "sono permesse solo gli argomenti pos o kw"
 
@@ -3241,12 +3243,10 @@ msgstr "zero step"
 #~ msgid "unknown config param"
 #~ msgstr "parametro di configurazione sconosciuto"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr ""
 #~ "codice di formattazione '%c' sconosciuto per oggetto di tipo 'float'"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr "codice di formattazione '%c' sconosciuto per oggetto di tipo 'str'"
 

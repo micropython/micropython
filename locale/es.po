@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-03 23:41-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1850,8 +1850,8 @@ msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer debe ser 3 bytes (RGB) ó 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
-msgstr "color buffer deber ser un buffer o un int"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2853,7 +2853,6 @@ msgstr "paso cero"
 #~ "Intento de allocation de heap cuando la VM de MicroPython no estaba "
 #~ "corriendo.\n"
 
-#, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "No se puede usar dotstar con %s"
 
@@ -3194,14 +3193,12 @@ msgstr "paso cero"
 #~ msgid "bad GATT role"
 #~ msgstr "mal GATT role"
 
-#, c-format
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "buf es demasiado pequeño. necesita %d bytes"
 
 #~ msgid "buffer too long"
 #~ msgstr "buffer demasiado largo"
 
-#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "byteorder no es instancia de ByteOrder (encontarmos un %s)"
 
@@ -3222,6 +3219,9 @@ msgstr "paso cero"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr "characteristics incluye un objeto que no es una Characteristica"
+
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "color buffer deber ser un buffer o un int"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "ya sea pos o kw args son permitidos"
@@ -3312,11 +3312,9 @@ msgstr "paso cero"
 #~ msgid "unknown config param"
 #~ msgstr "parámetro config desconocido"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr "codigo format desconocido '%c' para el typo de objeto 'float'"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr "codigo format desconocido '%c' para objeto de tipo 'str'"
 
