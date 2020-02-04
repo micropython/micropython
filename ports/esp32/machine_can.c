@@ -53,17 +53,16 @@
 #define CAN_BAUDRATE_1M 1000
 
 #define ESP_STATUS_CHECK(status)   \
-    if (status != ESP_OK)          \
-    {                              \
+    if (status != ESP_OK) {        \
         mp_raise_OSError(-status); \
     }
-typedef enum _filter_mode_t{
+typedef enum _filter_mode_t {
     FILTER_RAW_SINGLE = 0,
     FILTER_RAW_DUAL,
     FILTER_ADDRESS
 } filter_mode_t;
 
-typedef struct _machine_can_config_t{
+typedef struct _machine_can_config_t {
     can_timing_config_t timing;
     can_filter_config_t filter;
     can_general_config_t general;
@@ -71,7 +70,7 @@ typedef struct _machine_can_config_t{
     bool initialized;
 } machine_can_config_t;
 
-typedef struct _machine_can_obj_t{
+typedef struct _machine_can_obj_t {
     mp_obj_base_t base;
     machine_can_config_t *config;
     mp_obj_t rxcallback;
@@ -83,7 +82,7 @@ typedef struct _machine_can_obj_t{
     uint16_t num_bus_off;
 } machine_can_obj_t;
 
-typedef enum _rx_state_t{
+typedef enum _rx_state_t {
     RX_STATE_FIFO_EMPTY = 0,
     RX_STATE_MESSAGE_PENDING,
     RX_STATE_FIFO_FULL,
@@ -102,28 +101,25 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
 STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 
 // singleton CAN device object
-machine_can_config_t can_config = {.general = CAN_GENERAL_CONFIG_DEFAULT(2, 4, 0),
-                                   .filter = CAN_FILTER_CONFIG_ACCEPT_ALL(),
-                                   .timing = CAN_TIMING_CONFIG_25KBITS(),
-                                   .initialized = false};
+machine_can_config_t can_config = { .general = CAN_GENERAL_CONFIG_DEFAULT(2, 4, 0),
+                                    .filter = CAN_FILTER_CONFIG_ACCEPT_ALL(),
+                                    .timing = CAN_TIMING_CONFIG_25KBITS(),
+                                    .initialized = false };
 
-STATIC machine_can_obj_t machine_can_obj = {{&machine_can_type}, .config = &can_config};
+STATIC machine_can_obj_t machine_can_obj = { {&machine_can_type}, .config = &can_config };
 
-// INTERNAL FUNCTION Return status information
 STATIC can_status_info_t _machine_hw_can_get_status(){
     can_status_info_t status;
     uint32_t err_code = can_get_status_info(&status);
-    if (err_code != ESP_OK)
-    {
+    if (err_code != ESP_OK){
         mp_raise_OSError(-err_code);
     }
     return status;
 }
 
-//INTERNAL FUNCTION Populates the filter register according to inputs
 STATIC void _machine_hw_can_set_filter(machine_can_obj_t *self, uint32_t addr, uint32_t mask, uint8_t bank, bool rtr){
     //Check if bank is allowed
-    if (bank < 0 && bank > ((self->extframe && self->config->filter.single_filter) ? 0 : 1)){
+    if ( bank < 0 && bank > ( (self->extframe && self->config->filter.single_filter) ? 0 : 1 ) ){
         mp_raise_ValueError("CAN filter parameter error");
     }
     uint32_t preserve_mask;
@@ -131,21 +127,21 @@ STATIC void _machine_hw_can_set_filter(machine_can_obj_t *self, uint32_t addr, u
         addr = (addr & 0x1FFFFFFF) << 3 | (rtr ? 0x04 : 0);
         mask = (mask & 0x1FFFFFFF) << 3 | 0x03;
         preserve_mask = 0;
-    }else if (self->config->filter.single_filter){
-        addr = (((addr & 0x7FF) << 5) | (rtr ? 0x10 : 0));
-        mask = ((mask & 0x7FF) << 5);
+    } else if (self->config->filter.single_filter){
+        addr = ( ( (addr & 0x7FF) << 5 ) | (rtr ? 0x10 : 0) );
+        mask = ( (mask & 0x7FF) << 5 );
         mask |= 0xFFFFF000;
         preserve_mask = 0;
-    }else{
-        addr = (((addr & 0x7FF) << 5) | (rtr ? 0x10 : 0));
-        mask = ((mask & 0x7FF) << 5);
-        preserve_mask = 0xFFFF << (bank == 0 ? 16 : 0);
-        if ((self->config->filter.acceptance_mask & preserve_mask) == (0xFFFF << (bank == 0 ? 16 : 0))){
+    } else {
+        addr = ( ( (addr & 0x7FF) << 5 ) | (rtr ? 0x10 : 0) );
+        mask = ( (mask & 0x7FF) << 5 );
+        preserve_mask = 0xFFFF << ( bank == 0 ? 16 : 0 );
+        if ( (self->config->filter.acceptance_mask & preserve_mask) == ( 0xFFFF << (bank == 0 ? 16 : 0) ) ){
             // Other filter accepts all; it will replaced duplicating current filter
             addr = addr | (addr << 16);
             mask = mask | (mask << 16);
             preserve_mask = 0;
-        }else{
+        } else {
             addr = addr << (bank == 1 ? 16 : 0);
             mask = mask << (bank == 1 ? 16 : 0);
         }
@@ -191,7 +187,7 @@ STATIC mp_obj_t machine_hw_can_info(size_t n_args, const mp_obj_t *args){
     mp_obj_list_t *list;
     if (n_args == 1){
         list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
-    }else{
+    } else{
         if (!mp_obj_is_type(args[1], &mp_type_list)){
             mp_raise_TypeError(NULL);
         }
@@ -264,20 +260,20 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
     if (length > 8){
         mp_raise_ValueError("CAN data field too long");
     }
-    uint8_t flags = (args[ARG_rtr].u_bool == true ? CAN_MSG_FLAG_RTR : CAN_MSG_FLAG_NONE);
+    uint8_t flags = (args[ARG_rtr].u_bool ? CAN_MSG_FLAG_RTR : CAN_MSG_FLAG_NONE);
     uint32_t id = args[ARG_id].u_int;
     if (self->extframe){
         flags += CAN_MSG_FLAG_EXTD;
         id &= 0x1FFFFFFF;
-    }else{
+    } else {
         id &= 0x1FF;
     }
     if (self->loopback){
         flags += CAN_MSG_FLAG_SELF;
     }
-    can_message_t tx_msg = {.data_length_code = length,
-                            .identifier = id,
-                            .flags = flags};
+    can_message_t tx_msg = { .data_length_code = length,
+                             .identifier = id,
+                             .flags = flags };
     for (uint8_t i = 0; i < length; i++){
         tx_msg.data[i] = mp_obj_get_int(items[i]);
     }
@@ -287,7 +283,7 @@ STATIC mp_obj_t machine_hw_can_send(size_t n_args, const mp_obj_t *pos_args, mp_
             mp_raise_OSError(-status);
         }
         return mp_const_none;
-    }else{
+    } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "CAN Device is not ready"));
     }
 }
@@ -300,8 +296,8 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
         ARG_timeout
     };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_list, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)}},
-        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000}},
+        { MP_QSTR_list, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
     // parse args
@@ -319,9 +315,9 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_obj_t *items;
     if (ret_obj == mp_const_none){
         ret_obj = mp_obj_new_tuple(4, NULL);
-        items = ((mp_obj_tuple_t *)MP_OBJ_TO_PTR(ret_obj))->items;
+        items = ( (mp_obj_tuple_t *)MP_OBJ_TO_PTR(ret_obj) )->items;
         items[3] = mp_obj_new_bytes(rx_message.data, rx_message.data_length_code);
-    }else{
+    } else {
         // User should provide a list of length at least 4 to hold the values
         if (!mp_obj_is_type(ret_obj, &mp_type_list)){
             mp_raise_TypeError(NULL);
@@ -344,7 +340,7 @@ STATIC mp_obj_t machine_hw_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_
         memcpy(mv->items, rx_message.data, rx_message.data_length_code);
     }
     items[0] = MP_OBJ_NEW_SMALL_INT(rx_message.identifier);
-    items[1] = rx_message.flags && CAN_MSG_FLAG_RTR > 0 ? mp_const_true : mp_const_false;
+    items[1] = mp_obj_new_bool(rx_message.flags && CAN_MSG_FLAG_RTR > 0 ? true : false);
     items[2] = 0;
     return ret_obj;
 }
@@ -381,10 +377,10 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
         ARG_rtr
     };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_bank, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0}},
-        {MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0}},
-        {MP_QSTR_params, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        {MP_QSTR_rtr, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_bool = false}},
+        { MP_QSTR_bank, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_params, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rtr, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_bool = false} },
     };
 
     // parse args
@@ -404,17 +400,17 @@ STATIC mp_obj_t machine_hw_can_setfilter(size_t n_args, const mp_obj_t *pos_args
         self->config->filter.single_filter = (args[ARG_mode].u_int == FILTER_RAW_SINGLE);
         self->config->filter.acceptance_code = id;
         self->config->filter.acceptance_mask = mask;
-    }else{
+    } else {
         self->config->filter.single_filter = self->extframe;
         _machine_hw_can_set_filter(self, id, mask, args[ARG_bank].u_int, args[ARG_rtr].u_int);
     }
-    ESP_STATUS_CHECK(can_stop());
-    ESP_STATUS_CHECK(can_driver_uninstall());
-    ESP_STATUS_CHECK(can_driver_install(
+    ESP_STATUS_CHECK( can_stop() );
+    ESP_STATUS_CHECK( can_driver_uninstall() );
+    ESP_STATUS_CHECK( can_driver_install(
         &self->config->general,
         &self->config->timing,
-        &self->config->filter));
-    ESP_STATUS_CHECK(can_start());
+        &self->config->filter) );
+    ESP_STATUS_CHECK( can_start() );
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_hw_can_setfilter_obj, 1, machine_hw_can_setfilter);
@@ -446,7 +442,7 @@ STATIC void machine_hw_can_print(const mp_print_t *print, mp_obj_t self_in, mp_p
                   mode,
                   self->loopback,
                   self->extframe);
-    }else{
+    } else {
         mp_printf(print, "CAN Device is not initialized");
     }
 }
@@ -531,18 +527,18 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
         ARG_auto_restart
     };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_MODE_NORMAL}},
-        {MP_QSTR_extframe, MP_ARG_BOOL, {.u_bool = false}},
-        {MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
-        {MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_PRESCALER}},
-        {MP_QSTR_sjw, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_SJW}},
-        {MP_QSTR_bs1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS1}},
-        {MP_QSTR_bs2, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS2}},
-        {MP_QSTR_tx_io, MP_ARG_INT, {.u_int = 4}},
-        {MP_QSTR_rx_io, MP_ARG_INT, {.u_int = 2}},
-        {MP_QSTR_tx_queue, MP_ARG_INT, {.u_int = 0}},
-        {MP_QSTR_rx_queue, MP_ARG_INT, {.u_int = 5}},
-        {MP_QSTR_auto_restart, MP_ARG_BOOL, {.u_bool = false}},
+        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_MODE_NORMAL} },
+        { MP_QSTR_extframe, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_PRESCALER} },
+        { MP_QSTR_sjw, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_SJW} },
+        { MP_QSTR_bs1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS1} },
+        { MP_QSTR_bs2, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = CAN_DEFAULT_BS2} },
+        { MP_QSTR_tx_io, MP_ARG_INT, {.u_int = 4} },
+        { MP_QSTR_rx_io, MP_ARG_INT, {.u_int = 2} },
+        { MP_QSTR_tx_queue, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_rx_queue, MP_ARG_INT, {.u_int = 5} },
+        { MP_QSTR_auto_restart, MP_ARG_BOOL, {.u_bool = false} },
     };
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -578,28 +574,28 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
             .triple_sampling = false});
         break;
     case CAN_BAUDRATE_25k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_25KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_25KBITS() );
         break;
     case CAN_BAUDRATE_50k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_50KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_50KBITS() );
         break;
     case CAN_BAUDRATE_100k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_100KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_100KBITS() );
         break;
     case CAN_BAUDRATE_125k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_125KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_125KBITS() );
         break;
     case CAN_BAUDRATE_250k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_250KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_250KBITS() );
         break;
     case CAN_BAUDRATE_500k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_500KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_500KBITS() );
         break;
     case CAN_BAUDRATE_800k:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_800KBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_800KBITS() );
         break;
     case CAN_BAUDRATE_1M:
-        timing = &((can_timing_config_t)CAN_TIMING_CONFIG_1MBITS());
+        timing = &( (can_timing_config_t) CAN_TIMING_CONFIG_1MBITS() );
         break;
     default:
         mp_raise_ValueError("Unable to set baudrate");
@@ -612,14 +608,14 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
     uint32_t status = can_driver_install(
         &self->config->general,
         &self->config->timing,
-        &(can_filter_config_t)CAN_FILTER_CONFIG_ACCEPT_ALL());
+        &(can_filter_config_t) CAN_FILTER_CONFIG_ACCEPT_ALL() );
     if (status != ESP_OK){
         mp_raise_OSError(-status);
-    }else{
+    } else {
         status = can_start();
         if (status != ESP_OK){
             mp_raise_OSError(-status);
-        }else{
+        } else {
             self->config->initialized = true;
         }
     }
@@ -628,37 +624,37 @@ STATIC mp_obj_t machine_hw_can_init_helper(machine_can_obj_t *self, size_t n_arg
 
 STATIC const mp_rom_map_elem_t machine_can_locals_dict_table[] = {
     // CAN_ATTRIBUTES
-    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_CAN)},
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_CAN) },
     // Micropython Generic API
-    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj)},
-    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj)},
-    {MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&machine_hw_can_restart_obj)},
-    {MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&machine_hw_can_state_obj)},
-    {MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&machine_hw_can_info_obj)},
-    {MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_hw_can_any_obj)},
-    {MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_send_obj)},
-    {MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_hw_can_recv_obj)},
-    {MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&machine_hw_can_setfilter_obj)},
-    {MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&machine_hw_can_clearfilter_obj)},
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_hw_can_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_hw_can_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&machine_hw_can_restart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&machine_hw_can_state_obj) },
+    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&machine_hw_can_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_hw_can_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&machine_hw_can_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&machine_hw_can_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&machine_hw_can_setfilter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&machine_hw_can_clearfilter_obj) },
     // ESP32 Specific API
-    {MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_get_alerts), MP_ROM_PTR(&machine_hw_can_alert_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_tx_queue), MP_ROM_PTR(&machine_hw_can_clear_tx_queue_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx_queue), MP_ROM_PTR(&machine_hw_can_clear_rx_queue_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_alerts), MP_ROM_PTR(&machine_hw_can_alert_obj) },
     // CAN_MODE
-    {MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL)},
-    {MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(CAN_MODE_NORMAL | 0x10)},
-    {MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(CAN_MODE_NO_ACK)},
-    {MP_ROM_QSTR(MP_QSTR_SILENT_LOOPBACK), MP_ROM_INT(CAN_MODE_NO_ACK | 0x10)},
-    {MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY)},
+    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(CAN_MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_LOOPBACK), MP_ROM_INT(CAN_MODE_NORMAL | 0x10) },
+    { MP_ROM_QSTR(MP_QSTR_SILENT), MP_ROM_INT(CAN_MODE_NO_ACK) },
+    { MP_ROM_QSTR(MP_QSTR_SILENT_LOOPBACK), MP_ROM_INT(CAN_MODE_NO_ACK | 0x10) },
+    { MP_ROM_QSTR(MP_QSTR_LISTEN_ONLY), MP_ROM_INT(CAN_MODE_LISTEN_ONLY) },
     // CAN_STATE
-    {MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED)},
-    {MP_ROM_QSTR(MP_QSTR_ERROR_ACTIVE), MP_ROM_INT(CAN_STATE_RUNNING)},
-    {MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF)},
-    {MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING)},
+    { MP_ROM_QSTR(MP_QSTR_STOPPED), MP_ROM_INT(CAN_STATE_STOPPED) },
+    { MP_ROM_QSTR(MP_QSTR_ERROR_ACTIVE), MP_ROM_INT(CAN_STATE_RUNNING) },
+    { MP_ROM_QSTR(MP_QSTR_BUS_OFF), MP_ROM_INT(CAN_STATE_BUS_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_RECOVERING), MP_ROM_INT(CAN_STATE_RECOVERING) },
     // CAN_FILTER_MODE
-    {MP_ROM_QSTR(MP_QSTR_FILTER_RAW_SINGLE), MP_ROM_INT(FILTER_RAW_SINGLE)},
-    {MP_ROM_QSTR(MP_QSTR_FILTER_RAW_DUAL), MP_ROM_INT(FILTER_RAW_DUAL)},
-    {MP_ROM_QSTR(MP_QSTR_FILTER_ADDRESS), MP_ROM_INT(FILTER_ADDRESS)},
+    { MP_ROM_QSTR(MP_QSTR_FILTER_RAW_SINGLE), MP_ROM_INT(FILTER_RAW_SINGLE) },
+    { MP_ROM_QSTR(MP_QSTR_FILTER_RAW_DUAL), MP_ROM_INT(FILTER_RAW_DUAL) },
+    { MP_ROM_QSTR(MP_QSTR_FILTER_ADDRESS), MP_ROM_INT(FILTER_ADDRESS) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_can_locals_dict, machine_can_locals_dict_table);
 
