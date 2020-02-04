@@ -33,6 +33,18 @@
 
 // #if MICROPY_PY_BUILTINS_EVEL
 
+//| :mod:`eveL` --- low-level BridgeTek EVE bindings
+//| ================================================
+//|
+//| .. module:: eveL
+//|   :synopsis: low-level BridgeTek EVE bindings
+//|   :platform: SAMD21/SAMD51
+//|
+//| The `eveL` module provides a class EVEL which
+//| contains methods for constructing EVE command 
+//| buffers and appending basic graphics commands.
+//|
+
 typedef struct _mp_obj_EVEL_t {
     mp_obj_base_t base;
     mp_obj_t writer;
