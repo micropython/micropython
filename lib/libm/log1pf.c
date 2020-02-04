@@ -18,6 +18,8 @@
 
 #include "libm.h"
 
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 static const float
 ln2_hi = 6.9313812256e-01, /* 0x3f317180 */
 ln2_lo = 9.0580006145e-06, /* 0x3717f7d1 */
