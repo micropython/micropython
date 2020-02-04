@@ -1578,11 +1578,12 @@ NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_OSError, msg);
 }
 
-NORETURN void mp_raise_OSError_errno_str(int errno_, const char *str) {
-    char decompressed[50];
-    const char *errno_str = mp_common_errno_to_str(MP_OBJ_NEW_SMALL_INT(errno_),
-                                                   decompressed, sizeof(decompressed));
-    mp_raise_OSError_msg_varg(translate("[Errno %d] %s: %s"), errno_, errno_str, str);
+NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
+    mp_obj_t args[2] = {
+        MP_OBJ_NEW_SMALL_INT(errno_),
+        str,
+    };
+    nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
 }
 
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
