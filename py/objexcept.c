@@ -127,7 +127,8 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
                 }
                 return;
             }
-        } else if (o->args->len == 1) {
+        }
+        if (o->args->len == 1) {
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
