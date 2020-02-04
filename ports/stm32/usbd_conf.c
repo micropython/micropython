@@ -171,7 +171,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Configure USB HS GPIOs
         static const mp_hal_pin_obj_t usb_pins[] = {
-            pin_A5, pin_C0, pin_H4, pin_I11, // CLK, STP, NXT, DIR
+            pin_A5, pin_C0, MICROPY_HW_USB_HS_ULPI_NXT, MICROPY_HW_USB_HS_ULPI_DIR, // CLK, STP, NXT, DIR
             pin_A3, pin_B0, pin_B1, pin_B5, pin_B10, pin_B11, pin_B12, pin_B13, // D0-D7
         };
         for (size_t i = 0; i < MP_ARRAY_SIZE(usb_pins); ++i) {
