@@ -199,7 +199,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_errno_str(fresult_to_errno_table[res], fname);
     }
     // If we're reading, turn on fast seek.
     if (mode == FA_READ) {
