@@ -82,8 +82,9 @@ Environment variables
 .. envvar:: MICROPYPATH
 
     Overrides the default search path for MicroPython libraries. ``MICROPYPATH``
-    should be set to a colon separated list of directories. If ``MICROPYPATH`` is
-    not defined, the search path will be ``~/.micropython/lib:/usr/lib/micropython``
+    should be set to a colon (semicolon for Windows port) separated list of
+    directories. If ``MICROPYPATH`` is not defined, the search path will be
+    ``~/.micropython/lib:/usr/lib/micropython`` (``~/.micropython/lib`` for Windows port)
     or the value of the ``MICROPY_PY_SYS_PATH_DEFAULT`` option if it was set
     when MicroPython itself was compiled.
 
