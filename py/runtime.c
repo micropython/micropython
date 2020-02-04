@@ -29,10 +29,12 @@
 #include <string.h>
 #include <assert.h>
 
+
 #include "extmod/vfs.h"
 
 #include "py/parsenum.h"
 #include "py/compile.h"
+#include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objtype.h"
@@ -1574,6 +1576,14 @@ NORETURN void mp_raise_OSError(int errno_) {
 
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_OSError, msg);
+}
+
+NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
+    mp_obj_t args[2] = {
+        MP_OBJ_NEW_SMALL_INT(errno_),
+        str,
+    };
+    nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
 }
 
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
