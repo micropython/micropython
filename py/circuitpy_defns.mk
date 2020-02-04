@@ -157,6 +157,9 @@ endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
+ifeq ($(CIRCUITPY_EVEL),1)
+SRC_PATTERNS += eveL/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -298,6 +301,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
+        eveL/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
