@@ -162,7 +162,7 @@ NORETURN static void exception_from_errno(int _errno) {
 }
 
 static inline void check_for_exceptions(void) {
-    mp_handle_pending();
+    mp_handle_pending(true);
 }
 
 // This function mimics lwip_getaddrinfo, with added support for mDNS queries

@@ -157,7 +157,7 @@ void mp_hal_delay_us(uint32_t us) {
         if (dt + pend_overhead < us) {
             // we have enough time to service pending events
             // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 }

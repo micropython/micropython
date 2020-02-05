@@ -466,7 +466,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
 
         // shouldn't do anything while scheduler is locked
-        mp_handle_pending();
+        mp_handle_pending(true);
 
         // unlock scheduler
         mp_sched_unlock();
@@ -474,7 +474,7 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // drain pending callbacks
         while (mp_sched_num_pending()) {
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 

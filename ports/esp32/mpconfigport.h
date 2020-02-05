@@ -244,8 +244,8 @@ void *esp_native_code_commit(void*, size_t, void*);
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(void); \
-        mp_handle_pending(); \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         MP_THREAD_GIL_ENTER(); \
@@ -253,8 +253,8 @@ void *esp_native_code_commit(void*, size_t, void*);
 #else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(void); \
-        mp_handle_pending(); \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         asm("waiti 0"); \
     } while (0);

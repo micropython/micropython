@@ -144,7 +144,7 @@ void mp_hal_delay_ms(uint32_t delay) {
 
 void ets_event_poll(void) {
     ets_loop_iter();
-    mp_handle_pending();
+    mp_handle_pending(true);
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
