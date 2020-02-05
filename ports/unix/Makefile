@@ -239,6 +239,9 @@ coverage:
 coverage_test:
 	$(MAKE) VARIANT=coverage test_gcov
 
+# clean build directories of all variants, all micropython executables and all .map files.
+CLEAN_EXTRA = build-* micropython-*
+
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)
