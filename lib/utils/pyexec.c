@@ -107,6 +107,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #endif
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
         ret = 1;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -114,8 +115,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
     } else {
         // uncaught exception
-        // FIXME it could be that an interrupt happens just before we disable it here
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
