@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 23:41-0500\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -668,6 +668,10 @@ msgstr "Qídài yīgè dìzhǐ"
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
