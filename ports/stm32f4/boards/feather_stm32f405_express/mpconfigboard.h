@@ -34,6 +34,8 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PC00)
 
+#define BOARD_OSC_DIV 12
+
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)
 #define SPI_FLASH_MISO_PIN          (&pin_PB04)

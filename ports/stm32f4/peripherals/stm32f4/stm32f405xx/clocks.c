@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 #include "stm32f4xx_hal.h"
+#include "py/mpconfig.h"
 
 void stm32f4_peripherals_clocks_init(void) {
     //TODO: All parameters must be moved to board level, due to relationship with HSE Osc. 
@@ -46,7 +47,7 @@ void stm32f4_peripherals_clocks_init(void) {
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 12;
+    RCC_OscInitStruct.PLL.PLLM = BOARD_OSC_DIV;
     RCC_OscInitStruct.PLL.PLLN = 336;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 7;
