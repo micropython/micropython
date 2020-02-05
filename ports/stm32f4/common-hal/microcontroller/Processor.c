@@ -37,12 +37,26 @@
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+#define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 // correction factor for reference value
 STATIC volatile float adc_refcor = 1.0f;
 
-#define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
-#define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
+STATIC void set_adc_params(ADC_HandleTypeDef *AdcHandle) {
+    AdcHandle->Instance = ADC1;
+    AdcHandle->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+    AdcHandle->Init.Resolution = ADC_RESOLUTION_12B;
+    AdcHandle->Init.ScanConvMode = DISABLE;
+    AdcHandle->Init.ContinuousConvMode = DISABLE;
+    AdcHandle->Init.DiscontinuousConvMode = DISABLE;
+    AdcHandle->Init.NbrOfDiscConversion = 0;
+    AdcHandle->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    AdcHandle->Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    AdcHandle->Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    AdcHandle->Init.NbrOfConversion = 1;
+    AdcHandle->Init.DMAContinuousRequests = DISABLE;
+    AdcHandle->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+}
 
 float common_hal_mcu_processor_get_temperature(void) {
     __HAL_RCC_ADC1_CLK_ENABLE();
@@ -50,20 +64,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     //HAL Implementation
     ADC_HandleTypeDef AdcHandle;
     ADC_ChannelConfTypeDef sConfig;
-
-    AdcHandle.Instance = ADC1;
-    AdcHandle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-    AdcHandle.Init.Resolution = ADC_RESOLUTION_12B;
-    AdcHandle.Init.ScanConvMode = DISABLE;
-    AdcHandle.Init.ContinuousConvMode = DISABLE;
-    AdcHandle.Init.DiscontinuousConvMode = DISABLE;
-    AdcHandle.Init.NbrOfDiscConversion = 0;
-    AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    AdcHandle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    AdcHandle.Init.NbrOfConversion = 1;
-    AdcHandle.Init.DMAContinuousRequests = DISABLE;
-    AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    set_adc_params(&AdcHandle);
     HAL_ADC_Init(&AdcHandle);
 
     ADC->CCR |= ADC_CCR_TSVREFE;
@@ -71,7 +72,7 @@ float common_hal_mcu_processor_get_temperature(void) {
 
     sConfig.Channel = ADC_CHANNEL_TEMPSENSOR; //either 16 or 18, depending on chip
     sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES; //Taken from micropython
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES; // Temp sensor likes 10us minimum
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
@@ -84,50 +85,35 @@ float common_hal_mcu_processor_get_temperature(void) {
     //There's no F4 specific appnote for this but it works the same as the L1 in AN3964
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
     return (((float)value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
-
-    // STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
-    // adc_config_channel(adcHandle, channel);
-    // uint32_t raw_value = adc_read_channel(adcHandle);
-
-    // #if defined(STM32F4) || defined(STM32F7)
-    // // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
-    // // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
-    // // conversions to work.  VBATE is enabled by the above call to read
-    // // the channel, and here we disable VBATE so a subsequent call for
-    // // TEMPSENSOR or VREFINT works correctly.
-    // if (channel == ADC_CHANNEL_VBAT) {
-    //     ADC->CCR &= ~ADC_CCR_VBATE;
-    // }
-    // #endif
-
-    // return raw_value;
-
-    //     int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
-    //     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
-    //     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
-    // }
-
-    // #if MICROPY_PY_BUILTINS_FLOAT
-    // // correction factor for reference value
-    // STATIC volatile float adc_refcor = 1.0f;
-
-    // float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
-    //     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
-    //     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
-    //     return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
-    // }
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
-//  float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
-//     uint32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_VREFINT);
+    __HAL_RCC_ADC1_CLK_ENABLE();
 
-//     // update the reference correction factor
-//     adc_refcor = ((float)(*VREFIN_CAL)) / ((float)raw_value);
+    //HAL Implementation
+    ADC_HandleTypeDef AdcHandle;
+    ADC_ChannelConfTypeDef sConfig;
+    set_adc_params(&AdcHandle);
+    HAL_ADC_Init(&AdcHandle);
 
-//     return (*VREFIN_CAL) * ADC_SCALE;
-// }
-    return NAN;
+    ADC->CCR |= ADC_CCR_TSVREFE;
+
+    sConfig.Channel = ADC_CHANNEL_VREFINT;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
+
+    HAL_ADC_Start(&AdcHandle);
+    if (HAL_ADC_PollForConversion(&AdcHandle,1) != HAL_OK) {
+        mp_raise_RuntimeError(translate("Voltage read timed out"));
+    }
+    uint32_t value = (uint32_t)HAL_ADC_GetValue(&AdcHandle);
+    HAL_ADC_Stop(&AdcHandle);
+
+    //This value could be used to actively correct ADC values. 
+    adc_refcor = ((float)(*VREFIN_CAL)) / ((float)value);
+
+    return adc_refcor * 3.3f;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
