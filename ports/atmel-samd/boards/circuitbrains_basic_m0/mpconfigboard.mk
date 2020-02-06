@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x04D8
 USB_PID = 0xEC63
 USB_PRODUCT = "CircuitBrains Basic"

@@ -5,8 +5,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA14)
 
-#define SPI_FLASH_BAUDRATE  (8000000)
-
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          &pin_PA16
 #define SPI_FLASH_MISO_PIN          &pin_PA18
@@ -18,11 +16,7 @@
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
+#define SPI_FLASH_BAUDRATE  (8000000)
 
 #define CALIBRATE_CRYSTALLESS 1
 
