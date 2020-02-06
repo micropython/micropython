@@ -4,7 +4,7 @@ The Espruino Pico is normally updated via a bootloader activated by the Espruino
 
  - Short out the BOOT0/BTN solder jumper on the back of the board - you can do this by drawing over it with a pencil.
  - Install ST's DFU utility on Windows, or dfu-util for Mac or Linux
- 	- **Mac**: install Homebrew: `brew install dfu-util`
+ 	- **Mac**: install with Homebrew: `brew install dfu-util`
  	- **Linux**: install with apt-get: `sudo apt-get install dfu-util`
  	- **Windows**: download [ST's application](https://www.st.com/en/development-tools/stsw-stm32080.html) or install the Linux subsystem for Windows 10 and follow the linux instructions. 
  - Hold down the Pico's button while plugging it into USB (when overwriting Espruino's default firmware)
