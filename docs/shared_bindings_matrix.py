@@ -26,7 +26,7 @@ import os
 import re
 
 
-SUPPORTED_PORTS = ["atmel-samd", "nrf", "mimxrt10xx"]
+SUPPORTED_PORTS = ["atmel-samd", "nrf", "stm32f4", "mimxrt10xx"]
 
 
 def parse_port_config(contents, chip_keyword=None):
