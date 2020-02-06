@@ -31,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 
-// #if MICROPY_PY_BUILTINS_EVEL
-
 //| :mod:`eveL` --- low-level BridgeTek EVE bindings
 //| ================================================
 //|
@@ -47,12 +45,12 @@
 
 typedef struct _mp_obj_EVEL_t {
     mp_obj_base_t base;
-    mp_obj_t writer;
     mp_obj_t dest[3];
-
     size_t n;
     uint8_t buf[512];
 } mp_obj_EVEL_t;
+
+STATIC const mp_obj_type_t EVEL_type;
 
 STATIC void _write(mp_obj_EVEL_t *EVEL, mp_obj_t b) {
     EVEL->dest[2] = b;
@@ -60,17 +58,15 @@ STATIC void _write(mp_obj_EVEL_t *EVEL, mp_obj_t b) {
 }
 
 STATIC mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
-    mp_obj_EVEL_t *EVEL = self;
+    mp_obj_EVEL_t *EVEL = mp_instance_cast_to_native_base(self, &EVEL_type);
     EVEL->n = 0;
-    mp_printf(&mp_plat_print, "register %p %d\n", EVEL, EVEL->n);
     mp_load_method(o, MP_QSTR_write, EVEL->dest);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(register_obj, _register);
 
 STATIC mp_obj_t _flush(mp_obj_t self) {
-    mp_obj_EVEL_t *EVEL = self;
-    // mp_printf(&mp_plat_print, "flush %p %d\n", EVEL, EVEL->n);
+    mp_obj_EVEL_t *EVEL = mp_instance_cast_to_native_base(self, &EVEL_type);
     if (EVEL->n != 0) {
       _write(EVEL, mp_obj_new_bytearray_by_ref(EVEL->n, EVEL->buf));
       EVEL->n = 0;
@@ -79,19 +75,19 @@ STATIC mp_obj_t _flush(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
 
-STATIC void *append(mp_obj_EVEL_t *EVEL, size_t m) {
-  if ((EVEL->n + m) > sizeof(EVEL->buf))
-    _flush((mp_obj_t)EVEL);
-  uint8_t *r = EVEL->buf + EVEL->n;
-  EVEL->n += m;
-  return (void*)r;
+STATIC void *append(mp_obj_t self, size_t m) {
+    mp_obj_EVEL_t *EVEL = mp_instance_cast_to_native_base(self, &EVEL_type);
+    if ((EVEL->n + m) > sizeof(EVEL->buf))
+        _flush((mp_obj_t)EVEL);
+    uint8_t *r = EVEL->buf + EVEL->n;
+    EVEL->n += m;
+    return (void*)r;
 }
 
 STATIC mp_obj_t _cc(mp_obj_t self, mp_obj_t b) {
-    mp_obj_EVEL_t *EVEL = self;
+    mp_obj_EVEL_t *EVEL = mp_instance_cast_to_native_base(self, &EVEL_type);
     mp_buffer_info_t buffer_info;
     mp_get_buffer_raise(b, &buffer_info, MP_BUFFER_READ);
-    // mp_printf(&mp_plat_print, "flush %p %d %p\n", EVEL, buffer_info.len, EVEL->writer);
     if (buffer_info.len <= sizeof(EVEL->buf)) {
       uint8_t *p = (uint8_t*)append(EVEL, buffer_info.len);
       // memcpy(p, buffer_info.buf, buffer_info.len);
@@ -152,7 +148,6 @@ STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
                 break;
         }
     }
-    mp_printf(&mp_plat_print, "n=%d\n", n);
 
     uint32_t *p = (uint32_t*)append(self, sizeof(uint32_t) * (1 + n));
     *p++ = 0xffffff00 | mp_obj_get_int_truncated(num);
@@ -164,7 +159,6 @@ STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
             case 'I':
             case 'i':
                 *p++ = mp_obj_get_int_truncated(*a++);
-                mp_printf(&mp_plat_print, "    %d %08x\n", p[-1]);
                 i += 1;
                 break;
             case 'H':
@@ -201,16 +195,10 @@ STATIC void EVEL_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 STATIC mp_obj_t EVEL_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // mp_arg_check_num(n_args, kw_args, 1, 1, false);
     mp_obj_EVEL_t *o = m_new_obj(mp_obj_EVEL_t);
-    mp_printf(&mp_plat_print, "EVEL init\n");
-    o->base.type = type;
-    return o;
+    mp_printf(&mp_plat_print, "EVEL %p make_new\n", o);
+    o->base.type = &EVEL_type;
+    return MP_OBJ_FROM_PTR(o);
 }
-
-// STATIC void EVEL_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-//   printf("HERE\n");
-//   mp_type_type.attr(self_in, attr, dest);
-//   printf("THERE %p %p\n", dest[0], dest[1]);
-// }
 
 STATIC const mp_obj_type_t EVEL_type = {
     { &mp_type_type },
@@ -233,5 +221,3 @@ const mp_obj_module_t eveL_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_eveL_globals,
 };
-
-// #endif // MICROPY_PY_BUILTINS_EVEL
