@@ -28,6 +28,17 @@
 
 #include "py/runtime.h"
 
+#if MICROPY_KBD_EXCEPTION
+void mp_keyboard_interrupt(void) {
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+    }
+    #endif
+}
+#endif
+
 #if MICROPY_ENABLE_SCHEDULER
 
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
