@@ -551,6 +551,7 @@ void stm32_main(uint32_t reset_mode) {
         mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
         cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+        cyw43_wifi_ap_set_auth(&cyw43_state, CYW43_AUTH_WPA_WPA2_PSK);
     }
     #endif
 

@@ -120,6 +120,11 @@ static inline void cyw43_wifi_ap_set_password(cyw43_t *self, size_t len, const u
     memcpy(self->ap_key, buf, self->ap_key_len);
 }
 
+static inline void cyw43_wifi_ap_get_password(cyw43_t *self, size_t *len, const uint8_t **buf) {
+    *len = self->ap_key_len;
+    *buf = self->ap_key;
+}
+
 static inline void cyw43_wifi_ap_set_auth(cyw43_t *self, uint32_t auth) {
     self->ap_auth = auth;
 }

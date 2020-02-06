@@ -57,6 +57,14 @@ enum {
     CYW43_ITF_AP,
 };
 
+enum {
+    CYW43_AUTH_OPEN,
+    CYW43_AUTH_WEP,
+    CYW43_AUTH_WPA_PSK,
+    CYW43_AUTH_WPA2_PSK,
+    CYW43_AUTH_WPA_WPA2_PSK,
+};
+
 typedef struct _cyw43_ev_scan_result_t {
     uint32_t _0[5];
     uint8_t bssid[6];
