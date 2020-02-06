@@ -72,7 +72,7 @@ Event Handling
     references to data managed by the :mod:`ubluetooth` module (i.e. the same
     instance will be re-used across multiple calls to the event handler). If
     your program wants to use this data outside of the handler, then it must
-    copy them first, e.g. by using ``bytes(addr)`` or ``bluetooth.UUID(uuid)``.
+    copy them first, e.g. by using ``bytes(addr)`` or ``ubluetooth.UUID(uuid)``.
 
     An event handler showing all possible events::
 
@@ -234,12 +234,12 @@ writes from a central to a given characteristic, use
 
     The following example registers two services (Heart Rate, and Nordic UART)::
 
-        HR_UUID = bluetooth.UUID(0x180D)
-        HR_CHAR = (bluetooth.UUID(0x2A37), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
+        HR_UUID = ubluetooth.UUID(0x180D)
+        HR_CHAR = (ubluetooth.UUID(0x2A37), ubluetooth.FLAG_READ | ubluetooth.FLAG_NOTIFY,)
         HR_SERVICE = (HR_UUID, (HR_CHAR,),)
-        UART_UUID = bluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')
-        UART_TX = (bluetooth.UUID('6E400003-B5A3-F393-E0A9-E50E24DCCA9E'), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
-        UART_RX = (bluetooth.UUID('6E400002-B5A3-F393-E0A9-E50E24DCCA9E'), bluetooth.FLAG_WRITE,)
+        UART_UUID = ubluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')
+        UART_TX = (ubluetooth.UUID('6E400003-B5A3-F393-E0A9-E50E24DCCA9E'), ubluetooth.FLAG_READ | ubluetooth.FLAG_NOTIFY,)
+        UART_RX = (ubluetooth.UUID('6E400002-B5A3-F393-E0A9-E50E24DCCA9E'), ubluetooth.FLAG_WRITE,)
         UART_SERVICE = (UART_UUID, (UART_TX, UART_RX,),)
         SERVICES = (HR_SERVICE, UART_SERVICE,)
         ( (hr,), (tx, rx,), ) = bt.gatts_register_services(SERVICES)
