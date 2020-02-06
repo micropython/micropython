@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 23:41-0500\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -667,6 +667,10 @@ msgstr ""
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Oczekiwano krotkę długości %d, otrzymano %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
