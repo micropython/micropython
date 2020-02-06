@@ -45,9 +45,10 @@
 
 typedef struct _mp_obj__EVE_t {
     mp_obj_base_t base;
-    mp_obj_t dest[3];
-    size_t n;
-    uint8_t buf[512];
+    mp_obj_t dest[3];           // Own 'write' method, plus argument
+    int vscale;                 // fixed-point scaling used for Vertex2f
+    size_t n;                   // Current size of command buffer
+    uint8_t buf[512];           // Command buffer
 } mp_obj__EVE_t;
 
 STATIC const mp_obj_type_t _EVE_type;
@@ -59,7 +60,6 @@ STATIC void _write(mp_obj__EVE_t *_EVE, mp_obj_t b) {
 
 STATIC mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
     mp_obj__EVE_t *_EVE = mp_instance_cast_to_native_base(self, &_EVE_type);
-    _EVE->n = 0;
     mp_load_method(o, MP_QSTR_write, _EVE->dest);
     return mp_const_none;
 }
@@ -115,13 +115,23 @@ STATIC mp_obj_t _cmd0(mp_obj_t self, mp_obj_t n) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
 
-STATIC mp_obj_t _vertex2f(mp_obj_t self , mp_obj_t a0, mp_obj_t a1) {
-    int16_t x = (int16_t)(16 * mp_obj_get_float(a0));
-    int16_t y = (int16_t)(16 * mp_obj_get_float(a1));
+STATIC mp_obj_t _vertex2f(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
+    mp_obj__EVE_t *_EVE = mp_instance_cast_to_native_base(self, &_EVE_type);
+    int16_t x = (int16_t)(_EVE->vscale * mp_obj_get_float(a0));
+    int16_t y = (int16_t)(_EVE->vscale * mp_obj_get_float(a1));
     C4(self, (0x40000000 | ((x & 32767) << 15) | (y & 32767)));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
+
+STATIC mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
+    mp_obj__EVE_t *_EVE = mp_instance_cast_to_native_base(self, &_EVE_type);
+    uint32_t frac = mp_obj_get_int_truncated(a0);
+    C4(self, ((0x27 << 24) | (frac & 3)));
+    _EVE->vscale = 1 << frac;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
 
 STATIC mp_obj_t _cmd(size_t n_args, const mp_obj_t *args) {
     mp_obj_t self = args[0];
@@ -180,6 +190,7 @@ STATIC const mp_rom_map_elem_t _EVE_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cc), MP_ROM_PTR(&cc_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_Vertex2f), MP_ROM_PTR(&vertex2f_obj) },
+    { MP_ROM_QSTR(MP_QSTR_VertexFormat), MP_ROM_PTR(&vertexformat_obj) },
     { MP_ROM_QSTR(MP_QSTR_cmd), MP_ROM_PTR(&cmd_obj) },
     { MP_ROM_QSTR(MP_QSTR_cmd0), MP_ROM_PTR(&cmd0_obj) },
     ROM_DECLS
@@ -197,6 +208,8 @@ STATIC mp_obj_t _EVE_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     mp_obj__EVE_t *o = m_new_obj(mp_obj__EVE_t);
     mp_printf(&mp_plat_print, "_EVE %p make_new\n", o);
     o->base.type = &_EVE_type;
+    o->n = 0;
+    o->vscale = 16;
     return MP_OBJ_FROM_PTR(o);
 }
 
