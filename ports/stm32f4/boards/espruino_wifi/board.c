@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
-#include "py/mpconfig.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "boards/board.h"
 
-void stm32f4_peripherals_gpio_init(void) {
-    //* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-
-    //Never reset pins
-    never_reset_pin_number(2,14); //PC14 OSC32_IN
-    never_reset_pin_number(2,15); //PC15 OSC32_OUT
-
-    #if !defined(BOARD_OVERWRITE_SWD) 
-    never_reset_pin_number(0,13); //PA13 SWDIO
-    never_reset_pin_number(0,14); //PA14 SWCLK
-    #endif
-
-    // Port H is not included in GPIO port array
-    // never_reset_pin_number(5,0); //PH0 JTDO   
-    // never_reset_pin_number(5,1); //PH1 JTRST
+void board_init(void) {
 }
 
-//LEDs are inverted on F411 DISCO
-void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
+bool board_requests_safe_mode(void) {
+  return false;
 }
 
+void reset_board(void) {
 
+}
