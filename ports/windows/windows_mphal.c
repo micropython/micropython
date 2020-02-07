@@ -25,7 +25,7 @@
  */
 
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
 
@@ -84,8 +84,7 @@ BOOL WINAPI console_sighandler(DWORD evt) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+        mp_keyboard_interrupt();
         return TRUE;
     }
     return FALSE;
