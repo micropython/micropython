@@ -32,7 +32,7 @@ uint64_t common_hal_time_monotonic(void) {
     return supervisor_ticks_ms64();
 }
 
-uint64_t common_hal_time_monotonic_ns() {
+uint64_t common_hal_time_monotonic_ns(void) {
     uint64_t ms;
     uint32_t us_until_ms;
     current_tick(&ms, &us_until_ms);
