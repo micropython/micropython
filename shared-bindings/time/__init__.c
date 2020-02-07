@@ -70,14 +70,16 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 //|
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    float seconds = mp_obj_get_float(seconds_o);
+    mp_float_t seconds = mp_obj_get_float(seconds_o);
+    mp_float_t msecs = 1000.0f * seconds + 0.5f;
     #else
-    int seconds = mp_obj_get_int(seconds_o);
+    mp_int_t seconds = mp_obj_get_int(seconds_o);
+    mp_int_t msecs = 1000 * seconds;
     #endif
     if (seconds < 0) {
         mp_raise_ValueError(translate("sleep length must be non-negative"));
     }
-    common_hal_time_delay_ms(1000 * seconds);
+    common_hal_time_delay_ms(msecs);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
@@ -216,7 +218,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //|   :rtype: int
 //|
 STATIC mp_obj_t time_monotonic_ns(void) {
-    uint64_t time64 = common_hal_time_monotonic() * 1000000llu;
+    uint64_t time64 = common_hal_time_monotonic_ns();
     return mp_obj_new_int_from_ll((long long) time64);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
