@@ -130,6 +130,8 @@ jobs:
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
+        - "circuitbrains_basic_m0"
+        - "circuitbrains_deluxe_m4"
         - "circuitplayground_bluefruit"
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
