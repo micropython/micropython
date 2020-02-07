@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,28 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
-#include "common-hal/microcontroller/Pin.h"
+//Micropython setup
 
-void stm32f4_peripherals_gpio_init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
+#define MICROPY_HW_BOARD_NAME       "Espruino Pico"
+#define MICROPY_HW_MCU_NAME         "STM32F401xD"
 
-    //Never reset pins
-    never_reset_pin_number(2,14); //PC14 OSC32_IN
-    never_reset_pin_number(2,15); //PC15 OSC32_OUT
-    never_reset_pin_number(0,13); //PA13 SWDIO
-    never_reset_pin_number(0,14); //PA14 SWCLK
-}
+#define FLASH_SIZE                  (0x60000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-//LEDs are inverted on F411 DISCO
-void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
-}
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
+#define BOARD_OSC_DIV 8
 
