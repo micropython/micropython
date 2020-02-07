@@ -216,7 +216,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //|   :rtype: int
 //|
 STATIC mp_obj_t time_monotonic_ns(void) {
-    uint64_t time64 = common_hal_time_monotonic() * 1000000llu;
+    uint64_t time64 = common_hal_time_monotonic_ns();
     return mp_obj_new_int_from_ll((long long) time64);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
