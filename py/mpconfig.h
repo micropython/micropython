@@ -1439,6 +1439,13 @@ typedef double mp_float_t;
 #endif
 
 /*****************************************************************************/
+/* Hooks for a port to wrap functions with attributes                        */
+
+#ifndef MICROPY_WRAP_MP_KEYBOARD_INTERRUPT
+#define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) f
+#endif
+
+/*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
 // All uPy objects in ROM must be aligned on at least a 4 byte boundary
