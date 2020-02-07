@@ -24,6 +24,10 @@ are supported.
 
 WiPy/CC3200: Bits can be 5, 6, 7, 8. Stop can be 1 or 2.
 
+ESP32: Hardware flow control can be enabled by specifying pins for rts
+and cts. If the rts pin is specified, RTS flow control is enabled, if the
+cts pin is specified, CTS flow control is enabled. 
+
 A UART object acts like a `stream` object and reading and writing is done
 using the standard stream methods::
 
@@ -56,6 +60,8 @@ Methods
 
      - *tx* specifies the TX pin to use.
      - *rx* specifies the RX pin to use.
+     - *rts* specifies the RTS pin to use for RTS hardware flow control
+     - *cts* specifies the CTS pin to use for CTS hardware flow control
      - *txbuf* specifies the length in characters of the TX buffer.
      - *rxbuf* specifies the length in characters of the RX buffer.
      - *timeout* specifies the time to wait for the first character (in ms).
