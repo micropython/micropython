@@ -355,9 +355,8 @@ def run_tests(pyb, tests, args, base_path="."):
     if not has_coverage:
         skip_tests.add('cmdline/cmd_parsetree.py')
 
-    # Some tests shouldn't be run on a PC
-    if args.target == 'unix':
-        # unix build does not have the GIL so can't run thread mutation tests
+    # these builds do not have the GIL so they can't run thread mutation tests
+    if args.target in ('unix', 'linux-kernel'):
         for t in tests:
             if t.startswith('thread/mutate_'):
                 skip_tests.add(t)
@@ -384,8 +383,6 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
         elif args.target == 'nrf':
             skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
-            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
-            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
             skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
             skip_tests.add('micropython/opt_level.py')      # no support for line numbers
             skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
@@ -394,6 +391,16 @@ def run_tests(pyb, tests, args, base_path="."):
                     skip_tests.add(t)
         elif args.target == 'qemu-arm':
             skip_tests.add('misc/print_exception.py')       # requires sys stdfiles
+        elif args.target == 'linux-kernel':
+            # next 2 tests lock the heap and perform operations that lead to allocations (which will now
+            # use the stack instead)
+            # linux-kernel is compiled with MICROPY_STACKLESS_STRICT so it's not allowed.
+            skip_tests.add('micropython/heapalloc_inst_call.py')
+            skip_tests.add('micropython/heapalloc_yield_from.py')
+            # these 3 require MICROPY_PY_SYS_STDFILES (use sys.print_exception into a buffer)
+            skip_tests.add('micropython/heapalloc_traceback.py')
+            skip_tests.add('micropython/emg_exc.py')
+            skip_tests.add('misc/print_exception.py')
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -588,7 +595,7 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     LOCAL_TARGETS = ('unix', 'qemu-arm',)
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf', 'linux-kernel')
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -620,6 +627,8 @@ the last matching regex is used:
                 # Generate expected output files for qemu run.
                 # This list should match the test_dirs tuple in tinytest-codegen.py.
                 test_dirs += ('float', 'inlineasm', 'qemu-arm',)
+            elif args.target == 'linux-kernel':
+                test_dirs += ('linux-kernel', )
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
