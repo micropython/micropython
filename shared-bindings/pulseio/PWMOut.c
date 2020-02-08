@@ -42,7 +42,7 @@
 //|
 //| PWMOut can be used to output a PWM signal on a given pin.
 //|
-//| .. class:: PWMOut(pin, \*, duty_cycle=0, frequency=500, variable_frequency=False)
+//| .. class:: PWMOut(pin, *, duty_cycle=0, frequency=500, variable_frequency=False)
 //|
 //|   Create a PWM object associated with the given pin. This allows you to
 //|   write PWM signals out on the given pin. Frequency is fixed after init
@@ -133,6 +133,12 @@ STATIC mp_obj_t pulseio_pwmout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_deinit_obj, pulseio_pwmout_deinit);
 
+STATIC void check_for_deinit(pulseio_pwmout_obj_t *self) {
+    if (common_hal_pulseio_pwmout_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -156,16 +162,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pu
 //|      16 bit value that dictates how much of one cycle is high (1) versus low
 //|      (0). 0xffff will always be high, 0 will always be low and 0x7fff will
 //|      be half high and then half low.
+//|
+//|      Depending on how PWM is implemented on a specific board, the internal
+//|      representation for duty cycle might have less than 16 bits of resolution.
+//|      Reading this property will return the value from the internal representation,
+//|      so it may differ from the value set.
 STATIC mp_obj_t pulseio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_duty_cycle(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_duty_cycle_obj, pulseio_pwmout_obj_get_duty_cycle);
 
 STATIC mp_obj_t pulseio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    check_for_deinit(self);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
         mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
@@ -187,16 +198,22 @@ const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
 //|     32 bit value that dictates the PWM frequency in Hertz (cycles per
 //|     second). Only writeable when constructed with ``variable_frequency=True``.
 //|
+//|     Depending on how PWM is implemented on a specific board, the internal value
+//|     for the PWM's duty cycle may need to be recalculated when the frequency
+//|     changes. In these cases, the duty cycle is automatically recalculated
+//|     from the original duty cycle value. This should happen without any need
+//|     to manually re-set the duty cycle.
+//|
 STATIC mp_obj_t pulseio_pwmout_obj_get_frequency(mp_obj_t self_in) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_frequency_obj, pulseio_pwmout_obj_get_frequency);
 
 STATIC mp_obj_t pulseio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    check_for_deinit(self);
     if (!common_hal_pulseio_pwmout_get_variable_frequency(self)) {
         mp_raise_AttributeError(translate(
             "PWM frequency not writable when variable_frequency is False on "

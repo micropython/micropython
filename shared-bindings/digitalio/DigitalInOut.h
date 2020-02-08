@@ -53,5 +53,6 @@ digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(digitali
 void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t* self, digitalio_pull_t pull);
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_never_reset(digitalio_digitalinout_obj_t *self);
+digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H

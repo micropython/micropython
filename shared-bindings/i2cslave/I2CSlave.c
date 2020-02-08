@@ -150,7 +150,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave___exit___obj, 4, 4
 STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cslave_i2c_slave_type));
     i2cslave_i2c_slave_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_i2cslave_i2c_slave_deinited(self));
+    if(common_hal_i2cslave_i2c_slave_deinited(self)) {
+        raise_deinited_error();
+    }
     enum { ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
@@ -180,7 +182,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_ar
         bool is_read;
         bool is_restart;
 
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return mp_const_none;
         }
@@ -335,7 +337,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *p
     uint8_t *buffer = NULL;
     uint64_t timeout_end = common_hal_time_monotonic() + 10 * 1000;
     while (common_hal_time_monotonic() < timeout_end) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }
@@ -380,7 +382,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_write(mp_obj_t self_in, mp_obj_t buf_
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     for (size_t i = 0; i < bufinfo.len; i++) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }

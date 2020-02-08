@@ -47,7 +47,7 @@
 //| written in MicroPython will work in CPython but not necessarily the other
 //| way around.
 //|
-//| .. method:: monotonic()
+//| .. function:: monotonic()
 //|
 //|   Returns an always increasing value of time with an unknown reference
 //|   point. Only use it to compare against other values from `monotonic`.
@@ -62,7 +62,7 @@ STATIC mp_obj_t time_monotonic(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
-//| .. method:: sleep(seconds)
+//| .. function:: sleep(seconds)
 //|
 //|   Sleep for a given number of seconds.
 //|
@@ -70,14 +70,16 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 //|
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    float seconds = mp_obj_get_float(seconds_o);
+    mp_float_t seconds = mp_obj_get_float(seconds_o);
+    mp_float_t msecs = 1000.0f * seconds + 0.5f;
     #else
-    int seconds = mp_obj_get_int(seconds_o);
+    mp_int_t seconds = mp_obj_get_int(seconds_o);
+    mp_int_t msecs = 1000 * seconds;
     #endif
     if (seconds < 0) {
         mp_raise_ValueError(translate("sleep length must be non-negative"));
     }
-    common_hal_time_delay_ms(1000 * seconds);
+    common_hal_time_delay_ms(msecs);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
@@ -85,9 +87,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
-        mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
+        return namedtuple_make_new(type, n_args, args, kw_args);
     }
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
@@ -95,19 +97,21 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     return namedtuple_make_new(type, 9, tuple->items, NULL);
 }
 
-//| .. class:: struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst))
+//| .. class:: struct_time(time_tuple)
 //|
 //|   Structure used to capture a date and time. Note that it takes a tuple!
 //|
-//|   :param int tm_year: the year, 2017 for example
-//|   :param int tm_mon: the month, range [1, 12]
-//|   :param int tm_mday: the day of the month, range [1, 31]
-//|   :param int tm_hour: the hour, range [0, 23]
-//|   :param int tm_min: the minute, range [0, 59]
-//|   :param int tm_sec: the second, range [0, 61]
-//|   :param int tm_wday: the day of the week, range [0, 6], Monday is 0
-//|   :param int tm_yday: the day of the year, range [1, 366], -1 indicates not known
-//|   :param int tm_isdst: 1 when in daylight savings, 0 when not, -1 if unknown.
+//|   :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
+//|
+//|     * ``tm_year``: the year, 2017 for example
+//|     * ``tm_month``: the month, range [1, 12]
+//|     * ``tm_mday``: the day of the month, range [1, 31]
+//|     * ``tm_hour``: the hour, range [0, 23]
+//|     * ``tm_minute``: the minute, range [0, 59]
+//|     * ``tm_sec``: the second, range [0, 61]
+//|     * ``tm_wday``: the day of the week, range [0, 6], Monday is 0
+//|     * ``tm_yday``: the day of the year, range [1, 366], -1 indicates not known
+//|     * ``tm_isdst``: 1 when in daylight savings, 0 when not, -1 if unknown.
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
@@ -190,7 +194,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
     mp_raise_RuntimeError(translate("RTC is not supported on this board"));
 }
 
-//| .. method:: time()
+//| .. function:: time()
 //|
 //|   Return the current time in seconds since since Jan 1, 1970.
 //|
@@ -206,7 +210,7 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
-//| .. method:: monotonic_ns()
+//| .. function:: monotonic_ns()
 //|
 //|   Return the time of the specified clock clk_id in nanoseconds.
 //|
@@ -214,12 +218,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //|   :rtype: int
 //|
 STATIC mp_obj_t time_monotonic_ns(void) {
-    uint64_t time64 = common_hal_time_monotonic() * 1000000llu;
+    uint64_t time64 = common_hal_time_monotonic_ns();
     return mp_obj_new_int_from_ll((long long) time64);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 
-//| .. method:: localtime([secs])
+//| .. function:: localtime([secs])
 //|
 //|   Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
 //|   local time. If secs is not provided or None, the current time as returned
@@ -234,9 +238,16 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return rtc_get_time_source_time();
     }
 
-    mp_int_t secs = mp_obj_int_get_checked(args[0]);
-    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
+    mp_obj_t arg = args[0];
+    if (mp_obj_is_float(arg)) {
+        arg = mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    }
+
+    mp_int_t secs = mp_obj_get_int(arg);
+
+    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_epoch_to_struct_time(secs, &tm);
@@ -245,7 +256,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
-//| .. method:: mktime(t)
+//| .. function:: mktime(t)
 //|
 //|   This is the inverse function of localtime(). Its argument is the
 //|   struct_time or full 9-tuple (since the dst flag is needed; use -1 as the
@@ -268,8 +279,9 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
         mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
-    if (mp_obj_get_int(elem[0]) < 2000)
+    if (mp_obj_get_int(elem[0]) < 2000) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));

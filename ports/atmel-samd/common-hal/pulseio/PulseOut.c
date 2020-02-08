@@ -198,9 +198,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     while(pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;

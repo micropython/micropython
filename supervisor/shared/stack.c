@@ -29,6 +29,7 @@
 #include "py/mpconfig.h"
 #include "py/runtime.h"
 #include "supervisor/cpu.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/safe_mode.h"
 
 extern uint32_t _estack;
@@ -43,7 +44,11 @@ void allocate_stack(void) {
     mp_uint_t regs[10];
     mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
-    mp_uint_t c_size = (uint32_t) &_estack - sp;
+    mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
+
+    if (port_stack_get_top() != port_heap_get_top()) {
+        return;
+    }
 
     stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
     if (stack_alloc == NULL) {
@@ -70,6 +75,9 @@ void stack_init(void) {
 }
 
 void stack_resize(void) {
+    if (stack_alloc == NULL) {
+        return;
+    }
     if (next_stack_size == current_stack_size) {
         *stack_alloc->ptr = STACK_CANARY_VALUE;
         return;

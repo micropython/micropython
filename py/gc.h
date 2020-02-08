@@ -29,7 +29,18 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "py/mpstate.h"
 #include "py/misc.h"
+
+#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
+#define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
+
+// ptr should be of type void*
+#define VERIFY_PTR(ptr) ( \
+        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
+        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
+        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
+    )
 
 void gc_init(void *start, void *end);
 void gc_deinit(void);
@@ -43,9 +54,12 @@ bool gc_is_locked(void);
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
 void gc_collect_start(void);
+void gc_collect_ptr(void *ptr);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
+// Is the gc heap available?
+bool gc_alloc_possible(void);
 void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived);
 
 // Use this function to sweep the whole heap and run all finalisers

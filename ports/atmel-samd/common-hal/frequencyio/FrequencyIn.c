@@ -103,7 +103,10 @@ void frequencyin_interrupt_handler(uint8_t index) {
                 // record a new event count.
                 if (current_ms - self->last_ms >= self->capture_period) {
                     float new_factor = self->last_us + (1000 - current_us);
-                    self->factor = (current_ms - self->last_ms) + (new_factor / 1000);
+                    // ms difference will not need 64 bits. If we use 64 bits,
+                    // double-precision float routines are required, and we don't
+                    // want to include them because they're very large.
+                    self->factor = (uint32_t) (current_ms - self->last_ms) + (new_factor / 1000);
                     self->last_ms = current_ms;
                     self->last_us = current_us;
 
@@ -210,17 +213,17 @@ void frequencyin_samd51_start_dpll() {
     // Will also enable the Lock Bypass due to low-frequency sources causing DPLL unlocks
     // as outlined in the Errata (1.12.1)
     OSCCTRL->Dpll[1].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(0) | OSCCTRL_DPLLRATIO_LDR(2999);
-    if (board_has_crystal()) { // we can use XOSC32K directly as the source
-        OSC32KCTRL->XOSC32K.bit.EN32K = 1;
-        OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(1) |
-                                         OSCCTRL_DPLLCTRLB_LBYPASS;
-    } else {
-        // can't use OSCULP32K directly; need to setup a GCLK as a reference,
-        // which must be done in samd/clocks.c to avoid waiting for sync
-        return;
-        //OSC32KCTRL->OSCULP32K.bit.EN32K = 1;
-        //OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0);
-    }
+#if BOARD_HAS_CRYSTAL
+    // we can use XOSC32K directly as the source
+    OSC32KCTRL->XOSC32K.bit.EN32K = 1;
+    OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(1) | OSCCTRL_DPLLCTRLB_LBYPASS;
+#else
+    // can't use OSCULP32K directly; need to setup a GCLK as a reference,
+    // which must be done in samd/clocks.c to avoid waiting for sync
+    return;
+    //OSC32KCTRL->OSCULP32K.bit.EN32K = 1;
+    //OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0);
+#endif
     OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
 
     while (!(OSCCTRL->Dpll[1].DPLLSTATUS.bit.LOCK || OSCCTRL->Dpll[1].DPLLSTATUS.bit.CLKRDY)) {}

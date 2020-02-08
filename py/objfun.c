@@ -34,6 +34,8 @@
 #include "py/bc.h"
 #include "py/stackctrl.h"
 
+#include "supervisor/linker.h"
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
@@ -249,7 +251,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
 }
 #endif
 
-STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 
     DEBUG_printf("Input n_args: " UINT_FMT ", n_kw: " UINT_FMT "\n", n_args, n_kw);
@@ -546,7 +548,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, self->n_args, self->n_args, false);
 
     void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
 

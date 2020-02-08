@@ -128,6 +128,7 @@ mp_obj_t common_hal_os_listdir(const char* path) {
     while ((next = mp_iternext(iter_obj)) != MP_OBJ_STOP_ITERATION) {
         // next[0] is the filename.
         mp_obj_list_append(dir_list, mp_obj_subscr(next, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL));
+        RUN_BACKGROUND_TASKS;
     }
     return dir_list;
 }

@@ -105,6 +105,24 @@ $(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
+# External modules written in C.
+ifneq ($(USER_C_MODULES),)
+# pre-define USERMOD variables as expanded so that variables are immediate
+# expanded as they're added to them
+SRC_USERMOD :=
+CFLAGS_USERMOD :=
+LDFLAGS_USERMOD :=
+$(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
+    $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
+    $(info Including User C Module from $(USERMOD_DIR))\
+	$(eval include $(module))\
+)
+
+SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
+CFLAGS_MOD += $(CFLAGS_USERMOD)
+LDFLAGS_MOD += $(LDFLAGS_USERMOD)
+endif
+
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
@@ -196,6 +214,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objtype.o \
 	objzip.o \
 	opmethods.o \
+	proto.o \
 	reload.o \
 	sequence.o \
 	stream.o \
@@ -285,13 +304,20 @@ FORCE:
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
+	$(Q)$(PYTHON3) $(PY_SRC)/makeversionhdr.py $@
+
+# build a list of registered modules for py/objmodule.c.
+$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+	@$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
+
+SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
-$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po
+$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
 	$(Q)msgfmt -o $@ $^
 
 $(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
@@ -318,10 +344,23 @@ $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
+ifndef SUPEROPT_GC
+  SUPEROPT_GC = 1
+endif
+
+ifeq ($(SUPEROPT_GC),1)
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
+endif
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
+ifndef SUPEROPT_VM
+  SUPEROPT_VM = 1
+endif
+
+ifeq ($(SUPEROPT_VM),1)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
+endif
+
 # Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch

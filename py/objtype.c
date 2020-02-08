@@ -34,6 +34,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -117,6 +118,16 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
+// When instances are first created they have the base_init wrapper as their native parent's
+// instance because make_new combines __new__ and __init__. This object is invalid for the native
+// code so it must call this method to ensure that the given object has been __init__'d and is
+// valid.
+void mp_obj_assert_native_inited(mp_obj_t native_object) {
+    if (native_object == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+        mp_raise_NotImplementedError(translate("Call super().__init__() before accessing native object."));
+    }
+}
+
 // TODO
 // This implements depth-first left-to-right MRO, which is not compliant with Python3 MRO
 // http://python-history.blogspot.com/2010/06/method-resolution-order.html
@@ -176,14 +187,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     return;
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
-                    mp_obj_t obj_obj;
-                    if (obj != NULL && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
-                        // If we're dealing with native base class, then it applies to native sub-object
-                        obj_obj = obj->subobj[0];
-                    } else {
-                        obj_obj = MP_OBJ_FROM_PTR(obj);
-                    }
-                    mp_convert_member_lookup(obj_obj, type, elem->value, lookup->dest);
+                    mp_convert_member_lookup(MP_OBJ_FROM_PTR(obj), type, elem->value, lookup->dest);
                 }
 #if DEBUG_PRINT
                 printf("mp_obj_class_lookup: Returning: ");
@@ -326,8 +330,10 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, cons
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = MP_OBJ_FROM_PTR(self);
             memcpy(args2 + 1, args, n_args * sizeof(mp_obj_t));
-            // copy in kwargs
-            memcpy(args2 + 1 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+            if (kw_args) {
+                // copy in kwargs
+                memcpy(args2 + 1 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
+            }
             new_ret = mp_call_function_n_kw(init_fn[0], n_args + 1, n_kw, args2);
             m_del(mp_obj_t, args2, 1 + n_args + 2 * n_kw);
         }
@@ -839,8 +845,13 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         mp_obj_class_lookup(&lookup, self->base.type);
         meth_args = 3;
     }
-    if (member[0] == MP_OBJ_SENTINEL) {
-        return mp_obj_subscr(self->subobj[0], index, value);
+    if (member[0] == MP_OBJ_SENTINEL) { // native base subscr exists
+        mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
+        // return mp_obj_subscr(self->subobj[0], index, value, instance);
+        mp_obj_t ret = subobj_type->subscr(self_in, index, value);
+        // May have called port specific C code. Make sure it didn't mess up the heap.
+        assert_heap_ok();
+        return ret;
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
         // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw

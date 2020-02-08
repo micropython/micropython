@@ -15,3 +15,15 @@ print(ib.to_bytes(20, "big"))
 
 # check that extra zero bytes don't change the internal int value
 print(int.from_bytes(b + bytes(10), "little") == int.from_bytes(b, "little"))
+
+# too small buffer should raise an error
+try:
+    (2**64).to_bytes(8, "little")
+except OverflowError:
+    print("OverflowError")
+
+# negative numbers should raise an error
+try:
+    (-2**64).to_bytes(9, "little")
+except OverflowError:
+    print("OverflowError")

@@ -300,6 +300,76 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+
+void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed)
+{
+    if (is_signed) {
+        // self must be < 2**(bits - 1)
+        mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+                                     mp_obj_new_int(1),
+                                     mp_obj_new_int(nbytes * 8 - 1));
+
+        if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+            // and >= -2**(bits - 1)
+            edge = mp_unary_op(MP_UNARY_OP_NEGATIVE, edge);
+            if (mp_binary_op(MP_BINARY_OP_MORE_EQUAL, self_in, edge) == mp_const_true) {
+                return;
+            }
+        }
+    } else {
+        // self must be >= 0
+        if (mp_obj_int_sign(self_in) >= 0) {
+            // and < 2**(bits)
+            mp_obj_t edge = mp_binary_op(MP_BINARY_OP_INPLACE_LSHIFT,
+                                         mp_obj_new_int(1),
+                                         mp_obj_new_int(nbytes * 8));
+
+            if (mp_binary_op(MP_BINARY_OP_LESS, self_in, edge) == mp_const_true) {
+                return;
+            }
+        }
+    }
+
+    mp_raise_OverflowError_varg(translate("value must fit in %d byte(s)"), nbytes);
+}
+
+#endif // MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+
+void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_signed) {
+    // Fast path for zero.
+    if (val == 0) {
+        return;
+    }
+
+    // Trying to store negative values in unsigned bytes falls through to failure.
+    if (is_signed || val >= 0) {
+
+        if (nbytes >= sizeof(val)) {
+            // All non-negative N bit signed integers fit in an unsigned N bit integer.
+            // This case prevents shifting too far below.
+            return;
+        }
+
+        if (is_signed) {
+            mp_int_t edge = ((mp_int_t)1 << (nbytes * 8 - 1));
+            if (-edge <= val && val < edge) {
+                return;
+            }
+            // Out of range, fall through to failure.
+        } else {
+            // Unsigned. We already know val >= 0.
+            mp_int_t edge = ((mp_int_t)1 << (nbytes * 8));
+            if (val < edge) {
+                return;
+            }
+        }
+        // Fall through to failure.
+    }
+
+    mp_raise_OverflowError_varg(translate("value must fit in %d byte(s)"), nbytes);
+}
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 int mp_obj_int_sign(mp_obj_t self_in) {
@@ -437,11 +507,14 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!MP_OBJ_IS_SMALL_INT(args[0])) {
+        mp_obj_int_buffer_overflow_check(args[0], len, false);
         mp_obj_int_to_bytes_impl(args[0], big_endian, len, data);
     } else
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        // Small int checking is separate, to be fast.
+        mp_small_int_buffer_overflow_check(val, len, false);
         size_t l = MIN((size_t)len, sizeof(val));
         mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
     }

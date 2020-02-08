@@ -1,4 +1,6 @@
 print((10).to_bytes(1, "little"))
+# Test fitting in length that's not a power of two.
+print((0x10000).to_bytes(3, 'little'))
 print((111111).to_bytes(4, "little"))
 print((100).to_bytes(10, "little"))
 
@@ -17,3 +19,15 @@ try:
     (1).to_bytes(-1, "little")
 except ValueError:
     print("ValueError")
+
+# too small buffer should raise an error
+try:
+    (256).to_bytes(1, "little")
+except OverflowError:
+    print("OverflowError")
+
+# negative numbers should raise an error
+try:
+    (-256).to_bytes(2, "little")
+except OverflowError:
+    print("OverflowError")

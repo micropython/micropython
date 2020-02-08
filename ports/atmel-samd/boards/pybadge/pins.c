@@ -54,10 +54,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_CLOCK),  MP_ROM_PTR(&pin_PB31) },
 
     // TFT control pins
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_LITE),  MP_ROM_PTR(&pin_PA00) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_LITE),  MP_ROM_PTR(&pin_PA01) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MOSI),  MP_ROM_PTR(&pin_PB15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_SCK),  MP_ROM_PTR(&pin_PB13) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_RST),  MP_ROM_PTR(&pin_PA01) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_RST),  MP_ROM_PTR(&pin_PA00) },
     { MP_ROM_QSTR(MP_QSTR_TFT_CS), MP_ROM_PTR(&pin_PB07) },
     { MP_ROM_QSTR(MP_QSTR_TFT_DC), MP_ROM_PTR(&pin_PB05) },
 

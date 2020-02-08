@@ -42,7 +42,7 @@ typedef enum {
 extern void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
     uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-    uint8_t receiver_buffer_size);
+    uint16_t receiver_buffer_size);
 
 extern void common_hal_busio_uart_deinit(busio_uart_obj_t *self);
 extern bool common_hal_busio_uart_deinited(busio_uart_obj_t *self);
@@ -57,7 +57,8 @@ extern size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
 
 extern uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self);
 extern void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate);
-
+extern mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self);
+extern void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout);
 
 extern uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self);
 extern void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self);

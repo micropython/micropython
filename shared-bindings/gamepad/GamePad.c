@@ -23,17 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "shared-bindings/gamepad/GamePad.h"
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "py/mpstate.h"
-#include "shared-module/gamepad/__init__.h"
-#include "shared-module/gamepad/GamePad.h"
+#include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
-#include "GamePad.h"
 
 
 //| .. currentmodule:: gamepad
@@ -78,7 +77,8 @@
 //|     Initializes button scanning routines.
 //|
 //|     The ``b1``-``b8`` parameters are ``DigitalInOut`` objects, which
-//|     immediately get switched to input with a pull-up, and then scanned
+//|     immediately get switched to input with a pull-up, (unless they already
+//|     were set to pull-down, in which case they remain so), and then scanned
 //|     regularly for button presses. The order is the same as the order of
 //|     bits returned by the ``get_pressed`` function. You can re-initialize
 //|     it with different keys, then the new object will replace the previous
@@ -96,26 +96,23 @@
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *args, mp_map_t *kw_args) {
-    if (n_args > 8) {
-        mp_raise_TypeError(translate("too many arguments"));
+    if (n_args > 8 || n_args == 0) {
+        mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     for (size_t i = 0; i < n_args; ++i) {
-        if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError(translate("expected a DigitalInOut"));
-        }
-        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
-        raise_error_if_deinited(
-            common_hal_digitalio_digitalinout_deinited(pin));
+        assert_digitalinout(args[i]);
     }
-    if (!MP_STATE_VM(gamepad_singleton)) {
-        gamepad_obj_t* gamepad_singleton = m_new_obj(gamepad_obj_t);
+    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+    if (!gamepad_singleton ||
+        !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton), &gamepad_type)) {
+        gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
-        MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
+        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
+        MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
-    gamepad_init(n_args, args);
-    return MP_OBJ_FROM_PTR(MP_STATE_VM(gamepad_singleton));
+    common_hal_gamepad_gamepad_init(gamepad_singleton, args, n_args);
+    return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
-
 
 //|     .. method:: get_pressed()
 //|
@@ -129,9 +126,9 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
-    mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
-    gamepad_singleton->pressed = 0;
-    return gamepad;
+    mp_obj_t pressed = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
+    gamepad_singleton->pressed = gamepad_singleton->last;
+    return pressed;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 
@@ -141,7 +138,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 //|         Disable button scanning.
 //|
 STATIC mp_obj_t gamepad_deinit(mp_obj_t self_in) {
-    gamepad_reset();
+    common_hal_gamepad_gamepad_deinit(self_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_deinit_obj, gamepad_deinit);

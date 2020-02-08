@@ -33,6 +33,8 @@
 #include "py/qstr.h"
 #include "py/gc.h"
 
+#include "supervisor/linker.h"
+
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
 // also probably need to include the length in the string data, to allow null bytes in the string
@@ -248,7 +250,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
     return q;
 }
 
-mp_uint_t qstr_hash(qstr q) {
+mp_uint_t PLACE_IN_ITCM(qstr_hash)(qstr q) {
     return Q_GET_HASH(find_qstr(q));
 }
 

@@ -24,12 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "boards/board.h"
 #include "supervisor/port.h"
 
 // ASF 4
 #include "atmel_start_pins.h"
 #include "hal/include/hal_delay.h"
+#include "hal/include/hal_flash.h"
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_init.h"
 #include "hpl/gclk/hpl_gclk_base.h"
@@ -52,8 +56,13 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
+#endif
+
 #include "samd/cache.h"
 #include "samd/clocks.h"
 #include "samd/events.h"
@@ -71,6 +80,9 @@
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
 #endif
+#if CIRCUITPY_GAMEPADSHIFT
+#include "shared-module/gamepadshift/__init__.h"
+#endif
 #include "shared-module/_pew/PewPew.h"
 
 extern volatile bool mp_msc_enabled;
@@ -84,6 +96,40 @@ extern volatile bool mp_msc_enabled;
 // Size in bytes. 4 bytes per uint32_t.
 #define TRACE_BUFFER_SIZE_BYTES (TRACE_BUFFER_SIZE << 2)
 __attribute__((__aligned__(TRACE_BUFFER_SIZE_BYTES))) uint32_t mtb[TRACE_BUFFER_SIZE] = {0};
+#endif
+
+#if CALIBRATE_CRYSTALLESS
+static void save_usb_clock_calibration(void) {
+    // If we are on USB lets double check our fine calibration for the clock and
+    // save the new value if its different enough.
+    SYSCTRL->DFLLSYNC.bit.READREQ = 1;
+    uint16_t saved_calibration = 0x1ff;
+    if (strcmp((char*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        saved_calibration = ((uint16_t *) CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
+    }
+    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
+        // TODO(tannewt): Run the mass storage stuff if this takes a while.
+    }
+    int16_t current_calibration = SYSCTRL->DFLLVAL.bit.FINE;
+    if (abs(current_calibration - saved_calibration) > 10) {
+        // Copy the full internal config page to memory.
+        uint8_t page_buffer[NVMCTRL_ROW_SIZE];
+        memcpy(page_buffer, (uint8_t*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, NVMCTRL_ROW_SIZE);
+
+        // Modify it.
+        memcpy(page_buffer, "CIRCUITPYTHON1", 15);
+        // First 16 bytes (0-15) are ID. Little endian!
+        page_buffer[16] = current_calibration & 0xff;
+        page_buffer[17] = current_calibration >> 8;
+
+        // Write it back.
+        // We don't use features that use any advanced NVMCTRL features so we can fake the descriptor
+        // whenever we need it instead of storing it long term.
+        struct flash_descriptor desc;
+        desc.dev.hw = NVMCTRL;
+        flash_write(&desc, (uint32_t) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, page_buffer, NVMCTRL_ROW_SIZE);
+    }
+}
 #endif
 
 safe_mode_t port_init(void) {
@@ -160,7 +206,19 @@ safe_mode_t port_init(void) {
     hri_nvmctrl_set_CTRLB_RWS_bf(NVMCTRL, 2);
     _pm_init();
 #endif
-    clock_init();
+
+#if CALIBRATE_CRYSTALLESS
+    uint32_t fine = DEFAULT_DFLL48M_FINE_CALIBRATION;
+    // The fine calibration data is stored in an NVM page after the text and data storage but before
+    // the optional file system. The first 16 bytes are the identifier for the section.
+    if (strcmp((char*) CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        fine = ((uint16_t *) CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
+    }
+    clock_init(BOARD_HAS_CRYSTAL, fine);
+#else
+    // Use a default fine value
+    clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
+#endif
 
     // Configure millisecond timer initialization.
     tick_init();
@@ -173,9 +231,6 @@ safe_mode_t port_init(void) {
 
     // Reset everything into a known state before board_init.
     reset_port();
-
-    // Init the board last so everything else is ready
-    board_init();
 
     #ifdef SAMD21
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
@@ -207,7 +262,7 @@ void reset_port(void) {
     //pdmin_reset();
 #endif
 
-#if CIRCUITPY_TOUCHIO
+#if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
 #endif
     eic_reset();
@@ -229,6 +284,9 @@ void reset_port(void) {
 #if CIRCUITPY_GAMEPAD
     gamepad_reset();
 #endif
+#if CIRCUITPY_GAMEPADSHIFT
+    gamepadshift_reset();
+#endif
 #if CIRCUITPY_PEW
     pew_reset();
 #endif
@@ -246,9 +304,11 @@ void reset_port(void) {
     // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
     // #endif
 
+#if CALIBRATE_CRYSTALLESS
     if (tud_cdc_connected()) {
         save_usb_clock_calibration();
     }
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -258,6 +318,22 @@ void reset_to_bootloader(void) {
 
 void reset_cpu(void) {
     reset();
+}
+
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
+}
+
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
 }
 
 // Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.

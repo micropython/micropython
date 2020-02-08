@@ -53,9 +53,6 @@
 // detect untraced object still in use
 #define CLEAR_ON_SWEEP (0)
 
-#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
-#define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
-
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
 // 0b01 = HEAD -- head of a chain of blocks
@@ -209,13 +206,6 @@ bool gc_is_locked(void) {
     return MP_STATE_MEM(gc_lock_depth) != 0;
 }
 
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
-
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
 #define TRACE_MARK(block, ptr) DEBUG_printf("gc_mark(%p)\n", ptr)
@@ -345,6 +335,19 @@ STATIC void gc_sweep(void) {
     }
 }
 
+// Mark can handle NULL pointers because it verifies the pointer is within the heap bounds.
+STATIC void gc_mark(void* ptr) {
+    if (VERIFY_PTR(ptr)) {
+        size_t block = BLOCK_FROM_PTR(ptr);
+        if (ATB_GET_KIND(block) == AT_HEAD) {
+            // An unmarked head: mark it, and mark all its children
+            TRACE_MARK(block, ptr);
+            ATB_HEAD_TO_MARK(block);
+            gc_mark_subtree(block);
+        }
+    }
+}
+
 void gc_collect_start(void) {
     GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
@@ -361,9 +364,7 @@ void gc_collect_start(void) {
     size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
     gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
 
-    if (MP_STATE_MEM(permanent_pointers) != NULL) {
-        gc_collect_root(MP_STATE_MEM(permanent_pointers), BYTES_PER_BLOCK / sizeof(void*));
-    }
+    gc_mark(MP_STATE_MEM(permanent_pointers));
 
     #if MICROPY_ENABLE_PYSTACK
     // Trace root pointers from the Python stack.
@@ -372,18 +373,14 @@ void gc_collect_start(void) {
     #endif
 }
 
+void gc_collect_ptr(void *ptr) {
+    gc_mark(ptr);
+}
+
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        if (VERIFY_PTR(ptr)) {
-            size_t block = BLOCK_FROM_PTR(ptr);
-            if (ATB_GET_KIND(block) == AT_HEAD) {
-                // An unmarked head: mark it, and mark all its children
-                TRACE_MARK(block, ptr);
-                ATB_HEAD_TO_MARK(block);
-                gc_mark_subtree(block);
-            }
-        }
+        gc_mark(ptr);
     }
 }
 
@@ -467,6 +464,10 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+bool gc_alloc_possible(void) {
+    return MP_STATE_MEM(gc_pool_start) != 0;
+}
+
 // We place long lived objects at the end of the heap rather than the start. This reduces
 // fragmentation by localizing the heap churn to one portion of memory (the start of the heap.)
 void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
@@ -502,7 +503,6 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
         gc_collect();
         collected = 1;
         GC_ENTER();
-        collected = true;
     }
     #endif
 
@@ -671,6 +671,9 @@ void gc_free(void *ptr) {
     if (ptr == NULL) {
         GC_EXIT();
     } else {
+        if (MP_STATE_MEM(gc_pool_start) == 0) {
+            reset_into_safe_mode(GC_ALLOC_OUTSIDE_VM);
+        }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));
         size_t block = BLOCK_FROM_PTR(ptr);

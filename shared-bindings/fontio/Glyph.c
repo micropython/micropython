@@ -37,7 +37,7 @@
 //|
 //|   Named tuple used to capture a single glyph and its attributes.
 //|
-//|   :param fontio.Bitmap bitmap: the bitmap including the glyph
+//|   :param displayio.Bitmap bitmap: the bitmap including the glyph
 //|   :param int tile_index: the tile index within the bitmap
 //|   :param int width: the width of the glyph's bitmap
 //|   :param int height: the height of the glyph's bitmap

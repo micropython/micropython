@@ -1,9 +1,11 @@
 /*
  * SPI Master library for nRF5x.
- * Copyright (c) 2015 Arduino LLC
- * Copyright (c) 2016 Sandeep Mistry All right reserved.
- * Copyright (c) 2017 hathach
+ *
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 hathach
+ * Copyright (c) 2016 Sandeep Mistry All right reserved.
+ * Copyright (c) 2015 Arduino LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,14 +61,14 @@ STATIC spim_peripheral_t spim_peripherals[] = {
 #endif
 };
 
-STATIC bool never_reset[4];
+STATIC bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
 
 void spi_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {
         if (never_reset[i]) {
             continue;
         }
-        nrf_spim_disable(spim_peripherals[i].spim.p_reg);
+        nrfx_spim_uninit(&spim_peripherals[i].spim);
     }
 }
 
@@ -133,14 +135,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All SPI peripherals are in use"));
     }
 
-    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG;
+    nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG(NRFX_SPIM_PIN_NOT_USED, NRFX_SPIM_PIN_NOT_USED,
+                                                         NRFX_SPIM_PIN_NOT_USED, NRFX_SPIM_PIN_NOT_USED);
     config.frequency = NRF_SPIM_FREQ_8M;
 
     config.sck_pin = clock->number;
     self->clock_pin_number = clock->number;
     claim_pin(clock);
 
-    if (mosi != (mcu_pin_obj_t*)&mp_const_none_obj) {
+    if (mosi != mp_const_none) {
         config.mosi_pin = mosi->number;
         self->MOSI_pin_number = mosi->number;
         claim_pin(mosi);
@@ -148,7 +151,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         self->MOSI_pin_number = NO_PIN;
     }
 
-    if (miso != (mcu_pin_obj_t*)&mp_const_none_obj) {
+    if (miso != mp_const_none) {
         config.miso_pin = miso->number;
         self->MISO_pin_number = mosi->number;
         claim_pin(miso);
@@ -157,13 +160,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     }
 
     nrfx_err_t err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
-
-    // A soft reset doesn't uninit the driver so we might end up with a invalid state
-    if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_spim_uninit(&self->spim_peripheral->spim);
-        err = nrfx_spim_init(&self->spim_peripheral->spim, &config, NULL, NULL);
-    }
-
     if (err != NRFX_SUCCESS) {
         common_hal_busio_spi_deinit(self);
         mp_raise_OSError(MP_EIO);

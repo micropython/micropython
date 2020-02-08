@@ -35,6 +35,8 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
+#include "supervisor/linker.h"
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -116,7 +118,7 @@
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 #define SELECTIVE_EXC_IP (0)
 #if SELECTIVE_EXC_IP
 #define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
@@ -758,7 +760,7 @@ unwind_jump:;
                     } else {
                         PUSH(value); // push the next iteration value
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
                 // matched against: SETUP_EXCEPT, SETUP_FINALLY, SETUP_WITH

@@ -108,11 +108,27 @@ endif
 ifeq ($(CIRCUITPY_AUDIOIO),1)
 SRC_PATTERNS += audioio/%
 endif
+ifeq ($(CIRCUITPY_AUDIOPWMIO),1)
+SRC_PATTERNS += audiopwmio/%
+endif
+ifeq ($(CIRCUITPY_AUDIOCORE),1)
+SRC_PATTERNS += audiocore/%
+endif
+ifeq ($(CIRCUITPY_AUDIOMIXER),1)
+SRC_PATTERNS += audiomixer/%
+endif
+ifeq ($(CIRCUITPY_AUDIOMP3),1)
+SRC_PATTERNS += audiomp3/%
+endif
 ifeq ($(CIRCUITPY_BITBANGIO),1)
 SRC_PATTERNS += bitbangio/%
 endif
+# Some builds need bitbang SPI for the dotstar but don't make bitbangio available so include it separately.
+ifeq ($(CIRCUITPY_BITBANG_APA102),1)
+SRC_PATTERNS += bitbangio/SPI%
+endif
 ifeq ($(CIRCUITPY_BLEIO),1)
-SRC_PATTERNS += bleio/%
+SRC_PATTERNS += _bleio/%
 endif
 ifeq ($(CIRCUITPY_BOARD),1)
 SRC_PATTERNS += board/%
@@ -131,6 +147,9 @@ SRC_PATTERNS += frequencyio/%
 endif
 ifeq ($(CIRCUITPY_GAMEPAD),1)
 SRC_PATTERNS += gamepad/%
+endif
+ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
+SRC_PATTERNS += gamepadshift/%
 endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
 SRC_PATTERNS += i2cslave/%
@@ -158,6 +177,9 @@ SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
+endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -205,27 +227,28 @@ ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
 
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_COMMON_HAL = \
-$(filter $(SRC_PATTERNS), \
+# All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
+SRC_COMMON_HAL_ALL = \
+	_bleio/__init__.c \
+	_bleio/Adapter.c \
+	_bleio/Attribute.c \
+	_bleio/Characteristic.c \
+	_bleio/CharacteristicBuffer.c \
+	_bleio/Connection.c \
+	_bleio/Descriptor.c \
+	_bleio/PacketBuffer.c \
+	_bleio/Service.c \
+	_bleio/UUID.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
+	audiopwmio/__init__.c \
+	audiopwmio/PWMAudioOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	bleio/__init__.c \
-	bleio/Adapter.c \
-	bleio/Broadcaster.c \
-	bleio/Characteristic.c \
-	bleio/CharacteristicBuffer.c \
-	bleio/Descriptor.c \
-	bleio/Peripheral.c \
-	bleio/Scanner.c \
-	bleio/Service.c \
-	bleio/UUID.c \
 	board/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
@@ -249,55 +272,58 @@ $(filter $(SRC_PATTERNS), \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	ps2io/Ps2.c \
+	ps2io/__init__.c \
 	rotaryio/IncrementalEncoder.c \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	time/__init__.c \
-	touchio/TouchIn.c \
-	touchio/__init__.c \
-)
+	time/__init__.c
+
+SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_BINDINGS_ENUMS = \
 $(filter $(SRC_PATTERNS), \
+	_bleio/Address.c \
+	_bleio/Attribute.c \
+	_bleio/ScanEntry.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
-	supervisor/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
 	help.c \
 	util.c
 
-SRC_BINDINGS_ENUMS += \
-$(filter $(SRC_PATTERNS), \
-	bleio/Address.c \
-	bleio/AddressType.c \
-	bleio/AdvertisementData.c \
-	bleio/ScanEntry.c \
-)
-
-# All possible sources are listed here, and are filtered by SRC_PATTERNS.
-SRC_SHARED_MODULE = \
-$(filter $(SRC_PATTERNS), \
+SRC_SHARED_MODULE_ALL = \
+	_bleio/Address.c \
+	_bleio/Attribute.c \
+	_bleio/ScanEntry.c \
+	_bleio/ScanResults.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
+	audiopwmio/__init__.c \
 	audioio/__init__.c \
-	audioio/Mixer.c \
-	audioio/RawSample.c \
-	audioio/WaveFile.c \
+	audiocore/__init__.c \
+	audiocore/RawSample.c \
+	audiocore/WaveFile.c \
+	audiomixer/__init__.c \
+	audiomixer/Mixer.c \
+	audiomixer/MixerVoice.c \
+	audiomp3/__init__.c \
+	audiomp3/MP3Decoder.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
@@ -307,8 +333,10 @@ $(filter $(SRC_PATTERNS), \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
+	displayio/EPaperDisplay.c \
 	displayio/FourWire.c \
 	displayio/Group.c \
+	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
 	displayio/Shape.c \
@@ -318,6 +346,8 @@ $(filter $(SRC_PATTERNS), \
 	fontio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
+	gamepadshift/GamePadShift.c \
+	gamepadshift/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	socket/__init__.c \
@@ -329,7 +359,48 @@ $(filter $(SRC_PATTERNS), \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
-	_pew/PewPew.c \
+	_pew/PewPew.c
+
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
+SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
+
+# Use the native touchio if requested. This flag is set conditionally in, say, mpconfigport.h.
+# The presence of common-hal/touchio/* # does not imply it's available for all chips in a port,
+# so there is an explicit flag. For example, SAMD21 touchio is native, but SAMD51 is not.
+ifeq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),1)
+SRC_COMMON_HAL_ALL += \
+	touchio/TouchIn.c \
+	touchio/__init__.c
+else
+SRC_SHARED_MODULE_ALL += \
+	touchio/TouchIn.c \
+	touchio/__init__.c
+endif
+ifeq ($(CIRCUITPY_AUDIOMP3),1)
+SRC_MOD += $(addprefix lib/mp3/src/, \
+	bitstream.c \
+	buffers.c \
+	dct32.c \
+	dequant.c \
+	dqchan.c \
+	huffman.c \
+	hufftabs.c \
+	imdct.c \
+	mp3dec.c \
+	mp3tabs.c \
+	polyphase.c \
+	scalfact.c \
+	stproc.c \
+	subband.c \
+	trigtabs.c \
+)
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
+endif
+
+# All possible sources are listed here, and are filtered by SRC_PATTERNS.
+SRC_SHARED_MODULE_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	displayio/display_core.c \
 )
 
 ifeq ($(INTERNAL_LIBM),1)
@@ -356,3 +427,20 @@ $(addprefix lib/,\
 	libm/atan2f.c \
 	)
 endif
+
+ifdef LD_TEMPLATE_FILE
+# Generate a linker script (.ld file) from a template, for those builds that use it.
+GENERATED_LD_FILE = $(BUILD)/$(notdir $(patsubst %.template.ld,%.ld,$(LD_TEMPLATE_FILE)))
+#
+# ld_defines.pp is generated from ld_defines.c. See py/mkrules.mk.
+# Run gen_ld_files.py over ALL *.template.ld files, not just LD_TEMPLATE_FILE,
+# because it may include other template files.
+$(GENERATED_LD_FILE): $(BUILD)/ld_defines.pp boards/*.template.ld
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
+endif
+
+.PHONY: check-release-needs-clean-build
+
+check-release-needs-clean-build:
+	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"

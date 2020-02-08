@@ -31,7 +31,7 @@
 //| :class:`DriveMode` -- defines the drive mode of a digital pin
 //| =============================================================
 //|
-//| .. class:: digitalio.DriveMode
+//| .. class:: DriveMode
 //|
 //|     Enum-like class to define the drive mode used when outputting
 //|     digital values.

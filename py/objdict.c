@@ -31,6 +31,7 @@
 #include "py/builtin.h"
 #include "py/objtype.h"
 
+#include "supervisor/linker.h"
 #include "supervisor/shared/translate.h"
 
 #define MP_OBJ_IS_DICT_TYPE(o) (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->make_new == dict_make_new)
@@ -324,7 +325,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
-STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC mp_obj_t PLACE_IN_ITCM(dict_update)(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_ensure_not_fixed(self);
@@ -590,7 +591,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
     return self->map.used;
 }
 
-mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
+mp_obj_t PLACE_IN_ITCM(mp_obj_dict_store)(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);

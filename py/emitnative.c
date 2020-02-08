@@ -58,6 +58,22 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#ifndef N_X64
+    #define N_X64 (0)
+#endif
+#ifndef N_X86
+    #define N_X86 (0)
+#endif
+#ifndef N_THUMB
+    #define N_THUMB (0)
+#endif
+#ifndef N_ARM
+    #define N_ARM (0)
+#endif
+#ifndef N_XTENSA
+    #define N_XTENSA (0)
+#endif
+
 // wrapper around everything in this file
 #if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA
 
@@ -443,10 +459,13 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             type_sig |= (emit->local_vtype[i] & 0xf) << (i * 4 + 4);
         }
 
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-align"
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
             f, f_len, (mp_uint_t*)((byte*)f + emit->const_table_offset),
             emit->scope->num_pos_args, emit->scope->scope_flags, type_sig);
+        #pragma GCC diagnostic pop
     }
 }
 

@@ -26,8 +26,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "GamePad.h"
-
+#include "shared-bindings/gamepad/GamePad.h"
+#include "shared-bindings/util.h"
 
 //| :mod:`gamepad` --- Button handling
 //| ==================================

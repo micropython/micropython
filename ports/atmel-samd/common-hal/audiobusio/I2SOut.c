@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "common-hal/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
@@ -144,16 +144,16 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     }
     #endif
     if (bc_clock_unit == 0xff) {
-        mp_raise_ValueError(translate("Invalid bit clock pin"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_bit_clock);
     }
     if (ws_clock_unit == 0xff) {
-        mp_raise_ValueError(translate("Invalid bit clock pin"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_word_select);
     }
     if (bc_clock_unit != ws_clock_unit) {
         mp_raise_ValueError(translate("Bit clock and word select must share a clock unit"));
     }
     if (serializer == 0xff) {
-        mp_raise_ValueError(translate("Invalid data pin"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data);
     }
     self->clock_unit = ws_clock_unit;
     self->serializer = serializer;

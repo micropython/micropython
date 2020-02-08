@@ -56,19 +56,19 @@
 //|   using `UDA1334 Breakout <https://www.adafruit.com/product/3678>`_::
 //|
 //|     import audiobusio
-//|     import audioio
+//|     import audiocore
 //|     import board
 //|     import array
 //|     import time
 //|     import math
 //|
-//|     # Generate one period of sine wav.
+//|     # Generate one period of sine wave.
 //|     length = 8000 // 440
 //|     sine_wave = array.array("H", [0] * length)
 //|     for i in range(length):
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     sine_wave = audiobusio.RawSample(sine_wave, sample_rate=8000)
+//|     sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
 //|     i2s = audiobusio.I2SOut(board.D1, board.D0, board.D9)
 //|     i2s.play(sine_wave, loop=True)
 //|     time.sleep(1)
@@ -78,12 +78,13 @@
 //|
 //|     import board
 //|     import audioio
+//|     import audiocore
 //|     import audiobusio
 //|     import digitalio
 //|
 //|
 //|     f = open("cplay-5.1-16bit-16khz.wav", "rb")
-//|     wav = audioio.WaveFile(f)
+//|     wav = audiocore.WaveFile(f)
 //|
 //|     a = audiobusio.I2SOut(board.D1, board.D0, board.D9)
 //|
@@ -116,7 +117,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     assert_pin(data_obj, false);
     const mcu_pin_obj_t *data = MP_OBJ_TO_PTR(data_obj);
 
-    audiobusio_i2sout_obj_t *self = m_new_obj(audiobusio_i2sout_obj_t);
+    audiobusio_i2sout_obj_t *self = m_new_obj_with_finaliser(audiobusio_i2sout_obj_t);
     self->base.type = &audiobusio_i2sout_type;
     common_hal_audiobusio_i2sout_construct(self, bit_clock, word_select, data, args[ARG_left_justified].u_bool);
 
@@ -134,6 +135,11 @@ STATIC mp_obj_t audiobusio_i2sout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_deinit_obj, audiobusio_i2sout_deinit);
 
+STATIC void check_for_deinit(audiobusio_i2sout_obj_t *self) {
+    if (common_hal_audiobusio_i2sout_deinited(self)) {
+        raise_deinited_error();
+    }
+}
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -158,7 +164,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_i2sout___exit___obj, 4, 4,
 //|     Plays the sample once when loop=False and continuously when loop=True.
 //|     Does not block. Use `playing` to block.
 //|
-//|     Sample must be an `audioio.WaveFile` or `audioio.RawSample`.
+//|     Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
 //|
 //|     The sample itself should consist of 8 bit or 16 bit samples.
 //|
@@ -169,7 +175,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_play(size_t n_args, const mp_obj_t *pos_ar
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -186,7 +192,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audiobusio_i2sout_play_obj, 1, audiobusio_i2sout_obj_
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_stop(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
     common_hal_audiobusio_i2sout_stop(self);
     return mp_const_none;
 }
@@ -198,7 +204,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_stop_obj, audiobusio_i2sout_obj_stop
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_playing(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audiobusio_i2sout_get_playing(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_get_playing_obj, audiobusio_i2sout_obj_get_playing);
@@ -216,7 +222,7 @@ const mp_obj_property_t audiobusio_i2sout_playing_obj = {
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
 
     if (!common_hal_audiobusio_i2sout_get_playing(self)) {
         mp_raise_RuntimeError(translate("Not playing"));
@@ -232,7 +238,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_pause_obj, audiobusio_i2sout_obj_pau
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_resume(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
 
     if (common_hal_audiobusio_i2sout_get_paused(self)) {
         common_hal_audiobusio_i2sout_resume(self);
@@ -248,7 +254,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_re
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_paused(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_audiobusio_i2sout_get_paused(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_get_paused_obj, audiobusio_i2sout_obj_get_paused);
@@ -262,6 +268,7 @@ const mp_obj_property_t audiobusio_i2sout_paused_obj = {
 
 STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiobusio_i2sout___exit___obj) },

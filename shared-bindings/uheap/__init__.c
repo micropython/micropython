@@ -38,7 +38,7 @@
 //|   :synopsis: Heap size analysis
 //|
 
-//| .. method:: info(object)
+//| .. function:: info(object)
 //|
 //|   Prints memory debugging info for the given object and returns the
 //|   estimated size.

@@ -46,7 +46,7 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None)
+//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000)
 //|
 //|   Create a FourWire object associated with the given pins.
 //|
@@ -59,14 +59,16 @@
 //|   :param microcontroller.Pin command: Data or command pin
 //|   :param microcontroller.Pin chip_select: Chip select pin
 //|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|   :param int baudrate: Maximum baudrate in Hz for the display on the bus
 //|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset };
+    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_baudrate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 24000000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -97,39 +99,67 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     }
 
     common_hal_displayio_fourwire_construct(self,
-        MP_OBJ_TO_PTR(spi), command, chip_select, reset);
+        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int);
     return self;
 }
 
-//|   .. method:: send(command, data)
+//|   .. method:: reset()
+//|
+//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|     is available.
+//|
+STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
+    displayio_fourwire_obj_t *self = self_in;
+
+    if (!common_hal_displayio_fourwire_reset(self)) {
+        mp_raise_RuntimeError(translate("no reset pin available"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
+
+//|   .. method:: send(command, data, *, toggle_every_byte=False)
 //|
 //|     Sends the given command value followed by the full set of data. Display state, such as
 //|     vertical scroll, set via ``send`` may or may not be reset once the code is done.
 //|
-STATIC mp_obj_t displayio_fourwire_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
-    mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);
-    if (!MP_OBJ_IS_SMALL_INT(command_obj) || command_int > 255 || command_int < 0) {
+STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_command, ARG_data, ARG_toggle_every_byte };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_command, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_toggle_every_byte, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_int_t command_int = args[ARG_command].u_int;
+    if (command_int > 255 || command_int < 0) {
         mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
     }
+    displayio_fourwire_obj_t *self = pos_args[0];
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // Wait for display bus to be available.
     while (!common_hal_displayio_fourwire_begin_transaction(self)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-        MICROPY_VM_HOOK_LOOP ;
-#endif
+        RUN_BACKGROUND_TASKS;
     }
-    common_hal_displayio_fourwire_send(self, true, &command, 1);
-    common_hal_displayio_fourwire_send(self, false, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    display_chip_select_behavior_t chip_select = CHIP_SELECT_UNTOUCHED;
+    if (args[ARG_toggle_every_byte].u_bool) {
+        chip_select = CHIP_SELECT_TOGGLE_EVERY_BYTE;
+    }
+    common_hal_displayio_fourwire_send(self, DISPLAY_COMMAND, chip_select, &command, 1);
+    common_hal_displayio_fourwire_send(self, DISPLAY_DATA, chip_select, ((uint8_t*) bufinfo.buf), bufinfo.len);
     common_hal_displayio_fourwire_end_transaction(self);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_3(displayio_fourwire_send_obj, displayio_fourwire_obj_send);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 3, displayio_fourwire_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_fourwire_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&displayio_fourwire_send_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);

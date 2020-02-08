@@ -102,7 +102,7 @@ uint32_t next_start_tick_us = 1000;
 
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
-    // feature from the NRF25. However this technique implies to
+    // feature from the NRF52. However this technique implies to
     // generate a pattern and store it on the memory. The actual
     // memory used in bytes corresponds to the following formula:
     //              totalMem = numBytes*8*2+(2*2)
@@ -111,21 +111,42 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     //
     // If there is not enough memory, we will fall back to cycle counter
     // using DWT
-    uint32_t pattern_size = numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t);
+
+#define PATTERN_SIZE(numBytes) (numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t))
+// Allocate PWM space for up to STACK_PIXELS on the stack, to avoid malloc'ing.
+// We may need to write to the status neopixel or to Circuit Playground NeoPixels
+// when we cannot malloc, between VM instantiations.
+// We need space for at least 10 pixels for Circuit Playground, but let's choose 24
+// to handle larger NeoPixel rings without malloc'ing.
+#define STACK_PIXELS 24
+
+    uint32_t pattern_size = PATTERN_SIZE(numBytes);
     uint16_t* pixels_pattern = NULL;
     bool pattern_on_heap = false;
 
-    // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
-    uint32_t one_pixel[8 * sizeof(uint16_t) + 1];
+    // Use the stack to store STACK_PIXEL's worth of PWM data. uint32_t to ensure alignment.
+    // It is 3*STACK_PIXELS to handle RGB.
+    // PATTERN_SIZE is a multiple of 4, so we don't need round up to make sure one_pixel is large enough.
+    uint32_t stack_pixels[PATTERN_SIZE(3 * STACK_PIXELS) / sizeof(uint32_t)];
 
     NRF_PWM_Type* pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (pattern_size <= sizeof(one_pixel) * sizeof(uint32_t)) {
-            pixels_pattern = (uint16_t *) one_pixel;
+        if (pattern_size <= sizeof(stack_pixels)) {
+            pixels_pattern = (uint16_t *) stack_pixels;
         } else {
-            pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
+            uint8_t sd_en = 0;
+            (void) sd_softdevice_is_enabled(&sd_en);
+            if (sd_en) {
+                // If the soft device is enabled then we must use PWM to
+                // transmit. This takes a bunch of memory to do so raise an
+                // exception if we can't.
+                pixels_pattern = (uint16_t *) m_malloc(pattern_size, false);
+            } else {
+                pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
+            }
+
             pattern_on_heap = true;
         }
     }
@@ -195,9 +216,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // But we have to wait for the flag to be set.
         while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-#endif
+            RUN_BACKGROUND_TASKS;
         }
 
         // Before leave we clear the flag for the event.

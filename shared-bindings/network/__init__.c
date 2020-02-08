@@ -49,7 +49,7 @@
 //| It is used by the 'socket' module to look up a suitable
 //| NIC when a socket is created.
 //|
-//| .. function:: route
+//| .. function:: route()
 //|
 //|   Returns a list of all configured NICs.
 //|

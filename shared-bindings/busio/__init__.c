@@ -35,7 +35,6 @@
 #include "shared-bindings/busio/OneWire.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
-#include "shared-bindings/busio/__init__.h"
 
 #include "py/runtime.h"
 

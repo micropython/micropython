@@ -1261,6 +1261,7 @@ STATIC const mp_rom_map_elem_t lwip_socket_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(lwip_socket_locals_dict, lwip_socket_locals_dict_table);
 
 STATIC const mp_stream_p_t lwip_socket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = lwip_socket_read,
     .write = lwip_socket_write,
     .ioctl = lwip_socket_ioctl,

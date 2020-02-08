@@ -45,7 +45,7 @@
 //| The pulsed signal consists of timed active and idle periods. Unlike PWM,
 //| there is no set duration for active and idle pairs.
 //|
-//| .. class:: PulseIn(pin, maxlen=2, \*, idle_state=False)
+//| .. class:: PulseIn(pin, maxlen=2, *, idle_state=False)
 //|
 //|   Create a PulseIn object associated with the given pin. The object acts as
 //|   a read-only sequence of pulse lengths with a given max length. When it is
@@ -114,6 +114,12 @@ STATIC mp_obj_t pulseio_pulsein_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_deinit_obj, pulseio_pulsein_deinit);
 
+STATIC void check_for_deinit(pulseio_pulsein_obj_t *self) {
+    if (common_hal_pulseio_pulsein_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
 //|   .. method:: __enter__()
 //|
 //|      No-op used by Context Managers.
@@ -138,7 +144,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulsein___exit___obj, 4, 4, p
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_pause(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     common_hal_pulseio_pulsein_pause(self);
     return mp_const_none;
@@ -162,7 +168,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_ar
         { MP_QSTR_trigger_duration, MP_ARG_INT, {.u_int = 0} },
     };
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -178,7 +184,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pulseio_pulsein_resume_obj, 1, pulseio_pulsein_obj_re
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     common_hal_pulseio_pulsein_clear(self);
     return mp_const_none;
@@ -191,7 +197,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_clear_obj, pulseio_pulsein_obj_clear);
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pulsein_popleft(self));
 }
@@ -204,7 +210,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_popleft_obj, pulseio_pulsein_obj_pople
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_get_maxlen(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pulsein_get_maxlen(self));
 }
@@ -224,7 +230,7 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_get_paused(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
 
     return mp_obj_new_bool(common_hal_pulseio_pulsein_get_paused(self));
 }
@@ -248,7 +254,7 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
 //|
 STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+    check_for_deinit(self);
     uint16_t len = common_hal_pulseio_pulsein_get_len(self);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
@@ -272,7 +278,7 @@ STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t va
         mp_raise_AttributeError(translate("Cannot delete values"));
     } else {
         pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-        raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+        check_for_deinit(self);
 
         if (MP_OBJ_IS_TYPE(index_obj, &mp_type_slice)) {
             mp_raise_NotImplementedError(translate("Slices not supported"));

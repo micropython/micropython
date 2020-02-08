@@ -102,20 +102,35 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 
 #include "py/parsenum.h"
 
+STATIC void raise_corrupt_mpy(void) {
+    mp_raise_RuntimeError(translate("Corrupt .mpy file"));
+}
+
 STATIC int read_byte(mp_reader_t *reader) {
-    return reader->readbyte(reader->data);
+    mp_uint_t b = reader->readbyte(reader->data);
+    if (b == MP_READER_EOF) {
+        raise_corrupt_mpy();
+    }
+    return b;
 }
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
-        *buf++ = reader->readbyte(reader->data);
+        mp_uint_t b =reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
+        *buf++ = b;
     }
 }
 
 STATIC size_t read_uint(mp_reader_t *reader) {
     size_t unum = 0;
     for (;;) {
-        byte b = reader->readbyte(reader->data);
+        mp_uint_t b = reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
         unum = (unum << 7) | (b & 0x7f);
         if ((b & 0x80) == 0) {
             break;
@@ -145,11 +160,12 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
         } else if (obj_type == 'i') {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
-        } else {
-            assert(obj_type == 'f' || obj_type == 'c');
+        } else if (obj_type == 'f' || obj_type == 'c') {
             return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == 'c', false, NULL);
         }
     }
+    raise_corrupt_mpy();
+    return MP_OBJ_FROM_PTR(&mp_const_none_obj);
 }
 
 STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
@@ -220,7 +236,7 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || header[1] != MPY_VERSION
         || header[2] != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()) {
-        mp_raise_ValueError(translate("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
+        mp_raise_MpyError(translate("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
     }
     mp_raw_code_t *rc = load_raw_code(reader);
     reader->close(reader->data);

@@ -27,16 +27,17 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
 #define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
 
-#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/Display.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "py/obj.h"
 
 #define TRANSPARENT (0x1ff8)
 
-bool render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
+void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         mp_obj_t *layers, size_t layers_size,
         uint16_t *buffer, size_t buffer_size,
-        busio_spi_obj_t *spi);
+        displayio_display_obj_t *display,
+        uint8_t scale, uint16_t background);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE

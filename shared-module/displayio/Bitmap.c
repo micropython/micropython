@@ -63,6 +63,11 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     }
     self->x_mask = (1 << self->x_shift) - 1; // Used as a modulus on the x value
     self->bitmask = (1 << bits_per_value) - 1;
+
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = width;
+    self->dirty_area.y1 = 0;
+    self->dirty_area.y2 = height;
 }
 
 uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self) {
@@ -104,6 +109,26 @@ void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, 
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));
     }
+    // Update the dirty area.
+    if (self->dirty_area.x1 == self->dirty_area.x2) {
+        self->dirty_area.x1 = x;
+        self->dirty_area.x2 = x + 1;
+        self->dirty_area.y1 = y;
+        self->dirty_area.y2 = y + 1;
+    } else {
+        if (x < self->dirty_area.x1) {
+            self->dirty_area.x1 = x;
+        } else if (x >= self->dirty_area.x2) {
+            self->dirty_area.x2 = x + 1;
+        }
+        if (y < self->dirty_area.y1) {
+            self->dirty_area.y1 = y;
+        } else if (y >= self->dirty_area.y2) {
+            self->dirty_area.y2 = y + 1;
+        }
+    }
+
+    // Update our data
     int32_t row_start = y * self->stride;
     uint32_t bytes_per_value = self->bits_per_value / 8;
     if (bytes_per_value < 1) {
@@ -123,4 +148,17 @@ void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, 
             ((uint32_t*) row)[x] = value;
         }
     }
+}
+
+displayio_area_t* displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t* tail) {
+    if (self->dirty_area.x1 == self->dirty_area.x2) {
+        return tail;
+    }
+    self->dirty_area.next = tail;
+    return &self->dirty_area;
+}
+
+void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = 0;
 }
