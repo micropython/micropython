@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 James Bowman
+ * Copyright (c) 2020 James Bowman for Excamera Labs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include "py/binary.h"
 
 #include "shared-module/_eve/__init__.h"
+#include "shared-bindings/_eve/__init__.h"
 
 //| :mod:`_eve` --- low-level BridgeTek EVE bindings
 //| ================================================
