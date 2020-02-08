@@ -196,6 +196,7 @@ jobs:
         - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
+        - "pycubed"
         - "pyboard_v11"
         - "pygamer"
         - "pygamer_advance"
