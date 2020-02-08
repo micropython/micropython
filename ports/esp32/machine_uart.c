@@ -168,7 +168,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         self->cts = args[ARG_cts].u_int;
         flow_ctrl |= UART_HW_FLOWCTRL_CTS;
     }
-    uart_set_hw_flow_ctrl(self->uart_num, flow_ctrl, 1); 
+    uart_set_hw_flow_ctrl(self->uart_num, flow_ctrl, UART_FIFO_LEN - 32); 
 
     // set data bits
     switch (args[ARG_bits].u_int) {
