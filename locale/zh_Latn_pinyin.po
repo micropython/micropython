@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -668,6 +668,10 @@ msgstr "Qídài yīgè dìzhǐ"
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1839,8 +1843,8 @@ msgstr ""
 "yánsè huǎnchōng qū bìxū wèi 3 zì jié (RGB) huò 4 zì jié (RGB + pad zì jié)"
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
-msgstr "yánsè huǎnchōng qū bìxū shì huǎnchōng qū huò zhěngshù"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2829,7 +2833,6 @@ msgstr "líng bù"
 #~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
 #~ msgstr "MicroPython VM wèi yùnxíng shí chángshì duī fēnpèi.\n"
 
-#, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
 
@@ -3091,16 +3094,17 @@ msgstr "líng bù"
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
 
-#, c-format
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "huǎnchōng tài xiǎo. Xūyào%d zì jié"
 
-#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "zì jié bùshì zì jié xù shílì (yǒu %s)"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
+
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "yánsè huǎnchōng qū bìxū shì huǎnchōng qū huò zhěngshù"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
@@ -3132,11 +3136,9 @@ msgstr "líng bù"
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr "lèixíng 'float' duìxiàng wèizhī de géshì dàimǎ '%c'"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr "lèixíng 'str' duìxiàng wèizhī de géshì dàimǎ '%c'"
 

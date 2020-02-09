@@ -1,22 +1,13 @@
 /*
-    GNU linker script for STM32F401 with bootloader (from Meowbit Micropython)
-    Doesn't work: 
-
-    Traceback (most recent call last):
-  File "../../tools/build_memory_info.py", line 64, in <module>
-    regions[region] = int(eval(space))
-  File "<string>", line 1, in <module>
-NameError: name 'FLASH_ISR' is not defined
+    GNU linker script for STM32F401 with bootloader (such as the Meowbit)
 */
 
 /* Specify the memory areas */
-/*     FLASH_FS (rx)   : ORIGIN = 0x08020000, LENGTH = 128K */
-/* sectors 5 128K */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08010000, LENGTH = 512K - 64K /* entire flash */
-    FLASH_ISR (rx)  : ORIGIN = 0x08010000, LENGTH = 64K /* sector 4, sec 0~3 reserved for booloader */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 384K /* sectors 5, 6,7 are 128K */
+    FLASH (rx)      : ORIGIN = 0x08010000, LENGTH = 512K - 64K  /* entire flash, sans bootloader region */
+    FLASH_ISR (rx)  : ORIGIN = 0x08010000, LENGTH = 64K         /* sector 4 */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 384K        /* sectors 5,6,7 are 128K */
     RAM (xrw)       : ORIGIN = 0x20000194, LENGTH = 96K - 0x194
 }
 
@@ -24,16 +15,14 @@ MEMORY
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
 
-/* Define the stack.  The stack is full descending so begins just above last byte
-   of RAM.  Note that EABI requires the stack to be 8-byte aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM) - _estack_reserve;
-_sstack = _estack - 16K; /* tunable */
+/* Define tho top end of the stack.  The stack is full descending so begins just
+   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
+   aligned for a call. */
+_estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = _sstack;
 
 ENTRY(Reset_Handler)
 
@@ -47,25 +36,8 @@ SECTIONS
         KEEP(*(.isr_vector)) /* Startup code */
 
         /* This first flash block is 16K annd the isr vectors only take up
-           about 400 bytes. So we pull in a couple of object files to pad it
-           out. */
-
-        . = ALIGN(4);
-
-        /* NOTE: If you update the list of files contained in .isr_vector,
-                 then be sure to also update smhal/Makefile where it forcibly
-           builds each of these files with -Os */
-
-        */ff.o(.text*)
-        */vfs_fat_*.o(.text*)
-        */py/formatfloat.o(.text*)
-        */py/parsenum.o(.text*)
-        */py/mpprint.o(.text*)
-
-        */py/compile.o(.text*)
-        */py/objset.o(.text*)
-        */py/mpz.o(.text*)
-        */py/vm.o(.text*)
+           about 400 bytes. Micropython pads this with files, but this didn't
+           work with the size of Circuitpython's ff object. */
 
         . = ALIGN(4);
     } >FLASH_ISR
@@ -130,3 +102,5 @@ SECTIONS
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+
+

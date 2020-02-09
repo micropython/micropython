@@ -10,6 +10,9 @@ INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 
 CIRCUITPY_SMALL_BUILD = 1
+# TODO: Turn off analogio for now for space reasons, but restore it
+# when frozen module gets smaller.
+CIRCUITPY_ANALOGIO = 0
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_BITBANGIO = 0
 CIRCUITPY_FREQUENCYIO = 0
