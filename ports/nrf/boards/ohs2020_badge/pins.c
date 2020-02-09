@@ -20,10 +20,10 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display) },
 
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_A), MP_ROM_PTR(&pin_P0_29) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_B), MP_ROM_PTR(&pin_P0_03) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_C), MP_ROM_PTR(&pin_P0_17) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_D), MP_ROM_PTR(&pin_P1_03) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON_SW1), MP_ROM_PTR(&pin_P0_29) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON_SW2), MP_ROM_PTR(&pin_P0_03) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON_SW3), MP_ROM_PTR(&pin_P0_17) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON_SW4), MP_ROM_PTR(&pin_P1_03) },
 };
 
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
