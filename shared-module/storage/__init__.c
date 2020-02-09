@@ -149,9 +149,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
     }
 
     #ifdef USB_AVAILABLE
-    // TODO(dhalbert): is this is a good enough check? It checks for
-    // CDC enabled. There is no "MSC enabled" check.
-    if (usb_enabled()) {
+    if (!usb_msc_ejected()) {
         mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
     }
     #endif

@@ -39,7 +39,7 @@
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
-static bool ejected[1];
+static bool ejected[1] = {true};
 
 void usb_msc_mount(void) {
     // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
@@ -51,6 +51,14 @@ void usb_msc_mount(void) {
 
 void usb_msc_umount(void) {
 
+}
+
+bool usb_msc_ejected(void) {
+    bool all_ejected = true;
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        all_ejected &= ejected[i];
+    }
+    return all_ejected;
 }
 
 // The root FS is always at the end of the list.
