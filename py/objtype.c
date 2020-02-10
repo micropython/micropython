@@ -1100,7 +1100,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    uint16_t base_flags = MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST;
+    uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
+        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);

@@ -445,14 +445,17 @@ typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 // Flags for type behaviour (mp_obj_type_t.flags)
-// If MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST is clear then all the following hold:
-//  (a) the type only implements the __eq__ operator and not the __ne__ operator;
-//  (b) __eq__ returns a boolean result (False or True);
-//  (c) __eq__ is reflexive (A==A is True);
-//  (d) the type can't be equal to an instance of any different class that also clears this flag.
+// If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
+// If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
+// instance of any different class that also clears this flag.  If this flag is set
+// then the type may check for equality against a different type.
+// If MP_TYPE_FLAG_EQ_HAS_NEQ_TEST is clear then the type only implements the __eq__
+// operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
-#define MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST (0x0004)
+#define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0040)
+#define MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE (0x0080)
+#define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
 
 typedef enum {
     PRINT_STR = 0,

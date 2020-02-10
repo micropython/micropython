@@ -147,8 +147,8 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_complex = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_complex,
-    .flags = MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST,
     .print = complex_print,
     .make_new = complex_make_new,
     .unary_op = complex_unary_op,
