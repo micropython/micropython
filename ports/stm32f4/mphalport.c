@@ -51,7 +51,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    common_hal_mcu_delay_us();
+    common_hal_mcu_delay_us(delay);
 }
 
 void mp_hal_disable_all_interrupts(void) {
