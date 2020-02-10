@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-07 10:02-0500\n"
+"POT-Creation-Date: 2020-02-10 11:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1269,6 +1269,10 @@ msgstr ""
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: ports/stm32f4/common-hal/microcontroller/Processor.c
+msgid "Temperature read timed out"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
@@ -1475,6 +1479,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
+msgstr ""
+
+#: ports/stm32f4/common-hal/microcontroller/Processor.c
+msgid "Voltage read timed out"
 msgstr ""
 
 #: main.c
