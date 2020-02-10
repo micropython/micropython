@@ -36,6 +36,8 @@ ans = 1j ** 2.5j; print("%.5g %.5g" % (ans.real, ans.imag))
 # comparison
 print(1j == 1)
 print(1j == 1j)
+print(0 + 0j == False, 1 + 0j == True)
+print(False == 0 + 0j, True == 1 + 0j)
 
 # comparison of nan is special
 nan = float('nan') * 1j
