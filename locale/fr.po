@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -681,6 +681,10 @@ msgstr ""
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Tuple de longueur %d attendu, obtenu %d"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1884,9 +1888,8 @@ msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "le tampon de couleur doit faire 3 octets (RVB) ou 4 (RVB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
-#, fuzzy
-msgid "color buffer must be a buffer or int"
-msgstr "le tampon de couleur doit être un tampon ou un entier 'int'"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 #, fuzzy
@@ -2903,7 +2906,6 @@ msgstr "'step' nul"
 #~ msgstr ""
 #~ "Tentative d'allocation de tas alors que la VM MicroPython ne tourne pas.\n"
 
-#, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "Impossible d'utiliser 'dotstar' avec %s"
 
@@ -3253,14 +3255,12 @@ msgstr "'step' nul"
 #~ msgid "bad GATT role"
 #~ msgstr "mauvais rôle GATT"
 
-#, c-format
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "'buf' est trop petit. Besoin de %d octets"
 
 #~ msgid "buffer too long"
 #~ msgstr "tampon trop long"
 
-#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "'byteorder' n'est pas une instance de ByteOrder (reçu un %s)"
 
@@ -3282,6 +3282,10 @@ msgstr "'step' nul"
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr ""
 #~ "'characteristics' inclut un objet qui n'est pas une 'Characteristic'"
+
+#, fuzzy
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "le tampon de couleur doit être un tampon ou un entier 'int'"
 
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "soit 'pos', soit 'kw' est permis en argument"
@@ -3368,11 +3372,9 @@ msgstr "'step' nul"
 #~ msgid "unknown config param"
 #~ msgstr "paramètre de config. inconnu"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr "code de format '%c' inconnu pour un objet de type 'float'"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr "code de format '%c' inconnu pour un objet de type 'str'"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -677,6 +677,10 @@ msgstr ""
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
@@ -1861,8 +1865,8 @@ msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer ay dapat na 3 bytes (RGB) o 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
-msgstr "color buffer ay dapat buffer or int"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -3176,6 +3180,9 @@ msgstr "zero step"
 #~ msgid "can't set STA config"
 #~ msgstr "hindi makuha ang STA config"
 
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "color buffer ay dapat buffer or int"
+
 #~ msgid "either pos or kw args are allowed"
 #~ msgstr "pos o kw args ang pinahihintulutan"
 
@@ -3254,11 +3261,9 @@ msgstr "zero step"
 #~ msgid "unknown config param"
 #~ msgstr "hindi alam na config param"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr "hindi alam ang format code '%c' sa object na ang type ay 'float'"
 
-#, c-format
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr ""
 #~ "hindi alam ang format ng code na '%c' para sa object ng type ay 'str'"

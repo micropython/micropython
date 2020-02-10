@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-05 15:55-0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -668,6 +668,10 @@ msgstr "Erwartet eine Adresse"
 #, c-format
 msgid "Expected tuple of length %d, got %d"
 msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1849,8 +1853,8 @@ msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "Farbpuffer muss 3 Bytes (RGB) oder 4 Bytes (RGB + pad byte) sein"
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
-msgstr "Farbpuffer muss ein Puffer oder ein int sein"
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2853,7 +2857,6 @@ msgstr ""
 #~ msgid "C-level assert"
 #~ msgstr "C-Level Assert"
 
-#, c-format
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "Kann dotstar nicht mit %s verwenden"
 
@@ -3167,16 +3170,17 @@ msgstr ""
 #~ "Sie laufen im abgesicherten Modus, was bedeutet, dass etwas Unerwartetes "
 #~ "passiert ist.\n"
 
-#, c-format
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "buf ist zu klein. brauche %d Bytes"
 
 #~ msgid "buffer too long"
 #~ msgstr "Buffer zu lang"
 
-#, c-format
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "byteorder ist keine Instanz von ByteOrder (%s erhalten)"
+
+#~ msgid "color buffer must be a buffer or int"
+#~ msgstr "Farbpuffer muss ein Puffer oder ein int sein"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "erwarte DigitalInOut"

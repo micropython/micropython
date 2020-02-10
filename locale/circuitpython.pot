@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-29 17:27-0800\n"
+"POT-Creation-Date: 2020-02-07 10:02-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -663,6 +663,10 @@ msgstr ""
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
@@ -1821,7 +1825,7 @@ msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
 
 #: shared-bindings/displayio/Palette.c
-msgid "color buffer must be a buffer or int"
+msgid "color buffer must be a buffer, tuple, list, or int"
 msgstr ""
 
 #: shared-bindings/displayio/Palette.c

@@ -52,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0x00, // _MADCTL top to bottom refresh in vsync aligned order.
+    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -92,7 +92,7 @@ void board_init(void) {
         128, // Height
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // pixels in a byte share a row. Only valid for depths < 8
