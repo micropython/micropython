@@ -11,8 +11,8 @@ LONGINT_IMPL = NONE
 # other than the camera and ethernet, which aren't supported. 
 MCU_SERIES = m4
 MCU_VARIANT = stm32f4
-MCU_SUB_VARIANT = stm32f405xx
+MCU_SUB_VARIANT = stm32f407xx
 MCU_PACKAGE = 100
-CMSIS_MCU = STM32F405xx
-LD_FILE = boards/STM32F405_fs.ld
+CMSIS_MCU = STM32F407xx
+LD_FILE = boards/STM32F407_fs.ld
 

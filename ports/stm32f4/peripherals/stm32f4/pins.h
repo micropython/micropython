@@ -89,5 +89,8 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef STM32F405xx
 #include "stm32f405xx/pins.h"
 #endif
+#ifdef STM32F407xx
+#include "stm32f407xx/pins.h"
+#endif
 
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__

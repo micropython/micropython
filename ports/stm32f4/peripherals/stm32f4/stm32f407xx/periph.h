@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,45 +23,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
 
-#include "py/mpconfig.h"
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[3];
 
-#ifdef STM32F401xE
-#define STM32_FLASH_SIZE 0x80000 //512KiB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4];
+extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
-#ifdef STM32F411xE
-#define STM32_FLASH_SIZE 0x80000 //512KiB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[3];
 
-#ifdef STM32F412Zx
-#define STM32_FLASH_SIZE 0x100000 //1MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[7];
+extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6];
+extern const mcu_spi_miso_obj_t mcu_spi_miso_list[6];
+extern const mcu_spi_nss_obj_t mcu_spi_nss_list[6];
 
-#ifdef STM32F405xx
-#define STM32_FLASH_SIZE 0x100000 //1MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+//UART
+extern USART_TypeDef * mcu_uart_banks[MAX_UART];
+extern bool mcu_uart_has_usart[MAX_UART];
 
-#ifdef STM32F407xx
-#define STM32_FLASH_SIZE 0x100000 //1MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#endif
+extern const mcu_uart_tx_obj_t mcu_uart_tx_list[12];
+extern const mcu_uart_rx_obj_t mcu_uart_rx_list[12];
 
-#define STM32_FLASH_OFFSET 0x8000000 //All STM32 chips map to this flash location
+//Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 56
+TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
 
-#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
-#define INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS (INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE)
-
-#define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
-
-#endif  // MICROPY_INCLUDED_STM32F4_INTERNAL_FLASH_H
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
