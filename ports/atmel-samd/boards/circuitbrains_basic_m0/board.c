@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Original work copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Modified work copyright (c) 2019 Kevin Neubauer for Null Byte Labs LLC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include <sys/time.h>
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "py/mphal.h"
-
-#include "supervisor/shared/tick.h"
-
-uint64_t common_hal_time_monotonic(void) {
-    return supervisor_ticks_ms64();
+void board_init(void) {
 }
 
-uint64_t common_hal_time_monotonic_ns(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return 1000 * ((uint64_t) tv.tv_sec * 1000000 + (uint64_t) tv.tv_usec);
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
+void reset_board(void) {
 }

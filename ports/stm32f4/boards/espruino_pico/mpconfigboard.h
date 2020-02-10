@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include <sys/time.h>
+//Micropython setup
 
-#include "py/mphal.h"
+#define MICROPY_HW_BOARD_NAME       "Espruino Pico"
+#define MICROPY_HW_MCU_NAME         "STM32F401xD"
 
-#include "supervisor/shared/tick.h"
+#define FLASH_SIZE                  (0x60000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-uint64_t common_hal_time_monotonic(void) {
-    return supervisor_ticks_ms64();
-}
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-uint64_t common_hal_time_monotonic_ns(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return 1000 * ((uint64_t) tv.tv_sec * 1000000 + (uint64_t) tv.tv_usec);
-}
+#define BOARD_OSC_DIV 8
 
-void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
-}

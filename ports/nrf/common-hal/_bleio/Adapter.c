@@ -646,6 +646,10 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 
     check_data_fit(advertising_data_bufinfo->len, connectable);
     check_data_fit(scan_response_data_bufinfo->len, connectable);
+
+    if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
+        mp_raise_bleio_BluetoothError(translate("Extended advertisements with scan response not supported."));
+    }
     // The advertising data buffers must not move, because the SoftDevice depends on them.
     // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
