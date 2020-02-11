@@ -23,6 +23,8 @@ elif sys.platform == 'esp32':  # Software SPI
 else:
     raise ValueError('Unsupported platform {}'.format(sys.platform))
 
+# For Arduino compatibility the byte order must be reversed
+# pipes = (b'\xe1\xf0\xf0\xf0\xf0', b'\xd2\xf0\xf0\xf0\xf0')
 pipes = (b'\xf0\xf0\xf0\xf0\xe1', b'\xf0\xf0\xf0\xf0\xd2')
 
 def master():
