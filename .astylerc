@@ -1,0 +1,15 @@
+--style=google
+--indent=spaces=4
+--attach-closing-while
+--add-brackets
+--indent-switches
+--indent-after-parens
+--indent-labels
+--indent-preproc-define
+--indent-preproc-cond
+#--pad-oper
+--pad-header
+--unpad-paren
+#--align-pointer=name
+--add-braces
+--convert-tabs
