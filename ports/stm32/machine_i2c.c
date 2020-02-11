@@ -231,15 +231,13 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
             i2c_id = 4;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%s) doesn't exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
         }
     } else {
         i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
         if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
             || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%d) doesn't exist", i2c_id));
+            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id);
         }
     }
 

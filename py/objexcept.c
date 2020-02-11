@@ -385,6 +385,14 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
 }
 
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    mp_obj_t exc = mp_obj_new_exception_msg_varg2(exc_type, fmt, args);
+    va_end(args);
+    return exc;
+}
+
+mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const char *fmt, va_list args) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
@@ -425,10 +433,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         // We have some memory to format the string
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        va_list ap;
-        va_start(ap, fmt);
-        mp_vprintf(&print, fmt, ap);
-        va_end(ap);
+        mp_vprintf(&print, fmt, args);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;

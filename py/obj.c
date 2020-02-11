@@ -362,8 +362,8 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("can't convert to float");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "can't convert %s to float", mp_obj_get_type_str(arg)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "can't convert %s to float", mp_obj_get_type_str(arg));
         }
     }
 
@@ -395,8 +395,8 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("can't convert to complex");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "can't convert %s to complex", mp_obj_get_type_str(arg)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "can't convert %s to complex", mp_obj_get_type_str(arg));
         }
     }
 }
@@ -413,8 +413,8 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("expected tuple/list");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "object '%s' isn't a tuple or list", mp_obj_get_type_str(o)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "object '%s' isn't a tuple or list", mp_obj_get_type_str(o));
         }
     }
 }
@@ -427,8 +427,8 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_ValueError("tuple/list has wrong length");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "requested length %d but object has length %d", (int)len, (int)seq_len));
+            mp_raise_msg_varg(&mp_type_ValueError,
+                "requested length %d but object has length %d", (int)len, (int)seq_len);
         }
     }
 }
@@ -442,9 +442,9 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("indices must be integers");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_msg_varg(&mp_type_TypeError,
                 "%q indices must be integers, not %s",
-                type->name, mp_obj_get_type_str(index)));
+                type->name, mp_obj_get_type_str(index));
         }
     }
 
@@ -462,8 +462,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_raise_msg(&mp_type_IndexError, "index out of range");
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError,
-                    "%q index out of range", type->name));
+                mp_raise_msg_varg(&mp_type_IndexError, "%q index out of range", type->name);
             }
         }
     }
@@ -497,8 +496,8 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("object has no len");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "object of type '%s' has no len()", mp_obj_get_type_str(o_in)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "object of type '%s' has no len()", mp_obj_get_type_str(o_in));
         }
     } else {
         return len;
@@ -538,22 +537,22 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("object doesn't support item deletion");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object doesn't support item deletion", mp_obj_get_type_str(base)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "'%s' object doesn't support item deletion", mp_obj_get_type_str(base));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("object isn't subscriptable");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object isn't subscriptable", mp_obj_get_type_str(base)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "'%s' object isn't subscriptable", mp_obj_get_type_str(base));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("object doesn't support item assignment");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object doesn't support item assignment", mp_obj_get_type_str(base)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "'%s' object doesn't support item assignment", mp_obj_get_type_str(base));
         }
     }
 }

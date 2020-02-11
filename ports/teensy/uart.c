@@ -283,7 +283,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp
 
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init2(self)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART port %d does not exist", self->uart_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "UART port %d does not exist", self->uart_id);
     }
 #endif
 
@@ -330,7 +330,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
             o->uart_id = PYB_UART_YB;
 #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART port %s does not exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "UART port %s does not exist", port);
         }
     } else {
         o->uart_id = mp_obj_get_int(args[0]);
@@ -406,7 +406,7 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status));
+        mp_raise_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status);
     }
 #else
     (void)self;
@@ -453,7 +453,7 @@ STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "HAL_UART_Receive failed with code %d", status));
+        mp_raise_msg_varg(&mp_type_Exception, "HAL_UART_Receive failed with code %d", status);
     }
 
     // return the received data

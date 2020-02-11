@@ -307,7 +307,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         } else if (pin == pin_A5) {
             dac_id = 2;
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name));
+            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name);
         }
     }
 
@@ -319,7 +319,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac_channel = DAC_CHANNEL_2;
     #endif
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id);
     }
 
     pyb_dac_obj_t *dac = &pyb_dac_obj[dac_id - 1];

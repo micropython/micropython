@@ -98,9 +98,7 @@ NORETURN void _esp_exceptions(esp_err_t e) {
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
         mp_raise_OSError(MP_ENOMEM);
       default:
-        nlr_raise(mp_obj_new_exception_msg_varg(
-          &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
-        ));
+        mp_raise_msg_varg( &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e);
    }
 }
 

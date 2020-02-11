@@ -176,7 +176,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%s) doesn't exist", mp_obj_str_get_str(user_obj)));
+    mp_raise_msg_varg(&mp_type_ValueError, "Pin(%s) doesn't exist", mp_obj_str_get_str(user_obj));
 }
 
 /// \method __str__()
@@ -342,7 +342,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
     // get io mode
     uint mode = args[0].u_int;
     if (!IS_GPIO_MODE(mode)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
+        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode);
     }
 
     // get pull mode
@@ -351,7 +351,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
         pull = mp_obj_get_int(args[1].u_obj);
     }
     if (!IS_GPIO_PULL(pull)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull));
+        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull);
     }
 
     // get af (alternate function); alt-arg overrides af-arg
@@ -360,7 +360,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
         af = args[2].u_int;
     }
     if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af));
+        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af);
     }
 
     // enable the peripheral clock for the port of this pin

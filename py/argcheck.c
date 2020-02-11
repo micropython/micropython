@@ -50,9 +50,9 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_msg_varg(&mp_type_TypeError,
                     "function takes %d positional arguments but %d were given",
-                    n_args_min, n_args));
+                    n_args_min, n_args);
             }
         }
     } else {
@@ -60,17 +60,17 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_msg_varg(&mp_type_TypeError,
                     "function missing %d required positional arguments",
-                    n_args_min - n_args));
+                    n_args_min - n_args);
             }
         } else if (n_args > n_args_max) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_msg_varg(&mp_type_TypeError,
                     "function expected at most %d arguments, got %d",
-                    n_args_max, n_args));
+                    n_args_max, n_args);
             }
         }
     }
@@ -93,8 +93,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_arg_error_terse_mismatch();
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "'%q' argument required", allowed[i].qst));
+                        mp_raise_msg_varg(&mp_type_TypeError, "'%q' argument required", allowed[i].qst);
                     }
                 }
                 out_vals[i] = allowed[i].defval;

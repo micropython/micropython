@@ -129,7 +129,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index)));
+        mp_raise_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0)

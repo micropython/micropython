@@ -42,7 +42,7 @@
 STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_int_get_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+        mp_raise_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align);
     }
     return addr;
 }

@@ -288,8 +288,8 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
 
     len = (len + 3) & ~3;
     if (esp_native_code_cur + len > esp_native_code_end) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError,
-            "memory allocation failed, allocating %u bytes for native code", (uint)len));
+        mp_raise_msg_varg(&mp_type_MemoryError,
+            "memory allocation failed, allocating %u bytes for native code", (uint)len);
     }
 
     void *dest;

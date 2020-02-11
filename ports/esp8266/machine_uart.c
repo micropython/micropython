@@ -198,7 +198,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // get uart id
     mp_int_t uart_id = mp_obj_get_int(args[0]);
     if (uart_id != 0 && uart_id != 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id);
     }
 
     // create instance
