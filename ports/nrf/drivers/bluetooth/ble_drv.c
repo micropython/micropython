@@ -223,8 +223,7 @@ uint32_t ble_drv_stack_enable(void) {
     if ((err_code = sd_ble_gap_device_name_set(&sec_mode,
                                                (const uint8_t *)device_name,
                                                 strlen(device_name))) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Cannot apply GAP parameters."));
+        mp_raise_msg(&mp_type_OSError, "can't apply GAP parameters");
     }
 
     // set connection parameters
@@ -236,9 +235,7 @@ uint32_t ble_drv_stack_enable(void) {
     gap_conn_params.conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT;
 
     if (sd_ble_gap_ppcp_set(&gap_conn_params) != 0) {
-
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-              "Cannot set PPCP parameters."));
+        mp_raise_msg(&mp_type_OSError, "can't set PPCP parameters");
     }
 
     return err_code;
@@ -269,8 +266,7 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
 #endif
 
     if (err_code != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not query for the device address."));
+        mp_raise_msg(&mp_type_OSError, "can't query for the device address");
     }
 
     BLE_DRIVER_LOG("ble address, type: " HEX2_FMT ", " \
@@ -288,8 +284,7 @@ bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
     SD_TEST_OR_ENABLE();
 
     if (sd_ble_uuid_vs_add((ble_uuid128_t const *)p_uuid, idx) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not add Vendor Specific 128-bit UUID."));
+        mp_raise_msg(&mp_type_OSError, "can't add Vendor Specific 128-bit UUID");
     }
 
     return true;
@@ -308,8 +303,7 @@ bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
         if (sd_ble_gatts_service_add(p_service_obj->type,
                                      &uuid,
                                      &p_service_obj->handle) != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not add Service."));
+            mp_raise_msg(&mp_type_OSError, "can't add Service");
         }
     } else if (p_service_obj->p_uuid->type == BLE_UUID_TYPE_BLE) {
         BLE_DRIVER_LOG("adding service\n");
@@ -322,8 +316,7 @@ bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
         if (sd_ble_gatts_service_add(p_service_obj->type,
                                      &uuid,
                                      &p_service_obj->handle) != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not add Service."));
+            mp_raise_msg(&mp_type_OSError, "can't add Service");
         }
     }
     return true;
@@ -393,8 +386,7 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
                                         &char_md,
                                         &attr_char_value,
                                         &handles) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not add Characteristic."));
+        mp_raise_msg(&mp_type_OSError, "can't add Characteristic");
     }
 
     // apply handles to object instance
@@ -421,8 +413,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         if (sd_ble_gap_device_name_set(&sec_mode,
                                        p_adv_params->p_device_name,
                                        p_adv_params->device_name_len) != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                "Can not apply device name in the stack."));
+            mp_raise_msg(&mp_type_OSError, "can't apply device name in the stack");
         }
 
         BLE_DRIVER_LOG("Device name applied\n");
@@ -485,14 +476,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                 uuid.uuid += p_service->p_uuid->value[1] << 8;
                 // calculate total size of uuids
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              "Can not encode UUID, to check length."));
+                    mp_raise_msg(&mp_type_OSError, "can't encode UUID, to check length");
                 }
 
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              "Can encode UUID into the advertisment packet."));
+                    mp_raise_msg(&mp_type_OSError, "can't encode UUID into advertisment packet");
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -535,14 +524,12 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
                 // calculate total size of uuids
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              "Can not encode UUID, to check length."));
+                    mp_raise_msg(&mp_type_OSError, "can't encode UUID, to check length");
                 }
 
                 // do encoding into the adv buffer
                 if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                              "Can encode UUID into the advertisment packet."));
+                    mp_raise_msg(&mp_type_OSError, "can't encode UUID into advertisment packet");
                 }
 
                 BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
@@ -566,8 +553,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     if ((p_adv_params->data_len > 0) && (p_adv_params->p_data != NULL)) {
         if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_MAX_SIZE) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not fit data into the advertisment packet."));
+            mp_raise_msg(&mp_type_OSError, "can't fit data into advertisment packet");
         }
 
         memcpy(adv_data, p_adv_params->p_data, p_adv_params->data_len);
