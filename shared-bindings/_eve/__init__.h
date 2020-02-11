@@ -41,12 +41,12 @@ void common_hal__eve_BitmapSizeH(common_hal__eve_t *eve, uint32_t width, uint32_
 void common_hal__eve_BitmapSize(common_hal__eve_t *eve, uint32_t filter, uint32_t wrapx, uint32_t wrapy, uint32_t width, uint32_t height);
 void common_hal__eve_BitmapSource(common_hal__eve_t *eve, uint32_t addr);
 void common_hal__eve_BitmapSwizzle(common_hal__eve_t *eve, uint32_t r, uint32_t g, uint32_t b, uint32_t a);
-void common_hal__eve_BitmapTransformA(common_hal__eve_t *eve, uint32_t a, uint32_t p);
-void common_hal__eve_BitmapTransformB(common_hal__eve_t *eve, uint32_t b, uint32_t p);
-void common_hal__eve_BitmapTransformC(common_hal__eve_t *eve, uint32_t c, uint32_t p);
-void common_hal__eve_BitmapTransformD(common_hal__eve_t *eve, uint32_t d, uint32_t p);
-void common_hal__eve_BitmapTransformE(common_hal__eve_t *eve, uint32_t e, uint32_t p);
-void common_hal__eve_BitmapTransformF(common_hal__eve_t *eve, uint32_t f, uint32_t p);
+void common_hal__eve_BitmapTransformA(common_hal__eve_t *eve, uint32_t p, uint32_t v);
+void common_hal__eve_BitmapTransformB(common_hal__eve_t *eve, uint32_t p, uint32_t v);
+void common_hal__eve_BitmapTransformC(common_hal__eve_t *eve, uint32_t v);
+void common_hal__eve_BitmapTransformD(common_hal__eve_t *eve, uint32_t p, uint32_t v);
+void common_hal__eve_BitmapTransformE(common_hal__eve_t *eve, uint32_t p, uint32_t v);
+void common_hal__eve_BitmapTransformF(common_hal__eve_t *eve, uint32_t v);
 void common_hal__eve_BlendFunc(common_hal__eve_t *eve, uint32_t src, uint32_t dst);
 void common_hal__eve_Call(common_hal__eve_t *eve, uint32_t dest);
 void common_hal__eve_Cell(common_hal__eve_t *eve, uint32_t cell);
