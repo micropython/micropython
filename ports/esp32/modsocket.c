@@ -155,7 +155,9 @@ void usocket_events_handler(void) {
 
 NORETURN static void exception_from_errno(int _errno) {
     // Here we need to convert from lwip errno values to MicroPython's standard ones
-    if (_errno == EINPROGRESS) {
+    if (_errno == EADDRINUSE) {
+        _errno = MP_EADDRINUSE;
+    } else if (_errno == EINPROGRESS) {
         _errno = MP_EINPROGRESS;
     }
     mp_raise_OSError(_errno);
