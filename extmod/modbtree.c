@@ -256,7 +256,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            mp_raise_type(&mp_type_KeyError);
         }
         CHECK_ERROR(res);
         return mp_const_none;
@@ -266,7 +266,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+            mp_raise_type(&mp_type_KeyError);
         }
         CHECK_ERROR(res);
         return mp_obj_new_bytes(val.data, val.size);
