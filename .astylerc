@@ -1,0 +1,17 @@
+--style=google
+--suffix=none
+--indent=spaces=4
+--attach-closing-while
+--add-brackets
+--indent-switches
+--max-continuation-indent=40
+--indent-labels
+--indent-preproc-define
+--indent-preproc-cond
+--pad-header
+--unpad-paren
+--add-braces
+--convert-tabs
+--keep-one-line-statements
+--keep-one-line-blocks
+--max-code-length=200
