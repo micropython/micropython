@@ -219,6 +219,7 @@ jobs:
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
+        - "stm32f4_discovery"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
