@@ -221,24 +221,6 @@ test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c
 	gcov -o $(BUILD)/extmod $(TOP)/extmod/*.c
 
-# Maintain historical targets from pre-variant configurations.
-fast:
-	$(MAKE) VARIANT=fast
-
-minimal:
-	$(MAKE) VARIANT=minimal
-
-nanbox:
-	$(MAKE) VARIANT=nanbox
-
-freedos:
-	$(MAKE) VARIANT=freedos
-
-coverage:
-	$(MAKE) VARIANT=coverage
-coverage_test:
-	$(MAKE) VARIANT=coverage test_gcov
-
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)
