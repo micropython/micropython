@@ -104,7 +104,11 @@ void filesystem_init(bool create_allowed, bool force_create) {
         }
 
         // set label
+#ifdef CIRCUITPY_DRIVE_LABEL
+        f_setlabel(&vfs_fat->fatfs, CIRCUITPY_DRIVE_LABEL);
+#else
         f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+#endif
 
         // inhibit file indexing on MacOS
         f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
