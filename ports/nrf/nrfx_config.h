@@ -26,10 +26,9 @@
 
 // CIRCUITPY_NRF_NUM_I2C is 1 or 2 to choose how many I2C (TWIM) peripherals
 // to provide.
-// This can go away once we have SPIM3 working: then we can have two
-// I2C and two SPI.
+// With SPIM3 working we can have two I2C and two SPI.
 #ifndef CIRCUITPY_NRF_NUM_I2C
-#define CIRCUITPY_NRF_NUM_I2C 1
+#define CIRCUITPY_NRF_NUM_I2C 2
 #endif
 
 #if CIRCUITPY_NRF_NUM_I2C != 1 && CIRCUITPY_NRF_NUM_I2C != 2
@@ -42,13 +41,12 @@
 #define NRFX_SPIM1_ENABLED 1
 #endif
 #define NRFX_SPIM2_ENABLED 1
-// DON'T ENABLE SPIM3 DUE TO ANOMALY WORKAROUND FAILURE (SEE ABOVE).
-// #ifdef NRF52840_XXAA
-//     #define NRFX_SPIM_EXTENDED_ENABLED 1
-//     #define NRFX_SPIM3_ENABLED 1
-// #else
-//     #define NRFX_SPIM3_ENABLED 0
-// #endif
+#ifdef NRF52840_XXAA
+    #define NRFX_SPIM_EXTENDED_ENABLED 1
+    #define NRFX_SPIM3_ENABLED 1
+#else
+    #define NRFX_SPIM3_ENABLED 0
+#endif
 
 
 #define NRFX_SPIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
