@@ -244,6 +244,14 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Number of atb indices to cache. Allocations of fewer blocks will be faster
+// because the search will be accelerated by the index cache. This only applies
+// to short lived allocations because we assume the long lived allocations are
+// contiguous.
+#ifndef MICROPY_ATB_INDICES
+#define MICROPY_ATB_INDICES (8)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
