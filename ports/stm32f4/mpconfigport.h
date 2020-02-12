@@ -49,9 +49,6 @@
 #ifndef BOARD_NO_VBUS_SENSE
 #define BOARD_NO_VBUS_SENSE (0)
 #endif
-#ifndef BOARD_USE_INTERNAL_SPI
-#define BOARD_USE_INTERNAL_SPI (0)
-#endif
 
 #define MAX_UART 10 //how many UART are implemented
 
