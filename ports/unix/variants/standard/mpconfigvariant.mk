@@ -4,8 +4,8 @@ PROG ?= micropython
 
 # install micropython in /usr/local/bin
 TARGET = micropython
-PREFIX = $(DESTDIR)/usr/local
-BINDIR = $(PREFIX)/bin
+PREFIX = /usr/local
+BINDIR = $(DESTDIR)$(PREFIX)/bin
 
 install: micropython
 	install -d $(BINDIR)
