@@ -248,3 +248,12 @@ axtls: $(TOP)/lib/axtls/README
 $(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
 	(cd $(TOP); git submodule update --init --recursive)
+
+PREFIX = /usr/local
+BINDIR = $(DESTDIR)$(PREFIX)/bin
+
+install: $(PROG)
+	install -D $(PROG) $(BINDIR)/$(PROG)
+
+uninstall:
+	-rm $(BINDIR)/$(PROG)
