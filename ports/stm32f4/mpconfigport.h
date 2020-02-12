@@ -37,6 +37,8 @@
 // 24kiB stack
 #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
 
+#include "py/circuitpy_mpconfig.h"
+
 //Board flags:
 #ifndef BOARD_OVERWRITE_SWD
 #define BOARD_OVERWRITE_SWD (0)
@@ -50,8 +52,6 @@
 #ifndef BOARD_USE_INTERNAL_SPI
 #define BOARD_USE_INTERNAL_SPI (0)
 #endif
-
-#include "py/circuitpy_mpconfig.h"
 
 #define MAX_UART 10 //how many UART are implemented
 
