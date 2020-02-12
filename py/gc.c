@@ -150,9 +150,13 @@ void gc_init(void *start, void *end) {
 #endif
 
     // Set first free ATB index to the start of the heap.
-    MP_STATE_MEM(gc_first_free_atb_index) = 0;
+    for (size_t i = 0; i < MICROPY_ATB_INDICES; i++) {
+        MP_STATE_MEM(gc_first_free_atb_index)[i] = 0;
+    }
+
     // Set last free ATB index to the end of the heap.
     MP_STATE_MEM(gc_last_free_atb_index) = MP_STATE_MEM(gc_alloc_table_byte_len) - 1;
+
     // Set the lowest long lived ptr to the end of the heap to start. This will be lowered as long
     // lived objects are allocated.
     MP_STATE_MEM(gc_lowest_long_lived_ptr) = (void*) PTR_FROM_BLOCK(MP_STATE_MEM(gc_alloc_table_byte_len * BLOCKS_PER_ATB));
@@ -387,7 +391,9 @@ void gc_collect_root(void **ptrs, size_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
-    MP_STATE_MEM(gc_first_free_atb_index) = 0;
+    for (size_t i = 0; i < MICROPY_ATB_INDICES; i++) {
+        MP_STATE_MEM(gc_first_free_atb_index)[i] = 0;
+    }
     MP_STATE_MEM(gc_last_free_atb_index) = MP_STATE_MEM(gc_alloc_table_byte_len) - 1;
     MP_STATE_MEM(gc_lock_depth)--;
     GC_EXIT();
@@ -513,14 +519,16 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     size_t crossover_block = BLOCK_FROM_PTR(MP_STATE_MEM(gc_lowest_long_lived_ptr));
     while (keep_looking) {
         int8_t direction = 1;
-        size_t start = MP_STATE_MEM(gc_first_free_atb_index);
+        size_t bucket = MIN(n_blocks, MICROPY_ATB_INDICES) - 1;
+        size_t first_free = MP_STATE_MEM(gc_first_free_atb_index)[bucket];
+        size_t start = first_free;
         if (long_lived) {
             direction = -1;
             start = MP_STATE_MEM(gc_last_free_atb_index);
         }
         n_free = 0;
         // look for a run of n_blocks available blocks
-        for (size_t i = start; keep_looking && MP_STATE_MEM(gc_first_free_atb_index) <= i && i <= MP_STATE_MEM(gc_last_free_atb_index); i += direction) {
+        for (size_t i = start; keep_looking && first_free <= i && i <= MP_STATE_MEM(gc_last_free_atb_index); i += direction) {
             byte a = MP_STATE_MEM(gc_alloc_table_start)[i];
             // Four ATB states are packed into a single byte.
             int j = 0;
@@ -565,22 +573,24 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
 
     // Found free space ending at found_block inclusive.
     // Also, set last free ATB index to block after last block we found, for start of
-    // next scan.  To reduce fragmentation, we only do this if we were looking
-    // for a single free block, which guarantees that there are no free blocks
-    // before this one.  Also, whenever we free or shrink a block we must check
-    // if this index needs adjusting (see gc_realloc and gc_free).
+    // next scan. Also, whenever we free or shrink a block we must check if this index needs
+    // adjusting (see gc_realloc and gc_free).
     if (!long_lived) {
         end_block = found_block;
         start_block = found_block - n_free + 1;
-        if (n_blocks == 1) {
-            MP_STATE_MEM(gc_first_free_atb_index) = (found_block + 1) / BLOCKS_PER_ATB;
+        if (n_blocks < MICROPY_ATB_INDICES) {
+            size_t next_free_atb = (found_block + n_blocks) / BLOCKS_PER_ATB;
+            // Update all atb indices for larger blocks too.
+            for (size_t i = n_blocks - 1; i < MICROPY_ATB_INDICES; i++) {
+                MP_STATE_MEM(gc_first_free_atb_index)[i] = next_free_atb;
+            }
         }
     } else {
         start_block = found_block;
         end_block = found_block + n_free - 1;
-        if (n_blocks == 1) {
-            MP_STATE_MEM(gc_last_free_atb_index) = (found_block - 1) / BLOCKS_PER_ATB;
-        }
+        // Always update the bounds of the long lived area because we assume it is contiguous. (It
+        // can still be reset by a sweep.)
+        MP_STATE_MEM(gc_last_free_atb_index) = (found_block - 1) / BLOCKS_PER_ATB;
     }
 
     #ifdef LOG_HEAP_ACTIVITY
@@ -676,29 +686,36 @@ void gc_free(void *ptr) {
         }
         // get the GC block number corresponding to this pointer
         assert(VERIFY_PTR(ptr));
-        size_t block = BLOCK_FROM_PTR(ptr);
-        assert(ATB_GET_KIND(block) == AT_HEAD);
+        size_t start_block = BLOCK_FROM_PTR(ptr);
+        assert(ATB_GET_KIND(start_block) == AT_HEAD);
 
         #if MICROPY_ENABLE_FINALISER
-        FTB_CLEAR(block);
+        FTB_CLEAR(start_block);
         #endif
 
-        // set the last_free pointer to this block if it's earlier in the heap
-        if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_first_free_atb_index)) {
-            MP_STATE_MEM(gc_first_free_atb_index) = block / BLOCKS_PER_ATB;
-        }
-        if (block / BLOCKS_PER_ATB > MP_STATE_MEM(gc_last_free_atb_index)) {
-            MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
-        }
-
         // free head and all of its tail blocks
-            #ifdef LOG_HEAP_ACTIVITY
-            gc_log_change(block, 0);
-            #endif
+        #ifdef LOG_HEAP_ACTIVITY
+        gc_log_change(start_block, 0);
+        #endif
+        size_t block = start_block;
         do {
             ATB_ANY_TO_FREE(block);
             block += 1;
         } while (ATB_GET_KIND(block) == AT_TAIL);
+
+        // Update the first free pointer for our size only. Not much calls gc_free directly so there
+        // is decent chance we'll want to allocate this size again. By only updating the specific
+        // size we don't risk something smaller fitting in.
+        size_t n_blocks = block - start_block;
+        size_t bucket = MIN(n_blocks, MICROPY_ATB_INDICES) - 1;
+        size_t new_free_atb = start_block / BLOCKS_PER_ATB;
+        if (new_free_atb < MP_STATE_MEM(gc_first_free_atb_index)[bucket]) {
+            MP_STATE_MEM(gc_first_free_atb_index)[bucket] = new_free_atb;
+        }
+        // set the last_free pointer to this block if it's earlier in the heap
+        if (new_free_atb > MP_STATE_MEM(gc_last_free_atb_index)) {
+            MP_STATE_MEM(gc_last_free_atb_index) = new_free_atb;
+        }
 
         GC_EXIT();
 
@@ -870,11 +887,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         }
 
         // set the last_free pointer to end of this block if it's earlier in the heap
-        if ((block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_first_free_atb_index)) {
-            MP_STATE_MEM(gc_first_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
+        size_t new_free_atb = (block + new_blocks) / BLOCKS_PER_ATB;
+        size_t bucket = MIN(n_blocks - new_blocks, MICROPY_ATB_INDICES) - 1;
+        if (new_free_atb < MP_STATE_MEM(gc_first_free_atb_index)[bucket]) {
+            MP_STATE_MEM(gc_first_free_atb_index)[bucket] = new_free_atb;
         }
-        if ((block + new_blocks) / BLOCKS_PER_ATB > MP_STATE_MEM(gc_last_free_atb_index)) {
-            MP_STATE_MEM(gc_last_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
+        if (new_free_atb > MP_STATE_MEM(gc_last_free_atb_index)) {
+            MP_STATE_MEM(gc_last_free_atb_index) = new_free_atb;
         }
 
         GC_EXIT();
