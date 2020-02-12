@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,35 +24,15 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "boards/board.h"
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
-#define MICROPY_HW_MCU_NAME         "STM32F405RG"
+void board_init(void) {
+}
 
-#define FLASH_SIZE                  (0x100000)
-#define FLASH_PAGE_SIZE             (0x4000)
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#define MICROPY_HW_NEOPIXEL (&pin_PC00)
+void reset_board(void) {
 
-#define BOARD_OSC_DIV 12
-
-// On-board flash
-#define SPI_FLASH_MOSI_PIN          (&pin_PB05)
-#define SPI_FLASH_MISO_PIN          (&pin_PB04)
-#define SPI_FLASH_SCK_PIN           (&pin_PB03)
-#define SPI_FLASH_CS_PIN            (&pin_PA15)
-
-// Bootloader only
-#ifdef UF2_BOOTLOADER_ENABLED
-    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
-#endif
-
-#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_PB13)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PB15)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB14)
-
-#define DEFAULT_UART_BUS_RX (&pin_PB11)
-#define DEFAULT_UART_BUS_TX (&pin_PB10)
+}

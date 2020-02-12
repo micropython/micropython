@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-05 15:55-0800\n"
+"POT-Creation-Date: 2020-02-10 11:46-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1292,6 +1292,10 @@ msgstr "Stream kulang ng readinto() o write() method."
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: ports/stm32f4/common-hal/microcontroller/Processor.c
+msgid "Temperature read timed out"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
@@ -1503,6 +1507,10 @@ msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
+
+#: ports/stm32f4/common-hal/microcontroller/Processor.c
+msgid "Voltage read timed out"
+msgstr ""
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"

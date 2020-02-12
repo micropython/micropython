@@ -24,35 +24,34 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
+#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
-#define MICROPY_HW_MCU_NAME         "STM32F405RG"
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[3];
 
-#define FLASH_SIZE                  (0x100000)
-#define FLASH_PAGE_SIZE             (0x4000)
+extern const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4];
+extern const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4];
 
-#define MICROPY_HW_NEOPIXEL (&pin_PC00)
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[3];
 
-#define BOARD_OSC_DIV 12
+extern const mcu_spi_sck_obj_t mcu_spi_sck_list[7];
+extern const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6];
+extern const mcu_spi_miso_obj_t mcu_spi_miso_list[6];
+extern const mcu_spi_nss_obj_t mcu_spi_nss_list[6];
 
-// On-board flash
-#define SPI_FLASH_MOSI_PIN          (&pin_PB05)
-#define SPI_FLASH_MISO_PIN          (&pin_PB04)
-#define SPI_FLASH_SCK_PIN           (&pin_PB03)
-#define SPI_FLASH_CS_PIN            (&pin_PA15)
+//UART
+extern USART_TypeDef * mcu_uart_banks[MAX_UART];
+extern bool mcu_uart_has_usart[MAX_UART];
 
-// Bootloader only
-#ifdef UF2_BOOTLOADER_ENABLED
-    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
-#endif
+extern const mcu_uart_tx_obj_t mcu_uart_tx_list[12];
+extern const mcu_uart_rx_obj_t mcu_uart_rx_list[12];
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
+//Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 56
+TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
 
-#define DEFAULT_SPI_BUS_SCK (&pin_PB13)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PB15)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB14)
-
-#define DEFAULT_UART_BUS_RX (&pin_PB11)
-#define DEFAULT_UART_BUS_TX (&pin_PB10)
+#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F405XX_PERIPH_H

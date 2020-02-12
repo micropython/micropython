@@ -31,18 +31,15 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/tick.h"
+#include "stm32f4xx_hal.h"
 
-/*------------------------------------------------------------------*/
-/* delay
- *------------------------------------------------------------------*/
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = supervisor_ticks_ms64();
     uint64_t duration = 0;
     while (duration < delay) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
         if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
            MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
@@ -51,4 +48,16 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         duration = (supervisor_ticks_ms64() - start_tick);
         // TODO(tannewt): Go to sleep for a little while while we wait.
     }
+}
+
+void mp_hal_delay_us(mp_uint_t delay) {
+    common_hal_mcu_delay_us(delay);
+}
+
+void mp_hal_disable_all_interrupts(void) {
+    common_hal_mcu_disable_interrupts();
+}
+
+void mp_hal_enable_all_interrupts(void) {
+    common_hal_mcu_enable_interrupts();
 }

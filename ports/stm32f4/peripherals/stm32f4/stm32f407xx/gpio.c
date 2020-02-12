@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,35 +24,33 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "stm32f4xx_hal.h"
+#include "stm32f4/gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
-#define MICROPY_HW_MCU_NAME         "STM32F405RG"
+void stm32f4_peripherals_gpio_init(void) {
+    //Enable all GPIO for now
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-#define FLASH_SIZE                  (0x100000)
-#define FLASH_PAGE_SIZE             (0x4000)
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
+    never_reset_pin_number(2,14); //PC14 OSC32_IN
+    never_reset_pin_number(2,15); //PC15 OSC32_OUT
+    never_reset_pin_number(0,13); //PA13 SWDIO
+    never_reset_pin_number(0,14); //PA14 SWCLK
+    // never_reset_pin_number(0,15); //PA15 JTDI
+    // never_reset_pin_number(1,3); //PB3 JTDO
+    // never_reset_pin_number(1,4); //PB4 JTRST
 
-#define MICROPY_HW_NEOPIXEL (&pin_PC00)
+    // Port H is not included in GPIO port array
+    // never_reset_pin_number(5,0); //PH0 JTDO   
+    // never_reset_pin_number(5,1); //PH1 JTRST
+}
 
-#define BOARD_OSC_DIV 12
+void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
 
-// On-board flash
-#define SPI_FLASH_MOSI_PIN          (&pin_PB05)
-#define SPI_FLASH_MISO_PIN          (&pin_PB04)
-#define SPI_FLASH_SCK_PIN           (&pin_PB03)
-#define SPI_FLASH_CS_PIN            (&pin_PA15)
+}
 
-// Bootloader only
-#ifdef UF2_BOOTLOADER_ENABLED
-    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
-#endif
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_PB13)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PB15)
-#define DEFAULT_SPI_BUS_MISO (&pin_PB14)
-
-#define DEFAULT_UART_BUS_RX (&pin_PB11)
-#define DEFAULT_UART_BUS_TX (&pin_PB10)

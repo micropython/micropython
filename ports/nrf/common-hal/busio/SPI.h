@@ -32,7 +32,7 @@
 
 typedef struct {
     nrfx_spim_t spim;
-    uint8_t max_frequency_MHz;
+    uint32_t max_frequency;
     uint8_t max_xfer_size;
 } spim_peripheral_t;
 
