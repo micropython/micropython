@@ -24,20 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef __STM32F4_HAL
-#define __STM32F4_HAL
+#ifndef MICROPY_INCLUDED_STM32F4_MPHALPORT_H
+#define MICROPY_INCLUDED_STM32F4_MPHALPORT_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "py/obj.h"
 
-#include "lib/utils/interrupt_char.h"
-#include "py/mpconfig.h"
+#include "lib/oofatfs/ff.h"
+
 #include "supervisor/shared/tick.h"
 
+// Global millisecond tick count (driven by SysTick interrupt).
+static inline mp_uint_t mp_hal_ticks_ms(void) {
+  return supervisor_ticks_ms32();
+}
+// Number of bytes in receive buffer
+volatile uint8_t usb_rx_count;
+volatile bool mp_cdc_enabled;
 
-#define mp_hal_ticks_ms()       ((mp_uint_t) supervisor_ticks_ms32())
-//#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
+int receive_usb(void);
 
-bool mp_hal_stdin_any(void);
+void mp_hal_set_interrupt_char(int c);
 
-#endif
+void mp_hal_disable_all_interrupts(void);
+void mp_hal_enable_all_interrupts(void);
+
+#endif // MICROPY_INCLUDED_STM32F4_MPHALPORT_H
