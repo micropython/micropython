@@ -32,5 +32,5 @@
 #define FLASH_SIZE                  (0x80000) //512K
 #define FLASH_PAGE_SIZE             (0x4000)  //16K
 
-#define BOARD_OSC_DIV 8
-#define BOARD_OVERWRITE_SWD
+#define BOARD_OSC_DIV (8)
+#define BOARD_OVERWRITE_SWD (1)

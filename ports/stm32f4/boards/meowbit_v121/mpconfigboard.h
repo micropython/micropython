@@ -35,10 +35,10 @@
 #define AUTORESET_DELAY_MS 500
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-#define BOARD_OSC_DIV 12
-#define BOARD_NO_VBUS_SENSE
-#define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
-#define BOARD_USE_INTERNAL_SPI
+#define BOARD_OSC_DIV (12)
+#define BOARD_NO_VBUS_SENSE (1)
+#define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
+#define BOARD_USE_INTERNAL_SPI (1)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB15)
