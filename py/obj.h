@@ -81,18 +81,21 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
 
-static inline bool mp_obj_is_small_int(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 1) != 0); }
+static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 1) != 0);
+}
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
-static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 7) == 2); }
+static inline bool mp_obj_is_qstr(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 7) == 2);
+}
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 2))
 
-static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 7) == 6); }
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 7) == 6);
+}
 #define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 3)
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 6))
 
@@ -107,23 +110,27 @@ mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
 #endif
 
-static inline bool mp_obj_is_obj(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 3) == 0); }
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 3) == 0);
+}
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
 
-static inline bool mp_obj_is_small_int(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 3) == 1); }
+static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 3) == 1);
+}
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 2)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 2) | 1))
 
-static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 7) == 3); }
+static inline bool mp_obj_is_qstr(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 7) == 3);
+}
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 3))
 
-static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 7) == 7); }
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 7) == 7);
+}
 #define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 3)
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 7))
 
@@ -138,13 +145,15 @@ mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_new_float(mp_float_t value);
 #endif
 
-static inline bool mp_obj_is_obj(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 1) == 0); }
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 1) == 0);
+}
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
-static inline bool mp_obj_is_small_int(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 1) != 0); }
+static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 1) != 0);
+}
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
@@ -152,8 +161,9 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o)
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
 
-static inline bool mp_obj_is_float(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006; }
+static inline bool mp_obj_is_float(mp_const_obj_t o) {
+    return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
+}
 static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
     union {
         mp_float_t f;
@@ -170,33 +180,39 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
 }
 #endif
 
-static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 0xff80000f) == 0x00000006; }
+static inline bool mp_obj_is_qstr(mp_const_obj_t o) {
+    return (((mp_uint_t)(o)) & 0xff80000f) == 0x00000006;
+}
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 4)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 4) | 0x00000006))
 
-static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 0xff80000f) == 0x0000000e; }
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
+    return (((mp_uint_t)(o)) & 0xff80000f) == 0x0000000e;
+}
 #define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 4)
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 4) | 0xe))
 
-static inline bool mp_obj_is_obj(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 3) == 0); }
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return ((((mp_int_t)(o)) & 3) == 0);
+}
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 
-static inline bool mp_obj_is_small_int(mp_const_obj_t o)
-    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0001000000000000); }
+static inline bool mp_obj_is_small_int(mp_const_obj_t o) {
+    return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0001000000000000);
+}
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)((o) << 16)) >> 17)
 #define MP_OBJ_NEW_SMALL_INT(small_int) (((((uint64_t)(small_int)) & 0x7fffffffffff) << 1) | 0x0001000000000001)
 
-static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }
+static inline bool mp_obj_is_qstr(mp_const_obj_t o) {
+    return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0002000000000000);
+}
 #define MP_OBJ_QSTR_VALUE(o) ((((uint32_t)(o)) >> 1) & 0xffffffff)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)(((uint64_t)(((uint32_t)(qst)) << 1)) | 0x0002000000000001))
 
-static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
-    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0003000000000000); }
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
+    return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0003000000000000);
+}
 #define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) ((((uint32_t)(o)) >> 46) & 3)
 #define MP_OBJ_NEW_IMMEDIATE_OBJ(val) (((uint64_t)(val) << 46) | 0x0003000000000000)
 
@@ -228,13 +244,19 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
 }
 #endif
 
-static inline bool mp_obj_is_obj(mp_const_obj_t o)
-    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0000000000000000); }
+static inline bool mp_obj_is_obj(mp_const_obj_t o) {
+    return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0000000000000000);
+}
 #define MP_OBJ_TO_PTR(o) ((void*)(uintptr_t)(o))
 #define MP_OBJ_FROM_PTR(p) ((mp_obj_t)((uintptr_t)(p)))
 
 // rom object storage needs special handling to widen 32-bit pointer to 64-bits
-typedef union _mp_rom_obj_t { uint64_t u64; struct { const void *lo, *hi; } u32; } mp_rom_obj_t;
+typedef union _mp_rom_obj_t {
+    uint64_t u64;
+    struct {
+        const void *lo, *hi;
+    } u32;
+} mp_rom_obj_t;
 #define MP_ROM_INT(i) {MP_OBJ_NEW_SMALL_INT(i)}
 #define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}
 #if MP_ENDIANNESS_LITTLE
@@ -309,51 +331,51 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-        {{&mp_type_fun_builtin_0}, .fun._0 = fun_name}
+    {{&mp_type_fun_builtin_0}, .fun._0 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-        {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}
+    {{&mp_type_fun_builtin_1}, .fun._1 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-        {{&mp_type_fun_builtin_2}, .fun._2 = fun_name}
+    {{&mp_type_fun_builtin_2}, .fun._2 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
-        {{&mp_type_fun_builtin_3}, .fun._3 = fun_name}
+    {{&mp_type_fun_builtin_3}, .fun._3 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-        {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, false), .fun.var = fun_name}
+    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, false), .fun.var = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-        {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, false), .fun.var = fun_name}
+    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, false), .fun.var = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
-        {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, true), .fun.kw = fun_name}
+    {{&mp_type_fun_builtin_var}, MP_OBJ_FUN_MAKE_SIG(n_args_min, MP_OBJ_FUN_ARGS_MAX, true), .fun.kw = fun_name}
 
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
 
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
     const mp_map_t map_name = { \
-        .all_keys_are_qstrs = 1, \
-        .is_fixed = 1, \
-        .is_ordered = 1, \
-        .used = MP_ARRAY_SIZE(table_name), \
-        .alloc = MP_ARRAY_SIZE(table_name), \
-        .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
-    }
-
-#define MP_DEFINE_CONST_DICT(dict_name, table_name) \
-    const mp_obj_dict_t dict_name = { \
-        .base = {&mp_type_dict}, \
-        .map = { \
             .all_keys_are_qstrs = 1, \
             .is_fixed = 1, \
             .is_ordered = 1, \
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
-        }, \
-    }
+        }
+
+#define MP_DEFINE_CONST_DICT(dict_name, table_name) \
+    const mp_obj_dict_t dict_name = { \
+            .base = {&mp_type_dict}, \
+            .map = { \
+                    .all_keys_are_qstrs = 1, \
+                    .is_fixed = 1, \
+                    .is_ordered = 1, \
+                    .used = MP_ARRAY_SIZE(table_name), \
+                    .alloc = MP_ARRAY_SIZE(table_name), \
+                    .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
+                }, \
+        }
 
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
@@ -392,7 +414,8 @@ typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
     size_t is_ordered : 1;  // an ordered array
-    size_t used : (8 * sizeof(size_t) - 3);
+size_t used :
+    (8 * sizeof(size_t) - 3);
     size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
@@ -407,7 +430,9 @@ typedef enum _mp_map_lookup_kind_t {
 
 extern const mp_map_t mp_const_empty_map;
 
-static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
+static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
+    return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL);
+}
 
 void mp_map_init(mp_map_t *map, size_t n);
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
@@ -426,7 +451,9 @@ typedef struct _mp_set_t {
     mp_obj_t *table;
 } mp_set_t;
 
-static inline bool mp_set_slot_is_filled(const mp_set_t *set, size_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
+static inline bool mp_set_slot_is_filled(const mp_set_t *set, size_t pos) {
+    return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL);
+}
 
 void mp_set_init(mp_set_t *set, size_t n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -690,7 +717,9 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
-static inline mp_obj_t mp_obj_new_bool(mp_int_t x) { return x ? mp_const_true : mp_const_false; }
+static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
+    return x ? mp_const_true : mp_const_false;
+}
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(mp_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
@@ -744,7 +773,9 @@ bool mp_obj_is_callable(mp_obj_t o_in);
 mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
-static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_bool(o); } // returns true if o is bool, small int or long int
+static inline bool mp_obj_is_integer(mp_const_obj_t o) {
+    return mp_obj_is_int(o) || mp_obj_is_bool(o);    // returns true if o is bool, small int or long int
+}
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
@@ -801,7 +832,9 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 mp_int_t mp_float_hash(mp_float_t val);
 #else
-static inline mp_int_t mp_float_hash(mp_float_t val) { return (mp_int_t)val; }
+static inline mp_int_t mp_float_hash(mp_float_t val) {
+    return (mp_int_t)val;
+}
 #endif
 mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 

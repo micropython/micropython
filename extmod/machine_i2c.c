@@ -582,7 +582,7 @@ STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args
 
     // do the transfer
     int ret = read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
-        args[ARG_addrsize].u_int, (uint8_t*)vstr.buf, vstr.len);
+            args[ARG_addrsize].u_int, (uint8_t*)vstr.buf, vstr.len);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -604,7 +604,7 @@ STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos
 
     // do the transfer
     int ret = read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
-        args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
+            args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -624,7 +624,7 @@ STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args,
 
     // do the transfer
     int ret = write_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
-        args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
+            args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }

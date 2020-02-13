@@ -315,7 +315,7 @@ STATIC mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(dst_addr, &addr_bi, MP_BUFFER_READ);
     MP_THREAD_GIL_EXIT();
     int out_sz = sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
-                        (struct sockaddr *)addr_bi.buf, addr_bi.len);
+            (struct sockaddr *)addr_bi.buf, addr_bi.len);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
@@ -548,8 +548,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
-#ifdef __UCLIBC_MAJOR__
-#if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
+        #ifdef __UCLIBC_MAJOR__
+        #if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
 // "warning" requires -Wno-cpp which is a relatively new gcc option, so we choose not to use it.
 //#warning Working around uClibc bug with numeric service name
         // Older versions og uClibc have bugs when numeric ports in service
@@ -560,8 +560,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         // Note that this is crude workaround, precluding UDP socket addresses
         // to be returned. TODO: set only if not set by Python args.
         hints.ai_socktype = SOCK_STREAM;
-#endif
-#endif
+        #endif
+        #endif
     } else {
         serv = mp_obj_str_get_str(args[1]);
     }

@@ -7,8 +7,8 @@ extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 
 __attribute__((naked)) void Reset_Handler(void) {
     // set stack pointer
-    __asm volatile ("ldr r0, =_estack");
-    __asm volatile ("mov sp, r0");
+    __asm volatile("ldr r0, =_estack");
+    __asm volatile("mov sp, r0");
     // copy .data section from flash to RAM
     for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
         *dest++ = *src++;
@@ -60,7 +60,7 @@ void _start(void) {
 
 __attribute__((naked)) void exit(int status) {
     // Force qemu to exit using ARM Semihosting
-    __asm volatile (
+    __asm volatile(
         "mov r1, r0\n"
         "cmp r1, #0\n"
         "bne .notclean\n"

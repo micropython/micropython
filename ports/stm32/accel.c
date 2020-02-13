@@ -234,7 +234,8 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     const size_t DATA_SIZE = 5;
     const size_t DATA_STRIDE = 2;
     #endif
-    uint8_t data[DATA_SIZE]; data[0] = ACCEL_REG_X;
+    uint8_t data[DATA_SIZE];
+    data[0] = ACCEL_REG_X;
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, DATA_SIZE, true);
 

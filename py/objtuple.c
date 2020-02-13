@@ -125,7 +125,8 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
 mp_obj_t mp_obj_tuple_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_HASH: {
             // start hash with pointer to empty tuple, to make it fairly unique
             mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
@@ -134,8 +135,10 @@ mp_obj_t mp_obj_tuple_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_NEW_SMALL_INT(hash);
         }
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->len);
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
@@ -181,7 +184,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
@@ -191,7 +194,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(res);
         }
-#endif
+        #endif
         size_t index_value = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_value];
     } else {

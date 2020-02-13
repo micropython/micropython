@@ -122,7 +122,7 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
         case CDC_SET_LINE_CODING:
             #if 0
             LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
-                                    (pbuf[2] << 16) | (pbuf[3] << 24));
+                    (pbuf[2] << 16) | (pbuf[3] << 24));
             LineCoding.format     = pbuf[4];
             LineCoding.paritytype = pbuf[5];
             LineCoding.datatype   = pbuf[6];
@@ -242,7 +242,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
 bool usbd_cdc_rx_buffer_full(usbd_cdc_itf_t *cdc) {
     int get = cdc->rx_buf_get, put = cdc->rx_buf_put;
-    int remaining = (get - put) + (-((int) (get <= put)) & USBD_CDC_RX_DATA_SIZE);
+    int remaining = (get - put) + (-((int)(get <= put)) & USBD_CDC_RX_DATA_SIZE);
     return remaining < CDC_DATA_MAX_PACKET_SIZE + 1;
 }
 

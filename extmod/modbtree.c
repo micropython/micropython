@@ -42,12 +42,12 @@ typedef struct _mp_obj_btree_t {
     DB *db;
     mp_obj_t start_key;
     mp_obj_t end_key;
-    #define FLAG_END_KEY_INCL 1
-    #define FLAG_DESC 2
-    #define FLAG_ITER_TYPE_MASK 0xc0
-    #define FLAG_ITER_KEYS   0x40
-    #define FLAG_ITER_VALUES 0x80
-    #define FLAG_ITER_ITEMS  0xc0
+#define FLAG_END_KEY_INCL 1
+#define FLAG_DESC 2
+#define FLAG_ITER_TYPE_MASK 0xc0
+#define FLAG_ITER_KEYS   0x40
+#define FLAG_ITER_VALUES 0x80
+#define FLAG_ITER_ITEMS  0xc0
     byte flags;
     byte next_flags;
 } mp_obj_btree_t;
@@ -57,9 +57,9 @@ STATIC const mp_obj_type_t btree_type;
 #endif
 
 #define CHECK_ERROR(res) \
-        if (res == RET_ERROR) { \
-            mp_raise_OSError(errno); \
-        }
+    if (res == RET_ERROR) { \
+        mp_raise_OSError(errno); \
+    }
 
 void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);

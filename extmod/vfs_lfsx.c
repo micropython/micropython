@@ -153,7 +153,8 @@ typedef struct MP_VFS_LFSx(_ilistdir_it_t) {
     bool is_str;
     MP_OBJ_VFS_LFSx *vfs;
     LFSx_API(dir_t) dir;
-} MP_VFS_LFSx(ilistdir_it_t);
+}
+MP_VFS_LFSx(ilistdir_it_t);
 
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) *self = MP_OBJ_TO_PTR(self_in);
@@ -166,7 +167,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
             return MP_OBJ_STOP_ITERATION;
         }
         if (!(info.name[0] == '.' && (info.name[1] == '\0'
-            || (info.name[1] == '.' && info.name[2] == '\0')))) {
+                    || (info.name[1] == '.' && info.name[2] == '\0')))) {
             break;
         }
     }

@@ -260,7 +260,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) is disabled (dedicated to REPL)", uart_num);
     }
 
-     // Defaults
+    // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,

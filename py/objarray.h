@@ -44,7 +44,8 @@ typedef struct _mp_obj_array_t {
     // parent object. (Union is not used to not go into a complication of
     // union-of-bitfields with different toolchains). See comments in
     // objarray.c.
-    size_t free : (8 * sizeof(size_t) - 8);
+size_t free :
+    (8 * sizeof(size_t) - 8);
     size_t len; // in elements
     void *items;
 } mp_obj_array_t;

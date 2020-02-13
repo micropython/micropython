@@ -89,7 +89,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
     2 + MICROPY_PERSISTENT_CODE_LOAD,
-        SYS_IMPLEMENTATION_ELEMS
+    SYS_IMPLEMENTATION_ELEMS
 );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {

@@ -113,10 +113,19 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     } else {
         qstr mode;
         switch (self->can.Init.Mode) {
-            case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
-            case CAN_MODE_LOOPBACK: mode = MP_QSTR_LOOPBACK; break;
-            case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
-            case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
+            case CAN_MODE_NORMAL:
+                mode = MP_QSTR_NORMAL;
+                break;
+            case CAN_MODE_LOOPBACK:
+                mode = MP_QSTR_LOOPBACK;
+                break;
+            case CAN_MODE_SILENT:
+                mode = MP_QSTR_SILENT;
+                break;
+            case CAN_MODE_SILENT_LOOPBACK:
+            default:
+                mode = MP_QSTR_SILENT_LOOPBACK;
+                break;
         }
         mp_printf(print, "CAN(%u, CAN.%q, extframe=%q, auto_restart=%q)",
             self->can_id,
@@ -155,7 +164,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
 
     // init CAN (if it fails, it's because the port doesn't exist)
     if (!can_init(self, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
-        args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
+            args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
         mp_raise_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", self->can_id);
     }
 
@@ -172,18 +181,18 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
     if (mp_obj_is_str(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
-        #ifdef MICROPY_HW_CAN1_NAME
+            #ifdef MICROPY_HW_CAN1_NAME
         } else if (strcmp(port, MICROPY_HW_CAN1_NAME) == 0) {
             can_idx = PYB_CAN_1;
-        #endif
-        #ifdef MICROPY_HW_CAN2_NAME
+            #endif
+            #ifdef MICROPY_HW_CAN2_NAME
         } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
             can_idx = PYB_CAN_2;
-        #endif
-        #ifdef MICROPY_HW_CAN3_NAME
+            #endif
+            #ifdef MICROPY_HW_CAN3_NAME
         } else if (strcmp(port, MICROPY_HW_CAN3_NAME) == 0) {
             can_idx = PYB_CAN_3;
-        #endif
+            #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port);
         }
@@ -485,24 +494,24 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         byte *state = (fifo == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
 
         switch (*state) {
-        case RX_STATE_FIFO_EMPTY:
-            break;
-        case RX_STATE_MESSAGE_PENDING:
-            if (__HAL_CAN_MSG_PENDING(&self->can, fifo) == 0) {
-                // Fifo is empty
-                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
-                *state = RX_STATE_FIFO_EMPTY;
-            }
-            break;
-        case RX_STATE_FIFO_FULL:
-            __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
-            *state = RX_STATE_MESSAGE_PENDING;
-            break;
-        case RX_STATE_FIFO_OVERFLOW:
-            __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
-            __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
-            *state = RX_STATE_MESSAGE_PENDING;
-            break;
+            case RX_STATE_FIFO_EMPTY:
+                break;
+            case RX_STATE_MESSAGE_PENDING:
+                if (__HAL_CAN_MSG_PENDING(&self->can, fifo) == 0) {
+                    // Fifo is empty
+                    __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
+                    *state = RX_STATE_FIFO_EMPTY;
+                }
+                break;
+            case RX_STATE_FIFO_FULL:
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
+                *state = RX_STATE_MESSAGE_PENDING;
+                break;
+            case RX_STATE_FIFO_OVERFLOW:
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
+                __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
+                *state = RX_STATE_MESSAGE_PENDING;
+                break;
         }
     }
 
@@ -531,7 +540,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
         mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);
         if (!(mv->typecode == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | BYTEARRAY_TYPECODE)
-            || (mv->typecode | 0x20) == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | 'b'))) {
+                || (mv->typecode | 0x20) == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | 'b'))) {
             mp_raise_ValueError(NULL);
         }
         mv->len = rx_dlc;
@@ -606,8 +615,8 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // Check filter mode
     if (((args[ARG_mode].u_int != FDCAN_FILTER_RANGE) &&
-         (args[ARG_mode].u_int != FDCAN_FILTER_DUAL)  &&
-         (args[ARG_mode].u_int != FDCAN_FILTER_MASK))) {
+            (args[ARG_mode].u_int != FDCAN_FILTER_DUAL)  &&
+            (args[ARG_mode].u_int != FDCAN_FILTER_MASK))) {
         goto error;
     }
 
@@ -639,7 +648,7 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_obj_t *rtr_flags;
     mp_obj_t *params;
     mp_obj_get_array(args[ARG_params].u_obj, &len, &params);
-    if (args[ARG_rtr].u_obj != MP_OBJ_NULL){
+    if (args[ARG_rtr].u_obj != MP_OBJ_NULL) {
         mp_obj_get_array(args[ARG_rtr].u_obj, &rtr_len, &rtr_flags);
     }
 
@@ -692,8 +701,7 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
         if (args[ARG_mode].u_int == LIST16) {
             filter.FilterMode  = CAN_FILTERMODE_IDLIST;
         }
-    }
-    else if (args[ARG_mode].u_int == MASK32 || args[ARG_mode].u_int == LIST32) {
+    } else if (args[ARG_mode].u_int == MASK32 || args[ARG_mode].u_int == LIST32) {
         if (len != 2) {
             goto error;
         }
@@ -709,7 +717,7 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
         }
         filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0x1FFFE000)  >> 13;
         filter.FilterIdLow      = (((mp_obj_get_int(params[0]) & 0x00001FFF) << 3) | 4) | rtr_masks[0];
-        filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0x1FFFE000 ) >> 13;
+        filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0x1FFFE000) >> 13;
         filter.FilterMaskIdLow  = (((mp_obj_get_int(params[1]) & 0x00001FFF) << 3) | 4) | rtr_masks[1];
         if (args[ARG_mode].u_int == MASK32) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
@@ -770,14 +778,14 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         uint32_t irq = 0;
         if (self->can_id == PYB_CAN_1) {
             irq = (fifo == 0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
-        #if defined(CAN2)
+            #if defined(CAN2)
         } else if (self->can_id == PYB_CAN_2) {
             irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
-        #endif
-        #if defined(CAN3)
+            #endif
+            #if defined(CAN3)
         } else {
             irq = (fifo == 0) ? CAN3_RX0_IRQn : CAN3_RX1_IRQn;
-        #endif
+            #endif
         }
         NVIC_SetPriority(irq, IRQ_PRI_CAN);
         HAL_NVIC_EnableIRQ(irq);

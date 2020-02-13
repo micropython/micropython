@@ -69,9 +69,9 @@ void mp_init(void) {
     MP_STATE_VM(sched_len) = 0;
     #endif
 
-#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     mp_init_emergency_exception_buf();
-#endif
+    #endif
 
     #if MICROPY_KBD_EXCEPTION
     // initialise the exception object for raising KeyboardInterrupt
@@ -367,11 +367,17 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             //      <<      checked explicitly
             switch (op) {
                 case MP_BINARY_OP_OR:
-                case MP_BINARY_OP_INPLACE_OR: lhs_val |= rhs_val; break;
+                case MP_BINARY_OP_INPLACE_OR:
+                    lhs_val |= rhs_val;
+                    break;
                 case MP_BINARY_OP_XOR:
-                case MP_BINARY_OP_INPLACE_XOR: lhs_val ^= rhs_val; break;
+                case MP_BINARY_OP_INPLACE_XOR:
+                    lhs_val ^= rhs_val;
+                    break;
                 case MP_BINARY_OP_AND:
-                case MP_BINARY_OP_INPLACE_AND: lhs_val &= rhs_val; break;
+                case MP_BINARY_OP_INPLACE_AND:
+                    lhs_val &= rhs_val;
+                    break;
                 case MP_BINARY_OP_LSHIFT:
                 case MP_BINARY_OP_INPLACE_LSHIFT: {
                     if (rhs_val < 0) {
@@ -403,9 +409,13 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     }
                     break;
                 case MP_BINARY_OP_ADD:
-                case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+                case MP_BINARY_OP_INPLACE_ADD:
+                    lhs_val += rhs_val;
+                    break;
                 case MP_BINARY_OP_SUBTRACT:
-                case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+                case MP_BINARY_OP_INPLACE_SUBTRACT:
+                    lhs_val -= rhs_val;
+                    break;
                 case MP_BINARY_OP_MULTIPLY:
                 case MP_BINARY_OP_INPLACE_MULTIPLY: {
 
@@ -441,14 +451,14 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     lhs_val = mp_small_int_floor_divide(lhs_val, rhs_val);
                     break;
 
-                #if MICROPY_PY_BUILTINS_FLOAT
+                    #if MICROPY_PY_BUILTINS_FLOAT
                 case MP_BINARY_OP_TRUE_DIVIDE:
                 case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
                     if (rhs_val == 0) {
                         goto zero_division;
                     }
                     return mp_obj_new_float((mp_float_t)lhs_val / (mp_float_t)rhs_val);
-                #endif
+                    #endif
 
                 case MP_BINARY_OP_MODULO:
                 case MP_BINARY_OP_INPLACE_MODULO: {
@@ -505,10 +515,14 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     return MP_OBJ_FROM_PTR(tuple);
                 }
 
-                case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
-                case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
-                case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
-                case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
+                case MP_BINARY_OP_LESS:
+                    return mp_obj_new_bool(lhs_val < rhs_val);
+                case MP_BINARY_OP_MORE:
+                    return mp_obj_new_bool(lhs_val > rhs_val);
+                case MP_BINARY_OP_LESS_EQUAL:
+                    return mp_obj_new_bool(lhs_val <= rhs_val);
+                case MP_BINARY_OP_MORE_EQUAL:
+                    return mp_obj_new_bool(lhs_val >= rhs_val);
 
                 default:
                     goto unsupported_op;
@@ -519,7 +533,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return mp_obj_new_int_from_ll(lhs_val);
             }
-#if MICROPY_PY_BUILTINS_FLOAT
+            #if MICROPY_PY_BUILTINS_FLOAT
         } else if (mp_obj_is_float(rhs)) {
             mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
             if (res == MP_OBJ_NULL) {
@@ -527,7 +541,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return res;
             }
-#if MICROPY_PY_BUILTINS_COMPLEX
+            #if MICROPY_PY_BUILTINS_COMPLEX
         } else if (mp_obj_is_type(rhs, &mp_type_complex)) {
             mp_obj_t res = mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
             if (res == MP_OBJ_NULL) {
@@ -535,8 +549,8 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return res;
             }
-#endif
-#endif
+            #endif
+            #endif
         }
     }
 
@@ -559,7 +573,7 @@ generic_binary_op:
         }
     }
 
-#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    #if MICROPY_PY_REVERSE_SPECIAL_METHODS
     if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_POWER) {
         mp_obj_t t = rhs;
         rhs = lhs;
@@ -573,7 +587,7 @@ generic_binary_op:
         lhs = t;
         op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
     }
-#endif
+    #endif
 
     if (op == MP_BINARY_OP_CONTAINS) {
         // If type didn't support containment then explicitly walk the iterator.
@@ -1056,30 +1070,30 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // look for built-in names
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     if (attr == MP_QSTR___class__) {
         // a.__class__ is equivalent to type(a)
         dest[0] = MP_OBJ_FROM_PTR(type);
     } else
-#endif
-    if (attr == MP_QSTR___next__ && type->iternext != NULL) {
-        dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
-        dest[1] = obj;
+    #endif
+        if (attr == MP_QSTR___next__ && type->iternext != NULL) {
+            dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
+            dest[1] = obj;
 
-    } else if (type->attr != NULL) {
-        // this type can do its own load, so call it
-        type->attr(obj, attr, dest);
+        } else if (type->attr != NULL) {
+            // this type can do its own load, so call it
+            type->attr(obj, attr, dest);
 
-    } else if (type->locals_dict != NULL) {
-        // generic method lookup
-        // this is a lookup in the object (ie not class or type)
-        assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
-        mp_map_t *locals_map = &type->locals_dict->map;
-        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem != NULL) {
-            mp_convert_member_lookup(obj, type, elem->value, dest);
+        } else if (type->locals_dict != NULL) {
+            // generic method lookup
+            // this is a lookup in the object (ie not class or type)
+            assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+            mp_map_t *locals_map = &type->locals_dict->map;
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                mp_convert_member_lookup(obj, type, elem->value, dest);
+            }
         }
-    }
 }
 
 void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
@@ -1374,7 +1388,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
 
     if (dest[1] != MP_OBJ_NULL) {
         // Hopefully we can't import bound method from an object
-import_error:
+    import_error:
         mp_raise_msg_varg(&mp_type_ImportError, "cannot import name %q", name);
     }
 
@@ -1518,6 +1532,6 @@ NORETURN void mp_raise_NotImplementedError(const char *msg) {
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
-        MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
+            MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
 }
 #endif

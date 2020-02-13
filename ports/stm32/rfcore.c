@@ -413,7 +413,7 @@ void rfcore_ble_check_msg(int (*cb)(void*, uint8_t), void *env) {
         buf[0] = 0; // config offset
         buf[1] = 6; // config length
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, &buf[2]);
-        #define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; }
+#define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; }
         SWAP_UINT8(buf[2], buf[7]);
         SWAP_UINT8(buf[3], buf[6]);
         SWAP_UINT8(buf[4], buf[5]);

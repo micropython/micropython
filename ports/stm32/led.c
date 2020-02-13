@@ -52,15 +52,15 @@ typedef struct _pyb_led_obj_t {
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
     {{&pyb_led_type}, 1, MICROPY_HW_LED1},
-#if defined(MICROPY_HW_LED2)
+    #if defined(MICROPY_HW_LED2)
     {{&pyb_led_type}, 2, MICROPY_HW_LED2},
-#if defined(MICROPY_HW_LED3)
+    #if defined(MICROPY_HW_LED3)
     {{&pyb_led_type}, 3, MICROPY_HW_LED3},
-#if defined(MICROPY_HW_LED4)
+    #if defined(MICROPY_HW_LED4)
     {{&pyb_led_type}, 4, MICROPY_HW_LED4},
-#endif
-#endif
-#endif
+    #endif
+    #endif
+    #endif
 };
 #define NUM_LEDS MP_ARRAY_SIZE(pyb_led_obj)
 
@@ -75,9 +75,9 @@ void led_init(void) {
 }
 
 #if defined(MICROPY_HW_LED1_PWM) \
-    || defined(MICROPY_HW_LED2_PWM) \
-    || defined(MICROPY_HW_LED3_PWM) \
-    || defined(MICROPY_HW_LED4_PWM)
+|| defined(MICROPY_HW_LED2_PWM) \
+|| defined(MICROPY_HW_LED3_PWM) \
+|| defined(MICROPY_HW_LED4_PWM)
 
 // The following is semi-generic code to control LEDs using PWM.
 // It currently supports TIM1, TIM2 and TIM3, channels 1-4.
@@ -135,10 +135,17 @@ STATIC void led_pwm_init(int led) {
 
     // TIM configuration
     switch (pwm_cfg->tim_id) {
-        case 1: __TIM1_CLK_ENABLE(); break;
-        case 2: __TIM2_CLK_ENABLE(); break;
-        case 3: __TIM3_CLK_ENABLE(); break;
-        default: assert(0);
+        case 1:
+            __TIM1_CLK_ENABLE();
+            break;
+        case 2:
+            __TIM2_CLK_ENABLE();
+            break;
+        case 3:
+            __TIM3_CLK_ENABLE();
+            break;
+        default:
+            assert(0);
     }
     TIM_HandleTypeDef tim = {0};
     tim.Instance = pwm_cfg->tim;

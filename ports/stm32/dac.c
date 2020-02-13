@@ -97,26 +97,26 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
-    #if defined(TIM4)
+        #if defined(TIM4)
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
-    #endif
-    #if defined(TIM5)
+        #endif
+        #if defined(TIM5)
     } else if (tim->Instance == TIM5) {
         return DAC_TRIGGER_T5_TRGO;
-    #endif
-    #if defined(TIM6)
+        #endif
+        #if defined(TIM6)
     } else if (tim->Instance == TIM6) {
         return DAC_TRIGGER_T6_TRGO;
-    #endif
-    #if defined(TIM7)
+        #endif
+        #if defined(TIM7)
     } else if (tim->Instance == TIM7) {
         return DAC_TRIGGER_T7_TRGO;
-    #endif
-    #if defined(TIM8)
+        #endif
+        #if defined(TIM8)
     } else if (tim->Instance == TIM8) {
         return DAC_TRIGGER_T8_TRGO;
-    #endif
+        #endif
     } else {
         mp_raise_ValueError("Timer does not support DAC triggering");
     }
@@ -148,10 +148,10 @@ STATIC void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) 
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+        #if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
-    #endif
+        #endif
     }
     *(volatile uint32_t*)(base + align) = value;
 }
@@ -171,10 +171,10 @@ STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+        #if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
-    #endif
+        #endif
     }
 
     dma_nohal_deinit(dma_descr);
@@ -204,10 +204,10 @@ STATIC void pyb_dac_reconfigure(pyb_dac_obj_t *self, uint32_t cr, uint32_t outbu
         const dma_descr_t *tx_dma_descr;
         if (self->dac_channel == DAC_CHANNEL_1) {
             tx_dma_descr = &dma_DAC_1_TX;
-        #if !defined(STM32L452xx)
+            #if !defined(STM32L452xx)
         } else {
             tx_dma_descr = &dma_DAC_2_TX;
-        #endif
+            #endif
         }
         dma_nohal_deinit(tx_dma_descr);
         dac_config_channel(self->dac_channel, cr, outbuf);
@@ -240,10 +240,10 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_hal_pin_obj_t pin;
     if (self->dac_channel == DAC_CHANNEL_1) {
         pin = pin_A4;
-    #if !defined(STM32L452xx)
+        #if !defined(STM32L452xx)
     } else {
         pin = pin_A5;
-    #endif
+        #endif
     }
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
@@ -255,7 +255,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     #elif defined(STM32F0) || defined(STM32L4)
     __HAL_RCC_DAC1_CLK_ENABLE();
     #else
-    #error Unsupported Processor
+#error Unsupported Processor
     #endif
 
     // Stop the DAC in case it was already running
@@ -314,10 +314,10 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     uint32_t dac_channel;
     if (dac_id == 1) {
         dac_channel = DAC_CHANNEL_1;
-    #if !defined(STM32L452xx)
+        #if !defined(STM32L452xx)
     } else if (dac_id == 2) {
         dac_channel = DAC_CHANNEL_2;
-    #endif
+        #endif
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id);
     }
@@ -456,10 +456,10 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     const dma_descr_t *tx_dma_descr;
     if (self->dac_channel == DAC_CHANNEL_1) {
         tx_dma_descr = &dma_DAC_1_TX;
-    #if !defined(STM32L452xx)
+        #if !defined(STM32L452xx)
     } else {
         tx_dma_descr = &dma_DAC_2_TX;
-    #endif
+        #endif
     }
 
     uint32_t align;

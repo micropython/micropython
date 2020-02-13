@@ -110,8 +110,8 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     }
 
     return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),
-            mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
-            mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
+                mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
+                mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 

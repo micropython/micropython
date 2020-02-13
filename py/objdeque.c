@@ -39,7 +39,7 @@ typedef struct _mp_obj_deque_t {
     size_t i_put;
     mp_obj_t *items;
     uint32_t flags;
-    #define FLAG_CHECK_OVERFLOW 1
+#define FLAG_CHECK_OVERFLOW 1
 } mp_obj_deque_t;
 
 STATIC mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

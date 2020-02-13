@@ -51,7 +51,7 @@ STATIC mp_obj_t esp32_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_in
     mp_uint_t period_us = mp_obj_get_int(period_us_in);
     int _errno = ulp_set_wakeup_period(period_index, period_us);
     if (_errno != ESP_OK) {
-	    mp_raise_OSError(_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }
@@ -65,7 +65,7 @@ STATIC mp_obj_t esp32_ulp_load_binary(mp_obj_t self_in, mp_obj_t load_addr_in, m
 
     int _errno = ulp_load_binary(load_addr, bufinfo.buf, bufinfo.len/sizeof(uint32_t));
     if (_errno != ESP_OK) {
-	    mp_raise_OSError(_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }
@@ -75,7 +75,7 @@ STATIC mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {
     mp_uint_t entry_point = mp_obj_get_int(entry_point_in);
     int _errno = ulp_run(entry_point/sizeof(uint32_t));
     if (_errno != ESP_OK) {
-	    mp_raise_OSError(_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }

@@ -51,26 +51,26 @@
 //  - \0 terminated (so they can be printed using printf)
 
 #if MICROPY_QSTR_BYTES_IN_HASH == 1
-    #define Q_HASH_MASK (0xff)
-    #define Q_GET_HASH(q) ((mp_uint_t)(q)[0])
-    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); } while (0)
+#define Q_HASH_MASK (0xff)
+#define Q_GET_HASH(q) ((mp_uint_t)(q)[0])
+#define Q_SET_HASH(q, hash) do { (q)[0] = (hash); } while (0)
 #elif MICROPY_QSTR_BYTES_IN_HASH == 2
-    #define Q_HASH_MASK (0xffff)
-    #define Q_GET_HASH(q) ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
-    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); (q)[1] = (hash) >> 8; } while (0)
+#define Q_HASH_MASK (0xffff)
+#define Q_GET_HASH(q) ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
+#define Q_SET_HASH(q, hash) do { (q)[0] = (hash); (q)[1] = (hash) >> 8; } while (0)
 #else
-    #error unimplemented qstr hash decoding
+#error unimplemented qstr hash decoding
 #endif
 #define Q_GET_ALLOC(q)  (MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + Q_GET_LENGTH(q) + 1)
 #define Q_GET_DATA(q)   ((q) + MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN)
 #if MICROPY_QSTR_BYTES_IN_LEN == 1
-    #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH])
-    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); } while (0)
+#define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH])
+#define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); } while (0)
 #elif MICROPY_QSTR_BYTES_IN_LEN == 2
-    #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH] | ((q)[MICROPY_QSTR_BYTES_IN_HASH + 1] << 8))
-    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); (q)[MICROPY_QSTR_BYTES_IN_HASH + 1] = (len) >> 8; } while (0)
+#define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH] | ((q)[MICROPY_QSTR_BYTES_IN_HASH + 1] << 8))
+#define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); (q)[MICROPY_QSTR_BYTES_IN_HASH + 1] = (len) >> 8; } while (0)
 #else
-    #error unimplemented qstr length decoding
+#error unimplemented qstr length decoding
 #endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
@@ -106,11 +106,11 @@ const qstr_pool_t mp_qstr_const_pool = {
     MICROPY_ALLOC_QSTR_ENTRIES_INIT,
     MP_QSTRnumber_of,   // corresponds to number of strings in array just below
     {
-#ifndef NO_QSTR
+        #ifndef NO_QSTR
 #define QDEF(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
-#endif
+        #endif
     },
 };
 

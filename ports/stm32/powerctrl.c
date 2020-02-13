@@ -69,7 +69,7 @@ NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
 }
 
 static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
-    __asm volatile (
+    __asm volatile(
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // get stack pointer
         "ldr r2, [r1, #4]\n"    // get address of destination
@@ -205,51 +205,89 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_HCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_HCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_HCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_HCLK_DIV256; }
-    else { return RCC_HCLK_DIV512; }
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_HCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_HCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_HCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_HCLK_DIV256;
+    } else {
+        return RCC_HCLK_DIV512;
+    }
     #else
-    if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_SYSCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_SYSCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_SYSCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_SYSCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_SYSCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_SYSCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_SYSCLK_DIV256; }
-    else { return RCC_SYSCLK_DIV512; }
+    if (wanted_div <= 1) {
+        return RCC_SYSCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_SYSCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_SYSCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_SYSCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_SYSCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_SYSCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_SYSCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_SYSCLK_DIV256;
+    } else {
+        return RCC_SYSCLK_DIV512;
+    }
     #endif
 }
 
 STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_APB1_DIV1; }
-    else if (wanted_div <= 2) { return RCC_APB1_DIV2; }
-    else if (wanted_div <= 4) { return RCC_APB1_DIV4; }
-    else if (wanted_div <= 8) { return RCC_APB1_DIV8; }
-    else { return RCC_APB1_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_APB1_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB1_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB1_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB1_DIV8;
+    } else {
+        return RCC_APB1_DIV16;
+    }
     #else
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else { return RCC_HCLK_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else {
+        return RCC_HCLK_DIV16;
+    }
     #endif
 }
 
 STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_APB2_DIV1; }
-    else if (wanted_div <= 2) { return RCC_APB2_DIV2; }
-    else if (wanted_div <= 4) { return RCC_APB2_DIV4; }
-    else if (wanted_div <= 8) { return RCC_APB2_DIV8; }
-    else { return RCC_APB2_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_APB2_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB2_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB2_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB2_DIV8;
+    } else {
+        return RCC_APB2_DIV16;
+    }
     #else
     return calc_apb1_div(wanted_div);
     #endif
@@ -399,9 +437,9 @@ set_clk:
     #if MICROPY_HW_CLK_LAST_FREQ
     // Save settings in RTC backup register to reconfigure clocks on hard-reset
     #if defined(STM32F7)
-    #define FREQ_BKP BKP31R
+#define FREQ_BKP BKP31R
     #else
-    #define FREQ_BKP BKP19R
+#define FREQ_BKP BKP19R
     #endif
     // qqqqqqqq pppppppp nnnnnnnn nnmmmmmm
     // qqqqQQQQ ppppppPP nNNNNNNN NNMMMMMM
@@ -544,11 +582,11 @@ void powerctrl_enter_standby_mode(void) {
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
     #if defined(STM32F0) || defined(STM32L0)
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #else
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #endif
 
     // save RTC interrupts

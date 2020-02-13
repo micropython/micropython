@@ -120,7 +120,7 @@
         sd_nvic_critical_region_enter(&_is_nested_critical_region);
 
 #define NRFX_CRITICAL_SECTION_EXIT() \
-        sd_nvic_critical_region_exit(_is_nested_critical_region); \
+    sd_nvic_critical_region_exit(_is_nested_critical_region); \
     }
 
 #else // BLUETOOTH_SD

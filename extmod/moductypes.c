@@ -138,18 +138,22 @@ STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typen = "unk";
     if (mp_obj_is_type(self->desc, &mp_type_dict)
-      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         || mp_obj_is_type(self->desc, &mp_type_ordereddict)
-      #endif
-      ) {
+    #endif
+    ) {
         typen = "STRUCT";
     } else if (mp_obj_is_type(self->desc, &mp_type_tuple)) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
         uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
         switch (agg_type) {
-            case PTR: typen = "PTR"; break;
-            case ARRAY: typen = "ARRAY"; break;
+            case PTR:
+                typen = "PTR";
+                break;
+            case ARRAY:
+                typen = "ARRAY";
+                break;
         }
     } else {
         typen = "ERROR";
@@ -211,10 +215,10 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_
 
 STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
     if (!mp_obj_is_type(desc_in, &mp_type_dict)
-      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         && !mp_obj_is_type(desc_in, &mp_type_ordereddict)
-      #endif
-      ) {
+    #endif
+    ) {
         if (mp_obj_is_type(desc_in, &mp_type_tuple)) {
             return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
         } else if (mp_obj_is_small_int(desc_in)) {
@@ -324,11 +328,14 @@ static inline mp_uint_t get_aligned_basic(uint val_type, void *p) {
 static inline void set_aligned_basic(uint val_type, void *p, mp_uint_t v) {
     switch (val_type) {
         case UINT8:
-            *(uint8_t*)p = (uint8_t)v; return;
+            *(uint8_t*)p = (uint8_t)v;
+            return;
         case UINT16:
-            *(uint16_t*)p = (uint16_t)v; return;
+            *(uint16_t*)p = (uint16_t)v;
+            return;
         case UINT32:
-            *(uint32_t*)p = (uint32_t)v; return;
+            *(uint32_t*)p = (uint32_t)v;
+            return;
     }
     assert(0);
 }
@@ -351,12 +358,12 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
             return mp_obj_new_int_from_ull(((uint64_t*)p)[index]);
         case INT64:
             return mp_obj_new_int_from_ll(((int64_t*)p)[index]);
-        #if MICROPY_PY_BUILTINS_FLOAT
+            #if MICROPY_PY_BUILTINS_FLOAT
         case FLOAT32:
             return mp_obj_new_float(((float*)p)[index]);
         case FLOAT64:
             return mp_obj_new_float(((double*)p)[index]);
-        #endif
+            #endif
         default:
             assert(0);
             return MP_OBJ_NULL;
@@ -378,17 +385,23 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
     mp_int_t v = mp_obj_get_int_truncated(val);
     switch (val_type) {
         case UINT8:
-            ((uint8_t*)p)[index] = (uint8_t)v; return;
+            ((uint8_t*)p)[index] = (uint8_t)v;
+            return;
         case INT8:
-            ((int8_t*)p)[index] = (int8_t)v; return;
+            ((int8_t*)p)[index] = (int8_t)v;
+            return;
         case UINT16:
-            ((uint16_t*)p)[index] = (uint16_t)v; return;
+            ((uint16_t*)p)[index] = (uint16_t)v;
+            return;
         case INT16:
-            ((int16_t*)p)[index] = (int16_t)v; return;
+            ((int16_t*)p)[index] = (int16_t)v;
+            return;
         case UINT32:
-            ((uint32_t*)p)[index] = (uint32_t)v; return;
+            ((uint32_t*)p)[index] = (uint32_t)v;
+            return;
         case INT32:
-            ((int32_t*)p)[index] = (int32_t)v; return;
+            ((int32_t*)p)[index] = (int32_t)v;
+            return;
         case INT64:
         case UINT64:
             if (sizeof(mp_int_t) == 8) {
@@ -407,11 +420,11 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (!mp_obj_is_type(self->desc, &mp_type_dict)
-      #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         && !mp_obj_is_type(self->desc, &mp_type_ordereddict)
-      #endif
-      ) {
-            mp_raise_TypeError("struct: no fields");
+    #endif
+    ) {
+        mp_raise_TypeError("struct: no fields");
     }
 
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
@@ -627,9 +640,10 @@ STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     return mp_obj_new_int((mp_int_t)(uintptr_t)p);
                 }
             }
-            /* fallthru */
+        /* fallthru */
 
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

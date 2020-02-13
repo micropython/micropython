@@ -36,11 +36,11 @@
 #define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define DECODE_UINT { \
-    unum = 0; \
-    do { \
-        unum = (unum << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-}
+        unum = 0; \
+        do { \
+            unum = (unum << 7) + (*ip & 0x7f); \
+        } while ((*ip++ & 0x80) != 0); \
+    }
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 
@@ -59,21 +59,21 @@
 #else
 
 #define DECODE_QSTR { \
-    qst = 0; \
-    do { \
-        qst = (qst << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-}
+        qst = 0; \
+        do { \
+            qst = (qst << 7) + (*ip & 0x7f); \
+        } while ((*ip++ & 0x80) != 0); \
+    }
 #define DECODE_PTR do { \
-    ip = (byte*)MP_ALIGN(ip, sizeof(void*)); \
-    unum = (uintptr_t)*(void**)ip; \
-    ip += sizeof(void*); \
-} while (0)
+        ip = (byte*)MP_ALIGN(ip, sizeof(void*)); \
+        unum = (uintptr_t)*(void**)ip; \
+        ip += sizeof(void*); \
+    } while (0)
 #define DECODE_OBJ do { \
-    ip = (byte*)MP_ALIGN(ip, sizeof(mp_obj_t)); \
-    unum = (mp_uint_t)*(mp_obj_t*)ip; \
-    ip += sizeof(mp_obj_t); \
-} while (0)
+        ip = (byte*)MP_ALIGN(ip, sizeof(mp_obj_t)); \
+        unum = (mp_uint_t)*(mp_obj_t*)ip; \
+        ip += sizeof(mp_obj_t); \
+    } while (0)
 
 #endif
 
@@ -422,12 +422,12 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_SET " UINT_FMT, unum);
             break;
 
-#if MICROPY_PY_BUILTINS_SLICE
+            #if MICROPY_PY_BUILTINS_SLICE
         case MP_BC_BUILD_SLICE:
             DECODE_UINT;
             printf("BUILD_SLICE " UINT_FMT, unum);
             break;
-#endif
+            #endif
 
         case MP_BC_STORE_COMP:
             DECODE_UINT;

@@ -106,7 +106,7 @@ typedef struct _pyb_lcd_obj_t {
 } pyb_lcd_obj_t;
 
 STATIC void lcd_delay(void) {
-    __asm volatile ("nop\nnop");
+    __asm volatile("nop\nnop");
 }
 
 STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
@@ -236,14 +236,23 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
         spi_clock = HAL_RCC_GetPCLK1Freq();
     }
     uint br_prescale = spi_clock / 16000000; // datasheet says LCD can run at 20MHz, but we go for 16MHz
-    if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
-    else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
-    else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
-    else if (br_prescale <= 16) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; }
-    else if (br_prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
-    else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
-    else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
-    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
+    if (br_prescale <= 2) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    } else if (br_prescale <= 4) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    } else if (br_prescale <= 8) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    } else if (br_prescale <= 16) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    } else if (br_prescale <= 32) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    } else if (br_prescale <= 64) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    } else if (br_prescale <= 128) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    } else {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    }
 
     // data is sent bigendian, latches on rising clock
     init->CLKPolarity = SPI_POLARITY_HIGH;

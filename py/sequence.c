@@ -208,9 +208,9 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, cons
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value) {
     size_t count = 0;
     for (size_t i = 0; i < len; i++) {
-         if (mp_obj_equal(items[i], value)) {
-              count++;
-         }
+        if (mp_obj_equal(items[i], value)) {
+            count++;
+        }
     }
 
     // Common sense says this cannot overflow small int

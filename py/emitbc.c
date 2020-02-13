@@ -430,11 +430,11 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
         #if MICROPY_PERSISTENT_CODE
         emit->const_table = m_new0(mp_uint_t,
-            emit->scope->num_pos_args + emit->scope->num_kwonly_args
-            + emit->ct_cur_obj + emit->ct_cur_raw_code);
+                emit->scope->num_pos_args + emit->scope->num_kwonly_args
+                + emit->ct_cur_obj + emit->ct_cur_raw_code);
         #else
         emit->const_table = m_new0(mp_uint_t,
-            emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+                emit->scope->num_pos_args + emit->scope->num_kwonly_args);
         #endif
 
     } else if (emit->pass == MP_PASS_EMIT) {
@@ -467,7 +467,7 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
-#if MICROPY_ENABLE_SOURCE_LINE
+    #if MICROPY_ENABLE_SOURCE_LINE
     if (MP_STATE_VM(mp_optimise_value) >= 3) {
         // If we compile with -O3, don't store line numbers.
         return;
@@ -479,10 +479,10 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         emit->last_source_line_offset = emit->bytecode_offset;
         emit->last_source_line = source_line;
     }
-#else
+    #else
     (void)emit;
     (void)source_line;
-#endif
+    #endif
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {

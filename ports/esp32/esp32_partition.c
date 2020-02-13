@@ -180,17 +180,23 @@ STATIC mp_obj_t esp32_partition_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case MP_BLOCKDEV_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(0);
-        case MP_BLOCKDEV_IOCTL_DEINIT: return MP_OBJ_NEW_SMALL_INT(0);
-        case MP_BLOCKDEV_IOCTL_SYNC: return MP_OBJ_NEW_SMALL_INT(0);
-        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: return MP_OBJ_NEW_SMALL_INT(self->part->size / BLOCK_SIZE_BYTES);
-        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE: return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_INIT:
+            return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+            return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_SYNC:
+            return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
+            return MP_OBJ_NEW_SMALL_INT(self->part->size / BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
+            return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
             check_esp_err(esp_partition_erase_range(self->part, offset, BLOCK_SIZE_BYTES));
             return MP_OBJ_NEW_SMALL_INT(0);
         }
-        default: return mp_const_none;
+        default:
+            return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_ioctl_obj, esp32_partition_ioctl);

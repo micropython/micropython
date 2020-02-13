@@ -301,33 +301,33 @@ STATIC int do_str(const char *str) {
 
 STATIC void print_help(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
-"Options:\n"
-"-h : print this help message\n"
-"-i : enable inspection via REPL after running command/module/file\n"
-#if MICROPY_DEBUG_PRINTERS
-"-v : verbose (trace various operations); can be multiple\n"
-#endif
-"-O[N] : apply bytecode optimizations of level N\n"
-"\n"
-"Implementation specific options (-X):\n", argv[0]
-);
+        "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
+        "Options:\n"
+        "-h : print this help message\n"
+        "-i : enable inspection via REPL after running command/module/file\n"
+        #if MICROPY_DEBUG_PRINTERS
+        "-v : verbose (trace various operations); can be multiple\n"
+        #endif
+        "-O[N] : apply bytecode optimizations of level N\n"
+        "\n"
+        "Implementation specific options (-X):\n", argv[0]
+    );
     int impl_opts_cnt = 0;
     printf(
-"  compile-only                 -- parse and compile only\n"
-#if MICROPY_EMIT_NATIVE
-"  emit={bytecode,native,viper} -- set the default code emitter\n"
-#else
-"  emit=bytecode                -- set the default code emitter\n"
-#endif
-);
+        "  compile-only                 -- parse and compile only\n"
+        #if MICROPY_EMIT_NATIVE
+        "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        #else
+        "  emit=bytecode                -- set the default code emitter\n"
+        #endif
+    );
     impl_opts_cnt++;
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
-, heap_size);
+        "  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
+        , heap_size);
     impl_opts_cnt++;
-#endif
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -356,13 +356,13 @@ STATIC void pre_process_options(int argc, char **argv) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
-                #if MICROPY_EMIT_NATIVE
+                    #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
-                #endif
-#if MICROPY_ENABLE_GC
+                    #endif
+                    #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
@@ -395,9 +395,9 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
-#endif
+                    #endif
                 } else {
-invalid_arg:
+                invalid_arg:
                     exit(invalid_args());
                 }
                 a++;
@@ -452,10 +452,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     pre_process_options(argc, argv);
 
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
-#endif
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[1024];
@@ -507,25 +507,25 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
-    char *p = path;
-    for (mp_uint_t i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-        if (p1 == NULL) {
-            p1 = p + strlen(p);
+        char *p = path;
+        for (mp_uint_t i = 1; i < path_num; i++) {
+            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+            if (p1 == NULL) {
+                p1 = p + strlen(p);
+            }
+            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+                // Expand standalone ~ to $HOME
+                int home_l = strlen(home);
+                vstr_t vstr;
+                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_add_strn(&vstr, home, home_l);
+                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            } else {
+                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+            }
+            p = p1 + 1;
         }
-        if (p[0] == '~' && p[1] == '/' && home != NULL) {
-            // Expand standalone ~ to $HOME
-            int home_l = strlen(home);
-            vstr_t vstr;
-            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
-            vstr_add_strn(&vstr, home, home_l);
-            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
-        } else {
-            path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
-        }
-        p = p1 + 1;
-    }
     }
 
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
@@ -618,10 +618,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 break;
             } else if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
-            #if MICROPY_DEBUG_PRINTERS
+                #if MICROPY_DEBUG_PRINTERS
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
-            #endif
+                #endif
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
@@ -694,11 +694,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_deinit();
 
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.
     free(heap);
-#endif
+    #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;

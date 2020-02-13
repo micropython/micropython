@@ -62,7 +62,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         } else if (type->parent == NULL) {
             // No parents so end search here.
             return count;
-        #if MICROPY_MULTIPLE_INHERITANCE
+            #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             // Multiple parents, search through them all recursively.
             const mp_obj_tuple_t *parent_tuple = type->parent;
@@ -74,7 +74,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
                 count += instance_count_native_bases(bt, last_native_base);
             }
             return count;
-        #endif
+            #endif
         } else {
             // A single parent, use iteration to continue the search.
             type = type->parent;
@@ -173,7 +173,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     }
                     mp_convert_member_lookup(obj_obj, type, elem->value, lookup->dest);
                 }
-#if DEBUG_PRINT
+                #if DEBUG_PRINT
                 DEBUG_printf("mp_obj_class_lookup: Returning: ");
                 mp_obj_print_helper(MICROPY_DEBUG_PRINTER, lookup->dest[0], PRINT_REPR);
                 if (lookup->dest[1] != MP_OBJ_NULL) {
@@ -181,7 +181,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     DEBUG_printf(" <%s @%p>", mp_obj_get_type_str(lookup->dest[1]), MP_OBJ_TO_PTR(lookup->dest[1]));
                 }
                 DEBUG_printf("\n");
-#endif
+                #endif
                 return;
             }
         }
@@ -201,7 +201,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         if (type->parent == NULL) {
             DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
-        #if MICROPY_MULTIPLE_INHERITANCE
+            #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             const mp_obj_tuple_t *parent_tuple = type->parent;
             const mp_obj_t *item = parent_tuple->items;
@@ -222,7 +222,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             // search last base (simple tail recursion elimination)
             assert(mp_obj_is_type(*item, &mp_type_type));
             type = (mp_obj_type_t*)MP_OBJ_TO_PTR(*item);
-        #endif
+            #endif
         } else {
             type = type->parent;
         }
@@ -527,7 +527,8 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
-retry:;
+retry:
+    ;
     qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -586,7 +587,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         dest[0] = elem->value;
         return;
     }
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     if (attr == MP_QSTR___dict__) {
         // Create a new dict with a copy of the instance's map items.
         // This creates, unlike CPython, a 'read-only' __dict__: modifying
@@ -601,7 +602,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         dest[0] = attr_dict;
         return;
     }
-#endif
+    #endif
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = attr,
@@ -1223,7 +1224,9 @@ STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         mp_raise_TypeError(NULL);
     }
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
-    *o = (mp_obj_super_t){{type_in}, args[0], args[1]};
+    *o = (mp_obj_super_t) {
+        {type_in}, args[0], args[1]
+    };
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -1255,7 +1258,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     if (type->parent == NULL) {
         // no parents, do nothing
-    #if MICROPY_MULTIPLE_INHERITANCE
+        #if MICROPY_MULTIPLE_INHERITANCE
     } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
         const mp_obj_tuple_t *parent_tuple = type->parent;
         size_t len = parent_tuple->len;
@@ -1272,7 +1275,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 break;
             }
         }
-    #endif
+        #endif
     } else if (type->parent != &mp_type_object) {
         mp_obj_class_lookup(&lookup, type->parent);
     }
@@ -1329,7 +1332,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         if (self->parent == NULL) {
             // type has no parents
             return false;
-        #if MICROPY_MULTIPLE_INHERITANCE
+            #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)self->parent)->type == &mp_type_tuple) {
             // get the base objects (they should be type objects)
             const mp_obj_tuple_t *parent_tuple = self->parent;
@@ -1345,7 +1348,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 
             // search last base (simple tail recursion elimination)
             object = *item;
-        #endif
+            #endif
         } else {
             // type has 1 parent
             object = MP_OBJ_FROM_PTR(self->parent);
@@ -1407,7 +1410,9 @@ STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_obj_static_class_method_t *o = m_new_obj(mp_obj_static_class_method_t);
-    *o = (mp_obj_static_class_method_t){{self}, args[0]};
+    *o = (mp_obj_static_class_method_t) {
+        {self}, args[0]
+    };
     return MP_OBJ_FROM_PTR(o);
 }
 

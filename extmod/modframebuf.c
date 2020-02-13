@@ -432,9 +432,15 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     bool steep;
     if (dy > dx) {
         mp_int_t temp;
-        temp = x1; x1 = y1; y1 = temp;
-        temp = dx; dx = dy; dy = temp;
-        temp = sx; sx = sy; sy = temp;
+        temp = x1;
+        x1 = y1;
+        y1 = temp;
+        temp = dx;
+        dx = dy;
+        dy = temp;
+        temp = sx;
+        sx = sy;
+        sy = temp;
         steep = true;
     } else {
         steep = false;

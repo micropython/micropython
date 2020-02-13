@@ -40,20 +40,20 @@
 
 void asm_arm_end_pass(asm_arm_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
-#if defined(__linux__) && defined(__GNUC__)
+        #if defined(__linux__) && defined(__GNUC__)
         char *start = mp_asm_base_get_code(&as->base);
         char *end = start + mp_asm_base_get_code_size(&as->base);
         __builtin___clear_cache(start, end);
-#elif defined(__arm__)
+        #elif defined(__arm__)
         // flush I- and D-cache
         asm volatile(
-                "0:"
-                "mrc p15, 0, r15, c7, c10, 3\n"
-                "bne 0b\n"
-                "mov r0, #0\n"
-                "mcr p15, 0, r0, c7, c7, 0\n"
-                : : : "r0", "cc");
-#endif
+            "0:"
+            "mrc p15, 0, r15, c7, c10, 3\n"
+            "bne 0b\n"
+            "mov r0, #0\n"
+            "mcr p15, 0, r0, c7, c7, 0\n"
+            : : : "r0", "cc");
+        #endif
     }
 }
 

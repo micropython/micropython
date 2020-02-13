@@ -44,15 +44,24 @@
 
 int mp_native_type_from_qstr(qstr qst) {
     switch (qst) {
-        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
-        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
-        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
-        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
-        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
-        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
-        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
-        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
-        default: return -1;
+        case MP_QSTR_object:
+            return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool:
+            return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int:
+            return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint:
+            return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr:
+            return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8:
+            return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16:
+            return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32:
+            return MP_NATIVE_TYPE_PTR32;
+        default:
+            return -1;
     }
 }
 
@@ -60,10 +69,13 @@ int mp_native_type_from_qstr(qstr qst) {
 mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL: return mp_obj_is_true(obj);
+        case MP_NATIVE_TYPE_OBJ:
+            return (mp_uint_t)obj;
+        case MP_NATIVE_TYPE_BOOL:
+            return mp_obj_is_true(obj);
         case MP_NATIVE_TYPE_INT:
-        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
+        case MP_NATIVE_TYPE_UINT:
+            return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
@@ -84,10 +96,14 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
-        case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
-        case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
-        case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
+        case MP_NATIVE_TYPE_OBJ:
+            return (mp_obj_t)val;
+        case MP_NATIVE_TYPE_BOOL:
+            return mp_obj_new_bool(val);
+        case MP_NATIVE_TYPE_INT:
+            return mp_obj_new_int(val);
+        case MP_NATIVE_TYPE_UINT:
+            return mp_obj_new_int_from_uint(val);
         default: // a pointer
             // we return just the value of the pointer as an integer
             return mp_obj_new_int_from_uint(val);

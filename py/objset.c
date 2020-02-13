@@ -47,10 +47,10 @@ typedef struct _mp_obj_set_it_t {
 
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
     return mp_obj_is_type(o, &mp_type_set)
-#if MICROPY_PY_BUILTINS_FROZENSET
+        #if MICROPY_PY_BUILTINS_FROZENSET
         || mp_obj_is_type(o, &mp_type_frozenset)
-#endif
-    ;
+        #endif
+        ;
 }
 
 // This macro is shorthand for mp_check_self to verify the argument is a set.
@@ -426,9 +426,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->set.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
-#if MICROPY_PY_BUILTINS_FROZENSET
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->set.used != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->set.used);
+            #if MICROPY_PY_BUILTINS_FROZENSET
         case MP_UNARY_OP_HASH:
             if (mp_obj_is_type(self_in, &mp_type_frozenset)) {
                 // start hash with unique value
@@ -443,8 +445,9 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 }
                 return MP_OBJ_NEW_SMALL_INT(hash);
             }
-#endif
-        default: return MP_OBJ_NULL; // op not supported
+            #endif
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

@@ -140,7 +140,8 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     uint8_t str[4];
     int len = 0;
     if (c < 0x80) {
-        *str = c; len = 1;
+        *str = c;
+        len = 1;
     } else if (c < 0x800) {
         str[0] = (c >> 6) | 0xC0;
         str[1] = (c & 0x3F) | 0x80;
@@ -382,15 +383,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
 STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
     switch (n_args) {
-        case 2: return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
+        case 2:
+            return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
         default:
-#if !MICROPY_PY_BUILTINS_POW3
+            #if !MICROPY_PY_BUILTINS_POW3
             mp_raise_msg(&mp_type_NotImplementedError, "3-arg pow() not supported");
-#elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+            #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
             return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
-#else
+            #else
             return mp_obj_int_pow3(args[0], args[1], args[2]);
-#endif
+            #endif
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
@@ -503,7 +505,7 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         }
         #endif
     }
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t val = mp_obj_get_float(o_in);
     if (n_args > 1) {
         mp_int_t num_dig = mp_obj_get_int(args[1]);
@@ -514,18 +516,22 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     }
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val);
     return mp_obj_new_int_from_float(rounded);
-#else
+    #else
     mp_int_t r = mp_obj_get_int(o_in);
     return mp_obj_new_int(r);
-#endif
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj, 1, 2, mp_builtin_round);
 
 STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
     mp_obj_t value;
     switch (n_args) {
-        case 1: value = MP_OBJ_NEW_SMALL_INT(0); break;
-        default: value = args[1]; break;
+        case 1:
+            value = MP_OBJ_NEW_SMALL_INT(0);
+            break;
+        default:
+            value = args[1];
+            break;
     }
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[0], &iter_buf);

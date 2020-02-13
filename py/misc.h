@@ -129,9 +129,16 @@ unichar utf8_get_char(const byte *s);
 const byte *utf8_next_char(const byte *s);
 size_t utf8_charlen(const byte *str, size_t len);
 #else
-static inline unichar utf8_get_char(const byte *s) { return *s; }
-static inline const byte *utf8_next_char(const byte *s) { return s + 1; }
-static inline size_t utf8_charlen(const byte *str, size_t len) { (void)str; return len; }
+static inline unichar utf8_get_char(const byte *s) {
+    return *s;
+}
+static inline const byte *utf8_next_char(const byte *s) {
+    return s + 1;
+}
+static inline size_t utf8_charlen(const byte *str, size_t len) {
+    (void)str;
+    return len;
+}
 #endif
 
 bool unichar_isspace(unichar c);
@@ -169,9 +176,15 @@ void vstr_init_print(vstr_t *vstr, size_t alloc, struct _mp_print_t *print);
 void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(size_t alloc);
 void vstr_free(vstr_t *vstr);
-static inline void vstr_reset(vstr_t *vstr) { vstr->len = 0; }
-static inline char *vstr_str(vstr_t *vstr) { return vstr->buf; }
-static inline size_t vstr_len(vstr_t *vstr) { return vstr->len; }
+static inline void vstr_reset(vstr_t *vstr) {
+    vstr->len = 0;
+}
+static inline char *vstr_str(vstr_t *vstr) {
+    return vstr->buf;
+}
+static inline size_t vstr_len(vstr_t *vstr) {
+    return vstr->len;
+}
 void vstr_hint_size(vstr_t *vstr, size_t size);
 char *vstr_extend(vstr_t *vstr, size_t size);
 char *vstr_add_len(vstr_t *vstr, size_t len);
@@ -192,7 +205,7 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...);
 #define CHECKBUF(buf, max_size) char buf[max_size + 1]; size_t buf##_len = max_size; char *buf##_p = buf;
 #define CHECKBUF_RESET(buf, max_size) buf##_len = max_size; buf##_p = buf;
 #define CHECKBUF_APPEND(buf, src, src_len) \
-        { size_t l = MIN(src_len, buf##_len); \
+    { size_t l = MIN(src_len, buf##_len); \
         memcpy(buf##_p, src, l); \
         buf##_len -= l; \
         buf##_p += l; }

@@ -70,7 +70,7 @@ static inline uint32_t raise_irq_pri(uint32_t pri) {
     //   - Rn is non-zero and the current BASEPRI value is 0
     //   - Rn is non-zero and less than the current BASEPRI value
     pri <<= (8 - __NVIC_PRIO_BITS);
-    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    __ASM volatile("msr basepri_max, %0" : : "r"(pri) : "memory");
     return basepri;
 }
 

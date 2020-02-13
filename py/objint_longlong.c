@@ -95,15 +95,20 @@ int mp_obj_int_sign(mp_obj_t self_in) {
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->val != 0);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(o->val != 0);
 
         // truncate value to fit in mp_int_t, which gives the same hash as
         // small int if the value fits without truncation
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
 
-        case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
-        case MP_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
+        case MP_UNARY_OP_POSITIVE:
+            return o_in;
+        case MP_UNARY_OP_NEGATIVE:
+            return mp_obj_new_int_from_ll(-o->val);
+        case MP_UNARY_OP_INVERT:
+            return mp_obj_new_int_from_ll(~o->val);
         case MP_UNARY_OP_ABS: {
             mp_obj_int_t *self = MP_OBJ_TO_PTR(o_in);
             if (self->val >= 0) {
@@ -114,7 +119,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             self->val = -self->val;
             return MP_OBJ_FROM_PTR(self);
         }
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

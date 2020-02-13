@@ -45,7 +45,7 @@
     | (srd)                         << MPU_RASR_SRD_Pos \
     | (size)                        << MPU_RASR_SIZE_Pos \
     | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
-    )
+)
 
 #define MPU_CONFIG_ETH(size) ( \
     MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos \
@@ -57,7 +57,7 @@
     | 0x00                          << MPU_RASR_SRD_Pos \
     | (size)                        << MPU_RASR_SIZE_Pos \
     | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
-    )
+)
 
 #define MPU_CONFIG_SDRAM(size) ( \
     MPU_INSTRUCTION_ACCESS_ENABLE   << MPU_RASR_XN_Pos \
@@ -69,7 +69,7 @@
     | 0x00                          << MPU_RASR_SRD_Pos \
     | (size)                        << MPU_RASR_SIZE_Pos \
     | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
-    )
+)
 
 static inline void mpu_init(void) {
     MPU->CTRL = MPU_PRIVILEGED_DEFAULT | MPU_CTRL_ENABLE_Msk;

@@ -55,11 +55,11 @@ struct ssl_args {
 STATIC const mp_obj_type_t ussl_socket_type;
 
 STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
-#if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
-#else
+    #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
-#endif
+    #endif
     o->base.type = &ussl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
@@ -155,7 +155,7 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int 
                 return 0;
             }
             if (r == SSL_EAGAIN) {
-eagain:
+            eagain:
                 r = MP_EAGAIN;
             }
             *errcode = r;
@@ -219,9 +219,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ussl_socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-#if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_USSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);

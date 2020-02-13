@@ -190,9 +190,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_dump_obj, mod_utimeq_dump);
 STATIC mp_obj_t utimeq_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_utimeq_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->len);
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 

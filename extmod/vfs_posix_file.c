@@ -79,7 +79,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_posix_fileio;
@@ -87,7 +87,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case 't':
                 type = &mp_type_vfs_posix_textio;
                 break;
-            #endif
+                #endif
         }
     }
 

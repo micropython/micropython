@@ -146,11 +146,11 @@ overflow:
 value_error:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_ValueError,
-            "invalid syntax for integer");
+                "invalid syntax for integer");
         raise_exc(exc, lex);
     } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "invalid syntax for integer with base %d", base);
+                "invalid syntax for integer with base %d", base);
         raise_exc(exc, lex);
     } else {
         vstr_t vstr;
@@ -159,7 +159,7 @@ value_error:
         mp_printf(&print, "invalid syntax for integer with base %d: ", base);
         mp_str_print_quoted(&print, str_val_start, top - str_val_start, true);
         mp_obj_t exc = mp_obj_new_exception_arg1(&mp_type_ValueError,
-            mp_obj_new_str_from_vstr(&mp_type_str, &vstr));
+                mp_obj_new_str_from_vstr(&mp_type_str, &vstr));
         raise_exc(exc, lex);
     }
 }
@@ -171,7 +171,7 @@ typedef enum {
 } parse_dec_in_t;
 
 mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
 
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
 // SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
@@ -179,17 +179,17 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 //   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
 //   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
 //   exponent).
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define DEC_VAL_MAX 1e20F
 #define SMALL_NORMAL_VAL (1e-37F)
 #define SMALL_NORMAL_EXP (-37)
 #define EXACT_POWER_OF_10 (9)
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define DEC_VAL_MAX 1e200
 #define SMALL_NORMAL_VAL (1e-307)
 #define SMALL_NORMAL_EXP (-307)
 #define EXACT_POWER_OF_10 (22)
-#endif
+    #endif
 
     const char *top = str + len;
     mp_float_t dec_val = 0;
@@ -334,17 +334,17 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     }
 
     // return the object
-#if MICROPY_PY_BUILTINS_COMPLEX
+    #if MICROPY_PY_BUILTINS_COMPLEX
     if (imag) {
         return mp_obj_new_complex(0, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
     }
-#else
+    #else
     if (imag || force_complex) {
         raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
     }
-#endif
+    #endif
     else {
         return mp_obj_new_float(dec_val);
     }
@@ -352,7 +352,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 value_error:
     raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid syntax for number"), lex);
 
-#else
+    #else
     raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "decimal numbers not supported"), lex);
-#endif
+    #endif
 }

@@ -73,7 +73,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
         return mp_const_none;
     }
     return mp_obj_new_str_of_type(mp_obj_get_type(self->str),
-        (const byte*)start, self->caps[no * 2 + 1] - start);
+            (const byte*)start, self->caps[no * 2 + 1] - start);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
@@ -402,7 +402,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     #endif
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
-error:
+    error:
         mp_raise_ValueError("Error in regex");
     }
     #if MICROPY_PY_URE_DEBUG

@@ -295,9 +295,9 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
 STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(id=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d)",
-              self->host, self->baudrate, self->polarity,
-              self->phase, self->bits, self->firstbit,
-              self->sck, self->mosi, self->miso);
+        self->host, self->baudrate, self->polarity,
+        self->phase, self->bits, self->firstbit,
+        self->sck, self->mosi, self->miso);
 }
 
 STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -318,7 +318,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
+        allowed_args, args);
     int8_t sck, mosi, miso;
 
     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
@@ -346,8 +346,8 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
     }
 
     machine_hw_spi_init_internal(self, args[ARG_id].u_int, args[ARG_baudrate].u_int,
-                                 args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
-                                 args[ARG_firstbit].u_int, sck, mosi, miso);
+        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+        args[ARG_firstbit].u_int, sck, mosi, miso);
 }
 
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

@@ -105,9 +105,15 @@ STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
     }
 
     switch (socket->u_param.type) {
-        case MOD_NETWORK_SOCK_STREAM: socket->u_param.type = Sn_MR_TCP; break;
-        case MOD_NETWORK_SOCK_DGRAM: socket->u_param.type = Sn_MR_UDP; break;
-        default: *_errno = MP_EINVAL; return -1;
+        case MOD_NETWORK_SOCK_STREAM:
+            socket->u_param.type = Sn_MR_TCP;
+            break;
+        case MOD_NETWORK_SOCK_DGRAM:
+            socket->u_param.type = Sn_MR_UDP;
+            break;
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
     }
 
     if (socket->u_param.fileno == -1) {

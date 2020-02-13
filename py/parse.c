@@ -188,7 +188,7 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-0;
+    0;
 
 #if USE_RULE_NAME
 // Define an array of rule names corresponding to each rule
@@ -257,8 +257,8 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     if (chunk != NULL && chunk->union_.used + num_bytes > chunk->alloc) {
         // not enough room at end of previously allocated chunk so try to grow
         mp_parse_chunk_t *new_data = (mp_parse_chunk_t*)m_renew_maybe(byte, chunk,
-            sizeof(mp_parse_chunk_t) + chunk->alloc,
-            sizeof(mp_parse_chunk_t) + chunk->alloc + num_bytes, false);
+                sizeof(mp_parse_chunk_t) + chunk->alloc,
+                sizeof(mp_parse_chunk_t) + chunk->alloc + num_bytes, false);
         if (new_data == NULL) {
             // could not grow existing memory; shrink it to fit previous
             (void)m_renew_maybe(byte, chunk, sizeof(mp_parse_chunk_t) + chunk->alloc,
@@ -381,12 +381,19 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
-            case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
+            case MP_PARSE_NODE_ID:
+                printf("id(%s)\n", qstr_str(arg));
+                break;
+            case MP_PARSE_NODE_STRING:
+                printf("str(%s)\n", qstr_str(arg));
+                break;
+            case MP_PARSE_NODE_BYTES:
+                printf("bytes(%s)\n", qstr_str(arg));
+                break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
-                printf("tok(%u)\n", (uint)arg); break;
+                printf("tok(%u)\n", (uint)arg);
+                break;
         }
     } else {
         // node must be a mp_parse_node_struct_t
@@ -516,8 +523,8 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         } else {
             // not interned, make a node holding a pointer to the string/bytes object
             mp_obj_t o = mp_obj_new_str_copy(
-                lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
-                (const byte*)lex->vstr.buf, lex->vstr.len);
+                    lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
+                    (const byte*)lex->vstr.buf, lex->vstr.len);
             pn = make_node_const_object(parser, lex->tok_line, o);
         }
     } else {
@@ -679,12 +686,12 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
         }
         arg0 = mp_unary_op(op, arg0);
 
-    #if MICROPY_COMP_CONST
+        #if MICROPY_COMP_CONST
     } else if (rule_id == RULE_expr_stmt) {
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!MP_PARSE_NODE_IS_NULL(pn1)
             && !(MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_expr_stmt_augassign)
-            || MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_expr_stmt_assign_list))) {
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_expr_stmt_assign_list))) {
             // this node is of the form <x> = <y>
             mp_parse_node_t pn0 = peek_result(parser, 1);
             if (MP_PARSE_NODE_IS_ID(pn0)
@@ -692,7 +699,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pn1)->nodes[0])
                 && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn1)->nodes[0]) == MP_QSTR_const
                 && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pn1)->nodes[1], RULE_trailer_paren)
-                ) {
+            ) {
                 // code to assign dynamic constants: id = const(value)
 
                 // get the id
@@ -703,7 +710,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 mp_obj_t value;
                 if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                        "constant must be an integer");
+                            "constant must be an integer");
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t*)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
@@ -732,14 +739,14 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             }
         }
         return false;
-    #endif
+        #endif
 
-    #if MICROPY_COMP_MODULE_CONST
+        #if MICROPY_COMP_MODULE_CONST
     } else if (rule_id == RULE_atom_expr_normal) {
         mp_parse_node_t pn0 = peek_result(parser, 1);
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!(MP_PARSE_NODE_IS_ID(pn0)
-            && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period))) {
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period))) {
             return false;
         }
         // id1.id2
@@ -758,7 +765,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             return false;
         }
         arg0 = dest[0];
-    #endif
+        #endif
 
     } else {
         return false;
@@ -841,9 +848,14 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     // work out the top-level rule to use, and push it on the stack
     size_t top_level_rule;
     switch (input_kind) {
-        case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
-        case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
-        default: top_level_rule = RULE_file_input;
+        case MP_PARSE_SINGLE_INPUT:
+            top_level_rule = RULE_single_input;
+            break;
+        case MP_PARSE_EVAL_INPUT:
+            top_level_rule = RULE_eval_input;
+            break;
+        default:
+            top_level_rule = RULE_file_input;
     }
     push_rule(&parser, lex->tok_line, top_level_rule, 0);
 
@@ -852,7 +864,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     bool backtrack = false;
 
     for (;;) {
-        next_rule:
+    next_rule:
         if (parser.rule_stack_top == 0) {
             break;
         }
@@ -1024,7 +1036,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 // n=3 is: item (sep item)* [sep]
                 bool had_trailing_sep;
                 if (backtrack) {
-                    list_backtrack:
+                list_backtrack:
                     had_trailing_sep = false;
                     if (n == 2) {
                         if (i == 1) {
@@ -1123,18 +1135,19 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     if (
         lex->tok_kind != MP_TOKEN_END // check we are at the end of the token stream
         || parser.result_stack_top == 0 // check that we got a node (can fail on empty input)
-        ) {
-    syntax_error:;
+    ) {
+    syntax_error:
+        ;
         mp_obj_t exc;
         if (lex->tok_kind == MP_TOKEN_INDENT) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unexpected indent");
+                    "unexpected indent");
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unindent doesn't match any outer indent level");
+                    "unindent doesn't match any outer indent level");
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                "invalid syntax");
+                    "invalid syntax");
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this

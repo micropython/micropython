@@ -115,7 +115,10 @@ STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_nu
     return true;
 }
 
-typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
+typedef struct _reg_name_t {
+    byte reg;
+    byte name[3];
+} reg_name_t;
 STATIC const reg_name_t reg_name_table[] = {
     {0, "a0\0"},
     {1, "a1\0"},
@@ -328,7 +331,7 @@ unknown_op:
     return;
 
     /*
-branch_not_in_range:
+    branch_not_in_range:
     emit_inline_xtensa_error_msg(emit, "branch not in range");
     return;
     */

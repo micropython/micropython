@@ -266,7 +266,7 @@
 
 // Enable hardware I2C if there are any peripherals defined
 #if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
-    || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
+|| defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C4_SCL)
 #define MICROPY_HW_ENABLE_HW_I2C (1)
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
@@ -315,10 +315,10 @@
 #if __DCACHE_PRESENT == 1
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
     (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+            ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #define MP_HAL_CLEAN_DCACHE(addr, size) \
     (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+            ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #else
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
