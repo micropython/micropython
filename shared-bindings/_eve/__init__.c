@@ -906,7 +906,56 @@ STATIC mp_obj_t _vertex2ii(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
 
-#define ROM_DECLS { MP_ROM_QSTR(MP_QSTR_AlphaFunc), MP_ROM_PTR(&alphafunc_obj) }, { MP_ROM_QSTR(MP_QSTR_Begin), MP_ROM_PTR(&begin_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapExtFormat), MP_ROM_PTR(&bitmapextformat_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapHandle), MP_ROM_PTR(&bitmaphandle_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapLayoutH), MP_ROM_PTR(&bitmaplayouth_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapLayout), MP_ROM_PTR(&bitmaplayout_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapSizeH), MP_ROM_PTR(&bitmapsizeh_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapSize), MP_ROM_PTR(&bitmapsize_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapSource), MP_ROM_PTR(&bitmapsource_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapSwizzle), MP_ROM_PTR(&bitmapswizzle_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformA), MP_ROM_PTR(&bitmaptransforma_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformB), MP_ROM_PTR(&bitmaptransformb_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformC), MP_ROM_PTR(&bitmaptransformc_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformD), MP_ROM_PTR(&bitmaptransformd_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformE), MP_ROM_PTR(&bitmaptransforme_obj) }, { MP_ROM_QSTR(MP_QSTR_BitmapTransformF), MP_ROM_PTR(&bitmaptransformf_obj) }, { MP_ROM_QSTR(MP_QSTR_BlendFunc), MP_ROM_PTR(&blendfunc_obj) }, { MP_ROM_QSTR(MP_QSTR_Call), MP_ROM_PTR(&call_obj) }, { MP_ROM_QSTR(MP_QSTR_Cell), MP_ROM_PTR(&cell_obj) }, { MP_ROM_QSTR(MP_QSTR_ClearColorA), MP_ROM_PTR(&clearcolora_obj) }, { MP_ROM_QSTR(MP_QSTR_ClearColorRGB), MP_ROM_PTR(&clearcolorrgb_obj) }, { MP_ROM_QSTR(MP_QSTR_Clear), MP_ROM_PTR(&clear_obj) }, { MP_ROM_QSTR(MP_QSTR_ClearStencil), MP_ROM_PTR(&clearstencil_obj) }, { MP_ROM_QSTR(MP_QSTR_ClearTag), MP_ROM_PTR(&cleartag_obj) }, { MP_ROM_QSTR(MP_QSTR_ColorA), MP_ROM_PTR(&colora_obj) }, { MP_ROM_QSTR(MP_QSTR_ColorMask), MP_ROM_PTR(&colormask_obj) }, { MP_ROM_QSTR(MP_QSTR_ColorRGB), MP_ROM_PTR(&colorrgb_obj) }, { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&display_obj) }, { MP_ROM_QSTR(MP_QSTR_End), MP_ROM_PTR(&end_obj) }, { MP_ROM_QSTR(MP_QSTR_Jump), MP_ROM_PTR(&jump_obj) }, { MP_ROM_QSTR(MP_QSTR_LineWidth), MP_ROM_PTR(&linewidth_obj) }, { MP_ROM_QSTR(MP_QSTR_Macro), MP_ROM_PTR(&macro_obj) }, { MP_ROM_QSTR(MP_QSTR_Nop), MP_ROM_PTR(&nop_obj) }, { MP_ROM_QSTR(MP_QSTR_PaletteSource), MP_ROM_PTR(&palettesource_obj) }, { MP_ROM_QSTR(MP_QSTR_PointSize), MP_ROM_PTR(&pointsize_obj) }, { MP_ROM_QSTR(MP_QSTR_RestoreContext), MP_ROM_PTR(&restorecontext_obj) }, { MP_ROM_QSTR(MP_QSTR_Return), MP_ROM_PTR(&return_obj) }, { MP_ROM_QSTR(MP_QSTR_SaveContext), MP_ROM_PTR(&savecontext_obj) }, { MP_ROM_QSTR(MP_QSTR_ScissorSize), MP_ROM_PTR(&scissorsize_obj) }, { MP_ROM_QSTR(MP_QSTR_ScissorXY), MP_ROM_PTR(&scissorxy_obj) }, { MP_ROM_QSTR(MP_QSTR_StencilFunc), MP_ROM_PTR(&stencilfunc_obj) }, { MP_ROM_QSTR(MP_QSTR_StencilMask), MP_ROM_PTR(&stencilmask_obj) }, { MP_ROM_QSTR(MP_QSTR_StencilOp), MP_ROM_PTR(&stencilop_obj) }, { MP_ROM_QSTR(MP_QSTR_TagMask), MP_ROM_PTR(&tagmask_obj) }, { MP_ROM_QSTR(MP_QSTR_Tag), MP_ROM_PTR(&tag_obj) }, { MP_ROM_QSTR(MP_QSTR_VertexTranslateX), MP_ROM_PTR(&vertextranslatex_obj) }, { MP_ROM_QSTR(MP_QSTR_VertexTranslateY), MP_ROM_PTR(&vertextranslatey_obj) }, { MP_ROM_QSTR(MP_QSTR_VertexFormat), MP_ROM_PTR(&vertexformat_obj) }, { MP_ROM_QSTR(MP_QSTR_Vertex2ii), MP_ROM_PTR(&vertex2ii_obj) }
+#define ROM_DECLS \
+    { MP_ROM_QSTR(MP_QSTR_AlphaFunc), MP_ROM_PTR(&alphafunc_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Begin), MP_ROM_PTR(&begin_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapExtFormat), MP_ROM_PTR(&bitmapextformat_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapHandle), MP_ROM_PTR(&bitmaphandle_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapLayoutH), MP_ROM_PTR(&bitmaplayouth_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapLayout), MP_ROM_PTR(&bitmaplayout_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapSizeH), MP_ROM_PTR(&bitmapsizeh_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapSize), MP_ROM_PTR(&bitmapsize_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapSource), MP_ROM_PTR(&bitmapsource_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapSwizzle), MP_ROM_PTR(&bitmapswizzle_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformA), MP_ROM_PTR(&bitmaptransforma_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformB), MP_ROM_PTR(&bitmaptransformb_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformC), MP_ROM_PTR(&bitmaptransformc_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformD), MP_ROM_PTR(&bitmaptransformd_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformE), MP_ROM_PTR(&bitmaptransforme_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BitmapTransformF), MP_ROM_PTR(&bitmaptransformf_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_BlendFunc), MP_ROM_PTR(&blendfunc_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Call), MP_ROM_PTR(&call_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Cell), MP_ROM_PTR(&cell_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ClearColorA), MP_ROM_PTR(&clearcolora_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ClearColorRGB), MP_ROM_PTR(&clearcolorrgb_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Clear), MP_ROM_PTR(&clear_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ClearStencil), MP_ROM_PTR(&clearstencil_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ClearTag), MP_ROM_PTR(&cleartag_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ColorA), MP_ROM_PTR(&colora_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ColorMask), MP_ROM_PTR(&colormask_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ColorRGB), MP_ROM_PTR(&colorrgb_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&display_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_End), MP_ROM_PTR(&end_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Jump), MP_ROM_PTR(&jump_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_LineWidth), MP_ROM_PTR(&linewidth_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Macro), MP_ROM_PTR(&macro_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Nop), MP_ROM_PTR(&nop_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_PaletteSource), MP_ROM_PTR(&palettesource_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_PointSize), MP_ROM_PTR(&pointsize_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_RestoreContext), MP_ROM_PTR(&restorecontext_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Return), MP_ROM_PTR(&return_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_SaveContext), MP_ROM_PTR(&savecontext_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ScissorSize), MP_ROM_PTR(&scissorsize_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_ScissorXY), MP_ROM_PTR(&scissorxy_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_StencilFunc), MP_ROM_PTR(&stencilfunc_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_StencilMask), MP_ROM_PTR(&stencilmask_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_StencilOp), MP_ROM_PTR(&stencilop_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_TagMask), MP_ROM_PTR(&tagmask_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Tag), MP_ROM_PTR(&tag_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_VertexTranslateX), MP_ROM_PTR(&vertextranslatex_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_VertexTranslateY), MP_ROM_PTR(&vertextranslatey_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_VertexFormat), MP_ROM_PTR(&vertexformat_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_Vertex2ii), MP_ROM_PTR(&vertex2ii_obj) }
 
 //}
 
