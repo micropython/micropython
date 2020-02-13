@@ -383,11 +383,6 @@ typedef struct _mp_rom_map_elem_t {
     mp_rom_obj_t value;
 } mp_rom_map_elem_t;
 
-// TODO maybe have a truncated mp_map_t for fixed tables, since alloc=used
-// put alloc last in the structure, so the truncated version does not need it
-// this would save 1 ROM word for all ROM objects that have a locals_dict
-// would also need a trucated dict structure
-
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
