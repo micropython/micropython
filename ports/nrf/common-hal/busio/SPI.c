@@ -31,35 +31,35 @@
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
-// These are in order from ighest available frequency to lowest (32MHz first, then 8MHz).
+// These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
 STATIC spim_peripheral_t spim_peripherals[] = {
 #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
     // SPIM3 exists only on nRF52840 and supports 32MHz max. All other SPIM's are only 8MHz max.
     // Allocate SPIM3 first.
     { .spim = NRFX_SPIM_INSTANCE(3),
       .max_frequency = 32000000,
-      .max_xfer_size = SPIM3_EASYDMA_MAXCNT_SIZE,
+      .max_xfer_size = MIN(SPIM3_BUFFER_SIZE, (1UL << SPIM3_EASYDMA_MAXCNT_SIZE) - 1)
     },
 #endif
 #if NRFX_CHECK(NRFX_SPIM2_ENABLED)
     // SPIM2 is not shared with a TWIM, so allocate before the shared ones.
     { .spim = NRFX_SPIM_INSTANCE(2),
       .max_frequency = 8000000,
-      .max_xfer_size = SPIM2_EASYDMA_MAXCNT_SIZE,
+      .max_xfer_size = (1UL << SPIM2_EASYDMA_MAXCNT_SIZE) - 1
     },
 #endif
 #if NRFX_CHECK(NRFX_SPIM1_ENABLED)
     // SPIM1 and TWIM1 share an address.
     { .spim = NRFX_SPIM_INSTANCE(1),
       .max_frequency = 8000000,
-      .max_xfer_size = SPIM1_EASYDMA_MAXCNT_SIZE,
+      .max_xfer_size = (1UL << SPIM1_EASYDMA_MAXCNT_SIZE) - 1
     },
 #endif
 #if NRFX_CHECK(NRFX_SPIM0_ENABLED)
     // SPIM0 and TWIM0 share an address.
     { .spim = NRFX_SPIM_INSTANCE(0),
       .max_frequency = 8000000,
-      .max_xfer_size = SPIM0_EASYDMA_MAXCNT_SIZE,
+      .max_xfer_size = (1UL << SPIM0_EASYDMA_MAXCNT_SIZE) - 1
     },
 #endif
 };
@@ -232,104 +232,66 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size_t len) {
-    if (len == 0) {
-        return true;
-    }
-
     const bool is_spim3 = self->spim_peripheral->spim.p_reg == NRF_SPIM3;
+    uint8_t *next_chunk = (uint8_t *) data;
 
-    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
-    const uint32_t parts = len / max_xfer_size;
-    const uint32_t remainder = len % max_xfer_size;
-
-    for (uint32_t i = 0; i < parts; ++i) {
-        uint8_t *start = (uint8_t *) (data + i * max_xfer_size);
+    while (len > 0) {
+        size_t chunk_size = MIN(len, self->spim_peripheral->max_xfer_size);
+        uint8_t *chunk = next_chunk;
         if (is_spim3) {
             // If SPIM3, copy into unused RAM block, and do DMA from there.
-            memcpy(spim3_transmit_buffer, start, max_xfer_size);
-            start = spim3_transmit_buffer;
+            memcpy(spim3_transmit_buffer, chunk, chunk_size);
+            chunk = spim3_transmit_buffer;
         }
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(start, max_xfer_size);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(chunk, chunk_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS) {
             return false;
-    }
-
-    if (remainder > 0) {
-        uint8_t *start = (uint8_t *) (data + parts * max_xfer_size);
-        if (is_spim3) {
-            // If SPIM3, copy into unused RAM block, and do DMA from there.
-            memcpy(spim3_transmit_buffer, start, remainder);
-            start = spim3_transmit_buffer;
         }
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_TX(start, remainder);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
-            return false;
+        next_chunk += chunk_size;
+        len -= chunk_size;
     }
-
     return true;
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value) {
-    if (len == 0) {
-        return true;
-    }
+    uint8_t *next_chunk = data;
 
-    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
-    const uint32_t parts = len / max_xfer_size;
-    const uint32_t remainder = len % max_xfer_size;
-
-    for (uint32_t i = 0; i < parts; ++i) {
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + i * max_xfer_size, max_xfer_size);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+    while (len > 0) {
+        size_t chunk_size = MIN(len, self->spim_peripheral->max_xfer_size);
+        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(next_chunk, chunk_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS) {
             return false;
+        }
+        next_chunk += chunk_size;
+        len -= chunk_size;
     }
-
-    if (remainder > 0) {
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_XFER_RX(data + parts * max_xfer_size, remainder);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
-            return false;
-    }
-
     return true;
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
-    if (len == 0) {
-        return true;
-    }
-
     const bool is_spim3 = self->spim_peripheral->spim.p_reg == NRF_SPIM3;
+    uint8_t *next_chunk_out = data_out;
+    uint8_t *next_chunk_in = data_in;
 
-    const uint32_t max_xfer_size = self->spim_peripheral->max_xfer_size;
-    const uint32_t parts = len / max_xfer_size;
-    const uint32_t remainder = len % max_xfer_size;
-
-    for (uint32_t i = 0; i < parts; ++i) {
-        uint8_t *out_start = (uint8_t *) (data_out + i * max_xfer_size);
+    while (len > 0) {
+        uint8_t *chunk_out = next_chunk_out;
+        size_t chunk_size = MIN(len, self->spim_peripheral->max_xfer_size);
         if (is_spim3) {
             // If SPIM3, copy into unused RAM block, and do DMA from there.
-            memcpy(spim3_transmit_buffer, out_start, max_xfer_size);
-            out_start = spim3_transmit_buffer;
+            memcpy(spim3_transmit_buffer, chunk_out, chunk_size);
+            chunk_out = spim3_transmit_buffer;
         }
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(out_start, max_xfer_size,
-            data_in + i * max_xfer_size, max_xfer_size);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
+        const nrfx_spim_xfer_desc_t xfer =
+            NRFX_SPIM_SINGLE_XFER(next_chunk_out, chunk_size,
+                                  next_chunk_in, chunk_size);
+        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS) {
             return false;
-    }
-
-    if (remainder > 0) {
-        uint8_t *out_start = (uint8_t *) (data_out + parts * max_xfer_size);
-        if (is_spim3) {
-            // If SPIM3, copy into unused RAM block, and do DMA from there.
-            memcpy(spim3_transmit_buffer, out_start, remainder);
-            out_start = spim3_transmit_buffer;
         }
-        const nrfx_spim_xfer_desc_t xfer = NRFX_SPIM_SINGLE_XFER(out_start, remainder,
-            data_in + parts * max_xfer_size, remainder);
-        if (nrfx_spim_xfer(&self->spim_peripheral->spim, &xfer, 0) != NRFX_SUCCESS)
-            return false;
-    }
 
+        next_chunk_out += chunk_size;
+        next_chunk_in += chunk_size;
+        len -= chunk_size;
+    }
     return true;
 }
 

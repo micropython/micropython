@@ -22,8 +22,8 @@ MEMORY
     /* SoftDevice 6.1.0 with 5 connections and various increases takes just under 64kiB.
     /* To measure the minimum required amount of memory for given configuration, set this number
        high enough to work and then check the mutation of the value done by sd_ble_enable. */
-    SPIM3_RAM (rw)  : ORIGIN = 0x20000000 + 64K, LENGTH = 8K
-    RAM (xrw)       : ORIGIN = 0x20000000 + 64K + 8K, LENGTH = 256K - 64K -8K
+    SPIM3_RAM (rw)  : ORIGIN = 0x20000000 + ${SOFTDEVICE_RAM_SIZE}, LENGTH = ${SPIM3_BUFFER_SIZE}
+    RAM (xrw)       : ORIGIN = 0x20000000 + ${SOFTDEVICE_RAM_SIZE} + ${SPIM3_BUFFER_SIZE}, LENGTH = 256K - ${SOFTDEVICE_RAM_SIZE} -${SPIM3_BUFFER_SIZE}
 
 }
 

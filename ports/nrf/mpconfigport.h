@@ -34,9 +34,16 @@
 #include "nrf_sdm.h"  // for SD_FLASH_SIZE
 #include "peripherals/nrf/nvm.h" // for FLASH_PAGE_SIZE
 
+// Max RAM used by SoftDevice. Can be changed when SoftDevice parameters are changed.
+// See common.template.ld.
+#define SOFTDEVICE_RAM_SIZE         (64*1024)
+
 #ifdef NRF52840
 #define MICROPY_PY_SYS_PLATFORM "nRF52840"
 #define FLASH_SIZE                  (0x100000)  // 1MiB
+// Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
+// See common.template.ld.
+#define SPIM3_BUFFER_SIZE           (8192)
 #endif
 
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
