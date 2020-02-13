@@ -157,6 +157,9 @@ endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -298,6 +301,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
+        _eve/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -359,7 +363,8 @@ SRC_SHARED_MODULE_ALL = \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
-	_pew/PewPew.c
+	_pew/PewPew.c \
+        _eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))

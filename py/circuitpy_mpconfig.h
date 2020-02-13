@@ -384,6 +384,13 @@ extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE
 #endif
 
+#if CIRCUITPY__EVE
+extern const struct _mp_obj_module_t _eve_module;
+#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
+#else
+#define _EVE_MODULE
+#endif
+
 #if CIRCUITPY_MICROCONTROLLER
 extern const struct _mp_obj_module_t microcontroller_module;
 #define MICROCONTROLLER_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module },
@@ -617,6 +624,7 @@ extern const struct _mp_obj_module_t ustack_module;
     I2CSLAVE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
+    _EVE_MODULE \
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
