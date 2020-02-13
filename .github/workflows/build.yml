@@ -147,6 +147,7 @@ jobs:
         - "electronut_labs_papyr"
         - "escornabot_makech"
         - "espruino_pico"
+        - "espruino_wifi"
         - "feather_bluefruit_sense"
         - "feather_m0_adalogger"
         - "feather_m0_basic"

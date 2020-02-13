@@ -32,8 +32,8 @@
 #define FLASH_SIZE                  (0x60000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define AUTORESET_DELAY_MS 500
+#define AUTORESET_DELAY_MS (500)
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-#define BOARD_OSC_DIV 8
+#define BOARD_OSC_DIV (8)
 

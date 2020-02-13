@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Glenn Ruben Bakke
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef STM32F4_MPCONFIGPORT_H__
-#define STM32F4_MPCONFIGPORT_H__
+//Micropython setup
 
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
-#define MICROPY_PY_FUNCTION_ATTRS                (1)
-#define MICROPY_PY_IO                            (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
-#define MICROPY_PY_UJSON                         (1)
+#define MICROPY_HW_BOARD_NAME       "Espruino Wifi"
+#define MICROPY_HW_MCU_NAME         "STM32F411xE"
 
-// 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
+#define FLASH_SIZE                  (0x80000) //512K
+#define FLASH_PAGE_SIZE             (0x4000)  //16K
 
-#include "py/circuitpy_mpconfig.h"
-
-//Board flags:
-#ifndef BOARD_OVERWRITE_SWD
-#define BOARD_OVERWRITE_SWD (0)
-#endif
-#ifndef BOARD_VTOR_DEFER
-#define BOARD_VTOR_DEFER (0)
-#endif
-#ifndef BOARD_NO_VBUS_SENSE
-#define BOARD_NO_VBUS_SENSE (0)
-#endif
-
-#define MAX_UART 10 //how many UART are implemented
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    void *cpy_uart_obj_all[MAX_UART]; \
-	CIRCUITPY_COMMON_ROOT_POINTERS
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#define BOARD_OSC_DIV (8)
+#define BOARD_OVERWRITE_SWD (1)

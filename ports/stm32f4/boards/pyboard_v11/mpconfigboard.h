@@ -32,7 +32,7 @@
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define BOARD_OSC_DIV 12
+#define BOARD_OSC_DIV (12)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB07)

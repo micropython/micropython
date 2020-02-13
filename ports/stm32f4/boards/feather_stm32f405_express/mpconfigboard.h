@@ -34,7 +34,7 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PC00)
 
-#define BOARD_OSC_DIV 12
+#define BOARD_OSC_DIV (12)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)
@@ -44,7 +44,7 @@
 
 // Bootloader only
 #ifdef UF2_BOOTLOADER_ENABLED
-    #define BOARD_VTOR_DEFER //Leave VTOR relocation to bootloader
+    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
 #endif
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
