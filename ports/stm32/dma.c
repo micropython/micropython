@@ -85,7 +85,7 @@ struct _dma_descr_t {
     #elif defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
     DMA_Channel_TypeDef *instance;
     #else
-    #error "Unsupported Processor"
+#error "Unsupported Processor"
     #endif
     uint32_t sub_instance;
     dma_id_t id;
@@ -709,7 +709,7 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Parent = data;
 }
 
-void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data){
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
     // Some drivers allocate the DMA_HandleTypeDef from the stack
     // (i.e. dac, i2c, spi) and for those cases we need to clear the
     // structure so we don't get random values from the stack)
@@ -789,7 +789,7 @@ void dma_invalidate_channel(const dma_descr_t *dma_descr) {
     if (dma_descr != NULL) {
         dma_id_t dma_id = dma_descr->id;
         // Only compare the sub-instance, not the direction bit (MSB)
-        if ((dma_last_sub_instance[dma_id] & 0x7f) == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance) ) {
+        if ((dma_last_sub_instance[dma_id] & 0x7f) == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance)) {
             dma_last_sub_instance[dma_id] = DMA_INVALID_CHANNEL;
         }
     }

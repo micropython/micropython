@@ -31,7 +31,7 @@
 // returns the value of "intlevel" from the PS register
 static inline uint32_t query_irq(void) {
     uint32_t ps;
-    __asm__ volatile("rsr %0, ps" : "=a" (ps));
+    __asm__ volatile("rsr %0, ps" : "=a"(ps));
     return ps & 0xf;
 }
 
@@ -39,13 +39,13 @@ static inline uint32_t query_irq(void) {
 // "intlevel" should be between 0 and 15 inclusive, and should be an integer
 static inline uint32_t raise_irq_pri(uint32_t intlevel) {
     uint32_t old_ps;
-    __asm__ volatile ("rsil %0, %1" : "=a" (old_ps) : "I" (intlevel));
+    __asm__ volatile("rsil %0, %1" : "=a"(old_ps) : "I"(intlevel));
     return old_ps;
 }
 
 // "ps" should be the value returned from raise_irq_pri
 static inline void restore_irq_pri(uint32_t ps) {
-    __asm__ volatile ("wsr %0, ps; rsync" :: "a" (ps));
+    __asm__ volatile("wsr %0, ps; rsync" :: "a"(ps));
 }
 
 static inline uint32_t disable_irq(void) {

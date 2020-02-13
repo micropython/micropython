@@ -90,10 +90,9 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         pin = MICROPY_PY_MACHINE_PIN_MAKE_NEW(NULL, n_args, n_kw, pin_args);
 
         mp_local_free(pin_args);
-    }
-    else
+    } else
     #endif
-    // Otherwise there should be 1 or 2 args
+        // Otherwise there should be 1 or 2 args
     {
         if (n_args == 1) {
             pin = args[0];

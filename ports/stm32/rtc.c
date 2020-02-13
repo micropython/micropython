@@ -115,7 +115,7 @@ void rtc_init_start(bool force_init) {
     if (!force_init) {
         uint32_t bdcr = RCC->BDCR;
         if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL | RCC_BDCR_LSEON | RCC_BDCR_LSERDY))
-            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+                == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
             // LSE is enabled & ready --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
@@ -125,7 +125,7 @@ void rtc_init_start(bool force_init) {
             rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             return;
         } else if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL))
-            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
+                   == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
@@ -186,14 +186,14 @@ void rtc_init_finalise() {
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
     #if defined(STM32L4) || defined(STM32WB)
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
     #else
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
     #endif
         // power on reset occurred
         rtc_info |= 0x10000;
     }
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
         // external reset occurred
         rtc_info |= 0x20000;
     }
@@ -348,13 +348,13 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else
     #endif
-    if (rtc_use_lse) {
-        RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-        RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-    } else {
-        RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-        RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-    }
+        if (rtc_use_lse) {
+            RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+            RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+        } else {
+            RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+            RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+        }
     PYB_RCC_OscConfig(&RCC_OscInitStruct);
 
     // now ramp up osc. in background and flag calendear init needed
@@ -383,7 +383,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         #endif
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > timeout) {
+            if ((HAL_GetTick() - tickstart) > timeout) {
                 return HAL_TIMEOUT;
             }
         }
@@ -391,7 +391,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         // we now have to wait for LSI ready or timeout
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > MICROPY_HW_RTC_LSI_TIMEOUT_MS) {
+            if ((HAL_GetTick() - tickstart) > MICROPY_HW_RTC_LSI_TIMEOUT_MS) {
                 return HAL_TIMEOUT;
             }
         }
@@ -422,7 +422,7 @@ STATIC void RTC_CalendarConfig(void) {
     date.Date = 1;
     date.WeekDay = RTC_WEEKDAY_THURSDAY;
 
-    if(HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
+    if (HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -714,7 +714,7 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         cal = mp_obj_get_int(args[1]);
         mp_uint_t cal_p, cal_m;
         if (cal < -511 || cal > 512) {
-#if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
+            #if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
             if ((cal & 0xfffe) == 0x0ffe) {
                 // turn on/off X18 (PC13) 512Hz output
                 // Note:
@@ -728,9 +728,9 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
             } else {
                 mp_raise_ValueError("calibration value out of range");
             }
-#else
+            #else
             mp_raise_ValueError("calibration value out of range");
-#endif
+            #endif
         }
         if (cal > 0) {
             cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;

@@ -111,7 +111,7 @@ STATIC void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     int h, l;
     i2c_get_period(self->port, &h, &l);
     mp_printf(print, "I2C(%u, scl=%u, sda=%u, freq=%u)",
-        self->port, self->scl, self->sda, I2C_APB_CLK_FREQ / (h + l));
+              self->port, self->scl, self->sda, I2C_APB_CLK_FREQ / (h + l));
 }
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

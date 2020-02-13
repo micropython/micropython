@@ -48,7 +48,7 @@ void __stack_chk_fail(void) {
 
 /* fill in __assert_fail for libc */
 void __assert_fail(const char *__assertion, const char *__file,
-    unsigned int __line, const char *__function) {
+                   unsigned int __line, const char *__function) {
     printf("Assert at %s:%d:%s() \"%s\" failed\n", __file, __line, __function, __assertion);
     for (;;) ;
 }

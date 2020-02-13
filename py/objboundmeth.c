@@ -98,13 +98,13 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 STATIC const mp_obj_type_t mp_type_bound_meth = {
     { &mp_type_type },
     .name = MP_QSTR_bound_method,
-#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = bound_meth_print,
-#endif
+    #endif
     .call = bound_meth_call,
-#if MICROPY_PY_FUNCTION_ATTRS
+    #if MICROPY_PY_FUNCTION_ATTRS
     .attr = bound_meth_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self) {

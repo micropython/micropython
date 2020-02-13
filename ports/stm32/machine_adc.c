@@ -250,10 +250,10 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
         ADC1_COMMON->CCR |= ADC_CCR_TSEN;
         adc_stabilisation_delay_us(ADC_TEMPSENSOR_DELAY_US);
-    #if defined(ADC_CHANNEL_VBAT)
+        #if defined(ADC_CHANNEL_VBAT)
     } else if (channel == ADC_CHANNEL_VBAT) {
         ADC1_COMMON->CCR |= ADC_CCR_VBATEN;
-    #endif
+        #endif
     }
     adc->SMPR = sample_time << ADC_SMPR_SMP_Pos; // select sample time
     adc->CHSELR = 1 << channel; // select channel for conversion
@@ -382,25 +382,25 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         adc = ADC1;
         channel = mp_obj_get_int(source);
         if (channel == ADC_CHANNEL_VREFINT
-            || channel == ADC_CHANNEL_TEMPSENSOR
+                || channel == ADC_CHANNEL_TEMPSENSOR
             #if defined(ADC_CHANNEL_VBAT)
-            || channel == ADC_CHANNEL_VBAT
+                || channel == ADC_CHANNEL_VBAT
             #endif
-            ) {
+           ) {
             sample_time = ADC_SAMPLETIME_DEFAULT_INT;
         }
     } else {
         const pin_obj_t *pin = pin_find(source);
         if (pin->adc_num & PIN_ADC1) {
             adc = ADC1;
-        #if defined(ADC2)
+            #if defined(ADC2)
         } else if (pin->adc_num & PIN_ADC2) {
             adc = ADC2;
-        #endif
-        #if defined(ADC2)
+            #endif
+            #if defined(ADC2)
         } else if (pin->adc_num & PIN_ADC3) {
             adc = ADC3;
-        #endif
+            #endif
         } else {
             // No ADC function on given pin
             mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) does not have ADC capabilities", pin->name);

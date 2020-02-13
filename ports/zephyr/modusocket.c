@@ -52,10 +52,10 @@ typedef struct _socket_obj_t {
     mp_obj_base_t base;
     int ctx;
 
-    #define STATE_NEW 0
-    #define STATE_CONNECTING 1
-    #define STATE_CONNECTED 2
-    #define STATE_PEER_CLOSED 3
+#define STATE_NEW 0
+#define STATE_CONNECTING 1
+#define STATE_CONNECTED 2
+#define STATE_PEER_CLOSED 3
     int8_t state;
 } socket_obj_t;
 

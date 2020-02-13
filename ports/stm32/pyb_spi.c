@@ -98,7 +98,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
     init->Mode = args[0].u_int;
 
     spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
-        args[6].u_int, args[8].u_int);
+                   args[6].u_int, args[8].u_int);
 
     init->Direction = args[5].u_int;
     init->NSS = args[7].u_int;

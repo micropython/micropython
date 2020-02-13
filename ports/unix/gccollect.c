@@ -43,13 +43,13 @@
 typedef mp_uint_t regs_t[6];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long rbx asm ("rbx");
-    register long rbp asm ("rbp");
-    register long r12 asm ("r12");
-    register long r13 asm ("r13");
-    register long r14 asm ("r14");
-    register long r15 asm ("r15");
-#ifdef __clang__
+    register long rbx asm("rbx");
+    register long rbp asm("rbp");
+    register long r12 asm("r12");
+    register long r13 asm("r13");
+    register long r14 asm("r14");
+    register long r15 asm("r15");
+    #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
     // uncompliant (wrt to GCC) behavior of handling register variables.
@@ -62,7 +62,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     asm("" : "=r"(r13));
     asm("" : "=r"(r14));
     asm("" : "=r"(r15));
-#endif
+    #endif
     arr[0] = rbx;
     arr[1] = rbp;
     arr[2] = r12;
@@ -76,11 +76,11 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 typedef mp_uint_t regs_t[4];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long ebx asm ("ebx");
-    register long esi asm ("esi");
-    register long edi asm ("edi");
-    register long ebp asm ("ebp");
-#ifdef __clang__
+    register long ebx asm("ebx");
+    register long esi asm("esi");
+    register long edi asm("edi");
+    register long ebp asm("ebp");
+    #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
     // uncompliant (wrt to GCC) behavior of handling register variables.
@@ -91,7 +91,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     asm("" : "=r"(esi));
     asm("" : "=r"(edi));
     asm("" : "=r"(ebp));
-#endif
+    #endif
     arr[0] = ebx;
     arr[1] = esi;
     arr[2] = edi;
@@ -103,16 +103,16 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 typedef mp_uint_t regs_t[10];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long r4 asm ("r4");
-    register long r5 asm ("r5");
-    register long r6 asm ("r6");
-    register long r7 asm ("r7");
-    register long r8 asm ("r8");
-    register long r9 asm ("r9");
-    register long r10 asm ("r10");
-    register long r11 asm ("r11");
-    register long r12 asm ("r12");
-    register long r13 asm ("r13");
+    register long r4 asm("r4");
+    register long r5 asm("r5");
+    register long r6 asm("r6");
+    register long r7 asm("r7");
+    register long r8 asm("r8");
+    register long r9 asm("r9");
+    register long r10 asm("r10");
+    register long r11 asm("r11");
+    register long r12 asm("r12");
+    register long r13 asm("r13");
     arr[0] = r4;
     arr[1] = r5;
     arr[2] = r6;

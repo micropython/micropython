@@ -180,7 +180,7 @@ STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     for (int i = 0; i < heap->len; i++) {
         printf(UINT_FMT "\t%p\t%p\n", heap->items[i].time,
-            MP_OBJ_TO_PTR(heap->items[i].callback), MP_OBJ_TO_PTR(heap->items[i].args));
+               MP_OBJ_TO_PTR(heap->items[i].callback), MP_OBJ_TO_PTR(heap->items[i].args));
     }
     return mp_const_none;
 }

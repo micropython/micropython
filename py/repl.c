@@ -50,7 +50,7 @@ bool mp_repl_continue_with_input(const char *input) {
 
     // check if input starts with a certain keyword
     bool starts_with_compound_keyword =
-           input[0] == '@'
+        input[0] == '@'
         || str_startswith_word(input, "if")
         || str_startswith_word(input, "while")
         || str_startswith_word(input, "for")
@@ -64,11 +64,11 @@ bool mp_repl_continue_with_input(const char *input) {
         ;
 
     // check for unmatched open bracket, quote or escape quote
-    #define Q_NONE (0)
-    #define Q_1_SINGLE (1)
-    #define Q_1_DOUBLE (2)
-    #define Q_3_SINGLE (3)
-    #define Q_3_DOUBLE (4)
+#define Q_NONE (0)
+#define Q_1_SINGLE (1)
+#define Q_1_DOUBLE (2)
+#define Q_3_SINGLE (3)
+#define Q_3_DOUBLE (4)
     int n_paren = 0;
     int n_brack = 0;
     int n_brace = 0;
@@ -231,8 +231,8 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
 
             // multiple matches found, print them out
 
-            #define WORD_SLOT_LEN (16)
-            #define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
+#define WORD_SLOT_LEN (16)
+#define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
 
             int line_len = MAX_LINE_LEN; // force a newline for first word
             for (qstr q = q_first; q <= q_last; ++q) {

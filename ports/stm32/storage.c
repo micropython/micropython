@@ -162,10 +162,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
-    #if defined(MICROPY_HW_BDEV_READBLOCK)
+        #if defined(MICROPY_HW_BDEV_READBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
-    #endif
+        #endif
     } else {
         return false;
     }
@@ -176,10 +176,10 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;
-    #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
+        #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_WRITEBLOCK(src, block - FLASH_PART1_START_BLOCK);
-    #endif
+        #endif
     } else {
         return false;
     }
@@ -375,11 +375,11 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
                 // Will be using extended block protocol
                 if (self == &pyb_flash_obj) {
                     ret = -1;
-                #if defined(SPIFLASH)
+                    #if defined(SPIFLASH)
                 } else {
                     // Switch to use native block size of SPI flash
                     self->use_native_block_size = true;
-                #endif
+                    #endif
                 }
             }
             return MP_OBJ_NEW_SMALL_INT(ret);
@@ -392,10 +392,10 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             if (self == &pyb_flash_obj) {
                 // Get true size
                 n = storage_get_block_count();
-            #if defined(SPIFLASH)
+                #if defined(SPIFLASH)
             } else if (self->use_native_block_size) {
                 n = self->len / PYB_FLASH_NATIVE_BLOCK_SIZE;
-            #endif
+                #endif
             } else {
                 n = self->len / FLASH_BLOCK_SIZE;
             }

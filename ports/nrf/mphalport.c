@@ -57,7 +57,7 @@ void mp_hal_set_interrupt_char(int c) {
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     if ((poll_flags & MP_STREAM_POLL_RD) && MP_STATE_PORT(board_stdio_uart) != NULL
-        && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
+            && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
         ret |= MP_STREAM_POLL_RD;
     }
     return ret;
@@ -93,16 +93,15 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_delay_us(mp_uint_t us)
-{
+void mp_hal_delay_us(mp_uint_t us) {
     if (us == 0) {
         return;
     }
-    register uint32_t delay __ASM ("r0") = us;
-    __ASM volatile (
-#ifdef NRF51
-            ".syntax unified\n"
-#endif
+    register uint32_t delay __ASM("r0") = us;
+    __ASM volatile(
+        #ifdef NRF51
+        ".syntax unified\n"
+        #endif
         "1:\n"
         " SUBS %0, %0, #1\n"
         " NOP\n"
@@ -117,7 +116,7 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#if defined(NRF52) || defined(NRF9160_XXAA)
+        #if defined(NRF52) || defined(NRF9160_XXAA)
         " NOP\n"
         " NOP\n"
         " NOP\n"
@@ -164,15 +163,13 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#endif
+        #endif
         " BNE 1b\n"
-        : "+r" (delay));
+        : "+r"(delay));
 }
 
-void mp_hal_delay_ms(mp_uint_t ms)
-{
-    for (mp_uint_t i = 0; i < ms; i++)
-    {
+void mp_hal_delay_ms(mp_uint_t ms) {
+    for (mp_uint_t i = 0; i < ms; i++) {
         mp_hal_delay_us(999);
     }
 }

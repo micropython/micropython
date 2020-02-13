@@ -141,7 +141,7 @@ STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
 STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent_in) {
     uint32_t cmp;
     if (0) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_type(percent_in, &mp_type_float)) {
         float percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
@@ -151,7 +151,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
         } else {
             cmp = percent / 100.0 * ((float)period);
         }
-    #endif
+        #endif
     } else {
         mp_int_t percent = mp_obj_get_int(percent_in);
         if (percent <= 0) {
@@ -193,10 +193,10 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
         mp_printf(print, "Timer(%u)", self->tim_id);
     } else {
         mp_printf(print, "Timer(%u, prescaler=%u, period=%u, mode=%s)",
-            self->tim_id,
-            1 << (self->ftm.Instance->SC & 7),
-            self->ftm.Instance->MOD & 0xffff,
-            self->ftm.Init.CounterMode == FTM_COUNTERMODE_UP ? "UP" : "CENTER");
+                  self->tim_id,
+                  1 << (self->ftm.Instance->SC & 7),
+                  self->ftm.Instance->MOD & 0xffff,
+                  self->ftm.Init.CounterMode == FTM_COUNTERMODE_UP ? "UP" : "CENTER");
     }
 }
 
@@ -716,9 +716,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_prescaler), MP_ROM_PTR(&pyb_timer_prescaler_obj) },
     { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&pyb_timer_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_callback_obj) },
-#if MICROPY_TIMER_REG
+    #if MICROPY_TIMER_REG
     { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_reg_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_UP),              MP_ROM_INT(FTM_COUNTERMODE_UP) },
     { MP_ROM_QSTR(MP_QSTR_CENTER),          MP_ROM_INT(FTM_COUNTERMODE_CENTER) },
     { MP_ROM_QSTR(MP_QSTR_PWM),             MP_ROM_INT(CHANNEL_MODE_PWM_NORMAL) },
@@ -754,9 +754,9 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
     pyb_timer_channel_obj_t *self = self_in;
 
     mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
-          self->timer->tim_id,
-          self->channel,
-          qstr_str(channel_mode_info[self->mode].name));
+              self->timer->tim_id,
+              self->channel,
+              qstr_str(channel_mode_info[self->mode].name));
 }
 
 /// \method capture([value])
@@ -773,7 +773,7 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
 /// Get or set the pulse width value associated with a channel.
 /// capture, compare, and pulse_width are all aliases for the same function.
 /// pulse_width is the logical name to use when the channel is in PWM mode.
-/// 
+///
 /// In edge aligned mode, a pulse_width of `period + 1` corresponds to a duty cycle of 100%
 /// In center aligned mode, a pulse width of `period` corresponds to a duty cycle of 100%
 STATIC mp_obj_t pyb_timer_channel_capture_compare(size_t n_args, const mp_obj_t *args) {
@@ -873,9 +873,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pulse_width_percent), MP_ROM_PTR(&pyb_timer_channel_pulse_width_percent_obj) },
     { MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
     { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
-#if MICROPY_TIMER_REG
+    #if MICROPY_TIMER_REG
     { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_channel_reg_obj) },
-#endif
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 

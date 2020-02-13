@@ -326,17 +326,17 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         DMA2_Stream3->M0AR = (uint32_t)buf;
         DMA2_Stream3->NDTR = ((len + block_size - 1) & ~(block_size - 1)) / 4;
         DMA2_Stream3->CR = 4 << 25 // channel 4
-            | 1 << 23 // MBURST INCR4
-            | 1 << 21 // PBURST INCR4
-            | 3 << 16 // PL very high
-            | 2 << 13 // MSIZE word
-            | 2 << 11 // PSIZE word
-            | 1 << 10 // MINC enabled
-            | 0 << 9 // PINC disabled
-            | write << 6 // DIR mem-to-periph
-            | 1 << 5 // PFCTRL periph is flow controller
-            | 1 << 0 // EN
-            ;
+                           | 1 << 23 // MBURST INCR4
+                           | 1 << 21 // PBURST INCR4
+                           | 3 << 16 // PL very high
+                           | 2 << 13 // MSIZE word
+                           | 2 << 11 // PSIZE word
+                           | 1 << 10 // MINC enabled
+                           | 0 << 9 // PINC disabled
+                           | write << 6 // DIR mem-to-periph
+                           | 1 << 5 // PFCTRL periph is flow controller
+                           | 1 << 0 // EN
+                           ;
         #else
         SDMMC1->IDMABASE0 = (uint32_t)buf;
         SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
@@ -386,9 +386,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
         if (mp_hal_ticks_ms() - start > 200) {
             SDMMC1->MASK &= SDMMC_MASK_SDIOITIE;
             #if defined(STM32F7)
-            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
+            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA,
+                   (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
             #else
-            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
+            printf("sdio_transfer_cmd53: timeout wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT,
+                   (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
             #endif
             return -MP_ETIMEDOUT;
         }
@@ -398,9 +400,11 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
 
     if (sdmmc_error) {
         #if defined(STM32F7)
-        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
+        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x DMA=%08x:%08x:%08x RCC=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf,
+               (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->FIFOCNT, (uint)DMA2->LISR, (uint)DMA2->HISR, (uint)DMA2_Stream3->NDTR, (uint)RCC->AHB1ENR);
         #else
-        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA, (uint)SDMMC1->DCOUNT, (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
+        printf("sdio_transfer_cmd53: error=%08lx wr=%d len=%u dma=%u buf_idx=%u STA=%08x SDMMC=%08x:%08x IDMA=%08x\n", sdmmc_error, write, (uint)len, (uint)dma, sdmmc_buf_cur - buf, (uint)SDMMC1->STA,
+               (uint)SDMMC1->DCOUNT, (uint)SDMMC1->DCTRL, (uint)SDMMC1->IDMACTRL);
         #endif
         return -(0x1000000 | sdmmc_error);
     }

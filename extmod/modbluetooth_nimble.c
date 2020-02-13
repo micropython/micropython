@@ -483,7 +483,8 @@ int mp_bluetooth_gatts_register_service_end() {
     return 0;
 }
 
-int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
+int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags,
+                                        mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
     if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services == MP_BLUETOOTH_NIMBLE_MAX_SERVICES) {
         return MP_E2BIG;
     }
@@ -767,7 +768,8 @@ int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
 }
 
 STATIC int ble_gatt_characteristic_cb(uint16_t conn_handle, const struct ble_gatt_error *error, const struct ble_gatt_chr *characteristic, void *arg) {
-    DEBUG_EVENT_printf("ble_gatt_characteristic_cb: conn_handle=%d status=%d def_handle=%d val_handle=%d\n", conn_handle, error->status, characteristic ? characteristic->def_handle : -1, characteristic ? characteristic->val_handle : -1);
+    DEBUG_EVENT_printf("ble_gatt_characteristic_cb: conn_handle=%d status=%d def_handle=%d val_handle=%d\n", conn_handle, error->status, characteristic ? characteristic->def_handle : -1,
+                       characteristic ? characteristic->val_handle : -1);
     if (error->status == 0) {
         mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(&characteristic->uuid);
         mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic->def_handle, characteristic->val_handle, characteristic->properties, &characteristic_uuid);

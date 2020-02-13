@@ -120,7 +120,7 @@ STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t *type, size_t n_args, 
     vstr_init(&self->cur_dir, 16);
     vstr_add_byte(&self->cur_dir, '/');
     MP_VFS_LFSx(init_config)(self, args[LFS_MAKE_ARG_bdev].u_obj,
-        args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
+                             args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(mount)(&self->lfs, &self->config);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -134,7 +134,7 @@ STATIC mp_obj_t MP_VFS_LFSx(mkfs)(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     MP_OBJ_VFS_LFSx self;
     MP_VFS_LFSx(init_config)(&self, args[LFS_MAKE_ARG_bdev].u_obj,
-        args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
+                             args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(format)(&self.lfs, &self.config);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -166,7 +166,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
             return MP_OBJ_STOP_ITERATION;
         }
         if (!(info.name[0] == '.' && (info.name[1] == '\0'
-            || (info.name[1] == '.' && info.name[2] == '\0')))) {
+                                      || (info.name[1] == '.' && info.name[2] == '\0')))) {
             break;
         }
     }

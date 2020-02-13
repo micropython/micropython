@@ -31,34 +31,34 @@
 #define FTM2    ((FTM_TypeDef *)&FTM2_SC)
 
 typedef struct {
-    volatile uint32_t CSC;	// Channel x Status And Control
-    volatile uint32_t CV;		// Channel x Value
+    volatile uint32_t CSC;  // Channel x Status And Control
+    volatile uint32_t CV;       // Channel x Value
 } FTM_ChannelTypeDef;
 
 typedef struct {
-    volatile uint32_t SC;		// Status And Control
-    volatile uint32_t CNT;		// Counter
-    volatile uint32_t MOD;		// Modulo
+    volatile uint32_t SC;       // Status And Control
+    volatile uint32_t CNT;      // Counter
+    volatile uint32_t MOD;      // Modulo
     FTM_ChannelTypeDef channel[8];
-    volatile uint32_t CNTIN;	// Counter Initial Value
-    volatile uint32_t STATUS;	// Capture And Compare Status
-    volatile uint32_t MODE;		// Features Mode Selection
-    volatile uint32_t SYNC;		// Synchronization
+    volatile uint32_t CNTIN;    // Counter Initial Value
+    volatile uint32_t STATUS;   // Capture And Compare Status
+    volatile uint32_t MODE;     // Features Mode Selection
+    volatile uint32_t SYNC;     // Synchronization
     volatile uint32_t OUTINIT;  // Initial State For Channels Output
-    volatile uint32_t OUTMASK;	// Output Mask
-    volatile uint32_t COMBINE;	// Function For Linked Channels
+    volatile uint32_t OUTMASK;  // Output Mask
+    volatile uint32_t COMBINE;  // Function For Linked Channels
     volatile uint32_t DEADTIME; // Deadtime Insertion Control
-    volatile uint32_t EXTTRIG;	// FTM External Trigger
-    volatile uint32_t POL;		// Channels Polarity
-    volatile uint32_t FMS;		// Fault Mode Status
-    volatile uint32_t FILTER;	// Input Capture Filter Control
-    volatile uint32_t FLTCTRL;	// Fault Control
-    volatile uint32_t QDCTRL;	// Quadrature Decoder Control And Status
-    volatile uint32_t CONF;		// Configuration
-    volatile uint32_t FLTPOL;	// FTM Fault Input Polarity
-    volatile uint32_t SYNCONF;	// Synchronization Configuration
-    volatile uint32_t INVCTRL;	// FTM Inverting Control
-    volatile uint32_t SWOCTRL;	// FTM Software Output Control
+    volatile uint32_t EXTTRIG;  // FTM External Trigger
+    volatile uint32_t POL;      // Channels Polarity
+    volatile uint32_t FMS;      // Fault Mode Status
+    volatile uint32_t FILTER;   // Input Capture Filter Control
+    volatile uint32_t FLTCTRL;  // Fault Control
+    volatile uint32_t QDCTRL;   // Quadrature Decoder Control And Status
+    volatile uint32_t CONF;     // Configuration
+    volatile uint32_t FLTPOL;   // FTM Fault Input Polarity
+    volatile uint32_t SYNCONF;  // Synchronization Configuration
+    volatile uint32_t INVCTRL;  // FTM Inverting Control
+    volatile uint32_t SWOCTRL;  // FTM Software Output Control
     volatile uint32_t PWMLOAD;  // FTM PWM Load
 } FTM_TypeDef;
 

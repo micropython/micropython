@@ -42,12 +42,12 @@ typedef struct _mp_obj_btree_t {
     DB *db;
     mp_obj_t start_key;
     mp_obj_t end_key;
-    #define FLAG_END_KEY_INCL 1
-    #define FLAG_DESC 2
-    #define FLAG_ITER_TYPE_MASK 0xc0
-    #define FLAG_ITER_KEYS   0x40
-    #define FLAG_ITER_VALUES 0x80
-    #define FLAG_ITER_ITEMS  0xc0
+#define FLAG_END_KEY_INCL 1
+#define FLAG_DESC 2
+#define FLAG_ITER_TYPE_MASK 0xc0
+#define FLAG_ITER_KEYS   0x40
+#define FLAG_ITER_VALUES 0x80
+#define FLAG_ITER_ITEMS  0xc0
     byte flags;
     byte next_flags;
 } mp_obj_btree_t;
@@ -57,9 +57,9 @@ STATIC const mp_obj_type_t btree_type;
 #endif
 
 #define CHECK_ERROR(res) \
-        if (res == RET_ERROR) { \
-            mp_raise_OSError(errno); \
-        }
+    if (res == RET_ERROR) { \
+        mp_raise_OSError(errno); \
+    }
 
 void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
@@ -350,7 +350,7 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         mp_arg_val_t minkeypage;
     } args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
     BTREEINFO openinfo = {0};
     openinfo.flags = args.flags.u_int;
     openinfo.cachesize = args.cachesize.u_int;

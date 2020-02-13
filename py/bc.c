@@ -75,21 +75,21 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
 #endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
-#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
     (void)expected;
     (void)given;
     mp_arg_error_terse_mismatch();
-#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
+    #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
     mp_raise_msg_varg(&mp_type_TypeError,
-        "function takes %d positional arguments but %d were given", expected, given);
-#elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+                      "function takes %d positional arguments but %d were given", expected, given);
+    #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     mp_raise_msg_varg(&mp_type_TypeError,
-        "%q() takes %d positional arguments but %d were given",
-        mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
-#endif
+                      "%q() takes %d positional arguments but %d were given",
+                      mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
+    #endif
 }
 
 #if DEBUG_PRINT
@@ -204,7 +204,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 if (wanted_arg_name == arg_names[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         mp_raise_msg_varg(&mp_type_TypeError,
-                            "function got multiple values for argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name));
+                                          "function got multiple values for argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name));
                     }
                     code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
                     goto continue2;
@@ -216,11 +216,11 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                     mp_raise_TypeError("unexpected keyword argument");
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        "unexpected keyword argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name));
+                                      "unexpected keyword argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name));
                 }
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
-continue2:;
+        continue2:;
         }
 
         DEBUG_printf("Args with kws flattened: ");
@@ -242,7 +242,7 @@ continue2:;
         while (d < &code_state->state[n_state]) {
             if (*d++ == MP_OBJ_NULL) {
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    "function missing required positional argument #%d", &code_state->state[n_state] - d);
+                                  "function missing required positional argument #%d", &code_state->state[n_state] - d);
             }
         }
 
@@ -258,7 +258,7 @@ continue2:;
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        "function missing required keyword argument '%q'", MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
+                                      "function missing required keyword argument '%q'", MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
                 }
             }
         }
@@ -316,9 +316,9 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
     if (f == MP_BC_FORMAT_QSTR) {
         if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
             if (*ip == MP_BC_LOAD_NAME
-                || *ip == MP_BC_LOAD_GLOBAL
-                || *ip == MP_BC_LOAD_ATTR
-                || *ip == MP_BC_STORE_ATTR) {
+                    || *ip == MP_BC_LOAD_GLOBAL
+                    || *ip == MP_BC_LOAD_ATTR
+                    || *ip == MP_BC_STORE_ATTR) {
                 ip += 1;
             }
         }

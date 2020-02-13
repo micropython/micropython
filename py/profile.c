@@ -68,12 +68,12 @@ STATIC void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
     const mp_raw_code_t *rc = o->rc;
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     mp_printf(print,
-        "<code object %q at 0x%p, file \"%q\", line %d>",
-        prelude->qstr_block_name,
-        o,
-        prelude->qstr_source_file,
-        rc->line_of_definition
-    );
+              "<code object %q at 0x%p, file \"%q\", line %d>",
+              prelude->qstr_block_name,
+              o,
+              prelude->qstr_source_file,
+              rc->line_of_definition
+             );
 }
 
 STATIC mp_obj_tuple_t* code_consts(const mp_raw_code_t *rc) {
@@ -141,12 +141,12 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_code_t *o = MP_OBJ_TO_PTR(self_in);
     const mp_raw_code_t *rc = o->rc;
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    switch(attr) {
+    switch (attr) {
         case MP_QSTR_co_code:
             dest[0] = mp_obj_new_bytes(
-                (void*)prelude->opcodes,
-                rc->fun_data_len - (prelude->opcodes - (const byte*)rc->fun_data)
-            );
+                          (void*)prelude->opcodes,
+                          rc->fun_data_len - (prelude->opcodes - (const byte*)rc->fun_data)
+                      );
             break;
         case MP_QSTR_co_consts:
             dest[0] = MP_OBJ_FROM_PTR(code_consts(rc));
@@ -165,7 +165,7 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             break;
         case MP_QSTR_co_lnotab:
             if (!o->lnotab) {
-                 o->lnotab = raw_code_lnotab(rc);
+                o->lnotab = raw_code_lnotab(rc);
             }
             dest[0] = o->lnotab;
             break;
@@ -202,12 +202,12 @@ STATIC void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     const mp_raw_code_t *rc = code->rc;
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     mp_printf(print,
-        "<frame at 0x%p, file '%q', line %d, code %q>",
-        frame,
-        prelude->qstr_source_file,
-        frame->lineno,
-        prelude->qstr_block_name
-    );
+              "<frame at 0x%p, file '%q', line %d, code %q>",
+              frame,
+              prelude->qstr_source_file,
+              frame->lineno,
+              prelude->qstr_block_name
+             );
 }
 
 STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -218,7 +218,7 @@ STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     mp_obj_frame_t *o = MP_OBJ_TO_PTR(self_in);
 
-    switch(attr) {
+    switch (attr) {
         case MP_QSTR_f_back:
             dest[0] = mp_const_none;
             if (o->code_state->prev_state) {
@@ -444,11 +444,11 @@ mp_obj_t mp_prof_instr_tick(mp_code_state_t *code_state, bool is_exception) {
 #include "runtime0.h"
 
 #define DECODE_UINT { \
-    unum = 0; \
-    do { \
-        unum = (unum << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-}
+        unum = 0; \
+        do { \
+            unum = (unum << 7) + (*ip & 0x7f); \
+        } while ((*ip++ & 0x80) != 0); \
+    }
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 
@@ -783,13 +783,13 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->arg = unum;
             break;
 
-        #if MICROPY_PY_BUILTINS_SLICE
+            #if MICROPY_PY_BUILTINS_SLICE
         case MP_BC_BUILD_SLICE:
             DECODE_UINT;
             instruction->qstr_opname = MP_QSTR_BUILD_SLICE;
             instruction->arg = unum;
             break;
-        #endif
+            #endif
 
         case MP_BC_STORE_COMP:
             DECODE_UINT;
@@ -952,13 +952,13 @@ void mp_prof_print_instr(const byte* ip, mp_code_state_t *code_state) {
 
     /* long path */ if (1) {
         mp_printf(&mp_plat_print,
-            "@0x%p:%q:%q+0x%04x:%d",
-            ip,
-            prelude->qstr_source_file,
-            prelude->qstr_block_name,
-            offset,
-            mp_prof_bytecode_lineno(rc, offset)
-        );
+                  "@0x%p:%q:%q+0x%04x:%d",
+                  ip,
+                  prelude->qstr_source_file,
+                  prelude->qstr_block_name,
+                  offset,
+                  mp_prof_bytecode_lineno(rc, offset)
+                 );
     }
 
     /* bytecode */ if (0) {

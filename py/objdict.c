@@ -111,7 +111,7 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
-        #if MICROPY_PY_SYS_GETSIZEOF
+            #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);
@@ -143,25 +143,25 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
                 return e1 == NULL && e2 == NULL ? mp_const_true : mp_const_false;
             } else
             #endif
-            if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
-                mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
-                if (o->map.used != rhs->map.used) {
-                    return mp_const_false;
-                }
-
-                size_t cur = 0;
-                mp_map_elem_t *next = NULL;
-                while ((next = dict_iter_next(o, &cur)) != NULL) {
-                    mp_map_elem_t *elem = mp_map_lookup(&rhs->map, next->key, MP_MAP_LOOKUP);
-                    if (elem == NULL || !mp_obj_equal(next->value, elem->value)) {
+                if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
+                    mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+                    if (o->map.used != rhs->map.used) {
                         return mp_const_false;
                     }
+
+                    size_t cur = 0;
+                    mp_map_elem_t *next = NULL;
+                    while ((next = dict_iter_next(o, &cur)) != NULL) {
+                        mp_map_elem_t *elem = mp_map_lookup(&rhs->map, next->key, MP_MAP_LOOKUP);
+                        if (elem == NULL || !mp_obj_equal(next->value, elem->value)) {
+                            return mp_const_false;
+                        }
+                    }
+                    return mp_const_true;
+                } else {
+                    // dict is not equal to instance of any other type
+                    return mp_const_false;
                 }
-                return mp_const_true;
-            } else {
-                // dict is not equal to instance of any other type
-                return mp_const_false;
-            }
         }
         default:
             // op not supported
@@ -361,8 +361,8 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
                 mp_obj_t value = mp_iternext(inneriter);
                 mp_obj_t stop = mp_iternext(inneriter);
                 if (key == MP_OBJ_STOP_ITERATION
-                    || value == MP_OBJ_STOP_ITERATION
-                    || stop != MP_OBJ_STOP_ITERATION) {
+                        || value == MP_OBJ_STOP_ITERATION
+                        || stop != MP_OBJ_STOP_ITERATION) {
                     mp_raise_ValueError("dict update sequence has wrong length");
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;

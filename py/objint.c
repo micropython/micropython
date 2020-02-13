@@ -57,10 +57,10 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_integer(s, l, 0, NULL);
-#if MICROPY_PY_BUILTINS_FLOAT
+                #if MICROPY_PY_BUILTINS_FLOAT
             } else if (mp_obj_is_float(args[0])) {
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
-#endif
+                #endif
             } else {
                 return mp_unary_op(MP_UNARY_OP_INT, args[0]);
             }
@@ -86,26 +86,26 @@ typedef enum {
 STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
     union {
         mp_float_t f;
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         uint32_t i;
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         uint32_t i[2];
-#endif
+        #endif
     } u = {val};
 
     uint32_t e;
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     e = u.i;
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     e = u.i[MP_ENDIANNESS_LITTLE];
-#endif
+    #endif
 #define MP_FLOAT_SIGN_SHIFT_I32 ((MP_FLOAT_FRAC_BITS + MP_FLOAT_EXP_BITS) % 32)
 #define MP_FLOAT_EXP_SHIFT_I32 (MP_FLOAT_FRAC_BITS % 32)
 
     if (e & (1U << MP_FLOAT_SIGN_SHIFT_I32)) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
-#endif
+        #endif
         if ((e & ~(1 << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
             // handle case of -0 (when sign is set but rest of bits are zero)
             e = 0;
@@ -120,16 +120,16 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
     if (e <= ((8 * sizeof(uintptr_t) + MP_FLOAT_EXP_BIAS - 3) << MP_FLOAT_EXP_SHIFT_I32)) {
         return MP_FP_CLASS_FIT_SMALLINT;
     }
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
     if (e <= (((sizeof(long long) * BITS_PER_BYTE) + MP_FLOAT_EXP_BIAS - 2) << MP_FLOAT_EXP_SHIFT_I32)) {
         return MP_FP_CLASS_FIT_LONGINT;
     }
-#endif
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+    #endif
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
     return MP_FP_CLASS_FIT_LONGINT;
-#else
+    #else
     return MP_FP_CLASS_OVERFLOW;
-#endif
+    #endif
 }
 #undef MP_FLOAT_SIGN_SHIFT_I32
 #undef MP_FLOAT_EXP_SHIFT_I32
@@ -144,21 +144,21 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {
             return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+            #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
         } else {
             mp_obj_int_t *o = mp_obj_int_new_mpz();
             mpz_set_from_float(&o->mpz, val);
             return MP_OBJ_FROM_PTR(o);
         }
-        #else
-        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+            #else
+            #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         } else if (icl == MP_FP_CLASS_FIT_LONGINT) {
             return mp_obj_new_int_from_ll((long long)val);
-        #endif
+            #endif
         } else {
             mp_raise_ValueError("float too big");
         }
-        #endif
+            #endif
     }
 }
 
@@ -275,8 +275,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
                 *(--b) = comma;
                 last_comma = b;
             }
-        }
-        while (b > str && num != 0);
+        } while (b > str && num != 0);
     }
     if (prefix) {
         size_t prefix_len = strlen(prefix);

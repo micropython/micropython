@@ -100,7 +100,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     mp_obj_t stack_key = MP_OBJ_NULL;
     S_NEXT(s);
     for (;;) {
-        cont:
+    cont:
         if (S_END(s)) {
             break;
         }
@@ -259,7 +259,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
             }
         }
     }
-    success:
+success:
     // eat trailing whitespace
     while (unichar_isspace(S_CUR(s))) {
         S_NEXT(s);
@@ -275,7 +275,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     vstr_clear(&vstr);
     return stack_top;
 
-    fail:
+fail:
     mp_raise_ValueError("syntax error in JSON");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);

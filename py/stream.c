@@ -88,9 +88,9 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
     const mp_stream_p_t *stream_p = type->protocol;
     if (stream_p == NULL
-        || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
-        || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
-        || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
+            || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
+            || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
+            || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
         // CPython: io.UnsupportedOperation, OSError subclass
         mp_raise_msg(&mp_type_OSError, "stream operation not supported");
     }
@@ -378,7 +378,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
             mp_raise_OSError(error);
         }
         if (out_sz == 0) {
-done:
+        done:
             // Back out previously added byte
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.

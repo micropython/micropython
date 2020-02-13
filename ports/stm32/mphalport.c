@@ -33,15 +33,15 @@ MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 MP_WEAK int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-#if 0
-#ifdef USE_HOST_MODE
+        #if 0
+        #ifdef USE_HOST_MODE
         pyb_usb_host_process();
         int c = pyb_usb_host_get_keyboard();
         if (c != 0) {
             return c;
         }
-#endif
-#endif
+        #endif
+        #endif
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
@@ -61,9 +61,9 @@ MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
-#if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
+    #if 0 && defined(USE_HOST_MODE) && MICROPY_HW_HAS_LCD
     lcd_print_strn(str, len);
-#endif
+    #endif
     mp_uos_dupterm_tx_strn(str, len);
 }
 
@@ -112,20 +112,20 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
 
     #if defined(STM32F0)
-    #define AHBxENR AHBENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
+#define AHBxENR AHBENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHBENR_GPIOAEN_Pos
     #elif defined(STM32F4) || defined(STM32F7)
-    #define AHBxENR AHB1ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
+#define AHBxENR AHB1ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
     #elif defined(STM32H7)
-    #define AHBxENR AHB4ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
+#define AHBxENR AHB4ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
     #elif defined(STM32L0)
-    #define AHBxENR IOPENR
-    #define AHBxENR_GPIOAEN_Pos RCC_IOPENR_IOPAEN_Pos
+#define AHBxENR IOPENR
+#define AHBxENR_GPIOAEN_Pos RCC_IOPENR_IOPAEN_Pos
     #elif defined(STM32L4) || defined(STM32WB)
-    #define AHBxENR AHB2ENR
-    #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
+#define AHBxENR AHB2ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
     #endif
 
     uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);

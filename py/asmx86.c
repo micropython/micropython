@@ -368,7 +368,7 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x86_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x86_write_word32(as, rel);
@@ -390,7 +390,7 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x86_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x86_write_word32(as, rel);
@@ -488,8 +488,7 @@ void asm_x86_push_local(asm_x86_t *as, int local_num) {
     asm_x86_push_disp(as, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, local_num));
 }
 
-void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
-{
+void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32) {
     asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_ESP);
     asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_esp(as, local_num), temp_r32);
     asm_x86_push_r32(as, temp_r32);

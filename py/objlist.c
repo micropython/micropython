@@ -90,7 +90,7 @@ STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        #if MICROPY_PY_SYS_GETSIZEOF
+            #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(mp_obj_t) * self->alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);
@@ -153,7 +153,7 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             mp_bound_slice_t slice;
@@ -169,14 +169,14 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             self->len += len_adj;
             return mp_const_none;
         }
-#endif
+        #endif
         mp_obj_t args[2] = {self_in, index};
         list_pop(2, args);
         return mp_const_none;
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
@@ -186,11 +186,11 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(res);
         }
-#endif
+        #endif
         size_t index_val = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_val];
     } else {
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             size_t value_len; mp_obj_t *value_items;
@@ -208,10 +208,10 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                     self->alloc = self->len + len_adj;
                 }
                 mp_seq_replace_slice_grow_inplace(self->items, self->len,
-                    slice_out.start, slice_out.stop, value_items, value_len, len_adj, sizeof(*self->items));
+                                                  slice_out.start, slice_out.stop, value_items, value_len, len_adj, sizeof(*self->items));
             } else {
                 mp_seq_replace_slice_no_grow(self->items, self->len,
-                    slice_out.start, slice_out.stop, value_items, value_len, sizeof(*self->items));
+                                             slice_out.start, slice_out.stop, value_items, value_len, sizeof(*self->items));
                 // Clear "freed" elements at the end of list
                 mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
                 // TODO: apply allocation policy re: alloc_size
@@ -219,7 +219,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             self->len += len_adj;
             return mp_const_none;
         }
-#endif
+        #endif
         mp_obj_list_store(self_in, index, value);
         return mp_const_none;
     }
@@ -288,9 +288,9 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj
         mp_obj_t *t = tail;
         mp_obj_t v = key_fn == MP_OBJ_NULL ? tail[0] : mp_call_function_1(key_fn, tail[0]); // get pivot using key_fn
         for (;;) {
-            do ++h; while (h < t && mp_binary_op(MP_BINARY_OP_LESS, key_fn == MP_OBJ_NULL ? h[0] : mp_call_function_1(key_fn, h[0]), v) == binop_less_result);
-            do --t; while (h < t && mp_binary_op(MP_BINARY_OP_LESS, v, key_fn == MP_OBJ_NULL ? t[0] : mp_call_function_1(key_fn, t[0])) == binop_less_result);
-            if (h >= t) break;
+            do { ++h; } while (h < t && mp_binary_op(MP_BINARY_OP_LESS, key_fn == MP_OBJ_NULL ? h[0] : mp_call_function_1(key_fn, h[0]), v) == binop_less_result);
+            do { --t; } while (h < t && mp_binary_op(MP_BINARY_OP_LESS, v, key_fn == MP_OBJ_NULL ? t[0] : mp_call_function_1(key_fn, t[0])) == binop_less_result);
+            if (h >= t) { break; }
             mp_obj_t x = h[0];
             h[0] = t[0];
             t[0] = x;
@@ -321,7 +321,7 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
         mp_arg_val_t key, reverse;
     } args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     mp_check_self(mp_obj_is_type(pos_args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -369,19 +369,19 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     // insert has its own strange index logic
     mp_int_t index = MP_OBJ_SMALL_INT_VALUE(idx);
     if (index < 0) {
-         index += self->len;
+        index += self->len;
     }
     if (index < 0) {
-         index = 0;
+        index = 0;
     }
     if ((size_t)index > self->len) {
-         index = self->len;
+        index = self->len;
     }
 
     mp_obj_list_append(self_in, mp_const_none);
 
     for (mp_int_t i = self->len-1; i > index; i--) {
-         self->items[i] = self->items[i-1];
+        self->items[i] = self->items[i-1];
     }
     self->items[index] = obj;
 
@@ -403,9 +403,9 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
 
     mp_int_t len = self->len;
     for (mp_int_t i = 0; i < len/2; i++) {
-         mp_obj_t a = self->items[i];
-         self->items[i] = self->items[len-i-1];
-         self->items[len-i-1] = a;
+        mp_obj_t a = self->items[i];
+        self->items[i] = self->items[len-i-1];
+        self->items[len-i-1] = a;
     }
 
     return mp_const_none;

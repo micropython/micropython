@@ -86,23 +86,23 @@ typedef struct _mp_raw_code_t {
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    size_t len,
-    #endif
-    const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
-    uint16_t n_obj, uint16_t n_raw_code,
-    #endif
-    mp_uint_t scope_flags);
+                                  #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+                                  size_t len,
+                                  #endif
+                                  const mp_uint_t *const_table,
+                                  #if MICROPY_PERSISTENT_CODE_SAVE
+                                  uint16_t n_obj, uint16_t n_raw_code,
+                                  #endif
+                                  mp_uint_t scope_flags);
 
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
-    const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
-    uint16_t prelude_offset,
-    uint16_t n_obj, uint16_t n_raw_code,
-    uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
-    #endif
-    mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
+                                const mp_uint_t *const_table,
+                                #if MICROPY_PERSISTENT_CODE_SAVE
+                                uint16_t prelude_offset,
+                                uint16_t n_obj, uint16_t n_raw_code,
+                                uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
+                                #endif
+                                mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);

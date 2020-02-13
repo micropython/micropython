@@ -63,8 +63,8 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     uint32_t baudrate;
     uart_get_baudrate(self->uart_num, &baudrate);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u",
-        self->uart_num, baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
+              self->uart_num, baudrate, self->bits, _parity_name[self->parity],
+              self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
     if (self->invert) {
         mp_printf(print, ", invert=");
         uint32_t invert_mask = self->invert;
@@ -260,7 +260,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) is disabled (dedicated to REPL)", uart_num);
     }
 
-     // Defaults
+    // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,

@@ -228,7 +228,7 @@ STATIC size_t mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, const mpz_dig_t *k
    can have i, j, k pointing to same memory
 */
 STATIC size_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const mpz_dig_t *kdig, size_t klen,
-                            mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+                          mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
     mpz_dig_t *oidig = idig;
     mpz_dig_t imask = (0 == carryi) ? 0 : DIG_MASK;
     mpz_dig_t jmask = (0 == carryj) ? 0 : DIG_MASK;
@@ -289,7 +289,7 @@ STATIC size_t mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const 
 #if MICROPY_OPT_MPZ_BITWISE
 
 STATIC size_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const mpz_dig_t *kdig, size_t klen,
-                            mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+                         mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
     mpz_dig_t *oidig = idig;
     mpz_dbl_dig_t carryi = 1;
     mpz_dig_t jmask = (0 == carryj) ? 0 : DIG_MASK;
@@ -319,7 +319,7 @@ STATIC size_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, co
 #else
 
 STATIC size_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const mpz_dig_t *kdig, size_t klen,
-                            mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+                         mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
     mpz_dig_t *oidig = idig;
     mpz_dig_t imask = (0 == carryi) ? 0 : DIG_MASK;
     mpz_dig_t jmask = (0 == carryj) ? 0 : DIG_MASK;
@@ -378,7 +378,7 @@ STATIC size_t mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const
    can have i, j, k pointing to same memory
 */
 STATIC size_t mpn_xor_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const mpz_dig_t *kdig, size_t klen,
-                              mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+                          mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
     mpz_dig_t *oidig = idig;
 
     for (; jlen > 0; ++idig, ++jdig) {
@@ -771,17 +771,17 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-typedef uint64_t mp_float_int_t;
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-typedef uint32_t mp_float_int_t;
-#endif
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    typedef uint64_t mp_float_int_t;
+    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    typedef uint32_t mp_float_int_t;
+    #endif
     union {
         mp_float_t f;
         #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_int_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
+struct { mp_float_int_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
         #else
-        struct { mp_float_int_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
+struct { mp_float_int_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
         #endif
     } u = {src};
 
@@ -825,16 +825,16 @@ typedef uint32_t mp_float_int_t;
                 z->dig[dig_ind++] = (frc << shft) & DIG_MASK;
                 frc >>= DIG_SIZE - shft;
             }
-#if DIG_SIZE < (MP_FLOAT_FRAC_BITS + 1)
+            #if DIG_SIZE < (MP_FLOAT_FRAC_BITS + 1)
             while (dig_ind != dig_cnt) {
                 z->dig[dig_ind++] = frc & DIG_MASK;
                 frc >>= DIG_SIZE;
             }
-#else
+            #else
             if (dig_ind != dig_cnt) {
                 z->dig[dig_ind] = frc;
             }
-#endif
+            #endif
         }
     }
 }
@@ -948,28 +948,28 @@ int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
 mp_int_t mpz_cmp_sml_int(const mpz_t *z, mp_int_t sml_int) {
     mp_int_t cmp;
     if (z->neg == 0) {
-        if (sml_int < 0) return 1;
+        if (sml_int < 0) { return 1; }
         if (sml_int == 0) {
-            if (z->len == 0) return 0;
+            if (z->len == 0) { return 0; }
             return 1;
         }
-        if (z->len == 0) return -1;
+        if (z->len == 0) { return -1; }
         assert(sml_int < (1 << DIG_SIZE));
-        if (z->len != 1) return 1;
+        if (z->len != 1) { return 1; }
         cmp = z->dig[0] - sml_int;
     } else {
-        if (sml_int > 0) return -1;
+        if (sml_int > 0) { return -1; }
         if (sml_int == 0) {
-            if (z->len == 0) return 0;
+            if (z->len == 0) { return 0; }
             return -1;
         }
-        if (z->len == 0) return 1;
+        if (z->len == 0) { return 1; }
         assert(sml_int > -(1 << DIG_SIZE));
-        if (z->len != 1) return -1;
+        if (z->len != 1) { return -1; }
         cmp = -z->dig[0] - sml_int;
     }
-    if (cmp < 0) return -1;
-    if (cmp > 0) return 1;
+    if (cmp < 0) { return -1; }
+    if (cmp > 0) { return 1; }
     return 0;
 }
 #endif
@@ -1207,7 +1207,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len + 1);
         dest->len = mpn_and_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
-                                 lhs->neg == rhs->neg, 0 != lhs->neg, 0 != rhs->neg);
+                                lhs->neg == rhs->neg, 0 != lhs->neg, 0 != rhs->neg);
         dest->neg = lhs->neg & rhs->neg;
     }
 
@@ -1215,7 +1215,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
     mpz_need_dig(dest, lhs->len + (lhs->neg || rhs->neg));
     dest->len = mpn_and_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
-                             (lhs->neg == rhs->neg) ? lhs->neg : 0, lhs->neg, rhs->neg);
+                            (lhs->neg == rhs->neg) ? lhs->neg : 0, lhs->neg, rhs->neg);
     dest->neg = lhs->neg & rhs->neg;
 
     #endif
@@ -1241,7 +1241,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len + 1);
         dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
-                                 0 != lhs->neg, 0 != rhs->neg);
+                               0 != lhs->neg, 0 != rhs->neg);
         dest->neg = 1;
     }
 
@@ -1249,7 +1249,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
     mpz_need_dig(dest, lhs->len + (lhs->neg || rhs->neg));
     dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
-                             (lhs->neg || rhs->neg), lhs->neg, rhs->neg);
+                           (lhs->neg || rhs->neg), lhs->neg, rhs->neg);
     dest->neg = lhs->neg | rhs->neg;
 
     #endif
@@ -1287,7 +1287,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
     mpz_need_dig(dest, lhs->len + (lhs->neg || rhs->neg));
     dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
-                             (lhs->neg != rhs->neg), 0 == lhs->neg, 0 == rhs->neg);
+                            (lhs->neg != rhs->neg), 0 == lhs->neg, 0 == rhs->neg);
     dest->neg = lhs->neg ^ rhs->neg;
 
     #endif
@@ -1659,8 +1659,9 @@ size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, ch
     char *s = str;
     if (ilen == 0) {
         if (prefix) {
-            while (*prefix)
+            while (*prefix) {
                 *s++ = *prefix++;
+            }
         }
         *s++ = '0';
         *s = '\0';
@@ -1704,8 +1705,7 @@ size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, ch
             *s++ = comma;
             last_comma = s;
         }
-    }
-    while (!done);
+    } while (!done);
 
     // free the copy of the digits array
     m_del(mpz_dig_t, dig, ilen);

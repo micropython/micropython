@@ -108,7 +108,9 @@ DEF_RULE_NC(expr_stmt_assign, and_ident(2), tok(DEL_EQUAL), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_6, or(2), rule(yield_expr), rule(testlist_star_expr))
 DEF_RULE(testlist_star_expr, c(generic_tuple), list_with_end, rule(testlist_star_expr_2), tok(DEL_COMMA))
 DEF_RULE_NC(testlist_star_expr_2, or(2), rule(star_expr), rule(test))
-DEF_RULE_NC(augassign, or(13), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_AT_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL), tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
+DEF_RULE_NC(augassign,
+            or(13), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_AT_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL),
+            tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
 
 // del_stmt: 'del' exprlist
 // pass_stmt: 'pass'
@@ -268,7 +270,8 @@ DEF_RULE_NC(power_dbl_star, and_ident(2), tok(OP_DBL_STAR), rule(factor))
 // testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* [','] )
 // trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
 
-DEF_RULE_NC(atom, or(12), tok(NAME), tok(INTEGER), tok(FLOAT_OR_IMAG), tok(STRING), tok(BYTES), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
+DEF_RULE_NC(atom,
+            or(12), tok(NAME), tok(INTEGER), tok(FLOAT_OR_IMAG), tok(STRING), tok(BYTES), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
 DEF_RULE(atom_paren, c(atom_paren), and(3), tok(DEL_PAREN_OPEN), opt_rule(atom_2b), tok(DEL_PAREN_CLOSE))
 DEF_RULE_NC(atom_2b, or(2), rule(yield_expr), rule(testlist_comp))
 DEF_RULE(atom_bracket, c(atom_bracket), and(3), tok(DEL_BRACKET_OPEN), opt_rule(testlist_comp), tok(DEL_BRACKET_CLOSE))

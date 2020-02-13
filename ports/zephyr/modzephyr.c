@@ -49,8 +49,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 extern k_tid_t const _main_thread;
 extern k_tid_t const _idle_thread;
 
-static void thread_stack_dump(const struct k_thread *thread, void *user_data)
-{
+static void thread_stack_dump(const struct k_thread *thread, void *user_data) {
     const char *th_name = k_thread_name_get((k_tid_t)thread);
 
     if (th_name == NULL) {

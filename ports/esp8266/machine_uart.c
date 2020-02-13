@@ -60,8 +60,8 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
-        self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
+              self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
+              self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

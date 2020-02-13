@@ -45,12 +45,12 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     struct netif *netif = eth_netif(self->eth);
     int status = eth_link_status(self->eth);
     mp_printf(print, "<ETH %u %u.%u.%u.%u>",
-        status,
-        netif->ip_addr.addr & 0xff,
-        netif->ip_addr.addr >> 8 & 0xff,
-        netif->ip_addr.addr >> 16 & 0xff,
-        netif->ip_addr.addr >> 24
-    );
+              status,
+              netif->ip_addr.addr & 0xff,
+              netif->ip_addr.addr >> 8 & 0xff,
+              netif->ip_addr.addr >> 16 & 0xff,
+              netif->ip_addr.addr >> 24
+             );
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

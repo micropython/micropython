@@ -148,11 +148,11 @@ STATIC mp_obj_t range_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     mp_int_t lhs_len = range_len(lhs);
     mp_int_t rhs_len = range_len(rhs);
     return mp_obj_new_bool(
-        lhs_len == rhs_len
-        && (lhs_len == 0
-            || (lhs->start == rhs->start
-                && (lhs_len == 1 || lhs->step == rhs->step)))
-    );
+               lhs_len == rhs_len
+               && (lhs_len == 0
+                   || (lhs->start == rhs->start
+                       && (lhs_len == 1 || lhs->step == rhs->step)))
+           );
 }
 #endif
 
@@ -161,7 +161,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         // load
         mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
         mp_int_t len = range_len(self);
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             mp_seq_get_fast_slice_indexes(len, index, &slice);
@@ -176,7 +176,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return MP_OBJ_FROM_PTR(o);
         }
-#endif
+        #endif
         size_t index_val = mp_get_index(self->base.type, len, index, false);
         return MP_OBJ_NEW_SMALL_INT(self->start + index_val * self->step);
     } else {
@@ -218,7 +218,7 @@ const mp_obj_type_t mp_type_range = {
     #endif
     .subscr = range_subscr,
     .getiter = range_getiter,
-#if MICROPY_PY_BUILTINS_RANGE_ATTRS
+    #if MICROPY_PY_BUILTINS_RANGE_ATTRS
     .attr = range_attr,
-#endif
+    #endif
 };

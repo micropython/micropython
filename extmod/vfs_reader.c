@@ -49,7 +49,7 @@ STATIC mp_uint_t mp_reader_vfs_readbyte(void *data) {
         } else {
             int errcode;
             reader->len = mp_stream_rw(reader->file, reader->buf, sizeof(reader->buf),
-                &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+                                       &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
             if (errcode != 0) {
                 // TODO handle errors properly
                 return MP_READER_EOF;

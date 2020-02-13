@@ -214,7 +214,7 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                 }
                 // Check for successful HCI_Reset event
                 parse->was_hci_reset_evt = buf[1] == 0x0e && buf[2] == 0x04 && buf[3] == 0x01
-                    && buf[4] == 0x03 && buf[5] == 0x0c && buf[6] == 0x00;
+                                           && buf[4] == 0x03 && buf[5] == 0x0c && buf[6] == 0x00;
             }
             break;
         }
@@ -258,7 +258,7 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
             tl_parse_hci_msg((uint8_t*)cur->body, parse);
             volatile tl_list_node_t *next = tl_list_unlink(cur);
             if ((void*)&ipcc_mem_memmgr_evt_pool[0] <= (void*)cur
-                && (void*)cur < (void*)&ipcc_mem_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_mem_memmgr_evt_pool)]) {
+                    && (void*)cur < (void*)&ipcc_mem_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_mem_memmgr_evt_pool)]) {
                 // Place memory back in free pool
                 tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
                 free = true;
@@ -413,7 +413,7 @@ void rfcore_ble_check_msg(int (*cb)(void*, uint8_t), void *env) {
         buf[0] = 0; // config offset
         buf[1] = 6; // config length
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, &buf[2]);
-        #define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; }
+#define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; }
         SWAP_UINT8(buf[2], buf[7]);
         SWAP_UINT8(buf[3], buf[6]);
         SWAP_UINT8(buf[4], buf[5]);

@@ -63,9 +63,9 @@
 
 #if MICROPY_PY_UERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
-    #define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
+#define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
     MICROPY_PY_UERRNO_LIST
-    #undef X
+#undef X
 };
 
 STATIC const mp_obj_dict_t errorcode_dict = {
@@ -87,9 +87,9 @@ STATIC const mp_rom_map_elem_t mp_module_uerrno_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_errorcode), MP_ROM_PTR(&errorcode_dict) },
     #endif
 
-    #define X(e) { MP_ROM_QSTR(MP_QSTR_## e), MP_ROM_INT(MP_ ## e) },
+#define X(e) { MP_ROM_QSTR(MP_QSTR_## e), MP_ROM_INT(MP_ ## e) },
     MICROPY_PY_UERRNO_LIST
-    #undef X
+#undef X
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uerrno_globals, mp_module_uerrno_globals_table);

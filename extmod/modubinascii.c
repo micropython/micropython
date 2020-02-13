@@ -186,8 +186,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
         if (i == 2) {
             *out++ = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
             *out++ = (in[1] & 0x0F) << 2;
-        }
-        else {
+        } else {
             *out++ = (in[0] & 0x03) << 4;
             *out++ = 64;
         }

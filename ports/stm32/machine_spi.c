@@ -67,8 +67,8 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // here we would check the sck/mosi/miso pins and configure them, but it's not implemented
     if (args[ARG_sck].u_obj != MP_OBJ_NULL
-        || args[ARG_mosi].u_obj != MP_OBJ_NULL
-        || args[ARG_miso].u_obj != MP_OBJ_NULL) {
+            || args[ARG_mosi].u_obj != MP_OBJ_NULL
+            || args[ARG_miso].u_obj != MP_OBJ_NULL) {
         mp_raise_ValueError("explicit choice of sck/mosi/miso is not implemented");
     }
 
@@ -85,8 +85,8 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // set configurable paramaters
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
-        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
-        args[ARG_firstbit].u_int);
+                   args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+                   args[ARG_firstbit].u_int);
 
     // init the SPI bus
     spi_init(self->spi, false);
@@ -110,8 +110,8 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
 
     // set the SPI configuration values
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
-        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
-        args[ARG_firstbit].u_int);
+                   args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+                   args[ARG_firstbit].u_int);
 
     // re-init the SPI bus
     spi_init(self->spi, false);

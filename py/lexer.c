@@ -105,9 +105,9 @@ STATIC bool is_following_odigit(mp_lexer_t *lex) {
 
 STATIC bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
-        || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
-        || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
-            && is_char_following_following_or(lex, '\'', '\"'));
+           || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
+           || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
+               && is_char_following_following_or(lex, '\'', '\"'));
 }
 
 // to easily parse utf-8 identifiers we allow any raw byte with high bit set
@@ -325,9 +325,8 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                                 vstr_add_char(&lex->vstr, '\\');
                                 break;
                             }
-                            // Otherwise fall through.
-                        case 'x':
-                        {
+                        // Otherwise fall through.
+                        case 'x': {
                             mp_uint_t num = 0;
                             if (!get_hex(lex, (c == 'x' ? 2 : c == 'u' ? 4 : 8), &num)) {
                                 // not enough hex chars for escape sequence

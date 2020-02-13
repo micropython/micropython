@@ -60,14 +60,14 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
 }
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    size_t len,
-    #endif
-    const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
-    uint16_t n_obj, uint16_t n_raw_code,
-    #endif
-    mp_uint_t scope_flags) {
+                                  #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+                                  size_t len,
+                                  #endif
+                                  const mp_uint_t *const_table,
+                                  #if MICROPY_PERSISTENT_CODE_SAVE
+                                  uint16_t n_obj, uint16_t n_raw_code,
+                                  #endif
+                                  mp_uint_t scope_flags) {
 
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
@@ -84,27 +84,27 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     mp_prof_extract_prelude(code, prelude);
     #endif
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     #if !MICROPY_DEBUG_PRINTERS
     const size_t len = 0;
     #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
-#endif
-#if MICROPY_DEBUG_PRINTERS
+    #endif
+    #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag >= 2) {
         mp_bytecode_print(rc, code, len, const_table);
     }
-#endif
+    #endif
 }
 
 #if MICROPY_EMIT_MACHINE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
-    uint16_t prelude_offset,
-    uint16_t n_obj, uint16_t n_raw_code,
-    uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
-    #endif
-    mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
+                                #if MICROPY_PERSISTENT_CODE_SAVE
+                                uint16_t prelude_offset,
+                                uint16_t n_obj, uint16_t n_raw_code,
+                                uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
+                                #endif
+                                mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
 
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
 
@@ -124,7 +124,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->qstr_link = qstr_link;
     #endif
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {
@@ -134,14 +134,14 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     }
     DEBUG_printf("\n");
 
-#ifdef WRITE_CODE
+    #ifdef WRITE_CODE
     FILE *fp_write_code = fopen("out-code", "wb");
     fwrite(fun_data, fun_len, 1, fp_write_code);
     fclose(fp_write_code);
-#endif
-#else
+    #endif
+    #else
     (void)fun_len;
-#endif
+    #endif
 }
 #endif
 
@@ -158,7 +158,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        #if MICROPY_EMIT_NATIVE
+            #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->fun_data, rc->const_table);
@@ -167,12 +167,12 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
                 ((mp_obj_base_t*)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
             }
             break;
-        #endif
-        #if MICROPY_EMIT_INLINE_ASM
+            #endif
+            #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->fun_data, rc->type_sig);
             break;
-        #endif
+            #endif
         default:
             // rc->kind should always be set and BYTECODE is the only remaining case
             assert(rc->kind == MP_CODE_BYTECODE);

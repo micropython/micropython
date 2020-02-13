@@ -151,15 +151,15 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
         const reg_name_t *r = &reg_name_table[i];
         if (reg_str[0] == r->name[0]
-            && reg_str[1] == r->name[1]
-            && reg_str[2] == r->name[2]
-            && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
+                && reg_str[1] == r->name[1]
+                && reg_str[2] == r->name[2]
+                && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
             return r->reg;
         }
     }
     emit_inline_xtensa_error_exc(emit,
-        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-            "'%s' expects a register", op));
+                                 mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                                         "'%s' expects a register", op));
     return 0;
 }
 
@@ -328,7 +328,7 @@ unknown_op:
     return;
 
     /*
-branch_not_in_range:
+    branch_not_in_range:
     emit_inline_xtensa_error_msg(emit, "branch not in range");
     return;
     */

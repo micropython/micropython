@@ -99,12 +99,12 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             mp_arg_error_terse_mismatch();
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
             mp_raise_msg_varg(&mp_type_TypeError,
-                "function takes %d positional arguments but %d were given",
-                num_fields, n_args + n_kw);
+                              "function takes %d positional arguments but %d were given",
+                              num_fields, n_args + n_kw);
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
             mp_raise_msg_varg(&mp_type_TypeError,
-                "%q() takes %d positional arguments but %d were given",
-                type->base.name, num_fields, n_args + n_kw);
+                              "%q() takes %d positional arguments but %d were given",
+                              type->base.name, num_fields, n_args + n_kw);
         }
     }
 
@@ -132,7 +132,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 mp_arg_error_terse_mismatch();
             } else {
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    "function got multiple values for argument '%q'", kw);
+                                  "function got multiple values for argument '%q'", kw);
             }
         }
         tuple->items[id] = args[i + 1];

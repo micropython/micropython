@@ -129,7 +129,7 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *mode = mp_obj_str_get_str(mode_in);
     if (self->readonly
-        && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
+            && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
         mp_raise_OSError(MP_EROFS);
     }
     if (!mp_obj_is_small_int(path_in)) {

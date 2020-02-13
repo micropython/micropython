@@ -118,10 +118,10 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
     mp_buffer_info_t bufinfo;
     if (((MICROPY_PY_BUILTINS_BYTEARRAY
             && typecode == BYTEARRAY_TYPECODE)
-        || (MICROPY_PY_ARRAY
-            && (mp_obj_is_type(initializer, &mp_type_bytes)
-                || (MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(initializer, &mp_type_bytearray)))))
-        && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
+            || (MICROPY_PY_ARRAY
+                && (mp_obj_is_type(initializer, &mp_type_bytes)
+                    || (MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(initializer, &mp_type_bytearray)))))
+            && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
         // we round-down the len to make it a multiple of sz (CPython raises error)
         size_t sz = mp_binary_get_size('@', typecode, NULL);
@@ -221,8 +221,8 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     mp_obj_array_t *self = MP_OBJ_TO_PTR(mp_obj_new_memoryview(bufinfo.typecode,
-        bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
-        bufinfo.buf));
+                                         bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
+                                         bufinfo.buf));
 
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {
@@ -297,7 +297,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
                 }
                 array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
                 return mp_obj_new_bool(
-                    find_subbytes(lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len, 1) != NULL);
+                           find_subbytes(lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len, 1) != NULL);
             }
             #endif
 
@@ -328,7 +328,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
     assert((MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(self_in, &mp_type_bytearray))
-        || (MICROPY_PY_ARRAY && mp_obj_is_type(self_in, &mp_type_array)));
+           || (MICROPY_PY_ARRAY && mp_obj_is_type(self_in, &mp_type_array)));
     mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->free == 0) {
@@ -349,7 +349,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
     assert((MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(self_in, &mp_type_bytearray))
-        || (MICROPY_PY_ARRAY && mp_obj_is_type(self_in, &mp_type_array)));
+           || (MICROPY_PY_ARRAY && mp_obj_is_type(self_in, &mp_type_array)));
     mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
@@ -388,7 +388,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         return MP_OBJ_NULL; // op not supported
     } else {
         mp_obj_array_t *o = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
@@ -449,10 +449,10 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                         dest_items = o->items;
                     }
                     mp_seq_replace_slice_grow_inplace(dest_items, o->len,
-                        slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
+                                                      slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
                 } else {
                     mp_seq_replace_slice_no_grow(dest_items, o->len,
-                        slice.start, slice.stop, src_items, src_len, item_sz);
+                                                 slice.start, slice.stop, src_items, src_len, item_sz);
                     // Clear "freed" elements at the end of list
                     // TODO: This is actually only needed for typecode=='O'
                     mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
@@ -483,7 +483,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             }
             return MP_OBJ_FROM_PTR(res);
         } else
-#endif
+        #endif
         {
             size_t index = mp_get_index(o->base.type, o->len, index_in, false);
             #if MICROPY_PY_BUILTINS_MEMORYVIEW

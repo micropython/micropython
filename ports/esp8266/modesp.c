@@ -204,7 +204,7 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
+                       (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
@@ -214,8 +214,8 @@ STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
-        mp_obj_get_pin_obj(dataPin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len);
+                     mp_obj_get_pin_obj(dataPin)->phys_port,
+                     (uint8_t*)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
@@ -289,7 +289,7 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
     if (esp_native_code_cur + len > esp_native_code_end) {
         mp_raise_msg_varg(&mp_type_MemoryError,
-            "memory allocation failed, allocating %u bytes for native code", (uint)len);
+                          "memory allocation failed, allocating %u bytes for native code", (uint)len);
     }
 
     void *dest;
@@ -381,11 +381,11 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj) },
     #endif
 
-#if MODESP_INCLUDE_CONSTANTS
+    #if MODESP_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_SLEEP_NONE), MP_ROM_INT(NONE_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_SLEEP_LIGHT), MP_ROM_INT(LIGHT_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_SLEEP_MODEM), MP_ROM_INT(MODEM_SLEEP_T) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);

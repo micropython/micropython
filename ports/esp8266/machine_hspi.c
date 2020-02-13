@@ -97,7 +97,7 @@ STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint
 STATIC void machine_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hspi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "HSPI(id=1, baudrate=%u, polarity=%u, phase=%u)",
-        self->baudrate, self->polarity, self->phase);
+              self->baudrate, self->polarity, self->phase);
 }
 
 STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

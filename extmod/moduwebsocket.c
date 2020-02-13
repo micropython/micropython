@@ -183,7 +183,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                 self->msg_sz -= out_sz;
                 if (self->msg_sz == 0) {
                     byte last_state;
-no_payload:
+                no_payload:
                     last_state = self->state;
                     self->state = FRAME_HEADER;
                     self->to_recv = 2;

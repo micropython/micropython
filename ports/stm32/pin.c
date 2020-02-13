@@ -429,7 +429,7 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if (n_args > 1 || kw_args->used != 0) {
         // configure irq
         extint_register_pin(self, args[ARG_trigger].u_int,
-            args[ARG_hard].u_bool, args[ARG_handler].u_obj);
+                            args[ARG_hard].u_bool, args[ARG_handler].u_obj);
     }
 
     // TODO should return an IRQ object

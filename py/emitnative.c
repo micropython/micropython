@@ -110,11 +110,11 @@
 
 // Whether the viper function needs access to fun_obj
 #define NEED_FUN_OBJ(emit) ((emit)->scope->exc_stack_size > 0 \
-    || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_REFGLOBALS | MP_SCOPE_FLAG_HASCONSTS)))
+                            || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_REFGLOBALS | MP_SCOPE_FLAG_HASCONSTS)))
 
 // Whether the native/viper function needs to be wrapped in an exception handler
 #define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0 \
-    || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_REFGLOBALS)))
+                                       || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_REFGLOBALS)))
 
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
@@ -171,7 +171,7 @@ STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
         case VTYPE_PTR8: return MP_QSTR_ptr8;
         case VTYPE_PTR16: return MP_QSTR_ptr16;
         case VTYPE_PTR32: return MP_QSTR_ptr32;
-        case VTYPE_PTR_NONE: default: return MP_QSTR_None;
+    case VTYPE_PTR_NONE: default: return MP_QSTR_None;
     }
 }
 
@@ -703,14 +703,14 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         mp_uint_t f_len = mp_asm_base_get_code_size(&emit->as->base);
 
         mp_emit_glue_assign_native(emit->scope->raw_code,
-            emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
-            f, f_len, emit->const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
-            emit->prelude_offset,
-            emit->const_table_cur_obj, emit->const_table_cur_raw_code,
-            emit->qstr_link_cur, emit->qstr_link,
-            #endif
-            emit->scope->num_pos_args, emit->scope->scope_flags, 0);
+                                   emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
+                                   f, f_len, emit->const_table,
+                                   #if MICROPY_PERSISTENT_CODE_SAVE
+                                   emit->prelude_offset,
+                                   emit->const_table_cur_obj, emit->const_table_cur_raw_code,
+                                   emit->qstr_link_cur, emit->qstr_link,
+                                   #endif
+                                   emit->scope->num_pos_args, emit->scope->scope_flags, 0);
     }
 }
 
@@ -733,14 +733,14 @@ STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("  adjust_stack; stack_size=%d+%d; stack now:", emit->stack_size - stack_size_delta, stack_size_delta);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         DEBUG_printf(" (v=%d k=%d %d)", si->vtype, si->kind, si->data.u_reg);
     }
     DEBUG_printf("\n");
-#endif
+    #endif
 }
 
 STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
@@ -1132,8 +1132,8 @@ STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
 
     bool is_finally = false;
     if (emit->exc_stack_size > 0) {
-       exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
-       is_finally = e->is_finally && e->label == l;
+        exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
+        is_finally = e->is_finally && e->label == l;
     }
 
     if (is_finally) {
@@ -1580,7 +1580,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't load from '%q'", vtype_to_qstr(vtype_base));
+                                                 "can't load from '%q'", vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1590,7 +1590,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't load with '%q' index", vtype_to_qstr(vtype_index));
+                                             "can't load with '%q' index", vtype_to_qstr(vtype_index));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1618,7 +1618,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't load from '%q'", vtype_to_qstr(vtype_base));
+                                                 "can't load from '%q'", vtype_to_qstr(vtype_base));
             }
         }
         emit_post_push_reg(emit, VTYPE_INT, REG_RET);
@@ -1642,8 +1642,8 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (emit->local_vtype[local_num] != vtype) {
         // type of local is not the same as object stored in it
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "local '%q' has type '%q' but source is '%q'",
-            qst, vtype_to_qstr(emit->local_vtype[local_num]), vtype_to_qstr(vtype));
+                                     "local '%q' has type '%q' but source is '%q'",
+                                     qst, vtype_to_qstr(emit->local_vtype[local_num]), vtype_to_qstr(vtype));
     }
 }
 
@@ -1743,7 +1743,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #endif
             if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store '%q'", vtype_to_qstr(vtype_value));
+                                             "can't store '%q'", vtype_to_qstr(vtype_value));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1809,7 +1809,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't store to '%q'", vtype_to_qstr(vtype_base));
+                                                 "can't store to '%q'", vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1820,7 +1820,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store with '%q' index", vtype_to_qstr(vtype_index));
+                                             "can't store with '%q' index", vtype_to_qstr(vtype_index));
             }
             #if N_X86
             // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
@@ -1830,7 +1830,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #endif
             if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store '%q'", vtype_to_qstr(vtype_value));
+                                             "can't store '%q'", vtype_to_qstr(vtype_value));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1870,7 +1870,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't store to '%q'", vtype_to_qstr(vtype_base));
+                                                 "can't store to '%q'", vtype_to_qstr(vtype_base));
             }
         }
 
@@ -1992,7 +1992,7 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bo
         }
         if (!(vtype == VTYPE_BOOL || vtype == VTYPE_INT || vtype == VTYPE_UINT)) {
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                "can't implicitly convert '%q' to 'bool'", vtype_to_qstr(vtype));
+                                         "can't implicitly convert '%q' to 'bool'", vtype_to_qstr(vtype));
         }
     }
     // For non-pop need to save the vtype so that emit_native_adjust_stack_size
@@ -2271,7 +2271,7 @@ STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
     } else {
         adjust_stack(emit, 1);
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "unary op %q not implemented", mp_unary_op_method_name[op]);
+                                     "unary op %q not implemented", mp_unary_op_method_name[op]);
     }
 }
 
@@ -2327,107 +2327,107 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
         } else
         #endif
-        if (op == MP_BINARY_OP_OR) {
-            ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_XOR) {
-            ASM_XOR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_AND) {
-            ASM_AND_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_ADD) {
-            ASM_ADD_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_SUBTRACT) {
-            ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_MULTIPLY) {
-            ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
-            // comparison ops are (in enum order):
-            //  MP_BINARY_OP_LESS
-            //  MP_BINARY_OP_MORE
-            //  MP_BINARY_OP_EQUAL
-            //  MP_BINARY_OP_LESS_EQUAL
-            //  MP_BINARY_OP_MORE_EQUAL
-            //  MP_BINARY_OP_NOT_EQUAL
-            need_reg_single(emit, REG_RET, 0);
-            #if N_X64
-            asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
-            asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6] = {
-                ASM_X64_CC_JL,
-                ASM_X64_CC_JG,
-                ASM_X64_CC_JE,
-                ASM_X64_CC_JLE,
-                ASM_X64_CC_JGE,
-                ASM_X64_CC_JNE,
-            };
-            asm_x64_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
-            #elif N_X86
-            asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
-            asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6] = {
-                ASM_X86_CC_JL,
-                ASM_X86_CC_JG,
-                ASM_X86_CC_JE,
-                ASM_X86_CC_JLE,
-                ASM_X86_CC_JGE,
-                ASM_X86_CC_JNE,
-            };
-            asm_x86_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
-            #elif N_THUMB
-            asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
-            static uint16_t ops[6] = {
-                ASM_THUMB_OP_ITE_GE,
-                ASM_THUMB_OP_ITE_GT,
-                ASM_THUMB_OP_ITE_EQ,
-                ASM_THUMB_OP_ITE_GT,
-                ASM_THUMB_OP_ITE_GE,
-                ASM_THUMB_OP_ITE_EQ,
-            };
-            static byte ret[6] = { 0, 1, 1, 0, 1, 0, };
-            asm_thumb_op16(emit->as, ops[op - MP_BINARY_OP_LESS]);
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);
-            #elif N_ARM
-            asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
-            static uint ccs[6] = {
-                ASM_ARM_CC_LT,
-                ASM_ARM_CC_GT,
-                ASM_ARM_CC_EQ,
-                ASM_ARM_CC_LE,
-                ASM_ARM_CC_GE,
-                ASM_ARM_CC_NE,
-            };
-            asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
-            #elif N_XTENSA || N_XTENSAWIN
-            static uint8_t ccs[6] = {
-                ASM_XTENSA_CC_LT,
-                0x80 | ASM_XTENSA_CC_LT, // for GT we'll swap args
-                ASM_XTENSA_CC_EQ,
-                0x80 | ASM_XTENSA_CC_GE, // for LE we'll swap args
-                ASM_XTENSA_CC_GE,
-                ASM_XTENSA_CC_NE,
-            };
-            uint8_t cc = ccs[op - MP_BINARY_OP_LESS];
-            if ((cc & 0x80) == 0) {
-                asm_xtensa_setcc_reg_reg_reg(emit->as, cc, REG_RET, REG_ARG_2, reg_rhs);
+            if (op == MP_BINARY_OP_OR) {
+                ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (op == MP_BINARY_OP_XOR) {
+                ASM_XOR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (op == MP_BINARY_OP_AND) {
+                ASM_AND_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (op == MP_BINARY_OP_ADD) {
+                ASM_ADD_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (op == MP_BINARY_OP_SUBTRACT) {
+                ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (op == MP_BINARY_OP_MULTIPLY) {
+                ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
+                // comparison ops are (in enum order):
+                //  MP_BINARY_OP_LESS
+                //  MP_BINARY_OP_MORE
+                //  MP_BINARY_OP_EQUAL
+                //  MP_BINARY_OP_LESS_EQUAL
+                //  MP_BINARY_OP_MORE_EQUAL
+                //  MP_BINARY_OP_NOT_EQUAL
+                need_reg_single(emit, REG_RET, 0);
+                #if N_X64
+                asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
+                asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
+                static byte ops[6] = {
+                    ASM_X64_CC_JL,
+                    ASM_X64_CC_JG,
+                    ASM_X64_CC_JE,
+                    ASM_X64_CC_JLE,
+                    ASM_X64_CC_JGE,
+                    ASM_X64_CC_JNE,
+                };
+                asm_x64_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+                #elif N_X86
+                asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
+                asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
+                static byte ops[6] = {
+                    ASM_X86_CC_JL,
+                    ASM_X86_CC_JG,
+                    ASM_X86_CC_JE,
+                    ASM_X86_CC_JLE,
+                    ASM_X86_CC_JGE,
+                    ASM_X86_CC_JNE,
+                };
+                asm_x86_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+                #elif N_THUMB
+                asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
+                static uint16_t ops[6] = {
+                    ASM_THUMB_OP_ITE_GE,
+                    ASM_THUMB_OP_ITE_GT,
+                    ASM_THUMB_OP_ITE_EQ,
+                    ASM_THUMB_OP_ITE_GT,
+                    ASM_THUMB_OP_ITE_GE,
+                    ASM_THUMB_OP_ITE_EQ,
+                };
+                static byte ret[6] = { 0, 1, 1, 0, 1, 0, };
+                asm_thumb_op16(emit->as, ops[op - MP_BINARY_OP_LESS]);
+                asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
+                asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);
+                #elif N_ARM
+                asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
+                static uint ccs[6] = {
+                    ASM_ARM_CC_LT,
+                    ASM_ARM_CC_GT,
+                    ASM_ARM_CC_EQ,
+                    ASM_ARM_CC_LE,
+                    ASM_ARM_CC_GE,
+                    ASM_ARM_CC_NE,
+                };
+                asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
+                #elif N_XTENSA || N_XTENSAWIN
+                static uint8_t ccs[6] = {
+                    ASM_XTENSA_CC_LT,
+                    0x80 | ASM_XTENSA_CC_LT, // for GT we'll swap args
+                    ASM_XTENSA_CC_EQ,
+                    0x80 | ASM_XTENSA_CC_GE, // for LE we'll swap args
+                    ASM_XTENSA_CC_GE,
+                    ASM_XTENSA_CC_NE,
+                };
+                uint8_t cc = ccs[op - MP_BINARY_OP_LESS];
+                if ((cc & 0x80) == 0) {
+                    asm_xtensa_setcc_reg_reg_reg(emit->as, cc, REG_RET, REG_ARG_2, reg_rhs);
+                } else {
+                    asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
+                }
+                #else
+#error not implemented
+                #endif
+                emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
             } else {
-                asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
+                // TODO other ops not yet implemented
+                adjust_stack(emit, 1);
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                                             "binary op %q not implemented", mp_binary_op_method_name[op]);
             }
-            #else
-                #error not implemented
-            #endif
-            emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
-        } else {
-            // TODO other ops not yet implemented
-            adjust_stack(emit, 1);
-            EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                "binary op %q not implemented", mp_binary_op_method_name[op]);
-        }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
         emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
         bool invert = false;
@@ -2447,8 +2447,8 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     } else {
         adjust_stack(emit, -1);
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "can't do binary op between '%q' and '%q'",
-            vtype_to_qstr(vtype_lhs), vtype_to_qstr(vtype_rhs));
+                                     "can't do binary op between '%q' and '%q'",
+                                     vtype_to_qstr(vtype_lhs), vtype_to_qstr(vtype_rhs));
     }
 }
 
@@ -2516,13 +2516,13 @@ STATIC void emit_native_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t co
         emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
         assert(vtype_item == VTYPE_PYOBJ);
         f = MP_F_LIST_APPEND;
-    #if MICROPY_PY_BUILTINS_SET
+        #if MICROPY_PY_BUILTINS_SET
     } else if (kind == SCOPE_SET_COMP) {
         vtype_kind_t vtype_item;
         emit_pre_pop_reg(emit, &vtype_item, REG_ARG_2);
         assert(vtype_item == VTYPE_PYOBJ);
         f = MP_F_STORE_SET;
-    #endif
+        #endif
     } else {
         // SCOPE_DICT_COMP
         vtype_kind_t vtype_key, vtype_value;
@@ -2689,8 +2689,8 @@ STATIC void emit_native_return_value(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype, return_vtype == VTYPE_PYOBJ ? REG_PARENT_RET : REG_ARG_1);
             if (vtype != return_vtype) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "return expected '%q' but got '%q'",
-                    vtype_to_qstr(return_vtype), vtype_to_qstr(vtype));
+                                             "return expected '%q' but got '%q'",
+                                             vtype_to_qstr(return_vtype), vtype_to_qstr(vtype));
             }
         }
         if (return_vtype != VTYPE_PYOBJ) {

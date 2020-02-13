@@ -271,7 +271,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     // Access the existing object, if it has been constructed with the same hardware interface
     if (wiznet5k_obj.base.type == &mod_network_nic_type_wiznet5k) {
         if (!(wiznet5k_obj.spi == spi && wiznet5k_obj.cs == cs && wiznet5k_obj.rst == rst
-            && wiznet5k_obj.netif.flags != 0)) {
+                && wiznet5k_obj.netif.flags != 0)) {
             wiznet5k_deinit();
         }
     }
@@ -324,10 +324,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(
-        wizphy_getphylink() == PHY_LINK_ON
-        && (self->netif.flags & NETIF_FLAG_UP)
-        && self->netif.ip_addr.addr != 0
-    );
+               wizphy_getphylink() == PHY_LINK_ON
+               && (self->netif.flags & NETIF_FLAG_UP)
+               && self->netif.ip_addr.addr != 0
+           );
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
 

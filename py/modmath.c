@@ -185,7 +185,7 @@ STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_
     const mp_float_t a = mp_obj_get_float(args[ARG_a].u_obj);
     const mp_float_t b = mp_obj_get_float(args[ARG_b].u_obj);
     const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL
-        ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
+                               ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
     const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj);
     if (rel_tol < (mp_float_t)0.0 || abs_tol < (mp_float_t)0.0) {
         math_error();
@@ -198,8 +198,8 @@ STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_
         return mp_const_false;
     }
     if ((difference <= abs_tol) ||
-        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||
-        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b))) {
+            (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||
+            (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b))) {
         return mp_const_true;
     }
     return mp_const_false;

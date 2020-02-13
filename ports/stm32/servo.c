@@ -125,7 +125,7 @@ void servo_timer_irq_callback(void) {
 
 STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     static const uint8_t channel_table[4] =
-        {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
+    {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
     uint32_t channel = channel_table[s->pin->pin];
 
     // GPIO configuration
@@ -265,11 +265,11 @@ STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
         // get angle
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 90 / self->pulse_angle_90);
     } else {
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_float(args[1]) / 90.0;
-#else
+        #else
         self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_int(args[1]) / 90;
-#endif
+        #endif
         if (n_args == 2) {
             // set angle immediately
             self->time_left = 0;
@@ -295,11 +295,11 @@ STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
         // get speed
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 100 / self->pulse_speed_100);
     } else {
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_float(args[1]) / 100.0;
-#else
+        #else
         self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_int(args[1]) / 100;
-#endif
+        #endif
         if (n_args == 2) {
             // set speed immediately
             self->time_left = 0;

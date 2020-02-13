@@ -106,7 +106,7 @@ typedef struct _pyb_lcd_obj_t {
 } pyb_lcd_obj_t;
 
 STATIC void lcd_delay(void) {
-    __asm volatile ("nop\nnop");
+    __asm volatile("nop\nnop");
 }
 
 STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {

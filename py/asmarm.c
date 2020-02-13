@@ -40,20 +40,20 @@
 
 void asm_arm_end_pass(asm_arm_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
-#if defined(__linux__) && defined(__GNUC__)
+        #if defined(__linux__) && defined(__GNUC__)
         char *start = mp_asm_base_get_code(&as->base);
         char *end = start + mp_asm_base_get_code_size(&as->base);
         __builtin___clear_cache(start, end);
-#elif defined(__arm__)
+        #elif defined(__arm__)
         // flush I- and D-cache
         asm volatile(
-                "0:"
-                "mrc p15, 0, r15, c7, c10, 3\n"
-                "bne 0b\n"
-                "mov r0, #0\n"
-                "mcr p15, 0, r0, c7, c7, 0\n"
-                : : : "r0", "cc");
-#endif
+            "0:"
+            "mrc p15, 0, r15, c7, c10, 3\n"
+            "bne 0b\n"
+            "mov r0, #0\n"
+            "mcr p15, 0, r0, c7, c7, 0\n"
+            : : : "r0", "cc");
+        #endif
     }
 }
 
@@ -158,13 +158,13 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
 
     as->stack_adjust = 0;
     as->push_reglist = 1 << ASM_ARM_REG_R1
-        | 1 << ASM_ARM_REG_R2
-        | 1 << ASM_ARM_REG_R3
-        | 1 << ASM_ARM_REG_R4
-        | 1 << ASM_ARM_REG_R5
-        | 1 << ASM_ARM_REG_R6
-        | 1 << ASM_ARM_REG_R7
-        | 1 << ASM_ARM_REG_R8;
+                       | 1 << ASM_ARM_REG_R2
+                       | 1 << ASM_ARM_REG_R3
+                       | 1 << ASM_ARM_REG_R4
+                       | 1 << ASM_ARM_REG_R5
+                       | 1 << ASM_ARM_REG_R6
+                       | 1 << ASM_ARM_REG_R7
+                       | 1 << ASM_ARM_REG_R8;
 
     // Only adjust the stack if there are more locals than usable registers
     if (num_locals > 3) {

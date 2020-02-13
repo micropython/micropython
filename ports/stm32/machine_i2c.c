@@ -79,9 +79,9 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
     }
 
     mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
-        freq);
+              self - &machine_hard_i2c_obj[0] + 1,
+              mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
+              freq);
 
     #else
 
@@ -91,9 +91,9 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
     uint32_t scll = timingr & 0xff;
     uint32_t freq = HAL_RCC_GetPCLK1Freq() / (presc + 1) / (sclh + scll + 2);
     mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timingr=0x%08x)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
-        freq, timingr);
+              self - &machine_hard_i2c_obj[0] + 1,
+              mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
+              freq, timingr);
 
     #endif
 }
@@ -157,8 +157,8 @@ STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timeout=%u)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        self->scl->name, self->sda->name, 500000 / self->us_delay, self->us_timeout);
+              self - &machine_hard_i2c_obj[0] + 1,
+              self->scl->name, self->sda->name, 500000 / self->us_delay, self->us_timeout);
 }
 
 STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
@@ -214,29 +214,29 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (mp_obj_is_str(args[ARG_id].u_obj)) {
         const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
         if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
+            #ifdef MICROPY_HW_I2C1_NAME
         } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
             i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C2_NAME
         } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
             i2c_id = 2;
-        #endif
-        #ifdef MICROPY_HW_I2C3_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C3_NAME
         } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
             i2c_id = 3;
-        #endif
-        #ifdef MICROPY_HW_I2C4_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C4_NAME
         } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
             i2c_id = 4;
-        #endif
+            #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
         }
     } else {
         i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
         if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
-            || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
+                || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
             mp_raise_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id);
         }
     }

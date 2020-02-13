@@ -170,7 +170,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             bits -= 1;
         }
         mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
-            self->uart_id, uart_get_baudrate(self), bits);
+                  self->uart_id, uart_get_baudrate(self), bits);
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
         } else if (!(cr1 & USART_CR1_PS)) {
@@ -180,7 +180,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         }
         uint32_t cr2 = self->uartx->CR2;
         mp_printf(print, ", stop=%u, flow=",
-            ((cr2 >> USART_CR2_STOP_Pos) & 3) == 0 ? 1 : 2);
+                  ((cr2 >> USART_CR2_STOP_Pos) & 3) == 0 ? 1 : 2);
         uint32_t cr3 = self->uartx->CR3;
         if (!(cr3 & (USART_CR3_CTSE | USART_CR3_RTSE))) {
             mp_print_str(print, "0");
@@ -188,7 +188,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             if (cr3 & USART_CR3_RTSE) {
                 mp_print_str(print, "RTS");
                 if (cr3 & USART_CR3_CTSE) {
-                   mp_print_str(print, "|");
+                    mp_print_str(print, "|");
                 }
             }
             if (cr3 & USART_CR3_CTSE) {
@@ -196,8 +196,8 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             }
         }
         mp_printf(print, ", timeout=%u, timeout_char=%u, rxbuf=%u",
-            self->timeout, self->timeout_char,
-            self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
+                  self->timeout, self->timeout_char,
+                  self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); // -1 to adjust for usable length of buffer
         if (self->mp_irq_trigger != 0) {
             mp_printf(print, "; irq=0x%x", self->mp_irq_trigger);
         }
@@ -235,7 +235,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     // static UARTs are used for internal purposes and shouldn't be reconfigured
     if (self->is_static) {
@@ -261,10 +261,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         bits = UART_WORDLENGTH_8B;
     } else if (bits == 9) {
         bits = UART_WORDLENGTH_9B;
-    #ifdef UART_WORDLENGTH_7B
+        #ifdef UART_WORDLENGTH_7B
     } else if (bits == 7) {
         bits = UART_WORDLENGTH_7B;
-    #endif
+        #endif
     } else {
         mp_raise_ValueError("unsupported combination of bits and parity");
     }
@@ -353,46 +353,46 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     if (mp_obj_is_str(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
-        #ifdef MICROPY_HW_UART1_NAME
+            #ifdef MICROPY_HW_UART1_NAME
         } else if (strcmp(port, MICROPY_HW_UART1_NAME) == 0) {
             uart_id = PYB_UART_1;
-        #endif
-        #ifdef MICROPY_HW_UART2_NAME
+            #endif
+            #ifdef MICROPY_HW_UART2_NAME
         } else if (strcmp(port, MICROPY_HW_UART2_NAME) == 0) {
             uart_id = PYB_UART_2;
-        #endif
-        #ifdef MICROPY_HW_UART3_NAME
+            #endif
+            #ifdef MICROPY_HW_UART3_NAME
         } else if (strcmp(port, MICROPY_HW_UART3_NAME) == 0) {
             uart_id = PYB_UART_3;
-        #endif
-        #ifdef MICROPY_HW_UART4_NAME
+            #endif
+            #ifdef MICROPY_HW_UART4_NAME
         } else if (strcmp(port, MICROPY_HW_UART4_NAME) == 0) {
             uart_id = PYB_UART_4;
-        #endif
-        #ifdef MICROPY_HW_UART5_NAME
+            #endif
+            #ifdef MICROPY_HW_UART5_NAME
         } else if (strcmp(port, MICROPY_HW_UART5_NAME) == 0) {
             uart_id = PYB_UART_5;
-        #endif
-        #ifdef MICROPY_HW_UART6_NAME
+            #endif
+            #ifdef MICROPY_HW_UART6_NAME
         } else if (strcmp(port, MICROPY_HW_UART6_NAME) == 0) {
             uart_id = PYB_UART_6;
-        #endif
-        #ifdef MICROPY_HW_UART7_NAME
+            #endif
+            #ifdef MICROPY_HW_UART7_NAME
         } else if (strcmp(port, MICROPY_HW_UART7_NAME) == 0) {
             uart_id = PYB_UART_7;
-        #endif
-        #ifdef MICROPY_HW_UART8_NAME
+            #endif
+            #ifdef MICROPY_HW_UART8_NAME
         } else if (strcmp(port, MICROPY_HW_UART8_NAME) == 0) {
             uart_id = PYB_UART_8;
-        #endif
-        #ifdef MICROPY_HW_UART9_NAME
+            #endif
+            #ifdef MICROPY_HW_UART9_NAME
         } else if (strcmp(port, MICROPY_HW_UART9_NAME) == 0) {
             uart_id = PYB_UART_9;
-        #endif
-        #ifdef MICROPY_HW_UART10_NAME
+            #endif
+            #ifdef MICROPY_HW_UART10_NAME
         } else if (strcmp(port, MICROPY_HW_UART10_NAME) == 0) {
             uart_id = PYB_UART_10;
-        #endif
+            #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port);
         }

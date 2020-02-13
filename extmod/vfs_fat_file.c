@@ -181,11 +181,11 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
             case '+':
                 mode |= FA_READ | FA_WRITE;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &mp_type_vfs_fat_fileio;
                 break;
-            #endif
+                #endif
             case 't':
                 type = &mp_type_vfs_fat_textio;
                 break;

@@ -147,37 +147,37 @@ int spi_find_index(mp_obj_t id) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {
-        #ifdef MICROPY_HW_SPI1_NAME
+            #ifdef MICROPY_HW_SPI1_NAME
         } else if (strcmp(port, MICROPY_HW_SPI1_NAME) == 0) {
             return 1;
-        #endif
-        #ifdef MICROPY_HW_SPI2_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI2_NAME
         } else if (strcmp(port, MICROPY_HW_SPI2_NAME) == 0) {
             return 2;
-        #endif
-        #ifdef MICROPY_HW_SPI3_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI3_NAME
         } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
             return 3;
-        #endif
-        #ifdef MICROPY_HW_SPI4_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI4_NAME
         } else if (strcmp(port, MICROPY_HW_SPI4_NAME) == 0) {
             return 4;
-        #endif
-        #ifdef MICROPY_HW_SPI5_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI5_NAME
         } else if (strcmp(port, MICROPY_HW_SPI5_NAME) == 0) {
             return 5;
-        #endif
-        #ifdef MICROPY_HW_SPI6_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI6_NAME
         } else if (strcmp(port, MICROPY_HW_SPI6_NAME) == 0) {
             return 6;
-        #endif
+            #endif
         }
         mp_raise_msg_varg(&mp_type_ValueError, "SPI(%s) doesn't exist", port);
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
         if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(spi_obj)
-            && spi_obj[spi_id - 1].spi != NULL) {
+                && spi_obj[spi_id - 1].spi != NULL) {
             return spi_id;
         }
         mp_raise_msg_varg(&mp_type_ValueError, "SPI(%d) doesn't exist", spi_id);
@@ -203,22 +203,22 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     } else
     #endif
     #if defined(SPI3)
-    if (spi->Instance == SPI3) {
-        // SPI3 is on APB1
-        return HAL_RCC_GetPCLK1Freq();
-    } else
+        if (spi->Instance == SPI3) {
+            // SPI3 is on APB1
+            return HAL_RCC_GetPCLK1Freq();
+        } else
     #endif
-    {
-        // SPI1, SPI4, SPI5 and SPI6 are on APB2
-        return HAL_RCC_GetPCLK2Freq();
-    }
+        {
+            // SPI1, SPI4, SPI5 and SPI6 are on APB2
+            return HAL_RCC_GetPCLK2Freq();
+        }
     #endif
 }
 
 // sets the parameters in the SPI_InitTypeDef struct
 // if an argument is -1 then the corresponding parameter is not changed
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
-    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
+                    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     SPI_InitTypeDef *init = &spi->Init;
 
@@ -261,7 +261,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
-    #if defined(MICROPY_HW_SPI1_SCK)
+        #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         irqn = SPI1_IRQn;
         #if defined(MICROPY_HW_SPI1_NSS)
@@ -274,8 +274,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI1_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI1_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         irqn = SPI2_IRQn;
         #if defined(MICROPY_HW_SPI2_NSS)
@@ -288,8 +288,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI2_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI2_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         irqn = SPI3_IRQn;
         #if defined(MICROPY_HW_SPI3_NSS)
@@ -302,8 +302,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI3_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI3_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         irqn = SPI4_IRQn;
         #if defined(MICROPY_HW_SPI4_NSS)
@@ -316,8 +316,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI4_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI4_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         irqn = SPI5_IRQn;
         #if defined(MICROPY_HW_SPI5_NSS)
@@ -330,8 +330,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI5_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI5_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         irqn = SPI6_IRQn;
         #if defined(MICROPY_HW_SPI6_NSS)
@@ -344,7 +344,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI6_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI6_CLK_ENABLE();
-    #endif
+        #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
         return;
@@ -378,57 +378,57 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #if defined(STM32H7)
     NVIC_SetPriority(irqn, IRQ_PRI_SPI);
     HAL_NVIC_EnableIRQ(irqn);
-    #else 
+    #else
     (void)irqn;
-    #endif 
+    #endif
 }
 
 void spi_deinit(const spi_t *spi_obj) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
     if (0) {
-    #if defined(MICROPY_HW_SPI1_SCK)
+        #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         __HAL_RCC_SPI1_FORCE_RESET();
         __HAL_RCC_SPI1_RELEASE_RESET();
         __HAL_RCC_SPI1_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         __HAL_RCC_SPI2_FORCE_RESET();
         __HAL_RCC_SPI2_RELEASE_RESET();
         __HAL_RCC_SPI2_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI2_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         __HAL_RCC_SPI3_FORCE_RESET();
         __HAL_RCC_SPI3_RELEASE_RESET();
         __HAL_RCC_SPI3_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI3_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         __HAL_RCC_SPI4_FORCE_RESET();
         __HAL_RCC_SPI4_RELEASE_RESET();
         __HAL_RCC_SPI4_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI4_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         __HAL_RCC_SPI5_FORCE_RESET();
         __HAL_RCC_SPI5_RELEASE_RESET();
         __HAL_RCC_SPI5_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI5_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         __HAL_RCC_SPI6_FORCE_RESET();
         __HAL_RCC_SPI6_RELEASE_RESET();
         __HAL_RCC_SPI6_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI6_IRQn);
-    #endif
+        #endif
     }
 }
 
@@ -594,7 +594,8 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
         } else {
             mp_printf(print, ", SPI.SLAVE");
         }
-        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1,
+                  spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
         if (spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE) {
             mp_printf(print, ", crc=0x%x", spi->Init.CRCPolynomial);
         }
@@ -628,7 +629,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
             self->spi->spi->Init.TIMode = SPI_TIMODE_DISABLE;
             self->spi->spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
-                self->polarity, self->phase, self->bits, self->firstbit);
+                           self->polarity, self->phase, self->bits, self->firstbit);
             spi_init(self->spi, false);
             break;
 

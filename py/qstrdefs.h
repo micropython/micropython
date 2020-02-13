@@ -45,7 +45,7 @@ Q({:#o})
 Q({:#x})
 #endif
 Q({:#b})
-Q( )
+Q()
 Q(\n)
 Q(maximum recursion depth exceeded)
 Q(<module>)

@@ -37,10 +37,10 @@ void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
     // Set stack pointer
     #if __CORTEX_M >= 0x03
-    __asm volatile ("ldr sp, =_estack");
+    __asm volatile("ldr sp, =_estack");
     #else
-    __asm volatile ("ldr r0, =_estack");
-    __asm volatile ("mov sp, r0");
+    __asm volatile("ldr r0, =_estack");
+    __asm volatile("mov sp, r0");
     #endif
     // Copy .data section from flash to RAM
     for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {

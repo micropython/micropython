@@ -43,8 +43,8 @@
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
 #define SET_TRIGGER(phys_port, trig) \
     (GPIO_REG_WRITE(GPIO_PIN_ADDR(phys_port), \
-        (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
-        | GPIO_PIN_INT_TYPE_SET(trig))) \
+                    (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
+                    | GPIO_PIN_INT_TYPE_SET(trig))) \
 
 #define GPIO_MODE_INPUT (0)
 #define GPIO_MODE_OUTPUT (1)
@@ -177,10 +177,10 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
     ETS_GPIO_INTR_DISABLE();
     PIN_FUNC_SELECT(pin->periph, pin->func);
     GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
-        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
-        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+                   GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
+                   | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
     GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
-        GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
+                   GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
     ETS_GPIO_INTR_ENABLE();
 }
 

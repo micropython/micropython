@@ -69,7 +69,7 @@ NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
 }
 
 static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl_addr) {
-    __asm volatile (
+    __asm volatile(
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
         "msr msp, r2\n"         // get stack pointer
         "ldr r2, [r1, #4]\n"    // get address of destination
@@ -143,8 +143,8 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
         const uint32_t pllsaiq = 2;
         const uint32_t pllsain = 48 * pllsaip * pllm / (HSE_VALUE / 1000000);
         RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
-            | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
-            | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
+                          | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
+                          | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
         RCC->CR |= RCC_CR_PLLSAION;
         uint32_t ticks = mp_hal_ticks_ms();
         while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
@@ -258,9 +258,9 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
     if (sysclk == HAL_RCC_GetSysClockFreq()
-        && ahb == HAL_RCC_GetHCLKFreq()
-        && apb1 == HAL_RCC_GetPCLK1Freq()
-        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+            && ahb == HAL_RCC_GetHCLKFreq()
+            && apb1 == HAL_RCC_GetPCLK1Freq()
+            && apb2 == HAL_RCC_GetPCLK2Freq()) {
         return 0;
     }
 
@@ -399,19 +399,19 @@ set_clk:
     #if MICROPY_HW_CLK_LAST_FREQ
     // Save settings in RTC backup register to reconfigure clocks on hard-reset
     #if defined(STM32F7)
-    #define FREQ_BKP BKP31R
+#define FREQ_BKP BKP31R
     #else
-    #define FREQ_BKP BKP19R
+#define FREQ_BKP BKP19R
     #endif
     // qqqqqqqq pppppppp nnnnnnnn nnmmmmmm
     // qqqqQQQQ ppppppPP nNNNNNNN NNMMMMMM
     // 222111HH HHQQQQPP nNNNNNNN NNMMMMMM
     p = (p / 2) - 1;
     RTC->FREQ_BKP = m
-        | (n << 6) | (p << 16) | (q << 18)
-        | (h << 22)
-        | (b1 << 26)
-        | (b2 << 29);
+                    | (n << 6) | (p << 16) | (q << 18)
+                    | (h << 22)
+                    | (b1 << 26)
+                    | (b2 << 29);
     #endif
 
     return 0;
@@ -544,11 +544,11 @@ void powerctrl_enter_standby_mode(void) {
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
     #if defined(STM32F0) || defined(STM32L0)
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #else
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #endif
 
     // save RTC interrupts

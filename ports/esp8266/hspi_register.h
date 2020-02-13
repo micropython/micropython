@@ -77,8 +77,8 @@
 #define SPI_MOSI_DELAY_NUM 0x00000007
 #define SPI_MOSI_DELAY_NUM_S 23
 #define SPI_MOSI_DELAY_MODE 0x00000003  //mode 0 : posedge; data set at positive edge of clk
-										//mode 1 : negedge + 1 cycle delay, only if freq<10MHz ; data set at negitive edge of clk
-										//mode 2 : Do not use this mode.
+//mode 1 : negedge + 1 cycle delay, only if freq<10MHz ; data set at negitive edge of clk
+//mode 2 : Do not use this mode.
 #define SPI_MOSI_DELAY_MODE_S 21
 #define SPI_MISO_DELAY_NUM 0x00000007
 #define SPI_MISO_DELAY_NUM_S 18
@@ -158,7 +158,7 @@
 #define SPI_USR_COMMAND_VALUE_S 0
 
 #define SPI_WR_STATUS(i)                          (REG_SPI_BASE(i)  + 0x28)
- //previously defined as SPI_FLASH_USER3. No further info available.
+//previously defined as SPI_FLASH_USER3. No further info available.
 
 #define SPI_PIN(i)                            (REG_SPI_BASE(i)  + 0x2C)
 #define SPI_IDLE_EDGE (BIT(29))
@@ -233,26 +233,26 @@
 
 //Previous SDKs referred to these following registers as SPI_C0 etc.
 
-#define SPI_W0(i) 							(REG_SPI_BASE(i) +0x40)
-#define SPI_W1(i) 							(REG_SPI_BASE(i) +0x44)
-#define SPI_W2(i) 							(REG_SPI_BASE(i) +0x48)
-#define SPI_W3(i) 							(REG_SPI_BASE(i) +0x4C)
-#define SPI_W4(i) 							(REG_SPI_BASE(i) +0x50)
-#define SPI_W5(i) 							(REG_SPI_BASE(i) +0x54)
-#define SPI_W6(i) 							(REG_SPI_BASE(i) +0x58)
-#define SPI_W7(i) 							(REG_SPI_BASE(i) +0x5C)
-#define SPI_W8(i) 							(REG_SPI_BASE(i) +0x60)
-#define SPI_W9(i) 							(REG_SPI_BASE(i) +0x64)
-#define SPI_W10(i) 							(REG_SPI_BASE(i) +0x68)
-#define SPI_W11(i) 							(REG_SPI_BASE(i) +0x6C)
-#define SPI_W12(i) 							(REG_SPI_BASE(i) +0x70)
-#define SPI_W13(i) 							(REG_SPI_BASE(i) +0x74)
-#define SPI_W14(i) 							(REG_SPI_BASE(i) +0x78)
-#define SPI_W15(i) 							(REG_SPI_BASE(i) +0x7C)
+#define SPI_W0(i)                           (REG_SPI_BASE(i) +0x40)
+#define SPI_W1(i)                           (REG_SPI_BASE(i) +0x44)
+#define SPI_W2(i)                           (REG_SPI_BASE(i) +0x48)
+#define SPI_W3(i)                           (REG_SPI_BASE(i) +0x4C)
+#define SPI_W4(i)                           (REG_SPI_BASE(i) +0x50)
+#define SPI_W5(i)                           (REG_SPI_BASE(i) +0x54)
+#define SPI_W6(i)                           (REG_SPI_BASE(i) +0x58)
+#define SPI_W7(i)                           (REG_SPI_BASE(i) +0x5C)
+#define SPI_W8(i)                           (REG_SPI_BASE(i) +0x60)
+#define SPI_W9(i)                           (REG_SPI_BASE(i) +0x64)
+#define SPI_W10(i)                          (REG_SPI_BASE(i) +0x68)
+#define SPI_W11(i)                          (REG_SPI_BASE(i) +0x6C)
+#define SPI_W12(i)                          (REG_SPI_BASE(i) +0x70)
+#define SPI_W13(i)                          (REG_SPI_BASE(i) +0x74)
+#define SPI_W14(i)                          (REG_SPI_BASE(i) +0x78)
+#define SPI_W15(i)                          (REG_SPI_BASE(i) +0x7C)
 
- // +0x80 to +0xBC could be SPI_W16 through SPI_W31?
+// +0x80 to +0xBC could be SPI_W16 through SPI_W31?
 
- // +0xC0 to +0xEC not currently defined.
+// +0xC0 to +0xEC not currently defined.
 
 #define SPI_EXT0(i)                           (REG_SPI_BASE(i)  + 0xF0) //From previous SDK. Removed _FLASH_ from name to match other registers.
 #define SPI_T_PP_ENA (BIT(31)) //From previous SDK

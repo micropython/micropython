@@ -31,11 +31,11 @@
 
 typedef struct _mp_obj_int_t {
     mp_obj_base_t base;
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
     mp_longint_impl_t val;
-#elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+    #elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
     mpz_t mpz;
-#endif
+    #endif
 } mp_obj_int_t;
 
 extern const mp_obj_int_t mp_maxsize_obj;

@@ -68,7 +68,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     const pin_obj_t *pins[2];
 
     switch (can_obj->can_id) {
-        #if defined(MICROPY_HW_CAN1_TX)
+            #if defined(MICROPY_HW_CAN1_TX)
         case PYB_CAN_1:
             CANx = CAN1;
             sce_irq = CAN1_SCE_IRQn;
@@ -76,9 +76,9 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             pins[1] = MICROPY_HW_CAN1_RX;
             __HAL_RCC_CAN1_CLK_ENABLE();
             break;
-        #endif
+            #endif
 
-        #if defined(MICROPY_HW_CAN2_TX)
+            #if defined(MICROPY_HW_CAN2_TX)
         case PYB_CAN_2:
             CANx = CAN2;
             sce_irq = CAN2_SCE_IRQn;
@@ -87,9 +87,9 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             __HAL_RCC_CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
             __HAL_RCC_CAN2_CLK_ENABLE();
             break;
-        #endif
+            #endif
 
-        #if defined(MICROPY_HW_CAN3_TX)
+            #if defined(MICROPY_HW_CAN3_TX)
         case PYB_CAN_3:
             CANx = CAN3;
             sce_irq = CAN3_SCE_IRQn;
@@ -97,7 +97,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             pins[1] = MICROPY_HW_CAN3_RX;
             __HAL_RCC_CAN3_CLK_ENABLE(); // CAN3 is a "master" and doesn't need CAN1 enabled as well
             break;
-        #endif
+            #endif
 
         default:
             return false;
@@ -139,7 +139,7 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN1_FORCE_RESET();
         __HAL_RCC_CAN1_RELEASE_RESET();
         __HAL_RCC_CAN1_CLK_DISABLE();
-    #if defined(CAN2)
+        #if defined(CAN2)
     } else if (self->can.Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
@@ -147,8 +147,8 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN2_FORCE_RESET();
         __HAL_RCC_CAN2_RELEASE_RESET();
         __HAL_RCC_CAN2_CLK_DISABLE();
-    #endif
-    #if defined(CAN3)
+        #endif
+        #if defined(CAN3)
     } else if (self->can.Instance == CAN3) {
         HAL_NVIC_DisableIRQ(CAN3_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN3_RX1_IRQn);
@@ -156,7 +156,7 @@ void can_deinit(pyb_can_obj_t *self) {
         __HAL_RCC_CAN3_FORCE_RESET();
         __HAL_RCC_CAN3_RELEASE_RESET();
         __HAL_RCC_CAN3_CLK_DISABLE();
-    #endif
+        #endif
     }
 }
 
@@ -257,12 +257,12 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
         if (hcan->pTxMsg->IDE == CAN_ID_STD) {
             assert_param(IS_CAN_STDID(hcan->pTxMsg->StdId));
             hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->StdId << 21) | \
-                                                        hcan->pTxMsg->RTR);
+                    hcan->pTxMsg->RTR);
         } else {
             assert_param(IS_CAN_EXTID(hcan->pTxMsg->ExtId));
             hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->ExtId << 3) | \
-                                                        hcan->pTxMsg->IDE | \
-                                                        hcan->pTxMsg->RTR);
+                    hcan->pTxMsg->IDE | \
+                    hcan->pTxMsg->RTR);
         }
 
         // Set up the DLC
@@ -272,13 +272,13 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
 
         // Set up the data field
         hcan->Instance->sTxMailBox[transmitmailbox].TDLR = (((uint32_t)hcan->pTxMsg->Data[3] << 24) |
-                                                ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
-                                                ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
-                                                ((uint32_t)hcan->pTxMsg->Data[0]));
+                ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
+                ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
+                ((uint32_t)hcan->pTxMsg->Data[0]));
         hcan->Instance->sTxMailBox[transmitmailbox].TDHR = (((uint32_t)hcan->pTxMsg->Data[7] << 24) |
-                                                ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
-                                                ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
-                                                ((uint32_t)hcan->pTxMsg->Data[4]));
+                ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
+                ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
+                ((uint32_t)hcan->pTxMsg->Data[4]));
         // Request transmission
         hcan->Instance->sTxMailBox[transmitmailbox].TIR |= CAN_TI0R_TXRQ;
 
@@ -330,7 +330,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
 
     switch (*state) {
         case RX_STATE_FIFO_EMPTY:
-            __HAL_CAN_DISABLE_IT(&self->can,  (fifo_id == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+            __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(0);
             *state = RX_STATE_MESSAGE_PENDING;
             break;

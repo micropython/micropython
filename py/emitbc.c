@@ -246,8 +246,8 @@ STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, int stack_adj, byte b, q
 STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp_obj_t obj) {
     #if MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, stack_adj, b,
-        emit->scope->num_pos_args + emit->scope->num_kwonly_args
-        + emit->ct_cur_obj++, (mp_uint_t)obj);
+                                   emit->scope->num_pos_args + emit->scope->num_kwonly_args
+                                   + emit->ct_cur_obj++, (mp_uint_t)obj);
     #else
     // aligns the pointer so it is friendly to GC
     emit_write_bytecode_byte(emit, stack_adj, b);
@@ -262,8 +262,8 @@ STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp
 STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, int stack_adj, byte b, mp_raw_code_t *rc) {
     #if MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, stack_adj, b,
-        emit->scope->num_pos_args + emit->scope->num_kwonly_args
-        + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)(uintptr_t)rc);
+                                   emit->scope->num_pos_args + emit->scope->num_kwonly_args
+                                   + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)(uintptr_t)rc);
     #else
     // aligns the pointer so it is friendly to GC
     emit_write_bytecode_byte(emit, stack_adj, b);
@@ -430,23 +430,23 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
         #if MICROPY_PERSISTENT_CODE
         emit->const_table = m_new0(mp_uint_t,
-            emit->scope->num_pos_args + emit->scope->num_kwonly_args
-            + emit->ct_cur_obj + emit->ct_cur_raw_code);
+                                   emit->scope->num_pos_args + emit->scope->num_kwonly_args
+                                   + emit->ct_cur_obj + emit->ct_cur_raw_code);
         #else
         emit->const_table = m_new0(mp_uint_t,
-            emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+                                   emit->scope->num_pos_args + emit->scope->num_kwonly_args);
         #endif
 
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
-            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-            emit->code_info_size + emit->bytecode_size,
-            #endif
-            emit->const_table,
-            #if MICROPY_PERSISTENT_CODE_SAVE
-            emit->ct_cur_obj, emit->ct_cur_raw_code,
-            #endif
-            emit->scope->scope_flags);
+                                     #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+                                     emit->code_info_size + emit->bytecode_size,
+                                     #endif
+                                     emit->const_table,
+                                     #if MICROPY_PERSISTENT_CODE_SAVE
+                                     emit->ct_cur_obj, emit->ct_cur_raw_code,
+                                     #endif
+                                     emit->scope->scope_flags);
     }
 }
 
@@ -467,7 +467,7 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
-#if MICROPY_ENABLE_SOURCE_LINE
+    #if MICROPY_ENABLE_SOURCE_LINE
     if (MP_STATE_VM(mp_optimise_value) >= 3) {
         // If we compile with -O3, don't store line numbers.
         return;
@@ -479,10 +479,10 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         emit->last_source_line_offset = emit->bytecode_offset;
         emit->last_source_line = source_line;
     }
-#else
+    #else
     (void)emit;
     (void)source_line;
-#endif
+    #endif
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
@@ -524,9 +524,9 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
     if (-MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS <= arg
-        && arg < MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS) {
+            && arg < MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS) {
         emit_write_bytecode_byte(emit, 1,
-            MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS + arg);
+                                 MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS + arg);
     } else {
         emit_write_bytecode_byte_int(emit, 1, MP_BC_LOAD_CONST_SMALL_INT, arg);
     }

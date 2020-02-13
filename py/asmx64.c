@@ -350,8 +350,8 @@ void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64) {
     // cpu defaults to i32 to r64
     // to mov i64 to r64 need to use REX prefix
     asm_x64_write_byte_2(as,
-        REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_B),
-        OPCODE_MOV_I64_TO_R64 | (dest_r64 & 7));
+                         REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_B),
+                         OPCODE_MOV_I64_TO_R64 | (dest_r64 & 7));
     asm_x64_write_word64(as, src_i64);
 }
 
@@ -500,7 +500,7 @@ void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x64_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x64_write_word32(as, rel);
@@ -522,7 +522,7 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x64_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x64_write_word32(as, rel);

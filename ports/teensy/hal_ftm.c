@@ -43,7 +43,7 @@ void HAL_FTM_Base_Init(FTM_HandleTypeDef *hftm) {
     FTMx->MOD = hftm->Init.Period;
     uint32_t sc = FTM_SC_PS(hftm->Init.PrescalerShift);
     if (hftm->Init.CounterMode == FTM_COUNTERMODE_CENTER) {
-      sc |= FTM_SC_CPWMS;
+        sc |= FTM_SC_CPWMS;
     }
     FTMx->SC = sc;
 
@@ -102,9 +102,9 @@ void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConf
     FTMx->channel[channel].CSC = sConfig->OCMode;
     FTMx->channel[channel].CV  = sConfig->Pulse;
     if (sConfig->OCPolarity & 1) {
-      FTMx->POL |= (1 << channel); 
+        FTMx->POL |= (1 << channel);
     } else {
-      FTMx->POL &= ~(1 << channel); 
+        FTMx->POL &= ~(1 << channel);
     }
 
     hftm->State = HAL_FTM_STATE_READY;
@@ -142,9 +142,9 @@ void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sCon
     FTMx->channel[channel].CSC = sConfig->OCMode;
     FTMx->channel[channel].CV  = sConfig->Pulse;
     if (sConfig->OCPolarity & 1) {
-      FTMx->POL |= (1 << channel); 
+        FTMx->POL |= (1 << channel);
     } else {
-      FTMx->POL &= ~(1 << channel); 
+        FTMx->POL &= ~(1 << channel);
     }
 
     hftm->State = HAL_FTM_STATE_READY;

@@ -66,10 +66,10 @@ STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part) {
 STATIC void esp32_partition_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<Partition type=%u, subtype=%u, address=%u, size=%u, label=%s, encrypted=%u>",
-        self->part->type, self->part->subtype,
-        self->part->address, self->part->size,
-        &self->part->label[0], self->part->encrypted
-    );
+              self->part->type, self->part->subtype,
+              self->part->address, self->part->size,
+              &self->part->label[0], self->part->encrypted
+             );
 }
 
 STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

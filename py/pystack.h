@@ -51,7 +51,7 @@ static inline void mp_pystack_free(void *ptr) {
     }
     if (n_bytes != n_bytes_to_free) {
         mp_printf(&mp_plat_print, "mp_pystack_free() failed: %u != %u\n", (uint)n_bytes_to_free,
-            (uint)*(size_t*)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN));
+                  (uint)*(size_t*)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN));
         assert(0);
     }
     #endif

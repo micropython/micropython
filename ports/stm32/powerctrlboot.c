@@ -79,7 +79,7 @@ void SystemClock_Config(void) {
     RCC->CFGR2 = 0; // Input clock not divided
 
     #else
-    #error System clock not specified
+#error System clock not specified
     #endif
 
     RCC->CR |= RCC_CR_PLLON; // Turn PLL on
@@ -146,7 +146,7 @@ void SystemClock_Config(void) {
     __HAL_RCC_CRS_CLK_ENABLE();
     CRS->CR = 0x20 << CRS_CR_TRIM_Pos;
     CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
-        | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
+                | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
     #endif
 }
@@ -160,10 +160,10 @@ void SystemClock_Config(void) {
     }
 
     // Use HSE and the PLL to get a 64MHz SYSCLK
-    #define PLLM (HSE_VALUE / 8000000) // VCO input is 8MHz
-    #define PLLN (24) // 24*8MHz = 192MHz
-    #define PLLQ (4) // f_Q = 48MHz
-    #define PLLR (3) // f_R = 64MHz
+#define PLLM (HSE_VALUE / 8000000) // VCO input is 8MHz
+#define PLLN (24) // 24*8MHz = 192MHz
+#define PLLQ (4) // f_Q = 48MHz
+#define PLLR (3) // f_R = 64MHz
     RCC->PLLCFGR =
         (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
         | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN

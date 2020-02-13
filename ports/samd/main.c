@@ -92,7 +92,7 @@ void nlr_jump_fail(void *val) {
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     mp_printf(MP_PYTHON_PRINTER, "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    for(;;) {
+    for (;;) {
     }
 }
 #endif

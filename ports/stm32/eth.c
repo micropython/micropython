@@ -237,7 +237,7 @@ STATIC int eth_mac_init(eth_t *self) {
                 break;
             case 2:
                 if ((bsr & (PHY_BSR_AUTONEG_DONE | PHY_BSR_LINK_STATUS))
-                    == (PHY_BSR_AUTONEG_DONE | PHY_BSR_LINK_STATUS)) {
+                        == (PHY_BSR_AUTONEG_DONE | PHY_BSR_LINK_STATUS)) {
                     phy_state = 3;
                 }
                 break;
@@ -443,7 +443,7 @@ void ETH_IRQHandler(void) {
 
 STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
     if (((flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_TX))
-        || (!(flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_RX))) {
+            || (!(flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_RX))) {
         const uint8_t *buf;
         if (len == (size_t)-1) {
             // data is a pbuf
@@ -484,11 +484,11 @@ STATIC err_t eth_netif_init(struct netif *netif) {
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
     // Checksums only need to be checked on incoming frames, not computed on outgoing frames
     NETIF_SET_CHECKSUM_CTRL(netif,
-        NETIF_CHECKSUM_CHECK_IP
-        | NETIF_CHECKSUM_CHECK_UDP
-        | NETIF_CHECKSUM_CHECK_TCP
-        | NETIF_CHECKSUM_CHECK_ICMP
-        | NETIF_CHECKSUM_CHECK_ICMP6);
+                            NETIF_CHECKSUM_CHECK_IP
+                            | NETIF_CHECKSUM_CHECK_UDP
+                            | NETIF_CHECKSUM_CHECK_TCP
+                            | NETIF_CHECKSUM_CHECK_ICMP
+                            | NETIF_CHECKSUM_CHECK_ICMP6);
     return ERR_OK;
 }
 
@@ -552,7 +552,7 @@ struct netif *eth_netif(eth_t *self) {
 int eth_link_status(eth_t *self) {
     struct netif *netif = &self->netif;
     if ((netif->flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP))
-        == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
+            == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
         if (netif->ip_addr.addr != 0) {
             return 3; // link up
         } else {

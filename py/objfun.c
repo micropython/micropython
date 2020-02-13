@@ -195,10 +195,10 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         const uint8_t *ip = bytecode; \
         size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args; \
         MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state_out_var, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args); \
-                                    \
+        \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
-                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
+                             + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
@@ -294,7 +294,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     size_t n_state_unused, n_exc_stack_unused, scope_flags_unused;
     size_t n_pos_args, n_kwonly_args, n_def_args_unused;
     MP_BC_PRELUDE_SIG_DECODE_INTO(bytecode_ptr, n_state_unused, n_exc_stack_unused,
-        scope_flags_unused, n_pos_args, n_kwonly_args, n_def_args_unused);
+                                  scope_flags_unused, n_pos_args, n_kwonly_args, n_def_args_unused);
     // We can't check the case when an exception is returned in state[0]
     // and there are no arguments, because in this case our detection slot may have
     // been overwritten by the returned exception (which is allowed).
@@ -356,14 +356,14 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
-#endif
+    #endif
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
-#if MICROPY_PY_FUNCTION_ATTRS
+    #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
@@ -456,28 +456,28 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(obj);
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
         } else
-#endif
-        if (type == &mp_type_tuple || type == &mp_type_list) {
-            // pointer to start of tuple (could pass length, but then could use len(x) for that)
-            size_t len;
-            mp_obj_t *items;
-            mp_obj_get_array(obj, &len, &items);
-            return (mp_uint_t)items;
-        } else {
-            mp_buffer_info_t bufinfo;
-            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
-                // supports the buffer protocol, return a pointer to the data
-                return (mp_uint_t)bufinfo.buf;
+        #endif
+            if (type == &mp_type_tuple || type == &mp_type_list) {
+                // pointer to start of tuple (could pass length, but then could use len(x) for that)
+                size_t len;
+                mp_obj_t *items;
+                mp_obj_get_array(obj, &len, &items);
+                return (mp_uint_t)items;
             } else {
-                // just pass along a pointer to the object
-                return (mp_uint_t)obj;
+                mp_buffer_info_t bufinfo;
+                if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
+                    // supports the buffer protocol, return a pointer to the data
+                    return (mp_uint_t)bufinfo.buf;
+                } else {
+                    // just pass along a pointer to the object
+                    return (mp_uint_t)obj;
+                }
             }
-        }
     }
 }
 
@@ -501,11 +501,11 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         // compiler allows at most 4 arguments
         assert(n_args == 4);
         ret = ((inline_asm_fun_4_t)fun)(
-            convert_obj_for_inline_asm(args[0]),
-            convert_obj_for_inline_asm(args[1]),
-            convert_obj_for_inline_asm(args[2]),
-            convert_obj_for_inline_asm(args[3])
-        );
+                  convert_obj_for_inline_asm(args[0]),
+                  convert_obj_for_inline_asm(args[1]),
+                  convert_obj_for_inline_asm(args[2]),
+                  convert_obj_for_inline_asm(args[3])
+              );
     }
 
     return mp_native_to_obj(ret, self->type_sig);

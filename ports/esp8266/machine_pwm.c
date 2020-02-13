@@ -49,7 +49,7 @@ STATIC void pyb_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "PWM(%u", self->pin->phys_port);
     if (self->active) {
         mp_printf(print, ", freq=%u, duty=%u",
-            pwm_get_freq(self->channel), pwm_get_duty(self->channel));
+                  pwm_get_freq(self->channel), pwm_get_duty(self->channel));
     }
     mp_printf(print, ")");
 }

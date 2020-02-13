@@ -119,7 +119,7 @@ __attribute__((naked)) void PendSV_Handler(void) {
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
 
-    __asm volatile (
+    __asm volatile(
         #if defined(PENDSV_DISPATCH_NUM_SLOTS)
         // Check if there are any pending calls to dispatch to
         "ldr r1, pendsv_dispatch_active_ptr\n"

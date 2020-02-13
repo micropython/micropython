@@ -217,16 +217,16 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         v_line = pin->pin;
     }
     if (mode != GPIO_MODE_IT_RISING &&
-        mode != GPIO_MODE_IT_FALLING &&
-        mode != GPIO_MODE_IT_RISING_FALLING &&
-        mode != GPIO_MODE_EVT_RISING &&
-        mode != GPIO_MODE_EVT_FALLING &&
-        mode != GPIO_MODE_EVT_RISING_FALLING) {
+            mode != GPIO_MODE_IT_FALLING &&
+            mode != GPIO_MODE_IT_RISING_FALLING &&
+            mode != GPIO_MODE_EVT_RISING &&
+            mode != GPIO_MODE_EVT_FALLING &&
+            mode != GPIO_MODE_EVT_RISING_FALLING) {
         mp_raise_msg_varg(&mp_type_ValueError, "invalid ExtInt Mode: %d", mode);
     }
     if (pull != GPIO_NOPULL &&
-        pull != GPIO_PULLUP &&
-        pull != GPIO_PULLDOWN) {
+            pull != GPIO_PULLUP &&
+            pull != GPIO_PULLDOWN) {
         mp_raise_msg_varg(&mp_type_ValueError, "invalid ExtInt Pull: %d", pull);
     }
 
@@ -242,7 +242,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
 
     *cb = callback_obj;
     pyb_extint_mode[v_line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
-        EXTI_Mode_Interrupt : EXTI_Mode_Event;
+                              EXTI_Mode_Interrupt : EXTI_Mode_Event;
 
     if (*cb != mp_const_none) {
         pyb_extint_hard_irq[v_line] = true;
@@ -283,7 +283,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         } else {
             const pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
             mp_raise_msg_varg(&mp_type_OSError,
-                "IRQ resource already taken by Pin('%q')", other_pin->name);
+                              "IRQ resource already taken by Pin('%q')", other_pin->name);
         }
     }
 
@@ -291,7 +291,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
 
     *cb = callback_obj;
     pyb_extint_mode[line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
-        EXTI_Mode_Interrupt : EXTI_Mode_Event;
+                            EXTI_Mode_Interrupt : EXTI_Mode_Event;
 
     if (*cb != mp_const_none) {
         // Configure and enable the callback
@@ -328,7 +328,7 @@ void extint_set(const pin_obj_t *pin, uint32_t mode) {
     *cb = MP_OBJ_SENTINEL;
 
     pyb_extint_mode[line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
-        EXTI_Mode_Interrupt : EXTI_Mode_Event;
+                            EXTI_Mode_Interrupt : EXTI_Mode_Event;
 
     {
         // Configure and enable the callback
@@ -433,13 +433,13 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
-#else
+    #else
     EXTI->SWIER &= ~(1 << line);
     EXTI->SWIER |= (1 << line);
-#endif
+    #endif
 }
 
 void extint_trigger_mode(uint line, uint32_t mode) {
@@ -634,7 +634,7 @@ void extint_init0(void) {
         }
         MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
         pyb_extint_mode[i] = EXTI_Mode_Interrupt;
-   }
+    }
 }
 
 // Interrupt handler

@@ -276,11 +276,11 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 
     // Set USB Current Speed
     switch (hpcd->Init.speed) {
-        #if defined(PCD_SPEED_HIGH)
+            #if defined(PCD_SPEED_HIGH)
         case PCD_SPEED_HIGH:
             speed = USBD_SPEED_HIGH;
             break;
-        #endif
+            #endif
 
         case PCD_SPEED_FULL:
             speed = USBD_SPEED_FULL;
@@ -521,7 +521,7 @@ USBD_StatusTypeDef USBD_LL_Stop(USBD_HandleTypeDef *pdev) {
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_OpenEP(USBD_HandleTypeDef *pdev,
-    uint8_t ep_addr, uint8_t ep_type, uint16_t ep_mps) {
+                                  uint8_t ep_addr, uint8_t ep_type, uint16_t ep_mps) {
     HAL_PCD_EP_Open(pdev->pData, ep_addr, ep_mps, ep_type);
     return USBD_OK;
 }
@@ -606,7 +606,7 @@ USBD_StatusTypeDef USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_a
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
-    uint8_t ep_addr, uint8_t *pbuf, uint16_t size) {
+                                    uint8_t ep_addr, uint8_t *pbuf, uint16_t size) {
     HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
     return USBD_OK;
 }
@@ -620,7 +620,7 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
-    uint8_t ep_addr, uint8_t *pbuf, uint16_t size) {
+        uint8_t ep_addr, uint8_t *pbuf, uint16_t size) {
     HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
     return USBD_OK;
 }
