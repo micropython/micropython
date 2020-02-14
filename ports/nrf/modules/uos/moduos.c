@@ -42,7 +42,7 @@
 //#include "portmodules.h"
 
 #if MICROPY_HW_ENABLE_RNG
-#include "modrandom.h"
+#include "drivers/rng.h"
 #endif // MICROPY_HW_ENABLE_RNG
 
 /// \module os - basic "operating system" services
@@ -105,7 +105,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
     for (int i = 0; i < n; i++) {
-        vstr.buf[i] = (uint8_t)(machine_rng_generate_random_word() & 0xFF);
+        vstr.buf[i] = (uint8_t)(rng_generate_random_word() & 0xFF);
     }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
