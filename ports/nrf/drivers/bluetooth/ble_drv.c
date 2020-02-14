@@ -116,7 +116,7 @@ static mp_obj_t mp_gattc_char_data_observer;
 static uint8_t m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 static uint8_t m_scan_buffer[BLE_GAP_SCAN_BUFFER_MIN];
 
-nrf_nvic_state_t nrf_nvic_state = {0};
+nrf_nvic_state_t nrf_nvic_state = {{0}, 0};
 #endif
 
 #if (BLUETOOTH_SD == 110)
