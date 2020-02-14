@@ -111,6 +111,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_new_bytearray_by_ref(n, i)   (mp_fun_table.obj_new_bytearray_by_ref((n), (i)))
 #define mp_obj_new_tuple(n, items)          (mp_fun_table.new_tuple((n), (items)))
 #define mp_obj_new_list(n, items)           (mp_fun_table.new_list((n), (items)))
+#define mp_obj_new_dict(n)                  (mp_fun_table.new_dict((n)))
 
 #define mp_obj_get_type(o)                  (mp_fun_table.obj_get_type((o)))
 #define mp_obj_cast_to_native_base(o, t)    (mp_obj_cast_to_native_base_dyn((o), (t)))
@@ -125,6 +126,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
 #define mp_obj_get_array(o, len, items)     (mp_obj_get_array_dyn((o), (len), (items)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
+#define mp_obj_dict_store(dict, key, val)   (mp_fun_table.dict_store((dict), (key), (val)))
 
 #define mp_obj_malloc_helper(n, t)          (mp_obj_malloc_helper_dyn(n, t))
 
