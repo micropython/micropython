@@ -69,9 +69,9 @@ without an initialiser, and only written to within functions.
 
 Linker limitation: the native module is not linked against the symbol table of the
 full micropython firmware. Rather, it is linked against an explicit table of exported
-symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``).
+symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware build time.
 It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system function, for example.
-Adding new symbols to the end of the table is relatively easy,
+New symbols can be added to the end of the table and the firmware rebuilt,
 they then also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the same location.
 This allows ``mpy_ld.py`` to be able to pick the new symbols up and provide relocations
 for them when the mpy is imported.
