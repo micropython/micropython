@@ -666,7 +666,13 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     fun_table = {key: 67 + idx
         for idx, key in enumerate([
             'mp_type_type',
+            'mp_type_NoneType',
+            'mp_type_bool',
+            'mp_type_int',
             'mp_type_str',
+            'mp_type_bytes',
+            'mp_type_float',
+            'mp_type_tuple',
             'mp_type_list',
             'mp_type_dict',
             'mp_type_fun_builtin_0',

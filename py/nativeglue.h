@@ -157,8 +157,15 @@ typedef struct _mp_fun_table_t {
     void (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
     const mp_print_t *plat_print;
+
     const mp_obj_type_t *type_type;
+    const mp_obj_type_t *type_NoneType;
+    const mp_obj_type_t *type_bool;
+    const mp_obj_type_t *type_int;
     const mp_obj_type_t *type_str;
+    const mp_obj_type_t *type_bytes;
+    const mp_obj_type_t *type_float;
+    const mp_obj_type_t *type_tuple;
     const mp_obj_type_t *type_list;
     const mp_obj_type_t *type_dict;
     const mp_obj_type_t *type_fun_builtin_0;
@@ -166,6 +173,7 @@ typedef struct _mp_fun_table_t {
     const mp_obj_type_t *type_fun_builtin_2;
     const mp_obj_type_t *type_fun_builtin_3;
     const mp_obj_type_t *type_fun_builtin_var;
+
     const mp_obj_fun_builtin_var_t *stream_read_obj;
     const mp_obj_fun_builtin_var_t *stream_readinto_obj;
     const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;

@@ -75,8 +75,15 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_ ## x
 
 #define mp_type_type                        (*mp_fun_table.type_type)
+#define mp_type_NoneType                    (*mp_fun_table.type_NoneType)
+#define mp_type_bool                        (*mp_fun_table.type_bool)
+#define mp_type_int                         (*mp_fun_table.type_int)
 #define mp_type_str                         (*mp_fun_table.type_str)
+#define mp_type_bytes                       (*mp_fun_table.type_bytes)
+#define mp_type_float                       (*mp_fun_table.type_float)
+#define mp_type_tuple                       (*mp_fun_table.type_tuple)
 #define mp_type_list                        (*mp_fun_table.type_list)
+#define mp_type_dict                        (*mp_fun_table.type_dict)
 #define mp_type_EOFError                    (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_EOFError)))
 #define mp_type_IndexError                  (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_IndexError)))
 #define mp_type_KeyError                    (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_KeyError)))
@@ -104,11 +111,14 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_new_bytearray_by_ref(n, i)   (mp_fun_table.obj_new_bytearray_by_ref((n), (i)))
 #define mp_obj_new_tuple(n, items)          (mp_fun_table.new_tuple((n), (items)))
 #define mp_obj_new_list(n, items)           (mp_fun_table.new_list((n), (items)))
+#define mp_obj_new_dict(n)                  (mp_fun_table.new_dict((n)))
 
 #define mp_obj_get_type(o)                  (mp_fun_table.obj_get_type((o)))
 #define mp_obj_get_int(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_INT))
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
 #define mp_obj_str_get_str(s)               ((void*)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
+#define mp_obj_bytes_get_bytes(s)               ((void*)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
+
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
@@ -116,6 +126,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_len(o)                       (mp_obj_len_dyn(o))
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
+#define mp_obj_dict_store(dict, key, val)   (mp_fun_table.dict_store(dict, key, val))
 
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte* data, size_t len) {
     if (type == &mp_type_str) {
