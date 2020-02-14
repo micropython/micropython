@@ -1,7 +1,9 @@
 import sys
 
 print((2**64).to_bytes(9, "little"))
+print((-(2**64)).to_bytes(9, "little", signed=True))
 print((2**64).to_bytes(9, "big"))
+print((-(2**64)).to_bytes(9, "big", signed=True))
 
 b = bytes(range(20))
 
@@ -25,13 +27,20 @@ try:
 except OverflowError:
     print("OverflowError")
 
-# or one that it too short
+# or one that is too short
 try:
     ib.to_bytes(18, "big")
 except OverflowError:
     print("OverflowError")
 
 # negative representations
+
+# negative numbers should raise an error if signed=False
+try:
+    (-(2**64)).to_bytes(9, "little", signed=False)
+except OverflowError:
+    print("OverflowError")
+
 
 # MicroPython int.to_bytes() behaves as if signed=True for negative numbers
 if "micropython" in repr(sys.implementation):
