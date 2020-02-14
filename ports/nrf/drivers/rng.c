@@ -27,7 +27,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_RANDOM_HW_RNG
+#if MICROPY_HW_ENABLE_RNG
 
 #include "nrf_rng.h"
 #include "drivers/rng.h"
@@ -76,4 +76,4 @@ uint32_t rng_generate_random_word(void) {
     return generate_hw_random();
 }
 
-#endif // MICROPY_PY_RANDOM_HW_RNG
+#endif // MICROPY_HW_ENABLE_RNG
