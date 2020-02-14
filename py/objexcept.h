@@ -31,8 +31,8 @@
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
-    size_t traceback_alloc : (8 * sizeof(size_t) / 2);
-    size_t traceback_len : (8 * sizeof(size_t) / 2);
+    size_t traceback_alloc : 8 * sizeof(size_t) / 2;
+    size_t traceback_len : 8 * sizeof(size_t) / 2;
     size_t *traceback_data;
     mp_obj_tuple_t *args;
 } mp_obj_exception_t;
