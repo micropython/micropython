@@ -82,7 +82,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     // https://github.com/adafruit/circuitpython/issues/1056)
     busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
-    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size};
+    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size, ARG_rts, ARG_cts, ARG_rs485};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -92,6 +92,9 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         { MP_QSTR_stop, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rs485, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -124,7 +127,13 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    common_hal_busio_uart_construct(self, tx, rx,
+    const mcu_pin_obj_t* rts = MP_OBJ_TO_PTR(args[ARG_rts].u_obj);
+
+    const mcu_pin_obj_t* cts = MP_OBJ_TO_PTR(args[ARG_cts].u_obj);
+
+    bool rs485 = args[ARG_rs485].u_bool;
+
+    common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485,
                                     args[ARG_baudrate].u_int, bits, parity, stop, timeout,
                                     args[ARG_receiver_buffer_size].u_int);
     return (mp_obj_t)self;
