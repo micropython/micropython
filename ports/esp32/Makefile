@@ -761,19 +761,29 @@ APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp 
 endif
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += $(LIB)
+APP_LD_ARGS += $(BUILD)/plat_relo.o
 APP_LD_ARGS += --end-group
 
 $(BUILD)/esp32_out.ld: $(SDKCONFIG_H)
 	$(Q)$(CC) -I$(BUILD) -C -P -x c -E $(ESPCOMP)/esp32/ld/esp32.ld -o $@
 
-$(BUILD)/application.bin: $(BUILD)/application.elf
+$(BUILD)/application.bin: $(BUILD)/application.elf $(BUILD)/application.sym
 	$(ECHO) "Create $@"
 	$(Q)$(ESPTOOL) --chip esp32 elf2image --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) $<
 
-$(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.project.ld
+# Memory map produced by nm, for troubleshooting purposes, not required for operation
+$(BUILD)/application.sym: $(BUILD)/application.elf
+	$(ECHO) "Create $@"
+	$(Q)xtensa-esp32-elf-nm -l -n $< >$@
+
+$(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.project.ld $(BUILD)/plat_relo.o
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(APP_LD_ARGS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/plat_relo.s: plat_relo.py
+	$(ECHO) "GEN platform relocations"
+	$(Q)./plat_relo.py --tab >$@
 
 define compile_cxx
 $(ECHO) "CXX $<"

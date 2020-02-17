@@ -678,6 +678,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             'mp_stream_readinto_obj',
             'mp_stream_unbuffered_readline_obj',
             'mp_stream_write_obj',
+            'plat_relo_tab',
         ])
     }
     for sym in env.unresolved_syms:

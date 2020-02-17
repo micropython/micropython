@@ -128,6 +128,11 @@ $(BUILD)/%.o: %.c $(CONFIG_H) Makefile
 	$(ECHO) "CC $<"
 	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
 
+# Build .o from .s source files
+%.o: %.s $(CONFIG_H) Makefile
+	$(ECHO) "AS $<"
+	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
+
 # Build .mpy from .py source files
 $(BUILD)/%.mpy: %.py
 	$(ECHO) "MPY $<"
