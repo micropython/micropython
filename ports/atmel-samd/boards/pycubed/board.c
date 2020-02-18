@@ -30,6 +30,9 @@
 #include "boards/board.h"
 #include "py/mpconfig.h"
 #include "shared-bindings/nvm/ByteArray.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "hal/include/hal_gpio.h"
+#include "shared-bindings/pulseio/PWMOut.h"
 
 nvm_bytearray_obj_t bootcnt = {
     .base = {
@@ -41,6 +44,9 @@ nvm_bytearray_obj_t bootcnt = {
 
 
 void board_init(void) {
+    pulseio_pwmout_obj_t pwm;
+    common_hal_pulseio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
+    common_hal_pulseio_pwmout_never_reset(&pwm);
 }
 
 bool board_requests_safe_mode(void) {
