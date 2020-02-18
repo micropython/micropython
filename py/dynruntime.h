@@ -116,6 +116,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_len(o)                       (mp_obj_len_dyn(o))
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
+#define mp_obj_cast_to_native_base_unchecked(obj) (mp_fun_table.obj_cast_to_native_base_unchecked(obj))
 
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte* data, size_t len) {
     if (type == &mp_type_str) {
