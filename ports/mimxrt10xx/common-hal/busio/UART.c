@@ -73,7 +73,8 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
-        const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts, bool rs485_mode,
+        const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+        const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
         uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
         mp_float_t timeout, uint16_t receiver_buffer_size) {
 
@@ -114,7 +115,22 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_RuntimeError(translate("Invalid UART pin selection"));
     }
 
-    // Now check for RTS/CTS pin(s)
+    // Filter for sane settings for RS485
+    if (rs485_dir != mp_const_none) {
+      if ((rts != mp_const_none) || (cts != mp_const_none)) {
+        mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
+      }
+      // For IMXRT the RTS pin is used for RS485 direction
+      rts = rs485_dir;
+    }
+    else
+      {
+        if (rs485_invert == true) {
+          mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
+        }
+      }
+
+    // Now check for RTS/CTS (or overloaded RS485 direction) pin(s)
     const uint32_t rts_count = sizeof(mcu_uart_rts_list) / sizeof(mcu_periph_obj_t);
     const uint32_t cts_count = sizeof(mcu_uart_cts_list) / sizeof(mcu_periph_obj_t);
 
@@ -163,9 +179,23 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     config.enableTx = self->tx_pin != NULL;
     config.enableRx = self->rx_pin != NULL;
     config.enableRxRTS = self->rts_pin != NULL;
-    config.enableTxCTS = self->cts_pin != NULL;    
-    
+    config.enableTxCTS = self->cts_pin != NULL;
+    if (self->rts_pin != NULL)
+      claim_pin(self->rts_pin->pin);
+    if (self->cts_pin != NULL)
+      claim_pin(self->cts_pin->pin);
+
     LPUART_Init(self->uart, &config, UART_CLOCK_FREQ);
+
+    // Before we init, setup RS485 direction pin
+    // ..unfortunately this isn't done by the driver library
+    uint32_t modir = (self->uart->MODIR) & ~(LPUART_MODIR_TXRTSPOL_MASK | LPUART_MODIR_TXRTSE_MASK);
+    if (rs485_dir != mp_const_none) {
+      modir |= LPUART_MODIR_TXRTSE_MASK;
+      if ( rs485_invert == true )
+        modir |= LPUART_MODIR_TXRTSPOL_MASK;
+    }
+    self->uart->MODIR = modir;
 
     if (self->tx_pin != NULL)
       claim_pin(self->tx_pin->pin);

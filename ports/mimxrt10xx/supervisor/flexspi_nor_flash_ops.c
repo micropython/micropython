@@ -324,7 +324,7 @@ void flexspi_nor_flash_init(FLEXSPI_Type *base)
     config.ahbConfig.enableAHBBufferable  = true;
     config.ahbConfig.enableReadAddressOpt = true;
     config.ahbConfig.enableAHBCachable    = true;
-    config.rxSampleClock                  = kFLEXSPI_ReadSampleClkLoopbackFromDqsPad;
+    config.rxSampleClock                  = kFLEXSPI_ReadSampleClkLoopbackInternally; //kFLEXSPI_ReadSampleClkLoopbackFromDqsPad;
     FLEXSPI_Init(base, &config);
 
     /* Configure flash settings according to serial flash feature. */
