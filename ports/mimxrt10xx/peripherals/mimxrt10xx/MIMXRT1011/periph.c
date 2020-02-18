@@ -113,6 +113,26 @@ const mcu_periph_obj_t mcu_uart_tx_list[9] = {
     PERIPH_PIN(4, 3, kIOMUXC_LPUART4_TXD_SELECT_INPUT, 1, &pin_GPIO_06),
 };
 
+const mcu_periph_obj_t mcu_uart_rts_list[4] = {
+    PERIPH_PIN(1, 6, 0, 0, &pin_GPIO_07),
+   
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_AD_07),
+
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_13),
+
+    PERIPH_PIN(4, 3, 0, 0, &pin_GPIO_AD_13)
+};
+
+const mcu_periph_obj_t mcu_uart_cts_list[4] = {
+    PERIPH_PIN(1, 6, 0, 0, &pin_GPIO_08),
+
+    PERIPH_PIN(2, 3, 0, 0, &pin_GPIO_AD_08),
+
+    PERIPH_PIN(3, 1, 0, 0, &pin_GPIO_AD_14),
+
+    PERIPH_PIN(4, 3, 0, 0, &pin_GPIO_AD_14),
+};
+
 const mcu_pwm_obj_t mcu_pwm_list[20] = {
     PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, 2, &pin_GPIO_02),
     PWM_PIN(PWM1, kPWM_Module_0, kPWM_PwmA, 2, &pin_GPIO_SD_02),
