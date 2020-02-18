@@ -165,7 +165,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
                     mp_obj_t obj_obj;
-                    if (obj != NULL && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
+                    if (obj != NULL && mp_obj_is_native_type(type)
+                        && type != &mp_type_object /* object is not a real type */
+                        && !(type->flags & MP_TYPE_FLAG_CAN_HANDLE_SUBCLASS)
+                        ) {
                         // If we're dealing with native base class, then it applies to native sub-object
                         obj_obj = obj->subobj[0];
                     } else {
@@ -1388,6 +1391,19 @@ STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
+
+// This assumes that the incoming argument is a real object (can be cast to a pointer)
+// and is either the required native type, or is an instance which inherits from the
+// required native type.  These conditions are always true for native classes that are
+// subclassed by Python code.
+void *mp_obj_cast_to_native_base_unchecked(mp_const_obj_t self_in) {
+    mp_obj_base_t *base = MP_OBJ_TO_PTR(self_in);
+    if (mp_obj_is_native_type(base->type)) {
+        return base;
+    } else {
+        return MP_OBJ_TO_PTR(((mp_obj_instance_t*)base)->subobj[0]);
+    }
+}
 
 mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type) {
     const mp_obj_type_t *self_type = mp_obj_get_type(self_in);

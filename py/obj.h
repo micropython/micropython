@@ -451,6 +451,7 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 #define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0040)
 #define MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE (0x0080)
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
+#define MP_TYPE_FLAG_CAN_HANDLE_SUBCLASS (0x0020)
 
 typedef enum {
     PRINT_STR = 0,
@@ -728,6 +729,7 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
+void *mp_obj_cast_to_native_base_unchecked(mp_const_obj_t self_in);
 mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type);
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
