@@ -387,12 +387,12 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    mp_obj_t exc = mp_obj_new_exception_msg_varg2(exc_type, fmt, args);
+    mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
     va_end(args);
     return exc;
 }
 
-mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const char *fmt, va_list args) {
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list args) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type

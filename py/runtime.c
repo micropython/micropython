@@ -1494,7 +1494,7 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    mp_obj_t exc = mp_obj_new_exception_msg_varg2(exc_type, fmt, args);
+    mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
     va_end(args);
     nlr_raise(exc);
 }
