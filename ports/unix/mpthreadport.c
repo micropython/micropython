@@ -39,7 +39,13 @@
 #include <sched.h>
 #include <semaphore.h>
 
+// Some platforms don't have SIGRTMIN but if we do have it, use it to avoid
+// potential conflict with other uses of the more commonly used SIGUSR1.
+#ifdef SIGRTMIN
 #define MP_THREAD_GC_SIGNAL (SIGRTMIN + 5)
+#else
+#define MP_THREAD_GC_SIGNAL (SIGUSR1)
+#endif
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
