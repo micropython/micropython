@@ -501,6 +501,7 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_SDRAM_SIZE
     sdram_init();
     bool sdram_valid = true;
+    UNUSED(sdram_valid);
     #if MICROPY_HW_SDRAM_STARTUP_TEST
     sdram_valid = sdram_test(true);
     #endif
