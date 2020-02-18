@@ -143,6 +143,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //|
 //|   Get the status of a file or directory.
 //|
+//|   .. note:: On builds without long integers, the number of seconds
+//|      for contemporary dates will not fit in a small integer.
+//|      So the time fields return 946684800,
+//|      which is the number of seconds corresponding to 1999-12-31.
+//|
 mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_stat(path);
