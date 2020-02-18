@@ -111,9 +111,6 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
         // Slow path for user subclasses
         another_in = mp_instance_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
-            if (op == MP_BINARY_OP_EQUAL) {
-                return mp_const_false;
-            }
             return MP_OBJ_NULL;
         }
     }
