@@ -2,7 +2,9 @@ import skip_if
 skip_if.no_bigint()
 
 print((2**64).to_bytes(9, "little"))
+print((-2**64).to_bytes(9, "little", signed=True))
 print((2**64).to_bytes(9, "big"))
+print((-2**64).to_bytes(9, "big", signed=True))
 
 b = bytes(range(20))
 
@@ -22,8 +24,12 @@ try:
 except OverflowError:
     print("OverflowError")
 
-# negative numbers should raise an error
+# negative numbers should raise an error if signed=False
 try:
     (-2**64).to_bytes(9, "little")
+except OverflowError:
+    print("OverflowError")
+try:
+    (-2**64).to_bytes(9, "little", signed=False)
 except OverflowError:
     print("OverflowError")
