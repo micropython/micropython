@@ -141,8 +141,9 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
                     }
                 }
                 return e1 == NULL && e2 == NULL ? mp_const_true : mp_const_false;
-            } else
+            }
             #endif
+
             if (mp_obj_is_type(rhs_in, &mp_type_dict)) {
                 mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
                 if (o->map.used != rhs->map.used) {
