@@ -60,7 +60,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size) {
     struct termios tio;
 
-    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert == true)) {
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
     

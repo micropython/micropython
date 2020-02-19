@@ -123,41 +123,38 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
       // For IMXRT the RTS pin is used for RS485 direction
       rts = rs485_dir;
     }
-    else
-      {
-        if (rs485_invert == true) {
-          mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
-        }
+    else {
+      if (rs485_invert) {
+        mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
       }
+    }
 
     // Now check for RTS/CTS (or overloaded RS485 direction) pin(s)
     const uint32_t rts_count = sizeof(mcu_uart_rts_list) / sizeof(mcu_periph_obj_t);
     const uint32_t cts_count = sizeof(mcu_uart_cts_list) / sizeof(mcu_periph_obj_t);
 
     if (rts != mp_const_none) {
-      for (uint32_t i=0; i < rts_count; ++i)
-        {
-          if (mcu_uart_rts_list[i].bank_idx == self->rx_pin->bank_idx) {
-            if (mcu_uart_rts_list[i].pin == rts) {
-              self->rts_pin = &mcu_uart_rts_list[i];
-              break;
-            }
+      for (uint32_t i=0; i < rts_count; ++i) {
+        if (mcu_uart_rts_list[i].bank_idx == self->rx_pin->bank_idx) {
+          if (mcu_uart_rts_list[i].pin == rts) {
+            self->rts_pin = &mcu_uart_rts_list[i];
+            break;
           }
         }
+      }
       if (self->rts_pin == NULL)
         mp_raise_ValueError(translate("Selected RTS pin not valid"));
     }
 
     if (cts != mp_const_none) {
-      for (uint32_t i=0; i < cts_count; ++i)
-        {
-          if (mcu_uart_cts_list[i].bank_idx == self->rx_pin->bank_idx) {
-            if (mcu_uart_cts_list[i].pin == cts) {
-              self->cts_pin = &mcu_uart_cts_list[i];
-              break;
-            }
+      for (uint32_t i=0; i < cts_count; ++i) {
+        if (mcu_uart_cts_list[i].bank_idx == self->rx_pin->bank_idx) {
+          if (mcu_uart_cts_list[i].pin == cts) {
+            self->cts_pin = &mcu_uart_cts_list[i];
+            break;
           }
         }
+      }
       if (self->cts_pin == NULL)
         mp_raise_ValueError(translate("Selected CTS pin not valid"));
     }
@@ -192,7 +189,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t modir = (self->uart->MODIR) & ~(LPUART_MODIR_TXRTSPOL_MASK | LPUART_MODIR_TXRTSE_MASK);
     if (rs485_dir != mp_const_none) {
       modir |= LPUART_MODIR_TXRTSE_MASK;
-      if ( rs485_invert == true )
+      if (rs485_invert)
         modir |= LPUART_MODIR_TXRTSPOL_MASK;
     }
     self->uart->MODIR = modir;

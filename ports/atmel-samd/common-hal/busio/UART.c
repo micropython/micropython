@@ -65,7 +65,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
 
-    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert == true)) {
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
 
