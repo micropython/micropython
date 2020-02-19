@@ -224,3 +224,7 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
 //    reset_pin_number(pin->number);
 }
+
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+//    never_reset_pin_number(pin->port, pin->number);
+}
