@@ -53,6 +53,12 @@
 #define MICROPY_HW_SPI4_MISO    (pin_A1)    //              pin 30 on CN7
 #define MICROPY_HW_SPI4_MOSI    (pin_A11)   //              pin 14 on CN10
 
+// CAN buses
+#define MICROPY_HW_CAN1_TX      (pin_B9)    //              pin 5 on CN10
+#define MICROPY_HW_CAN1_RX      (pin_B8)    //              pin 3 on CN10
+#define MICROPY_HW_CAN2_TX      (pin_B6)    //              pin 17 on CN10
+#define MICROPY_HW_CAN2_RX      (pin_B5)    //              pin 29 on CN10
+
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_C13)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
