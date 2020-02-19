@@ -52,15 +52,22 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
+
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
     uint32_t rx_pinmux = 0;
     uint8_t rx_pad = 255; // Unset pad
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
+
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
 
     if (bits > 8) {
         mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));

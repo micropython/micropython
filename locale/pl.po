@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-10 11:46-0500\n"
+"POT-Creation-Date: 2020-02-19 08:44+0000\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -454,6 +454,10 @@ msgstr "Nie można zrestartować -- nie ma bootloadera."
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Nie można ustawić wartości w trybie wejścia"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Cannot specify RTS or CTS in RS485 mode"
+msgstr ""
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
@@ -1174,6 +1178,10 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "RS485 inversion specified when not in RS485 mode"
+msgstr ""
+
 #: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
@@ -1182,6 +1190,11 @@ msgstr "Brak obsługi kalibracji RTC"
 #: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Brak obsługi RTC"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+msgid "RTS/CTS/RS485 Not yet supported on this device"
+msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "Random number generation error"
@@ -1242,6 +1255,14 @@ msgstr "Zbyt wysoka częstotliwość próbkowania. Musi być mniejsza niż %d"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected CTS pin not valid"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected RTS pin not valid"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-10 11:46-0500\n"
+"POT-Creation-Date: 2020-02-19 08:44+0000\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -454,6 +454,10 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr ""
 
 #: py/objslice.c
@@ -1173,6 +1177,10 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "RS485 inversion specified when not in RS485 mode"
+msgstr ""
+
 #: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
@@ -1180,6 +1188,11 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
@@ -1241,6 +1254,14 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected CTS pin not valid"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected RTS pin not valid"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c

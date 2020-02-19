@@ -71,10 +71,12 @@ void uart_reset(void) {
     uart_clock_disable(ALL_UARTS);
 }
 
-void common_hal_busio_uart_construct(busio_uart_obj_t* self,
-        const mcu_pin_obj_t* tx, const mcu_pin_obj_t* rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
+void common_hal_busio_uart_construct(busio_uart_obj_t *self,
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
 
     //match pins to UART objects
     USART_TypeDef * USARTx;
@@ -84,6 +86,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
     bool uart_taken = false;
     uint8_t uart_index = 0; //origin 0 corrected
 
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert == true)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
+    
     //Can have both pins, or either
     if ((tx != mp_const_none) && (rx != mp_const_none)) {
         //normal find loop if both pins exist

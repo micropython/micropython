@@ -42,7 +42,11 @@ const flexspi_nor_config_t qspiflash_config = {
         {
             .tag              = FLEXSPI_CFG_BLK_TAG,
             .version          = FLEXSPI_CFG_BLK_VERSION,
-            .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
+#ifdef BOARD_USING_SECONDARY_QSPI_PINMUX
+            .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromInternally,
+#else
+            .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,            
+#endif
             .csHoldTime       = 1u,
             .csSetupTime      = 2u,
             // Enable DDR mode, Wordaddressable, Safe configuration, Differential clock
