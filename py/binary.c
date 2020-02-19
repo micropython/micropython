@@ -297,8 +297,9 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
             if (mp_obj_is_type(val_in, &mp_type_int)) {
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
                 return;
-            } else
+            }
             #endif
+
             {
                 val = mp_obj_get_int(val_in);
                 // zero/sign extend if needed

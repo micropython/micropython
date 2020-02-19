@@ -194,7 +194,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
     }
 
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
         if (mpz_is_zero(zrhs)) {
             goto zero_division_error;
@@ -202,8 +202,8 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         mp_float_t flhs = mpz_as_float(zlhs);
         mp_float_t frhs = mpz_as_float(zrhs);
         return mp_obj_new_float(flhs / frhs);
-    } else
-#endif
+    }
+    #endif
 
     if (op >= MP_BINARY_OP_INPLACE_OR && op < MP_BINARY_OP_CONTAINS) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
