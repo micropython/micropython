@@ -41,6 +41,10 @@ typedef struct _mp_obj_framebuf_t {
     uint8_t format;
 } mp_obj_framebuf_t;
 
+#if !MICROPY_ENABLE_DYNRUNTIME
+STATIC const mp_obj_type_t mp_type_framebuf;
+#endif
+
 typedef void (*setpixel_t)(const mp_obj_framebuf_t*, int, int, uint32_t);
 typedef uint32_t (*getpixel_t)(const mp_obj_framebuf_t*, int, int);
 typedef void (*fill_rect_t)(const mp_obj_framebuf_t *, int, int, int, int, uint32_t);
@@ -469,7 +473,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_lin
 
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(args[1]);
+    mp_obj_t source_in = mp_obj_cast_to_native_base(args[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
+    if (source_in == MP_OBJ_NULL) {
+        mp_raise_TypeError(NULL);
+    }
+    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(source_in);
+
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
     mp_int_t key = -1;
