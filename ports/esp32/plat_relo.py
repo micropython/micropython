@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-#
+
 # Linking table for platform-specific functions.
 #
 # The entry points below list a number of functions in the MP firmware that are to be exposed to

@@ -32,6 +32,8 @@ STATIC mp_obj_t counter_init(mp_obj_t x_obj) {
 // Define a Python reference to the function above
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(counter_init_obj, counter_init);
 
+// Another function that calls into the firmware, this time to mp_micropython_mem_info()
+// just as a simple demo which prints something to make it easy to see whether it's working or not.
 STATIC mp_obj_t mem_info() {
     extern int mp_micropython_mem_info(int, int);
     mp_printf(&mp_plat_print, "mp_fun_table is at 0x%x\n", &mp_fun_table);
