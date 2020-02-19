@@ -198,6 +198,7 @@ jobs:
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
+        - "pycubed"
         - "pygamer"
         - "pygamer_advance"
         - "pyportal"
