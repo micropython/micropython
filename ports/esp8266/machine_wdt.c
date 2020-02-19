@@ -49,12 +49,12 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     }
 
     switch (id) {
-    case 0:
-        ets_loop_dont_feed_sw_wdt = 1;
-        system_soft_wdt_feed();
-        return &wdt_default;
-    default:
-        mp_raise_ValueError(NULL);
+        case 0:
+            ets_loop_dont_feed_sw_wdt = 1;
+            system_soft_wdt_feed();
+            return &wdt_default;
+        default:
+            mp_raise_ValueError(NULL);
     }
 }
 

@@ -852,7 +852,7 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTS_WRITE) {
             // conn_handle, value_handle
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, 0, NULL, NULL);
-        #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+            #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT) {
             // addr_type, addr, connectable, rssi, adv_data
             ringbuf_extract(&o->ringbuf, data_tuple, 0, 1, &o->irq_data_addr, 1, 1, NULL, &o->irq_data_data);
@@ -874,7 +874,7 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS) {
             // conn_handle, value_handle, status
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, 0, NULL, NULL);
-        #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+            #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         }
 
         MICROPY_PY_BLUETOOTH_EXIT

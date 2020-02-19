@@ -77,8 +77,8 @@
 #define SPI_MOSI_DELAY_NUM 0x00000007
 #define SPI_MOSI_DELAY_NUM_S 23
 #define SPI_MOSI_DELAY_MODE 0x00000003  //mode 0 : posedge; data set at positive edge of clk
-										//mode 1 : negedge + 1 cycle delay, only if freq<10MHz ; data set at negitive edge of clk
-										//mode 2 : Do not use this mode.
+//mode 1 : negedge + 1 cycle delay, only if freq<10MHz ; data set at negitive edge of clk
+//mode 2 : Do not use this mode.
 #define SPI_MOSI_DELAY_MODE_S 21
 #define SPI_MISO_DELAY_NUM 0x00000007
 #define SPI_MISO_DELAY_NUM_S 18
@@ -158,7 +158,7 @@
 #define SPI_USR_COMMAND_VALUE_S 0
 
 #define SPI_WR_STATUS(i)                          (REG_SPI_BASE(i)  + 0x28)
- //previously defined as SPI_FLASH_USER3. No further info available.
+//previously defined as SPI_FLASH_USER3. No further info available.
 
 #define SPI_PIN(i)                            (REG_SPI_BASE(i)  + 0x2C)
 #define SPI_IDLE_EDGE (BIT(29))
@@ -250,9 +250,9 @@
 #define SPI_W14(i) 							(REG_SPI_BASE(i) +0x78)
 #define SPI_W15(i) 							(REG_SPI_BASE(i) +0x7C)
 
- // +0x80 to +0xBC could be SPI_W16 through SPI_W31?
+// +0x80 to +0xBC could be SPI_W16 through SPI_W31?
 
- // +0xC0 to +0xEC not currently defined.
+// +0xC0 to +0xEC not currently defined.
 
 #define SPI_EXT0(i)                           (REG_SPI_BASE(i)  + 0xF0) //From previous SDK. Removed _FLASH_ from name to match other registers.
 #define SPI_T_PP_ENA (BIT(31)) //From previous SDK

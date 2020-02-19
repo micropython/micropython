@@ -500,7 +500,7 @@ void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x64_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x64_write_word32(as, rel);
@@ -522,7 +522,7 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x64_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x64_write_word32(as, rel);

@@ -230,78 +230,78 @@ MP_DEFINE_EXCEPTION(SystemExit, BaseException)
 MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
-  #if MICROPY_PY_ASYNC_AWAIT
-  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
-  #endif
-  MP_DEFINE_EXCEPTION(StopIteration, Exception)
-  MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
-    //MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
-    MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
-    MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
-  MP_DEFINE_EXCEPTION(AssertionError, Exception)
-  MP_DEFINE_EXCEPTION(AttributeError, Exception)
-  //MP_DEFINE_EXCEPTION(BufferError, Exception)
-  MP_DEFINE_EXCEPTION(EOFError, Exception)
-  MP_DEFINE_EXCEPTION(ImportError, Exception)
-  MP_DEFINE_EXCEPTION(LookupError, Exception)
-    MP_DEFINE_EXCEPTION(IndexError, LookupError)
-    MP_DEFINE_EXCEPTION(KeyError, LookupError)
-  MP_DEFINE_EXCEPTION(MemoryError, Exception)
-  MP_DEFINE_EXCEPTION(NameError, Exception)
-    /*
-    MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
-    */
-  MP_DEFINE_EXCEPTION(OSError, Exception)
+#if MICROPY_PY_ASYNC_AWAIT
+MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
+#endif
+MP_DEFINE_EXCEPTION(StopIteration, Exception)
+MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
+//MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
+MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
+MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
+MP_DEFINE_EXCEPTION(AssertionError, Exception)
+MP_DEFINE_EXCEPTION(AttributeError, Exception)
+//MP_DEFINE_EXCEPTION(BufferError, Exception)
+MP_DEFINE_EXCEPTION(EOFError, Exception)
+MP_DEFINE_EXCEPTION(ImportError, Exception)
+MP_DEFINE_EXCEPTION(LookupError, Exception)
+MP_DEFINE_EXCEPTION(IndexError, LookupError)
+MP_DEFINE_EXCEPTION(KeyError, LookupError)
+MP_DEFINE_EXCEPTION(MemoryError, Exception)
+MP_DEFINE_EXCEPTION(NameError, Exception)
+/*
+MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
+*/
+MP_DEFINE_EXCEPTION(OSError, Exception)
 #if MICROPY_PY_BUILTINS_TIMEOUTERROR
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
+MP_DEFINE_EXCEPTION(TimeoutError, OSError)
 #endif
-    /*
-    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
-    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
-    MP_DEFINE_EXCEPTION(ConnectionError, OSError)
-      MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
-      MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
-      MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
-      MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
-    MP_DEFINE_EXCEPTION(InterruptedError, OSError)
-    MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
-    MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
-    MP_DEFINE_EXCEPTION(PermissionError, OSError)
-    MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
-    MP_DEFINE_EXCEPTION(FileExistsError, OSError)
-    MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
-    MP_DEFINE_EXCEPTION(ReferenceError, Exception)
-    */
-  MP_DEFINE_EXCEPTION(RuntimeError, Exception)
-    MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
-  MP_DEFINE_EXCEPTION(SyntaxError, Exception)
-    MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
-    /*
-      MP_DEFINE_EXCEPTION(TabError, IndentationError)
-      */
-  //MP_DEFINE_EXCEPTION(SystemError, Exception)
-  MP_DEFINE_EXCEPTION(TypeError, Exception)
+/*
+MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
+MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
+MP_DEFINE_EXCEPTION(ConnectionError, OSError)
+  MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
+  MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
+  MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
+  MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
+MP_DEFINE_EXCEPTION(InterruptedError, OSError)
+MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
+MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
+MP_DEFINE_EXCEPTION(PermissionError, OSError)
+MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
+MP_DEFINE_EXCEPTION(FileExistsError, OSError)
+MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
+MP_DEFINE_EXCEPTION(ReferenceError, Exception)
+*/
+MP_DEFINE_EXCEPTION(RuntimeError, Exception)
+MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
+MP_DEFINE_EXCEPTION(SyntaxError, Exception)
+MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
+/*
+  MP_DEFINE_EXCEPTION(TabError, IndentationError)
+  */
+//MP_DEFINE_EXCEPTION(SystemError, Exception)
+MP_DEFINE_EXCEPTION(TypeError, Exception)
 #if MICROPY_EMIT_NATIVE
-    MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
 #endif
-  MP_DEFINE_EXCEPTION(ValueError, Exception)
+MP_DEFINE_EXCEPTION(ValueError, Exception)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-    MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
-    //TODO: Implement more UnicodeError subclasses which take arguments
+MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
+//TODO: Implement more UnicodeError subclasses which take arguments
 #endif
-  /*
-  MP_DEFINE_EXCEPTION(Warning, Exception)
-    MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
-    MP_DEFINE_EXCEPTION(PendingDeprecationWarning, Warning)
-    MP_DEFINE_EXCEPTION(RuntimeWarning, Warning)
-    MP_DEFINE_EXCEPTION(SyntaxWarning, Warning)
-    MP_DEFINE_EXCEPTION(UserWarning, Warning)
-    MP_DEFINE_EXCEPTION(FutureWarning, Warning)
-    MP_DEFINE_EXCEPTION(ImportWarning, Warning)
-    MP_DEFINE_EXCEPTION(UnicodeWarning, Warning)
-    MP_DEFINE_EXCEPTION(BytesWarning, Warning)
-    MP_DEFINE_EXCEPTION(ResourceWarning, Warning)
-    */
+/*
+MP_DEFINE_EXCEPTION(Warning, Exception)
+  MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
+  MP_DEFINE_EXCEPTION(PendingDeprecationWarning, Warning)
+  MP_DEFINE_EXCEPTION(RuntimeWarning, Warning)
+  MP_DEFINE_EXCEPTION(SyntaxWarning, Warning)
+  MP_DEFINE_EXCEPTION(UserWarning, Warning)
+  MP_DEFINE_EXCEPTION(FutureWarning, Warning)
+  MP_DEFINE_EXCEPTION(ImportWarning, Warning)
+  MP_DEFINE_EXCEPTION(UnicodeWarning, Warning)
+  MP_DEFINE_EXCEPTION(BytesWarning, Warning)
+  MP_DEFINE_EXCEPTION(ResourceWarning, Warning)
+  */
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
@@ -333,7 +333,7 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
     if (o_str == NULL
         && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t)) {
         o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_BUF_STR_OFFSET);
+                + EMG_BUF_STR_OFFSET);
     }
     #endif
 
@@ -412,7 +412,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const cha
         && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
         used_emg_buf = true;
         o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_BUF_STR_OFFSET);
+                + EMG_BUF_STR_OFFSET);
         o_str_buf = (byte*)&o_str[1];
         o_str_alloc = (uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
             + mp_emergency_exception_buf_size - o_str_buf;
@@ -506,7 +506,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
             if (mp_emergency_exception_buf_size >= EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE) {
                 // There is room in the emergency buffer for traceback data
                 size_t *tb = (size_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-                    + EMG_BUF_TRACEBACK_OFFSET);
+                        + EMG_BUF_TRACEBACK_OFFSET);
                 self->traceback_data = tb;
                 self->traceback_alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
             } else {
@@ -531,7 +531,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         #endif
         // be conservative with growing traceback data
         size_t *tb_data = m_renew_maybe(size_t, self->traceback_data, self->traceback_alloc,
-            self->traceback_alloc + TRACEBACK_ENTRY_LEN, true);
+                self->traceback_alloc + TRACEBACK_ENTRY_LEN, true);
         if (tb_data == NULL) {
             return;
         }

@@ -166,7 +166,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
             return MP_OBJ_STOP_ITERATION;
         }
         if (!(info.name[0] == '.' && (info.name[1] == '\0'
-            || (info.name[1] == '.' && info.name[2] == '\0')))) {
+                    || (info.name[1] == '.' && info.name[2] == '\0')))) {
             break;
         }
     }

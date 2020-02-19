@@ -4,6 +4,9 @@ import sys, os, glob
 
 FILES = [
     'extmod/*.[ch]',
+    'lib/netutils/*.[ch]',
+    'lib/timeutils/*.[ch]',
+    'lib/utils/*.[ch]',
     'ports/*/*.[ch]',
     'py/*.[ch]',
 ]

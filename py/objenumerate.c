@@ -40,7 +40,7 @@ typedef struct _mp_obj_enumerate_t {
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in);
 
 STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_iterable, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start, MP_ARG_INT, {.u_int = 0} },
@@ -58,13 +58,13 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
     o->base.type = type;
     o->iter = mp_getiter(arg_vals.iterable.u_obj, NULL);
     o->cur = arg_vals.start.u_int;
-#else
+    #else
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
     o->base.type = type;
     o->iter = mp_getiter(args[0], NULL);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
-#endif
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }

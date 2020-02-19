@@ -348,13 +348,13 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else
     #endif
-    if (rtc_use_lse) {
-        RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-        RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-    } else {
-        RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-        RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-    }
+        if (rtc_use_lse) {
+            RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+            RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+        } else {
+            RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+            RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+        }
     PYB_RCC_OscConfig(&RCC_OscInitStruct);
 
     // now ramp up osc. in background and flag calendear init needed
@@ -714,7 +714,7 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         cal = mp_obj_get_int(args[1]);
         mp_uint_t cal_p, cal_m;
         if (cal < -511 || cal > 512) {
-#if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
+            #if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
             if ((cal & 0xfffe) == 0x0ffe) {
                 // turn on/off X18 (PC13) 512Hz output
                 // Note:
@@ -728,9 +728,9 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
             } else {
                 mp_raise_ValueError("calibration value out of range");
             }
-#else
+            #else
             mp_raise_ValueError("calibration value out of range");
-#endif
+            #endif
         }
         if (cal > 0) {
             cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;

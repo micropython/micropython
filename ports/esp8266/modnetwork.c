@@ -312,7 +312,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             wifi_softap_dhcps_stop();
         }
         if (!wifi_set_ip_info(self->if_id, &info)) {
-          mp_raise_msg(&mp_type_OSError, "wifi_set_ip_info() failed");
+            mp_raise_msg(&mp_type_OSError, "wifi_set_ip_info() failed");
         }
         dns_setserver(0, &dns_addr);
         if (restart_dhcp_server) {
@@ -346,7 +346,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
         for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
-                #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
+#define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_mac): {
                         mp_buffer_info_t bufinfo;
@@ -401,7 +401,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     default:
                         goto unknown;
                 }
-                #undef QS
+#undef QS
             }
         }
 
@@ -513,7 +513,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
-#if MODNETWORK_INCLUDE_CONSTANTS
+    #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
 
@@ -533,7 +533,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

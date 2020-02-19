@@ -247,13 +247,13 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1);
     #endif
 
-#if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
+    #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     #if defined(STM32F7)
-    #define FREQ_BKP BKP31R
+#define FREQ_BKP BKP31R
     #elif defined(STM32L4)
-    #error Unsupported Processor
+#error Unsupported Processor
     #else
-    #define FREQ_BKP BKP19R
+#define FREQ_BKP BKP19R
     #endif
     uint32_t m = RTC->FREQ_BKP;
     uint32_t n;
@@ -289,7 +289,7 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = h;  //RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = b1; //RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = b2; //RCC_HCLK_DIV2;
-#else // defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
+    #else // defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
@@ -320,13 +320,13 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     #endif
-#endif
+    #endif
 
     if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-      __fatal_error("HAL_RCC_OscConfig");
+        __fatal_error("HAL_RCC_OscConfig");
     }
 
-#if defined(STM32H7)
+    #if defined(STM32H7)
     /* PLL3 for USB Clock */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
@@ -341,15 +341,15 @@ void SystemClock_Config(void)
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
-#endif
+    #endif
 
-#if defined(STM32F7)
-  /* Activate the OverDrive to reach the 200 MHz Frequency */
-  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
-  {
-    __fatal_error("HAL_PWREx_EnableOverDrive");
-  }
-#endif
+    #if defined(STM32F7)
+    /* Activate the OverDrive to reach the 200 MHz Frequency */
+    if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+    {
+        __fatal_error("HAL_PWREx_EnableOverDrive");
+    }
+    #endif
 
     uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
@@ -358,28 +358,28 @@ void SystemClock_Config(void)
         __fatal_error("HAL_RCC_ClockConfig");
     }
 
-#if defined(STM32H7)
-  /* Activate CSI clock mandatory for I/O Compensation Cell*/
-  __HAL_RCC_CSI_ENABLE() ;
+    #if defined(STM32H7)
+    /* Activate CSI clock mandatory for I/O Compensation Cell*/
+    __HAL_RCC_CSI_ENABLE() ;
 
-  /* Enable SYSCFG clock mandatory for I/O Compensation Cell */
-  __HAL_RCC_SYSCFG_CLK_ENABLE() ;
+    /* Enable SYSCFG clock mandatory for I/O Compensation Cell */
+    __HAL_RCC_SYSCFG_CLK_ENABLE() ;
 
-  /* Enable the I/O Compensation Cell */
-  HAL_EnableCompensationCell();
+    /* Enable the I/O Compensation Cell */
+    HAL_EnableCompensationCell();
 
-  /* Enable the USB voltage level detector */
-  HAL_PWREx_EnableUSBVoltageDetector();
-#endif
+    /* Enable the USB voltage level detector */
+    HAL_PWREx_EnableUSBVoltageDetector();
+    #endif
 
-#if defined(STM32L4)
+    #if defined(STM32L4)
     // Enable MSI-Hardware auto calibration mode with LSE
     HAL_RCCEx_EnableMSIPLLMode();
 
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI1|RCC_PERIPHCLK_I2C1
-                                              |RCC_PERIPHCLK_USB |RCC_PERIPHCLK_ADC
-                                              |RCC_PERIPHCLK_RNG |RCC_PERIPHCLK_RTC;
+        |RCC_PERIPHCLK_USB |RCC_PERIPHCLK_ADC
+        |RCC_PERIPHCLK_RNG |RCC_PERIPHCLK_RTC;
     PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
 
     PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
@@ -412,8 +412,8 @@ void SystemClock_Config(void)
     PeriphClkInitStruct.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
     #endif
     PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK
-                                                 |RCC_PLLSAI1_48M2CLK
-                                                 |RCC_PLLSAI1_ADC1CLK;
+        |RCC_PLLSAI1_48M2CLK
+        |RCC_PLLSAI1_ADC1CLK;
 
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
@@ -427,7 +427,7 @@ void SystemClock_Config(void)
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
-#endif
+    #endif
 }
 
 #endif

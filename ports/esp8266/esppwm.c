@@ -215,8 +215,8 @@ void ICACHE_FLASH_ATTR
 pwm_set_duty(int16_t duty, uint8 channel)
 {
     uint8 i;
-    for(i=0;i<pwm_channel_num;i++){
-        if(pwm_out_io_num[i] == channel){
+    for(i=0; i<pwm_channel_num; i++) {
+        if(pwm_out_io_num[i] == channel) {
             channel = i;
             break;
         }
@@ -267,8 +267,8 @@ uint16 ICACHE_FLASH_ATTR
 pwm_get_duty(uint8 channel)
 {
     uint8 i;
-    for(i=0;i<pwm_channel_num;i++){
-        if(pwm_out_io_num[i] == channel){
+    for(i=0; i<pwm_channel_num; i++) {
+        if(pwm_out_io_num[i] == channel) {
             channel = i;
             break;
         }
@@ -310,17 +310,17 @@ pwm_tim1_intr_handler(void *dummy)
         pwm_channel = &pwm_channel_toggle[local_toggle];
 
         gpio_output_set(pwm_single[*pwm_channel - 1].gpio_set,
-                        pwm_single[*pwm_channel - 1].gpio_clear,
-                        pwm_gpio,
-                        0);
+            pwm_single[*pwm_channel - 1].gpio_clear,
+            pwm_gpio,
+            0);
 
         pwm_current_channel = 0;
 
         RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
     } else {
         gpio_output_set(pwm_single[pwm_current_channel].gpio_set,
-                        pwm_single[pwm_current_channel].gpio_clear,
-                        pwm_gpio, 0);
+            pwm_single[pwm_current_channel].gpio_clear,
+            pwm_gpio, 0);
 
         pwm_current_channel++;
         RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
@@ -340,9 +340,9 @@ pwm_init(void)
     uint8 i;
 
     RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
-                  DIVDED_BY_16
-                  | FRC1_ENABLE_TIMER
-                  | TM_EDGE_INT);
+        DIVDED_BY_16
+        | FRC1_ENABLE_TIMER
+        | TM_EDGE_INT);
     RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
 
     for (i = 0; i < PWM_CHANNEL; i++) {
@@ -359,7 +359,7 @@ pwm_init(void)
 }
 
 int ICACHE_FLASH_ATTR
-pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func){
+pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func) {
     PWM_DBG("--Function pwm_add() is called. channel:%d\n", channel);
     PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n",pwm_gpio,pwm_channel_num);
     PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n",pwm_out_io_num[0],pwm_out_io_num[1],pwm_out_io_num[2]);
@@ -375,10 +375,10 @@ pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func){
         return -1;
     }
     uint8 i;
-    for(i=0;i<PWM_CHANNEL;i++){
+    for(i=0; i<PWM_CHANNEL; i++) {
         if(pwm_out_io_num[i]==channel)  // already exist
             return channel;
-        if(pwm_out_io_num[i] == -1){ // empty exist
+        if(pwm_out_io_num[i] == -1) { // empty exist
             LOCK_PWM(critical);   // enter critical
             pwm_out_io_num[i] = channel;
             pwm.duty[i] = 0;
@@ -394,18 +394,18 @@ pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func){
 }
 
 bool ICACHE_FLASH_ATTR
-pwm_delete(uint8 channel){
+pwm_delete(uint8 channel) {
     PWM_DBG("--Function pwm_delete() is called. channel:%d\n", channel);
     PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n",pwm_gpio,pwm_channel_num);
     PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n",pwm_out_io_num[0],pwm_out_io_num[1],pwm_out_io_num[2]);
     PWM_DBG("pwm.duty[0]:%d,[1]:%d,[2]:%d\n",pwm.duty[0],pwm.duty[1],pwm.duty[2]);
     uint8 i,j;
-    for(i=0;i<pwm_channel_num;i++){
-        if(pwm_out_io_num[i]==channel){  // exist
+    for(i=0; i<pwm_channel_num; i++) {
+        if(pwm_out_io_num[i]==channel) { // exist
             LOCK_PWM(critical);   // enter critical
             pwm_out_io_num[i] = -1;
             pwm_gpio &= ~(1 << pin_num[channel]);   //clear the bit
-            for(j=i;j<pwm_channel_num-1;j++){
+            for(j=i; j<pwm_channel_num-1; j++) {
                 pwm_out_io_num[j] = pwm_out_io_num[j+1];
                 pwm.duty[j] = pwm.duty[j+1];
             }

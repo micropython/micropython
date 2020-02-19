@@ -141,7 +141,7 @@ STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
 STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent_in) {
     uint32_t cmp;
     if (0) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_type(percent_in, &mp_type_float)) {
         float percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
@@ -151,7 +151,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
         } else {
             cmp = percent / 100.0 * ((float)period);
         }
-    #endif
+        #endif
     } else {
         mp_int_t percent = mp_obj_get_int(percent_in);
         if (percent <= 0) {
@@ -716,9 +716,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_prescaler), MP_ROM_PTR(&pyb_timer_prescaler_obj) },
     { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&pyb_timer_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_callback_obj) },
-#if MICROPY_TIMER_REG
+    #if MICROPY_TIMER_REG
     { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_reg_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_UP),              MP_ROM_INT(FTM_COUNTERMODE_UP) },
     { MP_ROM_QSTR(MP_QSTR_CENTER),          MP_ROM_INT(FTM_COUNTERMODE_CENTER) },
     { MP_ROM_QSTR(MP_QSTR_PWM),             MP_ROM_INT(CHANNEL_MODE_PWM_NORMAL) },
@@ -754,9 +754,9 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
     pyb_timer_channel_obj_t *self = self_in;
 
     mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
-          self->timer->tim_id,
-          self->channel,
-          qstr_str(channel_mode_info[self->mode].name));
+        self->timer->tim_id,
+        self->channel,
+        qstr_str(channel_mode_info[self->mode].name));
 }
 
 /// \method capture([value])
@@ -773,7 +773,7 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
 /// Get or set the pulse width value associated with a channel.
 /// capture, compare, and pulse_width are all aliases for the same function.
 /// pulse_width is the logical name to use when the channel is in PWM mode.
-/// 
+///
 /// In edge aligned mode, a pulse_width of `period + 1` corresponds to a duty cycle of 100%
 /// In center aligned mode, a pulse width of `period` corresponds to a duty cycle of 100%
 STATIC mp_obj_t pyb_timer_channel_capture_compare(size_t n_args, const mp_obj_t *args) {
@@ -860,8 +860,8 @@ reg_t timer_channel_reg[] = {
 mp_obj_t pyb_timer_channel_reg(uint n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = args[0];
     return reg_cmd(&self->timer->ftm.Instance->channel[self->channel],
-                   timer_channel_reg, MP_ARRAY_SIZE(timer_channel_reg),
-                   n_args - 1, args + 1);
+            timer_channel_reg, MP_ARRAY_SIZE(timer_channel_reg),
+            n_args - 1, args + 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_reg_obj, 1, 3, pyb_timer_channel_reg);
 #endif
@@ -873,9 +873,9 @@ STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pulse_width_percent), MP_ROM_PTR(&pyb_timer_channel_pulse_width_percent_obj) },
     { MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
     { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
-#if MICROPY_TIMER_REG
+    #if MICROPY_TIMER_REG
     { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_channel_reg_obj) },
-#endif
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 
@@ -906,10 +906,10 @@ STATIC bool ftm_handle_irq_callback(pyb_timer_obj_t *self, mp_uint_t channel, mp
         self->callback = mp_const_none;
         if (channel == 0xffffffff) {
             printf("Uncaught exception in Timer(" UINT_FMT
-                   ") interrupt handler\n", self->tim_id);
+                ") interrupt handler\n", self->tim_id);
         } else {
             printf("Uncaught exception in Timer(" UINT_FMT ") channel "
-                   UINT_FMT " interrupt handler\n", self->tim_id, channel);
+                UINT_FMT " interrupt handler\n", self->tim_id, channel);
         }
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
@@ -956,7 +956,7 @@ STATIC void ftm_irq_handler(uint tim_id) {
             } else {
                 __HAL_FTM_DISABLE_CH_IT(&self->ftm, chan->channel);
                 printf("No callback for Timer %d channel %u (now disabled)\n",
-                       self->tim_id, chan->channel);
+                    self->tim_id, chan->channel);
             }
         }
         chan = chan->next;
@@ -971,7 +971,7 @@ STATIC void ftm_irq_handler(uint tim_id) {
                     __HAL_FTM_CLEAR_CH_FLAG(&self->ftm, channel);
                     __HAL_FTM_DISABLE_CH_IT(&self->ftm, channel);
                     printf("Unhandled interrupt Timer %d channel %u (now disabled)\n",
-                           tim_id, channel);
+                        tim_id, channel);
                 }
             }
         }

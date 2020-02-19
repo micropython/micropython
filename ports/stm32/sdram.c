@@ -50,7 +50,7 @@
 #ifdef FMC_SDRAM_BANK
 
 static void sdram_init_seq(SDRAM_HandleTypeDef
-        *hsdram, FMC_SDRAM_CommandTypeDef *command);
+    *hsdram, FMC_SDRAM_CommandTypeDef *command);
 extern void __fatal_error(const char *msg);
 
 bool sdram_init(void) {
@@ -149,8 +149,8 @@ bool sdram_init(void) {
     /* TRCD */
     SDRAM_Timing.RCDDelay             = MICROPY_HW_SDRAM_TIMING_TRCD;
 
-    #define _FMC_INIT(x, n) x ## _ ## n
-    #define FMC_INIT(x, n) _FMC_INIT(x,  n)
+#define _FMC_INIT(x, n) x ## _ ## n
+#define FMC_INIT(x, n) _FMC_INIT(x,  n)
 
     hsdram.Init.SDBank             = FMC_SDRAM_BANK;
     hsdram.Init.ColumnBitsNumber   = FMC_INIT(FMC_SDRAM_COLUMN_BITS_NUM, MICROPY_HW_SDRAM_COLUMN_BITS_NUM);
@@ -181,7 +181,7 @@ void *sdram_end(void) {
 }
 
 static void sdram_init_seq(SDRAM_HandleTypeDef
-        *hsdram, FMC_SDRAM_CommandTypeDef *command)
+    *hsdram, FMC_SDRAM_CommandTypeDef *command)
 {
     /* Program the SDRAM external device */
     __IO uint32_t tmpmrd =0;
@@ -239,7 +239,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
        we also need to subtract 20 from the value, so the target
        refresh rate is 703 - 20 = 683.
      */
-    #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
+#define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
 
     #if defined(STM32F7)

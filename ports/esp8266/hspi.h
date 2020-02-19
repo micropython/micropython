@@ -58,9 +58,9 @@ void spi_clock(uint8_t spi_no, uint16_t prediv, uint8_t cntdiv);
 void spi_tx_byte_order(uint8_t spi_no, uint8_t byte_order);
 void spi_rx_byte_order(uint8_t spi_no, uint8_t byte_order);
 uint32_t spi_transaction(uint8_t spi_no, uint8_t cmd_bits, uint16_t cmd_data,
-                         uint32_t addr_bits, uint32_t addr_data,
-                         uint32_t dout_bits, uint32_t dout_data,
-                         uint32_t din_bits, uint32_t dummy_bits);
+    uint32_t addr_bits, uint32_t addr_data,
+    uint32_t dout_bits, uint32_t dout_data,
+    uint32_t din_bits, uint32_t dummy_bits);
 void spi_tx8fast(uint8_t spi_no, uint8_t dout_data);
 
 // Expansion Macros

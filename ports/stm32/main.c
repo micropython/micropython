@@ -395,7 +395,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
             mp_hal_delay_ms(400);
         }
         #else
-        #error Need a reset mode update method
+#error Need a reset mode update method
         #endif
     }
     #endif
@@ -474,19 +474,19 @@ void stm32_main(uint32_t reset_mode) {
     #endif
 
     #if defined(STM32F4) ||  defined(STM32F7)
-        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-        // which behaves more or less like normal SRAM.
-        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #elif defined(CCMDATARAM_BASE)
-        // enable the CCM RAM
-        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
-        #endif
+    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+    #elif defined(CCMDATARAM_BASE)
+    // enable the CCM RAM
+    __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
+    #endif
     #elif defined(STM32H7)
-        // Enable D2 SRAM1/2/3 clocks.
-        __HAL_RCC_D2SRAM1_CLK_ENABLE();
-        __HAL_RCC_D2SRAM2_CLK_ENABLE();
-        __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    // Enable D2 SRAM1/2/3 clocks.
+    __HAL_RCC_D2SRAM1_CLK_ENABLE();
+    __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
 
 

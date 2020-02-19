@@ -85,7 +85,7 @@ struct _dma_descr_t {
     #elif defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
     DMA_Channel_TypeDef *instance;
     #else
-    #error "Unsupported Processor"
+#error "Unsupported Processor"
     #endif
     uint32_t sub_instance;
     dma_id_t id;
@@ -709,7 +709,7 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Parent = data;
 }
 
-void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data){
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
     // Some drivers allocate the DMA_HandleTypeDef from the stack
     // (i.e. dac, i2c, spi) and for those cases we need to clear the
     // structure so we don't get random values from the stack)

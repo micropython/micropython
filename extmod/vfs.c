@@ -103,7 +103,7 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
-            (const byte*)p_out, strlen(p_out));
+                (const byte*)p_out, strlen(p_out));
     }
     return vfs;
 }
@@ -394,8 +394,8 @@ STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
             // a mounted directory
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
             t->items[0] = mp_obj_new_str_of_type(
-                self->is_str ? &mp_type_str : &mp_type_bytes,
-                (const byte*)vfs->str + 1, vfs->len - 1);
+                    self->is_str ? &mp_type_str : &mp_type_bytes,
+                    (const byte*)vfs->str + 1, vfs->len - 1);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
             t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
             return MP_OBJ_FROM_PTR(t);

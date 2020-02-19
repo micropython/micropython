@@ -55,30 +55,30 @@
 
 // Define the host architecture
 #if MICROPY_EMIT_X86
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
 #elif MICROPY_EMIT_X64
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X64)
 #elif MICROPY_EMIT_THUMB
-    #if defined(__thumb2__)
-        #if defined(__ARM_FP) && (__ARM_FP & 8) == 8
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
-        #elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
-        #else
-            #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
-        #endif
-    #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
-    #endif
-    #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
-#elif MICROPY_EMIT_ARM
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
-#elif MICROPY_EMIT_XTENSA
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
-#elif MICROPY_EMIT_XTENSAWIN
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
+#if defined(__thumb2__)
+#if defined(__ARM_FP) && (__ARM_FP & 8) == 8
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMDP)
+#elif defined(__ARM_FP) && (__ARM_FP & 4) == 4
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EMSP)
 #else
-    #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
+#endif
+#else
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
+#endif
+#define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
+#elif MICROPY_EMIT_ARM
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6)
+#elif MICROPY_EMIT_XTENSA
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSA)
+#elif MICROPY_EMIT_XTENSAWIN
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_XTENSAWIN)
+#else
+#define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
 
 #ifndef MPY_FEATURE_ARCH_TEST

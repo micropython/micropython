@@ -147,30 +147,30 @@ int spi_find_index(mp_obj_t id) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
         if (0) {
-        #ifdef MICROPY_HW_SPI1_NAME
+            #ifdef MICROPY_HW_SPI1_NAME
         } else if (strcmp(port, MICROPY_HW_SPI1_NAME) == 0) {
             return 1;
-        #endif
-        #ifdef MICROPY_HW_SPI2_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI2_NAME
         } else if (strcmp(port, MICROPY_HW_SPI2_NAME) == 0) {
             return 2;
-        #endif
-        #ifdef MICROPY_HW_SPI3_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI3_NAME
         } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
             return 3;
-        #endif
-        #ifdef MICROPY_HW_SPI4_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI4_NAME
         } else if (strcmp(port, MICROPY_HW_SPI4_NAME) == 0) {
             return 4;
-        #endif
-        #ifdef MICROPY_HW_SPI5_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI5_NAME
         } else if (strcmp(port, MICROPY_HW_SPI5_NAME) == 0) {
             return 5;
-        #endif
-        #ifdef MICROPY_HW_SPI6_NAME
+            #endif
+            #ifdef MICROPY_HW_SPI6_NAME
         } else if (strcmp(port, MICROPY_HW_SPI6_NAME) == 0) {
             return 6;
-        #endif
+            #endif
         }
         mp_raise_msg_varg(&mp_type_ValueError, "SPI(%s) doesn't exist", port);
     } else {
@@ -203,15 +203,15 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     } else
     #endif
     #if defined(SPI3)
-    if (spi->Instance == SPI3) {
-        // SPI3 is on APB1
-        return HAL_RCC_GetPCLK1Freq();
-    } else
+        if (spi->Instance == SPI3) {
+            // SPI3 is on APB1
+            return HAL_RCC_GetPCLK1Freq();
+        } else
     #endif
-    {
-        // SPI1, SPI4, SPI5 and SPI6 are on APB2
-        return HAL_RCC_GetPCLK2Freq();
-    }
+        {
+            // SPI1, SPI4, SPI5 and SPI6 are on APB2
+            return HAL_RCC_GetPCLK2Freq();
+        }
     #endif
 }
 
@@ -261,7 +261,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
-    #if defined(MICROPY_HW_SPI1_SCK)
+        #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         irqn = SPI1_IRQn;
         #if defined(MICROPY_HW_SPI1_NSS)
@@ -274,8 +274,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI1_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI1_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         irqn = SPI2_IRQn;
         #if defined(MICROPY_HW_SPI2_NSS)
@@ -288,8 +288,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI2_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI2_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         irqn = SPI3_IRQn;
         #if defined(MICROPY_HW_SPI3_NSS)
@@ -302,8 +302,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI3_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI3_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         irqn = SPI4_IRQn;
         #if defined(MICROPY_HW_SPI4_NSS)
@@ -316,8 +316,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI4_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI4_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         irqn = SPI5_IRQn;
         #if defined(MICROPY_HW_SPI5_NSS)
@@ -330,8 +330,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI5_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI5_CLK_ENABLE();
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         irqn = SPI6_IRQn;
         #if defined(MICROPY_HW_SPI6_NSS)
@@ -344,7 +344,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         pins[3] = MICROPY_HW_SPI6_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI6_CLK_ENABLE();
-    #endif
+        #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
         return;
@@ -378,57 +378,57 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #if defined(STM32H7)
     NVIC_SetPriority(irqn, IRQ_PRI_SPI);
     HAL_NVIC_EnableIRQ(irqn);
-    #else 
+    #else
     (void)irqn;
-    #endif 
+    #endif
 }
 
 void spi_deinit(const spi_t *spi_obj) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
     if (0) {
-    #if defined(MICROPY_HW_SPI1_SCK)
+        #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         __HAL_RCC_SPI1_FORCE_RESET();
         __HAL_RCC_SPI1_RELEASE_RESET();
         __HAL_RCC_SPI1_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI1_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         __HAL_RCC_SPI2_FORCE_RESET();
         __HAL_RCC_SPI2_RELEASE_RESET();
         __HAL_RCC_SPI2_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI2_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         __HAL_RCC_SPI3_FORCE_RESET();
         __HAL_RCC_SPI3_RELEASE_RESET();
         __HAL_RCC_SPI3_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI3_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         __HAL_RCC_SPI4_FORCE_RESET();
         __HAL_RCC_SPI4_RELEASE_RESET();
         __HAL_RCC_SPI4_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI4_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         __HAL_RCC_SPI5_FORCE_RESET();
         __HAL_RCC_SPI5_RELEASE_RESET();
         __HAL_RCC_SPI5_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI5_IRQn);
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
+        #endif
+        #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         __HAL_RCC_SPI6_FORCE_RESET();
         __HAL_RCC_SPI6_RELEASE_RESET();
         __HAL_RCC_SPI6_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI6_IRQn);
-    #endif
+        #endif
     }
 }
 

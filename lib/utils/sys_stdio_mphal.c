@@ -103,9 +103,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_o
 // TODO gc hook to close the file if not already closed
 
 STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
-#if MICROPY_PY_SYS_STDIO_BUFFER
+    #if MICROPY_PY_SYS_STDIO_BUFFER
     { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},

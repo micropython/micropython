@@ -144,9 +144,9 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     switch(attr) {
         case MP_QSTR_co_code:
             dest[0] = mp_obj_new_bytes(
-                (void*)prelude->opcodes,
-                rc->fun_data_len - (prelude->opcodes - (const byte*)rc->fun_data)
-            );
+                    (void*)prelude->opcodes,
+                    rc->fun_data_len - (prelude->opcodes - (const byte*)rc->fun_data)
+                );
             break;
         case MP_QSTR_co_consts:
             dest[0] = MP_OBJ_FROM_PTR(code_consts(rc));
@@ -165,7 +165,7 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             break;
         case MP_QSTR_co_lnotab:
             if (!o->lnotab) {
-                 o->lnotab = raw_code_lnotab(rc);
+                o->lnotab = raw_code_lnotab(rc);
             }
             dest[0] = o->lnotab;
             break;
@@ -783,13 +783,13 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->arg = unum;
             break;
 
-        #if MICROPY_PY_BUILTINS_SLICE
+            #if MICROPY_PY_BUILTINS_SLICE
         case MP_BC_BUILD_SLICE:
             DECODE_UINT;
             instruction->qstr_opname = MP_QSTR_BUILD_SLICE;
             instruction->arg = unum;
             break;
-        #endif
+            #endif
 
         case MP_BC_STORE_COMP:
             DECODE_UINT;

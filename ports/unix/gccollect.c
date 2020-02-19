@@ -49,7 +49,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     register long r13 asm ("r13");
     register long r14 asm ("r14");
     register long r15 asm ("r15");
-#ifdef __clang__
+    #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
     // uncompliant (wrt to GCC) behavior of handling register variables.
@@ -62,7 +62,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     asm("" : "=r"(r13));
     asm("" : "=r"(r14));
     asm("" : "=r"(r15));
-#endif
+    #endif
     arr[0] = rbx;
     arr[1] = rbp;
     arr[2] = r12;
@@ -80,7 +80,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     register long esi asm ("esi");
     register long edi asm ("edi");
     register long ebp asm ("ebp");
-#ifdef __clang__
+    #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
     // uncompliant (wrt to GCC) behavior of handling register variables.
@@ -91,7 +91,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     asm("" : "=r"(esi));
     asm("" : "=r"(edi));
     asm("" : "=r"(ebp));
-#endif
+    #endif
     arr[0] = ebx;
     arr[1] = esi;
     arr[2] = edi;

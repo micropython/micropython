@@ -282,7 +282,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
             prec = buf_remaining - FPMIN_BUF_SIZE;
         }
-        if (fmt == 'g'){
+        if (fmt == 'g') {
             // Truncate precision to prevent buffer overflow
             if (prec + (FPMIN_BUF_SIZE - 1) > buf_remaining) {
                 prec = buf_remaining - (FPMIN_BUF_SIZE - 1);

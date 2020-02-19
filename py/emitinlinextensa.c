@@ -328,7 +328,7 @@ unknown_op:
     return;
 
     /*
-branch_not_in_range:
+    branch_not_in_range:
     emit_inline_xtensa_error_msg(emit, "branch not in range");
     return;
     */

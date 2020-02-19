@@ -356,14 +356,14 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
-#endif
+    #endif
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
-#if MICROPY_PY_FUNCTION_ATTRS
+    #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
@@ -501,11 +501,11 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         // compiler allows at most 4 arguments
         assert(n_args == 4);
         ret = ((inline_asm_fun_4_t)fun)(
-            convert_obj_for_inline_asm(args[0]),
-            convert_obj_for_inline_asm(args[1]),
-            convert_obj_for_inline_asm(args[2]),
-            convert_obj_for_inline_asm(args[3])
-        );
+                convert_obj_for_inline_asm(args[0]),
+                convert_obj_for_inline_asm(args[1]),
+                convert_obj_for_inline_asm(args[2]),
+                convert_obj_for_inline_asm(args[3])
+            );
     }
 
     return mp_native_to_obj(ret, self->type_sig);

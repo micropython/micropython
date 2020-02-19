@@ -378,7 +378,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
             mp_raise_OSError(error);
         }
         if (out_sz == 0) {
-done:
+        done:
             // Back out previously added byte
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.

@@ -212,7 +212,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 // Sanity check
 
 #if ( _MSC_VER < 1800 )
-    #error Can only build with Visual Studio 2013 toolset
+#error Can only build with Visual Studio 2013 toolset
 #endif
 
 

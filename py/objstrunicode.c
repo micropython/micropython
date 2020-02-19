@@ -113,7 +113,7 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
-                             mp_obj_t index, bool is_slice) {
+    mp_obj_t index, bool is_slice) {
     // All str functions also handle bytes objects, and they call str_index_to_ptr(),
     // so it must handle bytes.
     if (type == &mp_type_bytes) {
@@ -181,7 +181,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_t ostart, ostop, ostep;
             mp_obj_slice_t *slice = MP_OBJ_TO_PTR(index);
@@ -211,7 +211,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
-#endif
+        #endif
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
@@ -227,9 +227,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 STATIC const mp_rom_map_elem_t struni_locals_dict_table[] = {
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&str_index_obj) },

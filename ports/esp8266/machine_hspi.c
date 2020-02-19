@@ -111,7 +111,7 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
+        allowed_args, args);
 
     if (args[ARG_baudrate].u_int != -1) {
         self->baudrate = args[ARG_baudrate].u_int;
@@ -143,10 +143,10 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
     spi_tx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
     spi_rx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
     CLEAR_PERI_REG_MASK(SPI_USER(HSPI), SPI_FLASH_MODE | SPI_USR_MISO |
-                        SPI_USR_ADDR | SPI_USR_COMMAND | SPI_USR_DUMMY);
+        SPI_USR_ADDR | SPI_USR_COMMAND | SPI_USR_DUMMY);
     // Clear Dual or Quad lines transmission mode
     CLEAR_PERI_REG_MASK(SPI_CTRL(HSPI), SPI_QIO_MODE | SPI_DIO_MODE |
-                        SPI_DOUT_MODE | SPI_QOUT_MODE);
+        SPI_DOUT_MODE | SPI_QOUT_MODE);
     spi_mode(HSPI, self->phase, self->polarity);
 }
 

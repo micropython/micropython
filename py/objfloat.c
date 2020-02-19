@@ -95,17 +95,17 @@ mp_int_t mp_float_hash(mp_float_t src) {
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_float_t o_val = mp_obj_float_get(o_in);
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
     const int precision = 6;
     #else
     const int precision = 7;
     #endif
-#else
+    #else
     char buf[32];
     const int precision = 16;
-#endif
+    #endif
     mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
@@ -245,7 +245,7 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
-                zero_division_error:
+            zero_division_error:
                 mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must

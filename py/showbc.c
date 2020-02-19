@@ -422,12 +422,12 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_SET " UINT_FMT, unum);
             break;
 
-#if MICROPY_PY_BUILTINS_SLICE
+            #if MICROPY_PY_BUILTINS_SLICE
         case MP_BC_BUILD_SLICE:
             DECODE_UINT;
             printf("BUILD_SLICE " UINT_FMT, unum);
             break;
-#endif
+            #endif
 
         case MP_BC_STORE_COMP:
             DECODE_UINT;

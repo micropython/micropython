@@ -93,7 +93,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
     else
     #endif
-    // Otherwise there should be 1 or 2 args
+        // Otherwise there should be 1 or 2 args
     {
         if (n_args == 1) {
             pin = args[0];

@@ -365,7 +365,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 STATIC const mp_pin_p_t pin_pin_p = {
-  .ioctl = pin_ioctl,
+    .ioctl = pin_ioctl,
 };
 
 const mp_obj_type_t machine_pin_type = {

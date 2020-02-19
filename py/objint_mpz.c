@@ -43,25 +43,25 @@
 // Export value for sys.maxsize
 #define DIG_MASK ((MPZ_LONG_1 << MPZ_DIG_SIZE) - 1)
 STATIC const mpz_dig_t maxsize_dig[] = {
-    #define NUM_DIG 1
+#define NUM_DIG 1
     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
-     #undef NUM_DIG
-     #define NUM_DIG 2
-     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
-     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
-      #undef NUM_DIG
-      #define NUM_DIG 3
-      (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
-      #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
-       #undef NUM_DIG
-       #define NUM_DIG 4
-       (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
-       #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
-        #error cannot encode MP_SSIZE_MAX as mpz
-       #endif
-      #endif
-     #endif
+#undef NUM_DIG
+#define NUM_DIG 2
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
+#undef NUM_DIG
+#define NUM_DIG 3
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
+#undef NUM_DIG
+#define NUM_DIG 4
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
+#error cannot encode MP_SSIZE_MAX as mpz
+    #endif
+    #endif
+    #endif
     #endif
 };
 const mp_obj_int_t mp_maxsize_obj = {
@@ -89,7 +89,7 @@ mp_obj_int_t *mp_obj_int_new_mpz(void) {
 //
 // This particular routine should only be called for the mpz representation of the int.
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
-                                int base, const char *prefix, char base_char, char comma) {
+    int base, const char *prefix, char base_char, char comma) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -181,14 +181,14 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         zrhs = &z_int;
     } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(rhs_in))->mpz;
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
-#if MICROPY_PY_BUILTINS_COMPLEX
+        #if MICROPY_PY_BUILTINS_COMPLEX
     } else if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, mpz_as_float(zlhs), 0, rhs_in);
-#endif
-#endif
+        #endif
+        #endif
     } else {
         // delegate to generic function to check for extra cases
         return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
@@ -224,7 +224,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_FLOOR_DIVIDE:
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
-                    zero_division_error:
+                zero_division_error:
                     mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
                 }
                 mpz_t rem; mpz_init_zero(&rem);

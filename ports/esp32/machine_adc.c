@@ -56,7 +56,7 @@ STATIC const madc_obj_t madc_obj[] = {
 STATIC uint8_t adc_bit_width;
 
 STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-        const mp_obj_t *args) {
+    const mp_obj_t *args) {
 
     static int initialized = 0;
     if (!initialized) {

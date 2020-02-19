@@ -189,7 +189,7 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
     // This is around 548 bytes
     dhcp_msg_t dhcp_msg;
 
-    #define DHCP_MIN_SIZE (240 + 3)
+#define DHCP_MIN_SIZE (240 + 3)
     if (p->tot_len < DHCP_MIN_SIZE) {
         goto ignore_request;
     }

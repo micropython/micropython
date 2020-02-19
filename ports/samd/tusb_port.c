@@ -91,7 +91,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
 }
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index) {
-    #define DESC_STR_MAX (20)
+#define DESC_STR_MAX (20)
     static uint16_t desc_str[DESC_STR_MAX];
 
     uint8_t len;

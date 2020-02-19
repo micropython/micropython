@@ -100,12 +100,12 @@ static fs_user_mount_t *sflash_vfs_fat;
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
-                                    "# can run arbitrary Python, but best to keep it minimal\r\n"
-                                    #if MICROPY_STDIO_UART
-                                    "import os, machine\r\n"
-                                    "os.dupterm(machine.UART(0, " MP_STRINGIFY(MICROPY_STDIO_UART_BAUD) "))\r\n"
-                                    #endif
-                                    ;
+    "# can run arbitrary Python, but best to keep it minimal\r\n"
+    #if MICROPY_STDIO_UART
+    "import os, machine\r\n"
+    "os.dupterm(machine.UART(0, " MP_STRINGIFY(MICROPY_STDIO_UART_BAUD) "))\r\n"
+    #endif
+    ;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
@@ -118,9 +118,9 @@ void TASK_MicroPython (void *pvParameters) {
     bool safeboot = false;
     mptask_pre_init();
 
-#ifndef DEBUG
+    #ifndef DEBUG
     safeboot = PRCMGetSpecialBit(PRCM_SAFE_BOOT_BIT);
-#endif
+    #endif
 
 soft_reset:
 
@@ -286,11 +286,11 @@ STATIC void mptask_pre_init (void) {
 
     //CRYPTOHASH_Init();
 
-#ifndef DEBUG
+    #ifndef DEBUG
     OsiTaskHandle svTaskHandle;
-#endif
+    #endif
     svTaskHandle = xTaskCreateStatic(TASK_Servers, "Servers",
-        SERVERS_STACK_LEN, NULL, SERVERS_PRIORITY, svTaskStack, &svTaskTCB);
+            SERVERS_STACK_LEN, NULL, SERVERS_PRIORITY, svTaskStack, &svTaskTCB);
     ASSERT(svTaskHandle != NULL);
 }
 
@@ -382,8 +382,8 @@ STATIC void mptask_enter_ap_mode (void) {
     bool add_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
     // enable simplelink in ap mode (use the MAC address to make the ssid unique)
     wlan_sl_init (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID),
-                  MICROPY_PORT_WLAN_AP_SECURITY, MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY),
-                  MICROPY_PORT_WLAN_AP_CHANNEL, ANTENNA_TYPE_INTERNAL, add_mac);
+        MICROPY_PORT_WLAN_AP_SECURITY, MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY),
+        MICROPY_PORT_WLAN_AP_CHANNEL, ANTENNA_TYPE_INTERNAL, add_mac);
 }
 
 STATIC void mptask_create_main_py (void) {

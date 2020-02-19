@@ -111,9 +111,9 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG1_NUM_BLOCKS (256) // Sector 1: 128k / 512b = 256 blocks
 
 #elif defined(STM32L432xx) || \
-      defined(STM32L451xx) || defined(STM32L452xx) || defined(STM32L462xx) || \
-      defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx) || \
-      defined(STM32WB)
+defined(STM32L451xx) || defined(STM32L452xx) || defined(STM32L462xx) || \
+defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx) || \
+defined(STM32WB)
 
 // The STM32L4xx doesn't have CCRAM, so we use SRAM2 for this, although
 // actual location and size is defined by the linker script.

@@ -80,44 +80,44 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
             }
         }
 
-#if 0
+        #if 0
         /*--------------------- EXTI Mode Configuration ------------------------*/
         /* Configure the External Interrupt or event for the current IO */
         if((GPIO_Init->Mode & EXTI_MODE) == EXTI_MODE)
         {
-          /* Enable SYSCFG Clock */
-          __SYSCFG_CLK_ENABLE();
+            /* Enable SYSCFG Clock */
+            __SYSCFG_CLK_ENABLE();
 
-          temp = ((uint32_t)0x0F) << (4 * (position & 0x03));
-          SYSCFG->EXTICR[position >> 2] &= ~temp;
-          SYSCFG->EXTICR[position >> 2] |= ((uint32_t)(__HAL_GET_GPIO_SOURCE(GPIOx)) << (4 * (position & 0x03)));
+            temp = ((uint32_t)0x0F) << (4 * (position & 0x03));
+            SYSCFG->EXTICR[position >> 2] &= ~temp;
+            SYSCFG->EXTICR[position >> 2] |= ((uint32_t)(__HAL_GET_GPIO_SOURCE(GPIOx)) << (4 * (position & 0x03)));
 
-          /* Clear EXTI line configuration */
-          EXTI->IMR &= ~((uint32_t)iocurrent);
-          EXTI->EMR &= ~((uint32_t)iocurrent);
+            /* Clear EXTI line configuration */
+            EXTI->IMR &= ~((uint32_t)iocurrent);
+            EXTI->EMR &= ~((uint32_t)iocurrent);
 
-          if((GPIO_Init->Mode & GPIO_MODE_IT) == GPIO_MODE_IT)
-          {
-            EXTI->IMR |= iocurrent;
-          }
-          if((GPIO_Init->Mode & GPIO_MODE_EVT) == GPIO_MODE_EVT)
-          {
-            EXTI->EMR |= iocurrent;
-          }
+            if((GPIO_Init->Mode & GPIO_MODE_IT) == GPIO_MODE_IT)
+            {
+                EXTI->IMR |= iocurrent;
+            }
+            if((GPIO_Init->Mode & GPIO_MODE_EVT) == GPIO_MODE_EVT)
+            {
+                EXTI->EMR |= iocurrent;
+            }
 
-          /* Clear Rising Falling edge configuration */
-          EXTI->RTSR &= ~((uint32_t)iocurrent);
-          EXTI->FTSR &= ~((uint32_t)iocurrent);
+            /* Clear Rising Falling edge configuration */
+            EXTI->RTSR &= ~((uint32_t)iocurrent);
+            EXTI->FTSR &= ~((uint32_t)iocurrent);
 
-          if((GPIO_Init->Mode & RISING_EDGE) == RISING_EDGE)
-          {
-            EXTI->RTSR |= iocurrent;
-          }
-          if((GPIO_Init->Mode & FALLING_EDGE) == FALLING_EDGE)
-          {
-            EXTI->FTSR |= iocurrent;
-          }
+            if((GPIO_Init->Mode & RISING_EDGE) == RISING_EDGE)
+            {
+                EXTI->RTSR |= iocurrent;
+            }
+            if((GPIO_Init->Mode & FALLING_EDGE) == FALLING_EDGE)
+            {
+                EXTI->FTSR |= iocurrent;
+            }
         }
-#endif
+        #endif
     }
 }

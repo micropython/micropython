@@ -399,9 +399,9 @@ set_clk:
     #if MICROPY_HW_CLK_LAST_FREQ
     // Save settings in RTC backup register to reconfigure clocks on hard-reset
     #if defined(STM32F7)
-    #define FREQ_BKP BKP31R
+#define FREQ_BKP BKP31R
     #else
-    #define FREQ_BKP BKP19R
+#define FREQ_BKP BKP19R
     #endif
     // qqqqqqqq pppppppp nnnnnnnn nnmmmmmm
     // qqqqQQQQ ppppppPP nNNNNNNN NNMMMMMM
@@ -544,11 +544,11 @@ void powerctrl_enter_standby_mode(void) {
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
     #if defined(STM32F0) || defined(STM32L0)
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #else
-    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
-    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
+#define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+#define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
     #endif
 
     // save RTC interrupts

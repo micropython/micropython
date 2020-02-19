@@ -68,11 +68,11 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
             case '+':
                 flags |= LFSx_MACRO(_O_RDWR);
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &MP_TYPE_VFS_LFSx_(_fileio);
                 break;
-            #endif
+                #endif
             case 't':
                 type = &MP_TYPE_VFS_LFSx_(_textio);
                 break;

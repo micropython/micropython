@@ -33,19 +33,19 @@
 #if MICROPY_PY_BUILTINS_HELP
 
 const char mp_help_default_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online docs please visit http://docs.micropython.org/\n"
-"\n"
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-C        -- interrupt a running program\n"
-"  CTRL-D        -- on a blank line, exit or do a soft reset\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
-;
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
+    "Control commands:\n"
+    "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
+    "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
+    "  CTRL-C        -- interrupt a running program\n"
+    "  CTRL-D        -- on a blank line, exit or do a soft reset\n"
+    "  CTRL-E        -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
+    ;
 
 STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
     mp_print_str(MP_PYTHON_PRINTER, "  ");
@@ -94,8 +94,8 @@ STATIC void mp_help_print_modules(void) {
     mp_obj_list_sort(1, &list, (mp_map_t*)&mp_const_empty_map);
 
     // print the list of modules in a column-first order
-    #define NUM_COLUMNS (4)
-    #define COLUMN_WIDTH (18)
+#define NUM_COLUMNS (4)
+#define COLUMN_WIDTH (18)
     size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);

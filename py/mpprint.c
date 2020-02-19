@@ -269,14 +269,14 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
         // We add the pad in this function, so since the pad goes after
         // the sign & prefix, we format without a prefix
         str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size,
-                                   x, base, NULL, base_char, comma);
+                x, base, NULL, base_char, comma);
         if (*str == '-') {
             sign = *str++;
             fmt_size--;
         }
     } else {
         str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size,
-                                   x, base, prefix, base_char, comma);
+                x, base, prefix, base_char, comma);
     }
 
     int spaces_before = 0;
@@ -348,8 +348,7 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
     if (flags & PF_FLAG_SHOW_SIGN) {
         sign = '+';
     }
-    else
-    if (flags & PF_FLAG_SPACE_SIGN) {
+    else if (flags & PF_FLAG_SPACE_SIGN) {
         sign = ' ';
     }
 
@@ -532,7 +531,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 // Use unsigned long int to work on both ILP32 and LP64 systems
                 chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width);
                 break;
-#if MICROPY_PY_BUILTINS_FLOAT
+                #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
             case 'E':
             case 'f':
@@ -540,18 +539,18 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'g':
             case 'G':
             {
-#if ((MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT) || (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
+                #if ((MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT) || (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
                 mp_float_t f = va_arg(args, double);
                 chrs += mp_print_float(print, f, *fmt, flags, fill, width, prec);
-#else
+                #else
 #error Unknown MICROPY FLOAT IMPL
-#endif
+                #endif
                 break;
             }
-#endif
-            // Because 'l' is eaten above, another 'l' means %ll.  We need to support
-            // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
-            // TODO Either enable this unconditionally, or provide a specific config var.
+            #endif
+                // Because 'l' is eaten above, another 'l' means %ll.  We need to support
+                // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
+                // TODO Either enable this unconditionally, or provide a specific config var.
             #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
             case 'l': {
                 unsigned long long int arg_value = va_arg(args, unsigned long long int);

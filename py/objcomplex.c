@@ -45,17 +45,17 @@ typedef struct _mp_obj_complex_t {
 STATIC void complex_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
     const int precision = 6;
     #else
     const int precision = 7;
     #endif
-#else
+    #else
     char buf[32];
     const int precision = 16;
-#endif
+    #endif
     if (o->real == 0) {
         mp_format_float(o->imag, buf, sizeof(buf), 'g', precision, '\0');
         mp_printf(print, "%sj", buf);
@@ -188,7 +188,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY: {
             mp_float_t real;
-            multiply:
+        multiply:
             real = lhs_real * rhs_real - lhs_imag * rhs_imag;
             lhs_imag = lhs_real * rhs_imag + lhs_imag * rhs_real;
             lhs_real = real;

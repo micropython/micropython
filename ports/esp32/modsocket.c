@@ -184,7 +184,7 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         struct ip4_addr addr = {0};
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
-            if (err == ESP_ERR_NOT_FOUND){
+            if (err == ESP_ERR_NOT_FOUND) {
                 *res = NULL;
                 return 0;
             }
@@ -518,7 +518,7 @@ STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
 }
 
 mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
-        struct sockaddr *from, socklen_t *from_len) {
+    struct sockaddr *from, socklen_t *from_len) {
     size_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
     vstr_init_len(&vstr, len);

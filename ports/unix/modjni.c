@@ -288,7 +288,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     }
 
 
-return MP_OBJ_NULL;
+    return MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -541,7 +541,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             }
         }
 
-next_method:
+    next_method:
         JJ(ReleaseStringUTFChars, name_o, decl);
         JJ(DeleteLocalRef, name_o);
         JJ(DeleteLocalRef, meth);
@@ -614,26 +614,26 @@ STATIC void create_jvm(void) {
 
     jclass Object_class = JJ(FindClass, "java/lang/Object");
     Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
-                                     "()Ljava/lang/String;");
+            "()Ljava/lang/String;");
 
     Class_getName_mid = (*env)->GetMethodID(env, Class_class, "getName",
-                                     "()Ljava/lang/String;");
+            "()Ljava/lang/String;");
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
-                                     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+            "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",
-                                     "()[Ljava/lang/reflect/Method;");
+            "()[Ljava/lang/reflect/Method;");
     Class_getConstructors_mid = (*env)->GetMethodID(env, Class_class, "getConstructors",
-                                     "()[Ljava/lang/reflect/Constructor;");
+            "()[Ljava/lang/reflect/Constructor;");
     Method_getName_mid = (*env)->GetMethodID(env, method_class, "getName",
-                                     "()Ljava/lang/String;");
+            "()Ljava/lang/String;");
 
     List_class = JJ(FindClass, "java/util/List");
     List_get_mid = JJ(GetMethodID, List_class, "get",
-                                     "(I)Ljava/lang/Object;");
+            "(I)Ljava/lang/Object;");
     List_set_mid = JJ(GetMethodID, List_class, "set",
-                                     "(ILjava/lang/Object;)Ljava/lang/Object;");
+            "(ILjava/lang/Object;)Ljava/lang/Object;");
     List_size_mid = JJ(GetMethodID, List_class, "size",
-                                     "()I");
+            "()I");
     IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 

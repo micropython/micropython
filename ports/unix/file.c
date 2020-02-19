@@ -190,7 +190,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
             case '+':
                 mode_rw = O_RDWR;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_fileio;
@@ -198,7 +198,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
             case 't':
                 type = &mp_type_textio;
                 break;
-            #endif
+                #endif
         }
     }
 

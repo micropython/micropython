@@ -44,7 +44,7 @@ STATIC void sighandler(int signum) {
         #if MICROPY_PY_THREAD_GIL
         // Since signals can occur at any time, we may not be holding the GIL when
         // this callback is called, so it is not safe to raise an exception here
-        #error "MICROPY_ASYNC_KBD_INTR and MICROPY_PY_THREAD_GIL are not compatible"
+#error "MICROPY_ASYNC_KBD_INTR and MICROPY_PY_THREAD_GIL are not compatible"
         #endif
         mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
@@ -148,12 +148,12 @@ static int call_dupterm_read(size_t idx) {
 
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
-#if MICROPY_PY_OS_DUPTERM
+    #if MICROPY_PY_OS_DUPTERM
     // TODO only support dupterm one slot at the moment
     if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
         int c;
         do {
-             c = call_dupterm_read(0);
+            c = call_dupterm_read(0);
         } while (c == -2);
         if (c == -1) {
             goto main_term;
@@ -163,8 +163,8 @@ int mp_hal_stdin_rx_chr(void) {
         }
         return c;
     } else {
-        main_term:;
-#endif
+    main_term:;
+    #endif
         MP_THREAD_GIL_EXIT();
         int ret = read(0, &c, 1);
         MP_THREAD_GIL_ENTER();
@@ -174,9 +174,9 @@ int mp_hal_stdin_rx_chr(void) {
             c = '\r';
         }
         return c;
-#if MICROPY_PY_OS_DUPTERM
+        #if MICROPY_PY_OS_DUPTERM
     }
-#endif
+        #endif
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {

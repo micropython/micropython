@@ -2,10 +2,10 @@
 #include "hal_ftm.h"
 
 #ifdef  USE_FULL_ASSERT
-  #define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
-  void assert_failed(uint8_t* file, uint32_t line);
+#define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
+void assert_failed(uint8_t* file, uint32_t line);
 #else
-  #define assert_param(expr) ((void)0)
+#define assert_param(expr) ((void)0)
 #endif /* USE_FULL_ASSERT */
 
 #define HAL_NVIC_EnableIRQ(irq)    NVIC_ENABLE_IRQ(irq)
@@ -111,7 +111,7 @@ typedef struct {
 #define GPIO_AF7_FTM1   7
 
 __attribute__(( always_inline )) static inline void __WFI(void) {
-  __asm volatile ("wfi");
+    __asm volatile ("wfi");
 }
 
 void mp_hal_set_interrupt_char(int c);

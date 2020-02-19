@@ -117,34 +117,34 @@ void gc_init(void *start, void *end) {
     //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte*)end - (byte*)start;
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
-#else
+    #else
     MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
-#endif
+    #endif
 
     MP_STATE_MEM(gc_alloc_table_start) = (byte*)start;
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len);
-#endif
+    #endif
 
     size_t gc_pool_block_len = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
     MP_STATE_MEM(gc_pool_start) = (byte*)end - gc_pool_block_len * BYTES_PER_BLOCK;
     MP_STATE_MEM(gc_pool_end) = end;
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
-#endif
+    #endif
 
     // clear ATBs
     memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     // clear FTBs
     memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-#endif
+    #endif
 
     // set last free ATB index to start of heap
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
@@ -167,9 +167,9 @@ void gc_init(void *start, void *end) {
 
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
-#endif
+    #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
@@ -271,7 +271,7 @@ STATIC void gc_sweep(void) {
     for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
-#if MICROPY_ENABLE_FINALISER
+                #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
                     mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
                     if (obj->type != NULL) {
@@ -292,13 +292,13 @@ STATIC void gc_sweep(void) {
                     // clear finaliser flag
                     FTB_CLEAR(block);
                 }
-#endif
+                #endif
                 free_tail = 1;
                 DEBUG_printf("gc_sweep(%p)\n", PTR_FROM_BLOCK(block));
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
-                // fall through to free the head
+            // fall through to free the head
 
             case AT_TAIL:
                 if (free_tail) {
@@ -641,11 +641,11 @@ void *gc_realloc(void *ptr, mp_uint_t n_bytes) {
         if (ptr == NULL) {
             has_finaliser = false;
         } else {
-#if MICROPY_ENABLE_FINALISER
+            #if MICROPY_ENABLE_FINALISER
             has_finaliser = FTB_GET(BLOCK_FROM_PTR((mp_uint_t)ptr));
-#else
+            #else
             has_finaliser = false;
-#endif
+            #endif
         }
         void *ptr2 = gc_alloc(n_bytes, has_finaliser);
         if (ptr2 == NULL) {
@@ -800,7 +800,7 @@ void gc_dump_info(void) {
     mp_printf(&mp_plat_print, "GC: total: %u, used: %u, free: %u\n",
         (uint)info.total, (uint)info.used, (uint)info.free);
     mp_printf(&mp_plat_print, " No. of 1-blocks: %u, 2-blocks: %u, max blk sz: %u, max free sz: %u\n",
-           (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block, (uint)info.max_free);
+        (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block, (uint)info.max_free);
 }
 
 void gc_dump_alloc_table(void) {

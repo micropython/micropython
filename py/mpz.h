@@ -45,13 +45,13 @@
 // changed so long as the constraints mentioned above are met).
 
 #ifndef MPZ_DIG_SIZE
-  #if defined(__x86_64__) || defined(_WIN64)
-    // 64-bit machine, using 32-bit storage for digits
-    #define MPZ_DIG_SIZE (32)
-  #else
-    // default: 32-bit machine, using 16-bit storage for digits
-    #define MPZ_DIG_SIZE (16)
-  #endif
+#if defined(__x86_64__) || defined(_WIN64)
+// 64-bit machine, using 32-bit storage for digits
+#define MPZ_DIG_SIZE (32)
+#else
+// default: 32-bit machine, using 16-bit storage for digits
+#define MPZ_DIG_SIZE (16)
+#endif
 #endif
 
 #if MPZ_DIG_SIZE > 16
@@ -77,13 +77,13 @@ typedef int8_t mpz_dbl_dig_signed_t;
 #endif
 
 #ifdef _WIN64
-  #ifdef __MINGW32__
-    #define MPZ_LONG_1 1LL
-  #else
-    #define MPZ_LONG_1 1i64
-  #endif
+#ifdef __MINGW32__
+#define MPZ_LONG_1 1LL
 #else
-  #define MPZ_LONG_1 1L
+#define MPZ_LONG_1 1i64
+#endif
+#else
+#define MPZ_LONG_1 1L
 #endif
 
 // these define the maximum storage needed to hold an int or long long

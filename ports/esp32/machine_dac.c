@@ -48,7 +48,7 @@ STATIC const mdac_obj_t mdac_obj[] = {
 };
 
 STATIC mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-        const mp_obj_t *args) {
+    const mp_obj_t *args) {
 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     gpio_num_t pin_id = machine_pin_get_id(args[0]);

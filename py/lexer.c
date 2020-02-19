@@ -325,7 +325,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                                 vstr_add_char(&lex->vstr, '\\');
                                 break;
                             }
-                            // Otherwise fall through.
+                        // Otherwise fall through.
                         case 'x':
                         {
                             mp_uint_t num = 0;

@@ -111,7 +111,7 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
-        #if MICROPY_PY_SYS_GETSIZEOF
+            #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);

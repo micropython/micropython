@@ -211,21 +211,21 @@ void HardFault_Handler(void) {
 
     #if __CORTEX_M == 0
     __asm volatile(
-    " mov r0, lr    \n"
-    " lsr r0, r0, #3 \n"        // Shift Bit 3 into carry to see which stack pointer we should use.
-    " mrs r0, msp   \n"         // Make R0 point to main stack pointer
-    " bcc .use_msp  \n"         // Keep MSP in R0 if SPSEL (carry) is 0
-    " mrs r0, psp   \n"         // Make R0 point to process stack pointer
-    " .use_msp:     \n"
-    " b HardFault_C_Handler \n" // Off to C land
+        " mov r0, lr    \n"
+        " lsr r0, r0, #3 \n"        // Shift Bit 3 into carry to see which stack pointer we should use.
+        " mrs r0, msp   \n"         // Make R0 point to main stack pointer
+        " bcc .use_msp  \n"         // Keep MSP in R0 if SPSEL (carry) is 0
+        " mrs r0, psp   \n"         // Make R0 point to process stack pointer
+        " .use_msp:     \n"
+        " b HardFault_C_Handler \n" // Off to C land
     );
     #else
     __asm volatile(
-    " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
-    " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
-    " mrseq r0, msp \n"         // Make R0 point to main stack pointer
-    " mrsne r0, psp \n"         // Make R0 point to process stack pointer
-    " b HardFault_C_Handler \n" // Off to C land
+        " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
+        " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
+        " mrseq r0, msp \n"         // Make R0 point to main stack pointer
+        " mrsne r0, psp \n"         // Make R0 point to process stack pointer
+        " b HardFault_C_Handler \n" // Off to C land
     );
     #endif
 }
@@ -343,43 +343,43 @@ void OTG_HS_IRQHandler(void) {
   */
 STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 
-  if (pcd_handle->Init.low_power_enable) {
-    /* Reset SLEEPDEEP bit of Cortex System Control Register */
-    SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+    if (pcd_handle->Init.low_power_enable) {
+        /* Reset SLEEPDEEP bit of Cortex System Control Register */
+        SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
 
-    /* Configures system clock after wake-up from STOP: enable HSE/HSI, PLL and select
-    PLL as system clock source (HSE/HSI and PLL are disabled in STOP mode) */
+        /* Configures system clock after wake-up from STOP: enable HSE/HSI, PLL and select
+        PLL as system clock source (HSE/HSI and PLL are disabled in STOP mode) */
 
-    __HAL_RCC_HSE_CONFIG(MICROPY_HW_RCC_HSE_STATE);
-    #if MICROPY_HW_CLK_USE_HSI
-    __HAL_RCC_HSI_ENABLE();
-    #endif
+        __HAL_RCC_HSE_CONFIG(MICROPY_HW_RCC_HSE_STATE);
+        #if MICROPY_HW_CLK_USE_HSI
+        __HAL_RCC_HSI_ENABLE();
+        #endif
 
-    /* Wait till HSE/HSI is ready */
-    while(__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY) == RESET)
-    {}
+        /* Wait till HSE/HSI is ready */
+        while(__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY) == RESET)
+        {}
 
-    /* Enable the main PLL. */
-    __HAL_RCC_PLL_ENABLE();
+        /* Enable the main PLL. */
+        __HAL_RCC_PLL_ENABLE();
 
-    /* Wait till PLL is ready */
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
-    {}
+        /* Wait till PLL is ready */
+        while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
+        {}
 
-    /* Select PLL as SYSCLK */
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+        /* Select PLL as SYSCLK */
+        MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
 
-    #if defined(STM32H7)
-    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1)
-    {}
-    #else
-    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
-    {}
-    #endif
+        #if defined(STM32H7)
+        while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1)
+        {}
+        #else
+        while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
+        {}
+        #endif
 
-    /* ungate PHY clock */
-     __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
-  }
+        /* ungate PHY clock */
+        __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
+    }
 
 }
 #endif
@@ -393,12 +393,12 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 void OTG_FS_WKUP_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_WKUP_IRQn);
 
-  OTG_CMD_WKUP_Handler(&pcd_fs_handle);
+    OTG_CMD_WKUP_Handler(&pcd_fs_handle);
 
-  #if !defined(STM32H7)
-  /* Clear EXTI pending Bit*/
-  __HAL_USB_FS_EXTI_CLEAR_FLAG();
-  #endif
+    #if !defined(STM32H7)
+    /* Clear EXTI pending Bit*/
+    __HAL_USB_FS_EXTI_CLEAR_FLAG();
+    #endif
 
     IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
@@ -413,12 +413,12 @@ void OTG_FS_WKUP_IRQHandler(void) {
 void OTG_HS_WKUP_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_WKUP_IRQn);
 
-  OTG_CMD_WKUP_Handler(&pcd_hs_handle);
+    OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
-  #if !defined(STM32H7)
-  /* Clear EXTI pending Bit*/
-  __HAL_USB_HS_EXTI_CLEAR_FLAG();
-  #endif
+    #if !defined(STM32H7)
+    /* Clear EXTI pending Bit*/
+    __HAL_USB_HS_EXTI_CLEAR_FLAG();
+    #endif
 
     IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }

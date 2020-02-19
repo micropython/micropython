@@ -214,22 +214,22 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (mp_obj_is_str(args[ARG_id].u_obj)) {
         const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
         if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
+            #ifdef MICROPY_HW_I2C1_NAME
         } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
             i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C2_NAME
         } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
             i2c_id = 2;
-        #endif
-        #ifdef MICROPY_HW_I2C3_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C3_NAME
         } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
             i2c_id = 3;
-        #endif
-        #ifdef MICROPY_HW_I2C4_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C4_NAME
         } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
             i2c_id = 4;
-        #endif
+            #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
         }

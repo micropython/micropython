@@ -440,7 +440,7 @@ STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // initialize and start the module
     wlan_init(cc3k_callback, NULL, NULL, NULL,
-            ReadWlanInterruptPin, SpiResumeSpi, SpiPauseSpi, WriteWlanPin);
+        ReadWlanInterruptPin, SpiResumeSpi, SpiPauseSpi, WriteWlanPin);
 
     if (wlan_start(0) != 0) {
         mp_raise_msg(&mp_type_OSError, "failed to init CC3000 module");
@@ -451,9 +451,9 @@ STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Mask out all non-required events from the CC3000
     wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|
-                        HCI_EVNT_WLAN_UNSOL_INIT|
-                        HCI_EVNT_WLAN_ASYNC_PING_REPORT|
-                        HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
+        HCI_EVNT_WLAN_UNSOL_INIT|
+        HCI_EVNT_WLAN_ASYNC_PING_REPORT|
+        HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
 
     // register with network module
     mod_network_register_nic((mp_obj_t)&cc3k_obj);

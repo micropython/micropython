@@ -154,7 +154,7 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
             + ((year - 2000 + 3) / 4) // add a day each 4 years starting with 2001
             - ((year - 2000 + 99) / 100) // subtract a day each 100 years starting with 2001
             + ((year - 2000 + 399) / 400) // add a day each 400 years starting with 2001
-            ) * 86400
+        ) * 86400
         + (year - 2000) * 31536000;
 }
 
