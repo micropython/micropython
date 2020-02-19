@@ -521,8 +521,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else {
             goto unknown_op;
         }
-    } else
+        return;
+    }
     #endif
+
     if (n_args == 0) {
         if (op == MP_QSTR_nop) {
             asm_thumb_op16(&emit->as, ASM_THUMB_OP_NOP);
