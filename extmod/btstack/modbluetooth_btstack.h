@@ -27,4 +27,23 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 #define MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 
+typedef struct _mp_bluetooth_btstack_root_pointers_t {
+    // This stores both the advertising data and the scan response data, concatenated together.
+    uint8_t *adv_data;
+    // Total length of both.
+    size_t adv_data_alloc;
+} mp_bluetooth_btstack_root_pointers_t;
+
+enum {
+    MP_BLUETOOTH_BTSTACK_STATE_OFF,
+    MP_BLUETOOTH_BTSTACK_STATE_STARTING,
+    MP_BLUETOOTH_BTSTACK_STATE_ACTIVE,
+};
+
+extern volatile int mp_bluetooth_btstack_state;
+
+void mp_bluetooth_btstack_port_init(void);
+void mp_bluetooth_btstack_port_deinit(void);
+void mp_bluetooth_btstack_port_start(void);
+
 #endif // MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
