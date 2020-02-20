@@ -107,3 +107,21 @@ try:
     memoryview(b'a').noexist
 except AttributeError:
     print('AttributeError')
+
+# equality
+print(memoryview(b'abc') == b'abc')
+print(memoryview(b'abc') != b'abc')
+print(memoryview(b'abc') == b'xyz')
+print(memoryview(b'abc') != b'xyz')
+print(b'abc' == memoryview(b'abc'))
+print(b'abc' != memoryview(b'abc'))
+print(b'abc' == memoryview(b'xyz'))
+print(b'abc' != memoryview(b'xyz'))
+print(memoryview(b'abcdef')[2:4] == b'cd')
+print(memoryview(b'abcdef')[2:4] != b'cd')
+print(memoryview(b'abcdef')[2:4] == b'xy')
+print(memoryview(b'abcdef')[2:4] != b'xy')
+print(b'cd' == memoryview(b'abcdef')[2:4])
+print(b'cd' != memoryview(b'abcdef')[2:4])
+print(b'xy' == memoryview(b'abcdef')[2:4])
+print(b'xy' != memoryview(b'abcdef')[2:4])

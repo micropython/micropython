@@ -573,6 +573,7 @@ const mp_obj_type_t mp_type_bytearray = {
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
     .getiter = array_iterator_new,
