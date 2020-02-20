@@ -118,7 +118,12 @@ endif
 MICROPY_PY_BLUETOOTH ?= 1
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SDKCONFIG += boards/sdkconfig.ble
-MICROPY_BLUETOOTH_NIMBLE = 1
+
+# Use NimBLE on ESP32.
+MICROPY_BLUETOOTH_NIMBLE ?= 1
+# Use Nimble bindings, but ESP32 IDF provides the Nimble library.
+MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY = 1
+include $(TOP)/extmod/nimble/nimble.mk
 endif
 
 # include sdkconfig to get needed configuration values
@@ -244,10 +249,6 @@ INC_NEWLIB += -I$(ESPCOMP)/newlib/include
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
-endif
 endif
 
 # these flags are common to C and C++ compilation
@@ -354,9 +355,8 @@ SRC_C = \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
-EXTMOD_SRC_C = $(addprefix extmod/,\
+EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
-	modbluetooth_nimble.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\

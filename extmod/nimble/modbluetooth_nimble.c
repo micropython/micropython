@@ -31,8 +31,8 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
-#include "modbluetooth_nimble.h"
-#include "modbluetooth.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
+#include "extmod/modbluetooth.h"
 
 #include "host/ble_hs.h"
 #include "host/util/util.h"

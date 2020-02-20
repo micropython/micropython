@@ -36,7 +36,7 @@
 #include "transport/uart/ble_hci_uart.h"
 #include "host/ble_hs.h"
 
-#include "extmod/modbluetooth_nimble.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
 
 extern void nimble_uart_process(void);
 extern void os_eventq_run_all(void);
