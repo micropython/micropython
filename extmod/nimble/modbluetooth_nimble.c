@@ -153,17 +153,6 @@ STATIC ble_addr_t create_nimble_addr(uint8_t addr_type, const uint8_t *addr) {
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
-typedef struct {
-    // Pointer to heap-allocated data.
-    uint8_t *data;
-    // Allocated size of data.
-    size_t data_alloc;
-    // Current bytes in use.
-    size_t data_len;
-    // Whether new writes append or replace existing data (default false).
-    bool append;
-} gatts_db_entry_t;
-
 volatile int mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
 
 STATIC void reset_cb(int reason) {
@@ -195,24 +184,14 @@ STATIC void sync_cb(void) {
         assert(rc == 0);
     }
 
-    if (MP_BLUETOOTH_MAX_ATTR_SIZE > 20) {
-        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE + 3);
+    if (MP_BLUETOOTH_DEFAULT_ATTR_LEN > 20) {
+        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_DEFAULT_ATTR_LEN + 3);
         assert(rc == 0);
     }
 
     ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_NAME);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
-}
-
-STATIC void create_gatts_db_entry(uint16_t handle) {
-    mp_map_elem_t *elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(handle), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-    gatts_db_entry_t *entry = m_new(gatts_db_entry_t, 1);
-    entry->data = m_new(uint8_t, MP_BLUETOOTH_MAX_ATTR_SIZE);
-    entry->data_alloc = MP_BLUETOOTH_MAX_ATTR_SIZE;
-    entry->data_len = 0;
-    entry->append = false;
-    elem->value = MP_OBJ_FROM_PTR(entry);
 }
 
 STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
@@ -232,7 +211,7 @@ STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
 
             // Allocate the gatts_db storage for this characteristic.
             // Although this function is a callback, it's called synchronously from ble_hs_sched_start/ble_gatts_start, so safe to allocate.
-            create_gatts_db_entry(ctxt->chr.val_handle);
+            mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, ctxt->chr.val_handle, MP_BLUETOOTH_DEFAULT_ATTR_LEN);
             break;
 
         case BLE_GATT_REGISTER_OP_DSC:
@@ -241,7 +220,7 @@ STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
             DEBUG_EVENT_printf("gatts_register_cb: dsc uuid=%p handle=%d\n", &ctxt->dsc.dsc_def->uuid, ctxt->dsc.handle);
 
             // See above, safe to alloc.
-            create_gatts_db_entry(ctxt->dsc.handle);
+            mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, ctxt->dsc.handle, MP_BLUETOOTH_DEFAULT_ATTR_LEN);
 
             // Unlike characteristics, we have to manually provide a way to get the handle back to the register method.
             *((uint16_t *)ctxt->dsc.dsc_def->arg) = ctxt->dsc.handle;
@@ -291,7 +270,7 @@ int mp_bluetooth_init(void) {
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
-    MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db = m_new(mp_map_t, 1);
+    mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
@@ -408,8 +387,7 @@ void mp_bluetooth_gap_advertise_stop(void) {
 
 static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
     DEBUG_EVENT_printf("characteristic_access_cb: conn_handle=%u value_handle=%u op=%u\n", conn_handle, value_handle, ctxt->op);
-    mp_map_elem_t *elem;
-    gatts_db_entry_t *entry;
+    mp_bluetooth_gatts_db_entry_t *entry;
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
         case BLE_GATT_ACCESS_OP_READ_DSC:
@@ -420,22 +398,20 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
             }
             #endif
 
-            elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
-            if (!elem) {
+            entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
+            if (!entry) {
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
             }
-            entry = MP_OBJ_TO_PTR(elem->value);
 
             os_mbuf_append(ctxt->om, entry->data, entry->data_len);
 
             return 0;
         case BLE_GATT_ACCESS_OP_WRITE_CHR:
         case BLE_GATT_ACCESS_OP_WRITE_DSC:
-            elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
-            if (!elem) {
+            entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
+            if (!entry) {
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
             }
-            entry = MP_OBJ_TO_PTR(elem->value);
 
             size_t offset = 0;
             if (entry->append) {
@@ -458,7 +434,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     }
 
     // Reset the gatt characteristic value db.
-    mp_map_init(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, 0);
+    mp_bluetooth_gatts_db_reset(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
     // By default, just register the default gap service.
     ble_svc_gap_init();
@@ -551,33 +527,11 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 }
 
 int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len) {
-    mp_map_elem_t *elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
-    if (!elem) {
-        return MP_EINVAL;
-    }
-    gatts_db_entry_t *entry = MP_OBJ_TO_PTR(elem->value);
-    *value = entry->data;
-    *value_len = entry->data_len;
-    if (entry->append) {
-        entry->data_len = 0;
-    }
-    return 0;
+    return mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
 int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len) {
-    mp_map_elem_t *elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
-    if (!elem) {
-        return MP_EINVAL;
-    }
-    gatts_db_entry_t *entry = MP_OBJ_TO_PTR(elem->value);
-    if (value_len > entry->data_alloc) {
-        entry->data = m_new(uint8_t, value_len);
-        entry->data_alloc = value_len;
-    }
-
-    memcpy(entry->data, value, value_len);
-    entry->data_len = value_len;
-    return 0;
+    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
 // TODO: Could use ble_gatts_chr_updated to send to all subscribed centrals.
@@ -602,16 +556,7 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
 }
 
 int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append) {
-    mp_map_elem_t *elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
-    if (!elem) {
-        return MP_EINVAL;
-    }
-    gatts_db_entry_t *entry = MP_OBJ_TO_PTR(elem->value);
-    entry->data = m_renew(uint8_t, entry->data, entry->data_alloc, len);
-    entry->data_alloc = len;
-    entry->data_len = 0;
-    entry->append = append;
-    return 0;
+    return mp_bluetooth_gatts_db_resize(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, len, append);
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE

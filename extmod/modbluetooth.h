@@ -54,9 +54,11 @@
 #endif
 
 // Common constants.
-#ifndef MP_BLUETOOTH_MAX_ATTR_SIZE
-#define MP_BLUETOOTH_MAX_ATTR_SIZE (20)
+#ifndef MP_BLUETOOTH_DEFAULT_ATTR_LEN
+#define MP_BLUETOOTH_DEFAULT_ATTR_LEN (20)
 #endif
+
+#define MP_BLUETOOTH_CCCB_LEN (2)
 
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
@@ -266,5 +268,35 @@ void mp_bluetooth_gattc_on_data_available_end(void);
 // Notify modbluetooth that a write has completed.
 void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status);
 #endif
+
+// For stacks that don't manage attribute value data (currently all of them), helpers
+// to store this in a map, keyed by value handle.
+
+typedef struct {
+    // Pointer to heap-allocated data.
+    uint8_t *data;
+    // Allocated size of data.
+    size_t data_alloc;
+    // Current bytes in use.
+    size_t data_len;
+    // Whether new writes append or replace existing data (default false).
+    bool append;
+} mp_bluetooth_gatts_db_entry_t;
+
+typedef mp_map_t *mp_gatts_db_t;
+
+STATIC inline void mp_bluetooth_gatts_db_create(mp_gatts_db_t *db) {
+    *db = m_new(mp_map_t, 1);
+}
+
+STATIC inline void mp_bluetooth_gatts_db_reset(mp_gatts_db_t db) {
+    mp_map_init(db, 0);
+}
+
+void mp_bluetooth_gatts_db_create_entry(mp_gatts_db_t db, uint16_t handle, size_t len);
+mp_bluetooth_gatts_db_entry_t *mp_bluetooth_gatts_db_lookup(mp_gatts_db_t db, uint16_t handle);
+int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, uint8_t **value, size_t *value_len);
+int mp_bluetooth_gatts_db_write(mp_gatts_db_t db, uint16_t handle, const uint8_t *value, size_t value_len);
+int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, bool append);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_H

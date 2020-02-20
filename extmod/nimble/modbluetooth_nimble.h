@@ -27,11 +27,13 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_MODBLUETOOTH_NIMBLE_H
 #define MICROPY_INCLUDED_EXTMOD_NIMBLE_MODBLUETOOTH_NIMBLE_H
 
+#include "extmod/modbluetooth.h"
+
 #define MP_BLUETOOTH_NIMBLE_MAX_SERVICES (8)
 
 typedef struct _mp_bluetooth_nimble_root_pointers_t {
     // Characteristic (and descriptor) value storage.
-    mp_map_t *gatts_db;
+    mp_gatts_db_t gatts_db;
 
     // Pending service definitions.
     size_t n_services;
