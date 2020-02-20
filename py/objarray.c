@@ -574,6 +574,7 @@ const mp_obj_type_t mp_type_bytearray = {
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
     .name = MP_QSTR_memoryview,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .make_new = memoryview_make_new,
     .getiter = array_iterator_new,
     .unary_op = array_unary_op,
