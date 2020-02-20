@@ -189,12 +189,16 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
     #endif
 }
 
+extern size_t plat_relo_tab[];
+
 void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
     // Relocate native code
     reloc_info_t *ri = ri_in;
     uint8_t op;
     uintptr_t *addr_to_adjust = NULL;
     while ((op = read_byte(ri->reader)) != 0xff) {
+        mp_printf(&mp_plat_print, "mp_native_relocate %d\n", op);
+        // if lsb==1 then an offset follows the op byte, else addr_to_adjust auto-increments
         if (op & 1) {
             // Point to new location to make adjustments
             size_t addr = read_uint(ri->reader, NULL);
@@ -225,14 +229,20 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
         } else if (op == 6) {
             // Destination is mp_fun_table itself
             dest = (uintptr_t)&mp_fun_table;
+        } else if (op == 126) {
+            size_t index = read_uint(ri->reader, NULL);
+            dest = ((uintptr_t*)&plat_relo_tab)[index];
+            mp_printf(&mp_plat_print, "mp_native_relocate: op=%d, index=%d, dest=0x%08x\n", op, index, dest);
         } else {
             // Destination is an entry in mp_fun_table
             dest = ((uintptr_t*)&mp_fun_table)[op - 7];
+            mp_printf(&mp_plat_print, "mp_native_relocate: op=%d, dest=0x%08x\n", op, dest);
         }
         while (n--) {
             *addr_to_adjust++ += dest;
         }
     }
+    mp_printf(&mp_plat_print, "mp_native_relocate DONE\n");
 }
 
 #endif

@@ -34,6 +34,22 @@ from elftools.elf import elffile
 sys.path.append(os.path.dirname(__file__) + '/../py')
 import makeqstrdata as qstrutil
 
+# Platform-specific relocation table, which contains the addresses of a number of platform specific
+# functions compiled into the firmware. These entries are used by the dynamic linker to fix-up
+# relocation entries in dynamically loaded mpy modules.
+# TODO: this needs to be loaded from a file, not hard-coded here.
+plat_relo_entries = { name : idx
+    for idx, name in enumerate([
+        "pcnt_unit_config",
+        "pcnt_get_counter_value",
+        "pcnt_counter_pause",
+        "pcnt_counter_resume",
+        "pcnt_counter_clear",
+        "pcnt_intr_disable",
+        "mp_micropython_mem_info",
+    ])
+}
+
 # MicroPython constants
 MPY_VERSION = 5
 MP_NATIVE_ARCH_X86 = 1
@@ -256,6 +272,10 @@ class GOTEntry:
     def isbss(self):
         return self.sec_name.startswith('.bss')
 
+    def __repr__(self): # for debugging purposes
+        keys = ['name', 'sym', 'offset', 'link_addr', 'sec_name']
+        return "GOTEntry(" + repr({ k:getattr(self, k) for k in keys}) + ")"
+
 class LiteralEntry:
     def __init__(self, value, offset):
         self.value = value
@@ -381,8 +401,11 @@ def populate_got(env):
             dest = '.data.rel.ro'
         elif got_entry.sec_name.startswith('.bss'):
             dest = '.bss'
+        elif got_entry.sec_name == '.external.plat_relo_tab':
+            dest = 1000+got_entry.sym.plat_relo_offset
+            print("GOT entry: {}->{} ({})".format(got_entry.name, dest, repr(got_entry)))
         else:
-            assert 0, (got_entry.name, got_entry.sec_name)
+            assert 0, repr(got_entry)
         env.mpy_relocs.append(('.text', env.got_section.addr + got_entry.offset, dest))
 
     # Print out the final GOT
@@ -678,9 +701,10 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             'mp_stream_readinto_obj',
             'mp_stream_unbuffered_readline_obj',
             'mp_stream_write_obj',
-            'plat_relo_tab',
+            #'plat_relo_tab',
         ])
     }
+    plat_relo_sec = Section('.external.plat_relo_tab', b'', 0)
     for sym in env.unresolved_syms:
         assert sym['st_value'] == 0
         if sym.name == '_GLOBAL_OFFSET_TABLE_':
@@ -693,12 +717,15 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             sym.section = env.qstr_obj_section
         elif sym.name in env.known_syms:
             sym.resolved = env.known_syms[sym.name]
+        elif sym.name in fun_table:
+            sym.section = mp_fun_table_sec
+            sym.mp_fun_table_offset = fun_table[sym.name]
+        elif sym.name in plat_relo_entries:
+            sym.section = plat_relo_sec
+            sym.plat_relo_offset = plat_relo_entries[sym.name]
+            print("Unresolved: {} -> plat_relo_sec+{}".format(sym.name, sym.plat_relo_offset))
         else:
-            if sym.name in fun_table:
-                sym.section = mp_fun_table_sec
-                sym.mp_fun_table_offset = fun_table[sym.name]
-            else:
-                raise LinkError('{}: undefined symbol: {}'.format(sym.filename, sym.name))
+            raise LinkError('{}: undefined symbol: {}'.format(sym.filename, sym.name))
 
     # Align sections, assign their addresses, and create full_text
     env.full_text = bytearray(env.arch.asm_jump(8)) # dummy, to be filled in later
@@ -767,12 +794,29 @@ class MPYOutput:
             self.write_bytes(s)
 
     def write_reloc(self, base, offset, dest, n):
+        """
+        Write a relocation entry into the mpy that the dynamic linker will have to resolve
+        when the mpy is loaded. A relocation entry consists of a kind/op byte, followed by an
+        optional offset word, followed by an optional count word.
+        - base+offset is the location where the fixup is to be done, base is '.text' or 'rodata'.
+        - dest is the target whose address needs to be placed into the fixup: 0=string table,
+          1=rodata_const_table, 2=bss_const_table, 3..5: unused, 6=mp_fun_table,
+          7..126:entry in mp_fun_table, 1000..66535:entry in plat_relo_tab.
+        - n is number of consecutive words to fix up.
+        """
         need_offset = not (base == self.prev_base and offset == self.prev_offset + 1)
         self.prev_offset = offset + n - 1
+        index = None
         if dest <= 2:
             dest = (dest << 1) | (n > 1)
+        elif dest >= 1000:
+            # offset into plat_relo_tab
+            assert dest < 1000+65536
+            index = dest-1000
+            dest = 126
+            print("write_reloc plat_relo_tab+{}".format(index))
         else:
-            assert 6 <= dest <= 127
+            assert 6 <= dest < 126
             assert n == 1
         dest = dest << 1 | need_offset
         assert 0 <= dest <= 0xfe, dest
@@ -783,6 +827,8 @@ class MPYOutput:
             elif base == '.rodata':
                 base = 1
             self.write_uint(offset << 1 | base)
+        if index is not None:
+            self.write_uint(index)
         if n > 1:
             self.write_uint(n)
 
@@ -866,8 +912,12 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
             kind = bss_const_table_idx
         elif kind == 'mp_fun_table':
             kind = 6
-        else:
-            kind = 7 + kind
+        elif isinstance(kind, int):
+            if kind < 1000:
+                # element of mp_fun_table
+                kind = 7 + kind
+            else: # element of plat_relo_tab
+                pass
         assert addr % env.arch.word_size == 0, addr
         offset = addr // env.arch.word_size
         if kind == prev_kind and base == prev_base and offset == prev_offset + 1:

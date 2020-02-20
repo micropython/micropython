@@ -37,7 +37,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(counter_init_obj, counter_init);
 STATIC mp_obj_t mem_info() {
     extern int mp_micropython_mem_info(int, int);
     mp_printf(&mp_plat_print, "mp_fun_table is at 0x%x\n", &mp_fun_table);
-    mp_printf(&mp_plat_print, "plat_relo_tab is at 0x%x\n", mp_fun_table.plat_relo_tab);
     mp_printf(&mp_plat_print, "calling mp_micropython_mem_info\n");
     int i = mp_micropython_mem_info(0, 0);
     mp_printf(&mp_plat_print, "mp_micropython_mem_info: %d/0x%x\n", i, i);

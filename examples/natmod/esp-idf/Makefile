@@ -20,13 +20,4 @@ ARCH = xtensawin
 # Include to get the rules for compiling and linking the module
 include dyn_esp32.mk
 include $(MPY_DIR)/py/dynruntime.mk
-
-#plat_stubs.c: $(MPY_DIR)/ports/esp32/plat_relo.py
-#	$(ECHO) "GEN $@"
-#	$(Q)mkdir -p build
-#	$(Q)$< -c >$@
-
-build/plat_stubs.s: $(MPY_DIR)/ports/esp32/plat_relo.py
-	$(ECHO) "GEN $@"
-	$(Q)mkdir -p build
-	$(Q)$< >$@
+CFLAGS += -std=gnu99 # override -std=c99 in dynruntime.mk
