@@ -36,6 +36,8 @@
 #include "py/bc.h"
 #include "py/profile.h"
 
+// clang-format off
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -1534,3 +1536,5 @@ unwind_loop:
         }
     }
 }
+
+// clang-format on

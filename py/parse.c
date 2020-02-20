@@ -55,6 +55,8 @@
 #define RULE_ARG_RULE           (0x2000)
 #define RULE_ARG_OPT_RULE       (0x3000)
 
+// clang-format off
+
 // (un)comment to use rule names; for debugging
 //#define USE_RULE_NAME (1)
 
@@ -206,6 +208,8 @@ STATIC const char *const rule_name_table[] = {
 #undef DEF_RULE_NC
 };
 #endif
+
+// clang-format on
 
 typedef struct _rule_stack_t {
     size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number

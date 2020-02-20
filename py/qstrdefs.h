@@ -26,6 +26,8 @@
 
 #include "py/mpconfig.h"
 
+// clang-format off
+
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
 
@@ -61,3 +63,5 @@ Q(utf-8)
 #if MICROPY_ENABLE_PYSTACK
 Q(pystack exhausted)
 #endif
+
+// clang-format on

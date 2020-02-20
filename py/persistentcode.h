@@ -53,6 +53,7 @@
     | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
     )
 
+// clang-format off
 // Define the host architecture
 #if MICROPY_EMIT_X86
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_X86)
@@ -80,6 +81,7 @@
 #else
     #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_NONE)
 #endif
+// clang-format on
 
 #ifndef MPY_FEATURE_ARCH_TEST
 #define MPY_FEATURE_ARCH_TEST(x) ((x) == MPY_FEATURE_ARCH)

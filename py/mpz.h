@@ -44,6 +44,7 @@
 // are then set based on the value of MPZ_DIG_SIZE (although they can be freely
 // changed so long as the constraints mentioned above are met).
 
+// clang-format off
 #ifndef MPZ_DIG_SIZE
   #if defined(__x86_64__) || defined(_WIN64)
     // 64-bit machine, using 32-bit storage for digits
@@ -53,6 +54,7 @@
     #define MPZ_DIG_SIZE (16)
   #endif
 #endif
+// clang-format on
 
 #if MPZ_DIG_SIZE > 16
 #define MPZ_DBL_DIG_SIZE (64)
@@ -76,6 +78,7 @@ typedef uint8_t mpz_dbl_dig_t;
 typedef int8_t mpz_dbl_dig_signed_t;
 #endif
 
+// clang-format off
 #ifdef _WIN64
   #ifdef __MINGW32__
     #define MPZ_LONG_1 1LL
@@ -85,6 +88,7 @@ typedef int8_t mpz_dbl_dig_signed_t;
 #else
   #define MPZ_LONG_1 1L
 #endif
+// clang-format on
 
 // these define the maximum storage needed to hold an int or long long
 #define MPZ_NUM_DIG_FOR_INT ((sizeof(mp_int_t) * 8 + MPZ_DIG_SIZE - 1) / MPZ_DIG_SIZE)

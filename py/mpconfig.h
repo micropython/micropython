@@ -1482,6 +1482,7 @@ typedef double mp_float_t;
 // mp_int_t value with most significant bit set
 #define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
 
+// clang-format off
 // Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
 // defined and that they are the opposite of each other.
 #if defined(MP_ENDIANNESS_LITTLE)
@@ -1511,6 +1512,7 @@ typedef double mp_float_t;
   #endif
   #define MP_ENDIANNESS_BIG (!MP_ENDIANNESS_LITTLE)
 #endif
+// clang-format on
 
 // Make a pointer to RAM callable (eg set lower bit for Thumb code)
 // (This scheme won't work if we want to mix Thumb and normal ARM code.)

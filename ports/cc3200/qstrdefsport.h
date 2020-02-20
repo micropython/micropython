@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+// clang-format off
+
 // for machine module
 Q(/)
 // entries for sys.path

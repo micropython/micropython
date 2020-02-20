@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+// clang-format off
+
 // rules for writing rules:
 // - zero_or_more is implemented using opt_rule around a one_or_more rule
 // - don't put opt_rule in arguments of or rule; instead, wrap the call to this or rule in opt_rule
@@ -355,3 +357,5 @@ DEF_RULE_NC(comp_if, and(3), tok(KW_IF), rule(test_nocond), opt_rule(comp_iter))
 DEF_RULE(yield_expr, c(yield_expr), and(2), tok(KW_YIELD), opt_rule(yield_arg))
 DEF_RULE_NC(yield_arg, or(2), rule(yield_arg_from), rule(testlist))
 DEF_RULE_NC(yield_arg_from, and(2), tok(KW_FROM), rule(test))
+
+// clang-format on

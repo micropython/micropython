@@ -9,10 +9,6 @@ FILES = [
 ]
 
 EXCLUSIONS = [
-    'ports/*/qstrdefsport.h',
-    'py/grammar.h',
-    'py/qstrdefs.h',
-    'py/vm.c',
 ]
 
 def list_files():
@@ -32,7 +28,7 @@ def main():
 
     os.system('clang-format --style=file -i ' + ' '.join(list_files()))
     # Add spaces inside struct initialisation: `    {MP_QSTR_name, foo, {.x = y}},` --> `    { MP_QSTR_name, foo, {.x = y} },`
-    os.system(r'sed -r -i "s/^(\s+\{)\s*(.*)\s*(\},?)$/\1 \2 \3/g" ' + ' '.join(list_files()))
+    os.system(r'sed -r -i "s/^(\s+\{)(\S.*\S)(\},?)$/\1 \2 \3/g" ' + ' '.join(list_files()))
 
 if __name__ == '__main__':
     main()

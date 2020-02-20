@@ -25,6 +25,8 @@
  */
 
 // qstrs specific to this port
+// clang-format off
+
 Q(a)
 Q(a#)
 Q(a#:1)

@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_BC0_H
 #define MICROPY_INCLUDED_PY_BC0_H
 
+// clang-format off
+
 // MicroPython bytecode opcodes, grouped based on the format of the opcode
 
 #define MP_BC_MASK_FORMAT                   (0xf0)
@@ -146,5 +148,7 @@
 #define MP_BC_IMPORT_NAME                   (MP_BC_BASE_QSTR_O + 0x0b) // qstr
 #define MP_BC_IMPORT_FROM                   (MP_BC_BASE_QSTR_O + 0x0c) // qstr
 #define MP_BC_IMPORT_STAR                   (MP_BC_BASE_BYTE_E + 0x09)
+
+// clang-format on
 
 #endif // MICROPY_INCLUDED_PY_BC0_H
