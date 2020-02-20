@@ -37,6 +37,41 @@
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
+static btstack_packet_callback_registration_t hci_event_callback_registration;
+
+STATIC void att_server_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    // printf("att_server_packet_handler: packet_type: %u, channel: %u, packet: %p, size: %u\n", packet_type, channel, packet, size);
+    if (packet_type == HCI_EVENT_PACKET) {
+        uint8_t event_type = hci_event_packet_get_type(packet);
+        if (event_type == ATT_EVENT_CONNECTED) {
+            printf("  --> att connected\n");
+        } else if (event_type == ATT_EVENT_DISCONNECTED) {
+            printf("  --> att disconnected\n");
+        } else if (event_type == HCI_EVENT_LE_META) {
+            printf("  --> att le meta\n");
+        } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
+            printf("  --> att disconnect complete\n");
+        } else {
+            printf("  --> att type: unknown (%u)\n", event_type);
+        }
+    }
+}
+
+STATIC void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    // printf("hci_packet_handler: packet_type: %u, channel: %u, packet: %p, size: %u\n", packet_type, channel, packet, size);
+    if (packet_type == HCI_EVENT_PACKET) {
+        uint8_t event_type = hci_event_packet_get_type(packet);
+        if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT || event_type == HCI_EVENT_COMMAND_COMPLETE) {
+        } else if (event_type == BTSTACK_EVENT_NR_CONNECTIONS_CHANGED) {
+            printf("  --> hci type: # conns changed\n");
+        } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
+            printf("  --> hci type: vendor specific\n");
+        } else {
+            printf("  --> hci type: unknown (%u)\n", event_type);
+        }
+    }
+}
+
 int mp_bluetooth_init(void) {
     btstack_memory_init();
 
@@ -58,6 +93,15 @@ int mp_bluetooth_init(void) {
 
     mp_bluetooth_btstack_port_start();
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
+
+    // Register for HCI events.
+    memset(&hci_event_callback_registration, 0, sizeof(btstack_packet_callback_registration_t));
+    hci_event_callback_registration.callback = &hci_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
+    // Register for ATT event.
+    att_server_register_packet_handler(&att_server_packet_handler);
+
     return 0;
 }
 
@@ -118,14 +162,92 @@ void mp_bluetooth_gap_advertise_stop(void) {
 }
 
 int mp_bluetooth_gatts_register_service_begin(bool append) {
+    if (!append) {
+        // This will reset the DB.
+        // Becase the DB is statically allocated, there's no problem with just re-initing it.
+        // Note this would be a memory leak if we enabled HAVE_MALLOC (there's no API to free the existing db).
+        att_db_util_init();
+
+        att_db_util_add_service_uuid16(GAP_SERVICE_UUID);
+        att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, (uint8_t *)"MPY BTSTACK", 11);
+
+        att_db_util_add_service_uuid16(0x1801);
+        att_db_util_add_characteristic_uuid16(0x2a05, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, NULL, 0);
+
+    }
+
     return 0;
 }
 
+STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    printf("btstack: att_read_callback (handle: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, offset, buffer, buffer_size);
+    return 0;
+}
+
+STATIC int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    printf("btstack: att_write_callback (handle: %u, mode: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, transaction_mode, offset, buffer, buffer_size);
+    return 0;
+}
+
+// Note: modbluetooth UUIDs store their data in LE.
+STATIC inline uint16_t get_uuid16(const mp_obj_bluetooth_uuid_t *uuid) {
+    return (uuid->data[1] << 8) | uuid->data[0];
+}
+
 int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
+    // TODO: It's not clear which endian btstack needs for uuids.
+
+    uint16_t service_handle;
+    if (service_uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+        service_handle = att_db_util_add_service_uuid16(get_uuid16(service_uuid));
+    } else if (service_uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+        service_handle = att_db_util_add_service_uuid128(service_uuid->data);
+    } else {
+        return MP_EINVAL;
+    }
+
+    printf("Registered service with handle %u\n", service_handle);
+
+    size_t handle_index = 0;
+    size_t descriptor_index = 0;
+
+    for (size_t i = 0; i < num_characteristics; ++i) {
+        uint16_t props = characteristic_flags[i] | ATT_PROPERTY_DYNAMIC;
+        uint16_t read_permission = ATT_SECURITY_NONE;
+        uint16_t write_permission = ATT_SECURITY_NONE;
+        if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_16) {
+            handles[handle_index] = att_db_util_add_characteristic_uuid16(get_uuid16(characteristic_uuids[i]), props, read_permission, write_permission, NULL, 0);
+        } else if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_128) {
+            handles[handle_index] = att_db_util_add_characteristic_uuid128(characteristic_uuids[i]->data, props, read_permission, write_permission, NULL, 0);
+        } else {
+            return MP_EINVAL;
+        }
+        printf("Registered char with handle %u\n", handles[handle_index]);
+        ++handle_index;
+
+        for (size_t j = 0; j < num_descriptors[i]; ++j) {
+            uint16_t props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
+            uint16_t read_permission = ATT_SECURITY_NONE;
+            uint16_t write_permission = ATT_SECURITY_NONE;
+
+            if (descriptor_uuids[descriptor_index]->type == MP_BLUETOOTH_UUID_TYPE_16) {
+                handles[handle_index] = att_db_util_add_descriptor_uuid16(get_uuid16(descriptor_uuids[descriptor_index]), props, read_permission, write_permission, NULL, 0);
+            } else if (descriptor_uuids[descriptor_index]->type == MP_BLUETOOTH_UUID_TYPE_128) {
+                handles[handle_index] = att_db_util_add_descriptor_uuid128(descriptor_uuids[descriptor_index]->data, props, read_permission, write_permission, NULL, 0);
+            } else {
+                return MP_EINVAL;
+            }
+            printf("Registered desc with handle %u\n", handles[handle_index]);
+            ++descriptor_index;
+            ++handle_index;
+        }
+    }
+
     return 0;
 }
 
 int mp_bluetooth_gatts_register_service_end(void) {
+    att_server_init(att_db_util_get_address(), &att_read_callback, &att_write_callback);
     return 0;
 }
 

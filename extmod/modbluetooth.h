@@ -63,6 +63,7 @@
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
 
+// These match the spec values for these flags so can be passed directly to the stack.
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ     (1 << 1)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
