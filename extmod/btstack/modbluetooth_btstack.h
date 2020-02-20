@@ -27,11 +27,16 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 #define MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 
+#include "extmod/modbluetooth.h"
+
 typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // This stores both the advertising data and the scan response data, concatenated together.
     uint8_t *adv_data;
     // Total length of both.
     size_t adv_data_alloc;
+
+    // Characteristic (and descriptor) value storage.
+    mp_gatts_db_t gatts_db;
 } mp_bluetooth_btstack_root_pointers_t;
 
 enum {
