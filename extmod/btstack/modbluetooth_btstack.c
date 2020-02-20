@@ -39,7 +39,7 @@
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
-static btstack_packet_callback_registration_t hci_event_callback_registration;
+STATIC btstack_packet_callback_registration_t hci_event_callback_registration;
 
 STATIC int btstack_error_to_errno(int err) {
     if (err == ERROR_CODE_SUCCESS) {
@@ -51,46 +51,146 @@ STATIC int btstack_error_to_errno(int err) {
     }
 }
 
-STATIC void att_server_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
-    DEBUG_EVENT_printf("att_server_packet_handler: packet_type: %u, channel: %u, packet: %p, size: %u\n", packet_type, channel, packet, size);
-    if (packet_type == HCI_EVENT_PACKET) {
-        uint8_t event_type = hci_event_packet_get_type(packet);
-        if (event_type == ATT_EVENT_CONNECTED) {
-            DEBUG_EVENT_printf("  --> att connected\n");
-            uint16_t conn_handle = att_event_connected_get_handle(packet);
-            uint8_t addr_type = att_event_connected_get_address_type(packet);
+STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uuid128) {
+    mp_obj_bluetooth_uuid_t result;
+    if (uuid16 != 0) {
+        result.data[0] = uuid16 & 0xff;
+        result.data[1] = (uuid16 >> 8) & 0xff;
+        result.type = MP_BLUETOOTH_UUID_TYPE_16;
+    } else {
+        reverse_128(uuid128, result.data);
+        result.type = MP_BLUETOOTH_UUID_TYPE_128;
+    }
+    return result;
+}
+
+STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    DEBUG_EVENT_printf("btstack_packet_handler(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
+    if (packet_type != HCI_EVENT_PACKET) {
+        return;
+    }
+
+    uint8_t event_type = hci_event_packet_get_type(packet);
+    if (event_type == ATT_EVENT_CONNECTED) {
+        DEBUG_EVENT_printf("  --> att connected\n");
+    } else if (event_type == ATT_EVENT_DISCONNECTED) {
+        DEBUG_EVENT_printf("  --> att disconnected\n");
+    } else if (event_type == HCI_EVENT_LE_META) {
+        DEBUG_EVENT_printf("  --> hci le meta\n");
+        if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE) {
+            uint16_t conn_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
+            uint8_t addr_type = hci_subevent_le_connection_complete_get_peer_address_type(packet);
             bd_addr_t addr;
-            att_event_connected_get_address(packet, addr);
-            mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_CONNECT, conn_handle, addr_type, addr);
-        } else if (event_type == ATT_EVENT_DISCONNECTED) {
-            DEBUG_EVENT_printf("  --> att disconnected\n");
-            uint16_t conn_handle = att_event_disconnected_get_handle(packet);
-            bd_addr_t addr = {0};
-            mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT, conn_handle, 0, addr);
-        } else if (event_type == HCI_EVENT_LE_META) {
-            DEBUG_EVENT_printf("  --> att le meta\n");
-        } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
-            DEBUG_EVENT_printf("  --> att disconnect complete\n");
-        } else {
-            DEBUG_EVENT_printf("  --> att type: unknown (%u)\n", event_type);
+            hci_subevent_le_connection_complete_get_peer_address(packet, addr);
+            uint16_t irq_event;
+            if (hci_subevent_le_connection_complete_get_role(packet) == 0) {
+                // Master role.
+                irq_event = MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT;
+            } else {
+                // Slave role.
+                irq_event = MP_BLUETOOTH_IRQ_CENTRAL_CONNECT;
+            }
+            mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, addr_type, addr);
         }
+    } else if (event_type == BTSTACK_EVENT_STATE) {
+        DEBUG_EVENT_printf("  --> btstack event state 0x%02x\n", btstack_event_state_get_state(packet));
+    } else if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT) {
+        DEBUG_EVENT_printf("  --> hci transport packet set\n");
+    } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
+        DEBUG_EVENT_printf("  --> hci command complete\n");
+    } else if (event_type == HCI_EVENT_COMMAND_STATUS) {
+        DEBUG_EVENT_printf("  --> hci command status\n");
+    } else if (event_type == HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS) {
+        DEBUG_EVENT_printf("  --> hci number of completed packets\n");
+    } else if (event_type == BTSTACK_EVENT_NR_CONNECTIONS_CHANGED) {
+        DEBUG_EVENT_printf("  --> btstack # conns changed\n");
+    } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
+        DEBUG_EVENT_printf("  --> hci vendor specific\n");
+    } else if (event_type == GAP_EVENT_ADVERTISING_REPORT) {
+        DEBUG_EVENT_printf("  --> gap advertising report\n");
+        bd_addr_t address;
+        gap_event_advertising_report_get_address(packet, address);
+        uint8_t adv_event_type = gap_event_advertising_report_get_advertising_event_type(packet);
+        uint8_t address_type = gap_event_advertising_report_get_address_type(packet);
+        int8_t rssi = gap_event_advertising_report_get_rssi(packet);
+        uint8_t length = gap_event_advertising_report_get_data_length(packet);
+        const uint8_t *data = gap_event_advertising_report_get_data(packet);
+        bool connectable = adv_event_type == 0 || adv_event_type == 1;
+        if (adv_event_type <= 2) {
+            mp_bluetooth_gap_on_scan_result(address_type, address, connectable, rssi, data, length);
+        } else if (adv_event_type == 4) {
+            // TODO: Scan response.
+        }
+    } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
+        DEBUG_EVENT_printf("  --> hci disconnect complete\n");
+        uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
+        const hci_connection_t *conn = hci_connection_for_handle(conn_handle);
+        uint16_t irq_event;
+        if (conn == NULL || conn->role == 0) {
+            // Master role.
+            irq_event = MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT;
+        } else {
+            // Slave role.
+            irq_event = MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT;
+        }
+        uint8_t addr[6] = {0};
+        mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, 0xff, addr);
+    } else if (event_type == GATT_EVENT_QUERY_COMPLETE) {
+        DEBUG_EVENT_printf("  --> gatt query complete\n");
+    } else if (event_type == GATT_EVENT_SERVICE_QUERY_RESULT) {
+        DEBUG_EVENT_printf("  --> gatt service query result\n");
+        uint16_t conn_handle = gatt_event_service_query_result_get_handle(packet);
+        gatt_client_service_t service;
+        gatt_event_service_query_result_get_service(packet, &service);
+        mp_obj_bluetooth_uuid_t service_uuid = create_mp_uuid(service.uuid16, service.uuid128);
+        mp_bluetooth_gattc_on_primary_service_result(conn_handle, service.start_group_handle, service.end_group_handle, &service_uuid);
+    } else if (event_type == GATT_EVENT_CHARACTERISTIC_QUERY_RESULT) {
+        DEBUG_EVENT_printf("  --> gatt characteristic query result\n");
+        uint16_t conn_handle = gatt_event_characteristic_query_result_get_handle(packet);
+        gatt_client_characteristic_t characteristic;
+        gatt_event_characteristic_query_result_get_characteristic(packet, &characteristic);
+        mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(characteristic.uuid16, characteristic.uuid128);
+        mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic.start_handle, characteristic.value_handle, characteristic.properties, &characteristic_uuid);
+    } else if (event_type == GATT_EVENT_CHARACTERISTIC_DESCRIPTOR_QUERY_RESULT) {
+        DEBUG_EVENT_printf("  --> gatt descriptor query result\n");
+        uint16_t conn_handle = gatt_event_all_characteristic_descriptors_query_result_get_handle(packet);
+        gatt_client_characteristic_descriptor_t descriptor;
+        gatt_event_all_characteristic_descriptors_query_result_get_characteristic_descriptor(packet, &descriptor);
+        mp_obj_bluetooth_uuid_t descriptor_uuid = create_mp_uuid(descriptor.uuid16, descriptor.uuid128);
+        mp_bluetooth_gattc_on_descriptor_result(conn_handle, descriptor.handle, &descriptor_uuid);
+    } else if (event_type == GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT) {
+        DEBUG_EVENT_printf("  --> gatt characteristic value query result\n");
+        uint16_t conn_handle = gatt_event_characteristic_value_query_result_get_handle(packet);
+        uint16_t value_handle = gatt_event_characteristic_value_query_result_get_value_handle(packet);
+        uint16_t len = gatt_event_characteristic_value_query_result_get_value_length(packet);
+        const uint8_t *data = gatt_event_characteristic_value_query_result_get_value(packet);
+        MICROPY_PY_BLUETOOTH_ENTER
+            len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, value_handle, len);
+        mp_bluetooth_gattc_on_data_available_chunk(data, len);
+        mp_bluetooth_gattc_on_data_available_end();
+        MICROPY_PY_BLUETOOTH_EXIT
+    } else {
+        DEBUG_EVENT_printf("  --> hci event type: unknown (0x%02x)\n", event_type);
     }
 }
 
-STATIC void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
-    DEBUG_EVENT_printf("hci_packet_handler: packet_type: %u, channel: %u, packet: %p, size: %u\n", packet_type, channel, packet, size);
-    if (packet_type == HCI_EVENT_PACKET) {
-        uint8_t event_type = hci_event_packet_get_type(packet);
-        if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT || event_type == HCI_EVENT_COMMAND_COMPLETE) {
-        } else if (event_type == BTSTACK_EVENT_NR_CONNECTIONS_CHANGED) {
-            DEBUG_EVENT_printf("  --> hci type: # conns changed\n");
-        } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
-            DEBUG_EVENT_printf("  --> hci type: vendor specific\n");
-        } else {
-            DEBUG_EVENT_printf("  --> hci type: unknown (%u)\n", event_type);
-        }
+#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    DEBUG_EVENT_printf("btstack_packet_handler_write_with_response(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
+    if (packet_type != HCI_EVENT_PACKET) {
+        return;
+    }
+
+    uint8_t event_type = hci_event_packet_get_type(packet);
+    if (event_type == GATT_EVENT_QUERY_COMPLETE) {
+        DEBUG_EVENT_printf("  --> gatt query complete\n");
+        uint16_t conn_handle = gatt_event_query_complete_get_handle(packet);
+        uint8_t status = gatt_event_query_complete_get_att_status(packet);
+        // TODO there is no value_handle to pass here
+        mp_bluetooth_gattc_on_write_status(conn_handle, 0, status);
     }
 }
+#endif
 
 int mp_bluetooth_init(void) {
     DEBUG_EVENT_printf("mp_bluetooth_init\n");
@@ -113,16 +213,17 @@ int mp_bluetooth_init(void) {
     sm_set_er(dummy_key);
     sm_set_ir(dummy_key);
 
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    gatt_client_init();
+    #endif
+
     mp_bluetooth_btstack_port_start();
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
 
     // Register for HCI events.
     memset(&hci_event_callback_registration, 0, sizeof(btstack_packet_callback_registration_t));
-    hci_event_callback_registration.callback = &hci_packet_handler;
+    hci_event_callback_registration.callback = &btstack_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
-
-    // Register for ATT event.
-    att_server_register_packet_handler(&att_server_packet_handler);
 
     return 0;
 }
@@ -358,44 +459,106 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+STATIC btstack_timer_source_t scan_duration_timeout;
+
+STATIC void hci_initialization_timeout_handler(btstack_timer_source_t *ds) {
+    mp_bluetooth_gap_scan_stop();
+}
+
 int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us) {
     DEBUG_EVENT_printf("mp_bluetooth_gap_scan_start\n");
+
+    btstack_run_loop_set_timer(&scan_duration_timeout, duration_ms);
+    btstack_run_loop_set_timer_handler(&scan_duration_timeout, hci_initialization_timeout_handler);
+    btstack_run_loop_add_timer(&scan_duration_timeout);
+
+    // 0 = passive scan (we don't handle scan response).
+    gap_set_scan_parameters(0, interval_us / 625, window_us / 625);
+    gap_start_scan();
+
     return 0;
 }
 
 int mp_bluetooth_gap_scan_stop(void) {
     DEBUG_EVENT_printf("mp_bluetooth_gap_scan_stop\n");
+    btstack_run_loop_remove_timer(&scan_duration_timeout);
+    gap_stop_scan();
+    mp_bluetooth_gap_on_scan_complete();
     return 0;
 }
 
 int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms) {
     DEBUG_EVENT_printf("mp_bluetooth_gap_peripheral_connect\n");
-    return 0;
+
+    uint16_t conn_scan_interval = 60000 / 625;
+    uint16_t conn_scan_window = 30000 / 625;
+    uint16_t conn_interval_min = 10000 / 1250;
+    uint16_t conn_interval_max = 30000 / 1250;
+    uint16_t conn_latency = 4;
+    uint16_t supervision_timeout = duration_ms / 10; // default = 720
+    uint16_t min_ce_length = 10000 / 625;
+    uint16_t max_ce_length = 30000 / 625;
+
+    gap_set_connection_parameters(conn_scan_interval, conn_scan_window, conn_interval_min, conn_interval_max, conn_latency, supervision_timeout, min_ce_length, max_ce_length);
+
+    bd_addr_t btstack_addr;
+    memcpy(btstack_addr, addr, BD_ADDR_LEN);
+    return btstack_error_to_errno(gap_connect(btstack_addr, addr_type));
 }
 
 int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_primary_services\n");
-    return 0;
+    return btstack_error_to_errno(gatt_client_discover_primary_services(&btstack_packet_handler, conn_handle));
 }
 
 int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_characteristics\n");
-    return 0;
+
+    gatt_client_service_t service = {
+        // Only start/end handles needed for gatt_client_discover_characteristics_for_service.
+        .start_group_handle = start_handle,
+        .end_group_handle = end_handle,
+        .uuid16 = 0,
+        .uuid128 = {0},
+    };
+    return btstack_error_to_errno(gatt_client_discover_characteristics_for_service(&btstack_packet_handler, conn_handle, &service));
 }
 
 int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_descriptors\n");
-    return 0;
+    gatt_client_characteristic_t characteristic = {
+        // Only start/end handles needed for gatt_client_discover_characteristic_descriptors.
+        .start_handle = start_handle,
+        .value_handle = 0,
+        .end_handle = end_handle,
+        .properties = 0,
+        .uuid16 = 0,
+        .uuid128 = {0},
+    };
+    return btstack_error_to_errno(gatt_client_discover_characteristic_descriptors(&btstack_packet_handler, conn_handle, &characteristic));
 }
 
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_read\n");
-    return 0;
+    return btstack_error_to_errno(gatt_client_read_value_of_characteristic_using_value_handle(&btstack_packet_handler, conn_handle, value_handle));
 }
 
 int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_write\n");
-    return 0;
+
+    // TODO the below gatt_client functions do not copy the data and require it to be valid
+    // until the write is done, so there should be some kind of buffering done here.
+
+    if (mode == MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE) {
+        // TODO need to call gatt_client_request_can_write_without_response_event then do
+        // the actual write on the callback from that.
+        return btstack_error_to_errno(gatt_client_write_value_of_characteristic_without_response(conn_handle, value_handle, *value_len, (uint8_t *)value));
+    }
+    if (mode == MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE) {
+        return btstack_error_to_errno(gatt_client_write_value_of_characteristic(&btstack_packet_handler_write_with_response, conn_handle, value_handle, *value_len, (uint8_t *)value));
+    }
+
+    return MP_EINVAL;
 }
 #endif
 
