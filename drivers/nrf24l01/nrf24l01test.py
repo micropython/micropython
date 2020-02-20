@@ -23,7 +23,9 @@ elif sys.platform == 'esp32':  # Software SPI
 else:
     raise ValueError('Unsupported platform {}'.format(sys.platform))
 
-pipes = (b'\xf0\xf0\xf0\xf0\xe1', b'\xf0\xf0\xf0\xf0\xd2')
+# Addresses are in little-endian format. They correspond to big-endian
+# 0xf0f0f0f0e1, 0xf0f0f0f0d2
+pipes = (b'\xe1\xf0\xf0\xf0\xf0', b'\xd2\xf0\xf0\xf0\xf0')
 
 def master():
     csn = Pin(cfg['csn'], mode=Pin.OUT, value=1)

@@ -64,7 +64,8 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
-void mp_handle_pending(void);
+void mp_keyboard_interrupt(void);
+void mp_handle_pending(bool raise_exc);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
@@ -150,7 +151,9 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
+#define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
 NORETURN void mp_raise_ValueError(const char *msg);
 NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_raise_NotImplementedError(const char *msg);

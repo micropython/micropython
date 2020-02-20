@@ -44,9 +44,6 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS  || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
-#define TYPE_FLAG_IS_SUBCLASSED (0x0001)
-#define TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
-
 STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
@@ -354,8 +351,8 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_raise_TypeError("__init__() should return None");
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret));
             }
         }
 
@@ -470,7 +467,7 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
     [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
     [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
-    // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
+    [MP_BINARY_OP_NOT_EQUAL] = MP_QSTR___ne__,
     [MP_BINARY_OP_CONTAINS] = MP_QSTR___contains__,
 
     // If an inplace method is not found a normal method will be used as a fallback
@@ -615,7 +612,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     mp_obj_class_lookup(&lookup, self->base.type);
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
-        if (!(self->base.type->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
+        if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
             // Class doesn't have any special accessors to check so return straightaway
             return;
         }
@@ -680,7 +677,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (!(self->base.type->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
+    if (!(self->base.type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
         // Class doesn't have any special accessors so skip their checks
         goto skip_special_accessors;
     }
@@ -870,8 +867,8 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("object not callable");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object isn't callable", mp_obj_get_type_str(self_in)));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                "'%s' object isn't callable", mp_obj_get_type_str(self_in));
         }
     }
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
@@ -882,7 +879,8 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     return mp_call_method_self_n_kw(member[0], member[1], n_args, n_kw, args);
 }
 
-STATIC mp_obj_t instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+// Note that iter_buf may be NULL, and needs to be allocated if needed
+mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -896,7 +894,10 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
     if (member[0] == MP_OBJ_NULL) {
         return MP_OBJ_NULL;
     } else if (member[0] == MP_OBJ_SENTINEL) {
-        mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        if (iter_buf == NULL) {
+            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        }
         return type->getiter(self->subobj[0], iter_buf);
     } else {
         return mp_call_method_n_kw(0, 0, member);
@@ -915,7 +916,7 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
-        mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
         return type->buffer_p.get_buffer(self->subobj[0], bufinfo, flags);
     } else {
         return 1; // object does not support buffer protocol
@@ -991,8 +992,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("cannot create instance");
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "cannot create '%q' instances", self->name));
+            mp_raise_msg_varg(&mp_type_TypeError, "cannot create '%q' instances", self->name);
         }
     }
 
@@ -1057,13 +1057,13 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             } else {
                 #if ENABLE_SPECIAL_ACCESSORS
                 // Check if we add any special accessor methods with this store
-                if (!(self->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
+                if (!(self->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
                     if (check_for_special_accessors(MP_OBJ_NEW_QSTR(attr), dest[1])) {
-                        if (self->flags & TYPE_FLAG_IS_SUBCLASSED) {
+                        if (self->flags & MP_TYPE_FLAG_IS_SUBCLASSED) {
                             // This class is already subclassed so can't have special accessors added
                             mp_raise_msg(&mp_type_AttributeError, "can't add special method to already-subclassed class");
                         }
-                        self->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
+                        self->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
                     }
                 }
                 #endif
@@ -1099,7 +1099,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    uint16_t base_flags = 0;
+    uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
+        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
@@ -1113,14 +1114,14 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_raise_TypeError("type isn't an acceptable base type");
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "type '%q' isn't an acceptable base type", t->name));
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    "type '%q' isn't an acceptable base type", t->name);
             }
         }
         #if ENABLE_SPECIAL_ACCESSORS
         if (mp_obj_is_instance_type(t)) {
-            t->flags |= TYPE_FLAG_IS_SUBCLASSED;
-            base_flags |= t->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
+            t->flags |= MP_TYPE_FLAG_IS_SUBCLASSED;
+            base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         }
         #endif
     }
@@ -1136,7 +1137,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->binary_op = instance_binary_op;
     o->attr = mp_obj_instance_attr;
     o->subscr = instance_subscr;
-    o->getiter = instance_getiter;
+    o->getiter = mp_obj_instance_getiter;
     //o->iternext = ; not implemented
     o->buffer_p.get_buffer = instance_get_buffer;
 
@@ -1162,12 +1163,12 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
 
     #if ENABLE_SPECIAL_ACCESSORS
     // Check if the class has any special accessor methods
-    if (!(o->flags & TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
+    if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
         for (size_t i = 0; i < o->locals_dict->map.alloc; i++) {
             if (mp_map_slot_is_filled(&o->locals_dict->map, i)) {
                 const mp_map_elem_t *elem = &o->locals_dict->map.table[i];
                 if (check_for_special_accessors(elem->key, elem->value)) {
-                    o->flags |= TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
+                    o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
                     break;
                 }
             }
@@ -1389,7 +1390,7 @@ STATIC mp_obj_t mp_builtin_isinstance(mp_obj_t object, mp_obj_t classinfo) {
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj, mp_builtin_isinstance);
 
 mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type) {
-    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self_type), native_type)) {
         return MP_OBJ_NULL;
     }

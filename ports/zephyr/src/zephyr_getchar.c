@@ -15,9 +15,9 @@
  */
 
 #include <zephyr.h>
-#include <uart.h>
+#include <drivers/uart.h>
 #include <drivers/console/uart_console.h>
-#include <misc/printk.h>
+#include <sys/printk.h>
 #include "zephyr_getchar.h"
 
 extern int mp_interrupt_char;

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017 Linaro Limited
+ * Copyright (c) 2019 NXP
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +30,9 @@
 
 #include <stdio.h>
 #include <zephyr.h>
-#include <misc/stack.h>
+#include <debug/stack.h>
 
+#include "modzephyr.h"
 #include "py/runtime.h"
 
 STATIC mp_obj_t mod_is_preempt_thread(void) {
@@ -89,6 +91,12 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
 
     #ifdef CONFIG_NET_SHELL
     { MP_ROM_QSTR(MP_QSTR_shell_net_iface), MP_ROM_PTR(&mod_shell_net_iface_obj) },
+    #endif
+    #ifdef CONFIG_DISK_ACCESS
+    { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },
+    #endif
+    #ifdef CONFIG_FLASH_MAP
+    { MP_ROM_QSTR(MP_QSTR_FlashArea), MP_ROM_PTR(&zephyr_flash_area_type) },
     #endif
 };
 

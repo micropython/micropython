@@ -508,7 +508,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
             for (size_t j = 0; j < num_descriptors[i]; ++j) {
                 descriptors[j].uuid = create_nimble_uuid(descriptor_uuids[descriptor_index]);
                 descriptors[j].access_cb = characteristic_access_cb;
-                descriptors[j].att_flags = descriptor_flags[i];
+                descriptors[j].att_flags = descriptor_flags[descriptor_index];
                 descriptors[j].min_key_size = 0;
                 // Unlike characteristic, Nimble doesn't provide an automatic way to remember the handle, so use the arg.
                 descriptors[j].arg = &handles[handle_index];

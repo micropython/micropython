@@ -46,77 +46,19 @@ void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times
 #if MICROPY_PY_BUILTINS_SLICE
 
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
-    mp_obj_t ostart, ostop, ostep;
-    mp_int_t start, stop;
-    mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
+    mp_obj_slice_indices(slice, len, indexes);
 
-    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        indexes->step = mp_obj_get_int(ostep);
-        if (indexes->step == 0) {
-            mp_raise_ValueError("slice step cannot be zero");
-        }
-    } else {
-        indexes->step = 1;
-    }
-
-    if (ostart == mp_const_none) {
-        if (indexes->step > 0) {
-            start = 0;
-        } else {
-            start = len - 1;
-        }
-    } else {
-        start = mp_obj_get_int(ostart);
-    }
-    if (ostop == mp_const_none) {
-        if (indexes->step > 0) {
-            stop = len;
-        } else {
-            stop = 0;
-        }
-    } else {
-        stop = mp_obj_get_int(ostop);
-        if (stop >= 0 && indexes->step < 0) {
-            stop += 1;
-        }
-    }
-
-    // Unlike subscription, out-of-bounds slice indexes are never error
-    if (start < 0) {
-        start = len + start;
-        if (start < 0) {
-            if (indexes->step < 0) {
-                start = -1;
-            } else {
-                start = 0;
-            }
-        }
-    } else if (indexes->step > 0 && (mp_uint_t)start > len) {
-        start = len;
-    } else if (indexes->step < 0 && (mp_uint_t)start >= len) {
-        start = len - 1;
-    }
-    if (stop < 0) {
-        stop = len + stop;
-        if (stop < 0) {
-            stop = -1;
-        }
-        if (indexes->step < 0) {
-            stop += 1;
-        }
-    } else if ((mp_uint_t)stop > len) {
-        stop = len;
+    // If the index is negative then stop points to the last item, not after it
+    if (indexes->step < 0) {
+        indexes->stop++;
     }
 
     // CPython returns empty sequence in such case, or point for assignment is at start
-    if (indexes->step > 0 && start > stop) {
-        stop = start;
-    } else if (indexes->step < 0 && start < stop) {
-        stop = start + 1;
+    if (indexes->step > 0 && indexes->start > indexes->stop) {
+        indexes->stop = indexes->start;
+    } else if (indexes->step < 0 && indexes->start < indexes->stop) {
+        indexes->stop = indexes->start + 1;
     }
-
-    indexes->start = start;
-    indexes->stop = stop;
 
     return indexes->step == 1;
 }
@@ -241,7 +183,7 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp
 
 // Special-case of index() which searches for mp_obj_t
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, const mp_obj_t *args) {
-    mp_obj_type_t *type = mp_obj_get_type(args[0]);
+    const mp_obj_type_t *type = mp_obj_get_type(args[0]);
     mp_obj_t value = args[1];
     size_t start = 0;
     size_t stop = len;

@@ -320,7 +320,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
     // from now on we need lhs type and data, so extract them
-    mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
+    const mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
     GET_STR_DATA_LEN(lhs_in, lhs_data, lhs_len);
 
     // check for multiply
@@ -420,7 +420,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
 
 // This is used for both bytes and 8-bit strings. This is not used for unicode strings.
 STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self_in);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
@@ -910,7 +910,7 @@ STATIC bool istype(char ch) {
 }
 
 STATIC bool arg_looks_integer(mp_obj_t arg) {
-    return mp_obj_is_type(arg, &mp_type_bool) || mp_obj_is_int(arg);
+    return mp_obj_is_bool(arg) || mp_obj_is_int(arg);
 }
 
 STATIC bool arg_looks_numeric(mp_obj_t arg) {
@@ -1001,8 +1001,8 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         mp_raise_ValueError(
                             "end of format while looking for conversion specifier");
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                            "unknown conversion specifier %c", *str));
+                        mp_raise_msg_varg(&mp_type_ValueError,
+                            "unknown conversion specifier %c", *str);
                     }
                 }
             }
@@ -1262,9 +1262,9 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        mp_raise_msg_varg(&mp_type_ValueError,
                             "unknown format code '%c' for object of type '%s'",
-                            type, mp_obj_get_type_str(arg)));
+                            type, mp_obj_get_type_str(arg));
                     }
             }
         }
@@ -1334,9 +1334,9 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        mp_raise_msg_varg(&mp_type_ValueError,
                             "unknown format code '%c' for object of type '%s'",
-                            type, mp_obj_get_type_str(arg)));
+                            type, mp_obj_get_type_str(arg));
                     }
             }
         } else {
@@ -1370,9 +1370,9 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                        mp_raise_msg_varg(&mp_type_ValueError,
                             "unknown format code '%c' for object of type '%s'",
-                            type, mp_obj_get_type_str(arg)));
+                            type, mp_obj_get_type_str(arg));
                     }
             }
         }
@@ -1574,9 +1574,9 @@ not_enough_args:
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                    mp_raise_msg_varg(&mp_type_ValueError,
                         "unsupported format character '%c' (0x%x) at index %d",
-                        *str, *str, str - start_str));
+                        *str, *str, str - start_str);
                 }
         }
     }
@@ -1743,7 +1743,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 #if MICROPY_PY_BUILTINS_STR_PARTITION
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
     mp_check_self(mp_obj_is_str_or_bytes(self_in));
-    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (self_type != mp_obj_get_type(arg)) {
         bad_implicit_conversion(arg);
     }
@@ -2112,9 +2112,9 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
         mp_raise_TypeError("can't convert to str implicitly");
     } else {
         const qstr src_name = mp_obj_get_type(self_in)->name;
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+        mp_raise_msg_varg(&mp_type_TypeError,
             "can't convert '%q' object to %q implicitly",
-            src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));
+            src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str);
     }
 }
 
@@ -2153,13 +2153,13 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, size_t *len) {
     }
 }
 
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len) {
     if (mp_obj_is_qstr(self_in)) {
         return qstr_data(MP_OBJ_QSTR_VALUE(self_in), len);
     } else {
-        *len = ((mp_obj_str_t*)self_in)->len;
-        return ((mp_obj_str_t*)self_in)->data;
+        *len = ((mp_obj_str_t*)MP_OBJ_TO_PTR(self_in))->len;
+        return ((mp_obj_str_t*)MP_OBJ_TO_PTR(self_in))->data;
     }
 }
 #endif

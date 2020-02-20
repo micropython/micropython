@@ -306,7 +306,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(&adc_obj->handle, &multimode) != HAL_OK)
     {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Can not set multimode on ADC1 channel: %d", adc_obj->channel));
+        mp_raise_msg_varg(&mp_type_ValueError, "Can not set multimode on ADC1 channel: %d", adc_obj->channel);
     }
 #endif
 }
@@ -414,21 +414,20 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC_MASK) == 0) {
             // No ADC1 function on that pin
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name));
+            mp_raise_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name);
         }
         channel = pin->adc_channel;
     }
 
     if (!is_adcx_channel(channel)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
+        mp_raise_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel);
     }
 
 
     if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
         // these channels correspond to physical GPIO ports so make sure they exist
         if (pin_adc_table[channel] == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "channel %d not available on this board", channel));
+            mp_raise_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel);
         }
     }
 
@@ -700,8 +699,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
         case 16: resolution = ADC_RESOLUTION_16B; break;
         #endif
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "resolution %d not supported", resolution));
+            mp_raise_msg_varg(&mp_type_ValueError, "resolution %d not supported", resolution);
     }
 
     for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {

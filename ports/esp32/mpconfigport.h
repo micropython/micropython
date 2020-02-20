@@ -73,6 +73,7 @@
 #define MICROPY_PY_BUILTINS_SET             (1)
 #define MICROPY_PY_BUILTINS_SLICE           (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS     (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES   (1)
 #define MICROPY_PY_BUILTINS_FROZENSET       (1)
 #define MICROPY_PY_BUILTINS_PROPERTY        (1)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
@@ -243,8 +244,8 @@ void *esp_native_code_commit(void*, size_t, void*);
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(void); \
-        mp_handle_pending(); \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         MP_THREAD_GIL_ENTER(); \
@@ -252,12 +253,15 @@ void *esp_native_code_commit(void*, size_t, void*);
 #else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(void); \
-        mp_handle_pending(); \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         asm("waiti 0"); \
     } while (0);
 #endif
+
+// Functions that should go in IRAM
+#define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
 #define UINT_FMT "%u"
 #define INT_FMT "%d"

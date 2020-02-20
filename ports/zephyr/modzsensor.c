@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 
 #include <zephyr.h>
-#include <sensor.h>
+#include <drivers/sensor.h>
 
 #if MICROPY_PY_ZSENSOR
 

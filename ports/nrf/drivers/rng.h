@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2018 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,4 @@
  * THE SOFTWARE.
  */
 
-// This config file is intended to configure artificially fast uPy build for
-// synthetic benchmarking, at the expense of features supported and memory
-// usage. This config is not intended to be used in production.
-
-#include <mpconfigport.h>
-#define MICROPY_PY___FILE__ (0)
-// 91 is a magic number proposed by @dpgeorge, which make pystone run ~ at tie
-// with CPython 3.4.
-#define MICROPY_MODULE_DICT_SIZE (91)
+uint32_t rng_generate_random_word(void);

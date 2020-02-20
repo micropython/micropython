@@ -241,10 +241,8 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
   MP_DEFINE_EXCEPTION(AssertionError, Exception)
   MP_DEFINE_EXCEPTION(AttributeError, Exception)
   //MP_DEFINE_EXCEPTION(BufferError, Exception)
-  //MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
   MP_DEFINE_EXCEPTION(EOFError, Exception)
   MP_DEFINE_EXCEPTION(ImportError, Exception)
-  //MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
   MP_DEFINE_EXCEPTION(LookupError, Exception)
     MP_DEFINE_EXCEPTION(IndexError, LookupError)
     MP_DEFINE_EXCEPTION(KeyError, LookupError)
@@ -306,17 +304,19 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     */
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
-    return mp_obj_new_exception_args(exc_type, 0, NULL);
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
 }
 
 // "Optimized" version for common(?) case of having 1 exception arg
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    return mp_obj_new_exception_args(exc_type, 1, &arg);
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
-    return exc_type->make_new(exc_type, n_args, 0, args);
+    return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
@@ -385,6 +385,14 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
 }
 
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
+    va_end(args);
+    return exc;
+}
+
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list args) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
@@ -425,10 +433,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         // We have some memory to format the string
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        va_list ap;
-        va_start(ap, fmt);
-        mp_vprintf(&print, fmt, ap);
-        va_end(ap);
+        mp_vprintf(&print, fmt, args);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;

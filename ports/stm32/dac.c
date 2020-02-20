@@ -229,7 +229,7 @@ STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // parse args
@@ -307,7 +307,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         } else if (pin == pin_A5) {
             dac_id = 2;
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name));
+            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name);
         }
     }
 
@@ -319,7 +319,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac_channel = DAC_CHANNEL_2;
     #endif
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id);
     }
 
     pyb_dac_obj_t *dac = &pyb_dac_obj[dac_id - 1];

@@ -2,7 +2,7 @@
 #include "lib/utils/interrupt_char.h"
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
-    return SYS_CLOCK_HW_CYCLES_TO_NS(k_cycle_get_32()) / 1000;
+    return k_cyc_to_ns_floor64(k_cycle_get_32()) / 1000;
 }
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {

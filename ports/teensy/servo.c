@@ -70,7 +70,7 @@ static mp_obj_t servo_obj_attach(mp_obj_t self_in, mp_obj_t pin_obj) {
     return mp_const_none;
 
 pin_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin));
+    mp_raise_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin);
 }
 
 static mp_obj_t servo_obj_detach(mp_obj_t self_in) {

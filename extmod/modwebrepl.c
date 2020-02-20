@@ -104,7 +104,7 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     o->data_to_recv = 0;
     o->state = STATE_PASSWD;
     write_webrepl_str(args[0], SSTR(passwd_prompt));
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC void check_file_op_finished(mp_obj_webrepl_t *self) {
@@ -187,7 +187,7 @@ STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *
 STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     // We know that os.dupterm always calls with size = 1
     assert(size == 1);
-    mp_obj_webrepl_t *self = self_in;
+    mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *sock_stream = mp_get_stream(self->sock);
     mp_uint_t out_sz = sock_stream->read(self->sock, buf, size, errcode);
     //DEBUG_printf("webrepl: Read %d initial bytes from websocket\n", out_sz);
@@ -294,7 +294,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
 }
 
 STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_webrepl_t *self = self_in;
+    mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->state == STATE_PASSWD) {
         // Don't forward output until passwd is entered
         return size;

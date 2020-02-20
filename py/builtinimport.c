@@ -401,8 +401,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_raise_msg(&mp_type_ImportError, "module not found");
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "no module named '%q'", mod_name));
+                        mp_raise_msg_varg(&mp_type_ImportError, "no module named '%q'", mod_name);
                     }
                 }
             } else {
@@ -505,8 +504,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_msg(&mp_type_ImportError, "module not found");
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-            "no module named '%q'", module_name_qstr));
+        mp_raise_msg_varg(&mp_type_ImportError, "no module named '%q'", module_name_qstr);
     }
 }
 

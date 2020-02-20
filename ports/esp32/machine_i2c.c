@@ -130,7 +130,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Get I2C bus
     mp_int_t i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
     if (!(I2C_NUM_0 <= i2c_id && i2c_id < I2C_NUM_MAX)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id);
     }
 
     // Get static peripheral object

@@ -64,7 +64,9 @@ long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t dummy = write(STDERR_FILENO, str, len);
+    MP_THREAD_GIL_ENTER();
     mp_uos_dupterm_tx_strn(str, len);
     (void)dummy;
 }
@@ -143,21 +145,17 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         if (!compile_only) {
             // execute it
             mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
         }
 
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(true);
         nlr_pop();
         return 0;
 
     } else {
         // uncaught exception
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(false);
         return handle_uncaught_exception(nlr.ret_val);
     }
 }
@@ -301,11 +299,15 @@ STATIC int do_str(const char *str) {
     return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int usage(char **argv) {
+STATIC void print_help(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
+"usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
 "Options:\n"
+"-h : print this help message\n"
+"-i : enable inspection via REPL after running command/module/file\n"
+#if MICROPY_DEBUG_PRINTERS
 "-v : verbose (trace various operations); can be multiple\n"
+#endif
 "-O[N] : apply bytecode optimizations of level N\n"
 "\n"
 "Implementation specific options (-X):\n", argv[0]
@@ -330,7 +332,10 @@ STATIC int usage(char **argv) {
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
     }
+}
 
+STATIC int invalid_args(void) {
+    fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
@@ -338,9 +343,13 @@ STATIC int usage(char **argv) {
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
+            if (strcmp(argv[a], "-h") == 0) {
+                print_help(argv);
+                exit(0);
+            }
             if (strcmp(argv[a], "-X") == 0) {
                 if (a + 1 >= argc) {
-                    exit(usage(argv));
+                    exit(invalid_args());
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
@@ -389,8 +398,7 @@ STATIC void pre_process_options(int argc, char **argv) {
 #endif
                 } else {
 invalid_arg:
-                    printf("Invalid option\n");
-                    exit(usage(argv));
+                    exit(invalid_args());
                 }
                 a++;
             }
@@ -485,7 +493,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         #endif
     }
     size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == ':') {
+    if (*path == PATHLIST_SEP_CHAR) {
         path_num++;
     }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
@@ -558,7 +566,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 inspect = true;
             } else if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
                 ret = do_str(argv[a + 1]);
                 if (ret & FORCED_EXIT) {
@@ -567,7 +575,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
                 mp_obj_t import_args[4];
                 import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
@@ -622,7 +630,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
                 }
             } else {
-                return usage(argv);
+                return invalid_args();
             }
         } else {
             char *pathbuf = malloc(PATH_MAX);
@@ -645,6 +653,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    const char *inspect_env = getenv("MICROPYINSPECT");
+    if (inspect_env && inspect_env[0] != '\0') {
+        inspect = true;
+    }
     if (ret == NOTHING_EXECUTED || inspect) {
         if (isatty(0)) {
             prompt_read_history();
@@ -707,6 +719,6 @@ uint mp_import_stat(const char *path) {
 #endif
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught NLR %p\n", val);
+    fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }

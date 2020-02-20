@@ -60,21 +60,7 @@ const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 // must return actual integer value if it fits in mp_int_t
 mp_int_t mp_float_hash(mp_float_t src) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-typedef uint64_t mp_float_uint_t;
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-typedef uint32_t mp_float_uint_t;
-#endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_uint_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
-        #else
-        struct { mp_float_uint_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
-        #endif
-        mp_float_uint_t i;
-    } u = {.f = src};
-
+    mp_float_union_t u = {.f = src};
     mp_int_t val;
     const int adj_exp = (int)u.p.exp - MP_FLOAT_EXP_BIAS;
     if (adj_exp < 0) {
@@ -185,6 +171,7 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
 const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,

@@ -92,8 +92,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
-        extern void mp_handle_pending(void); \
-        mp_handle_pending(); \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
         __WFI(); \
     } while (0);
 

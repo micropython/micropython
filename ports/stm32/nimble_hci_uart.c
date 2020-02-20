@@ -109,7 +109,7 @@ int nimble_hci_uart_configure(uint32_t port) {
 int nimble_hci_uart_activate(void) {
     // Interrupt on RX chunk received (idle)
     // Trigger nimble poll when this happens
-    mp_obj_t uart_irq_fn = mp_load_attr(&bt_hci_uart_obj, MP_QSTR_irq);
+    mp_obj_t uart_irq_fn = mp_load_attr(MP_OBJ_FROM_PTR(&bt_hci_uart_obj), MP_QSTR_irq);
     mp_obj_t uargs[] = {
         MP_OBJ_FROM_PTR(&mp_uart_interrupt_obj),
         MP_OBJ_NEW_SMALL_INT(UART_FLAG_IDLE),

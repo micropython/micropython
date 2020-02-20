@@ -39,6 +39,7 @@
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "fdfile.h"
 
 #define DEBUG 0
@@ -188,7 +189,9 @@ STATIC int poll_poll_internal(size_t n_args, const mp_obj_t *args) {
 
     self->flags = flags;
 
+    MP_THREAD_GIL_EXIT();
     int n_ready = poll(self->entries, self->len, timeout);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(n_ready, errno);
     return n_ready;
 }

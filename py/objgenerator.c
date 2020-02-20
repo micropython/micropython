@@ -243,7 +243,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (ret == mp_const_none || ret == MP_OBJ_STOP_ITERATION) {
                 return MP_OBJ_STOP_ITERATION;
             } else {
-                nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_StopIteration, ret));
             }
 
         case MP_VM_RETURN_YIELD:
@@ -261,7 +261,7 @@ STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -288,7 +288,7 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }

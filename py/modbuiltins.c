@@ -244,10 +244,10 @@ STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
     vstr_init(&line, 16);
     int ret = mp_hal_readline(&line, "");
     if (ret == CHAR_CTRL_C) {
-        nlr_raise(mp_obj_new_exception(&mp_type_KeyboardInterrupt));
+        mp_raise_type(&mp_type_KeyboardInterrupt);
     }
     if (line.len == 0 && ret == CHAR_CTRL_D) {
-        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+        mp_raise_type(&mp_type_EOFError);
     }
     return mp_obj_new_str_from_vstr(&mp_type_str, &line);
 }
@@ -321,7 +321,7 @@ STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         mp_obj_t ret = mp_iternext_allow_raise(args[0]);
         if (ret == MP_OBJ_STOP_ITERATION) {
-            nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+            mp_raise_type(&mp_type_StopIteration);
         } else {
             return ret;
         }
@@ -335,7 +335,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_next_obj, 1, 2, mp_builtin_next);
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -374,8 +374,8 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("ord expects a character");
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "ord() expected a character, but string of length %d found", (int)len));
+        mp_raise_msg_varg(&mp_type_TypeError,
+            "ord() expected a character, but string of length %d found", (int)len);
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
@@ -762,8 +762,6 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ViperTypeError), MP_ROM_PTR(&mp_type_ViperTypeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ZeroDivisionError), MP_ROM_PTR(&mp_type_ZeroDivisionError) },
-    // Somehow CPython managed to have OverflowError not inherit from ValueError ;-/
-    // TODO: For MICROPY_CPYTHON_COMPAT==0 use ValueError to avoid exc proliferation
 
     // Extra builtins as defined by a port
     MICROPY_PORT_BUILTINS

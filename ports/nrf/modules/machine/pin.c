@@ -375,7 +375,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
                      NRF_GPIO_PIN_S0S1,
                      NRF_GPIO_PIN_NOSENSE);
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
+        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode);
     }
 
     return mp_const_none;

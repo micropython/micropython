@@ -249,7 +249,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_soft_reset(void) {
     pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
@@ -310,6 +310,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
         mp_int_t ahb = sysclk;
+        #if defined (STM32H7)
+        if (ahb > 200000000) {
+            ahb /= 2;
+        }
+        #endif
         mp_int_t apb1 = ahb / 4;
         mp_int_t apb2 = ahb / 2;
         if (n_args > 1) {

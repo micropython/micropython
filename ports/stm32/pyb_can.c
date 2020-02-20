@@ -156,7 +156,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     // init CAN (if it fails, it's because the port doesn't exist)
     if (!can_init(self, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
         args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", self->can_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", self->can_id);
     }
 
     return mp_const_none;
@@ -185,13 +185,13 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
             can_idx = PYB_CAN_3;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port);
         }
     } else {
         can_idx = mp_obj_get_int(args[0]);
     }
     if (can_idx < 1 || can_idx > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", can_idx));
+        mp_raise_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", can_idx);
     }
 
     pyb_can_obj_t *self;
@@ -442,7 +442,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     enum { ARG_fifo, ARG_list, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_fifo,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_list,    MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_list,    MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -563,7 +563,7 @@ STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self, mp_obj_t bank_in) {
     #endif
 
     for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(self, f, can2_start_bank);
+        can_clearfilter(MP_OBJ_TO_PTR(self), f, can2_start_bank);
     }
     return mp_const_none;
 }

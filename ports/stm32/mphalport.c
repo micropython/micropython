@@ -23,9 +23,10 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
 MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+        mp_obj_t pyb_stdio_uart = MP_OBJ_FROM_PTR(MP_STATE_PORT(pyb_stdio_uart));
         int errcode;
-        const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_PORT(pyb_stdio_uart));
-        ret = stream_p->ioctl(MP_STATE_PORT(pyb_stdio_uart), MP_STREAM_POLL, poll_flags, &errcode);
+        const mp_stream_p_t *stream_p = mp_get_stream(pyb_stdio_uart);
+        ret = stream_p->ioctl(pyb_stdio_uart, MP_STREAM_POLL, poll_flags, &errcode);
     }
     return ret | mp_uos_dupterm_poll(poll_flags);
 }

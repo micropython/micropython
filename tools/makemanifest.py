@@ -276,10 +276,22 @@ def main():
         sys.exit(1)
 
     # Freeze .mpy files
-    res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
-    if res != 0:
-        print('error freezing mpy {}: {}'.format(mpy_files, output_mpy))
-        sys.exit(1)
+    if mpy_files:
+        res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+        if res != 0:
+            print('error freezing mpy {}:'.format(mpy_files))
+            print(str(output_mpy, 'utf8'))
+            sys.exit(1)
+    else:
+        output_mpy = (
+            b'#include "py/emitglue.h"\n'
+            b'extern const qstr_pool_t mp_qstr_const_pool;\n'
+            b'const qstr_pool_t mp_qstr_frozen_const_pool = {\n'
+            b'    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n'
+            b'};\n'
+            b'const char mp_frozen_mpy_names[1] = {"\\0"};\n'
+            b'const mp_raw_code_t *const mp_frozen_mpy_content[0] = {};\n'
+        )
 
     # Generate output
     print('GEN', args.output)

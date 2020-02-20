@@ -98,9 +98,7 @@ NORETURN void _esp_exceptions(esp_err_t e) {
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
         mp_raise_OSError(MP_ENOMEM);
       default:
-        nlr_raise(mp_obj_new_exception_msg_varg(
-          &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e
-        ));
+        mp_raise_msg_varg( &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e);
    }
 }
 
@@ -619,6 +617,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         ESP_EXCEPTIONS(tcpip_adapter_set_hostname(self->if_id, s));
                         break;
                     }
+                    case QS(MP_QSTR_max_clients): {
+                        req_if = WIFI_IF_AP;
+                        cfg.ap.max_connection = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -691,6 +694,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             const char *s;
             ESP_EXCEPTIONS(tcpip_adapter_get_hostname(self->if_id, &s));
             val = mp_obj_new_str(s, strlen(s));
+            break;
+        }
+        case QS(MP_QSTR_max_clients): {
+            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.max_connection);
             break;
         }
         default:

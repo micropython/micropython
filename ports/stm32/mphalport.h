@@ -68,7 +68,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define mp_hal_pin_od_low(p)    mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)   mp_hal_pin_high(p)
 #define mp_hal_pin_read(p)      (((p)->gpio->IDR >> (p)->pin) & 1)
-#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_write(p, v)  ((v) ? mp_hal_pin_high(p) : mp_hal_pin_low(p))
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt);

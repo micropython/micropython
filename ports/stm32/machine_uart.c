@@ -221,7 +221,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -281,7 +281,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id);
     }
 
     // set timeout
@@ -323,7 +323,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         baudrate_diff = baudrate - actual_baudrate;
     }
     if (20 * baudrate_diff > actual_baudrate) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate));
+        mp_raise_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate);
     }
 
     return mp_const_none;
@@ -394,12 +394,12 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
             uart_id = PYB_UART_10;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port);
         }
     } else {
         uart_id = mp_obj_get_int(args[0]);
         if (!uart_exists(uart_id)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id));
+            mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id);
         }
     }
 
@@ -520,7 +520,7 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         mp_uint_t not_supported = trigger & ~mp_irq_allowed;
         if (trigger != 0 && not_supported) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported));
+            mp_raise_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported);
         }
 
         // Reconfigure user IRQs

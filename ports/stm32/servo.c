@@ -192,7 +192,7 @@ STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // check servo number
     if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo(%d) doesn't exist", servo_id + 1));
+        mp_raise_msg_varg(&mp_type_ValueError, "Servo(%d) doesn't exist", servo_id + 1);
     }
 
     // get and init servo object
@@ -250,7 +250,7 @@ STATIC mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
     }
 
     // bad number of arguments
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "calibration expecting 1, 4 or 6 arguments, got %d", n_args));
+    mp_raise_msg_varg(&mp_type_TypeError, "calibration expecting 1, 4 or 6 arguments, got %d", n_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
 

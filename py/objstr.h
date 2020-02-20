@@ -50,7 +50,7 @@ typedef struct _mp_obj_str_t {
     { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->len; }
 
 // use this macro to extract the string data and length
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
 const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len);
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
     size_t str_len; const byte *str_data = mp_obj_str_get_data_no_check(str_obj_in, &str_len);

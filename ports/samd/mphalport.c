@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
 #include "samd_soc.h"
 #include "tusb.h"
 
@@ -40,19 +39,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
 }
 
 void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-    }
     tud_cdc_set_wanted_char(c);
-}
-
-void mp_keyboard_interrupt(void) {
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
-    #if MICROPY_ENABLE_SCHEDULER
-    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-    }
-    #endif
 }
 
 #endif

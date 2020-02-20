@@ -45,6 +45,12 @@
 #define CMD_CHIP_ERASE  (0xc7)
 #define CMD_C4READ      (0xeb)
 
+// 32 bit addressing commands
+#define CMD_WRITE_32    (0x12)
+#define CMD_READ_32     (0x13)
+#define CMD_SEC_ERASE_32 (0x21)
+#define CMD_C4READ_32   (0xec)
+
 #define WAIT_SR_TIMEOUT (1000000)
 
 #define PAGE_SIZE (256) // maximum bytes we can write in one SPI transfer
@@ -76,18 +82,26 @@ STATIC void mp_spiflash_write_cmd_data(mp_spiflash_t *self, uint8_t cmd, size_t 
     }
 }
 
-STATIC void mp_spiflash_write_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+STATIC void mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src, uint8_t *dest) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        uint8_t buf[4] = {cmd, addr >> 16, addr >> 8, addr};
+        uint8_t buf[5] = {cmd, 0};
+        uint8_t buff_len = 1 + mp_spi_set_addr_buff(&buf[1], addr);
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 4, buf, NULL);
-        if (len) {
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, buff_len, buf, NULL);
+        if (len && (src != NULL)) {
             c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, src, NULL);
+        } else if (len && (dest != NULL)) {
+            c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, dest, dest);
         }
+
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
-        c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
+        if (dest != NULL) {
+            c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, len, dest);
+        } else {
+            c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
+        }
     }
 }
 
@@ -107,23 +121,17 @@ STATIC uint32_t mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t le
 
 STATIC void mp_spiflash_read_data(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     const mp_spiflash_config_t *c = self->config;
+    uint8_t cmd;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        uint8_t buf[4] = {CMD_READ, addr >> 16, addr >> 8, addr};
-        mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 4, buf, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, dest, dest);
-        mp_hal_pin_write(c->bus.u_spi.cs, 1);
+        cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_READ_32 : CMD_READ;
     } else {
-        c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, CMD_C4READ, addr, len, dest);
+        cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_C4READ_32 : CMD_C4READ;
     }
+    mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest);
 }
 
 STATIC void mp_spiflash_write_cmd(mp_spiflash_t *self, uint8_t cmd) {
     mp_spiflash_write_cmd_data(self, cmd, 0, 0);
-}
-
-STATIC void mp_spiflash_write_cmd_addr(mp_spiflash_t *self, uint8_t cmd, uint32_t addr) {
-    mp_spiflash_write_cmd_addr_data(self, cmd, addr, 0, NULL);
 }
 
 STATIC int mp_spiflash_wait_sr(mp_spiflash_t *self, uint8_t mask, uint8_t val, uint32_t timeout) {
@@ -210,7 +218,8 @@ STATIC int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) 
     }
 
     // erase the sector
-    mp_spiflash_write_cmd_addr(self, CMD_SEC_ERASE, addr);
+    uint8_t cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_SEC_ERASE_32 : CMD_SEC_ERASE;
+    mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL);
 
     // wait WIP=0
     return mp_spiflash_wait_wip0(self);
@@ -227,7 +236,8 @@ STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
     }
 
     // write the page
-    mp_spiflash_write_cmd_addr_data(self, CMD_WRITE, addr, len, src);
+    uint8_t cmd = MP_SPI_ADDR_IS_32B(addr) ? CMD_WRITE_32 : CMD_WRITE;
+    mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL);
 
     // wait WIP=0
     return mp_spiflash_wait_wip0(self);

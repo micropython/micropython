@@ -51,7 +51,7 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     mp_int_t id = args[ARG_id].u_int;
     if (id != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "WDT(%d) doesn't exist", id));
+        mp_raise_msg_varg(&mp_type_ValueError, "WDT(%d) doesn't exist", id);
     }
 
     // timeout is in milliseconds

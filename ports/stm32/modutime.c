@@ -106,7 +106,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 
     // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
     if (len < 8 || len > 9) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "mktime needs a tuple of length 8 or 9 (%d given)", len));
+        mp_raise_msg_varg(&mp_type_TypeError, "mktime needs a tuple of length 8 or 9 (%d given)", len);
     }
 
     return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),

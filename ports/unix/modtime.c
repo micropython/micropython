@@ -109,7 +109,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
         if (res != -1 || errno != EINTR) {
             break;
         }
-        mp_handle_pending();
+        mp_handle_pending(true);
         //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
@@ -161,6 +161,37 @@ STATIC mp_obj_t mod_time_localtime(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_localtime_obj, 0, 1, mod_time_localtime);
 
+STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
+    size_t len;
+    mp_obj_t *elem;
+    mp_obj_get_array(tuple, &len, &elem);
+
+    // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
+    if (len < 8 || len > 9) {
+        mp_raise_TypeError("mktime needs a tuple of length 8 or 9");
+    }
+
+    struct tm time = {
+        .tm_year = mp_obj_get_int(elem[0]) - 1900,
+        .tm_mon = mp_obj_get_int(elem[1]) - 1,
+        .tm_mday = mp_obj_get_int(elem[2]),
+        .tm_hour = mp_obj_get_int(elem[3]),
+        .tm_min = mp_obj_get_int(elem[4]),
+        .tm_sec = mp_obj_get_int(elem[5]),
+    };
+    if (len == 9) {
+        time.tm_isdst = mp_obj_get_int(elem[8]);
+    } else {
+        time.tm_isdst = -1; // auto-detect
+    }
+    time_t ret = mktime(&time);
+    if (ret == -1) {
+        mp_raise_msg(&mp_type_OverflowError, "invalid mktime usage");
+    }
+    return mp_obj_new_int(ret);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
+
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
     { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) },
@@ -174,6 +205,7 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mod_time_mktime_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);

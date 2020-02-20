@@ -500,8 +500,10 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     #if MICROPY_HW_SDRAM_SIZE
     sdram_init();
+    bool sdram_valid = true;
+    UNUSED(sdram_valid);
     #if MICROPY_HW_SDRAM_STARTUP_TEST
-    sdram_test(true);
+    sdram_valid = sdram_test(true);
     #endif
     #endif
     #if MICROPY_PY_THREAD

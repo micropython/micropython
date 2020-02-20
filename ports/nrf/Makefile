@@ -47,7 +47,7 @@ MICROPY_VFS_FAT ?= 0
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I../..
@@ -56,7 +56,6 @@ INC += -I./../../lib/cmsis/inc
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
-INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I./modules/board
 INC += -I../../lib/mp-readline
@@ -230,6 +229,7 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/flash.c \
+	drivers/rng.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -292,7 +292,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	music/modmusic.c \
 	music/musictunes.c \
 	ble/modble.c \
-	random/modrandom.c \
 	)
 
 # Custom micropython startup file with smaller interrupt vector table

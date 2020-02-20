@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "py/mphal.h"
@@ -49,7 +50,7 @@ STATIC void cyw43_ethernet_trace(cyw43_t *self, struct netif *netif, size_t len,
         }
 
         if (self->trace_flags & CYW43_TRACE_MAC) {
-            printf("[% 8d] ETH%cX itf=%c%c len=%u", mp_hal_ticks_ms(), is_tx ? 'T' : 'R', netif->name[0], netif->name[1], len);
+            printf("[% 8d] ETH%cX itf=%c%c len=%u", (int)mp_hal_ticks_ms(), is_tx ? 'T' : 'R', netif->name[0], netif->name[1], len);
             printf(" MAC type=%d subtype=%d data=", buf[0] >> 2 & 3, buf[0] >> 4);
             for (size_t i = 0; i < len; ++i) {
                 printf(" %02x", buf[i]);

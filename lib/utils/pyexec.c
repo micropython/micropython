@@ -45,7 +45,10 @@
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 int pyexec_system_exit = 0;
+
+#if MICROPY_REPL_INFO
 STATIC bool repl_display_debugging_info = 0;
+#endif
 
 #define EXEC_FLAG_PRINT_EOF (1)
 #define EXEC_FLAG_ALLOW_DEBUGGING (2)
@@ -61,7 +64,9 @@ STATIC bool repl_display_debugging_info = 0;
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
 STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
+    #if MICROPY_REPL_INFO
     uint32_t start = 0;
+    #endif
 
     // by default a SystemExit exception returns 0
     pyexec_system_exit = 0;
@@ -97,9 +102,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         // execute code
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+        #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
+        #endif
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
         ret = 1;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -107,8 +115,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
     } else {
         // uncaught exception
-        // FIXME it could be that an interrupt happens just before we disable it here
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
@@ -123,6 +131,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         }
     }
 
+    #if MICROPY_REPL_INFO
     // display debugging info if wanted
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
@@ -142,6 +151,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         gc_dump_info();
         #endif
     }
+    #endif
 
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
         mp_hal_stdout_tx_strn("\x04", 1);
@@ -576,9 +586,10 @@ int pyexec_frozen_module(const char *name) {
 }
 #endif
 
+#if MICROPY_REPL_INFO
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
     repl_display_debugging_info = mp_obj_get_int(o_value);
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
+#endif

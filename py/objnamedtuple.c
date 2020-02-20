@@ -98,13 +98,13 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_msg_varg(&mp_type_TypeError,
                 "function takes %d positional arguments but %d were given",
-                num_fields, n_args + n_kw));
+                num_fields, n_args + n_kw);
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_msg_varg(&mp_type_TypeError,
                 "%q() takes %d positional arguments but %d were given",
-                type->base.name, num_fields, n_args + n_kw));
+                type->base.name, num_fields, n_args + n_kw);
         }
     }
 
@@ -124,16 +124,15 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "unexpected keyword argument '%q'", kw));
+                mp_raise_msg_varg(&mp_type_TypeError, "unexpected keyword argument '%q'", kw);
             }
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function got multiple values for argument '%q'", kw));
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    "function got multiple values for argument '%q'", kw);
             }
         }
         tuple->items[id] = args[i + 1];
@@ -155,6 +154,7 @@ mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = mp_obj_new_namedtuple_base(n_fields, fields);
     o->base.base.type = &mp_type_type;
+    o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
     o->base.name = name;
     o->base.print = namedtuple_print;
     o->base.make_new = namedtuple_make_new;

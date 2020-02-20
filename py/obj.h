@@ -87,9 +87,14 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
 static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 3) == 2); }
-#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
+    { return ((((mp_int_t)(o)) & 7) == 2); }
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 2))
+
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 7) == 6); }
+#define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 3)
+#define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 6))
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
@@ -113,9 +118,14 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 2) | 1))
 
 static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return ((((mp_int_t)(o)) & 3) == 3); }
-#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 3))
+    { return ((((mp_int_t)(o)) & 7) == 3); }
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 3))
+
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 7) == 7); }
+#define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 3)
+#define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 3) | 7))
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
@@ -161,9 +171,14 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
 #endif
 
 static inline bool mp_obj_is_qstr(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 0xff800007) == 0x00000006; }
-#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 0x00000006))
+    { return (((mp_uint_t)(o)) & 0xff80000f) == 0x00000006; }
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 4)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 4) | 0x00000006))
+
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
+    { return (((mp_uint_t)(o)) & 0xff80000f) == 0x0000000e; }
+#define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) (((mp_uint_t)(o)) >> 4)
+#define MP_OBJ_NEW_IMMEDIATE_OBJ(val) ((mp_obj_t)(((val) << 4) | 0xe))
 
 static inline bool mp_obj_is_obj(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 0); }
@@ -178,7 +193,12 @@ static inline bool mp_obj_is_small_int(mp_const_obj_t o)
 static inline bool mp_obj_is_qstr(mp_const_obj_t o)
     { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }
 #define MP_OBJ_QSTR_VALUE(o) ((((uint32_t)(o)) >> 1) & 0xffffffff)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)(((uint64_t)(((uint32_t)(qst)) << 1)) | 0x0002000000000001))
+
+static inline bool mp_obj_is_immediate_obj(mp_const_obj_t o)
+    { return ((((uint64_t)(o)) & 0xffff000000000000) == 0x0003000000000000); }
+#define MP_OBJ_IMMEDIATE_OBJ_VALUE(o) ((((uint32_t)(o)) >> 46) & 3)
+#define MP_OBJ_NEW_IMMEDIATE_OBJ(val) (((uint64_t)(val) << 46) | 0x0003000000000000)
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
@@ -241,6 +261,24 @@ typedef union _mp_rom_obj_t { uint64_t u64; struct { const void *lo, *hi; } u32;
 #endif
 
 // Macros to create objects that are stored in ROM.
+
+#ifndef MP_ROM_NONE
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+#define MP_ROM_NONE mp_const_none
+#else
+#define MP_ROM_NONE MP_ROM_PTR(&mp_const_none_obj)
+#endif
+#endif
+
+#ifndef MP_ROM_FALSE
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+#define MP_ROM_FALSE mp_const_false
+#define MP_ROM_TRUE mp_const_true
+#else
+#define MP_ROM_FALSE MP_ROM_PTR(&mp_const_false_obj)
+#define MP_ROM_TRUE MP_ROM_PTR(&mp_const_true_obj)
+#endif
+#endif
 
 #ifndef MP_ROM_INT
 typedef mp_const_obj_t mp_rom_obj_t;
@@ -345,11 +383,6 @@ typedef struct _mp_rom_map_elem_t {
     mp_rom_obj_t value;
 } mp_rom_map_elem_t;
 
-// TODO maybe have a truncated mp_map_t for fixed tables, since alloc=used
-// put alloc last in the structure, so the truncated version does not need it
-// this would save 1 ROM word for all ROM objects that have a locals_dict
-// would also need a trucated dict structure
-
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
@@ -406,6 +439,19 @@ typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 // this arg to mp_map_lookup().
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
+// Flags for type behaviour (mp_obj_type_t.flags)
+// If MP_TYPE_FLAG_EQ_NOT_REFLEXIVE is clear then __eq__ is reflexive (A==A returns True).
+// If MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE is clear then the type can't be equal to an
+// instance of any different class that also clears this flag.  If this flag is set
+// then the type may check for equality against a different type.
+// If MP_TYPE_FLAG_EQ_HAS_NEQ_TEST is clear then the type only implements the __eq__
+// operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
+#define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
+#define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
+#define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0040)
+#define MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE (0x0080)
+#define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
+
 typedef enum {
     PRINT_STR = 0,
     PRINT_REPR = 1,
@@ -435,18 +481,9 @@ typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_b
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
-    // if we'd bother to support various versions of structure
-    // (with different number of fields), we can distinguish
-    // them with ver = sizeof(struct). Cons: overkill for *micro*?
-    //int ver; // ?
-
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
-
-    // Rationale: to load arbitrary-sized sprites directly to LCD
-    // Cons: a bit adhoc usecase
-    // int stride;
 } mp_buffer_info_t;
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
@@ -602,17 +639,27 @@ extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
 
-// Constant objects, globally accessible
-// The macros are for convenience only
+// Constant objects, globally accessible: None, False, True
+// These should always be accessed via the below macros.
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+// None is even while False/True are odd so their types can be distinguished with 1 bit.
+#define mp_const_none MP_OBJ_NEW_IMMEDIATE_OBJ(0)
+#define mp_const_false MP_OBJ_NEW_IMMEDIATE_OBJ(1)
+#define mp_const_true MP_OBJ_NEW_IMMEDIATE_OBJ(3)
+#else
 #define mp_const_none (MP_OBJ_FROM_PTR(&mp_const_none_obj))
 #define mp_const_false (MP_OBJ_FROM_PTR(&mp_const_false_obj))
 #define mp_const_true (MP_OBJ_FROM_PTR(&mp_const_true_obj))
-#define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
-#define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
-#define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_none_t mp_const_none_obj;
 extern const struct _mp_obj_bool_t mp_const_false_obj;
 extern const struct _mp_obj_bool_t mp_const_true_obj;
+#endif
+
+// Constant objects, globally accessible: b'', (), Ellipsis, NotImplemented, GeneratorExit()
+// The below macros are for convenience only.
+#define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
+#define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
+#define mp_const_notimplemented (MP_OBJ_FROM_PTR(&mp_const_notimplemented_obj))
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
@@ -626,6 +673,12 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
 #define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+// bool's are immediates, not real objects, so test for the 2 possible values.
+#define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
+#else
+#define mp_obj_is_bool(o) mp_obj_is_type(o, &mp_type_bool)
+#endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
@@ -654,6 +707,9 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+#ifdef va_start
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list arg); // same fmt restrictions as above
+#endif
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig);
@@ -669,7 +725,7 @@ mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_obj_new_module(qstr module_name);
 mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
-mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
+const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
 mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type);
@@ -680,9 +736,10 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
 
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
+mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
-static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_type(o, &mp_type_bool); } // returns true if o is bool, small int or long int
+static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_bool(o); } // returns true if o is bool, small int or long int
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
@@ -709,6 +766,8 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in);
 // Will raise exception if value doesn't fit into mp_int_t
 mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in);
+// Will raise exception if value is negative or doesn't fit into mp_uint_t
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in);
 
 // exception
 #define mp_obj_is_native_exception_instance(o) (mp_obj_get_type(o)->make_new == mp_obj_exception_make_new)
@@ -778,8 +837,21 @@ static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
 
+// slice indexes resolved to particular sequence
+typedef struct {
+    mp_int_t start;
+    mp_int_t stop;
+    mp_int_t step;
+} mp_bound_slice_t;
+
 // slice
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step);
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
 
 // functions
 
@@ -835,13 +907,6 @@ typedef struct _mp_rom_obj_static_class_method_t {
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // sequence helpers
-
-// slice indexes resolved to particular sequence
-typedef struct {
-    mp_uint_t start;
-    mp_uint_t stop;
-    mp_int_t step;
-} mp_bound_slice_t;
 
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);
 #if MICROPY_PY_BUILTINS_SLICE

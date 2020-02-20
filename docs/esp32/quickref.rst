@@ -82,6 +82,7 @@ The :mod:`network` module::
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
 A useful function for connecting to your local WiFi network is::
@@ -435,7 +436,7 @@ For low-level driving of a NeoPixel::
    ``NeoPixel`` object.
 
 
-Capacitive Touch
+Capacitive touch
 ----------------
 
 Use the ``TouchPad`` class in the ``machine`` module::

@@ -124,7 +124,7 @@ Functions
    string for first position which matches regex (which still may be
    0 if regex is anchored).
 
-.. function:: sub(regex_str, replace, string, count=0, flags=0)
+.. function:: sub(regex_str, replace, string, count=0, flags=0, /)
 
    Compile *regex_str* and search for it in *string*, replacing all matches
    with *replace*, and returning the new string.
@@ -156,14 +156,14 @@ Compiled regular expression. Instances of this class are created using
 
 .. method:: regex.match(string)
             regex.search(string)
-            regex.sub(replace, string, count=0, flags=0)
+            regex.sub(replace, string, count=0, flags=0, /)
 
    Similar to the module-level functions :meth:`match`, :meth:`search`
    and :meth:`sub`.
    Using methods is (much) more efficient if the same regex is applied to
    multiple strings.
 
-.. method:: regex.split(string, max_split=-1)
+.. method:: regex.split(string, max_split=-1, /)
 
    Split a *string* using regex. If *max_split* is given, it specifies
    maximum number of splits to perform. Returns list of strings (there

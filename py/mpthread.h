@@ -30,16 +30,16 @@
 
 #if MICROPY_PY_THREAD
 
+struct _mp_state_thread_t;
+
 #ifdef MICROPY_MPTHREADPORT_H
 #include MICROPY_MPTHREADPORT_H
 #else
 #include <mpthreadport.h>
 #endif
 
-struct _mp_state_thread_t;
-
 struct _mp_state_thread_t *mp_thread_get_state(void);
-void mp_thread_set_state(void *state);
+void mp_thread_set_state(struct _mp_state_thread_t *state);
 void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size);
 void mp_thread_start(void);
 void mp_thread_finish(void);

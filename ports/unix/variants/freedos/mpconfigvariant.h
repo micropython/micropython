@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Ayke van Laethem
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,17 @@
  * THE SOFTWARE.
  */
 
-uint32_t machine_rng_generate_random_word(void);
+// options to control how MicroPython is built
+
+#define MICROPY_PY_USELECT_POSIX (0)
+
+#define MICROPY_STREAMS_NON_BLOCK (0)
+
+#define MICROPY_PY_SYS_PLATFORM "freedos"
+
+// djgpp dirent struct does not have d_ino field
+#undef _DIRENT_HAVE_D_INO
+
+#define MICROPY_USE_INTERNAL_ERRNO  (1)
+
+#include "variants/DEV/mpconfigvariant.h"

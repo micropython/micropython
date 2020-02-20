@@ -200,8 +200,7 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
             return;
         }
     }
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                            "Unsupported I2C baudrate: %u", baudrate));
+    mp_raise_msg_varg(&mp_type_ValueError, "Unsupported I2C baudrate: %u", baudrate);
 }
 
 uint32_t pyb_i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
@@ -599,7 +598,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, size_t n_args, co
         { MP_QSTR_gencall,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_dma,      MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         #if PYB_I2C_TIMINGR
-        { MP_QSTR_timingr,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_timingr,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         #endif
     };
 
@@ -680,15 +679,13 @@ STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
             i2c_id = 4;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%s) doesn't exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
         }
     } else {
         i2c_id = mp_obj_get_int(args[0]);
         if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(pyb_i2c_obj)
             || pyb_i2c_obj[i2c_id - 1].i2c == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "I2C(%d) doesn't exist", i2c_id));
+            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id);
         }
     }
 

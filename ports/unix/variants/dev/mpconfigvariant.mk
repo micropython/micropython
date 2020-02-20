@@ -1,0 +1,1 @@
+PROG ?= micropython-dev

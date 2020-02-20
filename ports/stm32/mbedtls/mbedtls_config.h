@@ -54,6 +54,11 @@
 #define MBEDTLS_SSL_PROTO_TLS1_2
 #define MBEDTLS_SSL_SERVER_NAME_INDICATION
 
+// Use a smaller output buffer to reduce size of SSL context
+#define MBEDTLS_SSL_MAX_CONTENT_LEN (16384)
+#define MBEDTLS_SSL_IN_CONTENT_LEN  (MBEDTLS_SSL_MAX_CONTENT_LEN)
+#define MBEDTLS_SSL_OUT_CONTENT_LEN (4096)
+
 // Enable mbedtls modules
 #define MBEDTLS_AES_C
 #define MBEDTLS_ASN1_PARSE_C

@@ -403,7 +403,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         #endif
         } else {
             // No ADC function on given pin
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) does not have ADC capabilities", pin->name));
+            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) does not have ADC capabilities", pin->name);
         }
         channel = pin->adc_channel;
 
