@@ -84,7 +84,7 @@ SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
 
 EXTMOD_SRC_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/npl_os.c \
-	nimble/hci_uart.c \
+	hal/hal_uart.c \
 	)
 
 INC += -I$(TOP)/$(NIMBLE_EXTMOD_DIR)

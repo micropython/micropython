@@ -49,7 +49,7 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
-#if MICROPY_BLUETOOTH_NIMBLE
+#if MICROPY_PY_BLUETOOTH
 #include "extmod/modbluetooth.h"
 #endif
 
@@ -539,9 +539,9 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
-    #if MICROPY_BLUETOOTH_NIMBLE
-    extern void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms);
-    systick_enable_dispatch(SYSTICK_DISPATCH_NIMBLE, mod_bluetooth_nimble_poll_wrapper);
+    #if MICROPY_PY_BLUETOOTH
+    extern void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms);
+    systick_enable_dispatch(SYSTICK_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll_wrapper);
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43

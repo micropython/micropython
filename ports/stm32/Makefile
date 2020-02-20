@@ -460,10 +460,11 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 
+SRC_C += modbluetooth_hci.c
+
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += nimble.c
-SRC_C += nimble_hci_uart.c
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)

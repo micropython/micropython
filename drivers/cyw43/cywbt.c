@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,7 @@
 #include "py/mphal.h"
 #include "pin_static_af.h"
 #include "uart.h"
-#include "cywbt.h"
-#include "nimble/hci_uart.h"
+#include "extmod/modbluetooth_hci.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 
@@ -42,7 +41,7 @@ extern const char fw_4343WA1_7_45_98_50_start;
 /******************************************************************************/
 // CYW BT HCI low-level driver
 
-static void cywbt_wait_cts_low(void) {
+STATIC void cywbt_wait_cts_low(void) {
     mp_hal_pin_config(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
     for (int i = 0; i < 200; ++i) {
         if (mp_hal_pin_read(pyb_pin_BT_CTS) == 0) {
@@ -53,13 +52,13 @@ static void cywbt_wait_cts_low(void) {
     mp_hal_pin_config_alt_static(pyb_pin_BT_CTS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, STATIC_AF_USART6_CTS);
 }
 
-static int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
-    uart_tx_strn(&bt_hci_uart_obj, (void*)buf, len);
+STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
+    uart_tx_strn(&mp_bluetooth_hci_uart_obj, (void*)buf, len);
     for (int i = 0; i < 6; ++i) {
-        while (!uart_rx_any(&bt_hci_uart_obj)) {
+        while (!uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
             MICROPY_EVENT_POLL_HOOK
         }
-        buf[i] = uart_rx_char(&bt_hci_uart_obj);
+        buf[i] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
     }
 
     // expect a comand complete event (event 0x0e)
@@ -76,17 +75,17 @@ static int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
 
     int sz = buf[2] - 3;
     for (int i = 0; i < sz; ++i) {
-        while (!uart_rx_any(&bt_hci_uart_obj)) {
+        while (!uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
             MICROPY_EVENT_POLL_HOOK
         }
-        buf[i] = uart_rx_char(&bt_hci_uart_obj);
+        buf[i] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
     }
 
     return 0;
 }
 
-static int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
-    uint8_t *buf = bt_hci_cmd_buf;
+STATIC int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
+    uint8_t *buf = mp_bluetooth_hci_cmd_buf;
     buf[0] = 0x01;
     buf[1] = ocf;
     buf[2] = ogf << 2 | ocf >> 8;
@@ -97,19 +96,19 @@ static int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *para
     return cywbt_hci_cmd_raw(4 + param_len, buf);
 }
 
-static void put_le16(uint8_t *buf, uint16_t val) {
+STATIC void put_le16(uint8_t *buf, uint16_t val) {
     buf[0] = val;
     buf[1] = val >> 8;
 }
 
-static void put_le32(uint8_t *buf, uint32_t val) {
+STATIC void put_le32(uint8_t *buf, uint32_t val) {
     buf[0] = val;
     buf[1] = val >> 8;
     buf[2] = val >> 16;
     buf[3] = val >> 24;
 }
 
-static int cywbt_set_baudrate(uint32_t baudrate) {
+STATIC int cywbt_set_baudrate(uint32_t baudrate) {
     uint8_t buf[6];
     put_le16(buf, 0);
     put_le32(buf + 2, baudrate);
@@ -117,12 +116,12 @@ static int cywbt_set_baudrate(uint32_t baudrate) {
 }
 
 // download firmware
-static int cywbt_download_firmware(const uint8_t *firmware) {
+STATIC int cywbt_download_firmware(const uint8_t *firmware) {
     cywbt_hci_cmd(0x3f, 0x2e, 0, NULL);
 
     bool last_packet = false;
     while (!last_packet) {
-        uint8_t *buf = bt_hci_cmd_buf;
+        uint8_t *buf = mp_bluetooth_hci_cmd_buf;
         memcpy(buf + 1, firmware, 3);
         firmware += 3;
         last_packet = buf[1] == 0x4e;
@@ -149,15 +148,15 @@ static int cywbt_download_firmware(const uint8_t *firmware) {
     cywbt_wait_cts_low();
     mp_hal_pin_config(pyb_pin_WL_GPIO_1, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_DOWN, 0); // Select chip antenna (could also select external)
 
-    nimble_hci_uart_set_baudrate(115200);
+    mp_bluetooth_hci_uart_set_baudrate(115200);
     cywbt_set_baudrate(3000000);
-    nimble_hci_uart_set_baudrate(3000000);
+    mp_bluetooth_hci_uart_set_baudrate(3000000);
 
     return 0;
 }
 
-int cywbt_init(void) {
-    // This is called from Nimble via hal_uart_config which will have already initialized the UART.
+int mp_bluetooth_hci_controller_init(void) {
+    // This is called immediately after the UART is initialised during stack initialisation.
 
     mp_hal_pin_output(pyb_pin_BT_REG_ON);
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
@@ -172,11 +171,11 @@ int cywbt_init(void) {
     return 0;
 }
 
-int cywbt_activate(void) {
+int mp_bluetooth_hci_controller_activate(void) {
     uint8_t buf[256];
 
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
-    nimble_hci_uart_set_baudrate(115200);
+    mp_bluetooth_hci_uart_set_baudrate(115200);
     mp_hal_delay_ms(100);
     mp_hal_pin_high(pyb_pin_BT_REG_ON);
     cywbt_wait_cts_low();
@@ -186,7 +185,7 @@ int cywbt_activate(void) {
 
     // Change baudrate
     cywbt_set_baudrate(3000000);
-    nimble_hci_uart_set_baudrate(3000000);
+    mp_bluetooth_hci_uart_set_baudrate(3000000);
 
     cywbt_download_firmware((const uint8_t*)CYWBT_FW_ADDR);
 
@@ -216,6 +215,59 @@ int cywbt_activate(void) {
     cywbt_hci_cmd(3, 109, 2, (const uint8_t*)"\x01\x00");
 
     mp_hal_pin_high(pyb_pin_BT_DEV_WAKE); // let sleep
+
+    return 0;
+}
+
+int mp_bluetooth_hci_controller_deactivate(void) {
+    mp_hal_pin_low(pyb_pin_BT_REG_ON);
+
+    return 0;
+}
+
+#ifdef pyb_pin_BT_DEV_WAKE
+STATIC uint32_t bt_sleep_ticks;
+#endif
+
+int mp_bluetooth_hci_controller_sleep_maybe(void) {
+    #ifdef pyb_pin_BT_DEV_WAKE
+    if (mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 0) {
+        if (mp_hal_ticks_ms() - bt_sleep_ticks > 500) {
+            mp_hal_pin_high(pyb_pin_BT_DEV_WAKE); // let sleep
+        }
+    }
+    #endif
+    return 0;
+}
+
+bool mp_bluetooth_hci_controller_woken(void) {
+    #ifdef pyb_pin_BT_HOST_WAKE
+    bool host_wake = mp_hal_pin_read(pyb_pin_BT_HOST_WAKE);
+    /*
+    // this is just for info/tracing purposes
+    static bool last_host_wake = false;
+    if (host_wake != last_host_wake) {
+        printf("HOST_WAKE change %d -> %d\n", last_host_wake, host_wake);
+        last_host_wake = host_wake;
+    }
+    */
+    return host_wake;
+    #else
+    return true;
+    #endif
+}
+
+int mp_bluetooth_hci_controller_wakeup(void) {
+    #ifdef pyb_pin_BT_DEV_WAKE
+    bt_sleep_ticks = mp_hal_ticks_ms();
+
+    if (mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 1) {
+        mp_hal_pin_low(pyb_pin_BT_DEV_WAKE); // wake up
+        // Use delay_us rather than delay_ms to prevent running the scheduler (which
+        // might result in more BLE operations).
+        mp_hal_delay_us(5000); // can't go lower than this
+    }
+    #endif
 
     return 0;
 }

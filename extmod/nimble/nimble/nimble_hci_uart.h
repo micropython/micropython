@@ -23,21 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
-#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
+#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
+#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
+
+// Extensions to extmod/modbluetooth_hci.h specific to NimBLE.
 
 #include "extmod/nimble/hal/hal_uart.h"
 
-// To be implemented by the port.
+// Helpers called from ports.
+void mp_bluetooth_nimble_hci_uart_process(void);
 
-int nimble_hci_uart_configure(uint32_t port);
+// Must be provided by the port.
+void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
+void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len);
 
-// This will default to MICROPY_HW_BLE_UART_BAUDRATE, but can be updated later.
-int nimble_hci_uart_set_baudrate(uint32_t baudrate);
-
-int nimble_hci_uart_activate(void);
-
-void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
-void nimble_hci_uart_tx_strn(const char *str, uint len);
-
-#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
+#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
