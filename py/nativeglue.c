@@ -253,8 +253,6 @@ STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
 
 #endif
 
-extern int plat_relo_tab[];
-
 // these must correspond to the respective enum in nativeglue.h
 const mp_fun_table_t mp_fun_table = {
     mp_const_none,
@@ -346,7 +344,6 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_readinto_obj,
     &mp_stream_unbuffered_readline_obj,
     &mp_stream_write_obj,
-    (void*)&plat_relo_tab,
 };
 
 #endif // MICROPY_EMIT_NATIVE

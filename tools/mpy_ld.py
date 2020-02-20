@@ -701,7 +701,6 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             'mp_stream_readinto_obj',
             'mp_stream_unbuffered_readline_obj',
             'mp_stream_write_obj',
-            #'plat_relo_tab',
         ])
     }
     plat_relo_sec = Section('.external.plat_relo_tab', b'', 0)
@@ -918,6 +917,8 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
                 kind = 7 + kind
             else: # element of plat_relo_tab
                 pass
+        else:
+            assert(0, kind)
         assert addr % env.arch.word_size == 0, addr
         offset = addr // env.arch.word_size
         if kind == prev_kind and base == prev_base and offset == prev_offset + 1:

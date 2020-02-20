@@ -170,7 +170,6 @@ typedef struct _mp_fun_table_t {
     const mp_obj_fun_builtin_var_t *stream_readinto_obj;
     const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;
     const mp_obj_fun_builtin_var_t *stream_write_obj;
-    const int *plat_relo_tab;
 } mp_fun_table_t;
 
 extern const mp_fun_table_t mp_fun_table;

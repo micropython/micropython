@@ -783,7 +783,7 @@ $(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.pro
 
 $(BUILD)/plat_relo.s: plat_relo.py
 	$(ECHO) "GEN platform relocations"
-	$(Q)./plat_relo.py --tab >$@
+	$(Q)./plat_relo.py >$@
 
 define compile_cxx
 $(ECHO) "CXX $<"

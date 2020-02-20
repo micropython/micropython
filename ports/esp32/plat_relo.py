@@ -7,8 +7,6 @@
 # from C code in dynamically loaded native modules. The native module can then #include the esp-idf
 # header files as usual and call the functions normally.
 
-import sys
-
 # TODO: this needs to be loaded from a file, not hard-coded here
 entry_points = [
     "pcnt_unit_config",
