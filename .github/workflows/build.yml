@@ -157,6 +157,7 @@ jobs:
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
         - "feather_m4_express"
+        - "feather_m7_1011"
         - "feather_mimxrt1011"
         - "feather_mimxrt1062"
         - "feather_nrf52840_express"
