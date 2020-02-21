@@ -344,6 +344,11 @@ const mp_fun_table_t mp_fun_table = {
     &mp_stream_readinto_obj,
     &mp_stream_unbuffered_readline_obj,
     &mp_stream_write_obj,
+    #ifdef MICROPY_PORT_FUN_TABLE
+    &mp_port_fun_table,
+    #else
+    NULL,
+    #endif
 };
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER

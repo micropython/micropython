@@ -31,6 +31,12 @@
 #include "py/persistentcode.h"
 #include "py/stream.h"
 
+#if MICROPY_PORT_FUN_TABLE
+#include "portnativeglue.h"
+#else
+typedef void* mp_port_fun_table_t;
+#endif
+
 typedef enum {
     MP_F_CONST_NONE_OBJ = 0,
     MP_F_CONST_FALSE_OBJ,
@@ -170,6 +176,7 @@ typedef struct _mp_fun_table_t {
     const mp_obj_fun_builtin_var_t *stream_readinto_obj;
     const mp_obj_fun_builtin_var_t *stream_unbuffered_readline_obj;
     const mp_obj_fun_builtin_var_t *stream_write_obj;
+    const mp_port_fun_table_t *port_fun_table;
 } mp_fun_table_t;
 
 extern const mp_fun_table_t mp_fun_table;

@@ -215,4 +215,13 @@ static inline void mp_raise_OSError_dyn(int er) {
 #define mp_obj_get_float(o)         (mp_obj_get_float_to_d((o)))
 #endif
 
+/******************************************************************************/
+// Port-specific functionality
+
+#if MICROPY_PORT_FUN_TABLE
+#define mp_port_fun_table           (*mp_fun_table.port_fun_table)
+#else
+#define mp_port_fun_table           ERROR_must_set_PORT_in_natmod_make
+#endif
+
 #endif // MICROPY_INCLUDED_PY_DYNRUNTIME_H

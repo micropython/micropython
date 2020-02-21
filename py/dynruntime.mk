@@ -32,6 +32,11 @@ CFLAGS += -fpic -fno-common
 CFLAGS += -U _FORTIFY_SOURCE # prevent use of __*_chk libc functions
 #CFLAGS += -fdata-sections -ffunction-sections
 
+ifneq ($(PORT),)
+CFLAGS += -I$(MPY_DIR)/ports/$(PORT)
+CFLAGS += -DMICROPY_PORT_FUN_TABLE
+endif
+
 MPY_CROSS_FLAGS += -march=$(ARCH)
 
 SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))))
