@@ -132,6 +132,14 @@ NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) 
     nlr_raise(exception);
 }
 
+// Called when _bleio is imported.
+STATIC mp_obj_t bleio___init__(void) {
+    common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
+
+
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
@@ -156,6 +164,10 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ConnectionError),     MP_ROM_PTR(&mp_type_bleio_ConnectionError) },
     { MP_ROM_QSTR(MP_QSTR_RoleError),           MP_ROM_PTR(&mp_type_bleio_RoleError) },
     { MP_ROM_QSTR(MP_QSTR_SecurityError),       MP_ROM_PTR(&mp_type_bleio_SecurityError) },
+
+    // Initialization
+    { MP_ROM_QSTR(MP_QSTR___init__),            MP_ROM_PTR(&bleio___init___obj) },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);

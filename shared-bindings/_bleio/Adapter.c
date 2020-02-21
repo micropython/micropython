@@ -117,7 +117,7 @@ const mp_obj_property_t bleio_adapter_address_obj = {
 
 //|   .. attribute:: name
 //|
-//|       name of the BLE adapter used once connected. Not used in advertisements.
+//|       name of the BLE adapter used once connected.
 //|       The name is "CIRCUITPY" + the last four hex digits of ``adapter.address``,
 //|       to make it easy to distinguish multiple CircuitPython boards.
 //|
