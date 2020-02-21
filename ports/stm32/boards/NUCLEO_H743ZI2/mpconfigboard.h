@@ -72,7 +72,7 @@ void NUCLEO_H743ZI2_board_early_init(void);
 #define MICROPY_HW_I2C4_SDA         (pin_F15)
 
 // SPI
-#define MICROPY_HW_SPI3_NSS         (pin_A4)
+#define MICROPY_HW_SPI3_NSS         (pin_A15)
 #define MICROPY_HW_SPI3_SCK         (pin_B3)
 #define MICROPY_HW_SPI3_MISO        (pin_B4)
 #define MICROPY_HW_SPI3_MOSI        (pin_B5)
