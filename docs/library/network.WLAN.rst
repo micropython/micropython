@@ -116,6 +116,25 @@ Methods
     print(ap.config('essid'))
     print(ap.config('channel'))
 
+   ESP32 only:
+   The 'txpower' parameter returns rounded values in dBm and is set according
+   to the following intervals:
+   
+    * [-19 -]   -10.75 dBm
+    * [-18, -7]  -4.75 dBm
+    * [-6, 5]    -1.75 dBm
+    * [6, 17]     1.25 dBm
+    * [18, 25]    4.25 dBm
+    * [26, 31]    6.25 dBm
+    * [32, 41]    7.75 dBm
+    * [42, 49]   10.25 dBm
+    * [50, 53]   12.25 dBm
+    * [54, 57]   13.25 dBm
+    * [58, 63]   14.25 dBm
+    * [64, 69]   15.75 dBm
+    * [70, 75]   17.25 dBm
+    * [76 +]     18.75 dBm
+   
    Following are commonly supported parameters (availability of a specific parameter
    depends on network technology type, driver, and `MicroPython port`).
 
@@ -128,5 +147,6 @@ Methods
    hidden         Whether ESSID is hidden (boolean)
    authmode       Authentication mode supported (enumeration, see module constants)
    password       Access password (string)
+   txpower        Maximum WiFi transmitting power (integer)
    dhcp_hostname  The DHCP hostname to use
    =============  ===========
