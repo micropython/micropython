@@ -708,7 +708,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_txpower): {
             int8_t power;
             ESP_EXCEPTIONS(esp_wifi_get_max_tx_power(&power));
-            val = MP_OBJ_NEW_SMALL_INT(power);
+            val = MP_OBJ_NEW_SMALL_INT(power * 0.25);
             break;
         }
         default:
