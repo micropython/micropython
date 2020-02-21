@@ -351,6 +351,7 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	portnativeglue.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 

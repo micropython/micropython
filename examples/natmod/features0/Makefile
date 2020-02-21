@@ -8,7 +8,9 @@ MOD = features0
 SRC = features0.c
 
 # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
-ARCH = x64
+ARCH = xtensawin
+
+PORT = esp32
 
 # Include to get the rules for compiling and linking the module
 include $(MPY_DIR)/py/dynruntime.mk

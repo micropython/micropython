@@ -7,22 +7,24 @@
 // Include the header file to get access to the MicroPython API
 #include "py/dynruntime.h"
 
-// Helper function to compute factorial
-STATIC mp_int_t factorial_helper(mp_int_t x) {
-    if (x == 0) {
-        return 1;
-    }
-    return x * factorial_helper(x - 1);
-}
+// // Helper function to compute factorial
+// STATIC mp_int_t factorial_helper(mp_int_t x) {
+//     if (x == 0) {
+//         return 1;
+//     }
+//     return x * factorial_helper(x - 1);
+// }
 
 // This is the function which will be called from Python, as factorial(x)
 STATIC mp_obj_t factorial(mp_obj_t x_obj) {
-    // Extract the integer from the MicroPython input object
-    mp_int_t x = mp_obj_get_int(x_obj);
-    // Calculate the factorial
-    mp_int_t result = factorial_helper(x);
-    // Convert the result to a MicroPython integer object and return it
-    return mp_obj_new_int(result);
+    // // Extract the integer from the MicroPython input object
+    // mp_int_t x = mp_obj_get_int(x_obj);
+    // // Calculate the factorial
+    // mp_int_t result = factorial_helper(x);
+    // // Convert the result to a MicroPython integer object and return it
+    // return mp_obj_new_int(result);
+
+    return mp_obj_new_int(mp_port_fun_table.esp_clk_cpu_freq());
 }
 // Define a Python reference to the function above
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(factorial_obj, factorial);
