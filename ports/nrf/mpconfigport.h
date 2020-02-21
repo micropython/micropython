@@ -164,6 +164,7 @@
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
+    uint16_t* pixels_pattern_heap; \
     ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
 
 

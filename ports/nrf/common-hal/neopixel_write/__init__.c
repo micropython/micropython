@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/mpstate.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "nrf_pwm.h"
 
@@ -97,14 +98,11 @@ static NRF_PWM_Type* find_free_pwm (void) {
     return NULL;
 }
 
-static uint16_t* pixels_pattern_heap = NULL;
 static size_t pixels_pattern_heap_size = 0;
-static bool pattern_on_heap = false;
 // Called during reset_port() to free the pattern buffer
 void neopixel_write_reset(void) {
-    pixels_pattern_heap = NULL;
+    MP_STATE_VM(pixels_pattern_heap) = NULL;
     pixels_pattern_heap_size = 0;
-    pattern_on_heap = false;
 }
 
 uint64_t next_start_tick_ms = 0;
@@ -148,10 +146,11 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
             (void) sd_softdevice_is_enabled(&sd_en);
 
             if (pixels_pattern_heap_size < pattern_size) {
-                if (pattern_on_heap) {
-                    m_free(pixels_pattern_heap);
+                // Current heap buffer is too small.
+                if (MP_STATE_VM(pixels_pattern_heap)) {
+                    // Old pixels_pattern_heap will be gc'd; don't free it.
                     pixels_pattern = NULL;
-                    pixels_pattern_heap = NULL;
+                    MP_STATE_VM(pixels_pattern_heap) = NULL;
                     pixels_pattern_heap_size = 0;
                 }
 
@@ -159,16 +158,17 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
                     // If the soft device is enabled then we must use PWM to
                     // transmit. This takes a bunch of memory to do so raise an
                     // exception if we can't.
-                    pixels_pattern_heap = (uint16_t *) m_malloc(pattern_size, false);
+                    MP_STATE_VM(pixels_pattern_heap) = (uint16_t *) m_malloc(pattern_size, false);
                 } else {
-                    pixels_pattern_heap = (uint16_t *) m_malloc_maybe(pattern_size, false);
+                    // Might return NULL.
+                    MP_STATE_VM(pixels_pattern_heap) = (uint16_t *) m_malloc_maybe(pattern_size, false);
                 }
-                if (pixels_pattern_heap) {
-                    pattern_on_heap = true;
+                if (MP_STATE_VM(pixels_pattern_heap)) {
                     pixels_pattern_heap_size = pattern_size;
                 }
             }
-            pixels_pattern = pixels_pattern_heap;
+            // Might be NULL, which means we failed to allocate.
+            pixels_pattern = MP_STATE_VM(pixels_pattern_heap);
         }
     }
 
@@ -176,7 +176,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     wait_until(next_start_tick_ms, next_start_tick_us);
 
     // Use the identified device to choose the implementation
-    // If a PWM device is available use DMA
+    // If a PWM device is available and we have a buffer, use DMA.
     if ( (pixels_pattern != NULL) && (pwm != NULL) ) {
         uint16_t pos = 0;  // bit position
 
