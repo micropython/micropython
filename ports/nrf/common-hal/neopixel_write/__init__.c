@@ -150,18 +150,21 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
                 if (MP_STATE_VM(pixels_pattern_heap)) {
                     // Old pixels_pattern_heap will be gc'd; don't free it.
                     pixels_pattern = NULL;
-                    MP_STATE_VM(pixels_pattern_heap) = NULL;
                     pixels_pattern_heap_size = 0;
                 }
 
+                // realloc routines fall back to a plain malloc if the incoming ptr is NULL.
                 if (sd_en) {
                     // If the soft device is enabled then we must use PWM to
                     // transmit. This takes a bunch of memory to do so raise an
                     // exception if we can't.
-                    MP_STATE_VM(pixels_pattern_heap) = (uint16_t *) m_malloc(pattern_size, false);
+                    MP_STATE_VM(pixels_pattern_heap) =
+                        (uint16_t *) m_realloc(MP_STATE_VM(pixels_pattern_heap), pattern_size);
                 } else {
                     // Might return NULL.
-                    MP_STATE_VM(pixels_pattern_heap) = (uint16_t *) m_malloc_maybe(pattern_size, false);
+                    MP_STATE_VM(pixels_pattern_heap) =
+                        // true means move if necessary.
+                        (uint16_t *) m_realloc_maybe(MP_STATE_VM(pixels_pattern_heap), pattern_size, true);
                 }
                 if (MP_STATE_VM(pixels_pattern_heap)) {
                     pixels_pattern_heap_size = pattern_size;
