@@ -39,7 +39,7 @@ typedef struct {
     bool more_data;
     uint32_t* remaining_buffer;
     uint32_t buffer_length;
-    int16_t level;
+    uint16_t level;
 } audiomixer_mixervoice_obj_t;
 
 

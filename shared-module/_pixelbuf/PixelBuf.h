@@ -27,10 +27,38 @@
 
 #include "py/obj.h"
 #include "py/objarray.h"
-#include "../../shared-bindings/_pixelbuf/types.h"
 
 #ifndef PIXELBUF_SHARED_MODULE_H
 #define PIXELBUF_SHARED_MODULE_H
+
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t w;
+} pixelbuf_rgbw_t;
+
+typedef struct {
+    uint8_t bpp;
+    pixelbuf_rgbw_t byteorder;
+    bool has_white;
+    bool is_dotstar;
+    mp_obj_t order_string;
+} pixelbuf_byteorder_details_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    size_t pixel_count;
+    size_t bytes_per_pixel;
+    pixelbuf_byteorder_details_t byteorder;
+    mp_float_t brightness;
+    mp_obj_t transmit_buffer_obj;
+    // The post_brightness_buffer is offset into the buffer allocated in transmit_buffer_obj to
+    // account for any header.
+    uint8_t *post_brightness_buffer;
+    uint8_t *pre_brightness_buffer;
+    bool auto_write;
+} pixelbuf_pixelbuf_obj_t;
 
 #define PIXEL_R 0
 #define PIXEL_G 1
@@ -38,13 +66,6 @@
 #define PIXEL_W 3
 
 #define DOTSTAR_LED_START 0b11100000
-#define DOTSTAR_BRIGHTNESS(brightness) ((32 - (uint8_t)(32 - brightness * 31)) & 0b00011111)
-#define DOTSTAR_GET_BRIGHTNESS(value) ((value & 0b00011111) / 31.0)
 #define DOTSTAR_LED_START_FULL_BRIGHT 0xFF
-
-void pixelbuf_set_pixel(uint8_t *buf, uint8_t *rawbuf, float brightness, mp_obj_t *item, pixelbuf_byteorder_details_t *byteorder, bool dotstar);
-mp_obj_t *pixelbuf_get_pixel(uint8_t *buf, pixelbuf_byteorder_details_t *byteorder, bool dotstar);
-mp_obj_t *pixelbuf_get_pixel_array(uint8_t *buf, uint len, pixelbuf_byteorder_details_t *byteorder, uint8_t step, mp_int_t slice_step, bool dotstar);
-void pixelbuf_set_pixel_int(uint8_t *buf, mp_int_t value, pixelbuf_byteorder_details_t *byteorder);
 
 #endif

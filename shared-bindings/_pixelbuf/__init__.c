@@ -29,11 +29,8 @@
 #include "py/runtime.h"
 #include "py/objproperty.h"
 
-#include "types.h"
-#include "__init__.h"
-
-#include "PixelBuf.h"
-#include "../../shared-module/_pixelbuf/PixelBuf.h"
+#include "shared-bindings/_pixelbuf/__init__.h"
+#include "shared-bindings/_pixelbuf/PixelBuf.h"
 
 
 //| :mod:`_pixelbuf` --- Fast RGB(W) pixel buffer and helpers
@@ -82,39 +79,15 @@ const int32_t colorwheel(float pos) {
     }
 }
 
-
-//| .. function:: fill(pixelbuf, color)
-//|
-//|   Fills the given pixelbuf with the given color.
-//|
-
-STATIC mp_obj_t pixelbuf_fill(mp_obj_t pixelbuf_in, mp_obj_t value) {
-    mp_obj_t obj = mp_instance_cast_to_native_base(pixelbuf_in, &pixelbuf_pixelbuf_type);
-    if (obj == MP_OBJ_NULL)
-        mp_raise_TypeError(translate("Expected a PixelBuf instance"));
-    pixelbuf_pixelbuf_obj_t *pixelbuf = MP_OBJ_TO_PTR(obj);
-
-    for (size_t offset = 0; offset < pixelbuf->bytes; offset+= pixelbuf->pixel_step) {
-        pixelbuf_set_pixel(pixelbuf->buf + offset, pixelbuf->two_buffers ? (pixelbuf->rawbuf + offset) : NULL,
-                           pixelbuf->brightness, value, &pixelbuf->byteorder, pixelbuf->byteorder.is_dotstar);
-    }
-    if (pixelbuf->auto_write)
-        pixelbuf_call_show(pixelbuf_in);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_fill_obj, pixelbuf_fill);
-
-
 STATIC const mp_rom_map_elem_t pixelbuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pixelbuf) },
     { MP_ROM_QSTR(MP_QSTR_PixelBuf), MP_ROM_PTR(&pixelbuf_pixelbuf_type) },
     { MP_ROM_QSTR(MP_QSTR_wheel), MP_ROM_PTR(&pixelbuf_wheel_obj) },
-    { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&pixelbuf_fill_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pixelbuf_module_globals, pixelbuf_module_globals_table);
 
 const mp_obj_module_t pixelbuf_module = {
-        .base = { &mp_type_module },
-        .globals = (mp_obj_dict_t*)&pixelbuf_module_globals,
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&pixelbuf_module_globals,
 };

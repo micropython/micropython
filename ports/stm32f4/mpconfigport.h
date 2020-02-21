@@ -39,6 +39,17 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+//Board flags:
+#ifndef BOARD_OVERWRITE_SWD
+#define BOARD_OVERWRITE_SWD (0)
+#endif
+#ifndef BOARD_VTOR_DEFER
+#define BOARD_VTOR_DEFER (0)
+#endif
+#ifndef BOARD_NO_VBUS_SENSE
+#define BOARD_NO_VBUS_SENSE (0)
+#endif
+
 #define MAX_UART 10 //how many UART are implemented
 
 #define MICROPY_PORT_ROOT_POINTERS \

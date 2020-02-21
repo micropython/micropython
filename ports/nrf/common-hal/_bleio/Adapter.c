@@ -32,6 +32,7 @@
 
 #include "ble.h"
 #include "ble_drv.h"
+#include "bonding.h"
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
@@ -107,6 +108,9 @@ STATIC uint32_t ble_stack_enable(void) {
 
     ble_cfg_t ble_conf;
     ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
+    // Each additional connection costs:
+    // about 3700-4300 bytes when .hvn_tx_queue_size is 1
+    // about 9000 bytes when .hvn_tx_queue_size is 10
     ble_conf.conn_cfg.params.gap_conn_cfg.conn_count = BLEIO_TOTAL_CONNECTION_COUNT;
     // Event length here can influence throughput so perhaps make multiple connection profiles
     // available.
@@ -117,9 +121,12 @@ STATIC uint32_t ble_stack_enable(void) {
     }
 
     memset(&ble_conf, 0, sizeof(ble_conf));
+    // adv_set_count must be == 1 for S140. Cannot be increased.
     ble_conf.gap_cfg.role_count_cfg.adv_set_count = 1;
-    ble_conf.gap_cfg.role_count_cfg.periph_role_count = 2;
-    ble_conf.gap_cfg.role_count_cfg.central_role_count = 1;
+    // periph_role_count costs 1232 bytes for 2 to 3, then ~1840 for each further increment.
+    ble_conf.gap_cfg.role_count_cfg.periph_role_count = 4;
+    // central_role_count costs 648 bytes for 1 to 2, then ~1250 for each further increment.
+    ble_conf.gap_cfg.role_count_cfg.central_role_count = 4;
     err_code = sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -127,7 +134,10 @@ STATIC uint32_t ble_stack_enable(void) {
 
     memset(&ble_conf, 0, sizeof(ble_conf));
     ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
-    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = MAX_TX_IN_PROGRESS;
+    // Each increment to hvn_tx_queue_size costs 2064 bytes.
+    // DevZone recommends not setting this directly, but instead changing gap_conn_cfg.event_length.
+    // However, we are setting connection extension, so this seems to make sense.
+    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = 9;
     err_code = sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -142,10 +152,11 @@ STATIC uint32_t ble_stack_enable(void) {
         return err_code;
     }
 
-    // Triple the GATT Server attribute size to accomodate both the CircuitPython built-in service
+    // Increase the GATT Server attribute size to accomodate both the CircuitPython built-in service
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
-    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 3;
+    // Each increment to the BLE_GATTS_ATTR_TAB_SIZE_DEFAULT multiplier costs 1408 bytes.
+    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 5;
     err_code = sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -154,7 +165,8 @@ STATIC uint32_t ble_stack_enable(void) {
     // Increase the number of vendor UUIDs supported. Apple uses a complete random number per
     // service and characteristic.
     memset(&ble_conf, 0, sizeof(ble_conf));
-    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 32; // Defaults to 10.
+    // Each additional vs_uuid_count costs 16 bytes.
+    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 75; // Defaults to 10.
     err_code = sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -248,6 +260,7 @@ STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             }
             ble_drv_remove_event_handler(connection_on_ble_evt, connection);
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
+            connection->pair_status = PAIR_NOT_PAIRED;
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t* obj = connection->connection_obj;
                 obj->connection = NULL;
@@ -435,6 +448,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
         .active = active
     };
     uint32_t err_code;
+    vm_used_ble = true;
     err_code = sd_ble_gap_scan_start(&scan_params, sd_data);
 
     if (err_code != NRF_SUCCESS) {
@@ -509,6 +523,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     ble_drv_add_event_handler(connect_on_ble_evt, &event_info);
     event_info.done = false;
 
+    vm_used_ble = true;
     uint32_t err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_CUSTOM);
 
     if (err_code != NRF_SUCCESS) {
@@ -613,6 +628,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         return err_code;
     }
 
+    vm_used_ble = true;
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -630,6 +646,10 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 
     check_data_fit(advertising_data_bufinfo->len, connectable);
     check_data_fit(scan_response_data_bufinfo->len, connectable);
+
+    if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
+        mp_raise_bleio_BluetoothError(translate("Extended advertisements with scan response not supported."));
+    }
     // The advertising data buffers must not move, because the SoftDevice depends on them.
     // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
@@ -692,6 +712,10 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
     return self->connection_objs;
 }
 
+void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
+    bonding_erase_storage();
+}
+
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
     gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
     gc_collect_root((void**)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
@@ -703,6 +727,11 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
+        // Disconnect all connections with Python state cleanly. Keep any supervisor-only connections.
+        if (connection->connection_obj != mp_const_none &&
+            connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
+            common_hal_bleio_connection_disconnect(connection);
+        }
         connection->connection_obj = mp_const_none;
     }
 }

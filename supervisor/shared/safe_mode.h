@@ -40,6 +40,7 @@ typedef enum {
   PROGRAMMATIC_SAFE_MODE,
   NORDIC_SOFT_DEVICE_ASSERT,
   FLASH_WRITE_FAIL,
+  MEM_MANAGE,
 } safe_mode_t;
 
 safe_mode_t wait_for_safe_mode_reset(void);

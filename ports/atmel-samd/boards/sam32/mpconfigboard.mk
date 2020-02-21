@@ -8,3 +8,10 @@ CHIP_FAMILY = samd51
 
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = MPZ
+
+# No I2S on SAMD51
+CIRCUITPY_AUDIOBUSIO = 0
+CIRCUITPY_USTACK = 1
+
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel

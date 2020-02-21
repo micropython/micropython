@@ -27,27 +27,26 @@
 #ifndef CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
 #define CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H
 
-#include "shared-bindings/_pixelbuf/types.h"
+#include "shared-module/_pixelbuf/PixelBuf.h"
 
 const mp_obj_type_t pixelbuf_pixelbuf_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    size_t pixels;
-    size_t bytes;
-    size_t pixel_step;
-    pixelbuf_byteorder_details_t byteorder;
-    mp_obj_t bytearray;
-    mp_obj_t rawbytearray;
-    mp_float_t brightness;
-    bool two_buffers;
-    size_t offset;
-    uint8_t *rawbuf;
-    uint8_t *buf;
-    bool auto_write;
-} pixelbuf_pixelbuf_obj_t;
+void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
+    pixelbuf_byteorder_details_t* byteorder, mp_float_t brightness, bool auto_write, uint8_t* header,
+    size_t header_len, uint8_t* trailer, size_t trailer_len);
 
-void pixelbuf_recalculate_brightness(pixelbuf_pixelbuf_obj_t *self);
-mp_obj_t pixelbuf_call_show(mp_obj_t self_in);
+// These take mp_obj_t because they are called on subclasses of PixelBuf.
+uint8_t common_hal__pixelbuf_pixelbuf_get_bpp(mp_obj_t self);
+mp_float_t common_hal__pixelbuf_pixelbuf_get_brightness(mp_obj_t self);
+void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self, mp_float_t brightness);
+bool common_hal__pixelbuf_pixelbuf_get_auto_write(mp_obj_t self);
+void common_hal__pixelbuf_pixelbuf_set_auto_write(mp_obj_t self, bool auto_write);
+size_t common_hal__pixelbuf_pixelbuf_get_len(mp_obj_t self_in);
+mp_obj_t common_hal__pixelbuf_pixelbuf_get_byteorder_string(mp_obj_t self);
+void common_hal__pixelbuf_pixelbuf_fill(mp_obj_t self, mp_obj_t item);
+void common_hal__pixelbuf_pixelbuf_show(mp_obj_t self);
+mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self, size_t index);
+void common_hal__pixelbuf_pixelbuf_set_pixel(mp_obj_t self, size_t index, mp_obj_t item);
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, size_t stop, size_t step, mp_obj_t* values);
 
 #endif  // CP_SHARED_BINDINGS_PIXELBUF_PIXELBUF_H

@@ -157,6 +157,9 @@ void print_safe_mode_message(safe_mode_t reason) {
             case FLASH_WRITE_FAIL:
                 serial_write_compressed(translate("Failed to write internal flash."));
                 break;
+            case MEM_MANAGE:
+                serial_write_compressed(translate("Invalid memory access."));
+                break;
             default:
                 serial_write_compressed(translate("Unknown reason."));
                 break;

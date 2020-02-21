@@ -33,6 +33,7 @@
 #include "shared-bindings/_bleio/Service.h"
 
 #include "common-hal/_bleio/Adapter.h"
+#include "common-hal/_bleio/bonding.h"
 
 STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
     uint16_t cccd;

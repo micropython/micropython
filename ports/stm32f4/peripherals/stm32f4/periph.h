@@ -140,6 +140,12 @@ typedef struct {
 
 //Starter Lines
 
+#ifdef STM32F401xE
+#define HAS_DAC 0
+#define HAS_TRNG 0
+#include "stm32f401xe/periph.h"
+#endif
+
 #ifdef STM32F411xE
 #define HAS_DAC 0
 #define HAS_TRNG 0
@@ -158,6 +164,12 @@ typedef struct {
 #define HAS_DAC 1
 #define HAS_TRNG 1
 #include "stm32f405xx/periph.h"
+#endif
+
+#ifdef STM32F407xx
+#define HAS_DAC 1
+#define HAS_TRNG 1
+#include "stm32f407xx/periph.h"
 #endif
 
 #endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PERIPH_H__

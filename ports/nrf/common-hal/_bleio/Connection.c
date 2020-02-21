@@ -46,13 +46,16 @@
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
+#include "supervisor/shared/tick.h"
+
+#include "common-hal/_bleio/bonding.h"
 
 #define BLE_ADV_LENGTH_FIELD_SIZE   1
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
 static const ble_gap_sec_params_t pairing_sec_params = {
-    .bond = 0,
+    .bond = 1,
     .mitm = 0,
     .lesc = 0,
     .keypress = 0,
@@ -63,6 +66,13 @@ static const ble_gap_sec_params_t pairing_sec_params = {
     .kdist_own    = { .enc = 1, .id = 1},
     .kdist_peer   = { .enc = 1, .id = 1},
 };
+
+#define CONNECTION_DEBUG (1)
+#if CONNECTION_DEBUG
+  #define CONNECTION_DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+  #define CONNECTION_DEBUG_PRINTF(...)
+#endif
 
 static volatile bool m_discovery_in_process;
 static volatile bool m_discovery_successful;
@@ -84,6 +94,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_DISCONNECTED:
+            // Adapter.c does the work for this event.
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
@@ -136,6 +147,22 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             self->mtu = response->server_rx_mtu;
             break;
         }
+
+        case BLE_GATTS_EVT_WRITE:
+            // A client wrote a value.
+            // If we are bonded and it's a CCCD (UUID 0x2902), store the CCCD value.
+            if (self->conn_handle != BLE_CONN_HANDLE_INVALID &&
+                self->pair_status == PAIR_PAIRED &&
+                ble_evt->evt.gatts_evt.params.write.uuid.type == BLE_UUID_TYPE_BLE &&
+                ble_evt->evt.gatts_evt.params.write.uuid.uuid == 0x2902) {
+                //
+                // Save sys_attr data (CCCD state) in bonding area at
+                // next opportunity, but also remember time of this
+                // request, so we can consolidate closely-spaced requests.
+                self->do_bond_cccds = true;
+                self->do_bond_cccds_request_time = supervisor_ticks_ms64();
+            }
+            break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
@@ -197,6 +224,15 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
         }
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST: {
+            // First time pairing.
+            // 1. Either we or peer initiate the process
+            // 2. Peer asks for security parameters using BLE_GAP_EVT_SEC_PARAMS_REQUEST.
+            // 3. Pair Key exchange ("just works" implemented now; TODO: out-of-band key pairing)
+            // 4. Connection is secured: BLE_GAP_EVT_CONN_SEC_UPDATE
+            // 5. Long-term Keys exchanged: BLE_GAP_EVT_AUTH_STATUS
+
+            bonding_clear_keys(&self->bonding_keys);
+            self->ediv = EDIV_INVALID;
             ble_gap_sec_keyset_t keyset = {
                 .keys_own = {
                     .p_enc_key  = &self->bonding_keys.own_enc,
@@ -214,7 +250,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             };
 
             sd_ble_gap_sec_params_reply(self->conn_handle, BLE_GAP_SEC_STATUS_SUCCESS,
-                                        &pairing_sec_params, &keyset);
+                                        self->is_central ? NULL : &pairing_sec_params,
+                                        &keyset);
             break;
         }
 
@@ -224,13 +261,16 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             break;
 
         case BLE_GAP_EVT_AUTH_STATUS: { // 0x19
-            // Pairing process completed
+            // Key exchange completed.
             ble_gap_evt_auth_status_t* status = &ble_evt->evt.gap_evt.params.auth_status;
             self->sec_status = status->auth_status;
             if (status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
-                // TODO _ediv = bonding_keys->own_enc.master_id.ediv;
+                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
                 self->pair_status = PAIR_PAIRED;
+                // Save keys in bonding area at next opportunity.
+                self->do_bond_keys = true;
             } else {
+                // Inform busy-waiter pairing has failed.
                 self->pair_status = PAIR_NOT_PAIRED;
             }
             break;
@@ -242,17 +282,22 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             // - Else return NULL --> Initiate key exchange
             ble_gap_evt_sec_info_request_t* sec_info_request = &ble_evt->evt.gap_evt.params.sec_info_request;
             (void) sec_info_request;
-            //if ( bond_load_keys(_role, sec_req->master_id.ediv, &bkeys) ) {
-            //sd_ble_gap_sec_info_reply(_conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
-            //
-            //_ediv = bkeys.own_enc.master_id.ediv;
-            // } else {
+            if ( bonding_load_keys(self->is_central, sec_info_request->master_id.ediv, &self->bonding_keys) ) {
+                sd_ble_gap_sec_info_reply(
+                    self->conn_handle,
+                    &self->bonding_keys.own_enc.enc_info,
+                    &self->bonding_keys.peer_id.id_info,
+                    NULL);
+                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
+            } else {
+                // We don't have stored keys. Ask for keys.
                 sd_ble_gap_sec_info_reply(self->conn_handle, NULL, NULL, NULL);
-            // }
-                break;
+            }
+            break;
         }
 
         case BLE_GAP_EVT_CONN_SEC_UPDATE: { // 0x1a
+            // We get this both on first-time pairing and on subsequent pairings using stored keys.
             ble_gap_conn_sec_t* conn_sec = &ble_evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             if (conn_sec->sec_mode.sm <= 1 && conn_sec->sec_mode.lv <= 1) {
                 // Security setup did not succeed:
@@ -261,17 +306,16 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 // mode >=1 and/or level >=1 means encryption is set up
                 self->pair_status = PAIR_NOT_PAIRED;
             } else {
-                //if ( !bond_load_cccd(_role, _conn_hdl, _ediv) ) {
-                if (true) {  // TODO: no bonding yet
-                    // Initialize system attributes fresh.
+                if (bonding_load_cccd_info(self->is_central, self->conn_handle, self->ediv)) {
+                    // Did an sd_ble_gatts_sys_attr_set() with the stored sys_attr values.
+                } else {
+                    // No matching bonding found, so use fresh system attributes.
                     sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
                 }
-                // Not quite paired yet: wait for BLE_GAP_EVT_AUTH_STATUS SUCCESS.
-                self->ediv = self->bonding_keys.own_enc.master_id.ediv;
+                self->pair_status = PAIR_PAIRED;
             }
             break;
         }
-
 
         default:
             return false;
@@ -284,8 +328,7 @@ void bleio_connection_clear(bleio_connection_internal_t *self) {
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
-
-    memset(&self->bonding_keys, 0, sizeof(self->bonding_keys));
+    bonding_clear_keys(&self->bonding_keys);
 }
 
 bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {
@@ -565,8 +608,7 @@ STATIC bool discovery_on_ble_evt(ble_evt_t *ble_evt, mp_obj_t payload) {
             break;
 
         default:
-            // For debugging.
-            // mp_printf(&mp_plat_print, "Unhandled discovery event: 0x%04x\n", ble_evt->header.evt_id);
+            // CONNECTION_DEBUG_PRINTF(&mp_plat_print, "Unhandled discovery event: 0x%04x\n", ble_evt->header.evt_id);
             return false;
             break;
     }

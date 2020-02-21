@@ -86,7 +86,8 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|     Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
 //|
 //|     The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value).
-//|     Value can be an int, bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte)), or bytearray.
+//|     Value can be an int, bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte)), bytearray,
+//|     or a tuple or list of 3 integers.
 //|
 //|     This allows you to::
 //|
@@ -94,6 +95,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|       palette[1] = b'\xff\xff\x00'              # set using 3 bytes
 //|       palette[2] = b'\xff\xff\x00\x00'          # set using 4 bytes
 //|       palette[3] = bytearray(b'\x00\x00\xFF')   # set using a bytearay of 3 or 4 bytes
+//|       palette[4] = (10, 20, 30)                 # set using a tuple of 3 integers
 //|
 STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
@@ -109,6 +111,12 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     // index read
     if (value == MP_OBJ_SENTINEL) {
         return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_palette_get_color(self, index));
+    }
+
+    // Convert a tuple or list to a bytearray.
+    if (MP_OBJ_IS_TYPE(value, &mp_type_tuple) ||
+        MP_OBJ_IS_TYPE(value, &mp_type_list)) {
+        value = mp_type_bytes.make_new(&mp_type_bytes, 1, &value, NULL);
     }
 
     uint32_t color;
@@ -130,7 +138,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         }
         color = int_value;
     } else {
-        mp_raise_TypeError(translate("color buffer must be a buffer or int"));
+        mp_raise_TypeError(translate("color buffer must be a buffer, tuple, list, or int"));
     }
     common_hal_displayio_palette_set_color(self, index, color);
     return mp_const_none;

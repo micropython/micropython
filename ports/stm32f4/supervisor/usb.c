@@ -38,7 +38,7 @@
 
 STATIC void init_usb_vbus_sense(void) {
 
-#ifdef BOARD_NO_VBUS_SENSE
+#if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
@@ -57,7 +57,6 @@ STATIC void init_usb_vbus_sense(void) {
     #endif
 #endif
 }
-
 
 void init_usb_hardware(void) {
     //TODO: if future chips overload this with options, move to peripherals management. 
@@ -106,6 +105,7 @@ void init_usb_hardware(void) {
 #endif
     
     /* Peripheral clock enable */
+    __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
     init_usb_vbus_sense();

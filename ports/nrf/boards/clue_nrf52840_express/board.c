@@ -40,7 +40,7 @@ displayio_fourwire_obj_t board_display_obj;
 uint8_t display_init_sequence[] = {
     0x01, 0 | DELAY, 150, // SWRESET
     0x11, 0 | DELAY, 255, // SLPOUT
-    0x36, 1, 0x00,        // _MADCTL bottom to top refresh in vsync aligned order.
+    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     0x3a, 1, 0x55, // COLMOD - 16bit color
     0x21, 0 | DELAY, 10,                 // _INVON
     0x13, 0 | DELAY, 10,                 // _NORON
@@ -49,7 +49,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_P0_14, &pin_P0_15, NULL);
+    common_hal_busio_spi_construct(spi, &pin_P0_14, &pin_P0_15, mp_const_none);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -67,9 +67,9 @@ void board_init(void) {
         bus,
         240, // Width (after rotation)
         240, // Height (after rotation)
-        0, // column start
+        80, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // Pixels in a byte share a row. Only used for depth < 8

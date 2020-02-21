@@ -34,8 +34,6 @@
 #define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 
-extern volatile uint32_t _bootloader_dbl_tap;
-
 void reset_to_bootloader(void);
 void reset(void);
 bool bootloader_available(void);

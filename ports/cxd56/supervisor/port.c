@@ -85,6 +85,14 @@ uint32_t *port_stack_get_top(void) {
     return rtcb->adj_stack_ptr;
 }
 
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
+}
+
 extern uint32_t _ebss;
 
 // Place the word to save just after our BSS section that gets blanked.

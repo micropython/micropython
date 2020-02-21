@@ -34,7 +34,8 @@
 void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         mp_obj_t *layers, size_t layers_size,
         uint16_t *buffer, size_t buffer_size,
-        displayio_display_obj_t *display, uint8_t scale) {
+        displayio_display_obj_t *display,
+        uint8_t scale, uint16_t background) {
 
 
     displayio_area_t area;
@@ -67,6 +68,9 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
                     if (c != TRANSPARENT) {
                         break;
                     }
+                }
+                if (c == TRANSPARENT) {
+                    c = background;
                 }
                 for (uint8_t xscale = 0; xscale < scale; ++xscale) {
                     buffer[index] = c;

@@ -185,7 +185,7 @@ def get_excluded_boards(base):
                     board_is_excluded = True
 
                 # check if module is specifically disabled for this board
-                re_pattern = "CIRCUITPY_{}\s=\s(\w)".format(module.upper())
+                re_pattern = r"CIRCUITPY_{}\s=\s(\w)".format(module.upper())
                 find_module = re.search(re_pattern, contents)
                 if not find_module:
                     if base[module]["default_value"].isdigit():
@@ -204,9 +204,7 @@ def get_excluded_boards(base):
                             ]):
                                 check_dependent_modules[module] = base[module]["default_value"]
                 else:
-                    if (find_module.group(1) == "0" and
-                        find_module.group(1) != base[module]["default_value"]):
-                            board_is_excluded = True
+                    board_is_excluded = find_module.group(1) == "0"
 
                 if board_is_excluded:
                     if board_chip in base[module]["excluded"]:

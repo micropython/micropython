@@ -182,7 +182,10 @@ typedef long mp_off_t;
 
 // Remove some lesser-used functionality to make small builds fit.
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+//TODO: replace this with a rework of the FULL_BUILD system
+#if !defined(MICROPY_CPYTHON_COMPAT)
+	#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
@@ -379,6 +382,13 @@ extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
 #else
 #define MATH_MODULE
+#endif
+
+#if CIRCUITPY__EVE
+extern const struct _mp_obj_module_t _eve_module;
+#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
+#else
+#define _EVE_MODULE
 #endif
 
 #if CIRCUITPY_MICROCONTROLLER
@@ -614,6 +624,7 @@ extern const struct _mp_obj_module_t ustack_module;
     I2CSLAVE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
+    _EVE_MODULE \
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \

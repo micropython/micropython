@@ -71,7 +71,7 @@ const mcu_periph_obj_t mcu_spi_sck_list[8] = {
     PERIPH_PIN(2, 2, kIOMUXC_LPSPI2_SCK_SELECT_INPUT, 1, &pin_GPIO_EMC_00),
 
     PERIPH_PIN(3, 7, kIOMUXC_LPSPI3_SCK_SELECT_INPUT, 0, &pin_GPIO_AD_B0_00),
-    PERIPH_PIN(3, 2, kIOMUXC_LPSPI3_SCK_SELECT_INPUT, 0, &pin_GPIO_AD_B1_15),
+    PERIPH_PIN(3, 2, kIOMUXC_LPSPI3_SCK_SELECT_INPUT, 1, &pin_GPIO_AD_B1_15),
 
     PERIPH_PIN(4, 3, kIOMUXC_LPSPI4_SCK_SELECT_INPUT, 0, &pin_GPIO_B0_03),
     PERIPH_PIN(4, 1, kIOMUXC_LPSPI4_SCK_SELECT_INPUT, 1, &pin_GPIO_B1_07),
@@ -127,8 +127,8 @@ const mcu_periph_obj_t mcu_uart_rx_list[18] = {
     PERIPH_PIN(6, 2, kIOMUXC_LPUART6_RX_SELECT_INPUT, 0, &pin_GPIO_EMC_26),
     PERIPH_PIN(6, 2, kIOMUXC_LPUART6_RX_SELECT_INPUT, 1, &pin_GPIO_AD_B0_03),
 
-    PERIPH_PIN(7, 2, kIOMUXC_LPUART7_RX_SELECT_INPUT, 1, &pin_GPIO_EMC_32),
     PERIPH_PIN(7, 2, kIOMUXC_LPUART7_RX_SELECT_INPUT, 0, &pin_GPIO_SD_B1_09),
+    PERIPH_PIN(7, 2, kIOMUXC_LPUART7_RX_SELECT_INPUT, 1, &pin_GPIO_EMC_32),
 
     PERIPH_PIN(8, 2, kIOMUXC_LPUART8_RX_SELECT_INPUT, 0, &pin_GPIO_SD_B0_05),
     PERIPH_PIN(8, 2, kIOMUXC_LPUART8_RX_SELECT_INPUT, 1, &pin_GPIO_AD_B1_11),
@@ -161,6 +161,44 @@ const mcu_periph_obj_t mcu_uart_tx_list[18] = {
     PERIPH_PIN(8, 2, kIOMUXC_LPUART8_TX_SELECT_INPUT, 0, &pin_GPIO_SD_B0_04),
     PERIPH_PIN(8, 2, kIOMUXC_LPUART8_TX_SELECT_INPUT, 1, &pin_GPIO_AD_B1_10),
     PERIPH_PIN(8, 2, kIOMUXC_LPUART8_TX_SELECT_INPUT, 2, &pin_GPIO_EMC_38),
+};
+
+const mcu_periph_obj_t mcu_uart_rts_list[9] = {
+    PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_15),
+   
+    PERIPH_PIN(2, 2, 0, 0, &pin_GPIO_AD_B1_01),
+
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_AD_B1_05),
+    PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_EMC_16),
+
+    PERIPH_PIN(4, 2, 0, 0, &pin_GPIO_EMC_18),
+
+    PERIPH_PIN(5, 2, 0, 0, &pin_GPIO_EMC_27),
+
+    PERIPH_PIN(6, 2, 0, 0, &pin_GPIO_EMC_29),
+
+    PERIPH_PIN(7, 2, 0, 0, &pin_GPIO_SD_B1_07),
+
+    PERIPH_PIN(8, 2, 0, 0, &pin_GPIO_SD_B0_03),
+};
+
+const mcu_periph_obj_t mcu_uart_cts_list[9] = {
+    PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_14),
+
+    PERIPH_PIN(2, 2, 0, 0, &pin_GPIO_AD_B1_00),
+
+    PERIPH_PIN(3, 2, kIOMUXC_LPUART3_CTS_B_SELECT_INPUT, 0, &pin_GPIO_EMC_15),
+    PERIPH_PIN(3, 2, kIOMUXC_LPUART3_CTS_B_SELECT_INPUT, 1, &pin_GPIO_AD_B1_04),    
+
+    PERIPH_PIN(4, 2, 0, 0, &pin_GPIO_EMC_17),
+
+    PERIPH_PIN(5, 2, 0, 0, &pin_GPIO_EMC_28),
+
+    PERIPH_PIN(6, 2, 0, 0, &pin_GPIO_EMC_30),
+
+    PERIPH_PIN(7, 2, 0, 0, &pin_GPIO_SD_B1_06),
+
+    PERIPH_PIN(8, 2, 0, 0, &pin_GPIO_SD_B0_02),
 };
 
 const mcu_pwm_obj_t mcu_pwm_list[67] = {

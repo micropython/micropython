@@ -64,6 +64,9 @@ mp_obj_list_t characteristic_list;
 mp_obj_t characteristic_list_items[4];
 
 void supervisor_bluetooth_start_advertising(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -79,6 +82,10 @@ void supervisor_bluetooth_start_advertising(void) {
 }
 
 void supervisor_start_bluetooth(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
+
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
 
     supervisor_ble_service_uuid.base.type = &bleio_uuid_type;
@@ -203,6 +210,9 @@ uint32_t current_command[1024 / sizeof(uint32_t)];
 volatile size_t current_offset;
 
 void supervisor_bluetooth_background(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
     if (!run_ble_background) {
         return;
     }
@@ -296,6 +306,9 @@ void supervisor_bluetooth_background(void) {
 
 // This happens in an interrupt so we need to be quick.
 bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return false;
+    #endif
     // Catch writes to filename or contents. Length is read-only.
 
     bool done = false;

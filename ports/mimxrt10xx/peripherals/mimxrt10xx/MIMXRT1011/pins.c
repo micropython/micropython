@@ -41,8 +41,8 @@ const mcu_pin_obj_t pin_GPIO_08 = PIN(GPIO1, 8, GPIO_08, NO_ADC, 0);
 const mcu_pin_obj_t pin_GPIO_09 = PIN(GPIO1, 9, GPIO_09, NO_ADC, 0);
 const mcu_pin_obj_t pin_GPIO_10 = PIN(GPIO1, 10, GPIO_10, NO_ADC, 0);
 const mcu_pin_obj_t pin_GPIO_11 = PIN(GPIO1, 11, GPIO_11, NO_ADC, 0);
-const mcu_pin_obj_t pin_GPIO_12 = PIN(GPIO1, 12, GPIO_11, NO_ADC, 0);
-const mcu_pin_obj_t pin_GPIO_13 = PIN(GPIO1, 13, GPIO_11, NO_ADC, 0);
+const mcu_pin_obj_t pin_GPIO_12 = PIN(GPIO1, 12, GPIO_12, NO_ADC, 0);
+const mcu_pin_obj_t pin_GPIO_13 = PIN(GPIO1, 13, GPIO_13, NO_ADC, 0);
 
 const mcu_pin_obj_t pin_GPIO_AD_00 = PIN(GPIO1, 14, GPIO_AD_00, ADC1, 0);
 const mcu_pin_obj_t pin_GPIO_AD_01 = PIN(GPIO1, 15, GPIO_AD_01, ADC1, 1);

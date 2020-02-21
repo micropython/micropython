@@ -1,6 +1,4 @@
-# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
-# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
-# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
+LD_FILE = $(FLASH).ld $(CHIP_FAMILY).ld imxrt10xx.ld
 
 ifeq ($(LONGINT_IMPL),NONE)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
@@ -16,5 +14,17 @@ endif
 
 INTERNAL_LIBM = 1
 
+USB_DEVICES = "CDC,MSC,HID"
 USB_SERIAL_NUMBER_LENGTH = 32
 USB_MSC_MAX_PACKET_SIZE = 512
+
+INTERNAL_FLASH_FILESYSTEM = 1
+
+CIRCUITPY_AUDIOIO = 0
+CIRCUITPY_AUDIOBUSIO = 0
+CIRCUITPY_FREQUENCYIO = 0
+CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_NVM = 0
+CIRCUITPY_ROTARYIO = 0
+
+LONGINT_IMPL = MPZ

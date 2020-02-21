@@ -71,15 +71,6 @@ void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t ki
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }
 
-mp_obj_t namedtuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_type_t *type = mp_obj_get_type(self_in);
-    // Check for subclasses of namedtuple and unpack if needed.
-    if (type->parent != &mp_type_tuple) {
-        self_in = ((mp_obj_instance_t*) self_in)->subobj[0];
-    }
-    return mp_obj_tuple_subscr(self_in, index, value);
-}
-
 void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
@@ -177,7 +168,7 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t 
     o->base.unary_op = mp_obj_tuple_unary_op;
     o->base.binary_op = mp_obj_tuple_binary_op;
     o->base.attr = namedtuple_attr;
-    o->base.subscr = namedtuple_subscr;
+    o->base.subscr = mp_obj_tuple_subscr;
     o->base.getiter = mp_obj_tuple_getiter;
     o->base.parent = &mp_type_tuple;
     return MP_OBJ_FROM_PTR(o);
