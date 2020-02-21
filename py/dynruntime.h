@@ -31,6 +31,7 @@
 
 #include "py/nativeglue.h"
 #include "py/objstr.h"
+#include "py/objtype.h"
 
 #undef MP_ROM_QSTR
 #undef MP_OBJ_QSTR_VALUE
@@ -106,6 +107,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_new_list(n, items)           (mp_fun_table.new_list((n), (items)))
 
 #define mp_obj_get_type(o)                  (mp_fun_table.obj_get_type((o)))
+#define mp_obj_cast_to_native_base(o, t)    (mp_obj_cast_to_native_base_dyn((o), (t)))
 #define mp_obj_get_int(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_INT))
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
 #define mp_obj_str_get_str(s)               ((void*)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
@@ -122,6 +124,21 @@ static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, con
         return mp_obj_new_str((const char*)data, len);
     } else {
         return mp_obj_new_bytes(data, len);
+    }
+}
+
+static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const_obj_t native_type) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(self_in);
+
+    if (MP_OBJ_FROM_PTR(self_type) == native_type) {
+        return self_in;
+    } else if (self_type->parent != native_type) {
+        // The self_in object is not a direct descendant of native_type, so fail the cast.
+        // This is a very simple version of mp_obj_is_subclass_fast that could be improved.
+        return MP_OBJ_NULL;
+    } else {
+        mp_obj_instance_t *self = (mp_obj_instance_t*)MP_OBJ_TO_PTR(self_in);
+        return self->subobj[0];
     }
 }
 
