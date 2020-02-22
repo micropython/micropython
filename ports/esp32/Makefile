@@ -334,7 +334,6 @@ SRC_C = \
 	machine_i2c.c \
 	machine_pwm.c \
 	machine_uart.c \
-	modespidf.c \
 	modmachine.c \
 	modnetwork.c \
 	network_lan.c \
@@ -784,7 +783,7 @@ $(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.pro
 
 $(BUILD)/plat_relo.s: plat_relo.py
 	$(ECHO) "GEN platform relocations"
-	$(Q)./plat_relo.py >$@
+	$(Q)./plat_relo.py --tab >$@
 
 define compile_cxx
 $(ECHO) "CXX $<"

@@ -191,10 +191,6 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
-#if MICROPY_PY_PLAT_RELO
-extern const struct _mp_obj_module_t mp_module_espidf;
-#define MICROPY_PY_PLAT_RELO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_espidf), (mp_obj_t)&mp_module_espidf },
-#endif
 
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -207,7 +203,6 @@ extern const struct _mp_obj_module_t mp_module_espidf;
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
-    MICROPY_PY_PLAT_RELO_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

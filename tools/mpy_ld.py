@@ -40,6 +40,9 @@ import makeqstrdata as qstrutil
 # TODO: this needs to be loaded from a file, not hard-coded here.
 plat_relo_entries = { name : idx
     for idx, name in enumerate([
+        "esp_chip_info",
+        "esp_get_idf_version",
+        "esp_err_to_name",
         "pcnt_unit_config",
         "pcnt_get_counter_value",
         "pcnt_counter_pause",
@@ -47,6 +50,7 @@ plat_relo_entries = { name : idx
         "pcnt_counter_clear",
         "pcnt_intr_disable",
         "mp_micropython_mem_info",
+        "strlen",
     ])
 }
 
@@ -918,7 +922,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
             else: # element of plat_relo_tab
                 pass
         else:
-            assert(0, kind)
+            assert 0, kind
         assert addr % env.arch.word_size == 0, addr
         offset = addr // env.arch.word_size
         if kind == prev_kind and base == prev_base and offset == prev_offset + 1:
