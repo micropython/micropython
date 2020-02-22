@@ -30,16 +30,20 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA19) },
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA17) },
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA17) },
+
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
+
     // NINA-W102
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RESET), MP_ROM_PTR(&pin_PA08) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_MOSI), MP_ROM_PTR(&pin_PA12) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_MISO), MP_ROM_PTR(&pin_PA13) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_CS), MP_ROM_PTR(&pin_PA14) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_SCK), MP_ROM_PTR(&pin_PA15) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_TX), MP_ROM_PTR(&pin_PA22) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PA23) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_GPIO0), MP_ROM_PTR(&pin_PA27) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_ACK), MP_ROM_PTR(&pin_PA28) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_BUSY), MP_ROM_PTR(&pin_PA28) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);

@@ -54,14 +54,14 @@ PA18                                        ``D8``               ``D10``        
 PA19                    ``D10`` / ``MISO``  ``D12`` / ``MISO``   ``D12``                                       ``D12``                 ``D12``           ``D12``                                        ``D12``           ``D12`` / ``MISO``                ``D12``
 PA20                    ``D6``              ``D9``               ``D6``           ``MOSI``                     ``D6``                  ``D6``            ``D6``                                         ``D6``            ``D6``                            ``D6``
 PA21                    ``D7``              ``D10``              ``D7``           ``SCK``                      ``D7`` / ``SD_CD``                                                                       ``D7``            ``D7``                            ``D7``
-PA22                    ``D0``                                   ``SDA``                                       ``SDA``                 ``SDA``           ``SDA``                                        ``SDA``           ``SDA``                           ``SDA``
-PA23                    ``D1``                                   ``SCL``          ``REMOTEOUT`` / ``IR_TX``    ``SCL``                 ``SCL``           ``SCL``             ``L`` / ``D13``            ``SCL``           ``SCL``                           ``SCL``
+PA22                    ``D0``              ``ESP_TX``           ``SDA``                                       ``SDA``                 ``SDA``           ``SDA``                                        ``SDA``           ``SDA``                           ``SDA``
+PA23                    ``D1``              ``ESP_RX``           ``SCL``          ``REMOTEOUT`` / ``IR_TX``    ``SCL``                 ``SCL``           ``SCL``             ``L`` / ``D13``            ``SCL``           ``SCL``                           ``SCL``
 PA24
 PA25
 PB22                    ``D14`` / ``TX``    ``D1`` / ``TX``                       ``FLASH_CS``                                                                                                                                                              ``D30`` / ``TX1``
 PB23                    ``D13`` / ``RX``    ``D0`` / ``RX``                       ``NEOPIXEL`` / ``D8``                                                                                                                                                     ``D31`` / ``RX1``
 PA27                    ``SD_CD``           ``ESP_GPIO0``                                                                                                                                                                 ``GREEN_LED``                     ``GREEN_LED``
-PA28                                        ``ESP_ACK``                           ``BUTTON_A`` / ``D4``
+PA28                                        ``ESP_BUSY``                          ``BUTTON_A`` / ``D4``
 PA29
 PA30                                                                              ``SPEAKER_ENABLE``                                                                                                    ``NEOPIXEL``
 PA31
