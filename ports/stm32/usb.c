@@ -157,6 +157,9 @@ STATIC const uint8_t usbd_fifo_size_cdc3_msc_hid[] = {
 #endif
 
 #if MICROPY_HW_USB_HID
+#ifndef MICROPY_HW_HID_POLLING_INTERVAL
+#define MICROPY_HW_HID_POLLING_INTERVAL  (8) //polling interval: 8ms
+#endif
 // predefined hid mouse data
 STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
     {&mp_type_bytes},
@@ -171,7 +174,7 @@ const mp_rom_obj_tuple_t pyb_usb_hid_mouse_obj = {
         MP_ROM_INT(1), // subclass: boot
         MP_ROM_INT(2), // protocol: mouse
         MP_ROM_INT(USBD_HID_MOUSE_MAX_PACKET),
-        MP_ROM_INT(8), // polling interval: 8ms
+        MP_ROM_INT(MICROPY_HW_HID_POLLING_INTERVAL), 
         MP_ROM_PTR(&pyb_usb_hid_mouse_desc_obj),
     },
 };
@@ -190,7 +193,7 @@ const mp_rom_obj_tuple_t pyb_usb_hid_keyboard_obj = {
         MP_ROM_INT(1), // subclass: boot
         MP_ROM_INT(1), // protocol: keyboard
         MP_ROM_INT(USBD_HID_KEYBOARD_MAX_PACKET),
-        MP_ROM_INT(8), // polling interval: 8ms
+        MP_ROM_INT(MICROPY_HW_HID_POLLING_INTERVAL), 
         MP_ROM_PTR(&pyb_usb_hid_keyboard_desc_obj),
     },
 };
