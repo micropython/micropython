@@ -114,10 +114,12 @@ mp_obj_t common_hal_board_create_uart(void) {
     const mcu_pin_obj_t* rs485_dir = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RS485DIR);
 #ifdef DEFAULT_UART_RS485_INVERT
     const bool rs485_invert = true;
+#else
+    const bool rs485_invert = false;
 #endif
 #else
     const mcu_pin_obj_t* rs485_dir = mp_const_none;
-    const bool rs485_invert = true;
+    const bool rs485_invert = false;
 #endif
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
