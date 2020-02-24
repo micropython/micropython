@@ -32,6 +32,13 @@
 
 #define DFU_XFER_SIZE (2048)
 
+// The DFU standard allows for error messages to be sent (via str index) in GETSTATUS responses
+#define MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX 0x10
+#define MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER "Can't overwrite mboot"
+
+#define MBOOT_ERROR_STR_INVALID_ADDRESS_IDX 0x11
+#define MBOOT_ERROR_STR_INVALID_ADDRESS "Address out of range"
+
 // DFU class requests
 enum {
     DFU_DETACH = 0,
