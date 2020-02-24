@@ -5,8 +5,8 @@
 
 typedef enum {
     //MACHINE_WAKE_IDLE=0x01,
-    MACHINE_WAKE_SLEEP=0x02,
-    MACHINE_WAKE_DEEPSLEEP=0x04
+    MACHINE_WAKE_SLEEP = 0x02,
+    MACHINE_WAKE_DEEPSLEEP = 0x04
 } wake_type_t;
 
 extern const mp_obj_type_t machine_timer_type;

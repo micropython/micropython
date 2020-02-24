@@ -25,12 +25,12 @@ static void (*idle_cb)(void *);
 static void *idle_arg;
 
 #if ESP_SDK_VERSION >= 010500
-# define FIRST_PRIO 0
+#define FIRST_PRIO 0
 #else
-# define FIRST_PRIO 0x14
+#define FIRST_PRIO 0x14
 #endif
-#define LAST_PRIO 0x20
-#define PRIO2ID(prio) ((prio) - FIRST_PRIO)
+#define LAST_PRIO     0x20
+#define PRIO2ID(prio) ((prio)-FIRST_PRIO)
 
 volatile struct task_entry emu_tasks[PRIO2ID(LAST_PRIO) + 1];
 
@@ -38,7 +38,8 @@ static inline int prio2id(uint8_t prio) {
     int id = PRIO2ID(prio);
     if (id < 0 || id >= MP_ARRAY_SIZE(emu_tasks)) {
         printf("task prio out of range: %d\n", prio);
-        while (1);
+        while (1)
+            ;
     }
     return id;
 }
@@ -181,7 +182,7 @@ bool ets_loop_iter(void) {
 
 #if SDK_BELOW_1_1_1
 void my_timer_isr(void *arg) {
-//    uart0_write_char('+');
+    //    uart0_write_char('+');
     ets_post(0x1f, 0, 0);
 }
 
@@ -189,11 +190,11 @@ void my_timer_isr(void *arg) {
 // so, we have to re-init task using our handler
 void ets_timer_init() {
     printf("ets_timer_init\n");
-//    _ets_timer_init();
+    //    _ets_timer_init();
     ets_isr_attach(10, my_timer_isr, NULL);
     SET_PERI_REG_MASK(0x3FF00004, 4);
     ETS_INTR_ENABLE(10);
-    ets_task((os_task_t)0x40002E3C, 0x1f, (os_event_t*)0x3FFFDDC0, 4);
+    ets_task((os_task_t)0x40002E3C, 0x1f, (os_event_t *)0x3FFFDDC0, 4);
 
     WRITE_PERI_REG(PERIPHS_TIMER_BASEDDR + 0x30, 0);
     WRITE_PERI_REG(PERIPHS_TIMER_BASEDDR + 0x28, 0x88);
@@ -204,13 +205,13 @@ void ets_timer_init() {
 
 bool ets_run(void) {
 #if USE_ETS_TASK
-    #if SDK_BELOW_1_1_1
+#if SDK_BELOW_1_1_1
     ets_isr_attach(10, my_timer_isr, NULL);
-    #endif
+#endif
     _ets_run();
 #else
-//    ets_timer_init();
-    *(char*)0x3FFFC6FC = 0;
+    //    ets_timer_init();
+    *(char *)0x3FFFC6FC = 0;
     ets_intr_lock();
     printf("ets_alt_task: ets_run\n");
 #if DEBUG

@@ -53,7 +53,6 @@ typedef struct _mp_obj_match_t {
     const char *caps[0];
 } mp_obj_match_t;
 
-
 STATIC void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
@@ -73,7 +72,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
         return mp_const_none;
     }
     return mp_obj_new_str_of_type(mp_obj_get_type(self->str),
-        (const byte*)start, self->caps[no * 2 + 1] - start);
+        (const byte *)start, self->caps[no * 2 + 1] - start);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
@@ -147,14 +146,14 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_end_obj, 1, 2, match_end);
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
-    #if MICROPY_PY_URE_MATCH_GROUPS
+#if MICROPY_PY_URE_MATCH_GROUPS
     { MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj) },
-    #endif
-    #if MICROPY_PY_URE_MATCH_SPAN_START_END
+#endif
+#if MICROPY_PY_URE_MATCH_SPAN_START_END
     { MP_ROM_QSTR(MP_QSTR_span), MP_ROM_PTR(&match_span_obj) },
     { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&match_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_end), MP_ROM_PTR(&match_end_obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
@@ -163,7 +162,7 @@ STATIC const mp_obj_type_t match_type = {
     { &mp_type_type },
     .name = MP_QSTR_match,
     .print = match_print,
-    .locals_dict = (void*)&match_locals_dict,
+    .locals_dict = (void *)&match_locals_dict,
 };
 #endif
 
@@ -181,12 +180,12 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
-    mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char*, caps_num);
+    mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char *, caps_num);
     // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
-    memset((char*)match->caps, 0, caps_num * sizeof(char*));
+    memset((char *)match->caps, 0, caps_num * sizeof(char *));
     int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, is_anchored);
     if (res == 0) {
-        m_del_var(mp_obj_match_t, char*, caps_num, match);
+        m_del_var(mp_obj_match_t, char *, caps_num, match);
         return mp_const_none;
     }
 
@@ -221,10 +220,10 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
-    const char **caps = mp_local_alloc(caps_num * sizeof(char*));
+    const char **caps = mp_local_alloc(caps_num * sizeof(char *));
     while (true) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
-        memset((char**)caps, 0, caps_num * sizeof(char*));
+        memset((char **)caps, 0, caps_num * sizeof(char *));
         int res = re1_5_recursiveloopprog(&self->re, &subj, caps, caps_num, false);
 
         // if we didn't have a match, or had an empty match, it's time to stop
@@ -232,7 +231,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
-        mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, caps[0] - subj.begin);
+        mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte *)subj.begin, caps[0] - subj.begin);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
             mp_raise_NotImplementedError("Splitting with sub-captures");
@@ -243,9 +242,9 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         }
     }
     // cast is a workaround for a bug in msvc (see above)
-    mp_local_free((char**)caps);
+    mp_local_free((char **)caps);
 
-    mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
+    mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte *)subj.begin, subj.end - subj.begin);
     mp_obj_list_append(retval, s);
     return retval;
 }
@@ -272,14 +271,14 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
 
     vstr_t vstr_return;
     vstr_return.buf = NULL; // We'll init the vstr after the first match
-    mp_obj_match_t *match = mp_local_alloc(sizeof(mp_obj_match_t) + caps_num * sizeof(char*));
+    mp_obj_match_t *match = mp_local_alloc(sizeof(mp_obj_match_t) + caps_num * sizeof(char *));
     match->base.type = &match_type;
     match->num_matches = caps_num / 2; // caps_num counts start and end pointers
     match->str = where;
 
     for (;;) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
-        memset((char*)match->caps, 0, caps_num * sizeof(char*));
+        memset((char *)match->caps, 0, caps_num * sizeof(char *));
         int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, false);
 
         // If we didn't have a match, or had an empty match, it's time to stop
@@ -296,7 +295,7 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
         vstr_add_strn(&vstr_return, subj.begin, match->caps[0] - subj.begin);
 
         // Get replacement string
-        const char* repl = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace));
+        const char *repl = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace));
 
         // Append replacement string to result, substituting any regex groups
         while (*repl != '\0') {
@@ -370,9 +369,9 @@ STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
-    #if MICROPY_PY_URE_SUB
+#if MICROPY_PY_URE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -381,7 +380,7 @@ STATIC const mp_obj_type_t re_type = {
     { &mp_type_type },
     .name = MP_QSTR_ure,
     .print = re_print,
-    .locals_dict = (void*)&re_locals_dict,
+    .locals_dict = (void *)&re_locals_dict,
 };
 #endif
 
@@ -394,22 +393,22 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     }
     mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
     o->base.type = &re_type;
-    #if MICROPY_PY_URE_DEBUG
+#if MICROPY_PY_URE_DEBUG
     int flags = 0;
     if (n_args > 1) {
         flags = mp_obj_get_int(args[1]);
     }
-    #endif
+#endif
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
-error:
+    error:
         mp_raise_ValueError("Error in regex");
     }
-    #if MICROPY_PY_URE_DEBUG
+#if MICROPY_PY_URE_DEBUG
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);
     }
-    #endif
+#endif
     return MP_OBJ_FROM_PTR(o);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
@@ -447,19 +446,19 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
-    #if MICROPY_PY_URE_SUB
+#if MICROPY_PY_URE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
-    #endif
-    #if MICROPY_PY_URE_DEBUG
+#endif
+#if MICROPY_PY_URE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
 
 const mp_obj_module_t mp_module_ure = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_re_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
 #endif
 

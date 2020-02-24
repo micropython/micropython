@@ -83,9 +83,9 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
         i2c->TRISE = PCLK1 / 1000000 * 3 / 10 + 1; // 300ns rise time in FM
     }
 
-    #if defined(I2C_FLTR_ANOFF)
+#if defined(I2C_FLTR_ANOFF)
     i2c->FLTR = 0; // analog filter on, digital filter off
-    #endif
+#endif
 
     return 0;
 }
@@ -341,9 +341,9 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
     // Enable the peripheral and send the START condition with slave address
     i2c->CR1 |= I2C_CR1_PE;
     i2c->CR2 = (len > 1) << I2C_CR2_RELOAD_Pos
-        | (len > 0) << I2C_CR2_NBYTES_Pos
-        | rd_wrn << I2C_CR2_RD_WRN_Pos
-        | (addr & 0x7f) << 1;
+               | (len > 0) << I2C_CR2_NBYTES_Pos
+               | rd_wrn << I2C_CR2_RD_WRN_Pos
+               | (addr & 0x7f) << 1;
     i2c->CR2 |= I2C_CR2_START;
 
     // Wait for address to be sent
@@ -402,8 +402,8 @@ int i2c_read(i2c_t *i2c, uint8_t *dest, size_t len, size_t next_len) {
     load_cr2:
         if (len) {
             i2c->CR2 = (i2c->CR2 & I2C_CR2_AUTOEND)
-                | (len + next_len > 1) << I2C_CR2_RELOAD_Pos
-                | 1 << I2C_CR2_NBYTES_Pos;
+                       | (len + next_len > 1) << I2C_CR2_RELOAD_Pos
+                       | 1 << I2C_CR2_NBYTES_Pos;
         }
     }
 
@@ -450,8 +450,8 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     load_cr2:
         if (len) {
             i2c->CR2 = (i2c->CR2 & I2C_CR2_AUTOEND)
-                | (len + next_len > 1) << I2C_CR2_RELOAD_Pos
-                | 1 << I2C_CR2_NBYTES_Pos;
+                       | (len + next_len > 1) << I2C_CR2_RELOAD_Pos
+                       | 1 << I2C_CR2_NBYTES_Pos;
         }
     }
 

@@ -43,41 +43,41 @@
 // ETH PHY register definitions (for LAN8742)
 
 #undef PHY_BCR
-#define PHY_BCR                 (0x0000)
-#define PHY_BCR_SOFT_RESET      (0x8000)
-#define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR            (0x0000)
+#define PHY_BCR_SOFT_RESET (0x8000)
+#define PHY_BCR_AUTONEG_EN (0x1000)
 
 #undef PHY_BSR
-#define PHY_BSR                 (0x0001)
-#define PHY_BSR_LINK_STATUS     (0x0004)
-#define PHY_BSR_AUTONEG_DONE    (0x0020)
+#define PHY_BSR              (0x0001)
+#define PHY_BSR_LINK_STATUS  (0x0004)
+#define PHY_BSR_AUTONEG_DONE (0x0020)
 
-#define PHY_SCSR                (0x001f)
-#define PHY_SCSR_SPEED_Pos      (2)
-#define PHY_SCSR_SPEED_Msk      (7 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_10HALF   (1 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_10FULL   (5 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_100HALF  (2 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_100FULL  (6 << PHY_SCSR_SPEED_Pos)
+#define PHY_SCSR               (0x001f)
+#define PHY_SCSR_SPEED_Pos     (2)
+#define PHY_SCSR_SPEED_Msk     (7 << PHY_SCSR_SPEED_Pos)
+#define PHY_SCSR_SPEED_10HALF  (1 << PHY_SCSR_SPEED_Pos)
+#define PHY_SCSR_SPEED_10FULL  (5 << PHY_SCSR_SPEED_Pos)
+#define PHY_SCSR_SPEED_100HALF (2 << PHY_SCSR_SPEED_Pos)
+#define PHY_SCSR_SPEED_100FULL (6 << PHY_SCSR_SPEED_Pos)
 
 // ETH DMA RX and TX descriptor definitions
 
-#define RX_DESCR_0_OWN_Pos      (31)
-#define RX_DESCR_0_FL_Pos       (16)
-#define RX_DESCR_0_FL_Msk       (0x3fff << RX_DESCR_0_FL_Pos)
-#define RX_DESCR_1_RER_Pos      (15)
-#define RX_DESCR_1_RCH_Pos      (14)
-#define RX_DESCR_1_RBS2_Pos     (16)
-#define RX_DESCR_1_RBS1_Pos     (0)
+#define RX_DESCR_0_OWN_Pos  (31)
+#define RX_DESCR_0_FL_Pos   (16)
+#define RX_DESCR_0_FL_Msk   (0x3fff << RX_DESCR_0_FL_Pos)
+#define RX_DESCR_1_RER_Pos  (15)
+#define RX_DESCR_1_RCH_Pos  (14)
+#define RX_DESCR_1_RBS2_Pos (16)
+#define RX_DESCR_1_RBS1_Pos (0)
 
-#define TX_DESCR_0_OWN_Pos      (31)
-#define TX_DESCR_0_LS_Pos       (29)
-#define TX_DESCR_0_FS_Pos       (28)
-#define TX_DESCR_0_DP_Pos       (26)
-#define TX_DESCR_0_CIC_Pos      (22)
-#define TX_DESCR_0_TER_Pos      (21)
-#define TX_DESCR_0_TCH_Pos      (20)
-#define TX_DESCR_1_TBS1_Pos     (0)
+#define TX_DESCR_0_OWN_Pos  (31)
+#define TX_DESCR_0_LS_Pos   (29)
+#define TX_DESCR_0_FS_Pos   (28)
+#define TX_DESCR_0_DP_Pos   (26)
+#define TX_DESCR_0_CIC_Pos  (22)
+#define TX_DESCR_0_TER_Pos  (21)
+#define TX_DESCR_0_TCH_Pos  (20)
+#define TX_DESCR_1_TBS1_Pos (0)
 
 // Configuration values
 
@@ -254,7 +254,7 @@ STATIC int eth_mac_init(eth_t *self) {
 
     // Select DMA interrupts
     ETH->DMAIER =
-        ETH_DMAIER_NISE // enable normal interrupts
+        ETH_DMAIER_NISE  // enable normal interrupts
         | ETH_DMAIER_RIE // enable RX interrupt
         ;
 
@@ -263,8 +263,7 @@ STATIC int eth_mac_init(eth_t *self) {
         eth_dma.rx_descr[i].rdes0 = 1 << RX_DESCR_0_OWN_Pos;
         eth_dma.rx_descr[i].rdes1 =
             1 << RX_DESCR_1_RCH_Pos // chained
-            | RX_BUF_SIZE << RX_DESCR_1_RBS1_Pos
-            ;
+            | RX_BUF_SIZE << RX_DESCR_1_RBS1_Pos;
         eth_dma.rx_descr[i].rdes2 = (uint32_t)&eth_dma.rx_buf[i * RX_BUF_SIZE];
         eth_dma.rx_descr[i].rdes3 = (uint32_t)&eth_dma.rx_descr[(i + 1) % RX_BUF_NUM];
     }
@@ -283,7 +282,7 @@ STATIC int eth_mac_init(eth_t *self) {
 
     // Configure DMA
     ETH->DMAOMR =
-        ETH_DMAOMR_RSF // read from RX FIFO after a full frame is written
+        ETH_DMAOMR_RSF   // read from RX FIFO after a full frame is written
         | ETH_DMAOMR_TSF // transmit when a full frame is in TX FIFO (needed by errata)
         ;
     mp_hal_delay_ms(2);
@@ -304,22 +303,21 @@ STATIC int eth_mac_init(eth_t *self) {
     // Set main MAC control register
     ETH->MACCR =
         (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_10FULL ? ETH_MACCR_DM
-        : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100HALF ? ETH_MACCR_FES
-        : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100FULL ? (ETH_MACCR_FES | ETH_MACCR_DM)
-        : 0
-        ;
+                                                                 : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100HALF ? ETH_MACCR_FES
+                                                                                                                             : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100FULL ? (ETH_MACCR_FES | ETH_MACCR_DM)
+                                                                                                                                                                                         : 0;
     mp_hal_delay_ms(2);
 
     // Start MAC layer
     ETH->MACCR |=
-        ETH_MACCR_TE // enable TX
+        ETH_MACCR_TE   // enable TX
         | ETH_MACCR_RE // enable RX
         ;
     mp_hal_delay_ms(2);
 
     // Start DMA layer
     ETH->DMAOMR |=
-        ETH_DMAOMR_ST // start TX
+        ETH_DMAOMR_ST   // start TX
         | ETH_DMAOMR_SR // start RX
         ;
     mp_hal_delay_ms(2);
@@ -372,11 +370,11 @@ STATIC int eth_tx_buf_send(void) {
 
     // Schedule to send next outgoing frame
     tx_descr->tdes0 =
-        1 << TX_DESCR_0_OWN_Pos     // owned by DMA
-        | 1 << TX_DESCR_0_LS_Pos    // last segment
-        | 1 << TX_DESCR_0_FS_Pos    // first segment
-        | 3 << TX_DESCR_0_CIC_Pos   // enable all checksums inserted by hardware
-        | 1 << TX_DESCR_0_TCH_Pos   // TX descriptor is chained
+        1 << TX_DESCR_0_OWN_Pos   // owned by DMA
+        | 1 << TX_DESCR_0_LS_Pos  // last segment
+        | 1 << TX_DESCR_0_FS_Pos  // first segment
+        | 3 << TX_DESCR_0_CIC_Pos // enable all checksums inserted by hardware
+        | 1 << TX_DESCR_0_TCH_Pos // TX descriptor is chained
         ;
 
     // Notify ETH DMA that there is a new TX descriptor for sending
@@ -397,12 +395,12 @@ STATIC void eth_dma_rx_free(void) {
 
     // Schedule to get next incoming frame
     rx_descr->rdes1 =
-        1 << RX_DESCR_1_RCH_Pos                 // RX descriptor is chained
-        | RX_BUF_SIZE << RX_DESCR_1_RBS1_Pos    // maximum buffer length
+        1 << RX_DESCR_1_RCH_Pos              // RX descriptor is chained
+        | RX_BUF_SIZE << RX_DESCR_1_RBS1_Pos // maximum buffer length
         ;
     rx_descr->rdes2 = (uint32_t)buf;
     rx_descr->rdes3 = (uint32_t)&eth_dma.rx_descr[eth_dma.rx_descr_idx];
-    rx_descr->rdes0 = 1 << RX_DESCR_0_OWN_Pos;  // owned by DMA
+    rx_descr->rdes0 = 1 << RX_DESCR_0_OWN_Pos; // owned by DMA
 
     // Notify ETH DMA that there is a new RX descriptor available
     __DMB();
@@ -424,7 +422,7 @@ void ETH_IRQHandler(void) {
             // Get RX buffer containing new frame
             size_t len = (rx_descr->rdes0 & RX_DESCR_0_FL_Msk) >> RX_DESCR_0_FL_Pos;
             len -= 4; // discard CRC at end
-            uint8_t *buf = (uint8_t*)rx_descr->rdes2;
+            uint8_t *buf = (uint8_t *)rx_descr->rdes2;
 
             // Process frame
             eth_process_frame(&eth_instance, len, buf);
@@ -437,8 +435,8 @@ void ETH_IRQHandler(void) {
 // ETH-LwIP bindings
 
 #define TRACE_ASYNC_EV (0x0001)
-#define TRACE_ETH_TX (0x0002)
-#define TRACE_ETH_RX (0x0004)
+#define TRACE_ETH_TX   (0x0002)
+#define TRACE_ETH_RX   (0x0004)
 #define TRACE_ETH_FULL (0x0008)
 
 STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
@@ -485,10 +483,10 @@ STATIC err_t eth_netif_init(struct netif *netif) {
     // Checksums only need to be checked on incoming frames, not computed on outgoing frames
     NETIF_SET_CHECKSUM_CTRL(netif,
         NETIF_CHECKSUM_CHECK_IP
-        | NETIF_CHECKSUM_CHECK_UDP
-        | NETIF_CHECKSUM_CHECK_TCP
-        | NETIF_CHECKSUM_CHECK_ICMP
-        | NETIF_CHECKSUM_CHECK_ICMP6);
+            | NETIF_CHECKSUM_CHECK_UDP
+            | NETIF_CHECKSUM_CHECK_TCP
+            | NETIF_CHECKSUM_CHECK_ICMP
+            | NETIF_CHECKSUM_CHECK_ICMP6);
     return ERR_OK;
 }
 

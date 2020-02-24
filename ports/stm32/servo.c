@@ -49,13 +49,13 @@
 typedef struct _pyb_servo_obj_t {
     mp_obj_base_t base;
     const pin_obj_t *pin;
-    uint8_t pulse_min;          // units of 10us
-    uint8_t pulse_max;          // units of 10us
-    uint8_t pulse_centre;       // units of 10us
-    uint8_t pulse_angle_90;     // units of 10us; pulse at 90 degrees, minus pulse_centre
-    uint8_t pulse_speed_100;    // units of 10us; pulse at 100% forward speed, minus pulse_centre
-    uint16_t pulse_cur;         // units of 10us
-    uint16_t pulse_dest;        // units of 10us
+    uint8_t pulse_min;       // units of 10us
+    uint8_t pulse_max;       // units of 10us
+    uint8_t pulse_centre;    // units of 10us
+    uint8_t pulse_angle_90;  // units of 10us; pulse at 90 degrees, minus pulse_centre
+    uint8_t pulse_speed_100; // units of 10us; pulse at 100% forward speed, minus pulse_centre
+    uint16_t pulse_cur;      // units of 10us
+    uint16_t pulse_dest;     // units of 10us
     int16_t pulse_accum;
     uint16_t time_left;
 } pyb_servo_obj_t;
@@ -76,18 +76,18 @@ void servo_init(void) {
         pyb_servo_obj[i].time_left = 0;
     }
 
-    // assign servo objects to specific pins (must be some permutation of PA0-PA3)
-    #ifdef pyb_pin_X1
+// assign servo objects to specific pins (must be some permutation of PA0-PA3)
+#ifdef pyb_pin_X1
     pyb_servo_obj[0].pin = pyb_pin_X1;
     pyb_servo_obj[1].pin = pyb_pin_X2;
     pyb_servo_obj[2].pin = pyb_pin_X3;
     pyb_servo_obj[3].pin = pyb_pin_X4;
-    #else
+#else
     pyb_servo_obj[0].pin = pin_A0;
     pyb_servo_obj[1].pin = pin_A1;
     pyb_servo_obj[2].pin = pin_A2;
     pyb_servo_obj[3].pin = pin_A3;
-    #endif
+#endif
 }
 
 void servo_timer_irq_callback(void) {
@@ -153,13 +153,25 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
 STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     int p = mp_obj_get_int(port);
     int v = mp_obj_get_int(value);
-    if (v < 50) { v = 50; }
-    if (v > 250) { v = 250; }
+    if (v < 50) {
+        v = 50;
+    }
+    if (v > 250) {
+        v = 250;
+    }
     switch (p) {
-        case 1: TIM5->CCR1 = v; break;
-        case 2: TIM5->CCR2 = v; break;
-        case 3: TIM5->CCR3 = v; break;
-        case 4: TIM5->CCR4 = v; break;
+        case 1:
+            TIM5->CCR1 = v;
+            break;
+        case 2:
+            TIM5->CCR2 = v;
+            break;
+        case 3:
+            TIM5->CCR3 = v;
+            break;
+        case 4:
+            TIM5->CCR4 = v;
+            break;
     }
     return mp_const_none;
 }
@@ -329,7 +341,7 @@ const mp_obj_type_t pyb_servo_type = {
     .name = MP_QSTR_Servo,
     .print = pyb_servo_print,
     .make_new = pyb_servo_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_servo_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_servo_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_SERVO

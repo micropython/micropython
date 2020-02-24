@@ -44,9 +44,9 @@ pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 #endif
 
 void pendsv_init(void) {
-    #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+#if defined(PENDSV_DISPATCH_NUM_SLOTS)
     pendsv_dispatch_active = false;
-    #endif
+#endif
     // set PendSV interrupt at lowest priority
     NVIC_SetPriority(PendSV_IRQn, IRQ_PRI_PENDSV);
 }
@@ -119,66 +119,65 @@ __attribute__((naked)) void PendSV_Handler(void) {
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
 
-    __asm volatile (
-        #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+    __asm volatile(
+#if defined(PENDSV_DISPATCH_NUM_SLOTS)
         // Check if there are any pending calls to dispatch to
         "ldr r1, pendsv_dispatch_active_ptr\n"
         "ldr r0, [r1]\n"
         "cmp r0, #0\n"
         "beq .no_dispatch\n"
         "mov r2, #0\n"
-        "str r2, [r1]\n"                // clear pendsv_dispatch_active
-        "b pendsv_dispatch_handler\n"   // jump to the handler
+        "str r2, [r1]\n"              // clear pendsv_dispatch_active
+        "b pendsv_dispatch_handler\n" // jump to the handler
         ".no_dispatch:\n"
-        #endif
+#endif
 
         // Check if there is an active object to throw via nlr_jump
         "ldr r1, pendsv_object_ptr\n"
         "ldr r0, [r1]\n"
         "cmp r0, #0\n"
         "beq .no_obj\n"
-        #if defined(PENDSV_DEBUG)
-        "str r0, [sp, #8]\n"            // store to r0 on stack
-        #else
-        "str r0, [sp, #0]\n"            // store to r0 on stack
-        #endif
+#if defined(PENDSV_DEBUG)
+        "str r0, [sp, #8]\n" // store to r0 on stack
+#else
+        "str r0, [sp, #0]\n"  // store to r0 on stack
+#endif
         "mov r0, #0\n"
-        "str r0, [r1]\n"                // clear pendsv_object
+        "str r0, [r1]\n" // clear pendsv_object
         "ldr r0, nlr_jump_ptr\n"
-        #if defined(PENDSV_DEBUG)
-        "str r0, [sp, #32]\n"           // store to pc on stack
-        #else
-        "str r0, [sp, #24]\n"           // store to pc on stack
-        #endif
-        "bx lr\n"                       // return from interrupt; will return to nlr_jump
-        ".no_obj:\n"                    // pendsv_object==NULL
+#if defined(PENDSV_DEBUG)
+        "str r0, [sp, #32]\n" // store to pc on stack
+#else
+        "str r0, [sp, #24]\n" // store to pc on stack
+#endif
+        "bx lr\n"    // return from interrupt; will return to nlr_jump
+        ".no_obj:\n" // pendsv_object==NULL
 
-        #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
         // Do a thread context switch
         "push {r4-r11, lr}\n"
         "vpush {s16-s31}\n"
-        "mrs r5, primask\n"             // save PRIMASK in r5
-        "cpsid i\n"                     // disable interrupts while we change stacks
-        "mov r0, sp\n"                  // pass sp to save
-        "mov r4, lr\n"                  // save lr because we are making a call
-        "bl pyb_thread_next\n"          // get next thread to execute
-        "mov lr, r4\n"                  // restore lr
-        "mov sp, r0\n"                  // switch stacks
-        "msr primask, r5\n"             // reenable interrupts
+        "mrs r5, primask\n"    // save PRIMASK in r5
+        "cpsid i\n"            // disable interrupts while we change stacks
+        "mov r0, sp\n"         // pass sp to save
+        "mov r4, lr\n"         // save lr because we are making a call
+        "bl pyb_thread_next\n" // get next thread to execute
+        "mov lr, r4\n"         // restore lr
+        "mov sp, r0\n"         // switch stacks
+        "msr primask, r5\n"    // reenable interrupts
         "vpop {s16-s31}\n"
         "pop {r4-r11, lr}\n"
-        "bx lr\n"                       // return from interrupt; will return to new thread
-        #else
+        "bx lr\n" // return from interrupt; will return to new thread
+#else
         // Spurious pendsv, just return
         "bx lr\n"
-        #endif
+#endif
 
         // Data
         ".align 2\n"
-        #if defined(PENDSV_DISPATCH_NUM_SLOTS)
+#if defined(PENDSV_DISPATCH_NUM_SLOTS)
         "pendsv_dispatch_active_ptr: .word pendsv_dispatch_active\n"
-        #endif
+#endif
         "pendsv_object_ptr: .word pendsv_object\n"
-        "nlr_jump_ptr: .word nlr_jump\n"
-    );
+        "nlr_jump_ptr: .word nlr_jump\n");
 }

@@ -49,9 +49,9 @@
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
-    pthread_t id;           // system id of thread
-    int ready;              // whether the thread is ready and running
-    void *arg;              // thread Python args, a GC root pointer
+    pthread_t id; // system id of thread
+    int ready;    // whether the thread is ready and running
+    void *arg;    // thread Python args, a GC root pointer
     struct _thread_t *next;
 } thread_t;
 
@@ -72,24 +72,24 @@ STATIC sem_t thread_signal_done;
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
-    (void)info; // unused
+    (void)info;    // unused
     (void)context; // unused
     if (signo == MP_THREAD_GC_SIGNAL) {
         void gc_collect_regs_and_stack(void);
         gc_collect_regs_and_stack();
-        // We have access to the context (regs, stack) of the thread but it seems
-        // that we don't need the extra information, enough is captured by the
-        // gc_collect_regs_and_stack function above
-        //gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
-        #if MICROPY_ENABLE_PYSTACK
-        void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
-        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
-        #endif
-        #if defined (__APPLE__)
+// We have access to the context (regs, stack) of the thread but it seems
+// that we don't need the extra information, enough is captured by the
+// gc_collect_regs_and_stack function above
+//gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
+#if MICROPY_ENABLE_PYSTACK
+        void **ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
+        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
+#endif
+#if defined(__APPLE__)
         sem_post(thread_signal_done_p);
-        #else
+#else
         sem_post(&thread_signal_done);
-        #endif
+#endif
     }
 }
 
@@ -104,12 +104,12 @@ void mp_thread_init(void) {
     thread->arg = NULL;
     thread->next = NULL;
 
-    #if defined(__APPLE__)
+#if defined(__APPLE__)
     snprintf(thread_signal_done_name, sizeof(thread_signal_done_name), "micropython_sem_%d", (int)thread->id);
     thread_signal_done_p = sem_open(thread_signal_done_name, O_CREAT | O_EXCL, 0666, 0);
-    #else
+#else
     sem_init(&thread_signal_done, 0, 0);
-    #endif
+#endif
 
     // enable signal handler for garbage collection
     struct sigaction sa;
@@ -128,10 +128,10 @@ void mp_thread_deinit(void) {
         free(th);
     }
     pthread_mutex_unlock(&thread_mutex);
-    #if defined(__APPLE__)
+#if defined(__APPLE__)
     sem_close(thread_signal_done_p);
     sem_unlink(thread_signal_done_name);
-    #endif
+#endif
     assert(thread->id == pthread_self());
     free(thread);
 }
@@ -153,17 +153,17 @@ void mp_thread_gc_others(void) {
             continue;
         }
         pthread_kill(th->id, MP_THREAD_GC_SIGNAL);
-        #if defined(__APPLE__)
+#if defined(__APPLE__)
         sem_wait(thread_signal_done_p);
-        #else
+#else
         sem_wait(&thread_signal_done);
-        #endif
+#endif
     }
     pthread_mutex_unlock(&thread_mutex);
 }
 
 mp_state_thread_t *mp_thread_get_state(void) {
-    return (mp_state_thread_t*)pthread_getspecific(tls_key);
+    return (mp_state_thread_t *)pthread_getspecific(tls_key);
 }
 
 void mp_thread_set_state(mp_state_thread_t *state) {
@@ -182,7 +182,7 @@ void mp_thread_start(void) {
     pthread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // default stack size is 8k machine-words
     if (*stack_size == 0) {
         *stack_size = 8192 * BYTES_PER_WORD;

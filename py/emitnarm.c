@@ -13,7 +13,7 @@
 #define NLR_BUF_IDX_LOCAL_2 (4) // r5
 #define NLR_BUF_IDX_LOCAL_3 (5) // r6
 
-#define N_ARM (1)
+#define N_ARM            (1)
 #define EXPORT_FUN(name) emit_native_arm_##name
 #include "py/emitnative.c"
 

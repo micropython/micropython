@@ -74,7 +74,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
-        byte *id = (byte*)0x40048058;
+        byte *id = (byte *)0x40048058;
         printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
@@ -125,7 +125,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 /// \function unique_id()
 /// Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
 STATIC mp_obj_t pyb_unique_id(void) {
-    byte *id = (byte*)0x40048058;
+    byte *id = (byte *)0x40048058;
     return mp_obj_new_bytes(id, 12);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
@@ -135,9 +135,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 // TODO should also be able to set frequency via this function
 STATIC mp_obj_t pyb_freq(void) {
     mp_obj_t tuple[3] = {
-       mp_obj_new_int(F_CPU),
-       mp_obj_new_int(F_BUS),
-       mp_obj_new_int(F_MEM),
+        mp_obj_new_int(F_CPU),
+        mp_obj_new_int(F_BUS),
+        mp_obj_new_int(F_MEM),
     };
     return mp_obj_new_tuple(3, tuple);
 }
@@ -247,7 +247,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
 /// \function have_cdc()
 /// Return True if USB is connected as a serial device, False otherwise.
-STATIC mp_obj_t pyb_have_cdc(void ) {
+STATIC mp_obj_t pyb_have_cdc(void) {
     return mp_obj_new_bool(usb_vcp_is_connected());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
@@ -273,8 +273,8 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_source_dir_obj); // defined in main.c
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_main_obj); // defined in main.c
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_usb_mode_obj); // defined in main.c
+MP_DECLARE_CONST_FUN_OBJ_1(pyb_main_obj);       // defined in main.c
+MP_DECLARE_CONST_FUN_OBJ_1(pyb_usb_mode_obj);   // defined in main.c
 
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
@@ -283,9 +283,9 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&pyb_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&pyb_freq_obj) },
-    #if MICROPY_REPL_INFO
+#if MICROPY_REPL_INFO
     { MP_ROM_QSTR(MP_QSTR_repl_info), MP_ROM_PTR(&pyb_set_repl_info_obj) },
-    #endif
+#endif
 
     { MP_ROM_QSTR(MP_QSTR_wfi), MP_ROM_PTR(&pyb_wfi_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&pyb_disable_irq_obj) },
@@ -310,13 +310,13 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
-//#if MICROPY_HW_ENABLE_RNG
-//    { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
-//#endif
+    //#if MICROPY_HW_ENABLE_RNG
+    //    { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
+    //#endif
 
-//#if MICROPY_HW_ENABLE_RTC
-//    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
-//#endif
+    //#if MICROPY_HW_ENABLE_RTC
+    //    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
+    //#endif
 
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
 //    { MP_ROM_QSTR(MP_QSTR_ExtInt), MP_ROM_PTR(&extint_type) },
@@ -331,30 +331,30 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type) },
 #endif
 
-//#if MICROPY_HW_HAS_SDCARD
-//    { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) },
-//#endif
+    //#if MICROPY_HW_HAS_SDCARD
+    //    { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) },
+    //#endif
 
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
-//    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
-//    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
+    //    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
+    //    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
 
-//    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
-//    { MP_ROM_QSTR(MP_QSTR_ADCAll), MP_ROM_PTR(&pyb_adc_all_type) },
+    //    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
+    //    { MP_ROM_QSTR(MP_QSTR_ADCAll), MP_ROM_PTR(&pyb_adc_all_type) },
 
-//#if MICROPY_HW_ENABLE_DAC
-//    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
-//#endif
+    //#if MICROPY_HW_ENABLE_DAC
+    //    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
+    //#endif
 
-//#if MICROPY_HW_HAS_MMA7660
-//    { MP_ROM_QSTR(MP_QSTR_Accel), MP_ROM_PTR(&pyb_accel_type) },
-//#endif
+    //#if MICROPY_HW_HAS_MMA7660
+    //    { MP_ROM_QSTR(MP_QSTR_Accel), MP_ROM_PTR(&pyb_accel_type) },
+    //#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
 
 const mp_obj_module_t pyb_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&pyb_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&pyb_module_globals,
 };

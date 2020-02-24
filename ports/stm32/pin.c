@@ -329,10 +329,10 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
-        { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        {MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // parse args
@@ -417,7 +417,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_handler, ARG_trigger, ARG_hard
+        ARG_handler,
+        ARG_trigger,
+        ARG_hard
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -519,51 +521,51 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
 STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pin_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pin_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pin_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pin_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pin_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pin_irq_obj) },
 
     // Legacy names as used by pyb.Pin
-    { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&pin_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_names),   MP_ROM_PTR(&pin_names_obj) },
+    { MP_ROM_QSTR(MP_QSTR_low), MP_ROM_PTR(&pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_high), MP_ROM_PTR(&pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&pin_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_names), MP_ROM_PTR(&pin_names_obj) },
     { MP_ROM_QSTR(MP_QSTR_af_list), MP_ROM_PTR(&pin_af_list_obj) },
-    { MP_ROM_QSTR(MP_QSTR_port),    MP_ROM_PTR(&pin_port_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pin),     MP_ROM_PTR(&pin_pin_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gpio),    MP_ROM_PTR(&pin_gpio_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&pin_mode_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pull),    MP_ROM_PTR(&pin_pull_obj) },
-    { MP_ROM_QSTR(MP_QSTR_af),      MP_ROM_PTR(&pin_af_obj) },
+    { MP_ROM_QSTR(MP_QSTR_port), MP_ROM_PTR(&pin_port_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&pin_pin_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gpio), MP_ROM_PTR(&pin_gpio_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mode), MP_ROM_PTR(&pin_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pull), MP_ROM_PTR(&pin_pull_obj) },
+    { MP_ROM_QSTR(MP_QSTR_af), MP_ROM_PTR(&pin_af_obj) },
 
     // class methods
-    { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_dict),    MP_ROM_PTR(&pin_map_dict_obj) },
-    { MP_ROM_QSTR(MP_QSTR_debug),   MP_ROM_PTR(&pin_debug_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mapper), MP_ROM_PTR(&pin_mapper_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dict), MP_ROM_PTR(&pin_map_dict_obj) },
+    { MP_ROM_QSTR(MP_QSTR_debug), MP_ROM_PTR(&pin_debug_obj) },
 
     // class attributes
-    { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
-    { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&pin_board_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_cpu), MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
+    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ALT),       MP_ROM_INT(GPIO_MODE_AF_PP) },
+    { MP_ROM_QSTR(MP_QSTR_ALT), MP_ROM_INT(GPIO_MODE_AF_PP) },
     { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_AF_OD) },
-    { MP_ROM_QSTR(MP_QSTR_ANALOG),    MP_ROM_INT(GPIO_MODE_ANALOG) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULLUP) },
+    { MP_ROM_QSTR(MP_QSTR_ANALOG), MP_ROM_INT(GPIO_MODE_ANALOG) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(GPIO_PULLUP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_MODE_IT_RISING) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_MODE_IT_FALLING) },
 
     // legacy class constants
-    { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_ROM_QSTR(MP_QSTR_OUT_OD),    MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_ROM_QSTR(MP_QSTR_AF_PP),     MP_ROM_INT(GPIO_MODE_AF_PP) },
-    { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
+    { MP_ROM_QSTR(MP_QSTR_OUT_PP), MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
+    { MP_ROM_QSTR(MP_QSTR_OUT_OD), MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
+    { MP_ROM_QSTR(MP_QSTR_AF_PP), MP_ROM_INT(GPIO_MODE_AF_PP) },
+    { MP_ROM_QSTR(MP_QSTR_AF_OD), MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 
 #include "genhdr/pins_af_const.h"
@@ -598,7 +600,7 @@ const mp_obj_type_t pin_type = {
     .make_new = mp_pin_make_new,
     .call = pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_locals_dict,
 };
 
 /// \moduleref pyb
@@ -672,5 +674,5 @@ const mp_obj_type_t pin_af_type = {
     { &mp_type_type },
     .name = MP_QSTR_PinAF,
     .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_af_locals_dict,
 };

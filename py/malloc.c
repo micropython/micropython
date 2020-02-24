@@ -42,7 +42,11 @@
 #if !MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #error MICROPY_MEM_STATS requires MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #endif
-#define UPDATE_PEAK() { if (MP_STATE_MEM(current_bytes_allocated) > MP_STATE_MEM(peak_bytes_allocated)) MP_STATE_MEM(peak_bytes_allocated) = MP_STATE_MEM(current_bytes_allocated); }
+#define UPDATE_PEAK()                                                                   \
+    {                                                                                   \
+        if (MP_STATE_MEM(current_bytes_allocated) > MP_STATE_MEM(peak_bytes_allocated)) \
+            MP_STATE_MEM(peak_bytes_allocated) = MP_STATE_MEM(current_bytes_allocated); \
+    }
 #endif
 
 #if MICROPY_ENABLE_GC
@@ -56,11 +60,11 @@
 #undef malloc
 #undef free
 #undef realloc
-#define malloc(b) gc_alloc((b), false)
+#define malloc(b)                gc_alloc((b), false)
 #define malloc_with_finaliser(b) gc_alloc((b), true)
-#define free gc_free
-#define realloc(ptr, n) gc_realloc(ptr, n, true)
-#define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
+#define free                     gc_free
+#define realloc(ptr, n)          gc_realloc(ptr, n, true)
+#define realloc_ext(ptr, n, mv)  gc_realloc(ptr, n, mv)
 #else
 
 // GC is disabled.  Use system malloc/realloc/free.
@@ -125,10 +129,10 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 
 void *m_malloc0(size_t num_bytes) {
     void *ptr = m_malloc(num_bytes);
-    // If this config is set then the GC clears all memory, so we don't need to.
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
+// If this config is set then the GC clears all memory, so we don't need to.
+#if !MICROPY_GC_CONSERVATIVE_CLEAR
     memset(ptr, 0, num_bytes);
-    #endif
+#endif
     return ptr;
 }
 
@@ -152,11 +156,11 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
     MP_STATE_MEM(current_bytes_allocated) += diff;
     UPDATE_PEAK();
 #endif
-    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
-    #else
+#else
     DEBUG_printf("realloc %p, %d : %p\n", ptr, new_num_bytes, new_ptr);
-    #endif
+#endif
     return new_ptr;
 }
 
@@ -180,11 +184,11 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
         UPDATE_PEAK();
     }
 #endif
-    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
-    #else
+#else
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, new_num_bytes, new_ptr);
-    #endif
+#endif
     return new_ptr;
 }
 
@@ -197,11 +201,11 @@ void m_free(void *ptr) {
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(current_bytes_allocated) -= num_bytes;
 #endif
-    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("free %p, %d\n", ptr, num_bytes);
-    #else
+#else
     DEBUG_printf("free %p\n", ptr);
-    #endif
+#endif
 }
 
 #if MICROPY_MEM_STATS

@@ -43,12 +43,12 @@
 typedef mp_uint_t regs_t[6];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long rbx asm ("rbx");
-    register long rbp asm ("rbp");
-    register long r12 asm ("r12");
-    register long r13 asm ("r13");
-    register long r14 asm ("r14");
-    register long r15 asm ("r15");
+    register long rbx asm("rbx");
+    register long rbp asm("rbp");
+    register long r12 asm("r12");
+    register long r13 asm("r13");
+    register long r14 asm("r14");
+    register long r15 asm("r15");
 #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
@@ -56,12 +56,18 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     // Application of this patch here is random, and done only to unbreak
     // MacOS build. Better, cross-arch ways to deal with Clang issues should
     // be found.
-    asm("" : "=r"(rbx));
-    asm("" : "=r"(rbp));
-    asm("" : "=r"(r12));
-    asm("" : "=r"(r13));
-    asm("" : "=r"(r14));
-    asm("" : "=r"(r15));
+    asm(""
+        : "=r"(rbx));
+    asm(""
+        : "=r"(rbp));
+    asm(""
+        : "=r"(r12));
+    asm(""
+        : "=r"(r13));
+    asm(""
+        : "=r"(r14));
+    asm(""
+        : "=r"(r15));
 #endif
     arr[0] = rbx;
     arr[1] = rbp;
@@ -76,10 +82,10 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 typedef mp_uint_t regs_t[4];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long ebx asm ("ebx");
-    register long esi asm ("esi");
-    register long edi asm ("edi");
-    register long ebp asm ("ebp");
+    register long ebx asm("ebx");
+    register long esi asm("esi");
+    register long edi asm("edi");
+    register long ebp asm("ebp");
 #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
@@ -87,10 +93,14 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     // Application of this patch here is random, and done only to unbreak
     // MacOS build. Better, cross-arch ways to deal with Clang issues should
     // be found.
-    asm("" : "=r"(ebx));
-    asm("" : "=r"(esi));
-    asm("" : "=r"(edi));
-    asm("" : "=r"(ebp));
+    asm(""
+        : "=r"(ebx));
+    asm(""
+        : "=r"(esi));
+    asm(""
+        : "=r"(edi));
+    asm(""
+        : "=r"(ebp));
 #endif
     arr[0] = ebx;
     arr[1] = esi;
@@ -103,16 +113,16 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 typedef mp_uint_t regs_t[10];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
-    register long r4 asm ("r4");
-    register long r5 asm ("r5");
-    register long r6 asm ("r6");
-    register long r7 asm ("r7");
-    register long r8 asm ("r8");
-    register long r9 asm ("r9");
-    register long r10 asm ("r10");
-    register long r11 asm ("r11");
-    register long r12 asm ("r12");
-    register long r13 asm ("r13");
+    register long r4 asm("r4");
+    register long r5 asm("r5");
+    register long r6 asm("r6");
+    register long r7 asm("r7");
+    register long r8 asm("r8");
+    register long r9 asm("r9");
+    register long r10 asm("r10");
+    register long r11 asm("r11");
+    register long r12 asm("r12");
+    register long r13 asm("r13");
     arr[0] = r4;
     arr[1] = r5;
     arr[2] = r6;
@@ -160,7 +170,7 @@ MP_NOINLINE void gc_collect_regs_and_stack(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
-    void **regs_ptr = (void**)(void*)&regs;
+    void **regs_ptr = (void **)(void *)&regs;
     gc_collect_root(regs_ptr, ((uintptr_t)MP_STATE_THREAD(stack_top) - (uintptr_t)&regs) / sizeof(uintptr_t));
 }
 
@@ -169,12 +179,12 @@ void gc_collect(void) {
 
     gc_collect_start();
     gc_collect_regs_and_stack();
-    #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
     mp_thread_gc_others();
-    #endif
-    #if MICROPY_EMIT_NATIVE
+#endif
+#if MICROPY_EMIT_NATIVE
     mp_unix_mark_exec();
-    #endif
+#endif
     gc_collect_end();
 
     //printf("-----\n");

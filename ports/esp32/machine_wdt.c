@@ -43,12 +43,12 @@ STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
 STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
-        ARG_id, ARG_timeout
+        ARG_id,
+        ARG_timeout
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} }
-    };
+        {MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000}}};
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 

@@ -118,38 +118,38 @@ STATIC mp_import_stat_t mp_frozen_stat_helper(const char *name, const char *str)
 mp_import_stat_t mp_frozen_stat(const char *str) {
     mp_import_stat_t stat;
 
-    #if MICROPY_MODULE_FROZEN_STR
+#if MICROPY_MODULE_FROZEN_STR
     stat = mp_frozen_stat_helper(mp_frozen_str_names, str);
     if (stat != MP_IMPORT_STAT_NO_EXIST) {
         return stat;
     }
-    #endif
+#endif
 
-    #if MICROPY_MODULE_FROZEN_MPY
+#if MICROPY_MODULE_FROZEN_MPY
     stat = mp_frozen_stat_helper(mp_frozen_mpy_names, str);
     if (stat != MP_IMPORT_STAT_NO_EXIST) {
         return stat;
     }
-    #endif
+#endif
 
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
-    #if MICROPY_MODULE_FROZEN_STR
+#if MICROPY_MODULE_FROZEN_STR
     mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
     if (lex != NULL) {
         *data = lex;
         return MP_FROZEN_STR;
     }
-    #endif
-    #if MICROPY_MODULE_FROZEN_MPY
+#endif
+#if MICROPY_MODULE_FROZEN_MPY
     const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
     if (rc != NULL) {
-        *data = (void*)rc;
+        *data = (void *)rc;
         return MP_FROZEN_MPY;
     }
-    #endif
+#endif
     return MP_FROZEN_NONE;
 }
 

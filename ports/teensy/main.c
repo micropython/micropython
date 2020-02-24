@@ -232,7 +232,7 @@ mp_obj_t pyb_led(mp_obj_t state) {
     return state;
 }
 
-#endif  // 0
+#endif // 0
 
 #if 0
 char *strdup(const char *str) {
@@ -245,10 +245,10 @@ char *strdup(const char *str) {
 #endif
 
 int main(void) {
-    // TODO: Put this in a more common initialization function.
-    // Turn on STKALIGN which keeps the stack 8-byte aligned for interrupts
-    // (per EABI)
-    #define SCB_CCR_STKALIGN (1 << 9)
+// TODO: Put this in a more common initialization function.
+// Turn on STKALIGN which keeps the stack 8-byte aligned for interrupts
+// (per EABI)
+#define SCB_CCR_STKALIGN (1 << 9)
     SCB_CCR |= SCB_CCR_STKALIGN;
 
     mp_stack_ctrl_init();
@@ -257,14 +257,14 @@ int main(void) {
     pinMode(LED_BUILTIN, OUTPUT);
     led_init();
 
-//    int first_soft_reset = true;
+    //    int first_soft_reset = true;
 
 soft_reset:
 
     led_state(PYB_LED_BUILTIN, 1);
 
     // GC init
-    gc_init(&_heap_start, (void*)HEAP_END);
+    gc_init(&_heap_start, (void *)HEAP_END);
 
     // MicroPython init
     mp_init();
@@ -345,7 +345,7 @@ soft_reset:
 
     printf("MPY: soft reboot\n");
 
-//    first_soft_reset = false;
+    //    first_soft_reset = false;
     goto soft_reset;
 }
 
@@ -358,24 +358,24 @@ void __libc_init_array(void) {
 // ultoa is used by usb_init_serialnumber. Normally ultoa would be provided
 // by nonstd.c from the teensy core, but it conflicts with some of the
 // MicroPython functions in string0.c, so we provide ultoa here.
-char * ultoa(unsigned long val, char *buf, int radix) 	
-{
-	unsigned digit;
-	int i=0, j;
-	char t;
+char *ultoa(unsigned long val, char *buf, int radix) {
+    unsigned digit;
+    int i = 0, j;
+    char t;
 
-	while (1) {
-		digit = val % radix;
-		buf[i] = ((digit < 10) ? '0' + digit : 'A' + digit - 10);
-		val /= radix;
-		if (val == 0) break;
-		i++;
-	}
-	buf[i + 1] = 0;
-	for (j=0; j < i; j++, i--) {
-		t = buf[j];
-		buf[j] = buf[i];
-		buf[i] = t;
-	}
-	return buf;
+    while (1) {
+        digit = val % radix;
+        buf[i] = ((digit < 10) ? '0' + digit : 'A' + digit - 10);
+        val /= radix;
+        if (val == 0)
+            break;
+        i++;
+    }
+    buf[i + 1] = 0;
+    for (j = 0; j < i; j++, i--) {
+        t = buf[j];
+        buf[j] = buf[i];
+        buf[i] = t;
+    }
+    return buf;
 }

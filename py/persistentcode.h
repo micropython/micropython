@@ -35,7 +35,7 @@
 
 // Macros to encode/decode flags to/from the feature byte
 #define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
-#define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
+#define MPY_FEATURE_DECODE_FLAGS(feat)  ((feat)&3)
 
 // Macros to encode/decode native architecture to/from the feature byte
 #define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
@@ -43,15 +43,13 @@
 
 // The feature flag bits encode the compile-time config options that
 // affect the generate bytecode.
-#define MPY_FEATURE_FLAGS ( \
+#define MPY_FEATURE_FLAGS (                           \
     ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
-    )
+    | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1))
 // This is a version of the flags that can be configured at runtime.
-#define MPY_FEATURE_FLAGS_DYNAMIC ( \
+#define MPY_FEATURE_FLAGS_DYNAMIC (                           \
     ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
-    )
+    | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1))
 
 // clang-format off
 // Define the host architecture
@@ -89,7 +87,7 @@
 
 // 16-bit little-endian integer with the second and third bytes of supported .mpy files
 #define MPY_FILE_HEADER_INT (MPY_VERSION \
-    | (MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
+                             | (MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
 
 enum {
     MP_NATIVE_ARCH_NONE = 0,

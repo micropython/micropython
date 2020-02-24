@@ -37,7 +37,7 @@
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT       (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -140,11 +140,11 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 
 qstr mp_obj_code_get_name(const byte *code_info) {
     MP_BC_PRELUDE_SIZE_DECODE(code_info);
-    #if MICROPY_PERSISTENT_CODE
+#if MICROPY_PERSISTENT_CODE
     return code_info[0] | (code_info[1] << 8);
-    #else
+#else
     return mp_decode_uint_value(code_info);
-    #endif
+#endif
 }
 
 #if MICROPY_EMIT_NATIVE
@@ -153,12 +153,12 @@ STATIC const mp_obj_type_t mp_type_fun_native;
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
-    #if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE
     if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
         // TODO native functions don't have name stored
         return MP_QSTR_;
     }
-    #endif
+#endif
 
     const byte *bc = fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(bc);
@@ -190,22 +190,22 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // than this will try to use the heap, with fallback to stack allocation.
 #define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
 
-#define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
-    { \
-        const uint8_t *ip = bytecode; \
-        size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args; \
+#define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var)                                                 \
+    {                                                                                                                        \
+        const uint8_t *ip = bytecode;                                                                                        \
+        size_t n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args;                                              \
         MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state_out_var, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_args); \
-                                    \
-        /* state size in bytes */                                                 \
-        state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
-                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
+                                                                                                                             \
+        /* state size in bytes */                                                                                            \
+        state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                                                              \
+                             + n_exc_stack * sizeof(mp_exc_stack_t);                                                         \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
-    code_state->fun_bc = _fun_bc; \
-    code_state->ip = 0; \
-    code_state->n_state = _n_state; \
-    mp_setup_code_state(code_state, n_args, n_kw, args); \
+    code_state->fun_bc = _fun_bc;                                         \
+    code_state->ip = 0;                                                   \
+    code_state->n_state = _n_state;                                       \
+    mp_setup_code_state(code_state, n_args, n_kw, args);                  \
     code_state->old_globals = mp_globals_get();
 
 #if MICROPY_STACKLESS
@@ -217,9 +217,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
 
     mp_code_state_t *code_state;
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
-    #else
+#else
     // If we use m_new_obj_var(), then on no memory, MemoryError will be
     // raised. But this is not correct exception for a function call,
     // RuntimeError should be raised instead. So, we use m_new_obj_var_maybe(),
@@ -229,7 +229,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     if (!code_state) {
         return NULL;
     }
-    #endif
+#endif
 
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
@@ -256,25 +256,25 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 
     // allocate state for locals and stack
     mp_code_state_t *code_state = NULL;
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
-    #else
+#else
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
-        #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+#if MICROPY_DEBUG_VM_STACK_OVERFLOW
         if (code_state != NULL) {
             memset(code_state->state, 0, state_size);
         }
-        #endif
+#endif
     }
     if (code_state == NULL) {
         code_state = alloca(sizeof(mp_code_state_t) + state_size);
-        #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+#if MICROPY_DEBUG_VM_STACK_OVERFLOW
         memset(code_state->state, 0, state_size);
-        #endif
+#endif
         state_size = 0; // indicate that we allocated using alloca
     }
-    #endif
+#endif
 
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
@@ -283,7 +283,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
 
-    #if MICROPY_DEBUG_VM_STACK_OVERFLOW
+#if MICROPY_DEBUG_VM_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         if (code_state->sp < code_state->state) {
             mp_printf(MICROPY_DEBUG_PRINTER, "VM stack underflow: " INT_FMT "\n", code_state->sp - code_state->state);
@@ -312,7 +312,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
             assert(0);
         }
     }
-    #endif
+#endif
 
     mp_obj_t result;
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
@@ -325,14 +325,14 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         result = code_state->state[0];
     }
 
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     mp_pystack_free(code_state);
-    #else
+#else
     // free the state if it was allocated on the heap
     if (state_size != 0) {
         m_del_var(mp_code_state_t, byte, state_size, code_state);
     }
-    #endif
+#endif
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;
@@ -400,7 +400,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = self_in;
-    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void*)self->bytecode);
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);
 }
 
@@ -412,7 +412,7 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte*)fun_data, const_table);
+    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table);
     o->base.type = &mp_type_fun_native;
     return o;
 }
@@ -456,12 +456,12 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(obj);
-        #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
         }
-        #endif
+#endif
         if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             size_t len;
@@ -504,8 +504,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
             convert_obj_for_inline_asm(args[0]),
             convert_obj_for_inline_asm(args[1]),
             convert_obj_for_inline_asm(args[2]),
-            convert_obj_for_inline_asm(args[3])
-        );
+            convert_obj_for_inline_asm(args[3]));
     }
 
     return mp_native_to_obj(ret, self->type_sig);

@@ -142,13 +142,13 @@ typedef struct _mp_fun_table_t {
     void *(*realloc_)(void *ptr, size_t n_bytes, bool allow_move);
     int (*printf_)(const mp_print_t *print, const char *fmt, ...);
     int (*vprintf_)(const mp_print_t *print, const char *fmt, va_list args);
-    #if defined(__GNUC__)
+#if defined(__GNUC__)
     NORETURN // Only certain compilers support no-return attributes in function pointer declarations
-    #endif
-    void (*raise_msg)(const mp_obj_type_t *exc_type, const char *msg);
+#endif
+        void (*raise_msg)(const mp_obj_type_t *exc_type, const char *msg);
     const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
-    mp_obj_t (*obj_new_str)(const char* data, size_t len);
-    mp_obj_t (*obj_new_bytes)(const byte* data, size_t len);
+    mp_obj_t (*obj_new_str)(const char *data, size_t len);
+    mp_obj_t (*obj_new_bytes)(const byte *data, size_t len);
     mp_obj_t (*obj_new_bytearray_by_ref)(size_t n, void *items);
     mp_obj_t (*obj_new_float_from_f)(float f);
     mp_obj_t (*obj_new_float_from_d)(double d);

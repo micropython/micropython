@@ -65,26 +65,26 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
-        #if MICROPY_MODULE_GETATTR
+#if MICROPY_MODULE_GETATTR
         } else if (attr != MP_QSTR___getattr__) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
             }
-        #endif
+#endif
         }
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
         if (dict->map.is_fixed) {
-            #if MICROPY_CAN_OVERRIDE_BUILTINS
+#if MICROPY_CAN_OVERRIDE_BUILTINS
             if (dict == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
                     MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
                 }
                 dict = MP_STATE_VM(mp_module_builtins_override_dict);
             } else
-            #endif
+#endif
             {
                 // can't delete or store to fixed map
                 return;
@@ -168,7 +168,7 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
 #endif
 
-    // extmod modules
+// extmod modules
 
 #if MICROPY_PY_UERRNO
     { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
@@ -231,10 +231,10 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
 
-    #ifdef MICROPY_REGISTERED_MODULES
-    // builtin modules declared with MP_REGISTER_MODULE()
-    MICROPY_REGISTERED_MODULES
-    #endif
+#ifdef MICROPY_REGISTERED_MODULES
+        // builtin modules declared with MP_REGISTER_MODULE()
+        MICROPY_REGISTERED_MODULES
+#endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
@@ -247,7 +247,7 @@ mp_obj_t mp_module_get(qstr module_name) {
 
     if (el == NULL) {
         // module not found, look for builtin module names
-        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+        el = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
         if (el == NULL) {
             return MP_OBJ_NULL;
         }
@@ -267,12 +267,11 @@ void mp_module_register(qstr qst, mp_obj_t module) {
 // Search for u"foo" in built-in modules, return MP_OBJ_NULL if not found
 mp_obj_t mp_module_search_umodule(const char *module_str) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(mp_builtin_module_table); ++i) {
-        const mp_map_elem_t *entry = (const mp_map_elem_t*)&mp_builtin_module_table[i];
+        const mp_map_elem_t *entry = (const mp_map_elem_t *)&mp_builtin_module_table[i];
         const char *key = qstr_str(MP_OBJ_QSTR_VALUE(entry->key));
         if (key[0] == 'u' && strcmp(&key[1], module_str) == 0) {
             return (mp_obj_t)entry->value;
         }
-
     }
     return MP_OBJ_NULL;
 }

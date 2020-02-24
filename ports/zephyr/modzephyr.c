@@ -49,8 +49,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 extern k_tid_t const _main_thread;
 extern k_tid_t const _idle_thread;
 
-static void thread_stack_dump(const struct k_thread *thread, void *user_data)
-{
+static void thread_stack_dump(const struct k_thread *thread, void *user_data) {
     const char *th_name = k_thread_name_get((k_tid_t)thread);
 
     if (th_name == NULL) {
@@ -59,7 +58,7 @@ static void thread_stack_dump(const struct k_thread *thread, void *user_data)
         th_name = tid;
     }
 
-    stack_analyze(th_name, (char*)thread->stack_info.start, thread->stack_info.size);
+    stack_analyze(th_name, (char *)thread->stack_info.start, thread->stack_info.size);
 }
 
 STATIC mp_obj_t mod_stacks_analyze(void) {
@@ -85,26 +84,26 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_tid), MP_ROM_PTR(&mod_current_tid_obj) },
-    #ifdef CONFIG_THREAD_STACK_INFO
+#ifdef CONFIG_THREAD_STACK_INFO
     { MP_ROM_QSTR(MP_QSTR_stacks_analyze), MP_ROM_PTR(&mod_stacks_analyze_obj) },
-    #endif
+#endif
 
-    #ifdef CONFIG_NET_SHELL
+#ifdef CONFIG_NET_SHELL
     { MP_ROM_QSTR(MP_QSTR_shell_net_iface), MP_ROM_PTR(&mod_shell_net_iface_obj) },
-    #endif
-    #ifdef CONFIG_DISK_ACCESS
+#endif
+#ifdef CONFIG_DISK_ACCESS
     { MP_ROM_QSTR(MP_QSTR_DiskAccess), MP_ROM_PTR(&zephyr_disk_access_type) },
-    #endif
-    #ifdef CONFIG_FLASH_MAP
+#endif
+#ifdef CONFIG_FLASH_MAP
     { MP_ROM_QSTR(MP_QSTR_FlashArea), MP_ROM_PTR(&zephyr_flash_area_type) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
 
 const mp_obj_module_t mp_module_zephyr = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_ZEPHYR

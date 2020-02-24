@@ -36,7 +36,7 @@
 #include "py/stackctrl.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -76,9 +76,9 @@ const mp_obj_type_t mp_type_gen_wrap = {
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
-    #if MICROPY_PY_FUNCTION_ATTRS
+#if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
-    #endif
+#endif
 };
 
 /******************************************************************************/
@@ -91,12 +91,12 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude, and extract n_state from it
-    uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
-    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    uintptr_t prelude_offset = ((uintptr_t *)self_fun->bytecode)[0];
+#if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
     // Prelude is in bytes object in const_table, at index prelude_offset
     mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->const_table[prelude_offset]);
-    prelude_offset = (const byte*)prelude_bytes->data - self_fun->bytecode;
-    #endif
+    prelude_offset = (const byte *)prelude_bytes->data - self_fun->bytecode;
+#endif
     const uint8_t *ip = self_fun->bytecode + prelude_offset;
     size_t n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args;
     MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args);
@@ -110,7 +110,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = (const byte*)prelude_offset;
+    o->code_state.ip = (const byte *)prelude_offset;
     o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
 
@@ -118,8 +118,8 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
-    uintptr_t start_offset = ((uintptr_t*)self_fun->bytecode)[1];
-    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void*)(self_fun->bytecode + start_offset));
+    uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
+    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void *)(self_fun->bytecode + start_offset));
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -129,9 +129,9 @@ const mp_obj_type_t mp_type_native_gen_wrap = {
     .name = MP_QSTR_generator,
     .call = native_gen_wrap_call,
     .unary_op = mp_generic_unary_op,
-    #if MICROPY_PY_FUNCTION_ATTRS
+#if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
-    #endif
+#endif
 };
 
 #endif // MICROPY_EMIT_NATIVE
@@ -160,12 +160,12 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         mp_raise_ValueError("generator already executing");
     }
 
-    #if MICROPY_PY_GENERATOR_PEND_THROW
+#if MICROPY_PY_GENERATOR_PEND_THROW
     // If exception is pending (set using .pend_throw()), process it now.
     if (self->pend_exc != mp_const_none) {
         throw_value = self->pend_exc;
     }
-    #endif
+#endif
 
     // If the generator is started, allow sending a value.
     if (self->code_state.sp == self->code_state.state - 1) {
@@ -185,14 +185,14 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     mp_vm_return_kind_t ret_kind;
 
-    #if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator, with entry point 2 words into the "bytecode" pointer
-        typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);
-        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void*)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
-        ret_kind = fun((void*)&self->code_state, throw_value);
+        typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
+        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        ret_kind = fun((void *)&self->code_state, throw_value);
     } else
-    #endif
+#endif
     {
         // A bytecode generator
         ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
@@ -215,9 +215,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_YIELD:
             *ret_val = *self->code_state.sp;
-            #if MICROPY_PY_GENERATOR_PEND_THROW
+#if MICROPY_PY_GENERATOR_PEND_THROW
             *self->code_state.sp = mp_const_none;
-            #endif
+#endif
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
@@ -333,9 +333,9 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
-    #if MICROPY_PY_GENERATOR_PEND_THROW
+#if MICROPY_PY_GENERATOR_PEND_THROW
     { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
@@ -347,5 +347,5 @@ const mp_obj_type_t mp_type_gen_instance = {
     .unary_op = mp_generic_unary_op,
     .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
-    .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
 };

@@ -50,7 +50,7 @@
 // This is used to protect the ringbuffer.
 #ifndef MICROPY_PY_BLUETOOTH_ENTER
 #define MICROPY_PY_BLUETOOTH_ENTER mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_END_ATOMIC_SECTION(atomic_state);
+#define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_END_ATOMIC_SECTION(atomic_state);
 #endif
 
 // Common constants.
@@ -61,13 +61,13 @@
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
 
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ     (1 << 1)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ   (1 << 1)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE  (1 << 3)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY (1 << 4)
 
 // For mp_bluetooth_gattc_write, the mode parameter
-#define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE     (0)
-#define MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE   (1)
+#define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE   (0)
+#define MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE (1)
 
 // Type value also doubles as length.
 #define MP_BLUETOOTH_UUID_TYPE_16  (2)
@@ -76,10 +76,10 @@
 
 // Address types (for the addr_type params).
 // Ports will need to map these to their own values.
-#define MP_BLUETOOTH_ADDR_PUBLIC                        (0x00)  // Public (identity) address. (Same as NimBLE and NRF SD)
-#define MP_BLUETOOTH_ADDR_RANDOM_STATIC                 (0x01)  // Random static (identity) address. (Same as NimBLE and NRF SD)
-#define MP_BLUETOOTH_ADDR_PUBLIC_ID                     (0x02)  // (Same as NimBLE)
-#define MP_BLUETOOTH_ADDR_RANDOM_ID                     (0x03)  // (Same as NimBLE)
+#define MP_BLUETOOTH_ADDR_PUBLIC                        (0x00) // Public (identity) address. (Same as NimBLE and NRF SD)
+#define MP_BLUETOOTH_ADDR_RANDOM_STATIC                 (0x01) // Random static (identity) address. (Same as NimBLE and NRF SD)
+#define MP_BLUETOOTH_ADDR_PUBLIC_ID                     (0x02) // (Same as NimBLE)
+#define MP_BLUETOOTH_ADDR_RANDOM_ID                     (0x03) // (Same as NimBLE)
 #define MP_BLUETOOTH_ADDR_RANDOM_PRIVATE_RESOLVABLE     (0x12) // Random private resolvable address. (NRF SD 0x02)
 #define MP_BLUETOOTH_ADDR_RANDOM_PRIVATE_NON_RESOLVABLE (0x13) // Random private non-resolvable address. (NRF SD 0x03)
 
@@ -88,22 +88,22 @@
 // are interested in.
 // Note this is currently stored in a uint16_t (in irq_trigger, and the event
 // arg to the irq handler), so one spare value remaining.
-#define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT              (1 << 0)
-#define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT           (1 << 1)
-#define MP_BLUETOOTH_IRQ_GATTS_WRITE                  (1 << 2)
-#define MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST           (1 << 3)
-#define MP_BLUETOOTH_IRQ_SCAN_RESULT                  (1 << 4)
-#define MP_BLUETOOTH_IRQ_SCAN_COMPLETE                (1 << 5)
-#define MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT           (1 << 6)
-#define MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT        (1 << 7)
-#define MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT         (1 << 8)
-#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT  (1 << 9)
-#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT      (1 << 10)
-#define MP_BLUETOOTH_IRQ_GATTC_READ_RESULT            (1 << 11)
-#define MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS           (1 << 12)
-#define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                 (1 << 13)
-#define MP_BLUETOOTH_IRQ_GATTC_INDICATE               (1 << 14)
-#define MP_BLUETOOTH_IRQ_ALL                          (0xffff)
+#define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT             (1 << 0)
+#define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT          (1 << 1)
+#define MP_BLUETOOTH_IRQ_GATTS_WRITE                 (1 << 2)
+#define MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST          (1 << 3)
+#define MP_BLUETOOTH_IRQ_SCAN_RESULT                 (1 << 4)
+#define MP_BLUETOOTH_IRQ_SCAN_COMPLETE               (1 << 5)
+#define MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT          (1 << 6)
+#define MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT       (1 << 7)
+#define MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT        (1 << 8)
+#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT (1 << 9)
+#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT     (1 << 10)
+#define MP_BLUETOOTH_IRQ_GATTC_READ_RESULT           (1 << 11)
+#define MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS          (1 << 12)
+#define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                (1 << 13)
+#define MP_BLUETOOTH_IRQ_GATTC_INDICATE              (1 << 14)
+#define MP_BLUETOOTH_IRQ_ALL                         (0xffff)
 
 /*
 These aren't included in the module for space reasons, but can be used

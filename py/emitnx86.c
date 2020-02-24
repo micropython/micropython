@@ -65,7 +65,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_SETJMP] = 1,
 };
 
-#define N_X86 (1)
+#define N_X86            (1)
 #define EXPORT_FUN(name) emit_native_x86_##name
 #include "py/emitnative.c"
 

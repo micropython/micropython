@@ -37,10 +37,10 @@
 #include "py/frozenmod.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
-#define DEBUG_PRINT (1)
+#define DEBUG_PRINT  (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT       (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -57,12 +57,12 @@ bool mp_obj_is_package(mp_obj_t module) {
 // Stat either frozen or normal module by a given path
 // (whatever is available, if at all).
 STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
-    #if MICROPY_MODULE_FROZEN
+#if MICROPY_MODULE_FROZEN
     mp_import_stat_t st = mp_frozen_stat(path);
     if (st != MP_IMPORT_STAT_NO_EXIST) {
         return st;
     }
-    #endif
+#endif
     return mp_import_stat(path);
 }
 
@@ -72,13 +72,13 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
         return stat;
     }
 
-    #if MICROPY_PERSISTENT_CODE_LOAD
+#if MICROPY_PERSISTENT_CODE_LOAD
     vstr_ins_byte(path, path->len - 2, 'm');
     stat = mp_import_stat_any(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
-    #endif
+#endif
 
     return MP_IMPORT_STAT_NO_EXIST;
 }
@@ -133,10 +133,10 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
-    #if MICROPY_PY___FILE__
+#if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
     mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-    #endif
+#endif
 
     // parse, compile and execute the module in its context
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
@@ -145,12 +145,12 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *source_name) {
     (void)source_name;
 
-    #if MICROPY_PY___FILE__
+#if MICROPY_PY___FILE__
     mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(qstr_from_str(source_name)));
-    #endif
+#endif
 
     // execute the module in its context
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
@@ -182,56 +182,56 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, co
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    #if MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
+#if MICROPY_MODULE_FROZEN || MICROPY_ENABLE_COMPILER || (MICROPY_PERSISTENT_CODE_LOAD && MICROPY_HAS_FILE_READER)
     char *file_str = vstr_null_terminated_str(file);
-    #endif
+#endif
 
-    // If we support frozen modules (either as str or mpy) then try to find the
-    // requested filename in the list of frozen module filenames.
-    #if MICROPY_MODULE_FROZEN
+// If we support frozen modules (either as str or mpy) then try to find the
+// requested filename in the list of frozen module filenames.
+#if MICROPY_MODULE_FROZEN
     void *modref;
     int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
-    #endif
+#endif
 
-    // If we support frozen str modules and the compiler is enabled, and we
-    // found the filename in the list of frozen files, then load and execute it.
-    #if MICROPY_MODULE_FROZEN_STR
+// If we support frozen str modules and the compiler is enabled, and we
+// found the filename in the list of frozen files, then load and execute it.
+#if MICROPY_MODULE_FROZEN_STR
     if (frozen_type == MP_FROZEN_STR) {
         do_load_from_lexer(module_obj, modref);
         return;
     }
-    #endif
+#endif
 
-    // If we support frozen mpy modules and we found a corresponding file (and
-    // its data) in the list of frozen files, execute it.
-    #if MICROPY_MODULE_FROZEN_MPY
+// If we support frozen mpy modules and we found a corresponding file (and
+// its data) in the list of frozen files, execute it.
+#if MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
         do_execute_raw_code(module_obj, modref, file_str);
         return;
     }
-    #endif
+#endif
 
-    // If we support loading .mpy files then check if the file extension is of
-    // the correct format and, if so, load and execute the file.
-    #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
+// If we support loading .mpy files then check if the file extension is of
+// the correct format and, if so, load and execute the file.
+#if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         do_execute_raw_code(module_obj, raw_code, file_str);
         return;
     }
-    #endif
+#endif
 
-    // If we can compile scripts then load the file and compile and execute it.
-    #if MICROPY_ENABLE_COMPILER
+// If we can compile scripts then load the file and compile and execute it.
+#if MICROPY_ENABLE_COMPILER
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
         do_load_from_lexer(module_obj, lex);
         return;
     }
-    #else
+#else
     // If we get here then the file was not frozen and we can't compile scripts.
     mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
-    #endif
+#endif
 }
 
 STATIC void chop_component(const char *start, const char **end) {
@@ -282,12 +282,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         level--;
         mp_obj_t this_name_q = mp_obj_dict_get(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
         assert(this_name_q != MP_OBJ_NULL);
-        #if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT
         if (MP_OBJ_QSTR_VALUE(this_name_q) == MP_QSTR___main__) {
             // This is a module run by -m command-line switch, get its real name from backup attribute
             this_name_q = mp_obj_dict_get(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
         }
-        #endif
+#endif
         mp_map_t *globals_map = &mp_globals_get()->map;
         mp_map_elem_t *elem = mp_map_lookup(globals_map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
         bool is_pkg = (elem != NULL);
@@ -386,7 +386,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
                 module_obj = MP_OBJ_NULL;
-                #if MICROPY_MODULE_WEAK_LINKS
+#if MICROPY_MODULE_WEAK_LINKS
                 // check if there is a weak link to this module
                 if (i == mod_len) {
                     module_obj = mp_module_search_umodule(mod_str);
@@ -395,7 +395,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                         mp_module_call_init(mod_name, module_obj);
                     }
                 }
-                #endif
+#endif
                 if (module_obj == MP_OBJ_NULL) {
                     // couldn't find the file, so fail
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -425,12 +425,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 if (i == mod_len && fromtuple == mp_const_false && stat != MP_IMPORT_STAT_DIR) {
                     mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
-                    #if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT
                     // Store module as "__main__" in the dictionary of loaded modules (returned by sys.modules).
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)), MP_OBJ_NEW_QSTR(MP_QSTR___main__), module_obj);
                     // Store real name in "__main__" attribute. Chosen semi-randonly, to reuse existing qstr's.
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
-                    #endif
+#endif
                 }
 
                 if (stat == MP_IMPORT_STAT_DIR) {
@@ -490,7 +490,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         return module_obj;
     }
 
-    #if MICROPY_MODULE_WEAK_LINKS
+#if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
     module_obj = mp_module_search_umodule(qstr_str(module_name_qstr));
     if (module_obj != MP_OBJ_NULL) {
@@ -498,7 +498,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         mp_module_call_init(module_name_qstr, module_obj);
         return module_obj;
     }
-    #endif
+#endif
 
     // Couldn't find the module, so fail
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {

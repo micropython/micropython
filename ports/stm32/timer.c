@@ -94,21 +94,21 @@ typedef enum {
 } pyb_channel_mode;
 
 STATIC const struct {
-    qstr        name;
-    uint32_t    oc_mode;
+    qstr name;
+    uint32_t oc_mode;
 } channel_mode_info[] = {
-    { MP_QSTR_PWM,                TIM_OCMODE_PWM1 },
-    { MP_QSTR_PWM_INVERTED,       TIM_OCMODE_PWM2 },
-    { MP_QSTR_OC_TIMING,          TIM_OCMODE_TIMING },
-    { MP_QSTR_OC_ACTIVE,          TIM_OCMODE_ACTIVE },
-    { MP_QSTR_OC_INACTIVE,        TIM_OCMODE_INACTIVE },
-    { MP_QSTR_OC_TOGGLE,          TIM_OCMODE_TOGGLE },
-    { MP_QSTR_OC_FORCED_ACTIVE,   TIM_OCMODE_FORCED_ACTIVE },
+    { MP_QSTR_PWM, TIM_OCMODE_PWM1 },
+    { MP_QSTR_PWM_INVERTED, TIM_OCMODE_PWM2 },
+    { MP_QSTR_OC_TIMING, TIM_OCMODE_TIMING },
+    { MP_QSTR_OC_ACTIVE, TIM_OCMODE_ACTIVE },
+    { MP_QSTR_OC_INACTIVE, TIM_OCMODE_INACTIVE },
+    { MP_QSTR_OC_TOGGLE, TIM_OCMODE_TOGGLE },
+    { MP_QSTR_OC_FORCED_ACTIVE, TIM_OCMODE_FORCED_ACTIVE },
     { MP_QSTR_OC_FORCED_INACTIVE, TIM_OCMODE_FORCED_INACTIVE },
-    { MP_QSTR_IC,                 0 },
-    { MP_QSTR_ENC_A,              TIM_ENCODERMODE_TI1 },
-    { MP_QSTR_ENC_B,              TIM_ENCODERMODE_TI2 },
-    { MP_QSTR_ENC_AB,             TIM_ENCODERMODE_TI12 },
+    { MP_QSTR_IC, 0 },
+    { MP_QSTR_ENC_A, TIM_ENCODERMODE_TI1 },
+    { MP_QSTR_ENC_B, TIM_ENCODERMODE_TI2 },
+    { MP_QSTR_ENC_AB, TIM_ENCODERMODE_TI12 },
 };
 
 enum {
@@ -153,7 +153,8 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
 
 void timer_init0(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        MP_STATE_PORT(pyb_timer_obj_all)[i] = NULL;
+        MP_STATE_PORT(pyb_timer_obj_all)
+        [i] = NULL;
     }
 }
 
@@ -180,7 +181,7 @@ void timer_tim5_init(void) {
 
     // PWM clock configuration
     TIM5_Handle.Instance = TIM5;
-    TIM5_Handle.Init.Period = 2000 - 1; // timer cycles at 50Hz
+    TIM5_Handle.Init.Period = 2000 - 1;                                   // timer cycles at 50Hz
     TIM5_Handle.Init.Prescaler = (timer_get_source_freq(5) / 100000) - 1; // timer runs at 100kHz
     TIM5_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     TIM5_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -211,7 +212,7 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
     TIM6_Handle.Init.Period = period - 1;
     TIM6_Handle.Init.Prescaler = prescaler - 1;
     TIM6_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1; // unused for TIM6
-    TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP; // unused for TIM6
+    TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;       // unused for TIM6
     HAL_TIM_Base_Init(&TIM6_Handle);
 
     return &TIM6_Handle;
@@ -220,11 +221,11 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    #if MICROPY_HW_ENABLE_SERVO
+#if MICROPY_HW_ENABLE_SERVO
     if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }
-    #endif
+#endif
 }
 
 // Get the frequency (in Hz) of the source clock for the given timer.
@@ -235,27 +236,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
-        // TIM{1,8,9,10,11} are on APB2
-        #if defined(STM32F0)
+// TIM{1,8,9,10,11} are on APB2
+#if defined(STM32F0)
         source = HAL_RCC_GetPCLK1Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
-        #elif defined(STM32H7)
+#elif defined(STM32H7)
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
-        #else
+#else
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
-        #endif
+#endif
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        #if defined(STM32F0)
+#if defined(STM32F0)
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
-        #elif defined(STM32H7)
+#elif defined(STM32H7)
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
-        #else
+#else
         clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
-        #endif
+#endif
     }
     if (clk_div != 0) {
         // APB prescaler for this timer is > 1
@@ -271,7 +272,7 @@ STATIC const mp_obj_type_t pyb_timer_channel_type;
 
 // This is the largest value that we can multiply by 100 and have the result
 // fit in a uint32_t.
-#define MAX_PERIOD_DIV_100  42949672
+#define MAX_PERIOD_DIV_100 42949672
 
 // computes prescaler and period so TIM triggers at freq-Hz
 STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj_t freq_in, uint32_t *period_out) {
@@ -279,7 +280,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
     uint32_t prescaler = 1;
     uint32_t period;
     if (0) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_type(freq_in, &mp_type_float)) {
         float freq = mp_obj_get_float(freq_in);
         if (freq <= 0) {
@@ -290,12 +291,12 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
             freq *= 10;
         }
         period = (float)source_freq / freq;
-    #endif
+#endif
     } else {
         mp_int_t freq = mp_obj_get_int(freq_in);
         if (freq <= 0) {
             goto bad_freq;
-            bad_freq:
+        bad_freq:
             mp_raise_ValueError("must have positive freq");
         }
         period = source_freq / freq;
@@ -359,8 +360,7 @@ STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
     // In edge mode, compare == (period + 1) corresponds to 100%
     uint32_t period = (__HAL_TIM_GET_AUTORELOAD(&self->tim) & TIMER_CNT_MASK(self));
     if (period != 0xffffffff) {
-        if (self->tim.Init.CounterMode == TIM_COUNTERMODE_UP ||
-            self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN) {
+        if (self->tim.Init.CounterMode == TIM_COUNTERMODE_UP || self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN) {
             // Edge mode
             period++;
         }
@@ -374,7 +374,7 @@ STATIC uint32_t compute_period(pyb_timer_obj_t *self) {
 STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent_in) {
     uint32_t cmp;
     if (0) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_type(percent_in, &mp_type_float)) {
         mp_float_t percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
@@ -384,7 +384,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
         } else {
             cmp = percent / 100.0 * ((mp_float_t)period);
         }
-    #endif
+#endif
     } else {
         // For integer arithmetic, if period is large and 100*period will
         // overflow, then divide period before multiplying by cmp.  Otherwise
@@ -405,7 +405,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
 
 // Helper function to compute percentage from timer perion and PWM value.
 STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t percent;
     if (cmp >= period) {
         percent = 100.0;
@@ -413,7 +413,7 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
         percent = (mp_float_t)cmp * 100.0 / ((mp_float_t)period);
     }
     return mp_obj_new_float(percent);
-    #else
+#else
     mp_int_t percent;
     if (cmp >= period) {
         percent = 100;
@@ -423,7 +423,7 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
         percent = cmp * 100 / period;
     }
     return mp_obj_new_int(percent);
-    #endif
+#endif
 }
 
 #if !defined(STM32L0)
@@ -471,19 +471,19 @@ STATIC mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
 
 STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk) {
     TIM_BreakDeadTimeConfigTypeDef deadTimeConfig;
-    deadTimeConfig.OffStateRunMode  = TIM_OSSR_DISABLE;
+    deadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
     deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-    deadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
-    deadTimeConfig.DeadTime         = compute_dtg_from_ticks(ticks);
-    deadTimeConfig.BreakState       = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
-    deadTimeConfig.BreakPolarity    = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32H7) | defined(STM32L4)
-    deadTimeConfig.BreakFilter      = 0;
-    deadTimeConfig.Break2State      = TIM_BREAK_DISABLE;
-    deadTimeConfig.Break2Polarity   = TIM_BREAKPOLARITY_LOW;
-    deadTimeConfig.Break2Filter     = 0;
-    #endif
-    deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
+    deadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+    deadTimeConfig.DeadTime = compute_dtg_from_ticks(ticks);
+    deadTimeConfig.BreakState = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
+    deadTimeConfig.BreakPolarity = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
+#if defined(STM32F7) || defined(STM32H7) | defined(STM32L4)
+    deadTimeConfig.BreakFilter = 0;
+    deadTimeConfig.Break2State = TIM_BREAK_DISABLE;
+    deadTimeConfig.Break2Polarity = TIM_BREAKPOLARITY_LOW;
+    deadTimeConfig.Break2Filter = 0;
+#endif
+    deadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
 
@@ -512,19 +512,17 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
             freq,
             prescaler,
             period,
-            self->tim.Init.CounterMode == TIM_COUNTERMODE_UP     ? "UP" :
-            self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN   ? "DOWN" : "CENTER",
-            self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV4 ? 4 :
-            self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV2 ? 2 : 1);
+            self->tim.Init.CounterMode == TIM_COUNTERMODE_UP ? "UP" : self->tim.Init.CounterMode == TIM_COUNTERMODE_DOWN ? "DOWN" : "CENTER",
+            self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV4 ? 4 : self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV2 ? 2 : 1);
 
-        #if !defined(STM32L0)
-        #if defined(IS_TIM_ADVANCED_INSTANCE)
+#if !defined(STM32L0)
+#if defined(IS_TIM_ADVANCED_INSTANCE)
         if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance))
-        #elif defined(IS_TIM_BREAK_INSTANCE)
+#elif defined(IS_TIM_BREAK_INSTANCE)
         if (IS_TIM_BREAK_INSTANCE(self->tim.Instance))
-        #else
+#else
         if (0)
-        #endif
+#endif
         {
             mp_printf(print, ", deadtime=%u",
                 compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
@@ -535,7 +533,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
                 mp_printf(print, ", brk=BRK_OFF");
             }
         }
-        #endif
+#endif
         mp_print_str(print, ")");
     }
 }
@@ -593,18 +591,26 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///  You must either specify freq or both of period and prescaler.
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime, ARG_brk
+        ARG_freq,
+        ARG_prescaler,
+        ARG_period,
+        ARG_tick_hz,
+        ARG_mode,
+        ARG_div,
+        ARG_callback,
+        ARG_deadtime,
+        ARG_brk
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_prescaler,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
-        { MP_QSTR_div,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_deadtime,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_brk,          MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_OFF} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_period, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIM_COUNTERMODE_UP} },
+        { MP_QSTR_div, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_deadtime, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_brk, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BRK_OFF} },
     };
 
     // parse args
@@ -633,110 +639,151 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         mp_raise_msg_varg(&mp_type_ValueError, "invalid mode (%d)", init->CounterMode);
     }
 
-    init->ClockDivision = args[ARG_div].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
-                          args[ARG_div].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 :
-                                                     TIM_CLOCKDIVISION_DIV1;
+    init->ClockDivision = args[ARG_div].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 : args[ARG_div].u_int == 4 ? TIM_CLOCKDIVISION_DIV4 : TIM_CLOCKDIVISION_DIV1;
 
-    #if !defined(STM32L0)
+#if !defined(STM32L0)
     init->RepetitionCounter = 0;
-    #endif
+#endif
 
     // enable TIM clock
     switch (self->tim_id) {
-        #if defined(TIM1)
-        case 1: __HAL_RCC_TIM1_CLK_ENABLE(); break;
-        #endif
-        case 2: __HAL_RCC_TIM2_CLK_ENABLE(); break;
-        #if defined(TIM3)
-        case 3: __HAL_RCC_TIM3_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM4)
-        case 4: __HAL_RCC_TIM4_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM5)
-        case 5: __HAL_RCC_TIM5_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM6)
-        case 6: __HAL_RCC_TIM6_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM7)
-        case 7: __HAL_RCC_TIM7_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM8)
-        case 8: __HAL_RCC_TIM8_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM9)
-        case 9: __HAL_RCC_TIM9_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM10)
-        case 10: __HAL_RCC_TIM10_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM11)
-        case 11: __HAL_RCC_TIM11_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM12)
-        case 12: __HAL_RCC_TIM12_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM13)
-        case 13: __HAL_RCC_TIM13_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM14)
-        case 14: __HAL_RCC_TIM14_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM15)
-        case 15: __HAL_RCC_TIM15_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM16)
-        case 16: __HAL_RCC_TIM16_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM17)
-        case 17: __HAL_RCC_TIM17_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM18)
-        case 18: __HAL_RCC_TIM18_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM19)
-        case 19: __HAL_RCC_TIM19_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM20)
-        case 20: __HAL_RCC_TIM20_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM21)
-        case 21: __HAL_RCC_TIM21_CLK_ENABLE(); break;
-        #endif
-        #if defined(TIM22)
-        case 22: __HAL_RCC_TIM22_CLK_ENABLE(); break;
-        #endif
+#if defined(TIM1)
+        case 1:
+            __HAL_RCC_TIM1_CLK_ENABLE();
+            break;
+#endif
+        case 2:
+            __HAL_RCC_TIM2_CLK_ENABLE();
+            break;
+#if defined(TIM3)
+        case 3:
+            __HAL_RCC_TIM3_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM4)
+        case 4:
+            __HAL_RCC_TIM4_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM5)
+        case 5:
+            __HAL_RCC_TIM5_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM6)
+        case 6:
+            __HAL_RCC_TIM6_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM7)
+        case 7:
+            __HAL_RCC_TIM7_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM8)
+        case 8:
+            __HAL_RCC_TIM8_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM9)
+        case 9:
+            __HAL_RCC_TIM9_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM10)
+        case 10:
+            __HAL_RCC_TIM10_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM11)
+        case 11:
+            __HAL_RCC_TIM11_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM12)
+        case 12:
+            __HAL_RCC_TIM12_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM13)
+        case 13:
+            __HAL_RCC_TIM13_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM14)
+        case 14:
+            __HAL_RCC_TIM14_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM15)
+        case 15:
+            __HAL_RCC_TIM15_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM16)
+        case 16:
+            __HAL_RCC_TIM16_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM17)
+        case 17:
+            __HAL_RCC_TIM17_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM18)
+        case 18:
+            __HAL_RCC_TIM18_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM19)
+        case 19:
+            __HAL_RCC_TIM19_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM20)
+        case 20:
+            __HAL_RCC_TIM20_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM21)
+        case 21:
+            __HAL_RCC_TIM21_CLK_ENABLE();
+            break;
+#endif
+#if defined(TIM22)
+        case 22:
+            __HAL_RCC_TIM22_CLK_ENABLE();
+            break;
+#endif
     }
 
     // set IRQ priority (if not a special timer)
     if (self->tim_id != 5) {
         NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_TIMX);
         if (self->tim_id == 1) {
-            #if defined(TIM1)
+#if defined(TIM1)
             NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX);
-            #endif
+#endif
         } else if (self->tim_id == 8) {
-            #if defined(TIM8)
+#if defined(TIM8)
             NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX);
-            #endif
+#endif
         }
     }
 
     // init TIM
     HAL_TIM_Base_Init(&self->tim);
-    #if !defined(STM32L0)
-    #if defined(IS_TIM_ADVANCED_INSTANCE)
+#if !defined(STM32L0)
+#if defined(IS_TIM_ADVANCED_INSTANCE)
     if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance)) {
-    #elif defined(IS_TIM_BREAK_INSTANCE)
+#elif defined(IS_TIM_BREAK_INSTANCE)
     if (IS_TIM_BREAK_INSTANCE(self->tim.Instance)) {
-    #else
+#else
     if (0) {
-    #endif
+#endif
         config_deadtime(self, args[ARG_deadtime].u_int, args[ARG_brk].u_int);
-
     }
-    #endif
+#endif
 
     // Enable ARPE so that the auto-reload register is buffered.
     // This allows to smoothly change the frequency of the timer.
@@ -756,81 +803,81 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 // It assumes that timer instance pointer has the lower 8 bits cleared.
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
-    #if defined(TIM1)
-    #if defined(STM32F0)
+#if defined(TIM1)
+#if defined(STM32F0)
     TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
-    #elif defined(STM32F4) || defined(STM32F7)
+#elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(STM32H7)
+#elif defined(STM32H7)
     TIM_ENTRY(1, TIM1_UP_IRQn),
-    #elif defined(STM32L4)
+#elif defined(STM32L4)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
-    #endif
-    #endif
+#endif
+#endif
     TIM_ENTRY(2, TIM2_IRQn),
-    #if defined(TIM3)
+#if defined(TIM3)
     TIM_ENTRY(3, TIM3_IRQn),
-    #endif
-    #if defined(TIM4)
+#endif
+#if defined(TIM4)
     TIM_ENTRY(4, TIM4_IRQn),
-    #endif
-    #if defined(TIM5)
+#endif
+#if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
-    #endif
-    #if defined(TIM6)
+#endif
+#if defined(TIM6)
     TIM_ENTRY(6, TIM6_DAC_IRQn),
-    #endif
-    #if defined(TIM7)
+#endif
+#if defined(TIM7)
     TIM_ENTRY(7, TIM7_IRQn),
-    #endif
-    #if defined(TIM8)
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#endif
+#if defined(TIM8)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
-    #elif defined(STM32L4)
+#elif defined(STM32L4)
     TIM_ENTRY(8, TIM8_UP_IRQn),
-    #endif
-    #endif
-    #if defined(TIM9)
+#endif
+#endif
+#if defined(TIM9)
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
-    #endif
-    #if defined(TIM10)
+#endif
+#if defined(TIM10)
     TIM_ENTRY(10, TIM1_UP_TIM10_IRQn),
-    #endif
-    #if defined(TIM11)
+#endif
+#if defined(TIM11)
     TIM_ENTRY(11, TIM1_TRG_COM_TIM11_IRQn),
-    #endif
-    #if defined(TIM12)
+#endif
+#if defined(TIM12)
     TIM_ENTRY(12, TIM8_BRK_TIM12_IRQn),
-    #endif
-    #if defined(TIM13)
+#endif
+#if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
-    #endif
-    #if defined(STM32F0)
+#endif
+#if defined(STM32F0)
     TIM_ENTRY(14, TIM14_IRQn),
-    #elif defined(TIM14)
+#elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
-    #endif
-    #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32H7)
+#endif
+#if defined(TIM15)
+#if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(15, TIM15_IRQn),
-    #else
+#else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
-    #endif
-    #endif
-    #if defined(TIM16)
-    #if defined(STM32F0) || defined(STM32H7)
+#endif
+#endif
+#if defined(TIM16)
+#if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(16, TIM16_IRQn),
-    #else
+#else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
-    #endif
-    #endif
-    #if defined(TIM17)
-    #if defined(STM32F0) || defined(STM32H7)
+#endif
+#endif
+#if defined(TIM17)
+#if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(17, TIM17_IRQn),
-    #else
+#else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
-    #endif
-    #endif
+#endif
+#endif
 };
 #undef TIM_ENTRY
 
@@ -860,9 +907,10 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         tim->is_32bit = tim_id == 2 || tim_id == 5;
         tim->callback = mp_const_none;
         uint32_t ti = tim_instance_table[tim_id - 1];
-        tim->tim.Instance = (TIM_TypeDef*)(ti & 0xffffff00);
+        tim->tim.Instance = (TIM_TypeDef *)(ti & 0xffffff00);
         tim->irqn = ti & 0xff;
-        MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
+        MP_STATE_PORT(pyb_timer_obj_all)
+        [tim_id - 1] = tim;
     } else {
         // reference existing Timer object
         tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
@@ -903,7 +951,7 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
 
     self->tim.State = HAL_TIM_STATE_RESET;
     self->tim.Instance->CCER = 0x0000; // disable all capture/compare outputs
-    self->tim.Instance->CR1 = 0x0000; // disable the timer and reset its state
+    self->tim.Instance->CR1 = 0x0000;  // disable the timer and reset its state
 
     return mp_const_none;
 }
@@ -983,13 +1031,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     ch3 = timer.channel(3, pyb.Timer.PWM, pin=pyb.Pin.board.X3, pulse_width=420000)
 STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,                MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_pulse_width, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_compare, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
     };
 
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -1060,9 +1108,8 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         const mp_obj_t args2[6] = {
             MP_OBJ_FROM_PTR(&pin_init_obj),
             pin_obj,
-            MP_OBJ_NEW_QSTR(MP_QSTR_mode),  MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
-            MP_OBJ_NEW_QSTR(MP_QSTR_af),    MP_OBJ_NEW_SMALL_INT(af->idx)
-        };
+            MP_OBJ_NEW_QSTR(MP_QSTR_mode), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
+            MP_OBJ_NEW_QSTR(MP_QSTR_af), MP_OBJ_NEW_SMALL_INT(af->idx)};
         mp_call_method_n_kw(0, 2, args2);
     }
 
@@ -1087,13 +1134,13 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
                 // use absolute pulse width value (defaults to 0 if nothing given)
                 oc_config.Pulse = args[3].u_int;
             }
-            oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
-            oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
-            #if !defined(STM32L0)
-            oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
-            oc_config.OCIdleState  = TIM_OCIDLESTATE_SET;
+            oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
+            oc_config.OCFastMode = TIM_OCFAST_DISABLE;
+#if !defined(STM32L0)
+            oc_config.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+            oc_config.OCIdleState = TIM_OCIDLESTATE_SET;
             oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
-            #endif
+#endif
 
             HAL_TIM_PWM_ConfigChannel(&self->tim, &oc_config, TIMER_CHANNEL(chan));
             if (chan->callback == mp_const_none) {
@@ -1101,12 +1148,12 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             } else {
                 pyb_timer_channel_callback(MP_OBJ_FROM_PTR(chan), chan->callback);
             }
-            #if !defined(STM32L0)
+#if !defined(STM32L0)
             // Start the complimentary channel too (if its supported)
             if (IS_TIM_CCXN_INSTANCE(self->tim.Instance, TIMER_CHANNEL(chan))) {
                 HAL_TIMEx_PWMN_Start(&self->tim, TIMER_CHANNEL(chan));
             }
-            #endif
+#endif
             break;
         }
 
@@ -1117,22 +1164,22 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         case CHANNEL_MODE_OC_FORCED_ACTIVE:
         case CHANNEL_MODE_OC_FORCED_INACTIVE: {
             TIM_OC_InitTypeDef oc_config;
-            oc_config.OCMode       = channel_mode_info[chan->mode].oc_mode;
-            oc_config.Pulse        = args[5].u_int;
-            oc_config.OCPolarity   = args[6].u_int;
+            oc_config.OCMode = channel_mode_info[chan->mode].oc_mode;
+            oc_config.Pulse = args[5].u_int;
+            oc_config.OCPolarity = args[6].u_int;
             if (oc_config.OCPolarity == 0xffffffff) {
                 oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
             }
-            oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
-            #if !defined(STM32L0)
+            oc_config.OCFastMode = TIM_OCFAST_DISABLE;
+#if !defined(STM32L0)
             if (oc_config.OCPolarity == TIM_OCPOLARITY_HIGH) {
-                oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+                oc_config.OCNPolarity = TIM_OCNPOLARITY_HIGH;
             } else {
-                oc_config.OCNPolarity  = TIM_OCNPOLARITY_LOW;
+                oc_config.OCNPolarity = TIM_OCNPOLARITY_LOW;
             }
-            oc_config.OCIdleState  = TIM_OCIDLESTATE_SET;
+            oc_config.OCIdleState = TIM_OCIDLESTATE_SET;
             oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
-            #endif
+#endif
 
             if (!IS_TIM_OC_POLARITY(oc_config.OCPolarity)) {
                 mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", oc_config.OCPolarity);
@@ -1143,25 +1190,25 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             } else {
                 pyb_timer_channel_callback(MP_OBJ_FROM_PTR(chan), chan->callback);
             }
-            #if !defined(STM32L0)
+#if !defined(STM32L0)
             // Start the complimentary channel too (if its supported)
             if (IS_TIM_CCXN_INSTANCE(self->tim.Instance, TIMER_CHANNEL(chan))) {
                 HAL_TIMEx_OCN_Start(&self->tim, TIMER_CHANNEL(chan));
             }
-            #endif
+#endif
             break;
         }
 
         case CHANNEL_MODE_IC: {
             TIM_IC_InitTypeDef ic_config;
 
-            ic_config.ICPolarity  = args[6].u_int;
+            ic_config.ICPolarity = args[6].u_int;
             if (ic_config.ICPolarity == 0xffffffff) {
                 ic_config.ICPolarity = TIM_ICPOLARITY_RISING;
             }
             ic_config.ICSelection = TIM_ICSELECTION_DIRECTTI;
             ic_config.ICPrescaler = TIM_ICPSC_DIV1;
-            ic_config.ICFilter    = 0;
+            ic_config.ICFilter = 0;
 
             if (!IS_TIM_IC_POLARITY(ic_config.ICPolarity)) {
                 mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", ic_config.ICPolarity);
@@ -1181,40 +1228,40 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             TIM_Encoder_InitTypeDef enc_config;
 
             enc_config.EncoderMode = channel_mode_info[chan->mode].oc_mode;
-            enc_config.IC1Polarity  = args[6].u_int;
+            enc_config.IC1Polarity = args[6].u_int;
             if (enc_config.IC1Polarity == 0xffffffff) {
                 enc_config.IC1Polarity = TIM_ICPOLARITY_RISING;
             }
-            enc_config.IC2Polarity  = enc_config.IC1Polarity;
+            enc_config.IC2Polarity = enc_config.IC1Polarity;
             enc_config.IC1Selection = TIM_ICSELECTION_DIRECTTI;
             enc_config.IC2Selection = TIM_ICSELECTION_DIRECTTI;
             enc_config.IC1Prescaler = TIM_ICPSC_DIV1;
             enc_config.IC2Prescaler = TIM_ICPSC_DIV1;
-            enc_config.IC1Filter    = 0;
-            enc_config.IC2Filter    = 0;
+            enc_config.IC1Filter = 0;
+            enc_config.IC2Filter = 0;
 
             if (!IS_TIM_IC_POLARITY(enc_config.IC1Polarity)) {
                 mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", enc_config.IC1Polarity);
             }
             // Only Timers 1, 2, 3, 4, 5, and 8 support encoder mode
             if (
-            #if defined(TIM1)
+#if defined(TIM1)
                 self->tim.Instance != TIM1
-            &&
-            #endif
+                &&
+#endif
                 self->tim.Instance != TIM2
-            #if defined(TIM3)
-            &&  self->tim.Instance != TIM3
-            #endif
-            #if defined(TIM4)
-            &&  self->tim.Instance != TIM4
-            #endif
-            #if defined(TIM5)
-            &&  self->tim.Instance != TIM5
-            #endif
-            #if defined(TIM8)
-            &&  self->tim.Instance != TIM8
-            #endif
+#if defined(TIM3)
+                && self->tim.Instance != TIM3
+#endif
+#if defined(TIM4)
+                && self->tim.Instance != TIM4
+#endif
+#if defined(TIM5)
+                && self->tim.Instance != TIM5
+#endif
+#if defined(TIM8)
+                && self->tim.Instance != TIM8
+#endif
             ) {
                 mp_raise_msg_varg(&mp_type_ValueError, "encoder not supported on timer %d", self->tim_id);
             }
@@ -1275,7 +1322,7 @@ STATIC mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
         uint32_t source_freq = timer_get_source_freq(self->tim_id);
         uint32_t divide_a = prescaler + 1;
         uint32_t divide_b = period + 1;
-        #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         if (source_freq % divide_a != 0) {
             return mp_obj_new_float((mp_float_t)source_freq / (mp_float_t)divide_a / (mp_float_t)divide_b);
         }
@@ -1285,9 +1332,9 @@ STATIC mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
         } else {
             return mp_obj_new_int(source_freq / divide_b);
         }
-        #else
+#else
         return mp_obj_new_int(source_freq / divide_a / divide_b);
-        #endif
+#endif
     } else {
         // set
         uint32_t period;
@@ -1396,7 +1443,7 @@ const mp_obj_type_t pyb_timer_type = {
     .name = MP_QSTR_Timer,
     .print = pyb_timer_print,
     .make_new = pyb_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_timer_locals_dict,
 };
 
 /// \moduleref pyb
@@ -1409,9 +1456,9 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
-          self->timer->tim_id,
-          self->channel,
-          qstr_str(channel_mode_info[self->mode].name));
+        self->timer->tim_id,
+        self->channel,
+        qstr_str(channel_mode_info[self->mode].name));
 }
 
 /// \method capture([value])
@@ -1479,16 +1526,16 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
     } else if (mp_obj_is_callable(callback)) {
         self->callback = callback;
         __HAL_TIM_CLEAR_IT(&self->timer->tim, TIMER_IRQ_MASK(self->channel));
-        #if defined(TIM1)
+#if defined(TIM1)
         if (self->timer->tim_id == 1) {
             HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
         } else
-        #endif
-        #if defined(TIM8) // STM32F401 doesn't have a TIM8
-        if (self->timer->tim_id == 8) {
+#endif
+#if defined(TIM8) // STM32F401 doesn't have a TIM8
+            if (self->timer->tim_id == 8) {
             HAL_NVIC_EnableIRQ(TIM8_CC_IRQn);
         } else
-        #endif
+#endif
         {
             HAL_NVIC_EnableIRQ(self->timer->irqn);
         }
@@ -1531,7 +1578,7 @@ STATIC const mp_obj_type_t pyb_timer_channel_type = {
     { &mp_type_type },
     .name = MP_QSTR_TimerChannel,
     .print = pyb_timer_channel_print,
-    .locals_dict = (mp_obj_dict_t*)&pyb_timer_channel_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_timer_channel_locals_dict,
 };
 
 STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_obj_t callback) {

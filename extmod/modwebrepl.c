@@ -55,10 +55,13 @@ struct webrepl_file {
 } __attribute__((packed));
 
 enum {
-    PUT_FILE = 1, GET_FILE, GET_VER
+    PUT_FILE = 1,
+    GET_FILE,
+    GET_VER
 };
 enum {
-    STATE_PASSWD, STATE_NORMAL
+    STATE_PASSWD,
+    STATE_NORMAL
 };
 
 typedef struct _mp_obj_webrepl_t {
@@ -152,21 +155,20 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
 
     mp_obj_t open_args[2] = {
         mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname)),
-        MP_OBJ_NEW_QSTR(MP_QSTR_rb)
-    };
+        MP_OBJ_NEW_QSTR(MP_QSTR_rb)};
 
     if (self->hdr.type == PUT_FILE) {
         open_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_wb);
     }
 
-    self->cur_file = mp_builtin_open(2, open_args, (mp_map_t*)&mp_const_empty_map);
+    self->cur_file = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
 
-    #if 0
+#if 0
     struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
     int err;
     mp_uint_t res = file_stream->ioctl(self->cur_file, MP_STREAM_SEEK, (uintptr_t)&seek, &err);
     assert(res != MP_STREAM_ERROR);
-    #endif
+#endif
 
     write_webrepl_resp(self->sock, 0);
 
@@ -200,7 +202,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     }
 
     if (self->state == STATE_PASSWD) {
-        char c = *(char*)buf;
+        char c = *(char *)buf;
         if (c == '\r' || c == '\n') {
             self->hdr.fname[self->data_to_recv] = 0;
             DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
@@ -228,8 +230,8 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     DEBUG_printf("webrepl: received bin data, hdr_to_recv: %d, data_to_recv=%d\n", self->hdr_to_recv, self->data_to_recv);
 
     if (self->hdr_to_recv != 0) {
-        char *p = (char*)&self->hdr + sizeof(self->hdr) - self->hdr_to_recv;
-        *p++ = *(char*)buf;
+        char *p = (char *)&self->hdr + sizeof(self->hdr) - self->hdr_to_recv;
+        *p++ = *(char *)buf;
         if (--self->hdr_to_recv != 0) {
             mp_uint_t hdr_sz = sock_stream->read(self->sock, p, self->hdr_to_recv, errcode);
             if (hdr_sz == MP_STREAM_ERROR) {
@@ -249,12 +251,12 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     }
 
     if (self->data_to_recv != 0) {
-        // Ports that don't have much available stack can make this filebuf static
-        #if MICROPY_PY_WEBREPL_STATIC_FILEBUF
+// Ports that don't have much available stack can make this filebuf static
+#if MICROPY_PY_WEBREPL_STATIC_FILEBUF
         static
-        #endif
-        byte filebuf[512];
-        filebuf[0] = *(byte*)buf;
+#endif
+            byte filebuf[512];
+        filebuf[0] = *(byte *)buf;
         mp_uint_t buf_sz = 1;
         if (--self->data_to_recv != 0) {
             size_t to_read = MIN(sizeof(filebuf) - 1, self->data_to_recv);
@@ -285,13 +287,13 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
 
         check_file_op_finished(self);
 
-        #ifdef MICROPY_PY_WEBREPL_DELAY
+#ifdef MICROPY_PY_WEBREPL_DELAY
         // Some platforms may have broken drivers and easily gets
         // overloaded with modest traffic WebREPL file transfers
         // generate. The basic workaround is a crude rate control
         // done in such way.
         mp_hal_delay_ms(MICROPY_PY_WEBREPL_DELAY);
-        #endif
+#endif
     }
 
     return -2;
@@ -352,7 +354,7 @@ STATIC const mp_obj_type_t webrepl_type = {
     .name = MP_QSTR__webrepl,
     .make_new = webrepl_make_new,
     .protocol = &webrepl_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&webrepl_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&webrepl_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t webrepl_module_globals_table[] = {
@@ -364,8 +366,8 @@ STATIC const mp_rom_map_elem_t webrepl_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(webrepl_module_globals, webrepl_module_globals_table);
 
 const mp_obj_module_t mp_module_webrepl = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&webrepl_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&webrepl_module_globals,
 };
 
 #endif // MICROPY_PY_WEBREPL

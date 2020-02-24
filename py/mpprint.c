@@ -158,7 +158,7 @@ STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
         } while (b > buf && x != 0);
     }
 
-    #if SUPPORT_INT_BASE_PREFIX
+#if SUPPORT_INT_BASE_PREFIX
     char prefix_char = '\0';
 
     if (flags & PF_FLAG_SHOW_PREFIX) {
@@ -170,7 +170,7 @@ STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
             prefix_char = base_char + 'x' - 'a';
         }
     }
-    #endif
+#endif
 
     int len = 0;
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
@@ -178,20 +178,20 @@ STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base,
             len += mp_print_strn(print, &sign, 1, flags, fill, 1);
             width--;
         }
-        #if SUPPORT_INT_BASE_PREFIX
+#if SUPPORT_INT_BASE_PREFIX
         if (prefix_char) {
             len += mp_print_strn(print, "0", 1, flags, fill, 1);
             len += mp_print_strn(print, &prefix_char, 1, flags, fill, 1);
             width -= 2;
         }
-        #endif
+#endif
     } else {
-        #if SUPPORT_INT_BASE_PREFIX
+#if SUPPORT_INT_BASE_PREFIX
         if (prefix_char && b > &buf[1]) {
             *(--b) = prefix_char;
             *(--b) = '0';
         }
-        #endif
+#endif
         if (sign && b > buf) {
             *(--b) = sign;
         }
@@ -269,14 +269,14 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
         // We add the pad in this function, so since the pad goes after
         // the sign & prefix, we format without a prefix
         str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size,
-                                   x, base, NULL, base_char, comma);
+            x, base, NULL, base_char, comma);
         if (*str == '-') {
             sign = *str++;
             fmt_size--;
         }
     } else {
         str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size,
-                                   x, base, prefix, base_char, comma);
+            x, base, prefix, base_char, comma);
     }
 
     int spaces_before = 0;
@@ -287,7 +287,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
         // the number to. This zero-padded number then gets left or right
         // aligned in width characters.
 
-        int prec_width = fmt_size;  // The digits
+        int prec_width = fmt_size; // The digits
         if (prec_width < prec) {
             prec_width = prec;
         }
@@ -347,9 +347,7 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
 
     if (flags & PF_FLAG_SHOW_SIGN) {
         sign = '+';
-    }
-    else
-    if (flags & PF_FLAG_SPACE_SIGN) {
+    } else if (flags & PF_FLAG_SPACE_SIGN) {
         sign = ' ';
     }
 
@@ -411,14 +409,19 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         int flags = 0;
         char fill = ' ';
         while (*fmt != '\0') {
-            if (*fmt == '-') flags |= PF_FLAG_LEFT_ADJUST;
-            else if (*fmt == '+') flags |= PF_FLAG_SHOW_SIGN;
-            else if (*fmt == ' ') flags |= PF_FLAG_SPACE_SIGN;
-            else if (*fmt == '!') flags |= PF_FLAG_NO_TRAILZ;
+            if (*fmt == '-')
+                flags |= PF_FLAG_LEFT_ADJUST;
+            else if (*fmt == '+')
+                flags |= PF_FLAG_SHOW_SIGN;
+            else if (*fmt == ' ')
+                flags |= PF_FLAG_SPACE_SIGN;
+            else if (*fmt == '!')
+                flags |= PF_FLAG_NO_TRAILZ;
             else if (*fmt == '0') {
                 flags |= PF_FLAG_PAD_AFTER_SIGN;
                 fill = '0';
-            } else break;
+            } else
+                break;
             ++fmt;
         }
 
@@ -446,16 +449,16 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             }
         }
 
-        // parse long specifiers (only for LP64 model where they make a difference)
-        #ifndef __LP64__
+// parse long specifiers (only for LP64 model where they make a difference)
+#ifndef __LP64__
         const
-        #endif
-        bool long_arg = false;
+#endif
+            bool long_arg = false;
         if (*fmt == 'l') {
             ++fmt;
-            #ifdef __LP64__
+#ifdef __LP64__
             long_arg = true;
-            #endif
+#endif
         }
 
         if (*fmt == '\0') {
@@ -470,33 +473,30 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                     chrs += mp_print_strn(print, "false", 5, flags, fill, width);
                 }
                 break;
-            case 'c':
-            {
+            case 'c': {
                 char str = va_arg(args, int);
                 chrs += mp_print_strn(print, &str, 1, flags, fill, width);
                 break;
             }
-            case 'q':
-            {
+            case 'q': {
                 qstr qst = va_arg(args, qstr);
                 size_t len;
-                const char *str = (const char*)qstr_data(qst, &len);
+                const char *str = (const char *)qstr_data(qst, &len);
                 if (prec < 0) {
                     prec = len;
                 }
                 chrs += mp_print_strn(print, str, prec, flags, fill, width);
                 break;
             }
-            case 's':
-            {
-                const char *str = va_arg(args, const char*);
-                #ifndef NDEBUG
+            case 's': {
+                const char *str = va_arg(args, const char *);
+#ifndef NDEBUG
                 // With debugging enabled, catch printing of null string pointers
                 if (prec != 0 && str == NULL) {
                     chrs += mp_print_strn(print, "(null)", 6, flags, fill, width);
                     break;
                 }
-                #endif
+#endif
                 if (prec < 0) {
                     prec = strlen(str);
                 }
@@ -516,7 +516,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'u':
             case 'x':
             case 'X': {
-                int base = 16 - ((*fmt + 1) & 6); // maps char u/x/X to base 10/16/16
+                int base = 16 - ((*fmt + 1) & 6);       // maps char u/x/X to base 10/16/16
                 char fmt_c = (*fmt & 0xf0) - 'P' + 'A'; // maps char u/x/X to char a/a/A
                 mp_uint_t val;
                 if (long_arg) {
@@ -538,8 +538,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'f':
             case 'F':
             case 'g':
-            case 'G':
-            {
+            case 'G': {
 #if ((MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT) || (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
                 mp_float_t f = va_arg(args, double);
                 chrs += mp_print_float(print, f, *fmt, flags, fill, width, prec);
@@ -549,10 +548,10 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 break;
             }
 #endif
-            // Because 'l' is eaten above, another 'l' means %ll.  We need to support
-            // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
-            // TODO Either enable this unconditionally, or provide a specific config var.
-            #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
+// Because 'l' is eaten above, another 'l' means %ll.  We need to support
+// this length specifier for OBJ_REPR_D (64-bit NaN boxing).
+// TODO Either enable this unconditionally, or provide a specific config var.
+#if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
             case 'l': {
                 unsigned long long int arg_value = va_arg(args, unsigned long long int);
                 ++fmt;
@@ -562,7 +561,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 }
                 assert(!"unsupported fmt char");
             }
-            #endif
+#endif
             default:
                 // if it's not %% then it's an unsupported format character
                 assert(*fmt == '%' || !"unsupported fmt char");

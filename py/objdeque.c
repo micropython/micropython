@@ -39,7 +39,7 @@ typedef struct _mp_obj_deque_t {
     size_t i_put;
     mp_obj_t *items;
     uint32_t flags;
-    #define FLAG_CHECK_OVERFLOW 1
+#define FLAG_CHECK_OVERFLOW 1
 } mp_obj_deque_t;
 
 STATIC mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -82,12 +82,12 @@ STATIC mp_obj_t deque_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_NEW_SMALL_INT(len);
         }
-        #if MICROPY_PY_SYS_GETSIZEOF
+#if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(mp_obj_t) * self->alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);
         }
-        #endif
+#endif
         default:
             return MP_OBJ_NULL; // op not supported
     }
@@ -148,9 +148,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(deque_clear_obj, deque_clear);
 
 STATIC const mp_rom_map_elem_t deque_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&deque_append_obj) },
-    #if 0
+#if 0
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&deque_clear_obj) },
-    #endif
+#endif
     { MP_ROM_QSTR(MP_QSTR_popleft), MP_ROM_PTR(&deque_popleft_obj) },
 };
 
@@ -161,7 +161,7 @@ const mp_obj_type_t mp_type_deque = {
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
     .unary_op = deque_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&deque_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
 };
 
 #endif // MICROPY_PY_COLLECTIONS_DEQUE

@@ -64,10 +64,10 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_AND,
     MP_TOKEN_KW_AS,
     MP_TOKEN_KW_ASSERT,
-    #if MICROPY_PY_ASYNC_AWAIT
+#if MICROPY_PY_ASYNC_AWAIT
     MP_TOKEN_KW_ASYNC,
     MP_TOKEN_KW_AWAIT,
-    #endif
+#endif
     MP_TOKEN_KW_BREAK,
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
@@ -153,25 +153,25 @@ typedef enum _mp_token_kind_t {
 // this data structure is exposed for efficiency
 // public members are: source_name, tok_line, tok_column, tok_kind, vstr
 typedef struct _mp_lexer_t {
-    qstr source_name;           // name of source
-    mp_reader_t reader;         // stream source
+    qstr source_name;   // name of source
+    mp_reader_t reader; // stream source
 
-    unichar chr0, chr1, chr2;   // current cached characters from source
+    unichar chr0, chr1, chr2; // current cached characters from source
 
-    size_t line;                // current source line
-    size_t column;              // current source column
+    size_t line;   // current source line
+    size_t column; // current source column
 
-    mp_int_t emit_dent;             // non-zero when there are INDENT/DEDENT tokens to emit
-    mp_int_t nested_bracket_level;  // >0 when there are nested brackets over multiple lines
+    mp_int_t emit_dent;            // non-zero when there are INDENT/DEDENT tokens to emit
+    mp_int_t nested_bracket_level; // >0 when there are nested brackets over multiple lines
 
     size_t alloc_indent_level;
     size_t num_indent_level;
     uint16_t *indent_level;
 
-    size_t tok_line;            // token source line
-    size_t tok_column;          // token source column
-    mp_token_kind_t tok_kind;   // token kind
-    vstr_t vstr;                // token data
+    size_t tok_line;          // token source line
+    size_t tok_column;        // token source column
+    mp_token_kind_t tok_kind; // token kind
+    vstr_t vstr;              // token data
 } mp_lexer_t;
 
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);

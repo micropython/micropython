@@ -29,12 +29,12 @@
 #include "py/unicode.h"
 
 // attribute flags
-#define FL_PRINT (0x01)
-#define FL_SPACE (0x02)
-#define FL_DIGIT (0x04)
-#define FL_ALPHA (0x08)
-#define FL_UPPER (0x10)
-#define FL_LOWER (0x20)
+#define FL_PRINT  (0x01)
+#define FL_SPACE  (0x02)
+#define FL_DIGIT  (0x04)
+#define FL_ALPHA  (0x08)
+#define FL_UPPER  (0x10)
+#define FL_LOWER  (0x20)
 #define FL_XDIGIT (0x40)
 
 // shorthand character attributes
@@ -64,14 +64,14 @@ STATIC const uint8_t attr[] = {
     AT_PR, AT_LX, AT_LX, AT_LX, AT_LX, AT_LX, AT_LX, AT_LO,
     AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO,
     AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO,
-    AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
-};
+    AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0};
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 
 unichar utf8_get_char(const byte *s) {
     unichar ord = *s++;
-    if (!UTF8_IS_NONASCII(ord)) return ord;
+    if (!UTF8_IS_NONASCII(ord))
+        return ord;
     ord &= 0x7F;
     for (unichar mask = 0x40; ord & mask; mask >>= 1) {
         ord &= ~mask;

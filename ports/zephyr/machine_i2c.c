@@ -53,7 +53,11 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
-        ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout
+        ARG_id,
+        ARG_scl,
+        ARG_sda,
+        ARG_freq,
+        ARG_timeout
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -99,7 +103,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     struct i2c_msg msg;
     int ret;
 
-    msg.buf = (u8_t*)buf;
+    msg.buf = (u8_t *)buf;
     msg.len = len;
     msg.flags = 0;
 
@@ -135,5 +139,5 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };

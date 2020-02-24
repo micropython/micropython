@@ -54,53 +54,60 @@
 // exponent is stored with a bias of 127.
 // The min and max floats are on the order of 1x10^37 and 1x10^-37
 
-#define FPTYPE float
-#define FPCONST(x) x##F
+#define FPTYPE         float
+#define FPCONST(x)     x##F
 #define FPROUND_TO_ONE 0.9999995F
-#define FPDECEXP 32
+#define FPDECEXP       32
 #define FPMIN_BUF_SIZE 6 // +9e+99
 
-#define FLT_SIGN_MASK   0x80000000
-#define FLT_EXP_MASK    0x7F800000
-#define FLT_MAN_MASK    0x007FFFFF
+#define FLT_SIGN_MASK 0x80000000
+#define FLT_EXP_MASK  0x7F800000
+#define FLT_MAN_MASK  0x007FFFFF
 
 union floatbits {
     float f;
     uint32_t u;
 };
-static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & FLT_SIGN_MASK; }
+static inline int fp_signbit(float x) {
+    union floatbits fb = {x};
+    return fb.u & FLT_SIGN_MASK;
+}
 #define fp_isnan(x) isnan(x)
 #define fp_isinf(x) isinf(x)
-static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
-static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 0x3f800000; }
+static inline int fp_iszero(float x) {
+    union floatbits fb = {x};
+    return fb.u == 0;
+}
+static inline int fp_isless1(float x) {
+    union floatbits fb = {x};
+    return fb.u < 0x3f800000;
+}
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
-#define FPTYPE double
-#define FPCONST(x) x
+#define FPTYPE         double
+#define FPCONST(x)     x
 #define FPROUND_TO_ONE 0.999999999995
-#define FPDECEXP 256
+#define FPDECEXP       256
 #define FPMIN_BUF_SIZE 7 // +9e+199
-#define fp_signbit(x) signbit(x)
-#define fp_isnan(x) isnan(x)
-#define fp_isinf(x) isinf(x)
-#define fp_iszero(x) (x == 0)
-#define fp_isless1(x) (x < 1.0)
+#define fp_signbit(x)  signbit(x)
+#define fp_isnan(x)    isnan(x)
+#define fp_isinf(x)    isinf(x)
+#define fp_iszero(x)   (x == 0)
+#define fp_isless1(x)  (x < 1.0)
 
 #endif
 
 static const FPTYPE g_pos_pow[] = {
-    #if FPDECEXP > 32
+#if FPDECEXP > 32
     1e256, 1e128, 1e64,
-    #endif
-    1e32, 1e16, 1e8, 1e4, 1e2, 1e1
-};
+#endif
+    1e32, 1e16, 1e8, 1e4, 1e2, 1e1};
 static const FPTYPE g_neg_pow[] = {
-    #if FPDECEXP > 32
+#if FPDECEXP > 32
     1e-256, 1e-128, 1e-64,
-    #endif
-    1e-32, 1e-16, 1e-8, 1e-4, 1e-2, 1e-1
-};
+#endif
+    1e-32, 1e-16, 1e-8, 1e-4, 1e-2, 1e-1};
 
 int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
 
@@ -152,8 +159,8 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     if (prec < 0) {
         prec = 6;
     }
-    char e_char = 'E' | (fmt & 0x20);   // e_char will match case of fmt
-    fmt |= 0x20; // Force fmt to be lowercase
+    char e_char = 'E' | (fmt & 0x20); // e_char will match case of fmt
+    fmt |= 0x20;                      // Force fmt to be lowercase
     char org_fmt = fmt;
     if (fmt == 'g' && prec == 0) {
         prec = 1;
@@ -282,7 +289,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
             prec = buf_remaining - FPMIN_BUF_SIZE;
         }
-        if (fmt == 'g'){
+        if (fmt == 'g') {
             // Truncate precision to prevent buffer overflow
             if (prec + (FPMIN_BUF_SIZE - 1) > buf_remaining) {
                 prec = buf_remaining - (FPMIN_BUF_SIZE - 1);

@@ -41,16 +41,15 @@ STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
 #endif
 
-STATIC uint32_t yasmarang(void)
-{
-   yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
-   yasmarang_pad = (yasmarang_pad<<3) + (yasmarang_pad>>29);
-   yasmarang_n = yasmarang_pad | 2;
-   yasmarang_d ^= (yasmarang_pad<<31) + (yasmarang_pad>>1);
-   yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d>>8) ^ 1;
+STATIC uint32_t yasmarang(void) {
+    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
+    yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
+    yasmarang_n = yasmarang_pad | 2;
+    yasmarang_d ^= (yasmarang_pad << 31) + (yasmarang_pad >> 1);
+    yasmarang_dat ^= (char)yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
 
-   return (yasmarang_pad^(yasmarang_d<<5)^(yasmarang_pad>>18)^(yasmarang_dat<<1));
-}  /* yasmarang */
+    return (yasmarang_pad ^ (yasmarang_d << 5) ^ (yasmarang_pad >> 18) ^ (yasmarang_dat << 1));
+} /* yasmarang */
 
 // End of Yasmarang
 
@@ -201,27 +200,27 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__)
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_urandom_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_urandom) },
-    #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&mod_urandom___init___obj) },
-    #endif
+#endif
     { MP_ROM_QSTR(MP_QSTR_getrandbits), MP_ROM_PTR(&mod_urandom_getrandbits_obj) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&mod_urandom_seed_obj) },
-    #if MICROPY_PY_URANDOM_EXTRA_FUNCS
+#if MICROPY_PY_URANDOM_EXTRA_FUNCS
     { MP_ROM_QSTR(MP_QSTR_randrange), MP_ROM_PTR(&mod_urandom_randrange_obj) },
     { MP_ROM_QSTR(MP_QSTR_randint), MP_ROM_PTR(&mod_urandom_randint_obj) },
     { MP_ROM_QSTR(MP_QSTR_choice), MP_ROM_PTR(&mod_urandom_choice_obj) },
-    #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&mod_urandom_random_obj) },
     { MP_ROM_QSTR(MP_QSTR_uniform), MP_ROM_PTR(&mod_urandom_uniform_obj) },
-    #endif
-    #endif
+#endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_urandom_globals, mp_module_urandom_globals_table);
 
 const mp_obj_module_t mp_module_urandom = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_urandom_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 #endif
 

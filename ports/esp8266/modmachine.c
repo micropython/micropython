@@ -84,7 +84,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC mp_obj_t machine_unique_id(void) {
     uint32_t id = system_get_chip_id();
-    return mp_obj_new_bytes((byte*)&id, sizeof(id));
+    return mp_obj_new_bytes((byte *)&id, sizeof(id));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
@@ -252,14 +252,14 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
         ARG_freq,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_period, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
 #if MICROPY_PY_BUILTINS_FLOAT
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 #else
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 #endif
     };
 
@@ -322,7 +322,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_timer_deinit_obj, esp_timer_deinit);
 STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp_timer_init_obj) },
-//    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&esp_timer_callback_obj) },
+    //    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&esp_timer_callback_obj) },
     { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };
@@ -333,7 +333,7 @@ const mp_obj_type_t esp_timer_type = {
     .name = MP_QSTR_Timer,
     .print = esp_timer_print,
     .make_new = esp_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&esp_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&esp_timer_locals_dict,
 };
 
 // this bit is unused in the Xtensa PS register
@@ -412,12 +412,12 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pyb_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
-    #if MICROPY_PY_MACHINE_I2C
+#if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_SPI
+#endif
+#if MICROPY_PY_MACHINE_SPI
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hspi_type) },
-    #endif
+#endif
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
@@ -433,8 +433,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
 const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

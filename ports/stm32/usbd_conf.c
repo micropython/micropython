@@ -60,47 +60,47 @@ PCD_HandleTypeDef pcd_hs_handle;
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
     if (hpcd->Instance == USB_OTG_FS) {
-        #if defined(STM32H7)
+#if defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
-        #elif defined(STM32L0)
+#elif defined(STM32L0)
         const uint32_t otg_alt = GPIO_AF0_USB;
-        #elif defined(STM32L432xx)
+#elif defined(STM32L432xx)
         const uint32_t otg_alt = GPIO_AF10_USB_FS;
-        #elif defined(STM32WB)
+#elif defined(STM32WB)
         const uint32_t otg_alt = GPIO_AF10_USB;
-        #else
+#else
         const uint32_t otg_alt = GPIO_AF10_OTG_FS;
-        #endif
+#endif
 
         mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_VERY_HIGH);
         mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
 
-        #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         // USB VBUS detect pin is always A9
         mp_hal_pin_config(MICROPY_HW_USB_VBUS_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-        #endif
+#endif
 
-        #if defined(MICROPY_HW_USB_OTG_ID_PIN)
+#if defined(MICROPY_HW_USB_OTG_ID_PIN)
         // USB ID pin is always A10
         mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
-        #endif
+#endif
 
-        #if defined(STM32H7)
+#if defined(STM32H7)
         // Keep USB clock running during sleep or else __WFI() will disable the USB
         __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
         __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
-        #endif
+#endif
 
-        // Enable USB FS Clocks
-        #if !MICROPY_HW_USB_IS_MULTI_OTG
+// Enable USB FS Clocks
+#if !MICROPY_HW_USB_IS_MULTI_OTG
         __HAL_RCC_USB_CLK_ENABLE();
-        #else
+#else
         __USB_OTG_FS_CLK_ENABLE();
-        #endif
+#endif
 
-        #if defined(STM32L4)
+#if defined(STM32L4)
         // Enable VDDUSB
         if (__HAL_RCC_PWR_IS_CLK_DISABLED()) {
             __HAL_RCC_PWR_CLK_ENABLE();
@@ -109,32 +109,32 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         } else {
             HAL_PWREx_EnableVddUSB();
         }
-        #endif
+#endif
 
-        // Configure and enable USB FS interrupt
-        #if defined(STM32L0)
+// Configure and enable USB FS interrupt
+#if defined(STM32L0)
         NVIC_SetPriority(USB_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_IRQn);
-        #elif defined(STM32L432xx)
+#elif defined(STM32L432xx)
         NVIC_SetPriority(USB_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_FS_IRQn);
-        #elif defined(STM32WB)
+#elif defined(STM32WB)
         NVIC_SetPriority(USB_LP_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(USB_LP_IRQn);
-        #else
+#else
         NVIC_SetPriority(OTG_FS_IRQn, IRQ_PRI_OTG_FS);
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
-        #endif
+#endif
     }
-    #if MICROPY_HW_USB_HS
+#if MICROPY_HW_USB_HS
     else if (hpcd->Instance == USB_OTG_HS) {
-        #if MICROPY_HW_USB_HS_IN_FS
+#if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32H7)
+#if defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF12_OTG2_FS;
-        #else
+#else
         const uint32_t otg_alt = GPIO_AF12_OTG_HS_FS;
-        #endif
+#endif
 
         // Configure USB FS GPIOs
         mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
@@ -142,15 +142,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
         mp_hal_pin_config_speed(pin_B15, GPIO_SPEED_FREQ_VERY_HIGH);
 
-        #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         // Configure VBUS Pin
         mp_hal_pin_config(MICROPY_HW_USB_VBUS_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
-        #endif
+#endif
 
-        #if defined(MICROPY_HW_USB_OTG_ID_PIN)
+#if defined(MICROPY_HW_USB_OTG_ID_PIN)
         // Configure ID pin
         mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
-        #endif
+#endif
 
         // Enable calling WFI and correct function of the embedded USB_FS_IN_HS phy
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
@@ -158,21 +158,21 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Enable USB HS Clocks
 
-        #if defined(STM32F723xx) || defined(STM32F733xx)
+#if defined(STM32F723xx) || defined(STM32F733xx)
         // Needs to remain awake during sleep or else __WFI() will disable the USB
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_ENABLE();
         __HAL_RCC_OTGPHYC_CLK_ENABLE();
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
-        #endif
+#endif
 
         __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
 
-        #else // !MICROPY_HW_USB_HS_IN_FS
+#else // !MICROPY_HW_USB_HS_IN_FS
 
         // Configure USB HS GPIOs
         static const mp_hal_pin_obj_t usb_pins[] = {
             pin_A5, pin_C0, MICROPY_HW_USB_HS_ULPI_NXT, MICROPY_HW_USB_HS_ULPI_DIR, // CLK, STP, NXT, DIR
-            pin_A3, pin_B0, pin_B1, pin_B5, pin_B10, pin_B11, pin_B12, pin_B13, // D0-D7
+            pin_A3, pin_B0, pin_B1, pin_B5, pin_B10, pin_B11, pin_B12, pin_B13,     // D0-D7
         };
         for (size_t i = 0; i < MP_ARRAY_SIZE(usb_pins); ++i) {
             mp_hal_pin_config(usb_pins[i], MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF10_OTG_HS);
@@ -185,13 +185,13 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
         __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_ENABLE();
 
-        #endif // !MICROPY_HW_USB_HS_IN_FS
+#endif // !MICROPY_HW_USB_HS_IN_FS
 
         // Configure and enable USB HS interrupt
         NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS);
         HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
     }
-    #endif // MICROPY_HW_USB_HS
+#endif // MICROPY_HW_USB_HS
 }
 
 /**
@@ -200,24 +200,24 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
-    #if !MICROPY_HW_USB_IS_MULTI_OTG
+#if !MICROPY_HW_USB_IS_MULTI_OTG
     __HAL_RCC_USB_CLK_DISABLE();
-    #else
+#else
 
     if (hpcd->Instance == USB_OTG_FS) {
         /* Disable USB FS Clocks */
         __USB_OTG_FS_CLK_DISABLE();
         __SYSCFG_CLK_DISABLE();
     }
-    #if MICROPY_HW_USB_HS
+#if MICROPY_HW_USB_HS
     else if (hpcd->Instance == USB_OTG_HS) {
         /* Disable USB FS Clocks */
         __USB_OTG_HS_CLK_DISABLE();
         __SYSCFG_CLK_DISABLE();
     }
-    #endif
+#endif
 
-    #endif
+#endif
 }
 
 /*******************************************************************************
@@ -276,11 +276,11 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 
     // Set USB Current Speed
     switch (hpcd->Init.speed) {
-        #if defined(PCD_SPEED_HIGH)
+#if defined(PCD_SPEED_HIGH)
         case PCD_SPEED_HIGH:
             speed = USBD_SPEED_HIGH;
             break;
-        #endif
+#endif
 
         case PCD_SPEED_FULL:
             speed = USBD_SPEED_FULL;
@@ -362,37 +362,37 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const uint8_t *fifo_size) {
-    #if MICROPY_HW_USB_FS
-    if (pdev->id ==  USB_PHY_FS_ID) {
-        #if defined(STM32WB)
+#if MICROPY_HW_USB_FS
+    if (pdev->id == USB_PHY_FS_ID) {
+#if defined(STM32WB)
         PWR->CR2 |= PWR_CR2_USV; // USB supply is valid
-        #endif
+#endif
 
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB_OTG_FS;
-        #if MICROPY_HW_USB_CDC_NUM == 2
+#if MICROPY_HW_USB_CDC_NUM == 2
         pcd_fs_handle.Init.dev_endpoints = 6;
-        #else
+#else
         pcd_fs_handle.Init.dev_endpoints = 4;
-        #endif
+#endif
         pcd_fs_handle.Init.ep0_mps = 0x40;
         pcd_fs_handle.Init.low_power_enable = 0;
         pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
         pcd_fs_handle.Init.Sof_enable = 0;
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
-        #if defined(STM32L4)
+#if defined(STM32L4)
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
-        #endif
-        #if MICROPY_HW_USB_IS_MULTI_OTG
+#endif
+#if MICROPY_HW_USB_IS_MULTI_OTG
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.dma_enable = 0;
-        #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+#if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         pcd_fs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
-        #else
+#else
         pcd_fs_handle.Init.vbus_sensing_enable = 1;
-        #endif
-        #endif
+#endif
+#endif
 
         // Link The driver to the stack
         pcd_fs_handle.pData = pdev;
@@ -401,31 +401,31 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
-        // Set FIFO buffer sizes
-        #if !MICROPY_HW_USB_IS_MULTI_OTG
+// Set FIFO buffer sizes
+#if !MICROPY_HW_USB_IS_MULTI_OTG
         uint32_t fifo_offset = USBD_PMA_RESERVE; // need to reserve some data at start of FIFO
         for (size_t i = 0; i < USBD_PMA_NUM_FIFO; ++i) {
             uint16_t ep_addr = ((i & 1) * 0x80) | (i >> 1);
             HAL_PCDEx_PMAConfig(&pcd_fs_handle, ep_addr, PCD_SNG_BUF, fifo_offset);
             fifo_offset += fifo_size[i] * 4;
         }
-        #else
+#else
         HAL_PCD_SetRxFiFo(&pcd_fs_handle, fifo_size[0] * 4);
         for (size_t i = 0; i < USBD_FS_NUM_TX_FIFO; ++i) {
             HAL_PCD_SetTxFiFo(&pcd_fs_handle, i, fifo_size[1 + i] * 4);
         }
-        #endif
+#endif
     }
-    #endif
-    #if MICROPY_HW_USB_HS
+#endif
+#if MICROPY_HW_USB_HS
     if (pdev->id == USB_PHY_HS_ID) {
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
-        #if MICROPY_HW_USB_CDC_NUM == 3
+#if MICROPY_HW_USB_CDC_NUM == 3
         pcd_hs_handle.Init.dev_endpoints = 8;
-        #else
+#else
         pcd_hs_handle.Init.dev_endpoints = 6;
-        #endif
+#endif
         pcd_hs_handle.Init.use_dedicated_ep1 = 0;
         pcd_hs_handle.Init.ep0_mps = 0x40;
         pcd_hs_handle.Init.dma_enable = 0;
@@ -435,19 +435,19 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         pcd_hs_handle.Init.Sof_enable = 0;
         pcd_hs_handle.Init.use_external_vbus = 0;
 
-        #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+#if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
         pcd_hs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
-        #else
+#else
         pcd_hs_handle.Init.vbus_sensing_enable = 1;
-        #endif
+#endif
 
-        #if MICROPY_HW_USB_HS_IN_FS
+#if MICROPY_HW_USB_HS_IN_FS
 
-        #if defined(STM32F723xx) || defined(STM32F733xx)
+#if defined(STM32F723xx) || defined(STM32F733xx)
         pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-        #else
+#else
         pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
-        #endif
+#endif
 
         if (high_speed) {
             pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
@@ -455,13 +455,13 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
             pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
         }
 
-        #else
+#else
 
         // USB HS with external PHY
         pcd_hs_handle.Init.phy_itface = PCD_PHY_ULPI;
         pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
 
-        #endif
+#endif
 
         // Link The driver to the stack
         pcd_hs_handle.pData = pdev;
@@ -477,7 +477,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
             HAL_PCD_SetTxFiFo(&pcd_hs_handle, i, fifo_size[1 + i] * 4);
         }
     }
-    #endif  // MICROPY_HW_USB_HS
+#endif // MICROPY_HW_USB_HS
 
     return USBD_OK;
 }
@@ -631,7 +631,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   * @param  ep_addr: Endpoint Number
   * @retval Recived Data Size
   */
-uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr) {
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr) {
     return HAL_PCD_EP_GetRxCount(pdev->pData, ep_addr);
 }
 

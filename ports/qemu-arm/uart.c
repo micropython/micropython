@@ -10,7 +10,7 @@ typedef struct _UART_t {
     volatile uint32_t DR;
 } UART_t;
 
-#define UART0 ((UART_t*)(0x40011000))
+#define UART0 ((UART_t *)(0x40011000))
 
 void uart_init(void) {
 }
@@ -25,14 +25,14 @@ void uart_tx_strn(const char *buf, size_t len) {
 
 typedef struct _UART_t {
     volatile uint32_t r0[2];
-    volatile uint32_t STARTTX;  // 0x008
+    volatile uint32_t STARTTX; // 0x008
     volatile uint32_t r1[(0x500 - 0x008) / 4 - 1];
-    volatile uint32_t ENABLE;   // 0x500
+    volatile uint32_t ENABLE; // 0x500
     volatile uint32_t r2[(0x51c - 0x500) / 4 - 1];
-    volatile uint32_t TXD;      // 0x51c
+    volatile uint32_t TXD; // 0x51c
 } UART_t;
 
-#define UART0 ((UART_t*)(0x40002000))
+#define UART0 ((UART_t *)(0x40002000))
 
 void uart_init(void) {
     UART0->ENABLE = 4;
@@ -60,7 +60,7 @@ typedef struct _UART_t {
     volatile uint32_t BAUDDIV;
 } UART_t;
 
-#define UART0 ((UART_t*)(0x40004000))
+#define UART0 ((UART_t *)(0x40004000))
 
 void uart_init(void) {
     UART0->BAUDDIV = 16;

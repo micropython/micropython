@@ -47,7 +47,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_u
     scope->source_file = source_file;
     if (kind == SCOPE_FUNCTION || kind == SCOPE_CLASS) {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
-        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
+        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t *)pn)->nodes[0]);
     } else {
         scope->simple_name = scope_simple_name_table[kind];
     }

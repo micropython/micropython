@@ -72,18 +72,18 @@ typedef struct _sdcard_obj_t {
 #define _SECTOR_SIZE(self) (self->card.csd.sector_size)
 
 STATIC esp_err_t check_esp_err(esp_err_t code) {
-    switch(code) {
-    case ESP_OK:
-        return ESP_OK;
-    case ESP_ERR_NO_MEM:
-        code = MP_ENOMEM;
-        break;
-    case ESP_ERR_TIMEOUT:
-        code = MP_ETIMEDOUT;
-        break;
-    case ESP_ERR_NOT_SUPPORTED:
-        code = MP_EOPNOTSUPP;
-        break;
+    switch (code) {
+        case ESP_OK:
+            return ESP_OK;
+        case ESP_ERR_NO_MEM:
+            code = MP_ENOMEM;
+            break;
+        case ESP_ERR_TIMEOUT:
+            code = MP_ETIMEDOUT;
+            break;
+        case ESP_ERR_NOT_SUPPORTED:
+            code = MP_EOPNOTSUPP;
+            break;
     }
 
     mp_raise_OSError(code);
@@ -98,9 +98,9 @@ STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
     }
 }
 
-#define SET_CONFIG_PIN(config, pin_var, arg_id) \
+#define SET_CONFIG_PIN(config, pin_var, arg_id)  \
     if (arg_vals[arg_id].u_obj != mp_const_none) \
-        config.pin_var = pin_or_int(arg_vals[arg_id].u_obj)
+    config.pin_var = pin_or_int(arg_vals[arg_id].u_obj)
 
 STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
     if (force || !(self->flags & SDCARD_CARD_FLAGS_CARD_INIT_DONE)) {
@@ -146,15 +146,15 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         ARG_cs,
     };
     STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_slot,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_width,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_cd,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_wp,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_slot, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_width, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_cd, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_wp, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         // These are only needed if using SPI mode
-        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t arg_vals[MP_ARRAY_SIZE(allowed_args)];
     mp_map_t kw_args;
@@ -165,15 +165,15 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
     mp_arg_parse_all(n_args, args, &kw_args,
-                     MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
 
     DEBUG_printf("  slot=%d, width=%d, cd=%p, wp=%p",
-                 arg_vals[ARG_slot].u_int, arg_vals[ARG_width].u_int,
-                 arg_vals[ARG_cd].u_obj, arg_vals[ARG_wp].u_obj);
+        arg_vals[ARG_slot].u_int, arg_vals[ARG_width].u_int,
+        arg_vals[ARG_cd].u_obj, arg_vals[ARG_wp].u_obj);
 
     DEBUG_printf("  miso=%p, mosi=%p, sck=%p, cs=%p",
-                 arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
-                 arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
+        arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
+        arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
 
     int slot_num = arg_vals[ARG_slot].u_int;
     if (slot_num < 0 || slot_num > 3) {
@@ -213,16 +213,14 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     if (is_spi) {
         // SPI interface
         STATIC const sdspi_slot_config_t slot_defaults[2] = {
-            {
-                .gpio_miso = GPIO_NUM_19,
+            {.gpio_miso = GPIO_NUM_19,
                 .gpio_mosi = GPIO_NUM_23,
-                .gpio_sck  = GPIO_NUM_18,
-                .gpio_cs   = GPIO_NUM_5,
-                .gpio_cd   = SDSPI_SLOT_NO_CD,
-                .gpio_wp   = SDSPI_SLOT_NO_WP,
-                .dma_channel = 2
-            },
-            SDSPI_SLOT_CONFIG_DEFAULT() };
+                .gpio_sck = GPIO_NUM_18,
+                .gpio_cs = GPIO_NUM_5,
+                .gpio_cd = SDSPI_SLOT_NO_CD,
+                .gpio_wp = SDSPI_SLOT_NO_WP,
+                .dma_channel = 2},
+            SDSPI_SLOT_CONFIG_DEFAULT()};
 
         DEBUG_printf("  Setting up SPI slot configuration");
         sdspi_slot_config_t slot_config = slot_defaults[slot_num];
@@ -284,7 +282,7 @@ STATIC mp_obj_t sd_info(mp_obj_t self_in) {
     // so. For the most part people only care about the card size and
     // block size.
 
-    check_esp_err(sdcard_ensure_card_init((sdcard_card_obj_t *) self, false));
+    check_esp_err(sdcard_ensure_card_init((sdcard_card_obj_t *)self, false));
 
     uint32_t log_block_nbr = self->card.csd.capacity;
     uint32_t log_block_size = _SECTOR_SIZE(self);
@@ -302,13 +300,13 @@ STATIC mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, 
     mp_buffer_info_t bufinfo;
     esp_err_t err;
 
-    err = sdcard_ensure_card_init((sdcard_card_obj_t *) self, false);
+    err = sdcard_ensure_card_init((sdcard_card_obj_t *)self, false);
     if (err != ESP_OK) {
         return false;
     }
 
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    err = sdmmc_read_sectors(&(self->card), bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / _SECTOR_SIZE(self) );
+    err = sdmmc_read_sectors(&(self->card), bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / _SECTOR_SIZE(self));
 
     return mp_obj_new_bool(err == ESP_OK);
 }
@@ -319,13 +317,13 @@ STATIC mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num,
     mp_buffer_info_t bufinfo;
     esp_err_t err;
 
-    err = sdcard_ensure_card_init((sdcard_card_obj_t *) self, false);
+    err = sdcard_ensure_card_init((sdcard_card_obj_t *)self, false);
     if (err != ESP_OK) {
         return false;
     }
 
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    err = sdmmc_write_sectors(&(self->card), bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / _SECTOR_SIZE(self) );
+    err = sdmmc_write_sectors(&(self->card), bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / _SECTOR_SIZE(self));
 
     return mp_obj_new_bool(err == ESP_OK);
 }
@@ -362,7 +360,7 @@ STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
                 return MP_OBJ_NEW_SMALL_INT(-1);
             return MP_OBJ_NEW_SMALL_INT(_SECTOR_SIZE(self));
 
-        default: // unknown command
+        default:                             // unknown command
             return MP_OBJ_NEW_SMALL_INT(-1); // error
     }
 }
@@ -384,7 +382,7 @@ const mp_obj_type_t machine_sdcard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDCard,
     .make_new = machine_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_sdcard_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_sdcard_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_SDCARD

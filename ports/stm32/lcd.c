@@ -75,13 +75,13 @@
 ///         pyb.delay(50)               # pause for 50ms
 
 #define LCD_INSTR (0)
-#define LCD_DATA (1)
+#define LCD_DATA  (1)
 
 #define LCD_CHAR_BUF_W (16)
 #define LCD_CHAR_BUF_H (4)
 
-#define LCD_PIX_BUF_W (128)
-#define LCD_PIX_BUF_H (32)
+#define LCD_PIX_BUF_W         (128)
+#define LCD_PIX_BUF_H         (32)
 #define LCD_PIX_BUF_BYTE_SIZE (LCD_PIX_BUF_W * LCD_PIX_BUF_H / 8)
 
 typedef struct _pyb_lcd_obj_t {
@@ -106,7 +106,7 @@ typedef struct _pyb_lcd_obj_t {
 } pyb_lcd_obj_t;
 
 STATIC void lcd_delay(void) {
-    __asm volatile ("nop\nnop");
+    __asm volatile("nop\nnop");
 }
 
 STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
@@ -174,9 +174,9 @@ STATIC void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len
     for (int i = redraw_min; i < redraw_max; i++) {
         uint page = i / LCD_CHAR_BUF_W;
         uint offset = 8 * (LCD_CHAR_BUF_W - 1 - (i - (page * LCD_CHAR_BUF_W)));
-        lcd_out(lcd, LCD_INSTR, 0xb0 | page); // page address set
+        lcd_out(lcd, LCD_INSTR, 0xb0 | page);                   // page address set
         lcd_out(lcd, LCD_INSTR, 0x10 | ((offset >> 4) & 0x0f)); // column address set upper
-        lcd_out(lcd, LCD_INSTR, 0x00 | (offset & 0x0f)); // column address set lower
+        lcd_out(lcd, LCD_INSTR, 0x00 | (offset & 0x0f));        // column address set lower
         int chr = lcd->char_buffer[i];
         if (chr < 32 || chr > 126) {
             chr = 127;
@@ -236,14 +236,23 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
         spi_clock = HAL_RCC_GetPCLK1Freq();
     }
     uint br_prescale = spi_clock / 16000000; // datasheet says LCD can run at 20MHz, but we go for 16MHz
-    if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
-    else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
-    else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
-    else if (br_prescale <= 16) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; }
-    else if (br_prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
-    else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
-    else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
-    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
+    if (br_prescale <= 2) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    } else if (br_prescale <= 4) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    } else if (br_prescale <= 8) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    } else if (br_prescale <= 16) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    } else if (br_prescale <= 32) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    } else if (br_prescale <= 64) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    } else if (br_prescale <= 128) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    } else {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    }
 
     // data is sent bigendian, latches on rising clock
     init->CLKPolarity = SPI_POLARITY_HIGH;
@@ -272,11 +281,11 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_hal_pin_output(lcd->pin_bl);
 
     // init the LCD
-    mp_hal_delay_ms(1); // wait a bit
-    mp_hal_pin_low(lcd->pin_rst); // RST=0; reset
-    mp_hal_delay_ms(1); // wait for reset; 2us min
+    mp_hal_delay_ms(1);            // wait a bit
+    mp_hal_pin_low(lcd->pin_rst);  // RST=0; reset
+    mp_hal_delay_ms(1);            // wait for reset; 2us min
     mp_hal_pin_high(lcd->pin_rst); // RST=1; enable
-    mp_hal_delay_ms(1); // wait for reset; 2us min
+    mp_hal_delay_ms(1);            // wait for reset; 2us min
     lcd_out(lcd, LCD_INSTR, 0xa0); // ADC select, normal
     lcd_out(lcd, LCD_INSTR, 0xc0); // common output mode select, normal (this flips the display)
     lcd_out(lcd, LCD_INSTR, 0xa2); // LCD bias set, 1/9 bias
@@ -290,8 +299,8 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // clear LCD RAM
     for (int page = 0; page < 4; page++) {
         lcd_out(lcd, LCD_INSTR, 0xb0 | page); // page address set
-        lcd_out(lcd, LCD_INSTR, 0x10); // column address set upper
-        lcd_out(lcd, LCD_INSTR, 0x00); // column address set lower
+        lcd_out(lcd, LCD_INSTR, 0x10);        // column address set upper
+        lcd_out(lcd, LCD_INSTR, 0x00);        // column address set lower
         for (int i = 0; i < 128; i++) {
             lcd_out(lcd, LCD_DATA, 0x00);
         }
@@ -328,7 +337,7 @@ STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj
 
     // send the data
     for (uint i = 0; i < bufinfo.len; i++) {
-        lcd_out(self, instr_data, ((byte*)bufinfo.buf)[i]);
+        lcd_out(self, instr_data, ((byte *)bufinfo.buf)[i]);
     }
 
     return mp_const_none;
@@ -346,7 +355,7 @@ STATIC mp_obj_t pyb_lcd_contrast(mp_obj_t self_in, mp_obj_t contrast_in) {
     } else if (contrast > 0x2f) {
         contrast = 0x2f;
     }
-    lcd_out(self, LCD_INSTR, 0x81); // electronic volume mode set
+    lcd_out(self, LCD_INSTR, 0x81);     // electronic volume mode set
     lcd_out(self, LCD_INSTR, contrast); // electronic volume register set
     return mp_const_none;
 }
@@ -452,7 +461,7 @@ STATIC mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
     // loop over chars
     for (const char *top = data + len; data < top; data++) {
         // get char and make sure its in range of font
-        uint chr = *(byte*)data;
+        uint chr = *(byte *)data;
         if (chr < 32 || chr > 127) {
             chr = 127;
         }
@@ -460,11 +469,11 @@ STATIC mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
         const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
         // loop over char data
         for (uint j = 0; j < 8; j++, x0++) {
-            if (0 <= x0 && x0 < LCD_PIX_BUF_W) { // clip x
-                uint vline_data = chr_data[j]; // each byte of char data is a vertical column of 8 pixels, LSB at top
+            if (0 <= x0 && x0 < LCD_PIX_BUF_W) {                      // clip x
+                uint vline_data = chr_data[j];                        // each byte of char data is a vertical column of 8 pixels, LSB at top
                 for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
-                    if (vline_data & 1) { // only draw if pixel set
-                        if (0 <= y && y < LCD_PIX_BUF_H) { // clip y
+                    if (vline_data & 1) {                             // only draw if pixel set
+                        if (0 <= y && y < LCD_PIX_BUF_H) {            // clip y
                             uint byte_pos = x0 + LCD_PIX_BUF_W * ((uint)y >> 3);
                             if (col == 0) {
                                 // clear pixel
@@ -492,8 +501,8 @@ STATIC mp_obj_t pyb_lcd_show(mp_obj_t self_in) {
     memcpy(self->pix_buf, self->pix_buf2, LCD_PIX_BUF_BYTE_SIZE);
     for (uint page = 0; page < 4; page++) {
         lcd_out(self, LCD_INSTR, 0xb0 | page); // page address set
-        lcd_out(self, LCD_INSTR, 0x10); // column address set upper; 0
-        lcd_out(self, LCD_INSTR, 0x00); // column address set lower; 0
+        lcd_out(self, LCD_INSTR, 0x10);        // column address set upper; 0
+        lcd_out(self, LCD_INSTR, 0x00);        // column address set lower; 0
         for (uint i = 0; i < 128; i++) {
             lcd_out(self, LCD_DATA, self->pix_buf[128 * page + 127 - i]);
         }
@@ -521,7 +530,7 @@ const mp_obj_type_t pyb_lcd_type = {
     { &mp_type_type },
     .name = MP_QSTR_LCD,
     .make_new = pyb_lcd_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_lcd_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_lcd_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_LCD

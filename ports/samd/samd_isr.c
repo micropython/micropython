@@ -35,13 +35,13 @@ uint32_t systick_ms;
 
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
-    // Set stack pointer
-    #if __CORTEX_M >= 0x03
-    __asm volatile ("ldr sp, =_estack");
-    #else
-    __asm volatile ("ldr r0, =_estack");
-    __asm volatile ("mov sp, r0");
-    #endif
+// Set stack pointer
+#if __CORTEX_M >= 0x03
+    __asm volatile("ldr sp, =_estack");
+#else
+    __asm volatile("ldr r0, =_estack");
+    __asm volatile("mov sp, r0");
+#endif
     // Copy .data section from flash to RAM
     for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
         *dest++ = *src++;
@@ -53,16 +53,16 @@ void Reset_Handler(void) {
 
     // When we get here: stack is initialised, bss is clear, data is copied
 
-    #if __FPU_PRESENT == 1 && __FPU_USED == 1
+#if __FPU_PRESENT == 1 && __FPU_USED == 1
     // Set CP10 and CP11 Full Access
     SCB->CPACR |= (3UL << 10 * 2) | (3UL << 11 * 2);
-    #endif
+#endif
 
     // SCB->VTOR
-    *((volatile uint32_t*)0xe000ed08) = (uint32_t)&isr_vector;
+    *((volatile uint32_t *)0xe000ed08) = (uint32_t)&isr_vector;
 
     // SCB->CCR: enable 8-byte stack alignment for IRQ handlers, in accord with EABI
-    *((volatile uint32_t*)0xe000ed14) |= 1 << 9;
+    *((volatile uint32_t *)0xe000ed14) |= 1 << 9;
 
     // Initialise the cpu and peripherals
     samd_init();
@@ -101,18 +101,18 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     &Default_Handler, // PendSV_Handler
     &SysTick_Handler, // SysTick_Handler
-    0, // line 0
+    0,                // line 0
     0,
     0,
     0,
     0,
     0,
     0,
-    #if defined(MCU_SAMD21)
+#if defined(MCU_SAMD21)
     USB_Handler_wrapper, // line 7
-    #else
+#else
     0,
-    #endif
+#endif
     0,
     0,
     0,
@@ -185,17 +185,17 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     0,
     0,
-    #if defined(MCU_SAMD51)
+#if defined(MCU_SAMD51)
     &USB_0_Handler_wrapper, // line 80
     &USB_1_Handler_wrapper,
     &USB_2_Handler_wrapper,
     &USB_3_Handler_wrapper,
-    #else
+#else
     0,
     0,
     0,
     0,
-    #endif
+#endif
     0,
     0,
     0,

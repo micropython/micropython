@@ -63,42 +63,37 @@ STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3
 // sys.implementation object
 // this holds the MicroPython version
 STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
-    {&mp_type_tuple},
+    { &mp_type_tuple },
     3,
-    { I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO) }
-};
+    {I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO)}};
 #if MICROPY_PERSISTENT_CODE_LOAD
-#define SYS_IMPLEMENTATION_ELEMS \
-    MP_ROM_QSTR(MP_QSTR_micropython), \
-    MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
-    MP_ROM_INT(MPY_FILE_HEADER_INT)
+#define SYS_IMPLEMENTATION_ELEMS                             \
+    MP_ROM_QSTR(MP_QSTR_micropython),                        \
+        MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
+        MP_ROM_INT(MPY_FILE_HEADER_INT)
 #else
-#define SYS_IMPLEMENTATION_ELEMS \
+#define SYS_IMPLEMENTATION_ELEMS      \
     MP_ROM_QSTR(MP_QSTR_micropython), \
-    MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
+        MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
 #endif
 #if MICROPY_PY_ATTRTUPLE
 STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
-    #if MICROPY_PERSISTENT_CODE_LOAD
+#if MICROPY_PERSISTENT_CODE_LOAD
     MP_QSTR_mpy,
-    #endif
+#endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
     2 + MICROPY_PERSISTENT_CODE_LOAD,
-        SYS_IMPLEMENTATION_ELEMS
-);
+    SYS_IMPLEMENTATION_ELEMS);
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
-    {&mp_type_tuple},
+    { &mp_type_tuple },
     2 + MICROPY_PERSISTENT_CODE_LOAD,
-    {
-        SYS_IMPLEMENTATION_ELEMS
-    }
-};
+    {SYS_IMPLEMENTATION_ELEMS}};
 #endif
 
 #undef I
@@ -121,7 +116,7 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+#if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
         mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE);
@@ -130,10 +125,10 @@ STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
 
     mp_print_t print = {stream_obj, mp_stream_write_adaptor};
     mp_obj_print_exception(&print, args[0]);
-    #else
+#else
     (void)n_args;
     mp_obj_print_exception(&mp_plat_print, args[0]);
-    #endif
+#endif
 
     return mp_const_none;
 }
@@ -192,67 +187,67 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&version_obj) },
     { MP_ROM_QSTR(MP_QSTR_version_info), MP_ROM_PTR(&mp_sys_version_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_implementation), MP_ROM_PTR(&mp_sys_implementation_obj) },
-    #ifdef MICROPY_PY_SYS_PLATFORM
+#ifdef MICROPY_PY_SYS_PLATFORM
     { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_obj) },
-    #endif
-    #if MP_ENDIANNESS_LITTLE
+#endif
+#if MP_ENDIANNESS_LITTLE
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_little) },
-    #else
+#else
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_big) },
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_MAXSIZE
-    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+#if MICROPY_PY_SYS_MAXSIZE
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
     // Maximum mp_int_t value is not representable as small int, so we have
     // little choice but to use MP_SMALL_INT_MAX. Apps also should be careful
     // to not try to compare sys.maxsize to some literal number (as this
     // number might not fit in available int size), but instead count number
     // of "one" bits in sys.maxsize.
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_INT(MP_SMALL_INT_MAX) },
-    #else
+#else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
-    #endif
-    #endif
+#endif
+#endif
 
-    #if MICROPY_PY_SYS_EXIT
+#if MICROPY_PY_SYS_EXIT
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_SETTRACE
+#if MICROPY_PY_SYS_SETTRACE
     { MP_ROM_QSTR(MP_QSTR_settrace), MP_ROM_PTR(&mp_sys_settrace_obj) },
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_STDFILES
+#if MICROPY_PY_SYS_STDFILES
     { MP_ROM_QSTR(MP_QSTR_stdin), MP_ROM_PTR(&mp_sys_stdin_obj) },
     { MP_ROM_QSTR(MP_QSTR_stdout), MP_ROM_PTR(&mp_sys_stdout_obj) },
     { MP_ROM_QSTR(MP_QSTR_stderr), MP_ROM_PTR(&mp_sys_stderr_obj) },
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_MODULES
+#if MICROPY_PY_SYS_MODULES
     { MP_ROM_QSTR(MP_QSTR_modules), MP_ROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)) },
-    #endif
-    #if MICROPY_PY_SYS_EXC_INFO
+#endif
+#if MICROPY_PY_SYS_EXC_INFO
     { MP_ROM_QSTR(MP_QSTR_exc_info), MP_ROM_PTR(&mp_sys_exc_info_obj) },
-    #endif
-    #if MICROPY_PY_SYS_GETSIZEOF
+#endif
+#if MICROPY_PY_SYS_GETSIZEOF
     { MP_ROM_QSTR(MP_QSTR_getsizeof), MP_ROM_PTR(&mp_sys_getsizeof_obj) },
-    #endif
+#endif
 
     /*
      * Extensions to CPython
      */
 
     { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
-    #if MICROPY_PY_SYS_ATEXIT
+#if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);
 
 const mp_obj_module_t mp_module_sys = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_sys_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_sys_globals,
 };
 
 #endif

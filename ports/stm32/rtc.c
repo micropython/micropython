@@ -32,11 +32,11 @@
 #include "irq.h"
 
 #if defined(STM32WB)
-#define RCC_CSR_LSION RCC_CSR_LSI1ON
-#define RCC_FLAG_LSIRDY RCC_FLAG_LSI1RDY
+#define RCC_CSR_LSION          RCC_CSR_LSI1ON
+#define RCC_FLAG_LSIRDY        RCC_FLAG_LSI1RDY
 #define RCC_OSCILLATORTYPE_LSI RCC_OSCILLATORTYPE_LSI1
-#define __HAL_RCC_LSI_ENABLE __HAL_RCC_LSI1_ENABLE
-#define __HAL_RCC_LSI_DISABLE __HAL_RCC_LSI1_DISABLE
+#define __HAL_RCC_LSI_ENABLE   __HAL_RCC_LSI1_ENABLE
+#define __HAL_RCC_LSI_DISABLE  __HAL_RCC_LSI1_DISABLE
 #endif
 
 /// \moduleref pyb
@@ -65,7 +65,7 @@ static mp_uint_t rtc_info;
 #define RTC_ASYNCH_PREDIV (0x7f)
 #endif
 #ifndef RTC_SYNCH_PREDIV
-#define RTC_SYNCH_PREDIV  (0x00ff)
+#define RTC_SYNCH_PREDIV (0x00ff)
 #endif
 
 STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc);
@@ -82,14 +82,14 @@ STATIC uint32_t rtc_startup_tick;
 STATIC bool rtc_need_init_finalise = false;
 
 #if defined(STM32L0)
-#define BDCR CSR
-#define RCC_BDCR_RTCEN RCC_CSR_RTCEN
-#define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
+#define BDCR              CSR
+#define RCC_BDCR_RTCEN    RCC_CSR_RTCEN
+#define RCC_BDCR_RTCSEL   RCC_CSR_RTCSEL
 #define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
 #define RCC_BDCR_RTCSEL_1 RCC_CSR_RTCSEL_1
-#define RCC_BDCR_LSEON RCC_CSR_LSEON
-#define RCC_BDCR_LSERDY RCC_CSR_LSERDY
-#define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
+#define RCC_BDCR_LSEON    RCC_CSR_LSEON
+#define RCC_BDCR_LSERDY   RCC_CSR_LSERDY
+#define RCC_BDCR_LSEBYP   RCC_CSR_LSEBYP
 #endif
 
 void rtc_init_start(bool force_init) {
@@ -125,7 +125,7 @@ void rtc_init_start(bool force_init) {
             rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             return;
         } else if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL))
-            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
+                   == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
@@ -152,12 +152,12 @@ void rtc_init_finalise() {
     rtc_info = 0;
     while (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
         if (rtc_use_lse) {
-            #if MICROPY_HW_RTC_USE_BYPASS
+#if MICROPY_HW_RTC_USE_BYPASS
             if (RCC->BDCR & RCC_BDCR_LSEBYP) {
                 // LSEBYP failed, fallback to LSE non-bypass
                 rtc_info |= 0x02000000;
             } else
-            #endif
+#endif
             {
                 // LSE failed, fallback to LSI
                 rtc_use_lse = false;
@@ -185,15 +185,15 @@ void rtc_init_finalise() {
 
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
-    #if defined(STM32L4) || defined(STM32WB)
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
-    #else
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
-    #endif
+#if defined(STM32L4) || defined(STM32WB)
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
+#else
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
+#endif
         // power on reset occurred
         rtc_info |= 0x10000;
     }
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
         // external reset occurred
         rtc_info |= 0x20000;
     }
@@ -202,7 +202,7 @@ void rtc_init_finalise() {
     rtc_need_init_finalise = false;
 }
 
-STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct) {
+STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct) {
     /*------------------------------ LSI Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSI) == RCC_OSCILLATORTYPE_LSI) {
         // Check the LSI State
@@ -217,16 +217,16 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
 
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
-        #if !defined(STM32H7) && !defined(STM32WB)
+#if !defined(STM32H7) && !defined(STM32WB)
         // Enable Power Clock
         __HAL_RCC_PWR_CLK_ENABLE();
-        #endif
+#endif
 
         // Enable access to the backup domain
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
-        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+#if defined(STM32F7) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
         //__HAL_RCC_PWR_CLK_ENABLE();
         // Enable write access to Backup domain
         //PWR->CR1 |= PWR_CR1_DBP;
@@ -236,7 +236,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
                 return HAL_TIMEOUT;
             }
         }
-        #else
+#else
         // Enable write access to Backup domain
         //PWR->CR |= PWR_CR_DBP;
         // Wait for Backup domain Write protection disable
@@ -245,9 +245,9 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
                 return HAL_TIMEOUT;
             }
         }
-        #endif
+#endif
 
-        #if MICROPY_HW_RTC_USE_BYPASS
+#if MICROPY_HW_RTC_USE_BYPASS
         // If LSEBYP is enabled and new state is non-bypass then disable LSEBYP
         if (RCC_OscInitStruct->LSEState == RCC_LSE_ON && (RCC->BDCR & RCC_BDCR_LSEBYP)) {
             CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEON);
@@ -255,7 +255,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
             }
             CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEBYP);
         }
-        #endif
+#endif
 
         // Set the new LSE configuration
         __HAL_RCC_LSE_CONFIG(RCC_OscInitStruct->LSEState);
@@ -295,7 +295,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         return HAL_ERROR;
     } else {
         // Clear RTC_CR FMT, OSEL and POL Bits
-        hrtc->Instance->CR &= ((uint32_t)~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL));
+        hrtc->Instance->CR &= ((uint32_t) ~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL));
         // Set RTC_CR register
         hrtc->Instance->CR |= (uint32_t)(hrtc->Init.HourFormat | hrtc->Init.OutPut | hrtc->Init.OutPutPolarity);
 
@@ -306,16 +306,16 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         // Exit Initialization mode
         hrtc->Instance->ISR &= (uint32_t)~RTC_ISR_INIT;
 
-        #if defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+#if defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMOUTTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #elif defined(STM32F7)
+#elif defined(STM32F7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #else
+#else
         hrtc->Instance->TAFCR &= (uint32_t)~RTC_TAFCR_ALARMOUTTYPE;
         hrtc->Instance->TAFCR |= (uint32_t)(hrtc->Init.OutPutType);
-        #endif
+#endif
 
         // Enable the write protection for RTC registers
         __HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
@@ -340,15 +340,15 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
     // configuration variable is set.  Otherwise it uses LSI (internal osc).
 
     RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-    #if MICROPY_HW_RTC_USE_BYPASS
+#if MICROPY_HW_RTC_USE_BYPASS
     if (rtc_use_byp) {
         RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else
-    #endif
-    if (rtc_use_lse) {
+#endif
+        if (rtc_use_lse) {
         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else {
@@ -362,10 +362,10 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool
 }
 
 #ifndef MICROPY_HW_RTC_LSE_TIMEOUT_MS
-#define MICROPY_HW_RTC_LSE_TIMEOUT_MS 1000  // ST docs spec 2000 ms LSE startup, seems to be too pessimistic
+#define MICROPY_HW_RTC_LSE_TIMEOUT_MS 1000 // ST docs spec 2000 ms LSE startup, seems to be too pessimistic
 #endif
 #ifndef MICROPY_HW_RTC_LSI_TIMEOUT_MS
-#define MICROPY_HW_RTC_LSI_TIMEOUT_MS 500   // this is way too pessimistic, typ. < 1ms
+#define MICROPY_HW_RTC_LSI_TIMEOUT_MS 500 // this is way too pessimistic, typ. < 1ms
 #endif
 #ifndef MICROPY_HW_RTC_BYP_TIMEOUT_MS
 #define MICROPY_HW_RTC_BYP_TIMEOUT_MS 150
@@ -376,14 +376,14 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
     if (rtc_use_lse) {
         // we now have to wait for LSE ready or timeout
         uint32_t timeout = MICROPY_HW_RTC_LSE_TIMEOUT_MS;
-        #if MICROPY_HW_RTC_USE_BYPASS
+#if MICROPY_HW_RTC_USE_BYPASS
         if (RCC->BDCR & RCC_BDCR_LSEBYP) {
             timeout = MICROPY_HW_RTC_BYP_TIMEOUT_MS;
         }
-        #endif
+#endif
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > timeout) {
+            if ((HAL_GetTick() - tickstart) > timeout) {
                 return HAL_TIMEOUT;
             }
         }
@@ -391,7 +391,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         // we now have to wait for LSI ready or timeout
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > MICROPY_HW_RTC_LSI_TIMEOUT_MS) {
+            if ((HAL_GetTick() - tickstart) > MICROPY_HW_RTC_LSI_TIMEOUT_MS) {
                 return HAL_TIMEOUT;
             }
         }
@@ -422,7 +422,7 @@ STATIC void RTC_CalendarConfig(void) {
     date.Date = 1;
     date.WeekDay = RTC_WEEKDAY_THURSDAY;
 
-    if(HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
+    if (HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -496,7 +496,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_info_obj, pyb_rtc_info);
 ///
 /// `subseconds` counts down from 255 to 0
 
-#define MEG_DIV_64 (1000000 / 64)
+#define MEG_DIV_64    (1000000 / 64)
 #define MEG_DIV_SCALE ((RTC_SYNCH_PREDIV + 1) / 64)
 
 #if defined(MICROPY_HW_RTC_USE_US) && MICROPY_HW_RTC_USE_US
@@ -631,7 +631,8 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     }
 
     // set the callback
-    MP_STATE_PORT(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
+    MP_STATE_PORT(pyb_extint_callback)
+    [EXTI_RTC_WAKEUP] = callback;
 
     // disable register write protection
     RTC->WPR = 0xca;
@@ -656,27 +657,27 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // enable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32L4) || defined(STM32WB)
+// enable external interrupts on line EXTI_RTC_WAKEUP
+#if defined(STM32L4) || defined(STM32WB)
         EXTI->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
-        #elif defined(STM32H7)
+#elif defined(STM32H7)
         EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
-        #else
+#else
         EXTI->IMR |= 1 << EXTI_RTC_WAKEUP;
         EXTI->RTSR |= 1 << EXTI_RTC_WAKEUP;
-        #endif
+#endif
 
         // clear interrupt flags
         RTC->ISR &= ~RTC_ISR_WUTF;
-        #if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32L4) || defined(STM32WB)
         EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
-        #elif defined(STM32H7)
+#elif defined(STM32H7)
         EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
-        #else
+#else
         EXTI->PR = 1 << EXTI_RTC_WAKEUP;
-        #endif
+#endif
 
         NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
@@ -689,14 +690,14 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // disable external interrupts on line EXTI_RTC_WAKEUP
-        #if defined(STM32L4) || defined(STM32WB)
+// disable external interrupts on line EXTI_RTC_WAKEUP
+#if defined(STM32L4) || defined(STM32WB)
         EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
-        #elif defined(STM32H7)
+#elif defined(STM32H7)
         EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
-        #else
+#else
         EXTI->IMR &= ~(1 << EXTI_RTC_WAKEUP);
-        #endif
+#endif
     }
 
     return mp_const_none;
@@ -767,5 +768,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
 };

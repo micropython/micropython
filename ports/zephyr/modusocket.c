@@ -52,10 +52,10 @@ typedef struct _socket_obj_t {
     mp_obj_base_t base;
     int ctx;
 
-    #define STATE_NEW 0
-    #define STATE_CONNECTING 1
-    #define STATE_CONNECTED 2
-    #define STATE_PEER_CLOSED 3
+#define STATE_NEW         0
+#define STATE_CONNECTING  1
+#define STATE_CONNECTED   2
+#define STATE_PEER_CLOSED 3
     int8_t state;
 } socket_obj_t;
 
@@ -63,8 +63,17 @@ STATIC const mp_obj_type_t socket_type;
 
 // Helper functions
 
-#define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
-#define RAISE_SOCK_ERRNO(x) { if ((int)(x) == -1) mp_raise_OSError(errno); }
+#define RAISE_ERRNO(x)               \
+    {                                \
+        int _err = x;                \
+        if (_err < 0)                \
+            mp_raise_OSError(-_err); \
+    }
+#define RAISE_SOCK_ERRNO(x)          \
+    {                                \
+        if ((int)(x) == -1)          \
+            mp_raise_OSError(errno); \
+    }
 
 STATIC void socket_check_closed(socket_obj_t *socket) {
     if (socket->ctx == -1) {
@@ -75,18 +84,18 @@ STATIC void socket_check_closed(socket_obj_t *socket) {
 
 STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in *sockaddr_in = (struct sockaddr_in*)sockaddr;
+    struct sockaddr_in *sockaddr_in = (struct sockaddr_in *)sockaddr;
 
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    sockaddr_in->sin_family = net_context_get_family((void*)socket->ctx);
+    sockaddr_in->sin_family = net_context_get_family((void *)socket->ctx);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
 
 STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6*)addr;
+    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6 *)addr;
     char buf[40];
     net_addr_ntop(addr->sa_family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->sa_family == AF_INET ? 2 : 4, NULL);
@@ -119,7 +128,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
     } else {
-        struct net_context *ctx = (void*)self->ctx;
+        struct net_context *ctx = (void *)self->ctx;
         mp_printf(print, "<socket %p type=%d>", ctx, net_context_get_type(ctx));
     }
 }
@@ -426,7 +435,6 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 3, mod_getaddrinfo);
 
-
 STATIC mp_obj_t pkt_get_info(void) {
     struct k_mem_slab *rx, *tx;
     struct net_buf_pool *rx_data, *tx_data;
@@ -461,8 +469,8 @@ STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);
 
 const mp_obj_module_t mp_module_usocket = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
 #endif // MICROPY_PY_USOCKET

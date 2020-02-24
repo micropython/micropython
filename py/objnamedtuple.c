@@ -46,7 +46,7 @@ size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr n
 #if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
-    const qstr *fields = ((mp_obj_namedtuple_type_t*)self->tuple.base.type)->fields;
+    const qstr *fields = ((mp_obj_namedtuple_type_t *)self->tuple.base.type)->fields;
     mp_obj_t dict = mp_obj_new_dict(self->tuple.len);
     //make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
@@ -64,7 +64,7 @@ STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
     (void)kind;
     mp_obj_namedtuple_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "%q", o->tuple.base.type->name);
-    const qstr *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
+    const qstr *fields = ((mp_obj_namedtuple_type_t *)o->tuple.base.type)->fields;
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }
 
@@ -72,14 +72,14 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
-        #if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
+#if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
         if (attr == MP_QSTR__asdict) {
             dest[0] = MP_OBJ_FROM_PTR(&namedtuple_asdict_obj);
             dest[1] = self_in;
             return;
         }
-        #endif
-        size_t id = mp_obj_namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
+#endif
+        size_t id = mp_obj_namedtuple_find_field((mp_obj_namedtuple_type_t *)self->tuple.base.type, attr);
         if (id == (size_t)-1) {
             return;
         }
@@ -92,7 +92,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
+    const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t *)type_in;
     size_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -171,11 +171,11 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     qstr name = mp_obj_str_get_qstr(name_in);
     size_t n_fields;
     mp_obj_t *fields;
-    #if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(fields_in)) {
         fields_in = mp_obj_str_split(1, &fields_in);
     }
-    #endif
+#endif
     mp_obj_get_array(fields_in, &n_fields, &fields);
     return mp_obj_new_namedtuple_type(name, n_fields, fields);
 }

@@ -31,7 +31,12 @@
 
 // Helpers for sequence types
 
-#define SWAP(type, var1, var2) { type t = var2; var2 = var1; var1 = t; }
+#define SWAP(type, var1, var2) \
+    {                          \
+        type t = var2;         \
+        var2 = var1;           \
+        var1 = t;              \
+    }
 
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.
@@ -39,7 +44,7 @@ void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times
     for (size_t i = 0; i < times; i++) {
         size_t copy_sz = item_sz * len;
         memcpy(dest, items, copy_sz);
-        dest = (char*)dest + copy_sz;
+        dest = (char *)dest + copy_sz;
     }
 }
 
@@ -96,7 +101,7 @@ bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, size_t len1, const byte *
 
     // Let's deal only with > & >=
     if (op == MP_BINARY_OP_LESS || op == MP_BINARY_OP_LESS_EQUAL) {
-        SWAP(const byte*, data1, data2);
+        SWAP(const byte *, data1, data2);
         SWAP(size_t, len1, len2);
         if (op == MP_BINARY_OP_LESS) {
             op = MP_BINARY_OP_MORE;
@@ -208,9 +213,9 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, cons
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value) {
     size_t count = 0;
     for (size_t i = 0; i < len; i++) {
-         if (mp_obj_equal(items[i], value)) {
-              count++;
-         }
+        if (mp_obj_equal(items[i], value)) {
+            count++;
+        }
     }
 
     // Common sense says this cannot overflow small int

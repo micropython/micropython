@@ -85,7 +85,6 @@ STATIC mp_obj_socket_t *socket_new(int fd) {
     return o;
 }
 
-
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -208,7 +207,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
     MP_THREAD_GIL_EXIT();
-    int fd = accept(self->fd, (struct sockaddr*)&addr, &addr_len);
+    int fd = accept(self->fd, (struct sockaddr *)&addr, &addr_len);
     MP_THREAD_GIL_ENTER();
     int err = errno;
     if (fd == -1 && self->blocking && err == EAGAIN) {
@@ -263,7 +262,7 @@ STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
 
     byte *buf = m_new(byte, sz);
     MP_THREAD_GIL_EXIT();
-    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr*)&addr, &addr_len);
+    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr *)&addr, &addr_len);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
@@ -272,7 +271,7 @@ STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = buf_o;
-    t->items[1] = mp_obj_from_sockaddr((struct sockaddr*)&addr, addr_len);
+    t->items[1] = mp_obj_from_sockaddr((struct sockaddr *)&addr, addr_len);
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -315,7 +314,7 @@ STATIC mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(dst_addr, &addr_bi, MP_BUFFER_READ);
     MP_THREAD_GIL_EXIT();
     int out_sz = sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
-                        (struct sockaddr *)addr_bi.buf, addr_bi.len);
+        (struct sockaddr *)addr_bi.buf, addr_bi.len);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
@@ -374,20 +373,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct timeval tv = {0,};
+    struct timeval tv = {
+        0,
+    };
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
     // and that's how 'tv' is initialized above
     if (timeout_in != mp_const_none) {
-        #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         mp_float_t val = mp_obj_get_float(timeout_in);
         double ipart;
         tv.tv_usec = round(modf(val, &ipart) * 1000000);
         tv.tv_sec = ipart;
-        #else
+#else
         tv.tv_sec = mp_obj_get_int(timeout_in);
-        #endif
+#endif
 
         // For SO_RCVTIMEO/SO_SNDTIMEO, zero timeout means infinity, but
         // for Python API it means non-blocking.
@@ -425,7 +426,7 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
     new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
-    return mp_builtin_open(n_args, new_args, (mp_map_t*)&mp_const_empty_map);
+    return mp_builtin_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
@@ -494,7 +495,7 @@ const mp_obj_type_t mp_type_socket = {
     .getiter = NULL,
     .iternext = NULL,
     .protocol = &usocket_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&usocket_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&usocket_locals_dict,
 };
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
@@ -550,8 +551,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         hints.ai_flags = AI_NUMERICSERV;
 #ifdef __UCLIBC_MAJOR__
 #if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
-// "warning" requires -Wno-cpp which is a relatively new gcc option, so we choose not to use it.
-//#warning Working around uClibc bug with numeric service name
+        // "warning" requires -Wno-cpp which is a relatively new gcc option, so we choose not to use it.
+        //#warning Working around uClibc bug with numeric service name
         // Older versions og uClibc have bugs when numeric ports in service
         // arg require also hints.ai_socktype (or hints.ai_protocol) != 0
         // This actually was fixed in 0.9.32.1, but uClibc doesn't allow to
@@ -608,30 +609,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 4, mod
 STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(sockaddr_in, &bufinfo, MP_BUFFER_READ);
-    switch (((struct sockaddr*)bufinfo.buf)->sa_family) {
+    switch (((struct sockaddr *)bufinfo.buf)->sa_family) {
         case AF_INET: {
-            struct sockaddr_in *sa = (struct sockaddr_in*)bufinfo.buf;
+            struct sockaddr_in *sa = (struct sockaddr_in *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
-            t->items[1] = mp_obj_new_bytes((byte*)&sa->sin_addr, sizeof(sa->sin_addr));
+            t->items[1] = mp_obj_new_bytes((byte *)&sa->sin_addr, sizeof(sa->sin_addr));
             t->items[2] = MP_OBJ_NEW_SMALL_INT(ntohs(sa->sin_port));
             return MP_OBJ_FROM_PTR(t);
         }
         case AF_INET6: {
-            struct sockaddr_in6 *sa = (struct sockaddr_in6*)bufinfo.buf;
+            struct sockaddr_in6 *sa = (struct sockaddr_in6 *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET6);
-            t->items[1] = mp_obj_new_bytes((byte*)&sa->sin6_addr, sizeof(sa->sin6_addr));
+            t->items[1] = mp_obj_new_bytes((byte *)&sa->sin6_addr, sizeof(sa->sin6_addr));
             t->items[2] = MP_OBJ_NEW_SMALL_INT(ntohs(sa->sin6_port));
             t->items[3] = MP_OBJ_NEW_SMALL_INT(ntohl(sa->sin6_flowinfo));
             t->items[4] = MP_OBJ_NEW_SMALL_INT(ntohl(sa->sin6_scope_id));
             return MP_OBJ_FROM_PTR(t);
         }
         default: {
-            struct sockaddr *sa = (struct sockaddr*)bufinfo.buf;
+            struct sockaddr *sa = (struct sockaddr *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(sa->sa_family);
-            t->items[1] = mp_obj_new_bytes((byte*)sa->sa_data, bufinfo.len - offsetof(struct sockaddr, sa_data));
+            t->items[1] = mp_obj_new_bytes((byte *)sa->sa_data, bufinfo.len - offsetof(struct sockaddr, sa_data));
             return MP_OBJ_FROM_PTR(t);
         }
     }
@@ -647,7 +648,8 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_inet_ntop), MP_ROM_PTR(&mod_socket_inet_ntop_obj) },
     { MP_ROM_QSTR(MP_QSTR_sockaddr), MP_ROM_PTR(&mod_socket_sockaddr_obj) },
 
-#define C(name) { MP_ROM_QSTR(MP_QSTR_ ## name), MP_ROM_INT(name) }
+#define C(name) \
+    { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(name) }
     C(AF_UNIX),
     C(AF_INET),
     C(AF_INET6),
@@ -670,6 +672,6 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
 
 const mp_obj_module_t mp_module_socket = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };

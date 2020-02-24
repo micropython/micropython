@@ -134,7 +134,7 @@ const mp_obj_type_t zephyr_disk_access_type = {
     .name = MP_QSTR_DiskAccess,
     .print = zephyr_disk_access_print,
     .make_new = zephyr_disk_access_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_disk_access_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_disk_access_locals_dict,
 };
 #endif // CONFIG_DISK_ACCESS
 
@@ -245,9 +245,9 @@ STATIC const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_flash_area_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_flash_area_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_flash_area_ioctl_obj) },
-    #ifdef DT_FLASH_AREA_STORAGE_ID
+#ifdef DT_FLASH_AREA_STORAGE_ID
     { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(DT_FLASH_AREA_STORAGE_ID) },
-    #endif
+#endif
 };
 STATIC MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
 
@@ -256,6 +256,6 @@ const mp_obj_type_t zephyr_flash_area_type = {
     .name = MP_QSTR_FlashArea,
     .print = zephyr_flash_area_print,
     .make_new = zephyr_flash_area_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_flash_area_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_flash_area_locals_dict,
 };
 #endif // CONFIG_FLASH_MAP

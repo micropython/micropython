@@ -34,13 +34,13 @@
 
 #include "py/mpconfig.h"
 
-#define MICROPY_NLR_NUM_REGS_X86            (6)
-#define MICROPY_NLR_NUM_REGS_X64            (8)
-#define MICROPY_NLR_NUM_REGS_X64_WIN        (10)
-#define MICROPY_NLR_NUM_REGS_ARM_THUMB      (10)
-#define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP   (10 + 6)
-#define MICROPY_NLR_NUM_REGS_XTENSA         (10)
-#define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
+#define MICROPY_NLR_NUM_REGS_X86          (6)
+#define MICROPY_NLR_NUM_REGS_X64          (8)
+#define MICROPY_NLR_NUM_REGS_X64_WIN      (10)
+#define MICROPY_NLR_NUM_REGS_ARM_THUMB    (10)
+#define MICROPY_NLR_NUM_REGS_ARM_THUMB_FP (10 + 6)
+#define MICROPY_NLR_NUM_REGS_XTENSA       (10)
+#define MICROPY_NLR_NUM_REGS_XTENSAWIN    (17)
 
 // clang-format off
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
@@ -95,36 +95,36 @@ struct _nlr_buf_t {
     nlr_buf_t *prev;
     void *ret_val; // always a concrete object (an exception instance)
 
-    #if MICROPY_NLR_SETJMP
+#if MICROPY_NLR_SETJMP
     jmp_buf jmpbuf;
-    #else
+#else
     void *regs[MICROPY_NLR_NUM_REGS];
-    #endif
+#endif
 
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     void *pystack;
-    #endif
+#endif
 };
 
 // Helper macros to save/restore the pystack state
 #if MICROPY_ENABLE_PYSTACK
-#define MP_NLR_SAVE_PYSTACK(nlr_buf) (nlr_buf)->pystack = MP_STATE_THREAD(pystack_cur)
+#define MP_NLR_SAVE_PYSTACK(nlr_buf)    (nlr_buf)->pystack = MP_STATE_THREAD(pystack_cur)
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) MP_STATE_THREAD(pystack_cur) = (nlr_buf)->pystack
 #else
-#define MP_NLR_SAVE_PYSTACK(nlr_buf) (void)nlr_buf
+#define MP_NLR_SAVE_PYSTACK(nlr_buf)    (void)nlr_buf
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
 #endif
 
 // Helper macro to use at the start of a specific nlr_jump implementation
-#define MP_NLR_JUMP_HEAD(val, top) \
+#define MP_NLR_JUMP_HEAD(val, top)                    \
     nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
-    nlr_buf_t *top = *_top_ptr; \
-    if (top == NULL) { \
-        nlr_jump_fail(val); \
-    } \
-    top->ret_val = val; \
-    MP_NLR_RESTORE_PYSTACK(top); \
-    *_top_ptr = top->prev; \
+    nlr_buf_t *top = *_top_ptr;                       \
+    if (top == NULL) {                                \
+        nlr_jump_fail(val);                           \
+    }                                                 \
+    top->ret_val = val;                               \
+    MP_NLR_RESTORE_PYSTACK(top);                      \
+    *_top_ptr = top->prev;
 
 #if MICROPY_NLR_SETJMP
 // nlr_push() must be defined as a macro, because "The stack context will be
@@ -149,19 +149,19 @@ NORETURN void nlr_jump_fail(void *val);
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
 #include "mpstate.h"
-#define nlr_raise(val) \
-    do { \
+#define nlr_raise(val)                                                 \
+    do {                                                               \
         /*printf("nlr_raise: nlr_top=%p\n", MP_STATE_THREAD(nlr_top)); \
-        fflush(stdout);*/ \
-        void *_val = MP_OBJ_TO_PTR(val); \
-        assert(_val != NULL); \
-        assert(mp_obj_is_exception_instance(val)); \
-        nlr_jump(_val); \
+        fflush(stdout);*/                                              \
+        void *_val = MP_OBJ_TO_PTR(val);                               \
+        assert(_val != NULL);                                          \
+        assert(mp_obj_is_exception_instance(val));                     \
+        nlr_jump(_val);                                                \
     } while (0)
 
 #if !MICROPY_NLR_SETJMP
 #define nlr_push(val) \
-    assert(MP_STATE_THREAD(nlr_top) != val),nlr_push(val)
+    assert(MP_STATE_THREAD(nlr_top) != val), nlr_push(val)
 
 /*
 #define nlr_push(val) \

@@ -51,18 +51,18 @@ typedef struct _pyb_uart_obj_t {
     pyb_uart_t uart_id : 8;
     bool is_static : 1;
     bool is_enabled : 1;
-    bool attached_to_repl;              // whether the UART is attached to REPL
-    byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars
-    uint16_t char_mask;                 // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
-    uint16_t timeout;                   // timeout waiting for first char
-    uint16_t timeout_char;              // timeout waiting between chars
-    uint16_t read_buf_len;              // len in chars; buf can hold len-1 chars
-    volatile uint16_t read_buf_head;    // indexes first empty slot
-    uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
-    byte *read_buf;                     // byte or uint16_t, depending on char size
-    uint16_t mp_irq_trigger;            // user IRQ trigger mask
-    uint16_t mp_irq_flags;              // user IRQ active IRQ flags
-    struct _mp_irq_obj_t *mp_irq_obj;   // user IRQ object
+    bool attached_to_repl;            // whether the UART is attached to REPL
+    byte char_width;                  // 0 for 7,8 bit chars, 1 for 9 bit chars
+    uint16_t char_mask;               // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
+    uint16_t timeout;                 // timeout waiting for first char
+    uint16_t timeout_char;            // timeout waiting between chars
+    uint16_t read_buf_len;            // len in chars; buf can hold len-1 chars
+    volatile uint16_t read_buf_head;  // indexes first empty slot
+    uint16_t read_buf_tail;           // indexes first full slot (not full if equals head)
+    byte *read_buf;                   // byte or uint16_t, depending on char size
+    uint16_t mp_irq_trigger;          // user IRQ trigger mask
+    uint16_t mp_irq_flags;            // user IRQ active IRQ flags
+    struct _mp_irq_obj_t *mp_irq_obj; // user IRQ object
 } pyb_uart_obj_t;
 
 extern const mp_obj_type_t pyb_uart_type;
@@ -86,13 +86,13 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
 static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
-    #if defined(STM32F4)
+#if defined(STM32F4)
     return self->uartx->SR & USART_SR_TXE;
-    #elif defined(STM32H7)
+#elif defined(STM32H7)
     return self->uartx->ISR & USART_ISR_TXE_TXFNF;
-    #else
+#else
     return self->uartx->ISR & USART_ISR_TXE;
-    #endif
+#endif
 }
 
 #endif // MICROPY_INCLUDED_STM32_UART_H

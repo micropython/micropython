@@ -53,15 +53,15 @@ void cpu_init(void) {
 /********************************************************************/
 // LEDs
 
-#define RED_LED_TRIS _TRISC15
+#define RED_LED_TRIS    _TRISC15
 #define YELLOW_LED_TRIS _TRISC13
-#define GREEN_LED_TRIS _TRISC14
+#define GREEN_LED_TRIS  _TRISC14
 
-#define RED_LED _LATC15
+#define RED_LED    _LATC15
 #define YELLOW_LED _LATC13
-#define GREEN_LED _LATC14
+#define GREEN_LED  _LATC14
 
-#define LED_ON (0)
+#define LED_ON  (0)
 #define LED_OFF (1)
 
 void led_init(void) {
@@ -79,17 +79,29 @@ void led_init(void) {
 void led_state(int led, int state) {
     int val = state ? LED_ON : LED_OFF;
     switch (led) {
-        case 1: RED_LED = val; break;
-        case 2: YELLOW_LED = val; break;
-        case 3: GREEN_LED = val; break;
+        case 1:
+            RED_LED = val;
+            break;
+        case 2:
+            YELLOW_LED = val;
+            break;
+        case 3:
+            GREEN_LED = val;
+            break;
     }
 }
 
 void led_toggle(int led) {
     switch (led) {
-        case 1: RED_LED ^= 1; break;
-        case 2: YELLOW_LED ^= 1; break;
-        case 3: GREEN_LED ^= 1; break;
+        case 1:
+            RED_LED ^= 1;
+            break;
+        case 2:
+            YELLOW_LED ^= 1;
+            break;
+        case 3:
+            GREEN_LED ^= 1;
+            break;
     }
 }
 
@@ -111,8 +123,12 @@ void switch_init(void) {
 int switch_get(int sw) {
     int val = 1;
     switch (sw) {
-        case 1: val = SWITCH_S1; break;
-        case 2: val = SWITCH_S2; break;
+        case 1:
+            val = SWITCH_S1;
+            break;
+        case 2:
+            val = SWITCH_S2;
+            break;
     }
     return val == 0;
 }
@@ -132,7 +148,7 @@ void uart_rx_irq(void) {
 void uart_init(void) {
     // baudrate = F_CY / 16 (uxbrg + 1)
     // F_CY = 40MHz for us
-    UART1.uxbrg = 64; // 38400 baud
+    UART1.uxbrg = 64;       // 38400 baud
     UART1.uxmode = 1 << 15; // UARTEN
     UART1.uxsta = 1 << 10;  // UTXEN
 }

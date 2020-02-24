@@ -28,7 +28,7 @@
 
 bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
     // Check for multiply overflow; see CERT INT32-C
-    if (x > 0) { // x is positive
+    if (x > 0) {     // x is positive
         if (y > 0) { // x and y are positive
             if (x > (MP_SMALL_INT_MAX / y)) {
                 return true;
@@ -37,8 +37,8 @@ bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
             if (y < (MP_SMALL_INT_MIN / x)) {
                 return true;
             }
-        } // x positive, y nonpositive
-    } else { // x is nonpositive
+        }            // x positive, y nonpositive
+    } else {         // x is nonpositive
         if (y > 0) { // x is nonpositive, y is positive
             if (x < (MP_SMALL_INT_MIN / y)) {
                 return true;
@@ -48,7 +48,7 @@ bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
                 return true;
             }
         } // End if x and y are nonpositive
-    } // End if x is nonpositive
+    }     // End if x is nonpositive
     return false;
 }
 

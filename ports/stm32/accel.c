@@ -52,48 +52,47 @@
 /// Raw values are between -32 and 31 for -/+ 1.5G acceleration for MMA7660.
 /// Raw values are between -128 and 127 for -/+ 8G acceleration for KXTJ3.
 
-
 #define I2C_TIMEOUT_MS (50)
 
 #if MICROPY_HW_HAS_MMA7660
 
-#define ACCEL_ADDR                  (76)
-#define ACCEL_REG_X                 (0)
-#define ACCEL_REG_Y                 (1)
-#define ACCEL_REG_Z                 (2)
-#define ACCEL_REG_TILT              (3)
-#define ACCEL_REG_MODE              (7)
-#define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
+#define ACCEL_ADDR                 (76)
+#define ACCEL_REG_X                (0)
+#define ACCEL_REG_Y                (1)
+#define ACCEL_REG_Z                (2)
+#define ACCEL_REG_TILT             (3)
+#define ACCEL_REG_MODE             (7)
+#define ACCEL_AXIS_SIGNED_VALUE(i) (((i)&0x3f) | ((i)&0x20 ? (~0x1f) : 0))
 
 #elif MICROPY_HW_HAS_KXTJ3
 
-#define ACCEL_ADDR                  (0x0f)
-#define ACCEL_REG_DCST_RESP         (0x0c)
-#define ACCEL_REG_WHO_AM_I          (0x0f)
-#define ACCEL_REG_X                 (0x07) // XOUT_H
-#define ACCEL_REG_Y                 (0x09) // YOUT_H
-#define ACCEL_REG_Z                 (0x0B) // ZOUT_H
-#define ACCEL_REG_CTRL_REG1         (0x1B)
-#define ACCEL_REG_CTRL_REG2         (0x1d)
-#define ACCEL_REG_CTRL_REG2         (0x1d)
-#define ACCEL_REG_DATA_CTRL_REG     (0x21)
-#define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x7f) | ((i) & 0x80 ? (~0x7f) : 0))
+#define ACCEL_ADDR                 (0x0f)
+#define ACCEL_REG_DCST_RESP        (0x0c)
+#define ACCEL_REG_WHO_AM_I         (0x0f)
+#define ACCEL_REG_X                (0x07) // XOUT_H
+#define ACCEL_REG_Y                (0x09) // YOUT_H
+#define ACCEL_REG_Z                (0x0B) // ZOUT_H
+#define ACCEL_REG_CTRL_REG1        (0x1B)
+#define ACCEL_REG_CTRL_REG2        (0x1d)
+#define ACCEL_REG_CTRL_REG2        (0x1d)
+#define ACCEL_REG_DATA_CTRL_REG    (0x21)
+#define ACCEL_AXIS_SIGNED_VALUE(i) (((i)&0x7f) | ((i)&0x80 ? (~0x7f) : 0))
 
 #endif
 
 void accel_init(void) {
-    #if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
     // PB5 is connected to AVDD; pull high to enable MMA accel device
     mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
     mp_hal_pin_output(MICROPY_HW_MMA_AVDD_PIN);
-    #endif
+#endif
 }
 
 STATIC void accel_start(void) {
     // start the I2C bus in master mode
     i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000, I2C_TIMEOUT_MS);
 
-    #if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off
@@ -120,10 +119,10 @@ STATIC void accel_start(void) {
     // wait for MMA to become active
     mp_hal_delay_ms(30);
 
-    #elif MICROPY_HW_HAS_KXTJ3
+#elif MICROPY_HW_HAS_KXTJ3
 
     // readout WHO_AM_I register to check KXTJ3 device presence
-    uint8_t data[2] = { ACCEL_REG_WHO_AM_I };
+    uint8_t data[2] = {ACCEL_REG_WHO_AM_I};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     if (data[0] != 0x35) {
@@ -139,13 +138,13 @@ STATIC void accel_start(void) {
     data[1] = 0x04;
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
 
-    #endif
+#endif
 }
 
 /******************************************************************************/
 /* MicroPython bindings                                                      */
 
-#define NUM_AXIS (3)
+#define NUM_AXIS   (3)
 #define FILT_DEPTH (4)
 
 typedef struct _pyb_accel_obj_t {
@@ -178,7 +177,7 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 STATIC mp_obj_t read_axis(int axis) {
-    uint8_t data[1] = { axis };
+    uint8_t data[1] = {axis};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(data[0]));
@@ -208,15 +207,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 /// \method tilt()
 /// Get the tilt register.
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
-    #if MICROPY_HW_HAS_MMA7660
-    uint8_t data[1] = { ACCEL_REG_TILT };
+#if MICROPY_HW_HAS_MMA7660
+    uint8_t data[1] = {ACCEL_REG_TILT};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
-    #elif MICROPY_HW_HAS_KXTJ3
+#elif MICROPY_HW_HAS_KXTJ3
     /// No tilt like register with KXTJ3 accelerometer
     return 0;
-    #endif
+#endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 
@@ -227,14 +226,15 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
-    #if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
     const size_t DATA_SIZE = NUM_AXIS;
     const size_t DATA_STRIDE = 1;
-    #elif MICROPY_HW_HAS_KXTJ3
+#elif MICROPY_HW_HAS_KXTJ3
     const size_t DATA_SIZE = 5;
     const size_t DATA_STRIDE = 2;
-    #endif
-    uint8_t data[DATA_SIZE]; data[0] = ACCEL_REG_X;
+#endif
+    uint8_t data[DATA_SIZE];
+    data[0] = ACCEL_REG_X;
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, DATA_SIZE, true);
 
@@ -253,7 +253,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
-    uint8_t data[1] = { mp_obj_get_int(reg) };
+    uint8_t data[1] = {mp_obj_get_int(reg)};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
@@ -261,7 +261,7 @@ STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
-    uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
+    uint8_t data[2] = {mp_obj_get_int(reg), mp_obj_get_int(val)};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
     return mp_const_none;
 }
@@ -284,7 +284,7 @@ const mp_obj_type_t pyb_accel_type = {
     { &mp_type_type },
     .name = MP_QSTR_Accel,
     .make_new = pyb_accel_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_accel_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_accel_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3

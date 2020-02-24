@@ -36,7 +36,7 @@
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT       (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -119,14 +119,14 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     // ip comes in as an offset into bytecode, so turn it into a true pointer
     code_state->ip = self->bytecode + (size_t)code_state->ip;
 
-    #if MICROPY_STACKLESS
+#if MICROPY_STACKLESS
     code_state->prev = NULL;
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_SETTRACE
+#if MICROPY_PY_SYS_SETTRACE
     code_state->prev_state = NULL;
     code_state->frame = NULL;
-    #endif
+#endif
 
     // Get cached n_state (rather than decode it again)
     size_t n_state = code_state->n_state;
@@ -195,7 +195,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         }
 
         // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t*)self->const_table;
+        const mp_obj_t *arg_names = (const mp_obj_t *)self->const_table;
 
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
@@ -220,7 +220,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 }
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
-continue2:;
+        continue2:;
         }
 
         DEBUG_printf("Args with kws flattened: ");
@@ -252,7 +252,7 @@ continue2:;
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
@@ -287,10 +287,10 @@ continue2:;
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
-    #if !MICROPY_PERSISTENT_CODE
+#if !MICROPY_PERSISTENT_CODE
     // so bytecode is aligned
     ip = MP_ALIGN(ip, sizeof(mp_uint_t));
-    #endif
+#endif
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;

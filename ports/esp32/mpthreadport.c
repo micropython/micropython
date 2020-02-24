@@ -40,17 +40,17 @@
 
 #if MICROPY_PY_THREAD
 
-#define MP_THREAD_MIN_STACK_SIZE                        (4 * 1024)
-#define MP_THREAD_DEFAULT_STACK_SIZE                    (MP_THREAD_MIN_STACK_SIZE + 1024)
-#define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
+#define MP_THREAD_MIN_STACK_SIZE     (4 * 1024)
+#define MP_THREAD_DEFAULT_STACK_SIZE (MP_THREAD_MIN_STACK_SIZE + 1024)
+#define MP_THREAD_PRIORITY           (ESP_TASK_PRIO_MIN + 1)
 
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
-    TaskHandle_t id;        // system id of thread
-    int ready;              // whether the thread is ready and running
-    void *arg;              // thread Python args, a GC root pointer
-    void *stack;            // pointer to the stack
-    size_t stack_len;       // number of words in the stack
+    TaskHandle_t id;  // system id of thread
+    int ready;        // whether the thread is ready and running
+    void *arg;        // thread Python args, a GC root pointer
+    void *stack;      // pointer to the stack
+    size_t stack_len; // number of words in the stack
     struct _thread_t *next;
 } thread_t;
 
@@ -75,7 +75,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
-        gc_collect_root((void**)&th, 1);
+        gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1); // probably not needed
         if (th->id == xTaskGetCurrentTaskHandle()) {
             continue;
@@ -107,17 +107,18 @@ void mp_thread_start(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-STATIC void *(*ext_thread_entry)(void*) = NULL;
+STATIC void *(*ext_thread_entry)(void *) = NULL;
 
 STATIC void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
     vTaskDelete(NULL);
-    for (;;);
+    for (;;)
+        ;
 }
 
-void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, int priority, char *name) {
+void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -153,7 +154,7 @@ void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, i
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     mp_thread_create_ex(entry, arg, stack_size, MP_THREAD_PRIORITY, "mp_thread");
 }
 
@@ -177,7 +178,7 @@ void vPortCleanUpTCB(void *tcb) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (thread_t *th = thread; th != NULL; prev = th, th = th->next) {
         // unlink the node from the list
-        if ((void*)th->id == tcb) {
+        if ((void *)th->id == tcb) {
             if (prev != NULL) {
                 prev->next = th->next;
             } else {

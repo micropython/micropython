@@ -34,20 +34,20 @@
 #include <stdbool.h>
 #include "py/mpconfig.h"
 
-#define PROC_FREQ                           50000000
-#define UART_FREQ                           115200
-#define POTATO_UART_BASE                    0xc0002000
+#define PROC_FREQ        50000000
+#define UART_FREQ        115200
+#define POTATO_UART_BASE 0xc0002000
 uint64_t potato_uart_base;
 
-#define POTATO_CONSOLE_TX                   0x00
-#define POTATO_CONSOLE_RX                   0x08
-#define POTATO_CONSOLE_STATUS               0x10
-#define POTATO_CONSOLE_STATUS_RX_EMPTY      0x01
-#define POTATO_CONSOLE_STATUS_TX_EMPTY      0x02
-#define POTATO_CONSOLE_STATUS_RX_FULL       0x04
-#define POTATO_CONSOLE_STATUS_TX_FULL       0x08
-#define POTATO_CONSOLE_CLOCK_DIV            0x18
-#define POTATO_CONSOLE_IRQ_EN               0x20
+#define POTATO_CONSOLE_TX              0x00
+#define POTATO_CONSOLE_RX              0x08
+#define POTATO_CONSOLE_STATUS          0x10
+#define POTATO_CONSOLE_STATUS_RX_EMPTY 0x01
+#define POTATO_CONSOLE_STATUS_TX_EMPTY 0x02
+#define POTATO_CONSOLE_STATUS_RX_FULL  0x04
+#define POTATO_CONSOLE_STATUS_TX_FULL  0x08
+#define POTATO_CONSOLE_CLOCK_DIV       0x18
+#define POTATO_CONSOLE_IRQ_EN          0x20
 
 static uint64_t potato_uart_reg_read(int offset) {
     uint64_t addr;
@@ -99,13 +99,13 @@ static unsigned long potato_uart_divisor(unsigned long proc_freq, unsigned long 
 void potato_uart_init(void) {
     potato_uart_base = POTATO_UART_BASE;
     potato_uart_reg_write(POTATO_CONSOLE_CLOCK_DIV, potato_uart_divisor(PROC_FREQ, UART_FREQ));
-
 }
 
 char potato_uart_read(void) {
     uint64_t val;
 
-    while (potato_uart_rx_empty());
+    while (potato_uart_rx_empty())
+        ;
     val = potato_uart_reg_read(POTATO_CONSOLE_RX);
 
     return (char)(val & 0x000000ff);
@@ -116,6 +116,7 @@ void potato_uart_write(char c) {
 
     val = c;
 
-    while (potato_uart_tx_full());
+    while (potato_uart_tx_full())
+        ;
     potato_uart_reg_write(POTATO_CONSOLE_TX, val);
 }

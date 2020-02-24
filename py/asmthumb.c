@@ -38,22 +38,22 @@
 #include "py/mphal.h"
 #include "py/asmthumb.h"
 
-#define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
-#define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
-#define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
-#define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)
-#define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
-#define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
-#define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
-#define SIGNED_FIT23(x) (((x) & 0xffc00000) == 0) || (((x) & 0xffc00000) == 0xffc00000)
+#define UNSIGNED_FIT5(x)  ((uint32_t)(x) < 32)
+#define UNSIGNED_FIT7(x)  ((uint32_t)(x) < 128)
+#define UNSIGNED_FIT8(x)  (((x)&0xffffff00) == 0)
+#define UNSIGNED_FIT16(x) (((x)&0xffff0000) == 0)
+#define SIGNED_FIT8(x)    (((x)&0xffffff80) == 0) || (((x)&0xffffff80) == 0xffffff80)
+#define SIGNED_FIT9(x)    (((x)&0xffffff00) == 0) || (((x)&0xffffff00) == 0xffffff00)
+#define SIGNED_FIT12(x)   (((x)&0xfffff800) == 0) || (((x)&0xfffff800) == 0xfffff800)
+#define SIGNED_FIT23(x)   (((x)&0xffc00000) == 0) || (((x)&0xffc00000) == 0xffc00000)
 
 // Note: these actually take an imm12 but the high-bit is not encoded here
-#define OP_ADD_W_RRI_HI(reg_src) (0xf200 | (reg_src))
+#define OP_ADD_W_RRI_HI(reg_src)         (0xf200 | (reg_src))
 #define OP_ADD_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
-#define OP_SUB_W_RRI_HI(reg_src) (0xf2a0 | (reg_src))
+#define OP_SUB_W_RRI_HI(reg_src)         (0xf2a0 | (reg_src))
 #define OP_SUB_W_RRI_LO(reg_dest, imm11) ((imm11 << 4 & 0x7000) | reg_dest << 8 | (imm11 & 0xff))
 
-#define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
+#define OP_LDR_W_HI(reg_base)        (0xf8d0 | (reg_base))
 #define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 
 static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
@@ -64,14 +64,14 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
     (void)as;
     // could check labels are resolved...
 
-    #if __ICACHE_PRESENT == 1
+#if __ICACHE_PRESENT == 1
     if (as->base.pass == MP_ASM_PASS_EMIT) {
         // flush D-cache, so the code emitted is stored in memory
         MP_HAL_CLEAN_DCACHE(as->base.code_base, as->base.code_size);
         // invalidate I-cache
         SCB_InvalidateICache();
     }
-    #endif
+#endif
 }
 
 /*
@@ -97,10 +97,10 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 */
 
 // rlolist is a bit map indicating desired lo-registers
-#define OP_PUSH_RLIST(rlolist)      (0xb400 | (rlolist))
-#define OP_PUSH_RLIST_LR(rlolist)   (0xb400 | 0x0100 | (rlolist))
-#define OP_POP_RLIST(rlolist)       (0xbc00 | (rlolist))
-#define OP_POP_RLIST_PC(rlolist)    (0xbc00 | 0x0100 | (rlolist))
+#define OP_PUSH_RLIST(rlolist)    (0xb400 | (rlolist))
+#define OP_PUSH_RLIST_LR(rlolist) (0xb400 | 0x0100 | (rlolist))
+#define OP_POP_RLIST(rlolist)     (0xbc00 | (rlolist))
+#define OP_POP_RLIST_PC(rlolist)  (0xbc00 | 0x0100 | (rlolist))
 
 // The number of words must fit in 7 unsigned bits
 #define OP_ADD_SP(num_words) (0xb000 | (num_words))
@@ -120,12 +120,12 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
     assert(num_locals >= 0);
 
-    // If this Thumb machine code is run from ARM state then add a prelude
-    // to switch to Thumb state for the duration of the function.
-    #if MICROPY_DYNAMIC_COMPILER || MICROPY_EMIT_ARM || (defined(__arm__) && !defined(__thumb2__))
-    #if MICROPY_DYNAMIC_COMPILER
+// If this Thumb machine code is run from ARM state then add a prelude
+// to switch to Thumb state for the duration of the function.
+#if MICROPY_DYNAMIC_COMPILER || MICROPY_EMIT_ARM || (defined(__arm__) && !defined(__thumb2__))
+#if MICROPY_DYNAMIC_COMPILER
     if (mp_dynamic_compiler.native_arch == MP_NATIVE_ARCH_ARMV6)
-    #endif
+#endif
     {
         asm_thumb_op32(as, 0x4010, 0xe92d); // push {r4, lr}
         asm_thumb_op32(as, 0xe009, 0xe28f); // add lr, pc, 8 + 1
@@ -133,7 +133,7 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
         asm_thumb_op32(as, 0x4010, 0xe8bd); // pop {r4, lr}
         asm_thumb_op32(as, 0xff1e, 0xe12f); // bx lr
     }
-    #endif
+#endif
 
     // work out what to push and how many extra spaces to reserve on stack
     // so that we have enough for all locals and it's aligned an 8-byte boundary
@@ -264,7 +264,7 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
 
 // all these bit arithmetics need coverage testing!
 #define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
-#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
+#define OP_BCC_W_LO(byte_offset)       (0x8000 | ((byte_offset)&0x2000) | (((byte_offset) >> 1) & 0x0fff))
 
 bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_uint_t dest = get_label_dest(as, label);
@@ -312,8 +312,8 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
     }
 }
 
-#define OP_STR_TO_SP_OFFSET(rlo_dest, word_offset) (0x9000 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
-#define OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset) (0x9800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
+#define OP_STR_TO_SP_OFFSET(rlo_dest, word_offset)   (0x9000 | ((rlo_dest) << 8) | ((word_offset)&0x00ff))
+#define OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset) (0x9800 | ((rlo_dest) << 8) | ((word_offset)&0x00ff))
 
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num, uint rlo_src) {
     assert(rlo_src < ASM_THUMB_REG_R8);
@@ -329,7 +329,7 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
     asm_thumb_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
 }
 
-#define OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset) (0xa800 | ((rlo_dest) << 8) | ((word_offset) & 0x00ff))
+#define OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset) (0xa800 | ((rlo_dest) << 8) | ((word_offset)&0x00ff))
 
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < ASM_THUMB_REG_R8);
@@ -341,10 +341,10 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
-    rel -= 4 + 4; // adjust for mov_reg_i16 and then PC+4 prefetch of add_reg_reg
-    rel |= 1; // to stay in Thumb state when jumping to this address
+    rel -= 4 + 4;                                                // adjust for mov_reg_i16 and then PC+4 prefetch of add_reg_reg
+    rel |= 1;                                                    // to stay in Thumb state when jumping to this address
     asm_thumb_mov_reg_i16(as, ASM_THUMB_OP_MOVW, rlo_dest, rel); // 4 bytes
-    asm_thumb_add_reg_reg(as, rlo_dest, ASM_THUMB_REG_R15); // 2 bytes
+    asm_thumb_add_reg_reg(as, rlo_dest, ASM_THUMB_REG_R15);      // 2 bytes
 }
 
 static inline void asm_thumb_ldr_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
@@ -376,8 +376,8 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
             goto large_jump;
         }
     } else {
-        // is a forwards jump, so need to assume it's large
-        large_jump:
+    // is a forwards jump, so need to assume it's large
+    large_jump:
         asm_thumb_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     }
 }
@@ -395,8 +395,8 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
             goto large_jump;
         }
     } else {
-        // is a forwards jump, so need to assume it's large
-        large_jump:
+    // is a forwards jump, so need to assume it's large
+    large_jump:
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
     }
 }

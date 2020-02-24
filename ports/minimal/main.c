@@ -33,14 +33,14 @@ static char heap[2048];
 
 int main(int argc, char **argv) {
     int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+    stack_top = (char *)&stack_dummy;
 
-    #if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
-    #endif
+#endif
     mp_init();
-    #if MICROPY_ENABLE_COMPILER
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_ENABLE_COMPILER
+#if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
     for (;;) {
         int c = mp_hal_stdin_rx_chr();
@@ -48,14 +48,14 @@ int main(int argc, char **argv) {
             break;
         }
     }
-    #else
+#else
     pyexec_friendly_repl();
-    #endif
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
-    #else
+#endif
+//do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
+//do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
+#else
     pyexec_frozen_module("frozentest.py");
-    #endif
+#endif
     mp_deinit();
     return 0;
 }
@@ -84,11 +84,13 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
-    while (1);
+    while (1)
+        ;
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1)
+        ;
 }
 
 #ifndef NDEBUG
@@ -107,7 +109,7 @@ extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
     // set stack pointer
-    __asm volatile ("ldr sp, =_estack");
+    __asm volatile("ldr sp, =_estack");
     // copy .data section from flash to RAM
     for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
         *dest++ = *src++;
@@ -149,13 +151,13 @@ void _start(void) {
     // when we get here: stack is initialised, bss is clear, data is copied
 
     // SCB->CCR: enable 8-byte stack alignment for IRQ handlers, in accord with EABI
-    *((volatile uint32_t*)0xe000ed14) |= 1 << 9;
+    *((volatile uint32_t *)0xe000ed14) |= 1 << 9;
 
-    // initialise the cpu and peripherals
-    #if MICROPY_MIN_USE_STM32_MCU
+// initialise the cpu and peripherals
+#if MICROPY_MIN_USE_STM32_MCU
     void stm32_init(void);
     stm32_init();
-    #endif
+#endif
 
     // now that we have a basic system up and running we can call main
     main(0, NULL);
@@ -205,17 +207,17 @@ typedef struct {
     volatile uint32_t CR1;
 } periph_uart_t;
 
-#define USART1 ((periph_uart_t*) 0x40011000)
-#define GPIOA  ((periph_gpio_t*) 0x40020000)
-#define GPIOB  ((periph_gpio_t*) 0x40020400)
-#define RCC    ((periph_rcc_t*)  0x40023800)
+#define USART1 ((periph_uart_t *)0x40011000)
+#define GPIOA  ((periph_gpio_t *)0x40020000)
+#define GPIOB  ((periph_gpio_t *)0x40020400)
+#define RCC    ((periph_rcc_t *)0x40023800)
 
 // simple GPIO interface
-#define GPIO_MODE_IN (0)
-#define GPIO_MODE_OUT (1)
-#define GPIO_MODE_ALT (2)
+#define GPIO_MODE_IN   (0)
+#define GPIO_MODE_OUT  (1)
+#define GPIO_MODE_ALT  (2)
 #define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (0)
+#define GPIO_PULL_UP   (0)
 #define GPIO_PULL_DOWN (1)
 void gpio_init(periph_gpio_t *gpio, int pin, int mode, int pull, int alt) {
     gpio->MODER = (gpio->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
@@ -225,18 +227,27 @@ void gpio_init(periph_gpio_t *gpio, int pin, int mode, int pull, int alt) {
     gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
 }
 #define gpio_get(gpio, pin) ((gpio->IDR >> (pin)) & 1)
-#define gpio_set(gpio, pin, value) do { gpio->ODR = (gpio->ODR & ~(1 << (pin))) | (value << pin); } while (0)
-#define gpio_low(gpio, pin) do { gpio->BSRRH = (1 << (pin)); } while (0)
-#define gpio_high(gpio, pin) do { gpio->BSRRL = (1 << (pin)); } while (0)
+#define gpio_set(gpio, pin, value)                                \
+    do {                                                          \
+        gpio->ODR = (gpio->ODR & ~(1 << (pin))) | (value << pin); \
+    } while (0)
+#define gpio_low(gpio, pin)         \
+    do {                            \
+        gpio->BSRRH = (1 << (pin)); \
+    } while (0)
+#define gpio_high(gpio, pin)        \
+    do {                            \
+        gpio->BSRRL = (1 << (pin)); \
+    } while (0)
 
 void stm32_init(void) {
     // basic MCU config
     RCC->CR |= (uint32_t)0x00000001; // set HSION
-    RCC->CFGR = 0x00000000; // reset all
+    RCC->CFGR = 0x00000000;          // reset all
     RCC->CR &= (uint32_t)0xfef6ffff; // reset HSEON, CSSON, PLLON
-    RCC->PLLCFGR = 0x24003010; // reset PLLCFGR
+    RCC->PLLCFGR = 0x24003010;       // reset PLLCFGR
     RCC->CR &= (uint32_t)0xfffbffff; // reset HSEBYP
-    RCC->CIR = 0x00000000; // disable IRQs
+    RCC->CIR = 0x00000000;           // disable IRQs
 
     // leave the clock as-is (internal 16MHz)
 
@@ -250,9 +261,9 @@ void stm32_init(void) {
     // enable UART1 at 9600 baud (TX=B6, RX=B7)
     gpio_init(GPIOB, 6, GPIO_MODE_ALT, GPIO_PULL_NONE, 7);
     gpio_init(GPIOB, 7, GPIO_MODE_ALT, GPIO_PULL_NONE, 7);
-    RCC->APB2ENR |= 0x00000010; // USART1EN
+    RCC->APB2ENR |= 0x00000010;   // USART1EN
     USART1->BRR = (104 << 4) | 3; // 16MHz/(16*104.1875) = 9598 baud
-    USART1->CR1 = 0x0000200c; // USART enable, tx enable, rx enable
+    USART1->CR1 = 0x0000200c;     // USART enable, tx enable, rx enable
 }
 
 #endif

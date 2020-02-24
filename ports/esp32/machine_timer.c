@@ -40,9 +40,9 @@
 #define TIMER_DIVIDER  8
 
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
+#define TIMER_SCALE (TIMER_BASE_CLK / TIMER_DIVIDER)
 
-#define TIMER_FLAGS    0
+#define TIMER_FLAGS 0
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
@@ -107,7 +107,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
             return t;
         }
     }
-    
+
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
     self->base.type = &machine_timer_type;
     self->group = group;
@@ -160,7 +160,7 @@ STATIC void machine_timer_enable(machine_timer_obj_t *self) {
     check_esp_err(timer_set_counter_value(self->group, self->index, 0x00000000));
     check_esp_err(timer_set_alarm_value(self->group, self->index, self->period));
     check_esp_err(timer_enable_intr(self->group, self->index));
-    check_esp_err(timer_isr_register(self->group, self->index, machine_timer_isr, (void*)self, TIMER_FLAGS, &self->handle));
+    check_esp_err(timer_isr_register(self->group, self->index, machine_timer_isr, (void *)self, TIMER_FLAGS, &self->handle));
     check_esp_err(timer_start(self->group, self->index));
 }
 
@@ -173,14 +173,14 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         ARG_freq,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_period, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
 #if MICROPY_PY_BUILTINS_FLOAT
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 #else
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
 #endif
     };
 
@@ -229,7 +229,7 @@ STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {
 
     timer_get_counter_time_sec(self->group, self->index, &result);
 
-    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result * 1000));  // value in ms
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result * 1000)); // value in ms
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 

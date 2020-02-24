@@ -37,7 +37,6 @@
 #include "soc/cpu.h"
 #include "xtensa/hal.h"
 
-
 static void gc_collect_inner(int level) {
     if (level < XCHAL_NUM_AREGS / 8) {
         gc_collect_inner(level + 1);
@@ -49,14 +48,14 @@ static void gc_collect_inner(int level) {
     if (level == XCHAL_NUM_AREGS / 8) {
         // get the sp
         volatile uint32_t sp = (uint32_t)get_sp();
-        gc_collect_root((void**)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+        gc_collect_root((void **)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
         return;
     }
 
-    // trace root pointers from any threads
-    #if MICROPY_PY_THREAD
+// trace root pointers from any threads
+#if MICROPY_PY_THREAD
     mp_thread_gc_others();
-    #endif
+#endif
 }
 
 void gc_collect(void) {

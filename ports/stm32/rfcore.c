@@ -37,15 +37,15 @@
 // Define to 1 to print traces of HCI packets
 #define HCI_TRACE (0)
 
-#define IPCC_CH_BLE         (0x01) // BLE HCI command and response
-#define IPCC_CH_SYS         (0x02) // system HCI command and response
-#define IPCC_CH_MM          (0x08) // release buffer
-#define IPCC_CH_HCI_ACL     (0x20) // HCI ACL outgoing data
+#define IPCC_CH_BLE     (0x01) // BLE HCI command and response
+#define IPCC_CH_SYS     (0x02) // system HCI command and response
+#define IPCC_CH_MM      (0x08) // release buffer
+#define IPCC_CH_HCI_ACL (0x20) // HCI ACL outgoing data
 
-#define OGF_VENDOR          (0x3f)
-#define OCF_WRITE_CONFIG    (0x0c)
-#define OCF_SET_TX_POWER    (0x0f)
-#define OCF_BLE_INIT        (0x66)
+#define OGF_VENDOR       (0x3f)
+#define OCF_WRITE_CONFIG (0x0c)
+#define OCF_SET_TX_POWER (0x0f)
+#define OCF_BLE_INIT     (0x66)
 
 #define HCI_OPCODE(ogf, ocf) ((ogf) << 10 | (ocf))
 
@@ -56,7 +56,7 @@ typedef struct _tl_list_node_t {
 } tl_list_node_t;
 
 typedef struct _parse_hci_info_t {
-    int (*cb_fun)(void*, uint8_t);
+    int (*cb_fun)(void *, uint8_t);
     void *cb_env;
     bool was_hci_reset_evt;
 } parse_hci_info_t;
@@ -106,11 +106,11 @@ STATIC void tl_list_append(volatile tl_list_node_t *head, volatile tl_list_node_
 // IPCC interface
 
 STATIC uint32_t get_ipccdba(void) {
-    return *(uint32_t*)(OPTION_BYTE_BASE + 0x68) & 0x3fff;
+    return *(uint32_t *)(OPTION_BYTE_BASE + 0x68) & 0x3fff;
 }
 
 STATIC volatile void **get_buffer_table(void) {
-    return (volatile void**)(SRAM2A_BASE + get_ipccdba());
+    return (volatile void **)(SRAM2A_BASE + get_ipccdba());
 }
 
 void ipcc_init(uint32_t irq_pri) {
@@ -125,7 +125,7 @@ void ipcc_init(uint32_t irq_pri) {
     __HAL_RCC_IPCC_CLK_ENABLE();
 
     // Enable wanted IRQs
-    IPCC->C1CR = 0;//IPCC_C1CR_RXOIE;
+    IPCC->C1CR = 0; //IPCC_C1CR_RXOIE;
     IPCC->C1MR = 0xffffffff;
     NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
     HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
@@ -214,7 +214,7 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                 }
                 // Check for successful HCI_Reset event
                 parse->was_hci_reset_evt = buf[1] == 0x0e && buf[2] == 0x04 && buf[3] == 0x01
-                    && buf[4] == 0x03 && buf[5] == 0x0c && buf[6] == 0x00;
+                                           && buf[4] == 0x03 && buf[5] == 0x0c && buf[6] == 0x00;
             }
             break;
         }
@@ -238,15 +238,15 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
             break;
     }
 
-    #if HCI_TRACE
+#if HCI_TRACE
     printf("[% 8d] %s(%02x", mp_hal_ticks_ms(), kind, buf[0]);
     for (int i = 1; i < len; ++i) {
         printf(":%02x", buf[i]);
     }
     printf(")\n");
-    #else
+#else
     (void)kind;
-    #endif
+#endif
 }
 
 STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
@@ -255,10 +255,10 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
         volatile tl_list_node_t *cur = head->next;
         bool free = false;
         while (cur != head) {
-            tl_parse_hci_msg((uint8_t*)cur->body, parse);
+            tl_parse_hci_msg((uint8_t *)cur->body, parse);
             volatile tl_list_node_t *next = tl_list_unlink(cur);
-            if ((void*)&ipcc_mem_memmgr_evt_pool[0] <= (void*)cur
-                && (void*)cur < (void*)&ipcc_mem_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_mem_memmgr_evt_pool)]) {
+            if ((void *)&ipcc_mem_memmgr_evt_pool[0] <= (void *)cur
+                && (void *)cur < (void *)&ipcc_mem_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_mem_memmgr_evt_pool)]) {
                 // Place memory back in free pool
                 tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
                 free = true;
@@ -275,7 +275,7 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
 }
 
 STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_list_node_t *n = (tl_list_node_t*)cmd;
+    tl_list_node_t *n = (tl_list_node_t *)cmd;
     n->next = n;
     n->prev = n;
     cmd[8] = hdr;
@@ -294,12 +294,12 @@ STATIC void tl_sys_wait_resp(const uint8_t *buf, unsigned int ch) {
 }
 
 STATIC void tl_sys_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t*)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
-    tl_sys_wait_resp((uint8_t*)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS);
+    tl_hci_cmd((uint8_t *)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
+    tl_sys_wait_resp((uint8_t *)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS);
 }
 
 STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t*)&ipcc_mem_ble_cmd_buf[0], IPCC_CH_BLE, 0x01, opcode, len, buf);
+    tl_hci_cmd((uint8_t *)&ipcc_mem_ble_cmd_buf[0], IPCC_CH_BLE, 0x01, opcode, len, buf);
     ipcc_wait_msg(IPCC_CH_BLE, 250);
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
 }
@@ -324,8 +324,8 @@ void rfcore_init(void) {
 }
 
 static const struct {
-    uint8_t* pBleBufferAddress;     // unused
-    uint32_t BleBufferSize;         // unused
+    uint8_t *pBleBufferAddress; // unused
+    uint32_t BleBufferSize;     // unused
     uint16_t NumAttrRecord;
     uint16_t NumAttrServ;
     uint16_t AttrValueArrSize;
@@ -336,31 +336,31 @@ static const struct {
     uint16_t AttMtu;
     uint16_t SlaveSca;
     uint8_t MasterSca;
-    uint8_t LsSource;               // 0=LSE 1=internal RO
+    uint8_t LsSource; // 0=LSE 1=internal RO
     uint32_t MaxConnEventLength;
     uint16_t HsStartupTime;
     uint8_t ViterbiEnable;
-    uint8_t LlOnly;                 // 0=LL+Host, 1=LL only
+    uint8_t LlOnly; // 0=LL+Host, 1=LL only
     uint8_t HwVersion;
 } ble_init_params = {
     0,
     0,
-    0, // NumAttrRecord
-    0, // NumAttrServ
-    0, // AttrValueArrSize
-    1, // NumOfLinks
-    1, // ExtendedPacketLengthEnable
-    0, // PrWriteListSize
-    0x79, // MblockCount
-    0, // AttMtu
-    0, // SlaveSca
-    0, // MasterSca
-    1, // LsSource
+    0,          // NumAttrRecord
+    0,          // NumAttrServ
+    0,          // AttrValueArrSize
+    1,          // NumOfLinks
+    1,          // ExtendedPacketLengthEnable
+    0,          // PrWriteListSize
+    0x79,       // MblockCount
+    0,          // AttMtu
+    0,          // SlaveSca
+    0,          // MasterSca
+    1,          // LsSource
     0xffffffff, // MaxConnEventLength
-    0x148, // HsStartupTime
-    0, // ViterbiEnable
-    1, // LlOnly
-    0, // HwVersion
+    0x148,      // HsStartupTime
+    0,          // ViterbiEnable
+    1,          // LlOnly
+    0,          // HwVersion
 };
 
 void rfcore_ble_init(void) {
@@ -369,26 +369,26 @@ void rfcore_ble_init(void) {
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
 
     // Configure and reset the BLE controller
-    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), sizeof(ble_init_params), (const uint8_t*)&ble_init_params);
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), sizeof(ble_init_params), (const uint8_t *)&ble_init_params);
     tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), 0, NULL);
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
-    #if HCI_TRACE
+#if HCI_TRACE
     printf("[% 8d] HCI_CMD(%02x", mp_hal_ticks_ms(), src[0]);
     for (int i = 1; i < len; ++i) {
         printf(":%02x", src[i]);
     }
     printf(")\n");
-    #endif
+#endif
 
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == 0x01) {
-        n = (tl_list_node_t*)&ipcc_mem_ble_cmd_buf[0];
+        n = (tl_list_node_t *)&ipcc_mem_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == 0x02) {
-        n = (tl_list_node_t*)&ipcc_mem_ble_hci_acl_data_buf[0];
+        n = (tl_list_node_t *)&ipcc_mem_ble_hci_acl_data_buf[0];
         ch = IPCC_CH_HCI_ACL;
     } else {
         printf("** UNEXPECTED HCI HDR: 0x%02x **\n", src[0]);
@@ -403,8 +403,8 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     IPCC->C1SCR = ch << 16;
 }
 
-void rfcore_ble_check_msg(int (*cb)(void*, uint8_t), void *env) {
-    parse_hci_info_t parse = { cb, env, false };
+void rfcore_ble_check_msg(int (*cb)(void *, uint8_t), void *env) {
+    parse_hci_info_t parse = {cb, env, false};
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
@@ -413,12 +413,17 @@ void rfcore_ble_check_msg(int (*cb)(void*, uint8_t), void *env) {
         buf[0] = 0; // config offset
         buf[1] = 6; // config length
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, &buf[2]);
-        #define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; }
+#define SWAP_UINT8(a, b)  \
+    {                     \
+        uint8_t temp = a; \
+        a = b;            \
+        b = temp;         \
+    }
         SWAP_UINT8(buf[2], buf[7]);
         SWAP_UINT8(buf[3], buf[6]);
         SWAP_UINT8(buf[4], buf[5]);
-        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), 8, buf); // set BDADDR
-        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, (const uint8_t*)"\x00\x06"); // 0 dBm
+        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), 8, buf);                         // set BDADDR
+        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, (const uint8_t *)"\x00\x06"); // 0 dBm
     }
 }
 

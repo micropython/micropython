@@ -65,11 +65,11 @@ uintptr_t mp_uos_dupterm_poll(uintptr_t poll_flags) {
         int errcode = 0;
         mp_uint_t ret = 0;
         const mp_stream_p_t *stream_p = mp_get_stream(s);
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+#if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
         if (mp_uos_dupterm_is_builtin_stream(s)) {
             ret = stream_p->ioctl(s, MP_STREAM_POLL, poll_flags, &errcode);
         } else
-        #endif
+#endif
         {
             nlr_buf_t nlr;
             if (nlr_push(&nlr) == 0) {
@@ -98,7 +98,7 @@ int mp_uos_dupterm_rx_chr(void) {
             continue;
         }
 
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+#if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
         if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             byte buf[1];
             int errcode = 0;
@@ -106,11 +106,11 @@ int mp_uos_dupterm_rx_chr(void) {
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (errcode == 0 && out_sz != 0) {
                 return buf[0];
-             } else {
+            } else {
                 continue;
-             }
+            }
         }
-        #endif
+#endif
 
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
@@ -153,14 +153,14 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
             continue;
         }
 
-        #if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
+#if MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM
         if (mp_uos_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
             continue;
         }
-        #endif
+#endif
 
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {

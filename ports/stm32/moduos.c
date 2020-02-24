@@ -58,8 +58,7 @@
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
-    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
-};
+    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine};
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "pyboard");
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "pyboard");
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
@@ -73,8 +72,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     MP_ROM_PTR(&os_uname_info_nodename_obj),
     MP_ROM_PTR(&os_uname_info_release_obj),
     MP_ROM_PTR(&os_uname_info_version_obj),
-    MP_ROM_PTR(&os_uname_info_machine_obj)
-);
+    MP_ROM_PTR(&os_uname_info_machine_obj));
 
 STATIC mp_obj_t os_uname(void) {
     return MP_OBJ_FROM_PTR(&os_uname_info_obj);
@@ -84,12 +82,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
-    #if MICROPY_VFS_FAT
+#if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
-    #endif
+#endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
@@ -113,9 +111,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
     return type == &pyb_uart_type
-        #if MICROPY_HW_ENABLE_USB
-        || type == &pyb_usb_vcp_type
-        #endif
+#if MICROPY_HW_ENABLE_USB
+           || type == &pyb_usb_vcp_type
+#endif
         ;
 }
 
@@ -124,20 +122,20 @@ STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
     if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     if (mp_obj_get_type(prev_obj) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
     }
-    #endif
+#endif
 
     if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     if (mp_obj_get_type(args[0]) == &pyb_usb_vcp_type) {
         usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
     }
-    #endif
+#endif
     return prev_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uos_dupterm_obj, 1, 2, uos_dupterm);
@@ -153,11 +151,11 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rename),MP_ROM_PTR(&mp_vfs_rename_obj)},
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
+    {MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj)}, // unlink aliases to remove
 
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mod_os_sync_obj) },
 
@@ -172,20 +170,20 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
-    #if MICROPY_VFS_FAT
+#if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
-    #endif
-    #if MICROPY_VFS_LFS1
+#endif
+#if MICROPY_VFS_LFS1
     { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
-    #endif
-    #if MICROPY_VFS_LFS2
+#endif
+#if MICROPY_VFS_LFS2
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

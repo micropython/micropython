@@ -55,46 +55,46 @@ typedef struct _machine_pin_irq_obj_t {
 } machine_pin_irq_obj_t;
 
 STATIC const machine_pin_obj_t machine_pin_obj[] = {
-    {{&machine_pin_type}, GPIO_NUM_0},
-    {{&machine_pin_type}, GPIO_NUM_1},
-    {{&machine_pin_type}, GPIO_NUM_2},
-    {{&machine_pin_type}, GPIO_NUM_3},
-    {{&machine_pin_type}, GPIO_NUM_4},
-    {{&machine_pin_type}, GPIO_NUM_5},
-    {{&machine_pin_type}, GPIO_NUM_6},
-    {{&machine_pin_type}, GPIO_NUM_7},
-    {{&machine_pin_type}, GPIO_NUM_8},
-    {{&machine_pin_type}, GPIO_NUM_9},
-    {{&machine_pin_type}, GPIO_NUM_10},
-    {{&machine_pin_type}, GPIO_NUM_11},
-    {{&machine_pin_type}, GPIO_NUM_12},
-    {{&machine_pin_type}, GPIO_NUM_13},
-    {{&machine_pin_type}, GPIO_NUM_14},
-    {{&machine_pin_type}, GPIO_NUM_15},
-    {{&machine_pin_type}, GPIO_NUM_16},
-    {{&machine_pin_type}, GPIO_NUM_17},
-    {{&machine_pin_type}, GPIO_NUM_18},
-    {{&machine_pin_type}, GPIO_NUM_19},
-    {{NULL}, -1},
-    {{&machine_pin_type}, GPIO_NUM_21},
-    {{&machine_pin_type}, GPIO_NUM_22},
-    {{&machine_pin_type}, GPIO_NUM_23},
-    {{NULL}, -1},
-    {{&machine_pin_type}, GPIO_NUM_25},
-    {{&machine_pin_type}, GPIO_NUM_26},
-    {{&machine_pin_type}, GPIO_NUM_27},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{&machine_pin_type}, GPIO_NUM_32},
-    {{&machine_pin_type}, GPIO_NUM_33},
-    {{&machine_pin_type}, GPIO_NUM_34},
-    {{&machine_pin_type}, GPIO_NUM_35},
-    {{&machine_pin_type}, GPIO_NUM_36},
-    {{&machine_pin_type}, GPIO_NUM_37},
-    {{&machine_pin_type}, GPIO_NUM_38},
-    {{&machine_pin_type}, GPIO_NUM_39},
+    { {&machine_pin_type}, GPIO_NUM_0 },
+    { {&machine_pin_type}, GPIO_NUM_1 },
+    { {&machine_pin_type}, GPIO_NUM_2 },
+    { {&machine_pin_type}, GPIO_NUM_3 },
+    { {&machine_pin_type}, GPIO_NUM_4 },
+    { {&machine_pin_type}, GPIO_NUM_5 },
+    { {&machine_pin_type}, GPIO_NUM_6 },
+    { {&machine_pin_type}, GPIO_NUM_7 },
+    { {&machine_pin_type}, GPIO_NUM_8 },
+    { {&machine_pin_type}, GPIO_NUM_9 },
+    { {&machine_pin_type}, GPIO_NUM_10 },
+    { {&machine_pin_type}, GPIO_NUM_11 },
+    { {&machine_pin_type}, GPIO_NUM_12 },
+    { {&machine_pin_type}, GPIO_NUM_13 },
+    { {&machine_pin_type}, GPIO_NUM_14 },
+    { {&machine_pin_type}, GPIO_NUM_15 },
+    { {&machine_pin_type}, GPIO_NUM_16 },
+    { {&machine_pin_type}, GPIO_NUM_17 },
+    { {&machine_pin_type}, GPIO_NUM_18 },
+    { {&machine_pin_type}, GPIO_NUM_19 },
+    { {NULL}, -1 },
+    { {&machine_pin_type}, GPIO_NUM_21 },
+    { {&machine_pin_type}, GPIO_NUM_22 },
+    { {&machine_pin_type}, GPIO_NUM_23 },
+    { {NULL}, -1 },
+    { {&machine_pin_type}, GPIO_NUM_25 },
+    { {&machine_pin_type}, GPIO_NUM_26 },
+    { {&machine_pin_type}, GPIO_NUM_27 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {&machine_pin_type}, GPIO_NUM_32 },
+    { {&machine_pin_type}, GPIO_NUM_33 },
+    { {&machine_pin_type}, GPIO_NUM_34 },
+    { {&machine_pin_type}, GPIO_NUM_35 },
+    { {&machine_pin_type}, GPIO_NUM_36 },
+    { {&machine_pin_type}, GPIO_NUM_37 },
+    { {&machine_pin_type}, GPIO_NUM_38 },
+    { {&machine_pin_type}, GPIO_NUM_39 },
 };
 
 // forward declaration
@@ -140,12 +140,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 // pin.init(mode, pull=None, *, value)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_mode, ARG_pull, ARG_value
+        ARG_mode,
+        ARG_pull,
+        ARG_value
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none}},
-        { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -204,7 +206,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(args[0]);
     const machine_pin_obj_t *self = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t*)&machine_pin_obj[wanted_pin];
+        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
     }
     if (self == NULL || self->base.type == NULL) {
         mp_raise_ValueError("invalid pin");
@@ -265,7 +267,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
 STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_handler, ARG_trigger, ARG_wake
+        ARG_handler,
+        ARG_trigger,
+        ARG_wake
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -318,9 +322,10 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 trigger = 0;
             }
             gpio_isr_handler_remove(self->id);
-            MP_STATE_PORT(machine_pin_irq_handler)[self->id] = handler;
+            MP_STATE_PORT(machine_pin_irq_handler)
+            [self->id] = handler;
             gpio_set_intr_type(self->id, trigger);
-            gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void*)self);
+            gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void *)self);
         }
     }
 
@@ -369,7 +374,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 STATIC const mp_pin_p_t pin_pin_p = {
-  .ioctl = pin_ioctl,
+    .ioctl = pin_ioctl,
 };
 
 const mp_obj_type_t machine_pin_type = {
@@ -388,52 +393,52 @@ const mp_obj_type_t machine_pin_type = {
 STATIC const mp_obj_type_t machine_pin_irq_type;
 
 STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
-    {{&machine_pin_irq_type}, GPIO_NUM_0},
-    {{&machine_pin_irq_type}, GPIO_NUM_1},
-    {{&machine_pin_irq_type}, GPIO_NUM_2},
-    {{&machine_pin_irq_type}, GPIO_NUM_3},
-    {{&machine_pin_irq_type}, GPIO_NUM_4},
-    {{&machine_pin_irq_type}, GPIO_NUM_5},
-    {{&machine_pin_irq_type}, GPIO_NUM_6},
-    {{&machine_pin_irq_type}, GPIO_NUM_7},
-    {{&machine_pin_irq_type}, GPIO_NUM_8},
-    {{&machine_pin_irq_type}, GPIO_NUM_9},
-    {{&machine_pin_irq_type}, GPIO_NUM_10},
-    {{&machine_pin_irq_type}, GPIO_NUM_11},
-    {{&machine_pin_irq_type}, GPIO_NUM_12},
-    {{&machine_pin_irq_type}, GPIO_NUM_13},
-    {{&machine_pin_irq_type}, GPIO_NUM_14},
-    {{&machine_pin_irq_type}, GPIO_NUM_15},
-    {{&machine_pin_irq_type}, GPIO_NUM_16},
-    {{&machine_pin_irq_type}, GPIO_NUM_17},
-    {{&machine_pin_irq_type}, GPIO_NUM_18},
-    {{&machine_pin_irq_type}, GPIO_NUM_19},
-    {{NULL}, -1},
-    {{&machine_pin_irq_type}, GPIO_NUM_21},
-    {{&machine_pin_irq_type}, GPIO_NUM_22},
-    {{&machine_pin_irq_type}, GPIO_NUM_23},
-    {{NULL}, -1},
-    {{&machine_pin_irq_type}, GPIO_NUM_25},
-    {{&machine_pin_irq_type}, GPIO_NUM_26},
-    {{&machine_pin_irq_type}, GPIO_NUM_27},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{NULL}, -1},
-    {{&machine_pin_irq_type}, GPIO_NUM_32},
-    {{&machine_pin_irq_type}, GPIO_NUM_33},
-    {{&machine_pin_irq_type}, GPIO_NUM_34},
-    {{&machine_pin_irq_type}, GPIO_NUM_35},
-    {{&machine_pin_irq_type}, GPIO_NUM_36},
-    {{&machine_pin_irq_type}, GPIO_NUM_37},
-    {{&machine_pin_irq_type}, GPIO_NUM_38},
-    {{&machine_pin_irq_type}, GPIO_NUM_39},
+    { {&machine_pin_irq_type}, GPIO_NUM_0 },
+    { {&machine_pin_irq_type}, GPIO_NUM_1 },
+    { {&machine_pin_irq_type}, GPIO_NUM_2 },
+    { {&machine_pin_irq_type}, GPIO_NUM_3 },
+    { {&machine_pin_irq_type}, GPIO_NUM_4 },
+    { {&machine_pin_irq_type}, GPIO_NUM_5 },
+    { {&machine_pin_irq_type}, GPIO_NUM_6 },
+    { {&machine_pin_irq_type}, GPIO_NUM_7 },
+    { {&machine_pin_irq_type}, GPIO_NUM_8 },
+    { {&machine_pin_irq_type}, GPIO_NUM_9 },
+    { {&machine_pin_irq_type}, GPIO_NUM_10 },
+    { {&machine_pin_irq_type}, GPIO_NUM_11 },
+    { {&machine_pin_irq_type}, GPIO_NUM_12 },
+    { {&machine_pin_irq_type}, GPIO_NUM_13 },
+    { {&machine_pin_irq_type}, GPIO_NUM_14 },
+    { {&machine_pin_irq_type}, GPIO_NUM_15 },
+    { {&machine_pin_irq_type}, GPIO_NUM_16 },
+    { {&machine_pin_irq_type}, GPIO_NUM_17 },
+    { {&machine_pin_irq_type}, GPIO_NUM_18 },
+    { {&machine_pin_irq_type}, GPIO_NUM_19 },
+    { {NULL}, -1 },
+    { {&machine_pin_irq_type}, GPIO_NUM_21 },
+    { {&machine_pin_irq_type}, GPIO_NUM_22 },
+    { {&machine_pin_irq_type}, GPIO_NUM_23 },
+    { {NULL}, -1 },
+    { {&machine_pin_irq_type}, GPIO_NUM_25 },
+    { {&machine_pin_irq_type}, GPIO_NUM_26 },
+    { {&machine_pin_irq_type}, GPIO_NUM_27 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {NULL}, -1 },
+    { {&machine_pin_irq_type}, GPIO_NUM_32 },
+    { {&machine_pin_irq_type}, GPIO_NUM_33 },
+    { {&machine_pin_irq_type}, GPIO_NUM_34 },
+    { {&machine_pin_irq_type}, GPIO_NUM_35 },
+    { {&machine_pin_irq_type}, GPIO_NUM_36 },
+    { {&machine_pin_irq_type}, GPIO_NUM_37 },
+    { {&machine_pin_irq_type}, GPIO_NUM_38 },
+    { {&machine_pin_irq_type}, GPIO_NUM_39 },
 };
 
 STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = self_in;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    machine_pin_isr_handler((void*)&machine_pin_obj[self->id]);
+    machine_pin_isr_handler((void *)&machine_pin_obj[self->id]);
     return mp_const_none;
 }
 
@@ -458,5 +463,5 @@ STATIC const mp_obj_type_t machine_pin_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_IRQ,
     .call = machine_pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&machine_pin_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_pin_irq_locals_dict,
 };

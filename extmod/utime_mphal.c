@@ -37,11 +37,11 @@
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
-    #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
     mp_hal_delay_ms((mp_uint_t)(1000 * mp_obj_get_float(seconds_o)));
-    #else
+#else
     mp_hal_delay_ms(1000 * mp_obj_get_int(seconds_o));
-    #endif
+#endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_obj, time_sleep);
@@ -86,7 +86,7 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     // Optimized formula avoiding if conditions. We adjust difference "forward",
     // wrap it around and adjust back.
     mp_int_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-                   - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+                    - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
     return MP_OBJ_NEW_SMALL_INT(diff);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_diff_obj, time_ticks_diff);

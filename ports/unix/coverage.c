@@ -108,7 +108,7 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
     { &mp_type_type },
     .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 
 // stream read returns non-blocking error
@@ -135,12 +135,12 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     { &mp_type_type },
     .protocol = &textio_stream_p2,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict2,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
 };
 
 // str/bytes objects without a valid hash
-STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
-STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte*)"0123456789"};
+STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
+STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
 
 STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
     return (uintptr_t)a < (uintptr_t)b;
@@ -160,12 +160,14 @@ STATIC void pairheap_test(size_t nops, int *ops) {
         if (mp_pairheap_is_empty(pairheap_lt, heap)) {
             mp_printf(&mp_plat_print, " -");
         } else {
-            mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);;
+            mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+            ;
         }
     }
     printf("\npop all:");
     while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
-        mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);;
+        mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+        ;
         heap = mp_pairheap_pop(pairheap_lt, heap);
     }
     printf("\n");
@@ -177,24 +179,24 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# mp_printf\n");
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
-        mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
-        mp_printf(&mp_plat_print, "%ld\n", 123); // long
-        mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
-        mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
-        mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
-        mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
-        mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
-        #ifndef NDEBUG
+        mp_printf(&mp_plat_print, "%05d\n", -123);                 // negative number with zero padding
+        mp_printf(&mp_plat_print, "%ld\n", 123);                   // long
+        mp_printf(&mp_plat_print, "%lx\n", 0x123);                 // long hex
+        mp_printf(&mp_plat_print, "%X\n", 0x1abcdef);              // capital hex
+        mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc");    // fixed string precision
+        mp_printf(&mp_plat_print, "%.*s\n", -1, "abc");            // negative string precision
+        mp_printf(&mp_plat_print, "%b %b\n", 0, 1);                // bools
+#ifndef NDEBUG
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
-        #else
+#else
         mp_printf(&mp_plat_print, "(null)\n"); // without debugging mp_printf won't check for null
-        #endif
+#endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
-        mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
-        mp_printf(&mp_plat_print, "%%\n"); // literal % character
+        mp_printf(&mp_plat_print, "abc\n%");           // string ends in middle of format specifier
+        mp_printf(&mp_plat_print, "%%\n");             // literal % character
     }
 
     // GC
@@ -438,10 +440,10 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
         mp_obj_fun_bc_t fun_bc;
-        fun_bc.bytecode = (const byte*)"\x01"; // just needed for n_state
+        fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
         mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
-        code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
+        code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
         code_state->exc_sp_idx = 0;
         code_state->old_globals = NULL;

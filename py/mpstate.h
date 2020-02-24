@@ -53,8 +53,8 @@ extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
 
 // These are the values for sched_state
-#define MP_SCHED_IDLE (1)
-#define MP_SCHED_LOCKED (-1)
+#define MP_SCHED_IDLE    (1)
+#define MP_SCHED_LOCKED  (-1)
 #define MP_SCHED_PENDING (0) // 0 so it's a quick check in the VM
 
 typedef struct _mp_sched_item_t {
@@ -64,17 +64,17 @@ typedef struct _mp_sched_item_t {
 
 // This structure hold information about the memory allocation system.
 typedef struct _mp_state_mem_t {
-    #if MICROPY_MEM_STATS
+#if MICROPY_MEM_STATS
     size_t total_bytes_allocated;
     size_t current_bytes_allocated;
     size_t peak_bytes_allocated;
-    #endif
+#endif
 
     byte *gc_alloc_table_start;
     size_t gc_alloc_table_byte_len;
-    #if MICROPY_ENABLE_FINALISER
+#if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
-    #endif
+#endif
     byte *gc_pool_start;
     byte *gc_pool_end;
 
@@ -87,21 +87,21 @@ typedef struct _mp_state_mem_t {
     // you can still allocate/free memory and also explicitly call gc_collect.
     uint16_t gc_auto_collect_enabled;
 
-    #if MICROPY_GC_ALLOC_THRESHOLD
+#if MICROPY_GC_ALLOC_THRESHOLD
     size_t gc_alloc_amount;
     size_t gc_alloc_threshold;
-    #endif
+#endif
 
     size_t gc_last_free_atb_index;
 
-    #if MICROPY_PY_GC_COLLECT_RETVAL
+#if MICROPY_PY_GC_COLLECT_RETVAL
     size_t gc_collected;
-    #endif
+#endif
 
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
-    #endif
+#endif
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section
@@ -119,21 +119,21 @@ typedef struct _mp_state_vm_t {
     // non-heap memory for creating an exception if we can't allocate RAM
     mp_obj_exception_t mp_emergency_exception_obj;
 
-    // memory for exception arguments if we can't allocate RAM
-    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-    #if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+// memory for exception arguments if we can't allocate RAM
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+#if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
     // statically allocated buf (needs to be aligned to mp_obj_t)
     mp_obj_t mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE / sizeof(mp_obj_t)];
-    #else
+#else
     // dynamically allocated buf
     byte *mp_emergency_exception_buf;
-    #endif
-    #endif
+#endif
+#endif
 
-    #if MICROPY_KBD_EXCEPTION
+#if MICROPY_KBD_EXCEPTION
     // exception object of type KeyboardInterrupt
     mp_obj_exception_t mp_kbd_exception;
-    #endif
+#endif
 
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
@@ -141,19 +141,19 @@ typedef struct _mp_state_vm_t {
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
 
-    #if MICROPY_ENABLE_SCHEDULER
+#if MICROPY_ENABLE_SCHEDULER
     mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH];
-    #endif
+#endif
 
-    // current exception being handled, for sys.exc_info()
-    #if MICROPY_PY_SYS_EXC_INFO
+// current exception being handled, for sys.exc_info()
+#if MICROPY_PY_SYS_EXC_INFO
     mp_obj_base_t *cur_exception;
-    #endif
+#endif
 
-    #if MICROPY_PY_SYS_ATEXIT
+#if MICROPY_PY_SYS_ATEXIT
     // exposed through sys.atexit function
     mp_obj_t sys_exitfunc;
-    #endif
+#endif
 
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
@@ -162,36 +162,36 @@ typedef struct _mp_state_vm_t {
     mp_obj_list_t mp_sys_path_obj;
     mp_obj_list_t mp_sys_argv_obj;
 
-    // dictionary for overridden builtins
-    #if MICROPY_CAN_OVERRIDE_BUILTINS
+// dictionary for overridden builtins
+#if MICROPY_CAN_OVERRIDE_BUILTINS
     mp_obj_dict_t *mp_module_builtins_override_dict;
-    #endif
+#endif
 
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 
     // root pointers for extmod
 
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_REPL_EVENT_DRIVEN
     vstr_t *repl_line;
-    #endif
+#endif
 
-    #if MICROPY_PY_OS_DUPTERM
+#if MICROPY_PY_OS_DUPTERM
     mp_obj_t dupterm_objs[MICROPY_PY_OS_DUPTERM];
-    #endif
+#endif
 
-    #if MICROPY_PY_LWIP_SLIP
+#if MICROPY_PY_LWIP_SLIP
     mp_obj_t lwip_slip_stream;
-    #endif
+#endif
 
-    #if MICROPY_VFS
+#if MICROPY_VFS
     struct _mp_vfs_mount_t *vfs_cur;
     struct _mp_vfs_mount_t *vfs_mount_table;
-    #endif
+#endif
 
-    #if MICROPY_PY_BLUETOOTH
+#if MICROPY_PY_BLUETOOTH
     mp_obj_t bluetooth;
-    #endif
+#endif
 
     //
     // END ROOT POINTER SECTION
@@ -203,33 +203,33 @@ typedef struct _mp_state_vm_t {
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 
-    #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
+#if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make qstr interning thread-safe.
     mp_thread_mutex_t qstr_mutex;
-    #endif
+#endif
 
-    #if MICROPY_ENABLE_COMPILER
+#if MICROPY_ENABLE_COMPILER
     mp_uint_t mp_optimise_value;
-    #if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE
     uint8_t default_emit_opt; // one of MP_EMIT_OPT_xxx
-    #endif
-    #endif
+#endif
+#endif
 
-    // size of the emergency exception buf, if it's dynamically allocated
-    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0
+// size of the emergency exception buf, if it's dynamically allocated
+#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0
     mp_int_t mp_emergency_exception_buf_size;
-    #endif
+#endif
 
-    #if MICROPY_ENABLE_SCHEDULER
+#if MICROPY_ENABLE_SCHEDULER
     volatile int16_t sched_state;
     uint8_t sched_len;
     uint8_t sched_idx;
-    #endif
+#endif
 
-    #if MICROPY_PY_THREAD_GIL
+#if MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
-    #endif
+#endif
 } mp_state_vm_t;
 
 // This structure holds state that is specific to a given thread.
@@ -238,15 +238,15 @@ typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
 
-    #if MICROPY_STACK_CHECK
+#if MICROPY_STACK_CHECK
     size_t stack_limit;
-    #endif
+#endif
 
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     uint8_t *pystack_start;
     uint8_t *pystack_end;
     uint8_t *pystack_cur;
-    #endif
+#endif
 
     ////////////////////////////////////////////////////////////
     // START ROOT POINTER SECTION
@@ -259,11 +259,11 @@ typedef struct _mp_state_thread_t {
 
     nlr_buf_t *nlr_top;
 
-    #if MICROPY_PY_SYS_SETTRACE
+#if MICROPY_PY_SYS_SETTRACE
     mp_obj_t prof_trace_callback;
     bool prof_callback_is_executing;
     struct _mp_code_state_t *current_code_state;
-    #endif
+#endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.
@@ -276,7 +276,7 @@ typedef struct _mp_state_ctx_t {
 
 extern mp_state_ctx_t mp_state_ctx;
 
-#define MP_STATE_VM(x) (mp_state_ctx.vm.x)
+#define MP_STATE_VM(x)  (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
 
 #if MICROPY_PY_THREAD

@@ -60,48 +60,48 @@ typedef struct _mp_raw_code_t {
     mp_uint_t n_pos_args : 11;
     const void *fun_data;
     const mp_uint_t *const_table;
-    #if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PERSISTENT_CODE_SAVE
     size_t fun_data_len;
     uint16_t n_obj;
     uint16_t n_raw_code;
-    #if MICROPY_PY_SYS_SETTRACE
+#if MICROPY_PY_SYS_SETTRACE
     mp_bytecode_prelude_t prelude;
     // line_of_definition is a Python source line where the raw_code was
     // created e.g. MP_BC_MAKE_FUNCTION. This is different from lineno info
     // stored in prelude, which provides line number for first statement of
     // a function. Required to properly implement "call" trace event.
     mp_uint_t line_of_definition;
-    #endif
-    #if MICROPY_EMIT_MACHINE_CODE
+#endif
+#if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
     uint16_t n_qstr;
     mp_qstr_link_entry_t *qstr_link;
-    #endif
-    #endif
-    #if MICROPY_EMIT_MACHINE_CODE
+#endif
+#endif
+#if MICROPY_EMIT_MACHINE_CODE
     mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
-    #endif
+#endif
 } mp_raw_code_t;
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
     size_t len,
-    #endif
+#endif
     const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_obj, uint16_t n_raw_code,
-    #endif
+#endif
     mp_uint_t scope_flags);
 
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
     const mp_uint_t *const_table,
-    #if MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t prelude_offset,
     uint16_t n_obj, uint16_t n_raw_code,
     uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
-    #endif
+#endif
     mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);

@@ -99,7 +99,6 @@ extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
 
-
 soft_reset:
 
     led_init();
@@ -110,7 +109,7 @@ soft_reset:
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
+    mp_stack_set_limit((char *)&_ram_end - (char *)&_heap_end - 400);
 
     machine_init();
 
@@ -122,7 +121,6 @@ soft_reset:
     mp_obj_list_init(mp_sys_argv, 0);
 
     readline_init0();
-
 
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
@@ -162,7 +160,7 @@ soft_reset:
     }
 #endif
 
-pin_init0();
+    pin_init0();
 
 #if MICROPY_MBFS
     microbit_filesystem_init();
@@ -182,12 +180,14 @@ pin_init0();
         sdcard_init_vfs(vfs);
 
         // put the sd device in slot 1 (it will be unused at this point)
-        MP_STATE_PORT(fs_user_mount)[1] = vfs;
+        MP_STATE_PORT(fs_user_mount)
+        [1] = vfs;
 
         FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
         if (res != FR_OK) {
             printf("MPY: can't mount SD card\n");
-            MP_STATE_PORT(fs_user_mount)[1] = NULL;
+            MP_STATE_PORT(fs_user_mount)
+            [1] = NULL;
             m_del_obj(fs_user_mount_t, vfs);
         } else {
             // TODO these should go before the /flash entries in the path
@@ -197,7 +197,7 @@ pin_init0();
             // use SD card as current directory
             f_chdrive("/sd");
         }
-        no_mem_for_sd:;
+    no_mem_for_sd:;
     }
 #endif
 
@@ -226,7 +226,7 @@ pin_init0();
     pwm_start();
 #endif
 
-led_state(1, 0);
+    led_state(1, 0);
 
 #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
@@ -297,9 +297,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
-
-void HardFault_Handler(void)
-{
+void HardFault_Handler(void) {
 #if defined(NRF52_SERIES) || defined(NRF91_SERIES)
     static volatile uint32_t reg;
     static volatile uint32_t reg2;
@@ -316,7 +314,8 @@ void HardFault_Handler(void)
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1)
+        ;
 }
 
 void nlr_jump_fail(void *val) {
@@ -330,4 +329,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 
-void _start(void) {main(0, NULL);}
+void _start(void) {
+    main(0, NULL);
+}

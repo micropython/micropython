@@ -50,8 +50,8 @@ void error_check(bool status, const char *msg);
 const mp_obj_type_t wlan_if_type;
 
 STATIC const wlan_if_obj_t wlan_objs[] = {
-    {{&wlan_if_type}, STATION_IF},
-    {{&wlan_if_type}, SOFTAP_IF},
+    { {&wlan_if_type}, STATION_IF },
+    { {&wlan_if_type}, SOFTAP_IF },
 };
 
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
@@ -110,7 +110,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_ssid, ARG_password, ARG_bssid
+        ARG_ssid,
+        ARG_password,
+        ARG_bssid
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -201,13 +203,13 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
         if (nlr_push(&nlr) == 0) {
             for (struct bss_info *bs = result; bs; bs = STAILQ_NEXT(bs, next)) {
                 mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-                #if 1
+#if 1
                 // struct bss_info::ssid_len is not documented in SDK API Guide,
                 // but is present in SDK headers since 1.4.0
                 t->items[0] = mp_obj_new_bytes(bs->ssid, bs->ssid_len);
-                #else
-                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
-                #endif
+#else
+                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char *)bs->ssid));
+#endif
                 t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
                 t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
                 t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
@@ -282,10 +284,10 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         // get
         dns_addr = dns_getserver(0);
         mp_obj_t tuple[4] = {
-            netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns_addr, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t *)&dns_addr, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
@@ -293,19 +295,19 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         mp_obj_t *items;
         bool restart_dhcp_server = false;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
         if (mp_obj_is_integer(items[1])) {
             // allow numeric netmask, i.e.:
             // 24 -> 255.255.255.0
             // 16 -> 255.255.0.0
             // etc...
-            uint32_t* m = (uint32_t*)&info.netmask;
+            uint32_t *m = (uint32_t *)&info.netmask;
             *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
         } else {
-            netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
         }
-        netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], (void*)&dns_addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], (void *)&info.gw, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], (void *)&dns_addr, NETUTILS_BIG);
         // To set a static IP we have to disable DHCP first
         if (self->if_id == STATION_IF) {
             wifi_station_dhcpc_stop();
@@ -314,7 +316,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             wifi_softap_dhcps_stop();
         }
         if (!wifi_set_ip_info(self->if_id, &info)) {
-          mp_raise_msg(&mp_type_OSError, "wifi_set_ip_info() failed");
+            mp_raise_msg(&mp_type_OSError, "wifi_set_ip_info() failed");
         }
         dns_setserver(0, &dns_addr);
         if (restart_dhcp_server) {
@@ -348,7 +350,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
         for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
-                #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
+#define QS(x) (uintptr_t) MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_mac): {
                         mp_buffer_info_t bufinfo;
@@ -396,14 +398,14 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         req_if = STATION_IF;
                         if (self->if_id == STATION_IF) {
                             const char *s = mp_obj_str_get_str(kwargs->table[i].value);
-                            wifi_station_set_hostname((char*)s);
+                            wifi_station_set_hostname((char *)s);
                         }
                         break;
                     }
                     default:
                         goto unknown;
                 }
-                #undef QS
+#undef QS
             }
         }
 
@@ -438,9 +440,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case MP_QSTR_essid:
             if (self->if_id == STATION_IF) {
-                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+                val = mp_obj_new_str((char *)cfg.sta.ssid, strlen((char *)cfg.sta.ssid));
             } else {
-                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+                val = mp_obj_new_str((char *)cfg.ap.ssid, cfg.ap.ssid_len);
             }
             break;
         case MP_QSTR_hidden:
@@ -457,7 +459,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             break;
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
-            char* s = wifi_station_get_hostname();
+            char *s = wifi_station_get_hostname();
             if (s == NULL) {
                 val = MP_OBJ_NEW_QSTR(MP_QSTR_);
             } else {
@@ -497,7 +499,7 @@ STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 const mp_obj_type_t wlan_if_type = {
     { &mp_type_type },
     .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_dict_t*)&wlan_if_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&wlan_if_locals_dict,
 };
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
@@ -516,15 +518,15 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
+    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF) },
+    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF) },
 
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL) },
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP) },
 
     { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(PHY_MODE_11B) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(PHY_MODE_11G) },
@@ -541,6 +543,6 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t network_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_network_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };

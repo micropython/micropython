@@ -49,7 +49,7 @@ STATIC mp_obj_t object___init__(mp_obj_t self) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 STATIC mp_obj_t object___new__(mp_obj_t cls) {
-    if (!mp_obj_is_type(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t*)MP_OBJ_TO_PTR(cls))) {
+    if (!mp_obj_is_type(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t *)MP_OBJ_TO_PTR(cls))) {
         mp_raise_TypeError("arg must be user-type");
     }
     // This executes only "__new__" part of instance creation.
@@ -97,16 +97,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(object___delattr___obj, object___delattr__);
 #endif
 
 STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
-    #if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj) },
-    #endif
-    #if MICROPY_CPYTHON_COMPAT
+#endif
+#if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR___new__), MP_ROM_PTR(&object___new___obj) },
-    #endif
-    #if MICROPY_PY_DELATTR_SETATTR
+#endif
+#if MICROPY_PY_DELATTR_SETATTR
     { MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj) },
     { MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
@@ -116,7 +116,7 @@ const mp_obj_type_t mp_type_object = {
     { &mp_type_type },
     .name = MP_QSTR_object,
     .make_new = object_make_new,
-    #if MICROPY_CPYTHON_COMPAT
-    .locals_dict = (mp_obj_dict_t*)&object_locals_dict,
-    #endif
+#if MICROPY_CPYTHON_COMPAT
+    .locals_dict = (mp_obj_dict_t *)&object_locals_dict,
+#endif
 };

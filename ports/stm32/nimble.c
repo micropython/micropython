@@ -70,9 +70,9 @@ void mp_bluetooth_nimble_port_postinit(void) {
 }
 
 void mp_bluetooth_nimble_port_deinit(void) {
-    #ifdef pyb_pin_BT_REG_ON
+#ifdef pyb_pin_BT_REG_ON
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
-    #endif
+#endif
 }
 
 void mp_bluetooth_nimble_port_start(void) {

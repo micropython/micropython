@@ -56,7 +56,8 @@ STATIC void pyb_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 STATIC void pyb_pwm_init_helper(pyb_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_freq, ARG_duty
+        ARG_freq,
+        ARG_duty
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
@@ -168,5 +169,5 @@ const mp_obj_type_t pyb_pwm_type = {
     .name = MP_QSTR_PWM,
     .print = pyb_pwm_print,
     .make_new = pyb_pwm_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_pwm_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_pwm_locals_dict,
 };

@@ -34,7 +34,7 @@
 
 #else
 
-#define BOOL_VALUE(o) (((mp_obj_bool_t*)MP_OBJ_TO_PTR(o))->value)
+#define BOOL_VALUE(o) (((mp_obj_bool_t *)MP_OBJ_TO_PTR(o))->value)
 
 typedef struct _mp_obj_bool_t {
     mp_obj_base_t base;

@@ -40,14 +40,18 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq,
+        ARG_mode,
+        ARG_callback,
+        ARG_period,
+        ARG_tick_hz,
+        ARG_freq,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_period, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        { MP_QSTR_tick_hz, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // Parse args
@@ -56,12 +60,12 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 
     self->mode = args[ARG_mode].u_int;
     if (args[ARG_freq].u_obj != mp_const_none) {
-        // Frequency specified in Hz
-        #if MICROPY_PY_BUILTINS_FLOAT
+// Frequency specified in Hz
+#if MICROPY_PY_BUILTINS_FLOAT
         self->delta_ms = 1000 / mp_obj_get_float(args[ARG_freq].u_obj);
-        #else
+#else
         self->delta_ms = 1000 / mp_obj_get_int(args[ARG_freq].u_obj);
-        #endif
+#endif
     } else {
         // Period specified
         self->delta_ms = args[ARG_period].u_int * 1000 / args[ARG_tick_hz].u_int;
@@ -130,5 +134,5 @@ const mp_obj_type_t machine_timer_type = {
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_timer_locals_dict,
 };

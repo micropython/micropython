@@ -38,7 +38,7 @@ typedef struct _network_lan_obj_t {
     eth_t *eth;
 } network_lan_obj_t;
 
-STATIC const network_lan_obj_t network_lan_eth0 = { { &network_lan_type }, &eth_instance };
+STATIC const network_lan_obj_t network_lan_eth0 = {{&network_lan_type}, &eth_instance};
 
 STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -49,8 +49,7 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         netif->ip_addr.addr & 0xff,
         netif->ip_addr.addr >> 8 & 0xff,
         netif->ip_addr.addr >> 16 & 0xff,
-        netif->ip_addr.addr >> 24
-    );
+        netif->ip_addr.addr >> 24);
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -159,7 +158,7 @@ const mp_obj_type_t network_lan_type = {
     .name = MP_QSTR_LAN,
     .print = network_lan_print,
     .make_new = network_lan_make_new,
-    .locals_dict = (mp_obj_dict_t*)&network_lan_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&network_lan_locals_dict,
 };
 
 #endif // defined(MICROPY_HW_ETH_MDC)

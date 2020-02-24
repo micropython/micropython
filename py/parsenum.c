@@ -40,7 +40,7 @@ STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to convert the
     // exception's type from ValueError to SyntaxError and add traceback info
     if (lex != NULL) {
-        ((mp_obj_base_t*)MP_OBJ_TO_PTR(exc))->type = &mp_type_SyntaxError;
+        ((mp_obj_base_t *)MP_OBJ_TO_PTR(exc))->type = &mp_type_SyntaxError;
         mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTRnull);
     }
     nlr_raise(exc);
@@ -73,7 +73,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     }
 
     // parse optional base prefix
-    str += mp_parse_num_base((const char*)str, top - str, &base);
+    str += mp_parse_num_base((const char *)str, top - str, &base);
 
     // string should be an integer number
     mp_int_t int_val = 0;
@@ -137,9 +137,9 @@ have_ret_val:
 overflow:
     // reparse using long int
     {
-        const char *s2 = (const char*)str_val_start;
+        const char *s2 = (const char *)str_val_start;
         ret_val = mp_obj_new_int_from_str_len(&s2, top - str_val_start, neg, base);
-        str = (const byte*)s2;
+        str = (const byte *)s2;
         goto have_ret_val;
     }
 
@@ -180,14 +180,14 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 //   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
 //   exponent).
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define DEC_VAL_MAX 1e20F
-#define SMALL_NORMAL_VAL (1e-37F)
-#define SMALL_NORMAL_EXP (-37)
+#define DEC_VAL_MAX       1e20F
+#define SMALL_NORMAL_VAL  (1e-37F)
+#define SMALL_NORMAL_EXP  (-37)
 #define EXACT_POWER_OF_10 (9)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define DEC_VAL_MAX 1e200
-#define SMALL_NORMAL_VAL (1e-307)
-#define SMALL_NORMAL_EXP (-307)
+#define DEC_VAL_MAX       1e200
+#define SMALL_NORMAL_VAL  (1e-307)
+#define SMALL_NORMAL_EXP  (-307)
 #define EXACT_POWER_OF_10 (22)
 #endif
 

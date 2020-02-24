@@ -45,20 +45,19 @@
 
 typedef void *bdev_t;
 STATIC fs_user_mount_t *disk_get_device(void *bdev) {
-    return (fs_user_mount_t*)bdev;
+    return (fs_user_mount_t *)bdev;
 }
 
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_read (
-    bdev_t pdrv,      /* Physical drive nmuber (0..) */
-    BYTE *buff,        /* Data buffer to store read data */
-    DWORD sector,    /* Sector address (LBA) */
-    UINT count        /* Number of sectors to read (1..128) */
-)
-{
+DRESULT disk_read(
+    bdev_t pdrv,  /* Physical drive nmuber (0..) */
+    BYTE *buff,   /* Data buffer to store read data */
+    DWORD sector, /* Sector address (LBA) */
+    UINT count    /* Number of sectors to read (1..128) */
+) {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
     if (vfs == NULL) {
         return RES_PARERR;
@@ -73,13 +72,12 @@ DRESULT disk_read (
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_write (
-    bdev_t pdrv,          /* Physical drive nmuber (0..) */
-    const BYTE *buff,    /* Data to be written */
-    DWORD sector,        /* Sector address (LBA) */
-    UINT count            /* Number of sectors to write (1..128) */
-)
-{
+DRESULT disk_write(
+    bdev_t pdrv,      /* Physical drive nmuber (0..) */
+    const BYTE *buff, /* Data to be written */
+    DWORD sector,     /* Sector address (LBA) */
+    UINT count        /* Number of sectors to write (1..128) */
+) {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
     if (vfs == NULL) {
         return RES_PARERR;
@@ -95,17 +93,15 @@ DRESULT disk_write (
     return ret == 0 ? RES_OK : RES_ERROR;
 }
 
-
 /*-----------------------------------------------------------------------*/
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-DRESULT disk_ioctl (
-    bdev_t pdrv,      /* Physical drive nmuber (0..) */
-    BYTE cmd,        /* Control code */
-    void *buff        /* Buffer to send/receive control data */
-)
-{
+DRESULT disk_ioctl(
+    bdev_t pdrv, /* Physical drive nmuber (0..) */
+    BYTE cmd,    /* Control code */
+    void *buff   /* Buffer to send/receive control data */
+) {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
     if (vfs == NULL) {
         return RES_PARERR;
@@ -130,24 +126,24 @@ DRESULT disk_ioctl (
             return RES_OK;
 
         case GET_SECTOR_COUNT: {
-            *((DWORD*)buff) = mp_obj_get_int(ret);
+            *((DWORD *)buff) = mp_obj_get_int(ret);
             return RES_OK;
         }
 
         case GET_SECTOR_SIZE: {
             if (ret == mp_const_none) {
                 // Default sector size
-                *((WORD*)buff) = 512;
+                *((WORD *)buff) = 512;
             } else {
-                *((WORD*)buff) = mp_obj_get_int(ret);
+                *((WORD *)buff) = mp_obj_get_int(ret);
             }
             // need to store ssize because we use it in disk_read/disk_write
-            vfs->blockdev.block_size = *((WORD*)buff);
+            vfs->blockdev.block_size = *((WORD *)buff);
             return RES_OK;
         }
 
         case GET_BLOCK_SIZE:
-            *((DWORD*)buff) = 1; // erase block size in units of sector size
+            *((DWORD *)buff) = 1; // erase block size in units of sector size
             return RES_OK;
 
         case IOCTL_INIT:
@@ -161,7 +157,7 @@ DRESULT disk_ioctl (
             } else {
                 stat = 0;
             }
-            *((DSTATUS*)buff) = stat;
+            *((DSTATUS *)buff) = stat;
             return RES_OK;
         }
 

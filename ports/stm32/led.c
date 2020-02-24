@@ -51,13 +51,13 @@ typedef struct _pyb_led_obj_t {
 } pyb_led_obj_t;
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
-    {{&pyb_led_type}, 1, MICROPY_HW_LED1},
+    { {&pyb_led_type}, 1, MICROPY_HW_LED1 },
 #if defined(MICROPY_HW_LED2)
-    {{&pyb_led_type}, 2, MICROPY_HW_LED2},
+    { {&pyb_led_type}, 2, MICROPY_HW_LED2 },
 #if defined(MICROPY_HW_LED3)
-    {{&pyb_led_type}, 3, MICROPY_HW_LED3},
+    { {&pyb_led_type}, 3, MICROPY_HW_LED3 },
 #if defined(MICROPY_HW_LED4)
-    {{&pyb_led_type}, 4, MICROPY_HW_LED4},
+    { {&pyb_led_type}, 4, MICROPY_HW_LED4 },
 #endif
 #endif
 #endif
@@ -74,7 +74,7 @@ void led_init(void) {
     }
 }
 
-#if defined(MICROPY_HW_LED1_PWM) \
+#if defined(MICROPY_HW_LED1_PWM)    \
     || defined(MICROPY_HW_LED2_PWM) \
     || defined(MICROPY_HW_LED3_PWM) \
     || defined(MICROPY_HW_LED4_PWM)
@@ -87,22 +87,26 @@ void led_init(void) {
 #define LED_PWM_ENABLED (1)
 
 #ifndef MICROPY_HW_LED1_PWM
-#define MICROPY_HW_LED1_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED1_PWM \
+    { NULL, 0, 0, 0 }
 #endif
 #ifndef MICROPY_HW_LED2_PWM
-#define MICROPY_HW_LED2_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED2_PWM \
+    { NULL, 0, 0, 0 }
 #endif
 #ifndef MICROPY_HW_LED3_PWM
-#define MICROPY_HW_LED3_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED3_PWM \
+    { NULL, 0, 0, 0 }
 #endif
 #ifndef MICROPY_HW_LED4_PWM
-#define MICROPY_HW_LED4_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED4_PWM \
+    { NULL, 0, 0, 0 }
 #endif
 
 #define LED_PWM_TIM_PERIOD (10000) // TIM runs at 1MHz and fires every 10ms
 
 // this gives the address of the CCR register for channels 1-4
-#define LED_PWM_CCR(pwm_cfg) ((volatile uint32_t*)&(pwm_cfg)->tim->CCR1 + ((pwm_cfg)->tim_channel >> 2))
+#define LED_PWM_CCR(pwm_cfg) ((volatile uint32_t *)&(pwm_cfg)->tim->CCR1 + ((pwm_cfg)->tim_channel >> 2))
 
 typedef struct _led_pwm_config_t {
     TIM_TypeDef *tim;
@@ -135,10 +139,17 @@ STATIC void led_pwm_init(int led) {
 
     // TIM configuration
     switch (pwm_cfg->tim_id) {
-        case 1: __TIM1_CLK_ENABLE(); break;
-        case 2: __TIM2_CLK_ENABLE(); break;
-        case 3: __TIM3_CLK_ENABLE(); break;
-        default: assert(0);
+        case 1:
+            __TIM1_CLK_ENABLE();
+            break;
+        case 2:
+            __TIM2_CLK_ENABLE();
+            break;
+        case 3:
+            __TIM3_CLK_ENABLE();
+            break;
+        default:
+            assert(0);
     }
     TIM_HandleTypeDef tim = {0};
     tim.Instance = pwm_cfg->tim;
@@ -155,8 +166,8 @@ STATIC void led_pwm_init(int led) {
     oc_init.Pulse = 0; // off
     oc_init.OCPolarity = MICROPY_HW_LED_INVERTED ? TIM_OCPOLARITY_LOW : TIM_OCPOLARITY_HIGH;
     oc_init.OCFastMode = TIM_OCFAST_DISABLE;
-    oc_init.OCNPolarity = TIM_OCNPOLARITY_HIGH; // needed for TIM1 and TIM8
-    oc_init.OCIdleState = TIM_OCIDLESTATE_SET; // needed for TIM1 and TIM8
+    oc_init.OCNPolarity = TIM_OCNPOLARITY_HIGH;  // needed for TIM1 and TIM8
+    oc_init.OCIdleState = TIM_OCIDLESTATE_SET;   // needed for TIM1 and TIM8
     oc_init.OCNIdleState = TIM_OCNIDLESTATE_SET; // needed for TIM1 and TIM8
     HAL_TIM_PWM_ConfigChannel(&tim, &oc_init, pwm_cfg->tim_channel);
     HAL_TIM_PWM_Start(&tim, pwm_cfg->tim_channel);
@@ -171,7 +182,7 @@ STATIC void led_pwm_deinit(int led) {
     GPIO_TypeDef *g = led_pin->gpio;
     uint32_t pin = led_pin->pin;
     static const int mode = 1; // output
-    static const int alt = 0; // no alt func
+    static const int alt = 0;  // no alt func
     g->MODER = (g->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
     g->AFR[pin >> 3] = (g->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
     led_pwm_state &= ~(1 << led);
@@ -196,11 +207,11 @@ void led_state(pyb_led_t led, int state) {
         MICROPY_HW_LED_ON(led_pin);
     }
 
-    #if LED_PWM_ENABLED
+#if LED_PWM_ENABLED
     if (led_pwm_is_enabled(led)) {
         led_pwm_deinit(led);
     }
-    #endif
+#endif
 }
 
 void led_toggle(pyb_led_t led) {
@@ -208,13 +219,13 @@ void led_toggle(pyb_led_t led) {
         return;
     }
 
-    #if LED_PWM_ENABLED
+#if LED_PWM_ENABLED
     if (led_pwm_is_enabled(led)) {
         // if PWM is enabled then LED has non-zero intensity, so turn it off
         led_state(led, 0);
         return;
     }
-    #endif
+#endif
 
     // toggle the output data register to toggle the LED state
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
@@ -226,7 +237,7 @@ int led_get_intensity(pyb_led_t led) {
         return 0;
     }
 
-    #if LED_PWM_ENABLED
+#if LED_PWM_ENABLED
     if (led_pwm_is_enabled(led)) {
         const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
         mp_uint_t i = (*LED_PWM_CCR(pwm_cfg) * 255 + LED_PWM_TIM_PERIOD - 2) / (LED_PWM_TIM_PERIOD - 1);
@@ -235,7 +246,7 @@ int led_get_intensity(pyb_led_t led) {
         }
         return i;
     }
-    #endif
+#endif
 
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     GPIO_TypeDef *gpio = led_pin->gpio;
@@ -250,7 +261,7 @@ int led_get_intensity(pyb_led_t led) {
 }
 
 void led_set_intensity(pyb_led_t led, mp_int_t intensity) {
-    #if LED_PWM_ENABLED
+#if LED_PWM_ENABLED
     if (intensity > 0 && intensity < 255) {
         const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
         if (pwm_cfg->tim != NULL) {
@@ -262,7 +273,7 @@ void led_set_intensity(pyb_led_t led, mp_int_t intensity) {
             return;
         }
     }
-    #endif
+#endif
 
     // intensity not supported for this LED; just turn it on/off
     led_state(led, intensity > 0);
@@ -361,7 +372,7 @@ const mp_obj_type_t pyb_led_type = {
     .name = MP_QSTR_LED,
     .print = led_obj_print,
     .make_new = led_obj_make_new,
-    .locals_dict = (mp_obj_dict_t*)&led_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&led_locals_dict,
 };
 
 #else
@@ -373,4 +384,4 @@ void led_state(pyb_led_t led, int state) {
 }
 void led_toggle(pyb_led_t led) {
 }
-#endif  // defined(MICROPY_HW_LED1)
+#endif // defined(MICROPY_HW_LED1)

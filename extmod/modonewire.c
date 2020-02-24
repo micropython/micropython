@@ -36,9 +36,9 @@
 #define TIMING_RESET1 (480)
 #define TIMING_RESET2 (70)
 #define TIMING_RESET3 (410)
-#define TIMING_READ1 (5)
-#define TIMING_READ2 (5)
-#define TIMING_READ3 (40)
+#define TIMING_READ1  (5)
+#define TIMING_READ2  (5)
+#define TIMING_READ3  (40)
 #define TIMING_WRITE1 (10)
 #define TIMING_WRITE2 (50)
 #define TIMING_WRITE3 (10)
@@ -126,7 +126,7 @@ STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     uint8_t crc = 0;
     for (size_t i = 0; i < bufinfo.len; ++i) {
-        uint8_t byte = ((uint8_t*)bufinfo.buf)[i];
+        uint8_t byte = ((uint8_t *)bufinfo.buf)[i];
         for (int b = 0; b < 8; ++b) {
             uint8_t fb_bit = (crc ^ byte) & 0x01;
             if (fb_bit == 0x01) {
@@ -157,6 +157,6 @@ STATIC const mp_rom_map_elem_t onewire_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table);
 
 const mp_obj_module_t mp_module_onewire = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&onewire_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };

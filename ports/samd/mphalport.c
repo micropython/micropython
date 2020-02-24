@@ -93,7 +93,8 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
     }
     while (len--) {
-        while (!(USARTx->USART.INTFLAG.bit.DRE)) { }
+        while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+        }
         USARTx->USART.DATA.bit.DATA = *str++;
     }
 }

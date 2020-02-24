@@ -27,19 +27,19 @@
 #define MICROPY_INCLUDED_STM32_SYSTICK_H
 
 // Works for x between 0 and 16 inclusive
-#define POW2_CEIL(x) ((((x) - 1) | ((x) - 1) >> 1 | ((x) - 1) >> 2 | ((x) - 1) >> 3) + 1)
+#define POW2_CEIL(x) ((((x)-1) | ((x)-1) >> 1 | ((x)-1) >> 2 | ((x)-1) >> 3) + 1)
 
 enum {
     SYSTICK_DISPATCH_DMA = 0,
-    #if MICROPY_HW_ENABLE_STORAGE
+#if MICROPY_HW_ENABLE_STORAGE
     SYSTICK_DISPATCH_STORAGE,
-    #endif
-    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
+#endif
+#if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
     SYSTICK_DISPATCH_LWIP,
-    #endif
-    #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
+#endif
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
     SYSTICK_DISPATCH_NIMBLE,
-    #endif
+#endif
     SYSTICK_DISPATCH_MAX
 };
 

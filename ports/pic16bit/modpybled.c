@@ -33,12 +33,12 @@ typedef struct _pyb_led_obj_t {
 } pyb_led_obj_t;
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
-    {{&pyb_led_type}},
-    {{&pyb_led_type}},
-    {{&pyb_led_type}},
+    { {&pyb_led_type} },
+    { {&pyb_led_type} },
+    { {&pyb_led_type} },
 };
 
-#define NUM_LED MP_ARRAY_SIZE(pyb_led_obj)
+#define NUM_LED     MP_ARRAY_SIZE(pyb_led_obj)
 #define LED_ID(obj) ((obj) - &pyb_led_obj[0] + 1)
 
 void pyb_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

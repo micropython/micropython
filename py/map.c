@@ -36,7 +36,7 @@
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT       (0)
 #define DEBUG_printf(...) (void)0
 #endif
 
@@ -56,10 +56,10 @@ const mp_map_t mp_const_empty_map = {
 // 4-word GC block, and it's not so important for these small values to be
 // prime.  The latter sizes are prime and increase at an increasing rate.
 STATIC const uint16_t hash_allocation_sizes[] = {
-    0, 2, 4, 6, 8, 10, 12, // +2
-    17, 23, 29, 37, 47, 59, 73, // *1.25
+    0, 2, 4, 6, 8, 10, 12,                                        // +2
+    17, 23, 29, 37, 47, 59, 73,                                   // *1.25
     97, 127, 167, 223, 293, 389, 521, 691, 919, 1223, 1627, 2161, // *1.33
-    3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907, // *1.5
+    3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907,          // *1.5
 };
 
 STATIC size_t get_hash_alloc_greater_or_equal_to(size_t x) {
@@ -96,7 +96,7 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 1;
     map->is_ordered = 1;
-    map->table = (mp_map_elem_t*)table;
+    map->table = (mp_map_elem_t *)table;
 }
 
 // Differentiate from mp_map_clear() - semantics is different
@@ -170,7 +170,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     if (map->is_ordered) {
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
-                #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
                 if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
                     // remove the found element by moving the rest of the array down
                     mp_obj_t value = elem->value;
@@ -181,11 +181,11 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     elem->key = MP_OBJ_NULL;
                     elem->value = value;
                 }
-                #endif
+#endif
                 return elem;
             }
         }
-        #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         if (MP_LIKELY(lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
             return NULL;
         }
@@ -201,9 +201,9 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             map->all_keys_are_qstrs = 0;
         }
         return elem;
-        #else
+#else
         return NULL;
-        #endif
+#endif
     }
 
     // map is a hash table (not an ordered array), so do a hash lookup

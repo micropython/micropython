@@ -40,35 +40,35 @@
 #include "py/mpconfig.h"
 
 #ifndef USBD_LANGID_STRING
-#define USBD_LANGID_STRING            0x409
+#define USBD_LANGID_STRING 0x409
 #endif
 
 #ifndef USBD_MANUFACTURER_STRING
-#define USBD_MANUFACTURER_STRING      "MicroPython"
+#define USBD_MANUFACTURER_STRING "MicroPython"
 #endif
 
 #ifndef USBD_PRODUCT_HS_STRING
-#define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#define USBD_PRODUCT_HS_STRING "Pyboard Virtual Comm Port in HS Mode"
 #endif
 
 #ifndef USBD_PRODUCT_FS_STRING
-#define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#define USBD_PRODUCT_FS_STRING "Pyboard Virtual Comm Port in FS Mode"
 #endif
 
 #ifndef USBD_CONFIGURATION_HS_STRING
-#define USBD_CONFIGURATION_HS_STRING  "Pyboard Config"
+#define USBD_CONFIGURATION_HS_STRING "Pyboard Config"
 #endif
 
 #ifndef USBD_INTERFACE_HS_STRING
-#define USBD_INTERFACE_HS_STRING      "Pyboard Interface"
+#define USBD_INTERFACE_HS_STRING "Pyboard Interface"
 #endif
 
 #ifndef USBD_CONFIGURATION_FS_STRING
-#define USBD_CONFIGURATION_FS_STRING  "Pyboard Config"
+#define USBD_CONFIGURATION_FS_STRING "Pyboard Config"
 #endif
 
 #ifndef USBD_INTERFACE_FS_STRING
-#define USBD_INTERFACE_FS_STRING      "Pyboard Interface"
+#define USBD_INTERFACE_FS_STRING "Pyboard Interface"
 #endif
 
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
@@ -82,10 +82,10 @@ __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __AL
 void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only) {
     uint8_t *dev_desc = &usbd->usbd_device_desc[0];
 
-    dev_desc[0] = USB_LEN_DEV_DESC; // bLength
+    dev_desc[0] = USB_LEN_DEV_DESC;     // bLength
     dev_desc[1] = USB_DESC_TYPE_DEVICE; // bDescriptorType
-    dev_desc[2] = 0x00; // bcdUSB
-    dev_desc[3] = 0x02; // bcdUSB
+    dev_desc[2] = 0x00;                 // bcdUSB
+    dev_desc[3] = 0x02;                 // bcdUSB
     if (cdc_only) {
         // Make it look like a Communications device if we're only
         // using CDC. Otherwise, windows gets confused when we tell it that
@@ -99,16 +99,16 @@ void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_
         dev_desc[5] = 0x02; // bDeviceSubClass: Common Class
         dev_desc[6] = 0x01; // bDeviceProtocol: Interface Association Descriptor
     }
-    dev_desc[7] = USB_MAX_EP0_SIZE; // bMaxPacketSize
-    dev_desc[8] = LOBYTE(vid); // idVendor
-    dev_desc[9] = HIBYTE(vid); // idVendor
-    dev_desc[10] = LOBYTE(pid); // idVendor
-    dev_desc[11] = HIBYTE(pid); // idVendor
+    dev_desc[7] = USB_MAX_EP0_SIZE;            // bMaxPacketSize
+    dev_desc[8] = LOBYTE(vid);                 // idVendor
+    dev_desc[9] = HIBYTE(vid);                 // idVendor
+    dev_desc[10] = LOBYTE(pid);                // idVendor
+    dev_desc[11] = HIBYTE(pid);                // idVendor
     dev_desc[12] = LOBYTE(device_release_num); // bcdDevice
     dev_desc[13] = HIBYTE(device_release_num); // bcdDevice
-    dev_desc[14] = USBD_IDX_MFC_STR; // Index of manufacturer string
-    dev_desc[15] = USBD_IDX_PRODUCT_STR; // Index of product string
-    dev_desc[16] = USBD_IDX_SERIAL_STR; // Index of serial number string
+    dev_desc[14] = USBD_IDX_MFC_STR;           // Index of manufacturer string
+    dev_desc[15] = USBD_IDX_PRODUCT_STR;       // Index of product string
+    dev_desc[16] = USBD_IDX_SERIAL_STR;        // Index of serial number string
     dev_desc[17] = USBD_MAX_NUM_CONFIGURATION; // bNumConfigurations
 }
 
@@ -119,7 +119,7 @@ void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_device_desc;
+    uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t *)pdev->pClassData)->usbd_device_desc;
     *length = USB_LEN_DEV_DESC;
     return dev_desc;
 }
@@ -137,7 +137,7 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
     switch (idx) {
         case USBD_IDX_LANGID_STR:
             *length = sizeof(USBD_LangIDDesc);
-            return (uint8_t*)USBD_LangIDDesc; // the data should only be read from this buf
+            return (uint8_t *)USBD_LangIDDesc; // the data should only be read from this buf
 
         case USBD_IDX_MFC_STR:
             str = USBD_MANUFACTURER_STRING;
@@ -193,8 +193,8 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
             return NULL;
     }
 
-    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
-    USBD_GetString((uint8_t*)str, str_desc, length);
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t *)pdev->pClassData)->usbd_str_desc;
+    USBD_GetString((uint8_t *)str, str_desc, length);
     return str_desc;
 }
 

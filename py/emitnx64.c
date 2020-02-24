@@ -13,7 +13,7 @@
 #define NLR_BUF_IDX_LOCAL_2 (6) // r12
 #define NLR_BUF_IDX_LOCAL_3 (7) // r13
 
-#define N_X64 (1)
+#define N_X64            (1)
 #define EXPORT_FUN(name) emit_native_x64_##name
 #include "py/emitnative.c"
 

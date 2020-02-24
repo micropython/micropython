@@ -47,7 +47,7 @@
 STATIC char heap[38 * 1024];
 
 STATIC void mp_reset(void) {
-    mp_stack_set_top((void*)0x40000000);
+    mp_stack_set_top((void *)0x40000000);
     mp_stack_set_limit(8192);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
@@ -57,10 +57,10 @@ STATIC void mp_reset(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_init(mp_sys_argv, 0);
-    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     extern void esp_native_code_init(void);
     esp_native_code_init();
-    #endif
+#endif
     pin_init0();
     readline_init0();
     dupterm_task_init();
@@ -76,13 +76,13 @@ STATIC void mp_reset(void) {
         os_dupterm(2, args);
     }
 
-    #if MICROPY_MODULE_FROZEN
+#if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         pyexec_file_if_exists("main.py");
     }
-    #endif
+#endif
 }
 
 void soft_reset(void) {
@@ -90,9 +90,9 @@ void soft_reset(void) {
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
-    #endif
+#endif
 }
 
 void init_done(void) {
@@ -103,16 +103,16 @@ void init_done(void) {
         wifi_fpm_do_sleep(0xfffffff);
     }
 
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_REPL_EVENT_DRIVEN
     uart_task_init();
-    #endif
+#endif
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
-    #endif
+#endif
 
-    #if !MICROPY_REPL_EVENT_DRIVEN
+#if !MICROPY_REPL_EVENT_DRIVEN
 soft_reset:
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -127,7 +127,7 @@ soft_reset:
     }
     soft_reset();
     goto soft_reset;
-    #endif
+#endif
 }
 
 void user_init(void) {

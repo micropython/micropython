@@ -34,7 +34,7 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API(config) *c, int cmd, int arg, bool must_return_int) {
+STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API(config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
     int ret_i = 0;
     if (must_return_int || ret != mp_const_none) {
@@ -43,19 +43,19 @@ STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API(config) *c, int cmd, int
     return ret_i;
 }
 
-STATIC int MP_VFS_LFSx(dev_read)(const struct LFSx_API(config) *c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
+STATIC int MP_VFS_LFSx(dev_read)(const struct LFSx_API(config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_read_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API(config) *c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
+STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API(config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_write_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API(config) *c, LFSx_API(block_t) block) {
+STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API(config) * c, LFSx_API(block_t) block) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_BLOCK_ERASE, block, true);
 }
 
-STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API(config) *c) {
+STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API(config) * c) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_SYNC, 0, false);
 }
 
@@ -73,8 +73,8 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx *self, mp_obj_t bdev, size_
     config->erase = MP_VFS_LFSx(dev_erase);
     config->sync = MP_VFS_LFSx(dev_sync);
 
-    MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_INIT, 1, false); // initialise block device
-    int bs = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_SIZE, 0, true); // get block size
+    MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_INIT, 1, false);                // initialise block device
+    int bs = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_SIZE, 0, true);  // get block size
     int bc = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_COUNT, 0, true); // get block count
     self->blockdev.block_size = bs;
 
@@ -83,19 +83,19 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx *self, mp_obj_t bdev, size_
     config->block_size = bs;
     config->block_count = bc;
 
-    #if LFS_BUILD_VERSION == 1
+#if LFS_BUILD_VERSION == 1
     config->lookahead = lookahead;
     config->read_buffer = m_new(uint8_t, config->read_size);
     config->prog_buffer = m_new(uint8_t, config->prog_size);
     config->lookahead_buffer = m_new(uint8_t, config->lookahead / 8);
-    #else
+#else
     config->block_cycles = 100;
     config->cache_size = 4 * MAX(read_size, prog_size);
     config->lookahead_size = lookahead;
     config->read_buffer = m_new(uint8_t, config->cache_size);
     config->prog_buffer = m_new(uint8_t, config->cache_size);
     config->lookahead_buffer = m_new(uint8_t, config->lookahead_size);
-    #endif
+#endif
 }
 
 const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx *self, mp_obj_t path_in) {
@@ -153,7 +153,8 @@ typedef struct MP_VFS_LFSx(_ilistdir_it_t) {
     bool is_str;
     MP_OBJ_VFS_LFSx *vfs;
     LFSx_API(dir_t) dir;
-} MP_VFS_LFSx(ilistdir_it_t);
+}
+MP_VFS_LFSx(ilistdir_it_t);
 
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) *self = MP_OBJ_TO_PTR(self_in);
@@ -165,8 +166,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
             LFSx_API(dir_close)(&self->vfs->lfs, &self->dir);
             return MP_OBJ_STOP_ITERATION;
         }
-        if (!(info.name[0] == '.' && (info.name[1] == '\0'
-            || (info.name[1] == '.' && info.name[2] == '\0')))) {
+        if (!(info.name[0] == '.' && (info.name[1] == '\0' || (info.name[1] == '.' && info.name[2] == '\0')))) {
             break;
         }
     }
@@ -176,7 +176,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     if (self->is_str) {
         t->items[0] = mp_obj_new_str(info.name, strlen(info.name));
     } else {
-        t->items[0] = mp_obj_new_bytes((const byte*)info.name, strlen(info.name));
+        t->items[0] = mp_obj_new_bytes((const byte *)info.name, strlen(info.name));
     }
     t->items[1] = MP_OBJ_NEW_SMALL_INT(info.type == LFSx_MACRO(_TYPE_REG) ? MP_S_IFREG : MP_S_IFDIR);
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
@@ -313,15 +313,15 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(info.type == LFSx_MACRO(_TYPE_REG) ? MP_S_IFREG : MP_S_IFDIR); // st_mode
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
-    t->items[3] = MP_OBJ_NEW_SMALL_INT(0); // st_nlink
-    t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
-    t->items[6] = mp_obj_new_int_from_uint(info.size); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(0); // st_ctime
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_ino
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_dev
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_nlink
+    t->items[4] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_uid
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_gid
+    t->items[6] = mp_obj_new_int_from_uint(info.size);                                                // st_size
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_atime
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_mtime
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(0);                                                            // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -329,7 +329,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(stat_obj), MP_VFS_LFSx(stat));
 
 STATIC int LFSx_API(traverse_cb)(void *data, LFSx_API(block_t) bl) {
     (void)bl;
-    uint32_t *n = (uint32_t*)data;
+    uint32_t *n = (uint32_t *)data;
     *n += 1;
     return LFSx_MACRO(_ERR_OK);
 }
@@ -338,26 +338,26 @@ STATIC mp_obj_t MP_VFS_LFSx(statvfs)(mp_obj_t self_in, mp_obj_t path_in) {
     (void)path_in;
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     uint32_t n_used_blocks = 0;
-    #if LFS_BUILD_VERSION == 1
+#if LFS_BUILD_VERSION == 1
     int ret = LFSx_API(traverse)(&self->lfs, LFSx_API(traverse_cb), &n_used_blocks);
-    #else
+#else
     int ret = LFSx_API(fs_traverse)(&self->lfs, LFSx_API(traverse_cb), &n_used_blocks);
-    #endif
+#endif
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(self->lfs.cfg->block_size); // f_bsize
-    t->items[1] = t->items[0]; // f_frsize
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(self->lfs.cfg->block_count); // f_blocks
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(self->lfs.cfg->block_size);                  // f_bsize
+    t->items[1] = t->items[0];                                                      // f_frsize
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(self->lfs.cfg->block_count);                 // f_blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(self->lfs.cfg->block_count - n_used_blocks); // f_bfree
-    t->items[4] = t->items[3]; // f_bavail
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // f_files
-    t->items[6] = MP_OBJ_NEW_SMALL_INT(0); // f_ffree
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // f_favail
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // f_flags
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(LFSx_MACRO(_NAME_MAX)); // f_namemax
+    t->items[4] = t->items[3];                                                      // f_bavail
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0);                                          // f_files
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(0);                                          // f_ffree
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(0);                                          // f_favail
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(0);                                          // f_flags
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(LFSx_MACRO(_NAME_MAX));                      // f_namemax
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -417,12 +417,12 @@ STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     { &mp_type_type },
-    #if LFS_BUILD_VERSION == 1
+#if LFS_BUILD_VERSION == 1
     .name = MP_QSTR_VfsLfs1,
-    #else
+#else
     .name = MP_QSTR_VfsLfs2,
-    #endif
+#endif
     .make_new = MP_VFS_LFSx(make_new),
     .protocol = &MP_VFS_LFSx(proto),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
 };

@@ -75,17 +75,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 #if USE_STATFS
 #include <sys/vfs.h>
 #define STRUCT_STATVFS struct statfs
-#define STATVFS statfs
-#define F_FAVAIL sb.f_ffree
-#define F_NAMEMAX sb.f_namelen
-#define F_FLAG sb.f_flags
+#define STATVFS        statfs
+#define F_FAVAIL       sb.f_ffree
+#define F_NAMEMAX      sb.f_namelen
+#define F_FLAG         sb.f_flags
 #else
 #include <sys/statvfs.h>
 #define STRUCT_STATVFS struct statvfs
-#define STATVFS statvfs
-#define F_FAVAIL sb.f_favail
-#define F_NAMEMAX sb.f_namemax
-#define F_FLAG sb.f_flag
+#define STATVFS        statvfs
+#define F_FAVAIL       sb.f_favail
+#define F_NAMEMAX      sb.f_namemax
+#define F_FLAG         sb.f_flag
 #endif
 
 STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
@@ -185,11 +185,11 @@ STATIC mp_obj_t mod_os_putenv(mp_obj_t key_in, mp_obj_t value_in) {
     const char *value = mp_obj_str_get_str(value_in);
     int ret;
 
-    #if _WIN32
+#if _WIN32
     ret = _putenv_s(key, value);
-    #else
+#else
     ret = setenv(key, value, 1);
-    #endif
+#endif
 
     if (ret == -1) {
         mp_raise_OSError(errno);
@@ -202,11 +202,11 @@ STATIC mp_obj_t mod_os_unsetenv(mp_obj_t key_in) {
     const char *key = mp_obj_str_get_str(key_in);
     int ret;
 
-    #if _WIN32
+#if _WIN32
     ret = _putenv_s(key, "");
-    #else
+#else
     ret = unsetenv(key);
-    #endif
+#endif
 
     if (ret == -1) {
         mp_raise_OSError(errno);
@@ -219,11 +219,11 @@ STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     // TODO: Accept mode param
     const char *path = mp_obj_str_get_str(path_in);
     MP_THREAD_GIL_EXIT();
-    #ifdef _WIN32
+#ifdef _WIN32
     int r = mkdir(path);
-    #else
+#else
     int r = mkdir(path, 0777);
-    #endif
+#endif
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
@@ -256,10 +256,10 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
     t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name));
 
-    #ifdef _DIRENT_HAVE_D_TYPE
-    #ifdef DTTOIF
+#ifdef _DIRENT_HAVE_D_TYPE
+#ifdef DTTOIF
     t->items[1] = MP_OBJ_NEW_SMALL_INT(DTTOIF(dirent->d_type));
-    #else
+#else
     if (dirent->d_type == DT_DIR) {
         t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
     } else if (dirent->d_type == DT_REG) {
@@ -267,17 +267,17 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     } else {
         t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
     }
-    #endif
-    #else
+#endif
+#else
     // DT_UNKNOWN should have 0 value on any reasonable system
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
-    #endif
+#endif
 
-    #ifdef _DIRENT_HAVE_D_INO
+#ifdef _DIRENT_HAVE_D_INO
     t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
-    #else
+#else
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0);
-    #endif
+#endif
     return MP_OBJ_FROM_PTR(t);
 }
 
@@ -310,9 +310,9 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mod_os_errno_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mod_os_stat_obj) },
-    #if MICROPY_PY_OS_STATVFS
+#if MICROPY_PY_OS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mod_os_statvfs_obj) },
-    #endif
+#endif
     { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mod_os_system_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mod_os_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mod_os_rename_obj) },
@@ -322,14 +322,14 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mod_os_unsetenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
-    #if MICROPY_PY_OS_DUPTERM
+#if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
-    #endif
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);
 
 const mp_obj_module_t mp_module_os = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_os_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_os_globals,
 };

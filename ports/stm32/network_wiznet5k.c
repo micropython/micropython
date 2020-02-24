@@ -86,7 +86,7 @@ STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t*)buf, len, 5000);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t *)buf, len, 5000);
     (void)status;
 }
 
@@ -97,7 +97,7 @@ STATIC void wiznet5k_init(void) {
     init->Direction = SPI_DIRECTION_2LINES;
     init->DataSize = SPI_DATASIZE_8BIT;
     init->CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
-    init->CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
+    init->CLKPhase = SPI_PHASE_1EDGE;     // data latched on first edge, which is rising edge for low-idle
     init->NSS = SPI_NSS_SOFT;
     init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
     init->FirstBit = SPI_FIRSTBIT_MSB;
@@ -155,8 +155,8 @@ STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
 }
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
-    uint8_t ip[4] = {1, 1, 1, 1}; // dummy
-    int ret = WIZCHIP_EXPORT(sendto)(0, (byte*)buf, len, ip, 11); // dummy port
+    uint8_t ip[4] = {1, 1, 1, 1};                                  // dummy
+    int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
     if (ret != len) {
         printf("wiznet5k_send_ethernet: fatal error %d\n", ret);
         netif_set_link_down(&self->netif);
@@ -271,7 +271,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     // Access the existing object, if it has been constructed with the same hardware interface
     if (wiznet5k_obj.base.type == &mod_network_nic_type_wiznet5k) {
         if (!(wiznet5k_obj.spi == spi && wiznet5k_obj.cs == cs && wiznet5k_obj.rst == rst
-            && wiznet5k_obj.netif.flags != 0)) {
+                && wiznet5k_obj.netif.flags != 0)) {
             wiznet5k_deinit();
         }
     }
@@ -295,11 +295,11 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
-        #if MICROPY_PY_WIZNET5K == 5200
+#if MICROPY_PY_WIZNET5K == 5200
         uint32_t reg = i;
-        #else
+#else
         uint32_t reg = _W5500_IO_BASE_ | i << 8;
-        #endif
+#endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
     for (int sn = 0; sn < 4; ++sn) {
@@ -308,11 +308,11 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            #if MICROPY_PY_WIZNET5K == 5200
+#if MICROPY_PY_WIZNET5K == 5200
             uint32_t reg = WIZCHIP_SREG_ADDR(sn, i);
-            #else
+#else
             uint32_t reg = _W5500_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
-            #endif
+#endif
             printf(" %02x", WIZCHIP_READ(reg));
         }
     }
@@ -326,8 +326,7 @@ STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
     return mp_obj_new_bool(
         wizphy_getphylink() == PHY_LINK_ON
         && (self->netif.flags & NETIF_FLAG_UP)
-        && self->netif.ip_addr.addr != 0
-    );
+        && self->netif.ip_addr.addr != 0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
 
@@ -459,7 +458,7 @@ const mp_obj_type_t mod_network_nic_type_wiznet5k = {
     { &mp_type_type },
     .name = MP_QSTR_WIZNET5K,
     .make_new = wiznet5k_make_new,
-    .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
 };
 
 #endif // MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP

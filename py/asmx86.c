@@ -37,16 +37,16 @@
 #include "py/asmx86.h"
 
 /* all offsets are measured in multiples of 4 bytes */
-#define WORD_SIZE                (4)
+#define WORD_SIZE (4)
 
-#define OPCODE_NOP               (0x90)
-#define OPCODE_PUSH_R32          (0x50)
+#define OPCODE_NOP      (0x90)
+#define OPCODE_PUSH_R32 (0x50)
 //#define OPCODE_PUSH_I32          (0x68)
 //#define OPCODE_PUSH_M32          (0xff) /* /6 */
-#define OPCODE_POP_R32           (0x58)
-#define OPCODE_RET               (0xc3)
+#define OPCODE_POP_R32 (0x58)
+#define OPCODE_RET     (0xc3)
 //#define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
-#define OPCODE_MOV_I32_TO_R32    (0xb8)
+#define OPCODE_MOV_I32_TO_R32 (0xb8)
 //#define OPCODE_MOV_I32_TO_RM32   (0xc7)
 #define OPCODE_MOV_R8_TO_RM8     (0x88) /* /r */
 #define OPCODE_MOV_R32_TO_RM32   (0x89) /* /r */
@@ -66,25 +66,25 @@
 //#define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
 //#define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
 //#define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
-#define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
-#define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
+#define OPCODE_SHL_RM32_CL (0xd3) /* /4 */
+#define OPCODE_SAR_RM32_CL (0xd3) /* /7 */
 //#define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
 //#define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
 #define OPCODE_CMP_R32_WITH_RM32 (0x39)
 //#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
-#define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
+#define OPCODE_TEST_R8_WITH_RM8   (0x84) /* /r */
 #define OPCODE_TEST_R32_WITH_RM32 (0x85) /* /r */
-#define OPCODE_JMP_REL8          (0xeb)
-#define OPCODE_JMP_REL32         (0xe9)
-#define OPCODE_JMP_RM32          (0xff) /* /4 */
-#define OPCODE_JCC_REL8          (0x70) /* | jcc type */
-#define OPCODE_JCC_REL32_A       (0x0f)
-#define OPCODE_JCC_REL32_B       (0x80) /* | jcc type */
-#define OPCODE_SETCC_RM8_A       (0x0f)
-#define OPCODE_SETCC_RM8_B       (0x90) /* | jcc type, /0 */
-#define OPCODE_CALL_REL32        (0xe8)
-#define OPCODE_CALL_RM32         (0xff) /* /2 */
-#define OPCODE_LEAVE             (0xc9)
+#define OPCODE_JMP_REL8           (0xeb)
+#define OPCODE_JMP_REL32          (0xe9)
+#define OPCODE_JMP_RM32           (0xff) /* /4 */
+#define OPCODE_JCC_REL8           (0x70) /* | jcc type */
+#define OPCODE_JCC_REL32_A        (0x0f)
+#define OPCODE_JCC_REL32_B        (0x80) /* | jcc type */
+#define OPCODE_SETCC_RM8_A        (0x0f)
+#define OPCODE_SETCC_RM8_B        (0x90) /* | jcc type, /0 */
+#define OPCODE_CALL_REL32         (0xe8)
+#define OPCODE_CALL_RM32          (0xff) /* /2 */
+#define OPCODE_LEAVE              (0xc9)
 
 #define MODRM_R32(x)    ((x) << 3)
 #define MODRM_RM_DISP0  (0x00)
@@ -95,22 +95,22 @@
 
 #define OP_SIZE_PREFIX (0x66)
 
-#define IMM32_L0(x) ((x) & 0xff)
+#define IMM32_L0(x) ((x)&0xff)
 #define IMM32_L1(x) (((x) >> 8) & 0xff)
 #define IMM32_L2(x) (((x) >> 16) & 0xff)
 #define IMM32_L3(x) (((x) >> 24) & 0xff)
 
-#define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
+#define SIGNED_FIT8(x) (((x)&0xffffff80) == 0) || (((x)&0xffffff80) == 0xffffff80)
 
 STATIC void asm_x86_write_byte_1(asm_x86_t *as, byte b1) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
     if (c != NULL) {
         c[0] = b1;
     }
 }
 
 STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -118,7 +118,7 @@ STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
 }
 
 STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -127,7 +127,7 @@ STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
 }
 
 STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
     if (c != NULL) {
         c[0] = IMM32_L0(w32);
         c[1] = IMM32_L1(w32);
@@ -255,11 +255,11 @@ void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_XOR_R32_TO_RM32);
 }
 
-void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
 }
 
-void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 7, OPCODE_SAR_RM32_CL);
 }
 
@@ -367,8 +367,8 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
             goto large_jump;
         }
     } else {
-        // is a forwards jump, so need to assume it's large
-        large_jump:
+    // is a forwards jump, so need to assume it's large
+    large_jump:
         rel -= 5;
         asm_x86_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x86_write_word32(as, rel);
@@ -389,8 +389,8 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
             goto large_jump;
         }
     } else {
-        // is a forwards jump, so need to assume it's large
-        large_jump:
+    // is a forwards jump, so need to assume it's large
+    large_jump:
         rel -= 6;
         asm_x86_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x86_write_word32(as, rel);

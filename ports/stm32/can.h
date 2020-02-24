@@ -40,10 +40,10 @@
 #define LIST32 (3)
 
 #if MICROPY_HW_ENABLE_FDCAN
-#define CAN_TypeDef                 FDCAN_GlobalTypeDef
-#define CAN_HandleTypeDef           FDCAN_HandleTypeDef
-#define CanTxMsgTypeDef             FDCAN_TxHeaderTypeDef
-#define CanRxMsgTypeDef             FDCAN_RxHeaderTypeDef
+#define CAN_TypeDef       FDCAN_GlobalTypeDef
+#define CAN_HandleTypeDef FDCAN_HandleTypeDef
+#define CanTxMsgTypeDef   FDCAN_TxHeaderTypeDef
+#define CanRxMsgTypeDef   FDCAN_RxHeaderTypeDef
 #endif
 
 enum {

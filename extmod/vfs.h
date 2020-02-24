@@ -31,26 +31,26 @@
 
 // return values of mp_vfs_lookup_path
 // ROOT is 0 so that the default current directory is the root directory
-#define MP_VFS_NONE ((mp_vfs_mount_t*)1)
-#define MP_VFS_ROOT ((mp_vfs_mount_t*)0)
+#define MP_VFS_NONE ((mp_vfs_mount_t *)1)
+#define MP_VFS_ROOT ((mp_vfs_mount_t *)0)
 
 // MicroPython's port-standardized versions of stat constants
 #define MP_S_IFDIR (0x4000)
 #define MP_S_IFREG (0x8000)
 
 // these are the values for mp_vfs_blockdev_t.flags
-#define MP_BLOCKDEV_FLAG_NATIVE         (0x0001) // readblocks[2]/writeblocks[2] contain native func
-#define MP_BLOCKDEV_FLAG_FREE_OBJ       (0x0002) // fs_user_mount_t obj should be freed on umount
-#define MP_BLOCKDEV_FLAG_HAVE_IOCTL     (0x0004) // new protocol with ioctl
-#define MP_BLOCKDEV_FLAG_NO_FILESYSTEM  (0x0008) // the block device has no filesystem on it
+#define MP_BLOCKDEV_FLAG_NATIVE        (0x0001) // readblocks[2]/writeblocks[2] contain native func
+#define MP_BLOCKDEV_FLAG_FREE_OBJ      (0x0002) // fs_user_mount_t obj should be freed on umount
+#define MP_BLOCKDEV_FLAG_HAVE_IOCTL    (0x0004) // new protocol with ioctl
+#define MP_BLOCKDEV_FLAG_NO_FILESYSTEM (0x0008) // the block device has no filesystem on it
 
 // constants for block protocol ioctl
-#define MP_BLOCKDEV_IOCTL_INIT          (1)
-#define MP_BLOCKDEV_IOCTL_DEINIT        (2)
-#define MP_BLOCKDEV_IOCTL_SYNC          (3)
-#define MP_BLOCKDEV_IOCTL_BLOCK_COUNT   (4)
-#define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
-#define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
+#define MP_BLOCKDEV_IOCTL_INIT        (1)
+#define MP_BLOCKDEV_IOCTL_DEINIT      (2)
+#define MP_BLOCKDEV_IOCTL_SYNC        (3)
+#define MP_BLOCKDEV_IOCTL_BLOCK_COUNT (4)
+#define MP_BLOCKDEV_IOCTL_BLOCK_SIZE  (5)
+#define MP_BLOCKDEV_IOCTL_BLOCK_ERASE (6)
 
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {

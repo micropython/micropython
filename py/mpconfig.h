@@ -32,16 +32,15 @@
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
-#define MICROPY_VERSION ( \
-    MICROPY_VERSION_MAJOR << 16 \
+#define MICROPY_VERSION (        \
+    MICROPY_VERSION_MAJOR << 16  \
     | MICROPY_VERSION_MINOR << 8 \
     | MICROPY_VERSION_MICRO)
 
 // String version
-#define MICROPY_VERSION_STRING \
-    MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MICRO)
+#define MICROPY_VERSION_STRING          \
+    MP_STRINGIFY(MICROPY_VERSION_MAJOR) \
+    "." MP_STRINGIFY(MICROPY_VERSION_MINOR) "." MP_STRINGIFY(MICROPY_VERSION_MICRO)
 
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file
@@ -368,10 +367,10 @@
 // Configure dynamic compiler macros
 #if MICROPY_DYNAMIC_COMPILER
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC (mp_dynamic_compiler.opt_cache_map_lookup_in_bytecode)
-#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC (mp_dynamic_compiler.py_builtins_str_unicode)
+#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC          (mp_dynamic_compiler.py_builtins_str_unicode)
 #else
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
+#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC          MICROPY_PY_BUILTINS_STR_UNICODE
 #endif
 
 // Whether to enable constant folding; eg 1+2 rewritten as 3
@@ -471,7 +470,6 @@
 #define MICROPY_OPT_MPZ_BITWISE (0)
 #endif
 
-
 // Whether math.factorial is large, fast and recursive (1) or small and slow (0).
 #ifndef MICROPY_OPT_MATH_FACTORIAL
 #define MICROPY_OPT_MATH_FACTORIAL (0)
@@ -550,9 +548,9 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
 #endif
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-#   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
-#   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
-#   endif
+#ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0) // 0 - implies dynamic allocation
+#endif
 #endif
 
 // Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
@@ -612,9 +610,9 @@
 #endif
 
 // Long int implementation
-#define MICROPY_LONGINT_IMPL_NONE (0)
+#define MICROPY_LONGINT_IMPL_NONE     (0)
 #define MICROPY_LONGINT_IMPL_LONGLONG (1)
-#define MICROPY_LONGINT_IMPL_MPZ (2)
+#define MICROPY_LONGINT_IMPL_MPZ      (2)
 
 #ifndef MICROPY_LONGINT_IMPL
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
@@ -636,9 +634,9 @@ typedef long long mp_longint_impl_t;
 #endif
 
 // Exception messages are short static strings
-#define MICROPY_ERROR_REPORTING_TERSE    (1)
+#define MICROPY_ERROR_REPORTING_TERSE (1)
 // Exception messages provide basic error details
-#define MICROPY_ERROR_REPORTING_NORMAL   (2)
+#define MICROPY_ERROR_REPORTING_NORMAL (2)
 // Exception messages provide full info, e.g. object names
 #define MICROPY_ERROR_REPORTING_DETAILED (3)
 
@@ -662,8 +660,8 @@ typedef long long mp_longint_impl_t;
 #endif
 
 // Float and complex implementation
-#define MICROPY_FLOAT_IMPL_NONE (0)
-#define MICROPY_FLOAT_IMPL_FLOAT (1)
+#define MICROPY_FLOAT_IMPL_NONE   (0)
+#define MICROPY_FLOAT_IMPL_FLOAT  (1)
 #define MICROPY_FLOAT_IMPL_DOUBLE (2)
 
 #ifndef MICROPY_FLOAT_IMPL
@@ -672,13 +670,13 @@ typedef long long mp_longint_impl_t;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MICROPY_PY_BUILTINS_FLOAT (1)
-#define MICROPY_FLOAT_CONST(x) x##F
-#define MICROPY_FLOAT_C_FUN(fun) fun##f
+#define MICROPY_FLOAT_CONST(x)    x##F
+#define MICROPY_FLOAT_C_FUN(fun)  fun##f
 typedef float mp_float_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MICROPY_PY_BUILTINS_FLOAT (1)
-#define MICROPY_FLOAT_CONST(x) x
-#define MICROPY_FLOAT_C_FUN(fun) fun
+#define MICROPY_FLOAT_CONST(x)    x
+#define MICROPY_FLOAT_C_FUN(fun)  fun
 typedef double mp_float_t;
 #else
 #define MICROPY_PY_BUILTINS_FLOAT (0)
@@ -1342,7 +1340,7 @@ typedef double mp_float_t;
 #endif
 
 #ifndef MICROPY_PY_UHASHLIB_SHA1
-#define MICROPY_PY_UHASHLIB_SHA1  (0)
+#define MICROPY_PY_UHASHLIB_SHA1 (0)
 #endif
 
 #ifndef MICROPY_PY_UHASHLIB_SHA256
@@ -1524,7 +1522,11 @@ typedef double mp_float_t;
 // must be somehow reachable for marking by the GC, since the native code
 // generators store pointers to GC managed memory in the code.
 #ifndef MP_PLAT_ALLOC_EXEC
-#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) do { *ptr = m_new(byte, min_size); *size = min_size; } while (0)
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) \
+    do {                                        \
+        *ptr = m_new(byte, min_size);           \
+        *size = min_size;                       \
+    } while (0)
 #endif
 
 #ifndef MP_PLAT_FREE_EXEC
@@ -1545,14 +1547,14 @@ typedef double mp_float_t;
 #if defined(__LP64__)
 // Archs where mp_int_t == long, long != int
 #define UINT_FMT "%lu"
-#define INT_FMT "%ld"
+#define INT_FMT  "%ld"
 #elif defined(_WIN64)
 #define UINT_FMT "%llu"
-#define INT_FMT "%lld"
+#define INT_FMT  "%lld"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"
-#define INT_FMT "%d"
+#define INT_FMT  "%d"
 #endif
 #endif //INT_FMT
 
@@ -1591,39 +1593,41 @@ typedef double mp_float_t;
 #if defined(__GNUC__)
 #define MP_UNREACHABLE __builtin_unreachable();
 #else
-#define MP_UNREACHABLE for (;;);
+#define MP_UNREACHABLE \
+    for (;;)           \
+        ;
 #endif
 #endif
 
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
-# define MP_BE16TOH(x) MP_HTOBE16(x)
+#define MP_HTOBE16(x) ((uint16_t)((((x)&0xff) << 8) | (((x) >> 8) & 0xff)))
+#define MP_BE16TOH(x) MP_HTOBE16(x)
 #else
-# define MP_HTOBE16(x) (x)
-# define MP_BE16TOH(x) (x)
+#define MP_HTOBE16(x) (x)
+#define MP_BE16TOH(x) (x)
 #endif
 #endif
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
-# define MP_BE32TOH(x) MP_HTOBE32(x)
+#define MP_HTOBE32(x) ((uint32_t)((((x)&0xff) << 24) | (((x)&0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff)))
+#define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
-# define MP_HTOBE32(x) (x)
-# define MP_BE32TOH(x) (x)
+#define MP_HTOBE32(x) (x)
+#define MP_BE32TOH(x) (x)
 #endif
 #endif
 
 // Warning categories are by default implemented as strings, though
 // hook is left for a port to define them as something else.
 #if MICROPY_WARNINGS_CATEGORY
-# ifndef MP_WARN_CAT
-# define MP_WARN_CAT(x) #x
-# endif
+#ifndef MP_WARN_CAT
+#define MP_WARN_CAT(x) #x
+#endif
 #else
-# undef MP_WARN_CAT
-# define MP_WARN_CAT(x) (NULL)
+#undef MP_WARN_CAT
+#define MP_WARN_CAT(x) (NULL)
 #endif
 
 // Feature dependency check.

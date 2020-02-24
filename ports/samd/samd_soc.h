@@ -32,12 +32,12 @@
 #if defined(MCU_SAMD21)
 
 #define CPU_FREQ (48000000)
-#define USARTx SERCOM0
+#define USARTx   SERCOM0
 
 #elif defined(MCU_SAMD51)
 
 #define CPU_FREQ (48000000)
-#define USARTx SERCOM3
+#define USARTx   SERCOM3
 
 #endif
 

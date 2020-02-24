@@ -48,7 +48,7 @@ typedef struct _pyb_rtc_obj_t {
 STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
 // ALARM0 state
-uint32_t pyb_rtc_alarm0_wake; // see MACHINE_WAKE_xxx constants
+uint32_t pyb_rtc_alarm0_wake;   // see MACHINE_WAKE_xxx constants
 uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 
 // RTC overflow checking
@@ -140,8 +140,7 @@ STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(tm.tm_hour),
             mp_obj_new_int(tm.tm_min),
             mp_obj_new_int(tm.tm_sec),
-            mp_obj_new_int(msecs % 1000)
-        };
+            mp_obj_new_int(msecs % 1000)};
 
         return mp_obj_new_tuple(8, tuple);
     } else {
@@ -151,12 +150,15 @@ STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
 
         pyb_rtc_set_us_since_2000(
             ((uint64_t)timeutils_seconds_since_2000(
-                mp_obj_get_int(items[0]),
-                mp_obj_get_int(items[1]),
-                mp_obj_get_int(items[2]),
-                mp_obj_get_int(items[4]),
-                mp_obj_get_int(items[5]),
-                mp_obj_get_int(items[6])) * 1000 + mp_obj_get_int(items[7])) * 1000);
+                 mp_obj_get_int(items[0]),
+                 mp_obj_get_int(items[1]),
+                 mp_obj_get_int(items[2]),
+                 mp_obj_get_int(items[4]),
+                 mp_obj_get_int(items[5]),
+                 mp_obj_get_int(items[6]))
+                    * 1000
+                + mp_obj_get_int(items[7]))
+            * 1000);
 
         return mp_const_none;
     }
@@ -196,7 +198,6 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
 
         return mp_const_none;
     }
-
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_memory_obj, 1, 2, pyb_rtc_memory);
 
@@ -212,7 +213,6 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
     pyb_rtc_alarm0_expiry = pyb_rtc_get_us_since_2000() + (uint64_t)mp_obj_get_int(time_in) * 1000;
 
     return mp_const_none;
-
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_rtc_alarm_obj, pyb_rtc_alarm);
 
@@ -233,7 +233,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc
 
 STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_trigger, ARG_wake
+        ARG_trigger,
+        ARG_wake
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -268,5 +269,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
 };

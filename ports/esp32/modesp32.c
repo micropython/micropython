@@ -61,11 +61,12 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
         mp_raise_ValueError("no resources");
     }
     enum {
-        ARG_pin, ARG_level
+        ARG_pin,
+        ARG_level
     };
     const mp_arg_t allowed_args[] = {
-        { MP_QSTR_pin,  MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
-        { MP_QSTR_level,  MP_ARG_BOOL, {.u_bool = machine_rtc_config.ext0_level} },
+        { MP_QSTR_pin, MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
+        { MP_QSTR_level, MP_ARG_BOOL, {.u_bool = machine_rtc_config.ext0_level} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -91,7 +92,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0)
 
 STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_pins, ARG_level
+        ARG_pins,
+        ARG_level
     };
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -100,7 +102,6 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     uint64_t ext1_pins = machine_rtc_config.ext1_pins;
-
 
     // Check that all pins are allowed
     if (args[ARG_pins].u_obj != mp_const_none) {
@@ -169,6 +170,6 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
 
 const mp_obj_module_t esp32_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&esp32_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };

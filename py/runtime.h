@@ -36,12 +36,12 @@ typedef enum {
 } mp_vm_return_kind_t;
 
 typedef enum {
-    MP_ARG_BOOL      = 0x001,
-    MP_ARG_INT       = 0x002,
-    MP_ARG_OBJ       = 0x003,
+    MP_ARG_BOOL = 0x001,
+    MP_ARG_INT = 0x002,
+    MP_ARG_OBJ = 0x003,
     MP_ARG_KIND_MASK = 0x0ff,
-    MP_ARG_REQUIRED  = 0x100,
-    MP_ARG_KW_ONLY   = 0x200,
+    MP_ARG_REQUIRED = 0x100,
+    MP_ARG_KW_ONLY = 0x200,
 } mp_arg_flag_t;
 
 typedef union _mp_arg_val_t {
@@ -71,7 +71,9 @@ void mp_handle_pending_tail(mp_uint_t atomic_state);
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_len); }
+static inline unsigned int mp_sched_num_pending(void) {
+    return MP_STATE_VM(sched_len);
+}
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
@@ -87,10 +89,18 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-static inline mp_obj_dict_t *mp_locals_get(void) { return MP_STATE_THREAD(dict_locals); }
-static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
-static inline mp_obj_dict_t *mp_globals_get(void) { return MP_STATE_THREAD(dict_globals); }
-static inline void mp_globals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_globals) = d; }
+static inline mp_obj_dict_t *mp_locals_get(void) {
+    return MP_STATE_THREAD(dict_locals);
+}
+static inline void mp_locals_set(mp_obj_dict_t *d) {
+    MP_STATE_THREAD(dict_locals) = d;
+}
+static inline mp_obj_dict_t *mp_globals_get(void) {
+    return MP_STATE_THREAD(dict_globals);
+}
+static inline void mp_globals_set(mp_obj_dict_t *d) {
+    MP_STATE_THREAD(dict_globals) = d;
+}
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -142,7 +152,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 
 mp_obj_t mp_getiter(mp_obj_t o, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATION instead of raising StopIteration()
-mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
+mp_obj_t mp_iternext(mp_obj_t o);             // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o);

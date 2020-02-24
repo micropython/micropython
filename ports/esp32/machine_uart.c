@@ -48,9 +48,9 @@ typedef struct _machine_uart_obj_t {
     int8_t cts;
     uint16_t txbuf;
     uint16_t rxbuf;
-    uint16_t timeout;       // timeout waiting for first char (in ms)
-    uint16_t timeout_char;  // timeout waiting between chars (in ms)
-    uint32_t invert;        // lines to invert
+    uint16_t timeout;      // timeout waiting for first char (in ms)
+    uint16_t timeout_char; // timeout waiting between chars (in ms)
+    uint32_t invert;       // lines to invert
 } machine_uart_obj_t;
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
@@ -98,7 +98,19 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert
+        ARG_baudrate,
+        ARG_bits,
+        ARG_parity,
+        ARG_stop,
+        ARG_tx,
+        ARG_rx,
+        ARG_rts,
+        ARG_cts,
+        ARG_txbuf,
+        ARG_rxbuf,
+        ARG_timeout,
+        ARG_timeout_char,
+        ARG_invert
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
@@ -131,8 +143,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         }
         uart_config_t uartcfg = {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0
-        };
+            .rx_flow_ctrl_thresh = 0};
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
         uartcfg.baud_rate = baudrate;
@@ -262,15 +273,14 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) is disabled (dedicated to REPL)", uart_num);
     }
 
-     // Defaults
+    // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
-    };
+        .rx_flow_ctrl_thresh = 0};
 
     // create instance
     machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
@@ -465,5 +475,5 @@ const mp_obj_type_t machine_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
 };

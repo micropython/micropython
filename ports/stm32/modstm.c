@@ -49,8 +49,8 @@ STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&stm_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&stm_module_globals,
 };
 
 #endif // MICROPY_PY_STM

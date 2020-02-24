@@ -33,9 +33,9 @@
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
 
 // Stream ioctl request codes
-#define MP_STREAM_FLUSH (1)
-#define MP_STREAM_SEEK  (2)
-#define MP_STREAM_POLL  (3)
+#define MP_STREAM_FLUSH         (1)
+#define MP_STREAM_SEEK          (2)
+#define MP_STREAM_POLL          (3)
 #define MP_STREAM_CLOSE         (4)
 #define MP_STREAM_TIMEOUT       (5)  // Get/set timeout (single op)
 #define MP_STREAM_GET_OPTS      (6)  // Get stream options
@@ -45,11 +45,11 @@
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
 // These poll ioctl values are compatible with Linux
-#define MP_STREAM_POLL_RD       (0x0001)
-#define MP_STREAM_POLL_WR       (0x0004)
-#define MP_STREAM_POLL_ERR      (0x0008)
-#define MP_STREAM_POLL_HUP      (0x0010)
-#define MP_STREAM_POLL_NVAL     (0x0020)
+#define MP_STREAM_POLL_RD   (0x0001)
+#define MP_STREAM_POLL_WR   (0x0004)
+#define MP_STREAM_POLL_ERR  (0x0008)
+#define MP_STREAM_POLL_HUP  (0x0010)
+#define MP_STREAM_POLL_NVAL (0x0020)
 
 // Argument structure for MP_STREAM_SEEK
 struct mp_stream_seek_t {
@@ -89,13 +89,13 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
 // these are for mp_get_stream_raise and can be or'd together
-#define MP_STREAM_OP_READ (1)
+#define MP_STREAM_OP_READ  (1)
 #define MP_STREAM_OP_WRITE (2)
 #define MP_STREAM_OP_IOCTL (4)
 
 // Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
 static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
-    return (const mp_stream_p_t*)((const mp_obj_base_t*)MP_OBJ_TO_PTR(self))->type->protocol;
+    return (const mp_stream_p_t *)((const mp_obj_base_t *)MP_OBJ_TO_PTR(self))->type->protocol;
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
@@ -111,8 +111,8 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
 #define MP_STREAM_RW_WRITE 2
 #define MP_STREAM_RW_ONCE  1
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, byte flags);
-#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, MP_STREAM_RW_WRITE)
-#define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
+#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte *)buf, size, err, MP_STREAM_RW_WRITE)
+#define mp_stream_read_exactly(stream, buf, size, err)  mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 

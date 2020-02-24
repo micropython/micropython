@@ -4,8 +4,7 @@
 
 #define GPIO_NUMBER 32
 
-void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
-{
+void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init) {
     /* Check the parameters */
     assert_param(IS_GPIO_PIN(GPIO_Init->Pin));
     assert_param(IS_GPIO_MODE(GPIO_Init->Mode));
@@ -24,11 +23,9 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         if ((GPIO_Init->Mode == GPIO_MODE_AF_PP) || (GPIO_Init->Mode == GPIO_MODE_AF_OD)) {
             /* Check the Alternate function parameter */
             assert_param(IS_GPIO_AF(GPIO_Init->Alternate));
-        }
-        else if (GPIO_Init->Mode == GPIO_MODE_ANALOG) {
+        } else if (GPIO_Init->Mode == GPIO_MODE_ANALOG) {
             GPIO_Init->Alternate = 0;
-        }
-        else {
+        } else {
             GPIO_Init->Alternate = 1;
         }
 
@@ -44,8 +41,7 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         }
 
         /* In case of Output or Alternate function mode selection */
-        if ((GPIO_Init->Mode == GPIO_MODE_OUTPUT_PP) || (GPIO_Init->Mode == GPIO_MODE_AF_PP) ||
-            (GPIO_Init->Mode == GPIO_MODE_OUTPUT_OD) || (GPIO_Init->Mode == GPIO_MODE_AF_OD)) {
+        if ((GPIO_Init->Mode == GPIO_MODE_OUTPUT_PP) || (GPIO_Init->Mode == GPIO_MODE_AF_PP) || (GPIO_Init->Mode == GPIO_MODE_OUTPUT_OD) || (GPIO_Init->Mode == GPIO_MODE_AF_OD)) {
             /* Check the Speed parameter */
             assert_param(IS_GPIO_SPEED(GPIO_Init->Speed));
 
@@ -60,7 +56,7 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 
             /* Configure the IO Output Type */
             if (GPIO_Init->Mode & GPIO_OUTPUT_TYPE) {
-                *port_pcr |= PORT_PCR_ODE;  // OD
+                *port_pcr |= PORT_PCR_ODE; // OD
             } else {
                 *port_pcr &= ~PORT_PCR_ODE; // PP
             }

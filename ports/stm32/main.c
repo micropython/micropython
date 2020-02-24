@@ -143,8 +143,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 
 STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
-    };
+        {MP_QSTR_opt, MP_ARG_INT, {.u_int = 0}}};
 
     if (mp_obj_is_str(pos_args[0])) {
         MP_STATE_PORT(pyb_config_main) = pos_args[0];
@@ -152,9 +151,9 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
         mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-        #if MICROPY_ENABLE_COMPILER
+#if MICROPY_ENABLE_COMPILER
         MP_STATE_VM(mp_optimise_value) = args[0].u_int;
-        #endif
+#endif
     }
     return mp_const_none;
 }
@@ -165,8 +164,8 @@ STATIC int vfs_mount_and_chdir(mp_obj_t bdev, mp_obj_t mount_point) {
     nlr_buf_t nlr;
     mp_int_t ret = -MP_EIO;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[] = { bdev, mount_point };
-        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        mp_obj_t args[] = {bdev, mount_point};
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
         mp_vfs_chdir(mount_point);
         ret = 0; // success
         nlr_pop();
@@ -191,7 +190,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // Default block device to entire flash storage
     mp_obj_t bdev = MP_OBJ_FROM_PTR(&pyb_flash_obj);
 
-    #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+#if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
 
     // Try to detect the block device used for the main filesystem, based on the first block
 
@@ -200,33 +199,33 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     mp_int_t len = -1;
 
-    #if MICROPY_VFS_LFS1
+#if MICROPY_VFS_LFS1
     if (memcmp(&buf[40], "littlefs", 8) == 0) {
         // LFS1
-        lfs1_superblock_t *superblock = (void*)&buf[12];
+        lfs1_superblock_t *superblock = (void *)&buf[12];
         uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
         uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
         len = block_count * block_size;
     }
-    #endif
+#endif
 
-    #if MICROPY_VFS_LFS2
+#if MICROPY_VFS_LFS2
     if (memcmp(&buf[8], "littlefs", 8) == 0) {
         // LFS2
-        lfs2_superblock_t *superblock = (void*)&buf[20];
+        lfs2_superblock_t *superblock = (void *)&buf[20];
         uint32_t block_size = lfs2_fromle32(superblock->block_size);
         uint32_t block_count = lfs2_fromle32(superblock->block_count);
         len = block_count * block_size;
     }
-    #endif
+#endif
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
-        mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
+        mp_obj_t args[] = {MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len)};
         bdev = pyb_flash_type.make_new(&pyb_flash_type, 0, 1, args);
     }
 
-    #endif
+#endif
 
     // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
@@ -296,17 +295,17 @@ STATIC bool init_sdcard_fs(void) {
                 }
             }
 
-            #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
                 // if no USB MSC medium is selected then use the SD card
                 pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
             }
-            #endif
+#endif
 
-            #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
             // only use SD card as current directory if that's what the USB medium is
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
-            #endif
+#endif
             {
                 if (first_part) {
                     // use SD card as current directory
@@ -328,12 +327,12 @@ STATIC bool init_sdcard_fs(void) {
 
 #if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {
-    #if MICROPY_HW_HAS_SWITCH
+#if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
 
-        // The original method used on the pyboard is appropriate if you have 2
-        // or more LEDs.
-        #if defined(MICROPY_HW_LED2)
+// The original method used on the pyboard is appropriate if you have 2
+// or more LEDs.
+#if defined(MICROPY_HW_LED2)
         for (uint i = 0; i < 3000; i++) {
             if (!switch_get()) {
                 break;
@@ -361,7 +360,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
         }
         mp_hal_delay_ms(400);
 
-        #elif defined(MICROPY_HW_LED1)
+#elif defined(MICROPY_HW_LED1)
 
         // For boards with only a single LED, we'll flash that LED the
         // appropriate number of times, with a pause between each one
@@ -394,20 +393,20 @@ STATIC uint update_reset_mode(uint reset_mode) {
             }
             mp_hal_delay_ms(400);
         }
-        #else
-        #error Need a reset mode update method
-        #endif
+#else
+#error Need a reset mode update method
+#endif
     }
-    #endif
+#endif
     return reset_mode;
 }
 #endif
 
 void stm32_main(uint32_t reset_mode) {
-    #if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
+#if !defined(STM32F0) && defined(MICROPY_HW_VTOR)
     // Change IRQ vector table if configured differently
     SCB->VTOR = MICROPY_HW_VTOR;
-    #endif
+#endif
 
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
@@ -417,47 +416,47 @@ void stm32_main(uint32_t reset_mode) {
 
     // Enable caches and prefetch buffers
 
-    #if defined(STM32F4)
+#if defined(STM32F4)
 
-    #if INSTRUCTION_CACHE_ENABLE
+#if INSTRUCTION_CACHE_ENABLE
     __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
-    #endif
-    #if DATA_CACHE_ENABLE
+#endif
+#if DATA_CACHE_ENABLE
     __HAL_FLASH_DATA_CACHE_ENABLE();
-    #endif
-    #if PREFETCH_ENABLE
+#endif
+#if PREFETCH_ENABLE
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
-    #endif
+#endif
 
-    #elif defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F7) || defined(STM32H7)
 
-    #if ART_ACCLERATOR_ENABLE
+#if ART_ACCLERATOR_ENABLE
     __HAL_FLASH_ART_ENABLE();
-    #endif
+#endif
 
     SCB_EnableICache();
     SCB_EnableDCache();
 
-    #elif defined(STM32L4)
+#elif defined(STM32L4)
 
-    #if !INSTRUCTION_CACHE_ENABLE
+#if !INSTRUCTION_CACHE_ENABLE
     __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
-    #endif
-    #if !DATA_CACHE_ENABLE
+#endif
+#if !DATA_CACHE_ENABLE
     __HAL_FLASH_DATA_CACHE_DISABLE();
-    #endif
-    #if PREFETCH_ENABLE
+#endif
+#if PREFETCH_ENABLE
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
-    #endif
+#endif
 
-    #endif
+#endif
 
     mpu_init();
 
-    #if __CORTEX_M >= 0x03
+#if __CORTEX_M >= 0x03
     // Set the priority grouping
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-    #endif
+#endif
 
     // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
     HAL_InitTick(TICK_INT_PRIORITY);
@@ -469,93 +468,92 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
-    #if defined(GPIOD)
+#if defined(GPIOD)
     __HAL_RCC_GPIOD_CLK_ENABLE();
-    #endif
+#endif
 
-    #if defined(STM32F4) ||  defined(STM32F7)
-        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-        // which behaves more or less like normal SRAM.
-        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #elif defined(CCMDATARAM_BASE)
-        // enable the CCM RAM
-        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
-        #endif
-    #elif defined(STM32H7)
-        // Enable D2 SRAM1/2/3 clocks.
-        __HAL_RCC_D2SRAM1_CLK_ENABLE();
-        __HAL_RCC_D2SRAM2_CLK_ENABLE();
-        __HAL_RCC_D2SRAM3_CLK_ENABLE();
-    #endif
+#if defined(STM32F4) || defined(STM32F7)
+#if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+#elif defined(CCMDATARAM_BASE)
+    // enable the CCM RAM
+    __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
+#endif
+#elif defined(STM32H7)
+    // Enable D2 SRAM1/2/3 clocks.
+    __HAL_RCC_D2SRAM1_CLK_ENABLE();
+    __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    __HAL_RCC_D2SRAM3_CLK_ENABLE();
+#endif
 
-
-    #if defined(MICROPY_BOARD_EARLY_INIT)
+#if defined(MICROPY_BOARD_EARLY_INIT)
     MICROPY_BOARD_EARLY_INIT();
-    #endif
+#endif
 
-    // basic sub-system init
-    #if defined(STM32WB)
+// basic sub-system init
+#if defined(STM32WB)
     rfcore_init();
-    #endif
-    #if MICROPY_HW_SDRAM_SIZE
+#endif
+#if MICROPY_HW_SDRAM_SIZE
     sdram_init();
     bool sdram_valid = true;
     UNUSED(sdram_valid);
-    #if MICROPY_HW_SDRAM_STARTUP_TEST
+#if MICROPY_HW_SDRAM_STARTUP_TEST
     sdram_valid = sdram_test(true);
-    #endif
-    #endif
-    #if MICROPY_PY_THREAD
+#endif
+#endif
+#if MICROPY_PY_THREAD
     pyb_thread_init(&pyb_thread_main);
-    #endif
+#endif
     pendsv_init();
     led_init();
-    #if MICROPY_HW_HAS_SWITCH
+#if MICROPY_HW_HAS_SWITCH
     switch_init0();
-    #endif
+#endif
     machine_init();
-    #if MICROPY_HW_ENABLE_RTC
+#if MICROPY_HW_ENABLE_RTC
     rtc_init_start(false);
-    #endif
+#endif
     uart_init0();
     spi_init0();
-    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
+#if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
-    #endif
-    #if MICROPY_HW_ENABLE_SDCARD
+#endif
+#if MICROPY_HW_ENABLE_SDCARD
     sdcard_init();
-    #endif
-    #if MICROPY_HW_ENABLE_STORAGE
+#endif
+#if MICROPY_HW_ENABLE_STORAGE
     storage_init();
-    #endif
-    #if MICROPY_PY_LWIP
+#endif
+#if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
     // So for now we only init the lwIP stack once on power-up.
     lwip_init();
-    #if LWIP_MDNS_RESPONDER
+#if LWIP_MDNS_RESPONDER
     mdns_resp_init();
-    #endif
+#endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
-    #endif
-    #if MICROPY_BLUETOOTH_NIMBLE
+#endif
+#if MICROPY_BLUETOOTH_NIMBLE
     extern void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms);
     systick_enable_dispatch(SYSTICK_DISPATCH_NIMBLE, mod_bluetooth_nimble_poll_wrapper);
-    #endif
+#endif
 
-    #if MICROPY_PY_NETWORK_CYW43
+#if MICROPY_PY_NETWORK_CYW43
     {
         cyw43_init(&cyw43_state);
         uint8_t buf[8];
         memcpy(&buf[0], "PYBD", 4);
-        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char *)&buf[4]);
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
-        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"pybd0123");
     }
-    #endif
+#endif
 
-    #if defined(MICROPY_HW_UART_REPL)
+#if defined(MICROPY_HW_UART_REPL)
     // Set up a UART REPL using a statically allocated object
     pyb_uart_repl_obj.base.type = &pyb_uart_type;
     pyb_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
@@ -565,44 +563,45 @@ void stm32_main(uint32_t reset_mode) {
     uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
     uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
     uart_attach_to_repl(&pyb_uart_repl_obj, true);
-    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
-    #endif
+    MP_STATE_PORT(pyb_uart_obj_all)
+    [MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
+#endif
 
 soft_reset:
 
-    #if defined(MICROPY_HW_LED2)
+#if defined(MICROPY_HW_LED2)
     led_state(1, 0);
     led_state(2, 1);
-    #else
+#else
     led_state(1, 1);
     led_state(2, 0);
-    #endif
+#endif
     led_state(3, 0);
     led_state(4, 0);
 
-    #if !MICROPY_HW_USES_BOOTLOADER
+#if !MICROPY_HW_USES_BOOTLOADER
     // check if user switch held to select the reset mode
     reset_mode = update_reset_mode(1);
-    #endif
+#endif
 
-    // Python threading init
-    #if MICROPY_PY_THREAD
+// Python threading init
+#if MICROPY_PY_THREAD
     mp_thread_init();
-    #endif
+#endif
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above
     mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char*)&_estack - (char*)&_sstack - 1024);
+    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
 
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
     mp_pystack_init(pystack, &pystack[384]);
-    #endif
+#endif
 
     // MicroPython init
     mp_init();
@@ -615,34 +614,34 @@ soft_reset:
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
 
-    #if defined(MICROPY_HW_UART_REPL)
+#if defined(MICROPY_HW_UART_REPL)
     MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
-    #else
+#else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
-    #endif
+#endif
 
     readline_init0();
     pin_init0();
     extint_init0();
     timer_init0();
 
-    #if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN
     can_init0();
-    #endif
+#endif
 
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
-    #endif
+#endif
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
-    #if MICROPY_HW_ENABLE_STORAGE
+#if MICROPY_HW_ENABLE_STORAGE
     mounted_flash = init_flash_fs(reset_mode);
-    #endif
+#endif
 
     bool mounted_sdcard = false;
-    #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
+#if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
@@ -650,14 +649,14 @@ soft_reset:
             mounted_sdcard = init_sdcard_fs();
         }
     }
-    #endif
+#endif
 
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
     if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
         pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
     }
-    #endif
+#endif
 
     // set sys.path based on mounted filesystems (/sd is first so it can override /flash)
     if (mounted_sdcard) {
@@ -685,13 +684,13 @@ soft_reset:
         }
     }
 
-    // turn boot-up LEDs off
-    #if !defined(MICROPY_HW_LED2)
+// turn boot-up LEDs off
+#if !defined(MICROPY_HW_LED2)
     // If there is only one LED on the board then it's used to signal boot-up
     // and so we turn it off here.  Otherwise LED(1) is used to indicate dirty
     // flash cache and so we shouldn't change its state.
     led_state(1, 0);
-    #endif
+#endif
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
@@ -700,32 +699,32 @@ soft_reset:
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        #if MICROPY_HW_USB_MSC
+#if MICROPY_HW_USB_MSC
         const uint16_t pid = USBD_PID_CDC_MSC;
         const uint8_t mode = USBD_MODE_CDC_MSC;
-        #else
+#else
         const uint16_t pid = USBD_PID_CDC;
         const uint8_t mode = USBD_MODE_CDC;
-        #endif
+#endif
         pyb_usb_dev_init(pyb_usb_dev_detect(), USBD_VID, pid, mode, 0, NULL, NULL);
     }
-    #endif
+#endif
 
-    #if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
     accel_init();
-    #endif
+#endif
 
-    #if MICROPY_HW_ENABLE_SERVO
+#if MICROPY_HW_ENABLE_SERVO
     servo_init();
-    #endif
+#endif
 
-    #if MICROPY_PY_NETWORK
+#if MICROPY_PY_NETWORK
     mod_network_init();
-    #endif
+#endif
 
     // At this point everything is fully configured and initialised.
 
@@ -746,7 +745,7 @@ soft_reset:
         }
     }
 
-    #if MICROPY_ENABLE_COMPILER
+#if MICROPY_ENABLE_COMPILER
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
@@ -760,35 +759,35 @@ soft_reset:
             }
         }
     }
-    #endif
+#endif
 
 soft_reset_exit:
 
     // soft reset
 
-    #if MICROPY_HW_ENABLE_STORAGE
+#if MICROPY_HW_ENABLE_STORAGE
     printf("MPY: sync filesystems\n");
     storage_flush();
-    #endif
+#endif
 
     printf("MPY: soft reboot\n");
-    #if MICROPY_BLUETOOTH_NIMBLE
+#if MICROPY_BLUETOOTH_NIMBLE
     mp_bluetooth_deinit();
-    #endif
-    #if MICROPY_PY_NETWORK
+#endif
+#if MICROPY_PY_NETWORK
     mod_network_deinit();
-    #endif
+#endif
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
-    #if MICROPY_HW_ENABLE_CAN
+#if MICROPY_HW_ENABLE_CAN
     can_deinit_all();
-    #endif
+#endif
     machine_deinit();
 
-    #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
     pyb_thread_deinit();
-    #endif
+#endif
 
     gc_sweep_all();
 

@@ -56,12 +56,12 @@
 //     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
 STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
-    {{&pyb_spi_type}, &spi_obj[0]},
-    {{&pyb_spi_type}, &spi_obj[1]},
-    {{&pyb_spi_type}, &spi_obj[2]},
-    {{&pyb_spi_type}, &spi_obj[3]},
-    {{&pyb_spi_type}, &spi_obj[4]},
-    {{&pyb_spi_type}, &spi_obj[5]},
+    { {&pyb_spi_type}, &spi_obj[0] },
+    { {&pyb_spi_type}, &spi_obj[1] },
+    { {&pyb_spi_type}, &spi_obj[2] },
+    { {&pyb_spi_type}, &spi_obj[3] },
+    { {&pyb_spi_type}, &spi_obj[4] },
+    { {&pyb_spi_type}, &spi_obj[5] },
 };
 
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -76,17 +76,17 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 //   - `baudrate` is the SCK clock rate (only sensible for a master).
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 328125} },
         { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 0} },
-        { MP_QSTR_dir,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_DIRECTION_2LINES} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
-        { MP_QSTR_nss,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
-        { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_dir, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SPI_DIRECTION_2LINES} },
+        { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_nss, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SPI_NSS_SOFT} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SPI_FIRSTBIT_MSB} },
+        { MP_QSTR_ti, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_crc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // parse args
@@ -175,7 +175,7 @@ STATIC mp_obj_t pyb_spi_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // TODO assumes transmission size is 8-bits wide
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_send, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -209,7 +209,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // TODO assumes transmission size is 8-bits wide
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_recv, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -223,7 +223,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // receive the data
-    spi_transfer(self->spi, vstr.len, NULL, (uint8_t*)vstr.buf, args[1].u_int);
+    spi_transfer(self->spi, vstr.len, NULL, (uint8_t *)vstr.buf, args[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -248,8 +248,8 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
     // TODO assumes transmission size is 8-bits wide
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_recv,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_send, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_recv, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -324,9 +324,9 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     /// \constant MSB - set the first bit to MSB
     /// \constant LSB - set the first bit to LSB
     { MP_ROM_QSTR(MP_QSTR_MASTER), MP_ROM_INT(SPI_MODE_MASTER) },
-    { MP_ROM_QSTR(MP_QSTR_SLAVE),  MP_ROM_INT(SPI_MODE_SLAVE) },
-    { MP_ROM_QSTR(MP_QSTR_MSB),    MP_ROM_INT(SPI_FIRSTBIT_MSB) },
-    { MP_ROM_QSTR(MP_QSTR_LSB),    MP_ROM_INT(SPI_FIRSTBIT_LSB) },
+    { MP_ROM_QSTR(MP_QSTR_SLAVE), MP_ROM_INT(SPI_MODE_SLAVE) },
+    { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(SPI_FIRSTBIT_MSB) },
+    { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(SPI_FIRSTBIT_LSB) },
     /* TODO
     { MP_ROM_QSTR(MP_QSTR_DIRECTION_2LINES             ((uint32_t)0x00000000)
     { MP_ROM_QSTR(MP_QSTR_DIRECTION_2LINES_RXONLY      SPI_CR1_RXONLY
@@ -339,7 +339,7 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
+    pyb_spi_obj_t *self = (pyb_spi_obj_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
@@ -353,5 +353,5 @@ const mp_obj_type_t pyb_spi_type = {
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
     .protocol = &pyb_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_spi_locals_dict,
 };

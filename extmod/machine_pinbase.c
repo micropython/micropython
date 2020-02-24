@@ -42,7 +42,7 @@ typedef struct _mp_pinbase_t {
 } mp_pinbase_t;
 
 STATIC const mp_pinbase_t pinbase_singleton = {
-    .base = { &machine_pinbase_type },
+    .base = {&machine_pinbase_type},
 };
 
 STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

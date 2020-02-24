@@ -29,10 +29,10 @@
 #endif
 
 typedef struct _mp_thread_mutex_t {
-    #ifndef BOOTLOADER
+#ifndef BOOTLOADER
     SemaphoreHandle_t handle;
     StaticSemaphore_t buffer;
-    #endif
+#endif
 } mp_thread_mutex_t;
 
 void mp_thread_init(void);

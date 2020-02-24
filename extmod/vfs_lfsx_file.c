@@ -68,11 +68,11 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
             case '+':
                 flags |= LFSx_MACRO(_O_RDWR);
                 break;
-            #if MICROPY_PY_IO_FILEIO
+#if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &MP_TYPE_VFS_LFSx_(_fileio);
                 break;
-            #endif
+#endif
             case 't':
                 type = &MP_TYPE_VFS_LFSx_(_textio);
                 break;
@@ -88,17 +88,17 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
         flags = LFSx_MACRO(_O_RDONLY);
     }
 
-    #if LFS_BUILD_VERSION == 1
+#if LFS_BUILD_VERSION == 1
     MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, uint8_t, self->lfs.cfg->prog_size);
-    #else
+#else
     MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, uint8_t, self->lfs.cfg->cache_size);
-    #endif
+#endif
     o->base.type = type;
     o->vfs = self;
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
+#if !MICROPY_GC_CONSERVATIVE_CLEAR
     memset(&o->file, 0, sizeof(o->file));
     memset(&o->cfg, 0, sizeof(o->cfg));
-    #endif
+#endif
     o->cfg.buffer = &o->file_buffer[0];
 
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
@@ -147,7 +147,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
     }
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
         int res = LFSx_API(file_seek)(&self->vfs->lfs, &self->file, s->offset, s->whence);
         if (res < 0) {
             *errcode = -res;
@@ -214,7 +214,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(fileio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };
 #endif
 
@@ -232,5 +232,5 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(textio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };

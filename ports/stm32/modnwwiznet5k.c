@@ -79,7 +79,7 @@ STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t*)buf, len, 5000);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t *)buf, len, 5000);
     (void)status;
 }
 
@@ -87,7 +87,7 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
     uint8_t *buf = m_new(uint8_t, MAX_DNS_BUF_SIZE);
     DNS_init(0, buf);
-    mp_int_t ret = DNS_run(dns_ip, (uint8_t*)name, out_ip);
+    mp_int_t ret = DNS_run(dns_ip, (uint8_t *)name, out_ip);
     m_del(uint8_t, buf, MAX_DNS_BUF_SIZE);
     if (ret == 1) {
         // success
@@ -105,9 +105,15 @@ STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
     }
 
     switch (socket->u_param.type) {
-        case MOD_NETWORK_SOCK_STREAM: socket->u_param.type = Sn_MR_TCP; break;
-        case MOD_NETWORK_SOCK_DGRAM: socket->u_param.type = Sn_MR_UDP; break;
-        default: *_errno = MP_EINVAL; return -1;
+        case MOD_NETWORK_SOCK_STREAM:
+            socket->u_param.type = Sn_MR_TCP;
+            break;
+        case MOD_NETWORK_SOCK_DGRAM:
+            socket->u_param.type = Sn_MR_UDP;
+            break;
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
     }
 
     if (socket->u_param.fileno == -1) {
@@ -140,7 +146,8 @@ STATIC void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
     uint8_t sn = (uint8_t)socket->u_param.fileno;
     if (sn < _WIZCHIP_SOCK_NUM_) {
         wiznet5k_obj.socket_used &= ~(1 << sn);
-        WIZCHIP_EXPORT(close)(sn);
+        WIZCHIP_EXPORT(close)
+        (sn);
     }
 }
 
@@ -226,7 +233,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 
 STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte*)buf, len);
+    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -261,7 +268,7 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
     }
 
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte*)buf, len, ip, port);
+    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte *)buf, len, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -344,7 +351,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
     // init the wiznet5k object
-    wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
+    wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi_from_mp_obj(args[0]);
     wiznet5k_obj.cs = pin_find(args[1]);
@@ -357,7 +364,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     init->Direction = SPI_DIRECTION_2LINES;
     init->DataSize = SPI_DATASIZE_8BIT;
     init->CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
-    init->CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
+    init->CLKPhase = SPI_PHASE_1EDGE;     // data latched on first edge, which is rising edge for low-idle
     init->NSS = SPI_NSS_SOFT;
     init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
     init->FirstBit = SPI_FIRSTBIT_MSB;
@@ -390,7 +397,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
         .dns = {8, 8, 8, 8}, // Google public DNS
         .dhcp = NETINFO_STATIC,
     };
-    ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
+    ctlnetwork(CN_SET_NETINFO, (void *)&netinfo);
 
     // seems we need a small delay after init
     mp_hal_delay_ms(250);
@@ -411,11 +418,11 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
-        #if MICROPY_PY_WIZNET5K == 5200
+#if MICROPY_PY_WIZNET5K == 5200
         uint32_t reg = i;
-        #else
+#else
         uint32_t reg = _W5500_IO_BASE_ | i << 8;
-        #endif
+#endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
     for (int sn = 0; sn < 4; ++sn) {
@@ -424,11 +431,11 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            #if MICROPY_PY_WIZNET5K == 5200
+#if MICROPY_PY_WIZNET5K == 5200
             uint32_t reg = WIZCHIP_SREG_ADDR(sn, i);
-            #else
+#else
             uint32_t reg = _W5500_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
-            #endif
+#endif
             printf(" %02x", WIZCHIP_READ(reg));
         }
     }
@@ -484,7 +491,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
         { &mp_type_type },
         .name = MP_QSTR_WIZNET5K,
         .make_new = wiznet5k_make_new,
-        .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
+        .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
     },
     .gethostbyname = wiznet5k_gethostbyname,
     .socket = wiznet5k_socket_socket,

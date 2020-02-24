@@ -103,7 +103,7 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
-            (const byte*)p_out, strlen(p_out));
+            (const byte *)p_out, strlen(p_out));
     }
     return vfs;
 }
@@ -161,7 +161,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
 }
 
 STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
-    #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
+#if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t vfs = MP_OBJ_NULL;
@@ -169,38 +169,39 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
         mp_vfs_blockdev_init(&blockdev, bdev_obj);
         uint8_t buf[44];
         mp_vfs_blockdev_read_ext(&blockdev, 0, 8, sizeof(buf), buf);
-        #if MICROPY_VFS_LFS1
+#if MICROPY_VFS_LFS1
         if (memcmp(&buf[32], "littlefs", 8) == 0) {
             // LFS1
             vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
             nlr_pop();
             return vfs;
         }
-        #endif
-        #if MICROPY_VFS_LFS2
+#endif
+#if MICROPY_VFS_LFS2
         if (memcmp(&buf[0], "littlefs", 8) == 0) {
             // LFS2
             vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
             nlr_pop();
             return vfs;
         }
-        #endif
+#endif
         nlr_pop();
     } else {
         // Ignore exception (eg block device doesn't support extended readblocks)
     }
-    #endif
+#endif
 
-    #if MICROPY_VFS_FAT
+#if MICROPY_VFS_FAT
     return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
-    #endif
+#endif
 
     return bdev_obj;
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_readonly, ARG_mkfs
+        ARG_readonly,
+        ARG_mkfs
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
@@ -233,7 +234,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t *)&args);
 
     // check that the destination mount point is unused
     const char *path_out;
@@ -298,7 +299,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
 // Note: buffering and encoding args are currently ignored
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
-        ARG_file, ARG_mode, ARG_encoding
+        ARG_file,
+        ARG_mode,
+        ARG_encoding
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
@@ -311,15 +314,15 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    #if MICROPY_VFS_POSIX
+#if MICROPY_VFS_POSIX
     // If the file is an integer then delegate straight to the POSIX handler
     if (mp_obj_is_small_int(args[ARG_file].u_obj)) {
         return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
     }
-    #endif
+#endif
 
     mp_vfs_mount_t *vfs = lookup_path(args[ARG_file].u_obj, &args[ARG_file].u_obj);
-    return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t*)&args);
+    return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t *)&args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);
 
@@ -399,7 +402,7 @@ STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
             t->items[0] = mp_obj_new_str_of_type(
                 self->is_str ? &mp_type_str : &mp_type_bytes,
-                (const byte*)vfs->str + 1, vfs->len - 1);
+                (const byte *)vfs->str + 1, vfs->len - 1);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
             t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
             return MP_OBJ_FROM_PTR(t);

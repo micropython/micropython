@@ -35,40 +35,40 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
-#define MICROPY_STACK_CHECK         (1)
-#define MICROPY_ENABLE_GC           (1)
-#define MICROPY_HELPER_REPL         (1)
-#define MICROPY_REPL_AUTO_INDENT    (1)
-#define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_CPYTHON_COMPAT      (0)
-#define MICROPY_PY_ASYNC_AWAIT      (0)
-#define MICROPY_PY_ATTRTUPLE        (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE (0)
-#define MICROPY_PY_BUILTINS_FILTER  (0)
-#define MICROPY_PY_BUILTINS_MIN_MAX (0)
-#define MICROPY_PY_BUILTINS_PROPERTY (0)
+#define MICROPY_ENABLE_SOURCE_LINE      (1)
+#define MICROPY_STACK_CHECK             (1)
+#define MICROPY_ENABLE_GC               (1)
+#define MICROPY_HELPER_REPL             (1)
+#define MICROPY_REPL_AUTO_INDENT        (1)
+#define MICROPY_KBD_EXCEPTION           (1)
+#define MICROPY_CPYTHON_COMPAT          (0)
+#define MICROPY_PY_ASYNC_AWAIT          (0)
+#define MICROPY_PY_ATTRTUPLE            (0)
+#define MICROPY_PY_BUILTINS_ENUMERATE   (0)
+#define MICROPY_PY_BUILTINS_FILTER      (0)
+#define MICROPY_PY_BUILTINS_MIN_MAX     (0)
+#define MICROPY_PY_BUILTINS_PROPERTY    (0)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT (0)
-#define MICROPY_PY_BUILTINS_HELP    (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT zephyr_help_text
-#define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_COLLECTIONS      (0)
-#define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
+#define MICROPY_PY_BUILTINS_REVERSED    (0)
+#define MICROPY_PY_BUILTINS_SET         (0)
+#define MICROPY_PY_BUILTINS_STR_COUNT   (0)
+#define MICROPY_PY_BUILTINS_HELP        (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT   zephyr_help_text
+#define MICROPY_PY_ARRAY                (0)
+#define MICROPY_PY_COLLECTIONS          (0)
+#define MICROPY_PY_CMATH                (0)
+#define MICROPY_PY_IO                   (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_MACHINE          (1)
-#define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE              (1)
+#define MICROPY_PY_MACHINE_I2C          (1)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
-#define MICROPY_MODULE_WEAK_LINKS   (1)
-#define MICROPY_PY_STRUCT           (0)
+#define MICROPY_MODULE_WEAK_LINKS       (1)
+#define MICROPY_PY_STRUCT               (0)
 #ifdef CONFIG_NETWORKING
 // If we have networking, we likely want errno comfort
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_USOCKET          (1)
+#define MICROPY_PY_UERRNO  (1)
+#define MICROPY_PY_USOCKET (1)
 #endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UHASHLIB         (1)
@@ -78,22 +78,22 @@
 #define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_ZSENSOR          (1)
 #define MICROPY_PY_SYS_MODULES      (0)
-#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
-#define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (1)
-#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_FATFS_USE_LABEL        (1)
-#define MICROPY_FATFS_RPATH            (2)
-#define MICROPY_FATFS_NORTC            (1)
+#define MICROPY_FATFS_ENABLE_LFN    (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE 437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL     (1)
+#define MICROPY_FATFS_RPATH         (2)
+#define MICROPY_FATFS_NORTC         (1)
 
 // Saving extra crumbs to make sure binary fits in 128K
-#define MICROPY_COMP_CONST_FOLDING  (0)
-#define MICROPY_COMP_CONST (0)
+#define MICROPY_COMP_CONST_FOLDING       (0)
+#define MICROPY_COMP_CONST               (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
 #define MICROPY_PY_SYS_PLATFORM "zephyr"
@@ -110,9 +110,9 @@
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 #endif
 
-#define MICROPY_MODULE_FROZEN_STR   (1)
+#define MICROPY_MODULE_FROZEN_STR (1)
 
-typedef int mp_int_t; // must be pointer size
+typedef int mp_int_t;       // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
@@ -129,42 +129,42 @@ extern const struct _mp_obj_module_t mp_module_zephyr;
 extern const struct _mp_obj_module_t mp_module_zsensor;
 
 #if MICROPY_PY_UOS
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
+#define MICROPY_PY_UOS_DEF {MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos)},
 #else
 #define MICROPY_PY_UOS_DEF
 #endif
 
 #if MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
+#define MICROPY_PY_USOCKET_DEF {MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket)},
 #else
 #define MICROPY_PY_USOCKET_DEF
 #endif
 
 #if MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
+#define MICROPY_PY_UTIME_DEF {MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time)},
 #else
 #define MICROPY_PY_UTIME_DEF
 #endif
 
 #if MICROPY_PY_ZEPHYR
-#define MICROPY_PY_ZEPHYR_DEF { MP_ROM_QSTR(MP_QSTR_zephyr), MP_ROM_PTR(&mp_module_zephyr) },
+#define MICROPY_PY_ZEPHYR_DEF {MP_ROM_QSTR(MP_QSTR_zephyr), MP_ROM_PTR(&mp_module_zephyr)},
 #else
 #define MICROPY_PY_ZEPHYR_DEF
 #endif
 
 #if MICROPY_PY_ZSENSOR
-#define MICROPY_PY_ZSENSOR_DEF { MP_ROM_QSTR(MP_QSTR_zsensor), MP_ROM_PTR(&mp_module_zsensor) },
+#define MICROPY_PY_ZSENSOR_DEF {MP_ROM_QSTR(MP_QSTR_zsensor), MP_ROM_PTR(&mp_module_zsensor)},
 #else
 #define MICROPY_PY_ZSENSOR_DEF
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
-    MICROPY_PY_UOS_DEF \
-    MICROPY_PY_USOCKET_DEF \
-    MICROPY_PY_UTIME_DEF \
-    MICROPY_PY_ZEPHYR_DEF \
-    MICROPY_PY_ZSENSOR_DEF \
+#define MICROPY_PORT_BUILTIN_MODULES                                \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine)}, \
+        MICROPY_PY_UOS_DEF                                          \
+            MICROPY_PY_USOCKET_DEF                                  \
+                MICROPY_PY_UTIME_DEF                                \
+                    MICROPY_PY_ZEPHYR_DEF                           \
+                        MICROPY_PY_ZSENSOR_DEF
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

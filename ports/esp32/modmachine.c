@@ -97,12 +97,11 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         ARG_sleep_ms
     };
     const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sleep_ms, MP_ARG_INT, { .u_int = 0 } },
+        { MP_QSTR_sleep_ms, MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
 
     mp_int_t expiry = args[ARG_sleep_ms].u_int;
 
@@ -126,7 +125,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         }
     }
 
-    switch(wake_type) {
+    switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
             break;
@@ -145,10 +144,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_lightsleep_obj, 0, machine_lightsleep)
 STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, pos_args, kw_args);
 };
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0, machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    switch(rtc_get_reset_reason(0)) {
+    switch (rtc_get_reset_reason(0)) {
         case POWERON_RESET:
             return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
             break;
@@ -183,12 +182,12 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
             break;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0, machine_reset_cause);
 
 STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0, machine_wake_reason);
 
 STATIC mp_obj_t machine_reset(void) {
     esp_restart();
@@ -251,9 +250,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
-    #if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
-    #endif
+#endif
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_SLEEP), MP_ROM_INT(MACHINE_WAKE_SLEEP) },
@@ -290,8 +289,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
 const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

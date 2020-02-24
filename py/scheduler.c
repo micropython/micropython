@@ -33,11 +33,11 @@
 void MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(mp_keyboard_interrupt)(void) {
     MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
-    #if MICROPY_ENABLE_SCHEDULER
+#if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
-    #endif
+#endif
 }
 #endif
 
@@ -46,7 +46,7 @@ void MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(mp_keyboard_interrupt)(void) {
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
 
 static inline bool mp_sched_full(void) {
-    MP_STATIC_ASSERT(MICROPY_SCHEDULER_DEPTH <= 255); // MICROPY_SCHEDULER_DEPTH must fit in 8 bits
+    MP_STATIC_ASSERT(MICROPY_SCHEDULER_DEPTH <= 255);           // MICROPY_SCHEDULER_DEPTH must fit in 8 bits
     MP_STATIC_ASSERT((IDX_MASK(MICROPY_SCHEDULER_DEPTH) == 0)); // MICROPY_SCHEDULER_DEPTH must be a power of 2
 
     return mp_sched_num_pending() == MICROPY_SCHEDULER_DEPTH;
@@ -122,8 +122,10 @@ bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         }
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
-        MP_STATE_VM(sched_queue)[iput].func = function;
-        MP_STATE_VM(sched_queue)[iput].arg = arg;
+        MP_STATE_VM(sched_queue)
+        [iput].func = function;
+        MP_STATE_VM(sched_queue)
+        [iput].arg = arg;
         ret = true;
     } else {
         // schedule queue is full

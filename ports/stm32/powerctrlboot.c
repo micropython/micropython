@@ -43,7 +43,7 @@ void SystemClock_Config(void) {
     // Set flash latency to 1 because SYSCLK > 24MHz
     FLASH->ACR = (FLASH->ACR & ~0x7) | 0x1;
 
-    #if MICROPY_HW_CLK_USE_HSI48
+#if MICROPY_HW_CLK_USE_HSI48
     // Use the 48MHz internal oscillator
     // HAL does not support RCC CFGR SW=3 (HSI48 direct to SYSCLK)
     // so use HSI48 -> PREDIV(divide by 2) -> PLL (mult by 2) -> SYSCLK.
@@ -53,14 +53,14 @@ void SystemClock_Config(void) {
         // Wait for HSI48 to be ready
     }
     RCC->CFGR = 0 << RCC_CFGR_PLLMUL_Pos | 3 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 2, src = HSI48/PREDIV
-    RCC->CFGR2 = 1; // Input clock divided by 2
+    RCC->CFGR2 = 1;                                                  // Input clock divided by 2
 
-    #elif MICROPY_HW_CLK_USE_HSE
+#elif MICROPY_HW_CLK_USE_HSE
     // Use HSE and the PLL to get a 48MHz SYSCLK
 
-    #if MICROPY_HW_CLK_USE_BYPASS
+#if MICROPY_HW_CLK_USE_BYPASS
     RCC->CR |= RCC_CR_HSEBYP;
-    #endif
+#endif
     RCC->CR |= RCC_CR_HSEON;
     while ((RCC->CR & RCC_CR_HSERDY) == 0) {
         // Wait for HSE to be ready
@@ -68,7 +68,7 @@ void SystemClock_Config(void) {
     RCC->CFGR = ((48000000 / HSE_VALUE) - 2) << RCC_CFGR_PLLMUL_Pos | 2 << RCC_CFGR_PLLSRC_Pos;
     RCC->CFGR2 = 0; // Input clock not divided
 
-    #elif MICROPY_HW_CLK_USE_HSI
+#elif MICROPY_HW_CLK_USE_HSI
     // Use the 8MHz internal oscillator and the PLL to get a 48MHz SYSCLK
 
     RCC->CR |= RCC_CR_HSION;
@@ -76,11 +76,11 @@ void SystemClock_Config(void) {
         // Wait for HSI to be ready
     }
     RCC->CFGR = 4 << RCC_CFGR_PLLMUL_Pos | 1 << RCC_CFGR_PLLSRC_Pos; // PLL mult by 6, src = HSI
-    RCC->CFGR2 = 0; // Input clock not divided
+    RCC->CFGR2 = 0;                                                  // Input clock not divided
 
-    #else
-    #error System clock not specified
-    #endif
+#else
+#error System clock not specified
+#endif
 
     RCC->CR |= RCC_CR_PLLON; // Turn PLL on
     while ((RCC->CR & RCC_CR_PLLRDY) == 0) {
@@ -129,7 +129,7 @@ void SystemClock_Config(void) {
     SystemCoreClockUpdate();
     powerctrl_config_systick();
 
-    #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
     RCC->CRRCR |= RCC_CRRCR_HSI48ON;
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
@@ -141,14 +141,14 @@ void SystemClock_Config(void) {
     // Select RC48 as HSI48 for USB and RNG
     RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
 
-    #if MICROPY_HW_ENABLE_USB
+#if MICROPY_HW_ENABLE_USB
     // Synchronise HSI48 with 1kHz USB SoF
     __HAL_RCC_CRS_CLK_ENABLE();
     CRS->CR = 0x20 << CRS_CR_TRIM_Pos;
     CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
-        | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
-    #endif
-    #endif
+                | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
+#endif
+#endif
 }
 
 #elif defined(STM32WB)
@@ -159,11 +159,11 @@ void SystemClock_Config(void) {
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
 
-    // Use HSE and the PLL to get a 64MHz SYSCLK
-    #define PLLM (HSE_VALUE / 8000000) // VCO input is 8MHz
-    #define PLLN (24) // 24*8MHz = 192MHz
-    #define PLLQ (4) // f_Q = 48MHz
-    #define PLLR (3) // f_R = 64MHz
+// Use HSE and the PLL to get a 64MHz SYSCLK
+#define PLLM (HSE_VALUE / 8000000) // VCO input is 8MHz
+#define PLLN (24)                  // 24*8MHz = 192MHz
+#define PLLQ (4)                   // f_Q = 48MHz
+#define PLLR (3)                   // f_R = 64MHz
     RCC->PLLCFGR =
         (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
         | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN

@@ -75,7 +75,7 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 #endif
 
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t*)ctx;
+    mp_obj_t sock = *(mp_obj_t *)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
@@ -92,7 +92,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 }
 
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t*)ctx;
+    mp_obj_t sock = *(mp_obj_t *)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
@@ -107,7 +107,6 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
         return out_sz;
     }
 }
-
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     // Verify the socket object has the full stream protocol
@@ -128,10 +127,10 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_x509_crt_init(&o->cert);
     mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
+#ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4)
     mbedtls_debug_set_threshold(0);
-    #endif
+#endif
 
     mbedtls_entropy_init(&o->entropy);
     const byte seed[] = "upy";
@@ -141,18 +140,18 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     }
 
     ret = mbedtls_ssl_config_defaults(&o->conf,
-                    args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
-                    MBEDTLS_SSL_TRANSPORT_STREAM,
-                    MBEDTLS_SSL_PRESET_DEFAULT);
+        args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
+        MBEDTLS_SSL_TRANSPORT_STREAM,
+        MBEDTLS_SSL_PRESET_DEFAULT);
     if (ret != 0) {
         goto cleanup;
     }
 
     mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
+#ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
-    #endif
+#endif
 
     ret = mbedtls_ssl_setup(&o->ssl, &o->conf);
     if (ret != 0) {
@@ -171,7 +170,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     if (args->key.u_obj != mp_const_none) {
         size_t key_len;
-        const byte *key = (const byte*)mp_obj_str_get_data(args->key.u_obj, &key_len);
+        const byte *key = (const byte *)mp_obj_str_get_data(args->key.u_obj, &key_len);
         // len should include terminating null
         ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
         if (ret != 0) {
@@ -180,7 +179,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
 
         size_t cert_len;
-        const byte *cert = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
+        const byte *cert = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
         // len should include terminating null
         ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);
         if (ret != 0) {
@@ -230,7 +229,7 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     if (!mp_obj_is_true(binary_form)) {
         mp_raise_NotImplementedError(NULL);
     }
-    const mbedtls_x509_crt* peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    const mbedtls_x509_crt *peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
     if (peer_cert == NULL) {
         return mp_const_none;
     }
@@ -340,7 +339,7 @@ STATIC const mp_obj_type_t ussl_socket_type = {
     .getiter = NULL,
     .iternext = NULL,
     .protocol = &ussl_socket_stream_p,
-    .locals_dict = (void*)&ussl_socket_locals_dict,
+    .locals_dict = (void *)&ussl_socket_locals_dict,
 };
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -358,7 +357,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
 
     struct ssl_args args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     return MP_OBJ_FROM_PTR(socket_new(sock, &args));
 }
@@ -372,8 +371,8 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
 
 const mp_obj_module_t mp_module_ussl = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ssl_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
 #endif // MICROPY_PY_USSL

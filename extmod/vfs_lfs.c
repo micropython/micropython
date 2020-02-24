@@ -31,7 +31,10 @@
 #if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
 enum {
-    LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead
+    LFS_MAKE_ARG_bdev,
+    LFS_MAKE_ARG_readsize,
+    LFS_MAKE_ARG_progsize,
+    LFS_MAKE_ARG_lookahead
 };
 
 static const mp_arg_t lfs_make_allowed_args[] = {
@@ -45,14 +48,14 @@ static const mp_arg_t lfs_make_allowed_args[] = {
 
 #include "lib/littlefs/lfs1.h"
 
-#define LFS_BUILD_VERSION (1)
-#define LFSx_MACRO(s) LFS1 ## s
-#define LFSx_API(s) lfs1_ ## s
-#define MP_VFS_LFSx(s) mp_vfs_lfs1_ ## s
-#define MP_OBJ_VFS_LFSx mp_obj_vfs_lfs1_t
+#define LFS_BUILD_VERSION    (1)
+#define LFSx_MACRO(s)        LFS1##s
+#define LFSx_API(s)          lfs1_##s
+#define MP_VFS_LFSx(s)       mp_vfs_lfs1_##s
+#define MP_OBJ_VFS_LFSx      mp_obj_vfs_lfs1_t
 #define MP_OBJ_VFS_LFSx_FILE mp_obj_vfs_lfs1_file_t
-#define MP_TYPE_VFS_LFSx mp_type_vfs_lfs1
-#define MP_TYPE_VFS_LFSx_(s) mp_type_vfs_lfs1 ## s
+#define MP_TYPE_VFS_LFSx     mp_type_vfs_lfs1
+#define MP_TYPE_VFS_LFSx_(s) mp_type_vfs_lfs1##s
 
 typedef struct _mp_obj_vfs_lfs1_t {
     mp_obj_base_t base;
@@ -91,14 +94,14 @@ mp_obj_t mp_vfs_lfs1_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
 
 #include "lib/littlefs/lfs2.h"
 
-#define LFS_BUILD_VERSION (2)
-#define LFSx_MACRO(s) LFS2 ## s
-#define LFSx_API(s) lfs2_ ## s
-#define MP_VFS_LFSx(s) mp_vfs_lfs2_ ## s
-#define MP_OBJ_VFS_LFSx mp_obj_vfs_lfs2_t
+#define LFS_BUILD_VERSION    (2)
+#define LFSx_MACRO(s)        LFS2##s
+#define LFSx_API(s)          lfs2_##s
+#define MP_VFS_LFSx(s)       mp_vfs_lfs2_##s
+#define MP_OBJ_VFS_LFSx      mp_obj_vfs_lfs2_t
 #define MP_OBJ_VFS_LFSx_FILE mp_obj_vfs_lfs2_file_t
-#define MP_TYPE_VFS_LFSx mp_type_vfs_lfs2
-#define MP_TYPE_VFS_LFSx_(s) mp_type_vfs_lfs2 ## s
+#define MP_TYPE_VFS_LFSx     mp_type_vfs_lfs2
+#define MP_TYPE_VFS_LFSx_(s) mp_type_vfs_lfs2##s
 
 typedef struct _mp_obj_vfs_lfs2_t {
     mp_obj_base_t base;

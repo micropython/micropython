@@ -47,36 +47,36 @@
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
 
 STATIC int8_t ble_hs_err_to_errno_table[] = {
-    [BLE_HS_EAGAIN]             = MP_EAGAIN,
-    [BLE_HS_EALREADY]           = MP_EALREADY,
-    [BLE_HS_EINVAL]             = MP_EINVAL,
-    [BLE_HS_EMSGSIZE]           = MP_EIO,
-    [BLE_HS_ENOENT]             = MP_ENOENT,
-    [BLE_HS_ENOMEM]             = MP_ENOMEM,
-    [BLE_HS_ENOTCONN]           = MP_ENOTCONN,
-    [BLE_HS_ENOTSUP]            = MP_EOPNOTSUPP,
-    [BLE_HS_EAPP]               = MP_EIO,
-    [BLE_HS_EBADDATA]           = MP_EIO,
-    [BLE_HS_EOS]                = MP_EIO,
-    [BLE_HS_ECONTROLLER]        = MP_EIO,
-    [BLE_HS_ETIMEOUT]           = MP_ETIMEDOUT,
-    [BLE_HS_EDONE]              = MP_EIO,  // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
-    [BLE_HS_EBUSY]              = MP_EBUSY,
-    [BLE_HS_EREJECT]            = MP_EIO,
-    [BLE_HS_EUNKNOWN]           = MP_EIO,
-    [BLE_HS_EROLE]              = MP_EIO,
-    [BLE_HS_ETIMEOUT_HCI]       = MP_EIO,
-    [BLE_HS_ENOMEM_EVT]         = MP_EIO,
-    [BLE_HS_ENOADDR]            = MP_EIO,
-    [BLE_HS_ENOTSYNCED]         = MP_EIO,
-    [BLE_HS_EAUTHEN]            = MP_EIO,
-    [BLE_HS_EAUTHOR]            = MP_EIO,
-    [BLE_HS_EENCRYPT]           = MP_EIO,
-    [BLE_HS_EENCRYPT_KEY_SZ]    = MP_EIO,
-    [BLE_HS_ESTORE_CAP]         = MP_EIO,
-    [BLE_HS_ESTORE_FAIL]        = MP_EIO,
-    [BLE_HS_EPREEMPTED]         = MP_EIO,
-    [BLE_HS_EDISABLED]          = MP_EIO,
+    [BLE_HS_EAGAIN] = MP_EAGAIN,
+    [BLE_HS_EALREADY] = MP_EALREADY,
+    [BLE_HS_EINVAL] = MP_EINVAL,
+    [BLE_HS_EMSGSIZE] = MP_EIO,
+    [BLE_HS_ENOENT] = MP_ENOENT,
+    [BLE_HS_ENOMEM] = MP_ENOMEM,
+    [BLE_HS_ENOTCONN] = MP_ENOTCONN,
+    [BLE_HS_ENOTSUP] = MP_EOPNOTSUPP,
+    [BLE_HS_EAPP] = MP_EIO,
+    [BLE_HS_EBADDATA] = MP_EIO,
+    [BLE_HS_EOS] = MP_EIO,
+    [BLE_HS_ECONTROLLER] = MP_EIO,
+    [BLE_HS_ETIMEOUT] = MP_ETIMEDOUT,
+    [BLE_HS_EDONE] = MP_EIO, // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
+    [BLE_HS_EBUSY] = MP_EBUSY,
+    [BLE_HS_EREJECT] = MP_EIO,
+    [BLE_HS_EUNKNOWN] = MP_EIO,
+    [BLE_HS_EROLE] = MP_EIO,
+    [BLE_HS_ETIMEOUT_HCI] = MP_EIO,
+    [BLE_HS_ENOMEM_EVT] = MP_EIO,
+    [BLE_HS_ENOADDR] = MP_EIO,
+    [BLE_HS_ENOTSYNCED] = MP_EIO,
+    [BLE_HS_EAUTHEN] = MP_EIO,
+    [BLE_HS_EAUTHOR] = MP_EIO,
+    [BLE_HS_EENCRYPT] = MP_EIO,
+    [BLE_HS_EENCRYPT_KEY_SZ] = MP_EIO,
+    [BLE_HS_ESTORE_CAP] = MP_EIO,
+    [BLE_HS_ESTORE_FAIL] = MP_EIO,
+    [BLE_HS_EPREEMPTED] = MP_EIO,
+    [BLE_HS_EDISABLED] = MP_EIO,
 };
 
 STATIC int ble_hs_err_to_errno(int err) {
@@ -88,22 +88,22 @@ STATIC int ble_hs_err_to_errno(int err) {
 }
 
 // Note: modbluetooth UUIDs store their data in LE.
-STATIC ble_uuid_t* create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
+STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
     if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
         ble_uuid16_t *result = m_new(ble_uuid16_t, 1);
         result->u.type = BLE_UUID_TYPE_16;
         result->value = (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
         ble_uuid32_t *result = m_new(ble_uuid32_t, 1);
         result->u.type = BLE_UUID_TYPE_32;
         result->value = (uuid->data[1] << 24) | (uuid->data[1] << 16) | (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
         ble_uuid128_t *result = m_new(ble_uuid128_t, 1);
         result->u.type = BLE_UUID_TYPE_128;
         memcpy(result->value, uuid->data, 16);
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else {
         return NULL;
     }
@@ -139,7 +139,7 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
 // modbluetooth (and the layers above it) work in BE for addresses, Nimble works in LE.
 STATIC void reverse_addr_byte_order(uint8_t *addr_out, const uint8_t *addr_in) {
     for (int i = 0; i < 6; ++i) {
-        addr_out[i] = addr_in[5-i];
+        addr_out[i] = addr_in[5 - i];
     }
 }
 
@@ -176,27 +176,27 @@ STATIC void sync_cb(void) {
 
     rc = ble_hs_util_ensure_addr(0); // prefer public address
     if (rc != 0) {
-        // https://mynewt.apache.org/latest/tutorials/ble/eddystone.html#configure-the-nimble-stack-with-an-address
-        #if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
+// https://mynewt.apache.org/latest/tutorials/ble/eddystone.html#configure-the-nimble-stack-with-an-address
+#if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
         rc = ble_hs_id_gen_rnd(1, &addr);
         assert(rc == 0);
         rc = ble_hs_id_set_rnd(addr.val);
         assert(rc == 0);
-        #else
+#else
         uint8_t addr_be[6];
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr_be);
         reverse_addr_byte_order(addr.val, addr_be);
         // ble_hs_id_set_pub(addr.val);
         rc = ble_hs_id_set_rnd(addr.val);
         assert(rc == 0);
-        #endif
+#endif
 
         rc = ble_hs_util_ensure_addr(0); // prefer public address
         assert(rc == 0);
     }
 
     if (MP_BLUETOOTH_MAX_ATTR_SIZE > 20) {
-        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE+3);
+        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE + 3);
         assert(rc == 0);
     }
 
@@ -244,7 +244,7 @@ STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
             create_gatts_db_entry(ctxt->dsc.handle);
 
             // Unlike characteristics, we have to manually provide a way to get the handle back to the register method.
-            *((uint16_t*)ctxt->dsc.dsc_def->arg) = ctxt->dsc.handle;
+            *((uint16_t *)ctxt->dsc.dsc_def->arg) = ctxt->dsc.handle;
             break;
 
         default:
@@ -325,9 +325,9 @@ void mp_bluetooth_deinit(void) {
     }
 
     mp_bluetooth_gap_advertise_stop();
-    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     mp_bluetooth_gap_scan_stop();
-    #endif
+#endif
 
     ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb, NULL);
 
@@ -345,11 +345,11 @@ bool mp_bluetooth_is_enabled(void) {
 }
 
 void mp_bluetooth_get_device_addr(uint8_t *addr) {
-    #if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
+#if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
     ble_hs_id_copy_addr(BLE_ADDR_RANDOM, addr, NULL);
-    #else
+#else
     mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
-    #endif
+#endif
 }
 
 int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
@@ -413,12 +413,12 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
         case BLE_GATT_ACCESS_OP_READ_DSC:
-            #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
+#if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
             // Allow Python code to override (by using gatts_write), or deny (by returning false) the read.
             if (!mp_bluetooth_gatts_on_read_request(conn_handle, value_handle)) {
                 return BLE_ATT_ERR_READ_NOT_PERMITTED;
             }
-            #endif
+#endif
 
             elem = mp_map_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, MP_OBJ_NEW_SMALL_INT(value_handle), MP_MAP_LOOKUP);
             if (!elem) {
@@ -622,7 +622,7 @@ STATIC void gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16
     len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len);
     while (len > 0 && om != NULL) {
         size_t n = MIN(om->om_len, len);
-        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t*), n);
+        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t *), n);
         len -= n;
         om = SLIST_NEXT(om, om_next);
     }
@@ -642,7 +642,7 @@ STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
         return 0;
     }
 
-    if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND || event->disc.event_type ==  BLE_HCI_ADV_RPT_EVTYPE_NONCONN_IND) {
+    if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND || event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_NONCONN_IND) {
         bool connectable = event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND;
         uint8_t addr[6];
         reverse_addr_byte_order(addr, event->disc.addr.val);
@@ -665,7 +665,7 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
         .window = MAX(BLE_HCI_SCAN_WINDOW_MIN, MIN(BLE_HCI_SCAN_WINDOW_MAX, window_us / BLE_HCI_SCAN_ITVL)),
         .filter_policy = BLE_HCI_CONN_FILT_NO_WL,
         .limited = 0,
-        .passive = 1,  // TODO: Handle BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP in gap_scan_cb above.
+        .passive = 1, // TODO: Handle BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP in gap_scan_cb above.
         .filter_duplicates = 0,
     };
     int err = ble_gap_disc(BLE_OWN_ADDR_PUBLIC, duration_ms, &discover_params, gap_scan_cb, NULL);

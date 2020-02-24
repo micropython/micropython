@@ -33,31 +33,31 @@
 //
 // Use the following constants for the internal sources:
 
-#define EXTI_PVD_OUTPUT         (16)
+#define EXTI_PVD_OUTPUT (16)
 #if defined(STM32L4)
-#define EXTI_RTC_ALARM          (18)
-#define EXTI_USB_OTG_FS_WAKEUP  (17)
+#define EXTI_RTC_ALARM         (18)
+#define EXTI_USB_OTG_FS_WAKEUP (17)
 #else
-#define EXTI_RTC_ALARM          (17)
-#define EXTI_USB_OTG_FS_WAKEUP  (18)
+#define EXTI_RTC_ALARM         (17)
+#define EXTI_USB_OTG_FS_WAKEUP (18)
 #endif
-#define EXTI_ETH_WAKEUP         (19)
-#define EXTI_USB_OTG_HS_WAKEUP  (20)
+#define EXTI_ETH_WAKEUP        (19)
+#define EXTI_USB_OTG_HS_WAKEUP (20)
 #if defined(STM32F0) || defined(STM32L4)
-#define EXTI_RTC_TIMESTAMP      (19)
-#define EXTI_RTC_WAKEUP         (20)
+#define EXTI_RTC_TIMESTAMP (19)
+#define EXTI_RTC_WAKEUP    (20)
 #elif defined(STM32H7) || defined(STM32WB)
-#define EXTI_RTC_TIMESTAMP      (18)
-#define EXTI_RTC_WAKEUP         (19)
+#define EXTI_RTC_TIMESTAMP (18)
+#define EXTI_RTC_WAKEUP    (19)
 #else
-#define EXTI_RTC_TIMESTAMP      (21)
-#define EXTI_RTC_WAKEUP         (22)
+#define EXTI_RTC_TIMESTAMP (21)
+#define EXTI_RTC_WAKEUP    (22)
 #endif
 #if defined(STM32F7)
 #define EXTI_LPTIM1_ASYNC_EVENT (23)
 #endif
 
-#define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)
+#define EXTI_NUM_VECTORS (PYB_EXTI_NUM_VECTORS)
 
 void extint_init0(void);
 

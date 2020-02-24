@@ -30,46 +30,46 @@
 #include "mpconfigboard.h"
 
 // Memory allocation policies
-#define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
-#define MICROPY_GC_ALLOC_THRESHOLD          (0)
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
-#define MICROPY_ALLOC_PATH_MAX              (256)
-#define MICROPY_QSTR_BYTES_IN_HASH          (1)
+#define MICROPY_GC_STACK_ENTRY_TYPE    uint16_t
+#define MICROPY_GC_ALLOC_THRESHOLD     (0)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT (32)
+#define MICROPY_ALLOC_PATH_MAX         (256)
+#define MICROPY_QSTR_BYTES_IN_HASH     (1)
 
 // Compiler configuration
-#define MICROPY_COMP_CONST                  (0)
+#define MICROPY_COMP_CONST (0)
 
 // Python internal features
-#define MICROPY_ENABLE_GC                   (1)
-#define MICROPY_KBD_EXCEPTION               (1)
-#define MICROPY_HELPER_REPL                 (1)
-#define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_SOURCE_LINE          (1)
-#define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
-#define MICROPY_CPYTHON_COMPAT              (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
+#define MICROPY_ENABLE_GC             (1)
+#define MICROPY_KBD_EXCEPTION         (1)
+#define MICROPY_HELPER_REPL           (1)
+#define MICROPY_LONGINT_IMPL          (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_ENABLE_SOURCE_LINE    (1)
+#define MICROPY_ERROR_REPORTING       (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_CPYTHON_COMPAT        (0)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 
 // Control over Python builtins
-#define MICROPY_PY_ASYNC_AWAIT              (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT       (0)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
-#define MICROPY_PY_BUILTINS_SET             (0)
-#define MICROPY_PY_BUILTINS_FROZENSET       (0)
-#define MICROPY_PY_BUILTINS_PROPERTY        (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE       (0)
-#define MICROPY_PY_BUILTINS_FILTER          (0)
-#define MICROPY_PY_BUILTINS_REVERSED        (0)
-#define MICROPY_PY_BUILTINS_MIN_MAX         (0)
-#define MICROPY_PY___FILE__                 (0)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_ATTRTUPLE                (0)
-#define MICROPY_PY_COLLECTIONS              (0)
-#define MICROPY_PY_SYS_MAXSIZE              (1)
+#define MICROPY_PY_ASYNC_AWAIT          (0)
+#define MICROPY_PY_BUILTINS_STR_COUNT   (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW  (1)
+#define MICROPY_PY_BUILTINS_SET         (0)
+#define MICROPY_PY_BUILTINS_FROZENSET   (0)
+#define MICROPY_PY_BUILTINS_PROPERTY    (0)
+#define MICROPY_PY_BUILTINS_ENUMERATE   (0)
+#define MICROPY_PY_BUILTINS_FILTER      (0)
+#define MICROPY_PY_BUILTINS_REVERSED    (0)
+#define MICROPY_PY_BUILTINS_MIN_MAX     (0)
+#define MICROPY_PY___FILE__             (0)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN   (1)
+#define MICROPY_PY_ATTRTUPLE            (0)
+#define MICROPY_PY_COLLECTIONS          (0)
+#define MICROPY_PY_SYS_MAXSIZE          (1)
 
 // Extended modules
-#define MICROPY_PY_UTIME_MP_HAL             (1)
-#define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_UTIME_MP_HAL (1)
+#define MICROPY_PY_MACHINE      (1)
 
 // Hooks to add builtins
 
@@ -79,9 +79,9 @@
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_utime;
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
+#define MICROPY_PORT_BUILTIN_MODULES                                \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine)}, \
+        { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) },
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8];
@@ -90,18 +90,18 @@ extern const struct _mp_obj_module_t mp_module_utime;
 
 // Miscellaneous settings
 
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
+#define MICROPY_EVENT_POLL_HOOK              \
+    do {                                     \
         extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
+        mp_handle_pending(true);             \
+        __WFI();                             \
     } while (0);
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+#define MP_PLAT_PRINT_STRN(str, len)     mp_hal_stdout_tx_strn_cooked(str, len)
 
 #define MP_SSIZE_MAX (0x7fffffff)
-typedef int mp_int_t; // must be pointer size
+typedef int mp_int_t;       // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 

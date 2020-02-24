@@ -79,12 +79,12 @@ STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
-    #if MICROPY_PY_OS_DUPTERM
+#if MICROPY_PY_OS_DUPTERM
     if (o->fd <= STDERR_FILENO) {
         mp_hal_stdout_tx_strn(buf, size);
         return size;
     }
-    #endif
+#endif
     MP_THREAD_GIL_EXIT();
     mp_int_t r = write(o->fd, buf, size);
     MP_THREAD_GIL_ENTER();
@@ -110,7 +110,7 @@ STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     check_fd_is_open(o);
     switch (request) {
         case MP_STREAM_SEEK: {
-            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
             MP_THREAD_GIL_EXIT();
             off_t off = lseek(o->fd, s->offset, s->whence);
             MP_THREAD_GIL_ENTER();
@@ -134,9 +134,9 @@ STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             MP_THREAD_GIL_EXIT();
             close(o->fd);
             MP_THREAD_GIL_ENTER();
-            #ifdef MICROPY_CPYTHON_COMPAT
+#ifdef MICROPY_CPYTHON_COMPAT
             o->fd = -1;
-            #endif
+#endif
             return 0;
         case MP_STREAM_GET_FILENO:
             return o->fd;
@@ -190,7 +190,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
             case '+':
                 mode_rw = O_RDWR;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+#if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_fileio;
@@ -198,7 +198,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
             case 't':
                 type = &mp_type_textio;
                 break;
-            #endif
+#endif
         }
     }
 
@@ -260,7 +260,7 @@ const mp_obj_type_t mp_type_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 #endif
 
@@ -279,7 +279,7 @@ const mp_obj_type_t mp_type_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes
@@ -291,8 +291,8 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
-const mp_obj_fdfile_t mp_sys_stdin_obj  = { .base = {&mp_type_textio}, .fd = STDIN_FILENO };
-const mp_obj_fdfile_t mp_sys_stdout_obj = { .base = {&mp_type_textio}, .fd = STDOUT_FILENO };
-const mp_obj_fdfile_t mp_sys_stderr_obj = { .base = {&mp_type_textio}, .fd = STDERR_FILENO };
+const mp_obj_fdfile_t mp_sys_stdin_obj = {.base = {&mp_type_textio}, .fd = STDIN_FILENO};
+const mp_obj_fdfile_t mp_sys_stdout_obj = {.base = {&mp_type_textio}, .fd = STDOUT_FILENO};
+const mp_obj_fdfile_t mp_sys_stderr_obj = {.base = {&mp_type_textio}, .fd = STDERR_FILENO};
 
 #endif // MICROPY_PY_IO && !MICROPY_VFS

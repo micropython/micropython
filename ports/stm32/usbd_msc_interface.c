@@ -68,8 +68,8 @@ const uint8_t USBD_MSC_Mode_Sense6_Data[4] = {
 // Sent in response to MODE SENSE(10) command
 const uint8_t USBD_MSC_Mode_Sense10_Data[8] = {
     0x00, 0x06, // mode data length
-    0x00, // medium type
-    0x00, // bit 7: write protect
+    0x00,       // medium type
+    0x00,       // bit 7: write protect
     0x00,
     0x00,
     0x00, 0x00, // block descriptor length
@@ -79,36 +79,36 @@ STATIC const uint8_t usbd_msc_vpd00[6] = {
     0x00, // peripheral qualifier; peripheral device type
     0x00, // page code
     0x00, // reserved
-    2, // page length (additional bytes beyond this entry)
+    2,    // page length (additional bytes beyond this entry)
     0x00, // page 0x00 supported
     0x83, // page 0x83 supported
 };
 
 STATIC const uint8_t usbd_msc_vpd83[4] = {
-    0x00, // peripheral qualifier; peripheral device type
-    0x83, // page code
+    0x00,       // peripheral qualifier; peripheral device type
+    0x83,       // page code
     0x00, 0x00, // page length (additional bytes beyond this entry)
 };
 
 STATIC const int8_t usbd_msc_inquiry_data[36] = {
-    0x00, // peripheral qualifier; peripheral device type
-    0x80, // 0x00 for a fixed drive, 0x80 for a removable drive
-    0x02, // version
-    0x02, // response data format
-    (STANDARD_INQUIRY_DATA_LEN - 5), // additional length
-    0x00, // various flags
-    0x00, // various flags
-    0x00, // various flags
+    0x00,                                   // peripheral qualifier; peripheral device type
+    0x80,                                   // 0x00 for a fixed drive, 0x80 for a removable drive
+    0x02,                                   // version
+    0x02,                                   // response data format
+    (STANDARD_INQUIRY_DATA_LEN - 5),        // additional length
+    0x00,                                   // various flags
+    0x00,                                   // various flags
+    0x00,                                   // various flags
     'M', 'i', 'c', 'r', 'o', 'P', 'y', ' ', // Manufacturer : 8 bytes
     'p', 'y', 'b', 'o', 'a', 'r', 'd', ' ', // Product      : 16 Bytes
     'F', 'l', 'a', 's', 'h', ' ', ' ', ' ',
-    '1', '.', '0' ,'0',                     // Version      : 4 Bytes
+    '1', '.', '0', '0', // Version      : 4 Bytes
 };
 
 // Set the logical units that will be exposed over MSC
 void usbd_msc_init_lu(size_t lu_n, const void *lu_data) {
     usbd_msc_lu_num = MIN(lu_n, USBD_MSC_MAX_LUN);
-    memcpy(usbd_msc_lu_data, lu_data, sizeof(void*) * usbd_msc_lu_num);
+    memcpy(usbd_msc_lu_data, lu_data, sizeof(void *) * usbd_msc_lu_num);
     usbd_msc_lu_flags = 0;
 }
 
@@ -137,12 +137,12 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
             default:
                 return -1;
         }
-    #if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
-        #if MICROPY_HW_ENABLE_MMCARD
-        || lu == &pyb_mmcard_type
-        #endif
-        ) {
+#if MICROPY_HW_ENABLE_MMCARD
+               || lu == &pyb_mmcard_type
+#endif
+    ) {
         switch (op) {
             case MP_BLOCKDEV_IOCTL_INIT:
                 if (!sdcard_power_on()) {
@@ -161,7 +161,7 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
             default:
                 return -1;
         }
-    #endif
+#endif
     } else {
         return -1;
     }
@@ -214,19 +214,19 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
     int len = MIN(sizeof(usbd_msc_inquiry_data), alloc_len);
     memcpy(data_out, usbd_msc_inquiry_data, len);
 
-    #if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     const void *lu = usbd_msc_lu_data[lun];
     if (len == sizeof(usbd_msc_inquiry_data)) {
         if (lu == &pyb_sdcard_type) {
             memcpy(data_out + 24, "SDCard", sizeof("SDCard") - 1);
         }
-        #if MICROPY_HW_ENABLE_MMCARD
+#if MICROPY_HW_ENABLE_MMCARD
         else if (lu == &pyb_mmcard_type) {
             memcpy(data_out + 24, "MMCard", sizeof("MMCard") - 1);
         }
-        #endif
+#endif
     }
-    #endif
+#endif
 
     return len;
 }
@@ -288,16 +288,16 @@ STATIC int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
     if (lu == &pyb_flash_type) {
         storage_read_blocks(buf, blk_addr, blk_len);
         return 0;
-    #if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
-        #if MICROPY_HW_ENABLE_MMCARD
-        || lu == &pyb_mmcard_type
-        #endif
-        ) {
+#if MICROPY_HW_ENABLE_MMCARD
+               || lu == &pyb_mmcard_type
+#endif
+    ) {
         if (sdcard_read_blocks(buf, blk_addr, blk_len) == 0) {
             return 0;
         }
-    #endif
+#endif
     }
     return -1;
 }
@@ -312,16 +312,16 @@ STATIC int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint1
     if (lu == &pyb_flash_type) {
         storage_write_blocks(buf, blk_addr, blk_len);
         return 0;
-    #if MICROPY_HW_ENABLE_SDCARD
+#if MICROPY_HW_ENABLE_SDCARD
     } else if (lu == &pyb_sdcard_type
-        #if MICROPY_HW_ENABLE_MMCARD
-        || lu == &pyb_mmcard_type
-        #endif
-        ) {
+#if MICROPY_HW_ENABLE_MMCARD
+               || lu == &pyb_mmcard_type
+#endif
+    ) {
         if (sdcard_write_blocks(buf, blk_addr, blk_len) == 0) {
             return 0;
         }
-    #endif
+#endif
     }
     return -1;
 }

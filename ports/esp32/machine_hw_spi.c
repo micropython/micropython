@@ -37,7 +37,7 @@
 #include "driver/spi_master.h"
 
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
-#define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
+#define MP_HW_SPI_MAX_XFER_BITS  (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
 typedef struct _machine_hw_spi_obj_t {
     mp_obj_base_t base;
@@ -94,16 +94,16 @@ STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
 }
 
 STATIC void machine_hw_spi_init_internal(
-    machine_hw_spi_obj_t    *self,
-    int8_t                  host,
-    int32_t                 baudrate,
-    int8_t                  polarity,
-    int8_t                  phase,
-    int8_t                  bits,
-    int8_t                  firstbit,
-    int8_t                  sck,
-    int8_t                  mosi,
-    int8_t                  miso) {
+    machine_hw_spi_obj_t *self,
+    int8_t host,
+    int32_t baudrate,
+    int8_t polarity,
+    int8_t phase,
+    int8_t bits,
+    int8_t firstbit,
+    int8_t sck,
+    int8_t mosi,
+    int8_t miso) {
 
     // if we're not initialized, then we're
     // implicitly 'changed', since this is the init routine
@@ -129,7 +129,7 @@ STATIC void machine_hw_spi_init_internal(
     }
 
     if (phase != -1 && phase != self->phase) {
-        self->phase =  phase;
+        self->phase = phase;
         changed = true;
     }
 
@@ -176,8 +176,7 @@ STATIC void machine_hw_spi_init_internal(
         .mosi_io_num = self->mosi,
         .sclk_io_num = self->sck,
         .quadwp_io_num = -1,
-        .quadhd_io_num = -1
-    };
+        .quadhd_io_num = -1};
 
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = self->baudrate,
@@ -185,8 +184,7 @@ STATIC void machine_hw_spi_init_internal(
         .spics_io_num = -1, // No CS pin
         .queue_size = 1,
         .flags = self->firstbit == MICROPY_PY_MACHINE_SPI_LSB ? SPI_DEVICE_TXBIT_LSBFIRST | SPI_DEVICE_RXBIT_LSBFIRST : 0,
-        .pre_cb = NULL
-    };
+        .pre_cb = NULL};
 
     //Initialize the SPI bus
 
@@ -230,7 +228,7 @@ STATIC void machine_hw_spi_init_internal(
 }
 
 STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
     if (self->state == MACHINE_HW_SPI_STATE_INIT) {
         self->state = MACHINE_HW_SPI_STATE_DEINIT;
         machine_hw_spi_deinit_internal(self);
@@ -245,11 +243,10 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
         return;
     }
 
-    struct spi_transaction_t transaction = { 0 };
+    struct spi_transaction_t transaction = {0};
 
     // Round to nearest whole set of bits
     int bits_to_send = len * 8 / self->bits * self->bits;
-
 
     if (len <= 4) {
         if (src != NULL) {
@@ -295,32 +292,40 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
 STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(id=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d)",
-              self->host, self->baudrate, self->polarity,
-              self->phase, self->bits, self->firstbit,
-              self->sck, self->mosi, self->miso);
+        self->host, self->baudrate, self->polarity,
+        self->phase, self->bits, self->firstbit,
+        self->sck, self->mosi, self->miso);
 }
 
 STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
 
     enum {
-        ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso
+        ARG_id,
+        ARG_baudrate,
+        ARG_polarity,
+        ARG_phase,
+        ARG_bits,
+        ARG_firstbit,
+        ARG_sck,
+        ARG_mosi,
+        ARG_miso
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
+        allowed_args, args);
     int8_t sck, mosi, miso;
 
     if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
@@ -348,24 +353,32 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
     }
 
     machine_hw_spi_init_internal(self, args[ARG_id].u_int, args[ARG_baudrate].u_int,
-                                 args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
-                                 args[ARG_firstbit].u_int, sck, mosi, miso);
+        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+        args[ARG_firstbit].u_int, sck, mosi, miso);
 }
 
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
-        ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso
+        ARG_id,
+        ARG_baudrate,
+        ARG_polarity,
+        ARG_phase,
+        ARG_bits,
+        ARG_firstbit,
+        ARG_sck,
+        ARG_mosi,
+        ARG_miso
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_PY_MACHINE_SPI_MSB} },
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -405,5 +418,5 @@ const mp_obj_type_t machine_hw_spi_type = {
     .print = machine_hw_spi_print,
     .make_new = machine_hw_spi_make_new,
     .protocol = &machine_hw_spi_p,
-    .locals_dict = (mp_obj_dict_t *) &mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

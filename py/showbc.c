@@ -35,45 +35,57 @@
 // redirect all printfs in this file to the platform print stream
 #define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
-#define DECODE_UINT { \
-    unum = 0; \
-    do { \
-        unum = (unum << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-}
-#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
-#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+#define DECODE_UINT                            \
+    {                                          \
+        unum = 0;                              \
+        do {                                   \
+            unum = (unum << 7) + (*ip & 0x7f); \
+        } while ((*ip++ & 0x80) != 0);         \
+    }
+#define DECODE_ULABEL                  \
+    do {                               \
+        unum = (ip[0] | (ip[1] << 8)); \
+        ip += 2;                       \
+    } while (0)
+#define DECODE_SLABEL                           \
+    do {                                        \
+        unum = (ip[0] | (ip[1] << 8)) - 0x8000; \
+        ip += 2;                                \
+    } while (0)
 
 #if MICROPY_PERSISTENT_CODE
 
-#define DECODE_QSTR \
+#define DECODE_QSTR           \
     qst = ip[0] | ip[1] << 8; \
     ip += 2;
 #define DECODE_PTR \
-    DECODE_UINT; \
+    DECODE_UINT;   \
     unum = mp_showbc_const_table[unum]
 #define DECODE_OBJ \
-    DECODE_UINT; \
+    DECODE_UINT;   \
     unum = mp_showbc_const_table[unum]
 
 #else
 
-#define DECODE_QSTR { \
-    qst = 0; \
-    do { \
-        qst = (qst << 7) + (*ip & 0x7f); \
-    } while ((*ip++ & 0x80) != 0); \
-}
-#define DECODE_PTR do { \
-    ip = (byte*)MP_ALIGN(ip, sizeof(void*)); \
-    unum = (uintptr_t)*(void**)ip; \
-    ip += sizeof(void*); \
-} while (0)
-#define DECODE_OBJ do { \
-    ip = (byte*)MP_ALIGN(ip, sizeof(mp_obj_t)); \
-    unum = (mp_uint_t)*(mp_obj_t*)ip; \
-    ip += sizeof(mp_obj_t); \
-} while (0)
+#define DECODE_QSTR                          \
+    {                                        \
+        qst = 0;                             \
+        do {                                 \
+            qst = (qst << 7) + (*ip & 0x7f); \
+        } while ((*ip++ & 0x80) != 0);       \
+    }
+#define DECODE_PTR                                 \
+    do {                                           \
+        ip = (byte *)MP_ALIGN(ip, sizeof(void *)); \
+        unum = (uintptr_t) * (void **)ip;          \
+        ip += sizeof(void *);                      \
+    } while (0)
+#define DECODE_OBJ                                   \
+    do {                                             \
+        ip = (byte *)MP_ALIGN(ip, sizeof(mp_obj_t)); \
+        unum = (mp_uint_t) * (mp_obj_t *)ip;         \
+        ip += sizeof(mp_obj_t);                      \
+    } while (0)
 
 #endif
 
@@ -88,14 +100,14 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     MP_BC_PRELUDE_SIZE_DECODE(ip);
     const byte *code_info = ip;
 
-    #if MICROPY_PERSISTENT_CODE
+#if MICROPY_PERSISTENT_CODE
     qstr block_name = code_info[0] | (code_info[1] << 8);
     qstr source_file = code_info[2] | (code_info[3] << 8);
     code_info += 4;
-    #else
+#else
     qstr block_name = mp_decode_uint(&code_info);
     qstr source_file = mp_decode_uint(&code_info);
-    #endif
+#endif
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, mp_showbc_code_start, len);
 
@@ -135,7 +147,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
         mp_int_t bc = 0;
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
-        for (const byte* ci = code_info; *ci;) {
+        for (const byte *ci = code_info; *ci;) {
             if ((ci[0] & 0x80) == 0) {
                 // 0b0LLBBBBB encoding
                 bc += ci[0] & 0x1f;
@@ -446,25 +458,25 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_MAKE_FUNCTION:
             DECODE_PTR;
-            printf("MAKE_FUNCTION %p", (void*)(uintptr_t)unum);
+            printf("MAKE_FUNCTION %p", (void *)(uintptr_t)unum);
             break;
 
         case MP_BC_MAKE_FUNCTION_DEFARGS:
             DECODE_PTR;
-            printf("MAKE_FUNCTION_DEFARGS %p", (void*)(uintptr_t)unum);
+            printf("MAKE_FUNCTION_DEFARGS %p", (void *)(uintptr_t)unum);
             break;
 
         case MP_BC_MAKE_CLOSURE: {
             DECODE_PTR;
             mp_uint_t n_closed_over = *ip++;
-            printf("MAKE_CLOSURE %p " UINT_FMT, (void*)(uintptr_t)unum, n_closed_over);
+            printf("MAKE_CLOSURE %p " UINT_FMT, (void *)(uintptr_t)unum, n_closed_over);
             break;
         }
 
         case MP_BC_MAKE_CLOSURE_DEFARGS: {
             DECODE_PTR;
             mp_uint_t n_closed_over = *ip++;
-            printf("MAKE_CLOSURE_DEFARGS %p " UINT_FMT, (void*)(uintptr_t)unum, n_closed_over);
+            printf("MAKE_CLOSURE_DEFARGS %p " UINT_FMT, (void *)(uintptr_t)unum, n_closed_over);
             break;
         }
 

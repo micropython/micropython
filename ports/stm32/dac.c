@@ -97,26 +97,26 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
-    #if defined(TIM4)
+#if defined(TIM4)
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
-    #endif
-    #if defined(TIM5)
+#endif
+#if defined(TIM5)
     } else if (tim->Instance == TIM5) {
         return DAC_TRIGGER_T5_TRGO;
-    #endif
-    #if defined(TIM6)
+#endif
+#if defined(TIM6)
     } else if (tim->Instance == TIM6) {
         return DAC_TRIGGER_T6_TRGO;
-    #endif
-    #if defined(TIM7)
+#endif
+#if defined(TIM7)
     } else if (tim->Instance == TIM7) {
         return DAC_TRIGGER_T7_TRGO;
-    #endif
-    #if defined(TIM8)
+#endif
+#if defined(TIM8)
     } else if (tim->Instance == TIM8) {
         return DAC_TRIGGER_T8_TRGO;
-    #endif
+#endif
     } else {
         mp_raise_ValueError("Timer does not support DAC triggering");
     }
@@ -124,23 +124,23 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
 
 STATIC void dac_deinit(uint32_t dac_channel) {
     DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
-    #if defined(STM32H7) || defined(STM32L4)
+#if defined(STM32H7) || defined(STM32L4)
     DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (DAC_OUTPUTBUFFER_DISABLE << dac_channel);
-    #else
+#else
     DAC->CR |= DAC_CR_BOFF1 << dac_channel;
-    #endif
+#endif
 }
 
 STATIC void dac_config_channel(uint32_t dac_channel, uint32_t trig, uint32_t outbuf) {
     DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
     uint32_t cr_off = DAC_CR_DMAEN1 | DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1;
     uint32_t cr_on = trig;
-    #if defined(STM32H7) || defined(STM32L4)
+#if defined(STM32H7) || defined(STM32L4)
     DAC->MCR = (DAC->MCR & ~(DAC_MCR_MODE1_Msk << dac_channel)) | (outbuf << dac_channel);
-    #else
+#else
     cr_off |= DAC_CR_BOFF1;
     cr_on |= outbuf;
-    #endif
+#endif
     DAC->CR = (DAC->CR & ~(cr_off << dac_channel)) | (cr_on << dac_channel);
 }
 
@@ -148,12 +148,12 @@ STATIC void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) 
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
-    #endif
+#endif
     }
-    *(volatile uint32_t*)(base + align) = value;
+    *(volatile uint32_t *)(base + align) = value;
 }
 
 STATIC void dac_start(uint32_t dac_channel) {
@@ -171,10 +171,10 @@ STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
     uint32_t base;
     if (dac_channel == DAC_CHANNEL_1) {
         base = (uint32_t)&DAC->DHR12R1;
-    #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
     } else {
         base = (uint32_t)&DAC->DHR12R2;
-    #endif
+#endif
     }
 
     dma_nohal_deinit(dma_descr);
@@ -190,7 +190,7 @@ STATIC void dac_start_dma(uint32_t dac_channel, const dma_descr_t *dma_descr, ui
 typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
     uint8_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2. STM32L452 only has CHANNEL_1.
-    uint8_t bits; // 8 or 12
+    uint8_t bits;        // 8 or 12
     uint8_t outbuf_single;
     uint8_t outbuf_waveform;
 } pyb_dac_obj_t;
@@ -204,10 +204,10 @@ STATIC void pyb_dac_reconfigure(pyb_dac_obj_t *self, uint32_t cr, uint32_t outbu
         const dma_descr_t *tx_dma_descr;
         if (self->dac_channel == DAC_CHANNEL_1) {
             tx_dma_descr = &dma_DAC_1_TX;
-        #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
         } else {
             tx_dma_descr = &dma_DAC_2_TX;
-        #endif
+#endif
         }
         dma_nohal_deinit(tx_dma_descr);
         dac_config_channel(self->dac_channel, cr, outbuf);
@@ -240,23 +240,23 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_hal_pin_obj_t pin;
     if (self->dac_channel == DAC_CHANNEL_1) {
         pin = pin_A4;
-    #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
     } else {
         pin = pin_A5;
-    #endif
+#endif
     }
     mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
-    // DAC peripheral clock
-    #if defined(STM32F4) || defined(STM32F7)
+// DAC peripheral clock
+#if defined(STM32F4) || defined(STM32F7)
     __DAC_CLK_ENABLE();
-    #elif defined(STM32H7)
+#elif defined(STM32H7)
     __HAL_RCC_DAC12_CLK_ENABLE();
-    #elif defined(STM32F0) || defined(STM32L4)
+#elif defined(STM32F0) || defined(STM32L4)
     __HAL_RCC_DAC1_CLK_ENABLE();
-    #else
-    #error Unsupported Processor
-    #endif
+#else
+#error Unsupported Processor
+#endif
 
     // Stop the DAC in case it was already running
     DAC->CR &= ~(DAC_CR_EN1 << self->dac_channel);
@@ -314,10 +314,10 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     uint32_t dac_channel;
     if (dac_id == 1) {
         dac_channel = DAC_CHANNEL_1;
-    #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
     } else if (dac_id == 2) {
         dac_channel = DAC_CHANNEL_2;
-    #endif
+#endif
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id);
     }
@@ -456,10 +456,10 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     const dma_descr_t *tx_dma_descr;
     if (self->dac_channel == DAC_CHANNEL_1) {
         tx_dma_descr = &dma_DAC_1_TX;
-    #if !defined(STM32L452xx)
+#if !defined(STM32L452xx)
     } else {
         tx_dma_descr = &dma_DAC_2_TX;
-    #endif
+#endif
     }
 
     uint32_t align;
@@ -482,11 +482,11 @@ STATIC const mp_rom_map_elem_t pyb_dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_dac_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_dac_write_obj) },
-    #if defined(TIM6)
+#if defined(TIM6)
     { MP_ROM_QSTR(MP_QSTR_noise), MP_ROM_PTR(&pyb_dac_noise_obj) },
     { MP_ROM_QSTR(MP_QSTR_triangle), MP_ROM_PTR(&pyb_dac_triangle_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&pyb_dac_write_timed_obj) },
-    #endif
+#endif
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(DMA_NORMAL) },
@@ -500,7 +500,7 @@ const mp_obj_type_t pyb_dac_type = {
     .name = MP_QSTR_DAC,
     .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_dac_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_dac_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_DAC

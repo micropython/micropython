@@ -40,32 +40,32 @@
 
 // Values for connect_state
 #define USBD_CDC_CONNECT_STATE_DISCONNECTED (0)
-#define USBD_CDC_CONNECT_STATE_CONNECTING (1)
-#define USBD_CDC_CONNECT_STATE_CONNECTED (2)
+#define USBD_CDC_CONNECT_STATE_CONNECTING   (1)
+#define USBD_CDC_CONNECT_STATE_CONNECTED    (2)
 
 // Flow control settings
 #define USBD_CDC_FLOWCONTROL_NONE (0)
-#define USBD_CDC_FLOWCONTROL_RTS (1)
-#define USBD_CDC_FLOWCONTROL_CTS (2)
+#define USBD_CDC_FLOWCONTROL_RTS  (1)
+#define USBD_CDC_FLOWCONTROL_CTS  (2)
 
 typedef struct _usbd_cdc_itf_t {
     usbd_cdc_state_t base; // state for the base CDC layer
 
     uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
-    uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
-    volatile uint16_t rx_buf_put; // circular buffer index
-    uint16_t rx_buf_get; // circular buffer index
-    uint8_t rx_buf_full; // rx from host will be blocked while this is true
+    uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE];      // received data is buffered here until the user reads it
+    volatile uint16_t rx_buf_put;                    // circular buffer index
+    uint16_t rx_buf_get;                             // circular buffer index
+    uint8_t rx_buf_full;                             // rx from host will be blocked while this is true
 
     uint8_t tx_buf[USBD_CDC_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
-    uint16_t tx_buf_ptr_in; // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when new data is available
-    volatile uint16_t tx_buf_ptr_out; // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when data is drained
-    uint16_t tx_buf_ptr_out_shadow; // shadow of above
-    uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
+    uint16_t tx_buf_ptr_in;                // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when new data is available
+    volatile uint16_t tx_buf_ptr_out;      // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when data is drained
+    uint16_t tx_buf_ptr_out_shadow;        // shadow of above
+    uint8_t tx_need_empty_packet;          // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
     volatile uint8_t connect_state; // indicates if we are connected
-    uint8_t attached_to_repl; // indicates if interface is connected to REPL
-    uint8_t flow; // USBD_CDC_FLOWCONTROL_* setting flags
+    uint8_t attached_to_repl;       // indicates if interface is connected to REPL
+    uint8_t flow;                   // USBD_CDC_FLOWCONTROL_* setting flags
 } usbd_cdc_itf_t;
 
 // This is implemented in usb.c

@@ -33,19 +33,18 @@
 #if MICROPY_PY_BUILTINS_HELP
 
 const char mp_help_default_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online docs please visit http://docs.micropython.org/\n"
-"\n"
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-C        -- interrupt a running program\n"
-"  CTRL-D        -- on a blank line, exit or do a soft reset\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
-;
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
+    "Control commands:\n"
+    "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
+    "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
+    "  CTRL-C        -- interrupt a running program\n"
+    "  CTRL-D        -- on a blank line, exit or do a soft reset\n"
+    "  CTRL-E        -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n";
 
 STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
     mp_print_str(MP_PYTHON_PRINTER, "  ");
@@ -80,22 +79,22 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_FROZEN_STR
+#if MICROPY_MODULE_FROZEN_STR
     extern const char mp_frozen_str_names[];
     mp_help_add_from_names(list, mp_frozen_str_names);
-    #endif
+#endif
 
-    #if MICROPY_MODULE_FROZEN_MPY
+#if MICROPY_MODULE_FROZEN_MPY
     extern const char mp_frozen_mpy_names[];
     mp_help_add_from_names(list, mp_frozen_mpy_names);
-    #endif
+#endif
 
     // sort the list so it's printed in alphabetical order
-    mp_obj_list_sort(1, &list, (mp_map_t*)&mp_const_empty_map);
+    mp_obj_list_sort(1, &list, (mp_map_t *)&mp_const_empty_map);
 
-    // print the list of modules in a column-first order
-    #define NUM_COLUMNS (4)
-    #define COLUMN_WIDTH (18)
+// print the list of modules in a column-first order
+#define NUM_COLUMNS  (4)
+#define COLUMN_WIDTH (18)
     size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
@@ -119,20 +118,20 @@ STATIC void mp_help_print_modules(void) {
         mp_print_str(MP_PYTHON_PRINTER, "\n");
     }
 
-    #if MICROPY_ENABLE_EXTERNAL_IMPORT
+#if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
     mp_print_str(MP_PYTHON_PRINTER, "Plus any modules on the filesystem\n");
-    #endif
+#endif
 }
 #endif
 
 STATIC void mp_help_print_obj(const mp_obj_t obj) {
-    #if MICROPY_PY_BUILTINS_HELP_MODULES
+#if MICROPY_PY_BUILTINS_HELP_MODULES
     if (obj == MP_OBJ_NEW_QSTR(MP_QSTR_modules)) {
         mp_help_print_modules();
         return;
     }
-    #endif
+#endif
 
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 

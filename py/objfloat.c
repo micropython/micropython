@@ -74,7 +74,7 @@ mp_int_t mp_float_hash(mp_float_t src) {
         if (adj_exp <= MP_FLOAT_FRAC_BITS) {
             // number may have a fraction; xor the integer part with the fractional part
             val = (frc >> (MP_FLOAT_FRAC_BITS - adj_exp))
-                ^ (frc & (((mp_float_uint_t)1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
+                  ^ (frc & (((mp_float_uint_t)1 << (MP_FLOAT_FRAC_BITS - adj_exp)) - 1));
         } else if ((unsigned int)adj_exp < BITS_PER_BYTE * sizeof(mp_int_t) - 1) {
             // the number is a (big) whole integer and will fit in val's signed-width
             val = (mp_int_t)frc << (adj_exp - MP_FLOAT_FRAC_BITS);
@@ -97,11 +97,11 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_float_t o_val = mp_obj_float_get(o_in);
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
     const int precision = 6;
-    #else
+#else
     const int precision = 7;
-    #endif
+#endif
 #else
     char buf[32];
     const int precision = 16;
@@ -142,10 +142,14 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
-        case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(val != 0);
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
+        case MP_UNARY_OP_POSITIVE:
+            return o_in;
+        case MP_UNARY_OP_NEGATIVE:
+            return mp_obj_new_float(-val);
         case MP_UNARY_OP_ABS: {
             if (signbit(val)) {
                 return mp_obj_new_float(-val);
@@ -153,17 +157,18 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
                 return o_in;
             }
         }
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
     }
 }
 
 STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_val = mp_obj_float_get(lhs_in);
-    #if MICROPY_PY_BUILTINS_COMPLEX
+#if MICROPY_PY_BUILTINS_COMPLEX
     if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs_val, 0, rhs_in);
     }
-    #endif
+#endif
     return mp_obj_float_binary_op(op, lhs_val, rhs_in);
 }
 
@@ -237,15 +242,21 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
 
     switch (op) {
         case MP_BINARY_OP_ADD:
-        case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+        case MP_BINARY_OP_INPLACE_ADD:
+            lhs_val += rhs_val;
+            break;
         case MP_BINARY_OP_SUBTRACT:
-        case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
+            lhs_val -= rhs_val;
+            break;
         case MP_BINARY_OP_MULTIPLY:
-        case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_MULTIPLY:
+            lhs_val *= rhs_val;
+            break;
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
-                zero_division_error:
+            zero_division_error:
                 mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
@@ -281,11 +292,11 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
                 goto zero_division_error;
             }
             if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val)) {
-                #if MICROPY_PY_BUILTINS_COMPLEX
+#if MICROPY_PY_BUILTINS_COMPLEX
                 return mp_obj_complex_binary_op(MP_BINARY_OP_POWER, lhs_val, 0, rhs_in);
-                #else
+#else
                 mp_raise_ValueError("complex values not supported");
-                #endif
+#endif
             }
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
             break;
@@ -300,11 +311,16 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             };
             return mp_obj_new_tuple(2, tuple);
         }
-        case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
-        case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
-        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_val == rhs_val);
-        case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
-        case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
+        case MP_BINARY_OP_LESS:
+            return mp_obj_new_bool(lhs_val < rhs_val);
+        case MP_BINARY_OP_MORE:
+            return mp_obj_new_bool(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL:
+            return mp_obj_new_bool(lhs_val == rhs_val);
+        case MP_BINARY_OP_LESS_EQUAL:
+            return mp_obj_new_bool(lhs_val <= rhs_val);
+        case MP_BINARY_OP_MORE_EQUAL:
+            return mp_obj_new_bool(lhs_val >= rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported

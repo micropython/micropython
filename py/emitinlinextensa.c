@@ -115,24 +115,27 @@ STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_nu
     return true;
 }
 
-typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
+typedef struct _reg_name_t {
+    byte reg;
+    byte name[3];
+} reg_name_t;
 STATIC const reg_name_t reg_name_table[] = {
-    {0, "a0\0"},
-    {1, "a1\0"},
-    {2, "a2\0"},
-    {3, "a3\0"},
-    {4, "a4\0"},
-    {5, "a5\0"},
-    {6, "a6\0"},
-    {7, "a7\0"},
-    {8, "a8\0"},
-    {9, "a9\0"},
-    {10, "a10"},
-    {11, "a11"},
-    {12, "a12"},
-    {13, "a13"},
-    {14, "a14"},
-    {15, "a15"},
+    { 0, "a0\0" },
+    { 1, "a1\0" },
+    { 2, "a2\0" },
+    { 3, "a3\0" },
+    { 4, "a4\0" },
+    { 5, "a5\0" },
+    { 6, "a6\0" },
+    { 7, "a7\0" },
+    { 8, "a8\0" },
+    { 9, "a9\0" },
+    { 10, "a10" },
+    { 11, "a11" },
+    { 12, "a12" },
+    { 13, "a13" },
+    { 14, "a14" },
+    { 15, "a15" },
 };
 
 // return empty string in case of error, so we can attempt to parse the string
@@ -195,8 +198,8 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return 0;
 }
 
-#define RRR (0)
-#define RRI8 (1)
+#define RRR    (0)
+#define RRI8   (1)
 #define RRI8_B (2)
 
 typedef struct _opcode_table_3arg_t {
@@ -208,41 +211,41 @@ typedef struct _opcode_table_3arg_t {
 
 STATIC const opcode_table_3arg_t opcode_table_3arg[] = {
     // arithmetic opcodes: reg, reg, reg
-    {MP_QSTR_and_, RRR, 0, 1},
-    {MP_QSTR_or_, RRR, 0, 2},
-    {MP_QSTR_xor, RRR, 0, 3},
-    {MP_QSTR_add, RRR, 0, 8},
-    {MP_QSTR_sub, RRR, 0, 12},
-    {MP_QSTR_mull, RRR, 2, 8},
+    { MP_QSTR_and_, RRR, 0, 1 },
+    { MP_QSTR_or_, RRR, 0, 2 },
+    { MP_QSTR_xor, RRR, 0, 3 },
+    { MP_QSTR_add, RRR, 0, 8 },
+    { MP_QSTR_sub, RRR, 0, 12 },
+    { MP_QSTR_mull, RRR, 2, 8 },
 
     // load/store/addi opcodes: reg, reg, imm
     // upper nibble of type encodes the range of the immediate arg
-    {MP_QSTR_l8ui, RRI8 | 0x10, 2, 0},
-    {MP_QSTR_l16ui, RRI8 | 0x30, 2, 1},
-    {MP_QSTR_l32i, RRI8 | 0x50, 2, 2},
-    {MP_QSTR_s8i, RRI8 | 0x10, 2, 4},
-    {MP_QSTR_s16i, RRI8 | 0x30, 2, 5},
-    {MP_QSTR_s32i, RRI8 | 0x50, 2, 6},
-    {MP_QSTR_l16si, RRI8 | 0x30, 2, 9},
-    {MP_QSTR_addi, RRI8 | 0x00, 2, 12},
+    { MP_QSTR_l8ui, RRI8 | 0x10, 2, 0 },
+    { MP_QSTR_l16ui, RRI8 | 0x30, 2, 1 },
+    { MP_QSTR_l32i, RRI8 | 0x50, 2, 2 },
+    { MP_QSTR_s8i, RRI8 | 0x10, 2, 4 },
+    { MP_QSTR_s16i, RRI8 | 0x30, 2, 5 },
+    { MP_QSTR_s32i, RRI8 | 0x50, 2, 6 },
+    { MP_QSTR_l16si, RRI8 | 0x30, 2, 9 },
+    { MP_QSTR_addi, RRI8 | 0x00, 2, 12 },
 
     // branch opcodes: reg, reg, label
-    {MP_QSTR_ball, RRI8_B, ASM_XTENSA_CC_ALL, 0},
-    {MP_QSTR_bany, RRI8_B, ASM_XTENSA_CC_ANY, 0},
-    {MP_QSTR_bbc, RRI8_B, ASM_XTENSA_CC_BC, 0},
-    {MP_QSTR_bbs, RRI8_B, ASM_XTENSA_CC_BS, 0},
-    {MP_QSTR_beq, RRI8_B, ASM_XTENSA_CC_EQ, 0},
-    {MP_QSTR_bge, RRI8_B, ASM_XTENSA_CC_GE, 0},
-    {MP_QSTR_bgeu, RRI8_B, ASM_XTENSA_CC_GEU, 0},
-    {MP_QSTR_blt, RRI8_B, ASM_XTENSA_CC_LT, 0},
-    {MP_QSTR_bnall, RRI8_B, ASM_XTENSA_CC_NALL, 0},
-    {MP_QSTR_bne, RRI8_B, ASM_XTENSA_CC_NE, 0},
-    {MP_QSTR_bnone, RRI8_B, ASM_XTENSA_CC_NONE, 0},
+    { MP_QSTR_ball, RRI8_B, ASM_XTENSA_CC_ALL, 0 },
+    { MP_QSTR_bany, RRI8_B, ASM_XTENSA_CC_ANY, 0 },
+    { MP_QSTR_bbc, RRI8_B, ASM_XTENSA_CC_BC, 0 },
+    { MP_QSTR_bbs, RRI8_B, ASM_XTENSA_CC_BS, 0 },
+    { MP_QSTR_beq, RRI8_B, ASM_XTENSA_CC_EQ, 0 },
+    { MP_QSTR_bge, RRI8_B, ASM_XTENSA_CC_GE, 0 },
+    { MP_QSTR_bgeu, RRI8_B, ASM_XTENSA_CC_GEU, 0 },
+    { MP_QSTR_blt, RRI8_B, ASM_XTENSA_CC_LT, 0 },
+    { MP_QSTR_bnall, RRI8_B, ASM_XTENSA_CC_NALL, 0 },
+    { MP_QSTR_bne, RRI8_B, ASM_XTENSA_CC_NE, 0 },
+    { MP_QSTR_bnone, RRI8_B, ASM_XTENSA_CC_NONE, 0 },
 };
 
 STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     size_t op_len;
-    const char *op_str = (const char*)qstr_data(op, &op_len);
+    const char *op_str = (const char *)qstr_data(op, &op_len);
 
     if (n_args == 0) {
         if (op == MP_QSTR_ret_n) {
@@ -335,10 +338,10 @@ branch_not_in_range:
 }
 
 const emit_inline_asm_method_table_t emit_inline_xtensa_method_table = {
-    #if MICROPY_DYNAMIC_COMPILER
+#if MICROPY_DYNAMIC_COMPILER
     emit_inline_xtensa_new,
     emit_inline_xtensa_free,
-    #endif
+#endif
 
     emit_inline_xtensa_start_pass,
     emit_inline_xtensa_end_pass,

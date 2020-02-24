@@ -50,7 +50,8 @@ void __stack_chk_fail(void) {
 void __assert_fail(const char *__assertion, const char *__file,
     unsigned int __line, const char *__function) {
     printf("Assert at %s:%d:%s() \"%s\" failed\n", __file, __line, __function, __assertion);
-    for (;;) ;
+    for (;;)
+        ;
 }
 
 static char *stack_top;
@@ -62,27 +63,27 @@ extern void uart_init_ppc(int qemu);
 
 int main(int argc, char **argv) {
     int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+    stack_top = (char *)&stack_dummy;
 
     // microwatt has argc/r3 = 0 whereas QEMU has r3 set in head.S
     uart_init_ppc(argc);
 
-    #if MICROPY_ENABLE_PYSTACK
+#if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[1024];
     mp_pystack_init(pystack, &pystack[1024]);
-    #endif
+#endif
 
-    #if MICROPY_STACK_CHECK
+#if MICROPY_STACK_CHECK
     mp_stack_ctrl_init();
     mp_stack_set_limit(48 * 1024);
-    #endif
+#endif
 
-    #if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
-    #endif
+#endif
     mp_init();
-    #if MICROPY_ENABLE_COMPILER
-    #if MICROPY_REPL_EVENT_DRIVEN
+#if MICROPY_ENABLE_COMPILER
+#if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
     for (;;) {
         int c = mp_hal_stdin_rx_chr();
@@ -90,12 +91,12 @@ int main(int argc, char **argv) {
             break;
         }
     }
-    #else
+#else
     pyexec_friendly_repl();
-    #endif
-    #else
+#endif
+#else
     pyexec_frozen_module("frozentest.py");
-    #endif
+#endif
     mp_deinit();
     return 0;
 }
@@ -124,11 +125,13 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
-    while (1);
+    while (1)
+        ;
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1)
+        ;
 }
 
 #ifndef NDEBUG

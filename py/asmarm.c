@@ -36,7 +36,7 @@
 
 #include "py/asmarm.h"
 
-#define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
+#define SIGNED_FIT24(x) (((x)&0xff800000) == 0) || (((x)&0xff000000) == 0xff000000)
 
 void asm_arm_end_pass(asm_arm_t *as) {
     if (as->base.pass == MP_ASM_PASS_EMIT) {
@@ -47,12 +47,14 @@ void asm_arm_end_pass(asm_arm_t *as) {
 #elif defined(__arm__)
         // flush I- and D-cache
         asm volatile(
-                "0:"
-                "mrc p15, 0, r15, c7, c10, 3\n"
-                "bne 0b\n"
-                "mov r0, #0\n"
-                "mcr p15, 0, r0, c7, c7, 0\n"
-                : : : "r0", "cc");
+            "0:"
+            "mrc p15, 0, r15, c7, c10, 3\n"
+            "bne 0b\n"
+            "mov r0, #0\n"
+            "mcr p15, 0, r0, c7, c7, 0\n"
+            :
+            :
+            : "r0", "cc");
 #endif
     }
 }
@@ -61,7 +63,7 @@ void asm_arm_end_pass(asm_arm_t *as) {
 STATIC void emit(asm_arm_t *as, uint op) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
     if (c != NULL) {
-        *(uint32_t*)c = op;
+        *(uint32_t *)c = op;
     }
 }
 
@@ -158,13 +160,13 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
 
     as->stack_adjust = 0;
     as->push_reglist = 1 << ASM_ARM_REG_R1
-        | 1 << ASM_ARM_REG_R2
-        | 1 << ASM_ARM_REG_R3
-        | 1 << ASM_ARM_REG_R4
-        | 1 << ASM_ARM_REG_R5
-        | 1 << ASM_ARM_REG_R6
-        | 1 << ASM_ARM_REG_R7
-        | 1 << ASM_ARM_REG_R8;
+                       | 1 << ASM_ARM_REG_R2
+                       | 1 << ASM_ARM_REG_R3
+                       | 1 << ASM_ARM_REG_R4
+                       | 1 << ASM_ARM_REG_R5
+                       | 1 << ASM_ARM_REG_R6
+                       | 1 << ASM_ARM_REG_R7
+                       | 1 << ASM_ARM_REG_R8;
 
     // Only adjust the stack if there are more locals than usable registers
     if (num_locals > 3) {
@@ -204,7 +206,7 @@ void asm_arm_mov_reg_reg(asm_arm_t *as, uint reg_dest, uint reg_src) {
 size_t asm_arm_mov_reg_i32(asm_arm_t *as, uint rd, int imm) {
     // Insert immediate into code and jump over it
     emit_al(as, 0x59f0000 | (rd << 12)); // ldr rd, [pc]
-    emit_al(as, 0xa000000); // b pc
+    emit_al(as, 0xa000000);              // b pc
     size_t loc = mp_asm_base_get_code_pos(&as->base);
     emit(as, imm);
     return loc;
@@ -243,7 +245,7 @@ void asm_arm_cmp_reg_reg(asm_arm_t *as, uint rd, uint rn) {
 }
 
 void asm_arm_setcc_reg(asm_arm_t *as, uint rd, uint cond) {
-    emit(as, asm_arm_op_mov_imm(rd, 1) | cond); // movCOND rd, #1
+    emit(as, asm_arm_op_mov_imm(rd, 1) | cond);               // movCOND rd, #1
     emit(as, asm_arm_op_mov_imm(rd, 0) | (cond ^ (1 << 28))); // mov!COND rd, #0
 }
 
@@ -291,7 +293,7 @@ void asm_arm_mov_reg_pcrel(asm_arm_t *as, uint reg_dest, uint label) {
 
     // To load rel int reg_dest, insert immediate into code and jump over it
     emit_al(as, 0x59f0000 | (reg_dest << 12)); // ldr rd, [pc]
-    emit_al(as, 0xa000000); // b pc
+    emit_al(as, 0xa000000);                    // b pc
     emit(as, rel);
 
     // Do reg_dest += PC
@@ -345,7 +347,7 @@ void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
 
 void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
     // strh doesn't support scaled register index
-    emit_al(as, 0x1a00080 | (ASM_ARM_REG_R8 << 12) | rn); // mov r8, rn, lsl #1
+    emit_al(as, 0x1a00080 | (ASM_ARM_REG_R8 << 12) | rn);              // mov r8, rn, lsl #1
     emit_al(as, 0x18000b0 | (rm << 16) | (rd << 12) | ASM_ARM_REG_R8); // strh rd, [rm, r8]
 }
 
@@ -358,7 +360,7 @@ void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
     assert(label < as->base.max_num_labels);
     mp_uint_t dest = as->base.label_offsets[label];
     mp_int_t rel = dest - as->base.code_offset;
-    rel -= 8; // account for instruction prefetch, PC is 8 bytes ahead of this instruction
+    rel -= 8;  // account for instruction prefetch, PC is 8 bytes ahead of this instruction
     rel >>= 2; // in ARM mode the branch target is 32-bit aligned, so the 2 LSB are omitted
 
     if (SIGNED_FIT24(rel)) {
@@ -376,7 +378,7 @@ void asm_arm_bl_ind(asm_arm_t *as, uint fun_id, uint reg_temp) {
     // The table offset should fit into the ldr instruction
     assert(fun_id < (0x1000 / 4));
     emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_LR, ASM_ARM_REG_PC)); // mov lr, pc
-    emit_al(as, 0x597f000 | (fun_id << 2)); // ldr pc, [r7, #fun_id*4]
+    emit_al(as, 0x597f000 | (fun_id << 2));                          // ldr pc, [r7, #fun_id*4]
 }
 
 void asm_arm_bx_reg(asm_arm_t *as, uint reg_src) {

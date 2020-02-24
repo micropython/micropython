@@ -45,7 +45,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
     msec_sleep(tv->tv_sec * 1000.0 + tv->tv_usec / 1000.0);
     return 0;
 }
-#define sleep_select(a,b,c,d,e) msec_sleep_tv((e))
+#define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
 #else
 #define sleep_select select
 #endif
@@ -55,7 +55,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #define MP_REMOVE_BRACKETSA(x)
 #define MP_REMOVE_BRACKETSB(x) MP_REMOVE_BRACKETSA x
 #define MP_REMOVE_BRACKETSC(x) MP_REMOVE_BRACKETSB x
-#define MP_CLOCKS_PER_SEC MP_REMOVE_BRACKETSC(CLOCKS_PER_SEC)
+#define MP_CLOCKS_PER_SEC      MP_REMOVE_BRACKETSC(CLOCKS_PER_SEC)
 #else
 #define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
 #endif
@@ -103,17 +103,17 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
         MP_THREAD_GIL_EXIT();
         res = sleep_select(0, NULL, NULL, NULL, &tv);
         MP_THREAD_GIL_ENTER();
-        #if MICROPY_SELECT_REMAINING_TIME
+#if MICROPY_SELECT_REMAINING_TIME
         // TODO: This assumes Linux behavior of modifying tv to the remaining
         // time.
         if (res != -1 || errno != EINTR) {
             break;
         }
         mp_handle_pending(true);
-        //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
-        #else
+//printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
+#else
         break;
-        #endif
+#endif
     }
     RAISE_ERRNO(res, errno);
 #else
@@ -131,12 +131,12 @@ STATIC mp_obj_t mod_time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         t = time(NULL);
     } else {
-        #if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_PY_BUILTINS_FLOAT
         mp_float_t val = mp_obj_get_float(args[0]);
         t = (time_t)MICROPY_FLOAT_C_FUN(trunc)(val);
-        #else
+#else
         t = mp_obj_get_int(args[0]);
-        #endif
+#endif
     }
     struct tm *tm = localtime(&t);
 
@@ -211,8 +211,8 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
 
 const mp_obj_module_t mp_module_time = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .base = {&mp_type_module},
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_UTIME

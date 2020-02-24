@@ -61,7 +61,7 @@ void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
 
 void nimble_hci_uart_tx_strn(const char *str, uint len) {
     MICROPY_PY_LWIP_ENTER
-    rfcore_ble_hci_cmd(len, (const uint8_t*)str);
+    rfcore_ble_hci_cmd(len, (const uint8_t *)str);
     MICROPY_PY_LWIP_EXIT
 }
 
@@ -102,7 +102,8 @@ int nimble_hci_uart_configure(uint32_t port) {
     bt_hci_uart_obj.is_static = true;
     bt_hci_uart_obj.timeout = 2;
     bt_hci_uart_obj.timeout_char = 2;
-    MP_STATE_PORT(pyb_uart_obj_all)[bt_hci_uart_obj.uart_id - 1] = &bt_hci_uart_obj;
+    MP_STATE_PORT(pyb_uart_obj_all)
+    [bt_hci_uart_obj.uart_id - 1] = &bt_hci_uart_obj;
     return 0;
 }
 
@@ -117,19 +118,19 @@ int nimble_hci_uart_activate(void) {
     };
     mp_call_function_n_kw(uart_irq_fn, 3, 0, uargs);
 
-    #if MICROPY_PY_NETWORK_CYW43
+#if MICROPY_PY_NETWORK_CYW43
     cywbt_init();
     cywbt_activate();
-    #endif
+#endif
 
     return 0;
 }
 
 void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
-    #ifdef pyb_pin_BT_HOST_WAKE
+#ifdef pyb_pin_BT_HOST_WAKE
     int host_wake = 0;
     host_wake = mp_hal_pin_read(pyb_pin_BT_HOST_WAKE);
-    /*
+/*
     // this is just for info/tracing purposes
     static int last_host_wake = 0;
     if (host_wake != last_host_wake) {
@@ -137,7 +138,7 @@ void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
         last_host_wake = host_wake;
     }
     */
-    #endif
+#endif
 
     while (uart_rx_any(&bt_hci_uart_obj)) {
         uint8_t data = uart_rx_char(&bt_hci_uart_obj);
@@ -145,18 +146,18 @@ void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
         rx_cb(rx_arg, data);
     }
 
-    #ifdef pyb_pin_BT_DEV_WAKE
+#ifdef pyb_pin_BT_DEV_WAKE
     if (host_wake == 1 && mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 0) {
         if (mp_hal_ticks_ms() - bt_sleep_ticks > 500) {
             //printf("BT SLEEP\n");
             mp_hal_pin_high(pyb_pin_BT_DEV_WAKE); // let sleep
         }
     }
-    #endif
+#endif
 }
 
 void nimble_hci_uart_tx_strn(const char *str, uint len) {
-    #ifdef pyb_pin_BT_DEV_WAKE
+#ifdef pyb_pin_BT_DEV_WAKE
     bt_sleep_ticks = mp_hal_ticks_ms();
 
     if (mp_hal_pin_read(pyb_pin_BT_DEV_WAKE) == 1) {
@@ -166,7 +167,7 @@ void nimble_hci_uart_tx_strn(const char *str, uint len) {
         // might result in more BLE operations).
         mp_hal_delay_us(5000); // can't go lower than this
     }
-    #endif
+#endif
 
     uart_tx_strn(&bt_hci_uart_obj, str, len);
 }

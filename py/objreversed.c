@@ -33,8 +33,8 @@
 
 typedef struct _mp_obj_reversed_t {
     mp_obj_base_t base;
-    mp_obj_t seq;           // sequence object that we are reversing
-    mp_uint_t cur_index;    // current index, plus 1; 0=no more, 1=last one (index 0)
+    mp_obj_t seq;        // sequence object that we are reversing
+    mp_uint_t cur_index; // current index, plus 1; 0=no more, 1=last one (index 0)
 } mp_obj_reversed_t;
 
 STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

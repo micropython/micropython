@@ -64,7 +64,7 @@ STATIC mp_obj_t vfs_posix_get_path_obj(mp_obj_vfs_posix_t *self, mp_obj_t path) 
     }
 }
 
-STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char*)) {
+STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char *)) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = f(vfs_posix_get_path_str(self, path_in));
     if (ret != 0) {
@@ -193,13 +193,13 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
-            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+            t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
 
-        #ifdef _DIRENT_HAVE_D_TYPE
-        #ifdef DTTOIF
+#ifdef _DIRENT_HAVE_D_TYPE
+#ifdef DTTOIF
         t->items[1] = MP_OBJ_NEW_SMALL_INT(DTTOIF(dirent->d_type));
-        #else
+#else
         if (dirent->d_type == DT_DIR) {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
         } else if (dirent->d_type == DT_REG) {
@@ -207,17 +207,17 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         } else {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
         }
-        #endif
-        #else
+#endif
+#else
         // DT_UNKNOWN should have 0 value on any reasonable system
         t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
-        #endif
+#endif
 
-        #ifdef _DIRENT_HAVE_D_INO
+#ifdef _DIRENT_HAVE_D_INO
         t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
-        #else
+#else
         t->items[2] = MP_OBJ_NEW_SMALL_INT(0);
-        #endif
+#endif
 
         return MP_OBJ_FROM_PTR(t);
     }
@@ -318,17 +318,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);
 #if USE_STATFS
 #include <sys/vfs.h>
 #define STRUCT_STATVFS struct statfs
-#define STATVFS statfs
-#define F_FAVAIL sb.f_ffree
-#define F_NAMEMAX sb.f_namelen
-#define F_FLAG sb.f_flags
+#define STATVFS        statfs
+#define F_FAVAIL       sb.f_ffree
+#define F_NAMEMAX      sb.f_namelen
+#define F_FLAG         sb.f_flags
 #else
 #include <sys/statvfs.h>
 #define STRUCT_STATVFS struct statvfs
-#define STATVFS statvfs
-#define F_FAVAIL sb.f_favail
-#define F_NAMEMAX sb.f_namemax
-#define F_FLAG sb.f_flag
+#define STATVFS        statvfs
+#define F_FAVAIL       sb.f_favail
+#define F_NAMEMAX      sb.f_namemax
+#define F_FLAG         sb.f_flag
 #endif
 
 STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
@@ -382,7 +382,7 @@ const mp_obj_type_t mp_type_vfs_posix = {
     .name = MP_QSTR_VfsPosix,
     .make_new = vfs_posix_make_new,
     .protocol = &vfs_posix_proto,
-    .locals_dict = (mp_obj_dict_t*)&vfs_posix_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
 };
 
 #endif // MICROPY_VFS_POSIX
