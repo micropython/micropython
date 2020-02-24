@@ -33,6 +33,7 @@
 #include "storage.h"
 #include "i2cslave.h"
 #include "mboot.h"
+#include "dfu.h"
 
 // Using polling is about 10% faster than not using it (and using IRQ instead)
 // This DFU code with polling runs in about 70% of the time of the ST bootloader
@@ -76,6 +77,7 @@
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
 #endif
 #endif
+
 
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
@@ -905,45 +907,8 @@ uint8_t i2c_slave_process_tx_byte(void) {
 /******************************************************************************/
 // DFU
 
-#define DFU_XFER_SIZE (2048)
-
-enum {
-    DFU_DNLOAD = 1,
-    DFU_UPLOAD = 2,
-    DFU_GETSTATUS = 3,
-    DFU_CLRSTATUS = 4,
-    DFU_ABORT = 6,
-};
-
-enum {
-    DFU_STATUS_IDLE = 2,
-    DFU_STATUS_BUSY = 4,
-    DFU_STATUS_DNLOAD_IDLE = 5,
-    DFU_STATUS_MANIFEST = 7,
-    DFU_STATUS_UPLOAD_IDLE = 9,
-    DFU_STATUS_ERROR = 0xa,
-};
-
-enum {
-    DFU_CMD_NONE = 0,
-    DFU_CMD_EXIT = 1,
-    DFU_CMD_UPLOAD = 7,
-    DFU_CMD_DNLOAD = 8,
-};
-
-typedef struct _dfu_state_t {
-    int status;
-    int cmd;
-    uint16_t wBlockNum;
-    uint16_t wLength;
-    uint32_t addr;
-    uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
-} dfu_state_t;
-
-static dfu_state_t dfu_state SECTION_NOZERO_BSS;
-
 static void dfu_init(void) {
-    dfu_state.status = DFU_STATUS_IDLE;
+    dfu_state.state = DFU_STATE_IDLE;
     dfu_state.cmd = DFU_CMD_NONE;
     dfu_state.addr = 0x08000000;
 }
@@ -974,21 +939,25 @@ static int dfu_process_dnload(void) {
         ret = do_write(addr, dfu_state.buf, dfu_state.wLength);
     }
     if (ret == 0) {
-        return DFU_STATUS_DNLOAD_IDLE;
+        return DFU_STATE_DNLOAD_IDLE;
     } else {
-        return DFU_STATUS_ERROR;
+        return DFU_STATE_ERROR;
     }
 }
 
 static void dfu_handle_rx(int cmd, int arg, int len, const void *buf) {
     if (cmd == DFU_CLRSTATUS) {
         // clear status
-        dfu_state.status = DFU_STATUS_IDLE;
+        dfu_state.state = DFU_STATE_IDLE;
         dfu_state.cmd = DFU_CMD_NONE;
+        dfu_state.status = DFU_STATUS_OK;
+        dfu_state.error = 0;
     } else if (cmd == DFU_ABORT) {
         // clear status
-        dfu_state.status = DFU_STATUS_IDLE;
+        dfu_state.state = DFU_STATE_IDLE;
         dfu_state.cmd = DFU_CMD_NONE;
+        dfu_state.status = DFU_STATUS_OK;
+        dfu_state.error = 0;
     } else if (cmd == DFU_DNLOAD) {
         if (len == 0) {
             // exit DFU
@@ -1004,14 +973,14 @@ static void dfu_handle_rx(int cmd, int arg, int len, const void *buf) {
 }
 
 static void dfu_process(void) {
-    if (dfu_state.status == DFU_STATUS_MANIFEST) {
+    if (dfu_state.state == DFU_STATE_MANIFEST) {
         do_reset();
     }
 
-    if (dfu_state.status == DFU_STATUS_BUSY) {
+    if (dfu_state.state == DFU_STATE_BUSY) {
         if (dfu_state.cmd == DFU_CMD_DNLOAD) {
             dfu_state.cmd = DFU_CMD_NONE;
-            dfu_state.status = dfu_process_dnload();
+            dfu_state.state = dfu_process_dnload();
         }
     }
 }
@@ -1030,21 +999,23 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
             case DFU_CMD_NONE:
                 break;
             case DFU_CMD_EXIT:
-                dfu_state.status = DFU_STATUS_MANIFEST;
+                dfu_state.state = DFU_STATE_MANIFEST;
                 break;
             case DFU_CMD_UPLOAD:
-                dfu_state.status = DFU_STATUS_UPLOAD_IDLE;
+                dfu_state.state = DFU_STATE_UPLOAD_IDLE;
                 break;
             case DFU_CMD_DNLOAD:
-                dfu_state.status = DFU_STATUS_BUSY;
+                dfu_state.state = DFU_STATE_BUSY;
                 break;
+            default:
+                dfu_state.state = DFU_STATE_BUSY;
         }
-        buf[0] = 0;
-        buf[1] = dfu_state.cmd; // TODO is this correct?
-        buf[2] = 0;
-        buf[3] = 0;
-        buf[4] = dfu_state.status;
-        buf[5] = 0;
+        buf[0] = dfu_state.status; // bStatus
+        buf[1] = 0;  // bwPollTimeout (ms)
+        buf[2] = 0;  // bwPollTimeout (ms)
+        buf[3] = 0;  // bwPollTimeout (ms)
+        buf[4] = dfu_state.state; // bState
+        buf[5] = dfu_state.error;  // iString
         return 6;
     }
     return -1;
