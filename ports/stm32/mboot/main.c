@@ -415,7 +415,7 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define LED3 MICROPY_HW_LED4
 #endif
 
-void led_init(void) {
+MP_WEAK void led_init(void) {
     mp_hal_pin_output(LED0);
     mp_hal_pin_output(LED1);
     #ifdef LED2
@@ -426,7 +426,7 @@ void led_init(void) {
     #endif
 }
 
-void led_state(int led, int val) {
+MP_WEAK void led_state(int led, int val) {
     if (led == 1) {
         led = LED0;
     }
