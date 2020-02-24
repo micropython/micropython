@@ -54,6 +54,19 @@ __DFU_STATE_DFU_ERROR = 0x0A
 
 _DFU_DESCRIPTOR_TYPE = 0x21
 
+__DFU_STATUS_STR = {
+    __DFU_STATE_APP_IDLE: "STATE_APP_IDLE",
+    __DFU_STATE_APP_DETACH: "STATE_APP_DETACH",
+    __DFU_STATE_DFU_IDLE: "STATE_DFU_IDLE",
+    __DFU_STATE_DFU_DOWNLOAD_SYNC: "STATE_DFU_DOWNLOAD_SYNC",
+    __DFU_STATE_DFU_DOWNLOAD_BUSY: "STATE_DFU_DOWNLOAD_BUSY",
+    __DFU_STATE_DFU_DOWNLOAD_IDLE: "STATE_DFU_DOWNLOAD_IDLE",
+    __DFU_STATE_DFU_MANIFEST_SYNC: "STATE_DFU_MANIFEST_SYNC",
+    __DFU_STATE_DFU_MANIFEST: "STATE_DFU_MANIFEST",
+    __DFU_STATE_DFU_MANIFEST_WAIT_RESET: "STATE_DFU_MANIFEST_WAIT_RESET",
+    __DFU_STATE_DFU_UPLOAD_IDLE: "STATE_DFU_UPLOAD_IDLE",
+    __DFU_STATE_DFU_ERROR: "STATE_DFU_ERROR",
+}
 
 # USB device handle
 __dev = None
@@ -151,18 +164,22 @@ def get_status():
     return stat[4]
 
 
+def check_status(stage, expected):
+    status = get_status()
+    if status != expected:
+        raise SystemExit("DFU: %s failed (%s)" % (stage, __DFU_STATUS_STR.get(status, status)))
+
+
 def mass_erase():
     """Performs a MASS erase (i.e. erases the entire device)."""
     # Send DNLOAD with first byte=0x41
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE, "\x41", __TIMEOUT)
 
     # Execute last command
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: erase failed")
+    check_status("erase", __DFU_STATE_DFU_DOWNLOAD_BUSY)
 
     # Check command state
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: erase failed")
+    check_status("erase", __DFU_STATE_DFU_DOWNLOAD_IDLE)
 
 
 def page_erase(addr):
@@ -175,13 +192,10 @@ def page_erase(addr):
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: erase failed")
+    check_status("erase", __DFU_STATE_DFU_DOWNLOAD_BUSY)
 
     # Check command state
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-
-        raise Exception("DFU: erase failed")
+    check_status("erase", __DFU_STATE_DFU_DOWNLOAD_IDLE)
 
 
 def set_address(addr):
@@ -191,12 +205,10 @@ def set_address(addr):
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: set address failed")
+    check_status("set address", __DFU_STATE_DFU_DOWNLOAD_BUSY)
 
     # Check command state
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: set address failed")
+    check_status("set address", __DFU_STATE_DFU_DOWNLOAD_IDLE)
 
 
 def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
@@ -228,12 +240,10 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
         )
 
         # Execute last command
-        if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-            raise Exception("DFU: write memory failed")
+        check_status("write memory", __DFU_STATE_DFU_DOWNLOAD_BUSY)
 
         # Check command state
-        if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-            raise Exception("DFU: write memory failed")
+        check_status("write memory", __DFU_STATE_DFU_DOWNLOAD_IDLE)
 
         xfer_count += 1
         xfer_bytes += chunk
@@ -253,12 +263,10 @@ def write_page(buf, xfer_offset):
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE, buf, __TIMEOUT)
 
     # Execute last command
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
-        raise Exception("DFU: write memory failed")
+    check_status("write memory", __DFU_STATE_DFU_DOWNLOAD_BUSY)
 
     # Check command state
-    if get_status() != __DFU_STATE_DFU_DOWNLOAD_IDLE:
-        raise Exception("DFU: write memory failed")
+    check_status("write memory", __DFU_STATE_DFU_DOWNLOAD_IDLE)
 
     if __verbose:
         print("Write: 0x%x " % (xfer_base + xfer_offset))
@@ -477,8 +485,7 @@ def list_dfu_devices(*args, **kwargs):
     """Prints a lits of devices detected in DFU mode."""
     devices = get_dfu_devices(*args, **kwargs)
     if not devices:
-        print("No DFU capable devices found")
-        return
+        raise SystemExit("No DFU capable devices found")
     for device in devices:
         print(
             "Bus {} Device {:03d}: ID {:04x}:{:04x}".format(
@@ -551,17 +558,22 @@ def cli_progress(addr, offset, size):
 def main():
     """Test program for verifying this files functionality."""
     global __verbose
+    global __VID
+    global __PID
     # Parse CMD args
     parser = argparse.ArgumentParser(description="DFU Python Util")
     parser.add_argument(
         "-l", "--list", help="list available DFU devices", action="store_true", default=False
     )
+    parser.add_argument("--vid", help="USB Vendor ID", type=lambda x: int(x, 0), default=__VID)
+    parser.add_argument("--pid", help="USB Product ID", type=lambda x: int(x, 0), default=__PID)
     parser.add_argument(
         "-m", "--mass-erase", help="mass erase device", action="store_true", default=False
     )
     parser.add_argument(
         "-u", "--upload", help="read file from DFU device", dest="path", default=False
     )
+    parser.add_argument("-x", "--exit", help="Exit DFU", action="store_true", default=False)
     parser.add_argument(
         "-v", "--verbose", help="increase output verbosity", action="store_true", default=False
     )
@@ -569,28 +581,42 @@ def main():
 
     __verbose = args.verbose
 
+    __VID = args.vid
+    __PID = args.pid
+
     if args.list:
         list_dfu_devices(idVendor=__VID, idProduct=__PID)
         return
 
     init()
 
+    command_run = False
     if args.mass_erase:
         print("Mass erase...")
         mass_erase()
+        command_run = True
 
     if args.path:
         elements = read_dfu_file(args.path)
         if not elements:
+            print("No data in dfu file")
             return
         print("Writing memory...")
         write_elements(elements, args.mass_erase, progress=cli_progress)
 
         print("Exiting DFU...")
         exit_dfu()
-        return
+        command_run = True
 
-    print("No command specified")
+    if args.exit:
+        print("Exiting DFU...")
+        exit_dfu()
+        command_run = True
+
+    if command_run:
+        print("Finished")
+    else:
+        print("No command specified")
 
 
 if __name__ == "__main__":
