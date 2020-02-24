@@ -1109,11 +1109,11 @@ typedef struct _pyb_usbdd_obj_t {
 #endif
 
 #ifndef MBOOT_USB_VID
-#define MBOOT_USB_VID 0x0483
+#define MBOOT_USB_VID BOOTLOADER_DFU_USB_VID
 #endif
 
 #ifndef MBOOT_USB_PID
-#define MBOOT_USB_PID 0xDF11
+#define MBOOT_USB_PID BOOTLOADER_DFU_USB_PID
 #endif
 
 static const uint8_t usbd_fifo_size[] = {
