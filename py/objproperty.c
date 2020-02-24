@@ -37,7 +37,9 @@ typedef struct _mp_obj_property_t {
 } mp_obj_property_t;
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    enum { ARG_fget, ARG_fset, ARG_fdel, ARG_doc };
+    enum {
+        ARG_fget, ARG_fset, ARG_fdel, ARG_doc
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },

@@ -303,7 +303,9 @@ STATIC int mp_machine_i2c_writeto(mp_obj_base_t *self, uint16_t addr, const uint
 // MicroPython bindings for I2C
 
 STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
+    enum {
+        ARG_scl, ARG_sda, ARG_freq, ARG_timeout
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -571,7 +573,9 @@ STATIC const mp_arg_t machine_i2c_mem_allowed_args[] = {
 };
 
 STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_addr, ARG_memaddr, ARG_n, ARG_addrsize };
+    enum {
+        ARG_addr, ARG_memaddr, ARG_n, ARG_addrsize
+    };
     mp_arg_val_t args[MP_ARRAY_SIZE(machine_i2c_mem_allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(machine_i2c_mem_allowed_args), machine_i2c_mem_allowed_args, args);
@@ -593,7 +597,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_obj, 1, machine_i2c_readfrom
 
 
 STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
+    enum {
+        ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize
+    };
     mp_arg_val_t args[MP_ARRAY_SIZE(machine_i2c_mem_allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(machine_i2c_mem_allowed_args), machine_i2c_mem_allowed_args, args);
@@ -613,7 +619,9 @@ STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_into_obj, 1, machine_i2c_readfrom_mem_into);
 
 STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
+    enum {
+        ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize
+    };
     mp_arg_val_t args[MP_ARRAY_SIZE(machine_i2c_mem_allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(machine_i2c_mem_allowed_args), machine_i2c_mem_allowed_args, args);

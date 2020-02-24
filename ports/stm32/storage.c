@@ -277,7 +277,9 @@ STATIC void pyb_flash_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 
 STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Parse arguments
-    enum { ARG_start, ARG_len };
+    enum {
+        ARG_start, ARG_len
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },

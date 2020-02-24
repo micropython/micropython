@@ -93,7 +93,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq)
 
 STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum {ARG_sleep_ms};
+    enum {
+        ARG_sleep_ms
+    };
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_sleep_ms, MP_ARG_INT, { .u_int = 0 } },
     };

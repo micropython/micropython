@@ -199,7 +199,9 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly, ARG_mkfs };
+    enum {
+        ARG_readonly, ARG_mkfs
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
@@ -295,7 +297,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
 
 // Note: buffering and encoding args are currently ignored
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_file, ARG_mode, ARG_encoding };
+    enum {
+        ARG_file, ARG_mode, ARG_encoding
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },

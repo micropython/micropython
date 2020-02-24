@@ -60,7 +60,9 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (machine_rtc_config.wake_on_touch) {
         mp_raise_ValueError("no resources");
     }
-    enum {ARG_pin, ARG_level};
+    enum {
+        ARG_pin, ARG_level
+    };
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin,  MP_ARG_OBJ, {.u_obj = mp_obj_new_int(machine_rtc_config.ext0_pin)} },
         { MP_QSTR_level,  MP_ARG_BOOL, {.u_bool = machine_rtc_config.ext0_level} },
@@ -88,7 +90,9 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext0_obj, 0, esp32_wake_on_ext0);
 
 STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_pins, ARG_level};
+    enum {
+        ARG_pins, ARG_level
+    };
     const mp_arg_t allowed_args[] = {
         { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_level, MP_ARG_BOOL, {.u_bool = machine_rtc_config.ext1_level} },

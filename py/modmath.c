@@ -173,7 +173,9 @@ MATH_FUN_1(lgamma, lgamma)
 
 #if MICROPY_PY_MATH_ISCLOSE
 STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
+    enum {
+        ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol
+    };
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
         {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},

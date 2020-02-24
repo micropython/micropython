@@ -103,7 +103,9 @@ STATIC void machine_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_hspi_obj_t *self = (machine_hspi_obj_t*)self_in;
 
-    enum { ARG_baudrate, ARG_polarity, ARG_phase };
+    enum {
+        ARG_baudrate, ARG_polarity, ARG_phase
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },

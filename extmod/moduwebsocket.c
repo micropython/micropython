@@ -34,9 +34,13 @@
 
 #if MICROPY_PY_UWEBSOCKET
 
-enum { FRAME_HEADER, FRAME_OPT, PAYLOAD, CONTROL };
+enum {
+    FRAME_HEADER, FRAME_OPT, PAYLOAD, CONTROL
+};
 
-enum { BLOCKING_WRITE = 0x80 };
+enum {
+    BLOCKING_WRITE = 0x80
+};
 
 typedef struct _mp_obj_websocket_t {
     mp_obj_base_t base;

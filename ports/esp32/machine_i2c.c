@@ -116,7 +116,9 @@ STATIC void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Parse args
-    enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
+    enum {
+        ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },

@@ -660,7 +660,9 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 // init(*, flow=-1)
 STATIC mp_obj_t pyb_usb_vcp_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_flow };
+    enum {
+        ARG_flow
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };

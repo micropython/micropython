@@ -54,8 +54,12 @@ struct webrepl_file {
     char fname[64];
 } __attribute__((packed));
 
-enum { PUT_FILE = 1, GET_FILE, GET_VER };
-enum { STATE_PASSWD, STATE_NORMAL };
+enum {
+    PUT_FILE = 1, GET_FILE, GET_VER
+};
+enum {
+    STATE_PASSWD, STATE_NORMAL
+};
 
 typedef struct _mp_obj_webrepl_t {
     mp_obj_base_t base;

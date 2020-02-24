@@ -39,7 +39,9 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, };
+    enum {
+        ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq,
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },

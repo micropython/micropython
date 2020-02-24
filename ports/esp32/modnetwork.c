@@ -318,7 +318,9 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_bssid };
+    enum {
+        ARG_ssid, ARG_password, ARG_bssid
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },

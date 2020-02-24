@@ -165,7 +165,9 @@ STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ppp_active_obj, 1, 2, ppp_active);
 
 STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    enum { ARG_authmode, ARG_username, ARG_password };
+    enum {
+        ARG_authmode, ARG_username, ARG_password
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PPPAUTHTYPE_NONE} },
         { MP_QSTR_username, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },

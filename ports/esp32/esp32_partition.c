@@ -105,7 +105,9 @@ STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
 
 STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Parse args
-    enum { ARG_type, ARG_subtype, ARG_label };
+    enum {
+        ARG_type, ARG_subtype, ARG_label
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_type, MP_ARG_INT, {.u_int = ESP_PARTITION_TYPE_APP} },
         { MP_QSTR_subtype, MP_ARG_INT, {.u_int = ESP_PARTITION_SUBTYPE_ANY} },

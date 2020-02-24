@@ -353,7 +353,9 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_config_obj, 1, bluetooth_ble_config);
 
 STATIC mp_obj_t bluetooth_ble_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger };
+    enum {
+        ARG_handler, ARG_trigger
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ|MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = MP_BLUETOOTH_IRQ_ALL} },
@@ -381,7 +383,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_irq_obj, 1, bluetooth_ble_irq);
 // ----------------------------------------------------------------------------
 
 STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_interval_us, ARG_adv_data, ARG_resp_data, ARG_connectable };
+    enum {
+        ARG_interval_us, ARG_adv_data, ARG_resp_data, ARG_connectable
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_interval_us, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(500000)} },
         { MP_QSTR_adv_data, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },

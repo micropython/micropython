@@ -121,7 +121,9 @@ STATIC void esp32_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 
 STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
         size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_duty };
+    enum {
+        ARG_freq, ARG_duty
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_duty, MP_ARG_INT, {.u_int = -1} },

@@ -232,7 +232,9 @@ STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
 
 STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_trigger, ARG_wake };
+    enum {
+        ARG_trigger, ARG_wake
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },

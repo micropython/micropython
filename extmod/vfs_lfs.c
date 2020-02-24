@@ -30,7 +30,9 @@
 
 #if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
-enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead };
+enum {
+    LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead
+};
 
 static const mp_arg_t lfs_make_allowed_args[] = {
     { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ },

@@ -574,7 +574,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, mp_obj_str_split);
 
 #if MICROPY_PY_BUILTINS_STR_SPLITLINES
 STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_keepends };
+    enum {
+        ARG_keepends
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_keepends, MP_ARG_BOOL, {.u_bool = false} },
     };
@@ -781,7 +783,9 @@ STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
 
-enum { LSTRIP, RSTRIP, STRIP };
+enum {
+    LSTRIP, RSTRIP, STRIP
+};
 
 STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_str_or_bytes(args[0]));
