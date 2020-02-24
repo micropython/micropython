@@ -208,6 +208,8 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
         return false;
     }
     if (ejected[lun]) {
+        // Set 0x3a for media not present.
+        tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3A, 0x00);
         return false;
     }
 
@@ -243,10 +245,8 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
             if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
                 return false;
             }
-        } else {
-            // Start the unit, but only if not ejected.
-            return !ejected[lun];
         }
+        // Always start the unit, even if ejected. Whether media is present is a separate check.
     }
 
     return true;
