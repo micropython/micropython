@@ -164,8 +164,8 @@ int mp_bluetooth_init(void);
 // Disables the Bluetooth stack. Is a no-op when not enabled.
 void mp_bluetooth_deinit(void);
 
-// Returns true when the Bluetooth stack is enabled.
-bool mp_bluetooth_is_enabled(void);
+// Returns true when the Bluetooth stack is active.
+bool mp_bluetooth_is_active(void);
 
 // Gets the MAC addr of this device in big-endian format.
 void mp_bluetooth_get_device_addr(uint8_t *addr);

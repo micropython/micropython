@@ -271,7 +271,7 @@ void mp_bluetooth_deinit(void) {
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 }
 
-bool mp_bluetooth_is_enabled(void) {
+bool mp_bluetooth_is_active(void) {
     return mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
 }
 

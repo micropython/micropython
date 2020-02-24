@@ -275,7 +275,7 @@ STATIC mp_obj_t bluetooth_ble_active(size_t n_args, const mp_obj_t *args) {
         }
     }
     // Return current state.
-    return mp_obj_new_bool(mp_bluetooth_is_enabled());
+    return mp_obj_new_bool(mp_bluetooth_is_active());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_active_obj, 1, 2, bluetooth_ble_active);
 
