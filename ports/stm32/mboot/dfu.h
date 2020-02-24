@@ -92,3 +92,10 @@ typedef struct _dfu_state_t {
 } dfu_state_t;
 
 static dfu_state_t dfu_state SECTION_NOZERO_BSS;
+
+// The DFU standard allows for error messages to be sent (via str index) in GETSTATUS responses
+#define MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX 0x10
+#define MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER "Can't overwrite mboot"
+
+#define MBOOT_ERROR_STR_INVALID_ADDRESS_IDX 0x11
+#define MBOOT_ERROR_STR_INVALID_ADDRESS "Address out of range"
