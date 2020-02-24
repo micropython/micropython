@@ -1109,10 +1109,16 @@ typedef struct _pyb_usbdd_obj_t {
 #endif
 
 #ifndef MBOOT_USB_VID
+#ifdef BOOTLOADER_DFU_USB_VID
+#define MBOOT_USB_VID BOOTLOADER_DFU_USB_VID
+#else
 #define MBOOT_USB_VID 0x0483
 #endif
 
 #ifndef MBOOT_USB_PID
+#ifdef BOOTLOADER_DFU_USB_PID
+#define MBOOT_USB_PID BOOTLOADER_DFU_USB_PID
+#else
 #define MBOOT_USB_PID 0xDF11
 #endif
 

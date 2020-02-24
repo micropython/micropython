@@ -28,7 +28,6 @@ HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
-DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
@@ -71,6 +70,10 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += --gc-sections
+
+BOOTLOADER_DFU_USB_VID ?= 0x0483
+BOOTLOADER_DFU_USB_PID ?= 0xDF11
+CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
