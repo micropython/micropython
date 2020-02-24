@@ -52,6 +52,11 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;
     } >RAM AT> FLASH_BL
+    
+    .footer (ORIGIN(FLASH_BL) + LENGTH(FLASH_BL) - 32 /* ENC_KEY_LENGTH */ ) : 
+    {
+        KEEP(*(.footer*)) /* put key at end of bootloader sector if defined in build */
+    } >FLASH_BL
 
     /* Zeroed-out data section */
     .bss :

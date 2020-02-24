@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_RNG_H
-#define MICROPY_INCLUDED_STM32_RNG_H
 
-#include "py/mpconfig.h"
+#if MBOOT_ENCRYPTED
+#include <mboot/encryption.h>
 
-uint32_t rng_get(void);
+// Instantiate firmware footer at end of cpu flash
+__attribute__((section(".footer"), used))
+const fw_footer_v1_t fw_footer = {
+    FOOTER_VERSION
+};
 
-#if !MBOOT
-#include "py/obj.h"
-MP_DECLARE_CONST_FUN_OBJ_0(pyb_rng_get_obj);
 #endif
-
-#endif // MICROPY_INCLUDED_STM32_RNG_H

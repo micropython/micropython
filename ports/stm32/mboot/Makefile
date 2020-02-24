@@ -28,6 +28,7 @@ HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
+MBOOT_SET_KEYS ?= $(TOP)/tools/mboot_set_key.py
 BOOTLOADER_DFU_USB_VID ?= 0x0483
 BOOTLOADER_DFU_USB_PID ?= 0xDF11
 STFLASH ?= st-flash
@@ -86,7 +87,7 @@ LDFLAGS += --gc-sections
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
-COPT = -O0
+COPT = -Og
 else
 COPT += -Os -DNDEBUG
 endif
@@ -128,6 +129,23 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE) \
 	ports/stm32/resethandler.o \
+
+MBOOT_ENCRYPTED ?= 0
+ifeq ($(MBOOT_ENCRYPTED), 1)
+
+# Ensure this matches stm32 Makefile
+MBOOT_ENC_CHUNKSIZE ?= $$(( 24 * 1024 ))
+ENCRYPT_PUBLIC_KEY ?= $(BOARD_DIR)/key.pub
+
+SRC_C += \
+	lib/libhydrogen/hydrogen.c \
+    ports/stm32/rng.c
+
+CFLAGS += -DMBOOT_ENCRYPTED=1 -DPARTICLE -DPLATFORM_ID=3
+CFLAGS += -DMBOOT_ENC_CHUNKSIZE=$(MBOOT_ENC_CHUNKSIZE)
+
+$(BUILD)/lib/libhydrogen/hydrogen.o: COPT = -Os -DNDEBUG
+endif
 
 $(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
@@ -171,14 +189,21 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(FLASH_ADDR)
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
-	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware.bin $@
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary --gap-fill 0xFF -j .isr_vector -j .text -j .data -j .footer $^ $@
+ifeq ($(MBOOT_ENCRYPTED), 1)
+ifneq ("$(wildcard $(ENCRYPT_PUBLIC_KEY))","")
+	$(Q)$(PYTHON) $(MBOOT_SET_KEYS) -p $(ENCRYPT_PUBLIC_KEY) -b $@
+endif
+endif
 
-$(BUILD)/firmware.hex: $(BUILD)/firmware.elf
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O ihex $< $@
+	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$^ $@
+
+$(BUILD)/firmware.hex: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
+	$(Q)$(OBJCOPY) -I binary --change-addresses $(FLASH_ADDR) -O ihex $^ $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

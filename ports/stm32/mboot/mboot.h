@@ -55,7 +55,7 @@ void led_state_all(unsigned int mask);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
 void do_read(uint32_t addr, int len, uint8_t *buf);
-int do_write(uint32_t addr, const uint8_t *src8, size_t len);
+int do_write(uint32_t addr, uint8_t *src8, size_t len);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);

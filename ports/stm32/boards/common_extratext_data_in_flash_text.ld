@@ -20,3 +20,8 @@ _sidata = LOADADDR(.data);
     . = ALIGN(4);
     _edata = .;
 } >RAM AT> FLASH_TEXT
+
+.footer (ORIGIN(FLASH) + LENGTH(FLASH) - 0xD0 /* FW_FOOTER_LENGTH */ ) : 
+{
+    KEEP(*(.footer*)) /* put footer at end of flash space */
+} >FLASH

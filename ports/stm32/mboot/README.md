@@ -155,6 +155,46 @@ firmware.dfu.gz stored on the default FAT filesystem:
 The 0x80000000 value is the address understood by Mboot as the location of
 the external SPI flash, configured via `MBOOT_SPIFLASH_ADDR`.
 
+Signed and Encrypted DFU support
+--------------------------------
+
+Mboot optionally supports signing and encrypting the binary in the dfu file. 
+This requires additional settings in the board config and requires `pyhy` python 
+module to be installed into `python3` used when building mboot, eg:
+
+    pip3 install pyhy
+
+In addition to the changes made to mpconfigboard.mk earlier, for encrypted 
+support you also need to add:
+
+    MBOOT_ENCRYPTED = 1
+
+You will also need to generate a compatible pair of public and private key files, 
+which should be stored in the board definition folder (next to mpconfigboard.mk):
+
+    python3 micropython/tools/mboot_generate_keys.py micropython/ports/stm32/boards/PYBD_SF6
+    cd micropython/ports/stm32
+    make BOARD=PYBD_SF6
+
+Once you build the firmware, the `firmware.dfu` file will contain the encrypted 
+and signed binaries. `firmware.hex` is still un-encrypted and can be directly flashed with jtag etc.
+
+In encrypted/signed builds, a footer is appended to the end of the main application firmware.  
+This footer contains the signature(s) for the firmware as well as the public key used to 
+validate the signature. This public key is also used as the symmetric key for encryption, so should be 
+treated as private knowledge.  
+
+By default the public key is also copied into the last 32bytes of the mboot sector, protecting it 
+against the main application being wiped.  
+If mboot is built without the key being available, the encrpytion key is copied to mboot upon 
+first install/run of an encrypted firmware.
+
+When you build your micropython firmware with encryption enabled there will also be an extra
+set of files generated `firmware.ftr.bin`, `firmware.ftr.hex` and `firmware.ftr.dfu`. These 
+contain an un-encrypted copy of the footer with the encryption key. Keep these private.  
+If you prefer to flash firmware in production with jtag etc `firmware.ftr.hex` can be flashed 
+along with `firmware.hex` to get the complete application and footer installed.
+
 Example: Mboot on PYBv1.x
 -------------------------
 

@@ -41,6 +41,7 @@ HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 DFU=$(TOP)/tools/dfu.py
+ENCRYPT_BIN=$(TOP)/tools/mboot_signed_dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -143,6 +144,16 @@ CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,
 CXXFLAGS += $(CXXFLAGS_MOD)
 ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
 LDFLAGS += -L$(dir $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a))
+endif
+
+# encrypted bootloader support
+MBOOT_ENCRYPTED ?= 0
+
+ifeq ($(MBOOT_ENCRYPTED), 1)
+# Ensure this matches mboot Makefile
+MBOOT_ENC_CHUNKSIZE ?= $$(( 24 * 1024 ))
+ENCRYPT_SECRET_KEY ?= $(BOARD_DIR)/key
+ENCRYPT_PUBLIC_KEY ?= $(BOARD_DIR)/key.pub
 endif
 
 # Options for mpy-cross
@@ -516,6 +527,11 @@ endif
 
 endif
 
+ifeq ($(MBOOT_ENCRYPTED), 1)
+CFLAGS += -DMBOOT_ENCRYPTED=1 -DAPPLICATION_ADDR=$(TEXT0_ADDR)
+SRC_C += footer.c
+endif
+
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
@@ -596,6 +612,18 @@ define GENERATE_BIN
 	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(3)) $(2) $(1)
 endef
 
+ifeq ($(MBOOT_ENCRYPTED),1)
+define GENERATE_DFU
+	$(ECHO) "GEN ENC $(1)"
+	$(Q)$(PYTHON) $(ENCRYPT_BIN) \
+	-v $(BUILD)/genhdr/mpversion.h \
+	-D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+	-s $(ENCRYPT_SECRET_KEY) -p $(ENCRYPT_PUBLIC_KEY) \
+	$(if $(2),$(addprefix -b ,$(3):$(2))) \
+	$(if $(4),$(addprefix -b ,$(5):$(4))) \
+	$(1)
+endef
+else
 define GENERATE_DFU
 	$(ECHO) "GEN $(1)"
 	$(Q)$(PYTHON) $(DFU) \
@@ -604,6 +632,7 @@ define GENERATE_DFU
 	$(if $(4),$(addprefix -b ,$(5):$(4))) \
 	$(1)
 endef
+endif
 
 define GENERATE_HEX
 	$(ECHO) "GEN $(1)"
@@ -623,7 +652,7 @@ TEXT0_ADDR ?= 0x08000000
 ifeq ($(TEXT1_ADDR),)
 # No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
 
-TEXT0_SECTIONS ?= .isr_vector .text .data
+TEXT0_SECTIONS ?= .isr_vector .text .data .footer
 
 deploy-stlink: $(BUILD)/firmware.bin
 	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
@@ -641,7 +670,7 @@ else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 TEXT0_SECTIONS ?= .isr_vector
-TEXT1_SECTIONS ?= .text .data
+TEXT1_SECTIONS ?= .text .data .footer
 
 deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call RUN_STLINK,$(word 1,$^),$(TEXT0_ADDR))

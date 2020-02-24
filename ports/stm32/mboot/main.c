@@ -37,6 +37,11 @@
 #include "mboot.h"
 #include "powerctrl.h"
 #include "dfu.h"
+#include "py/misc.h"
+
+#if MBOOT_ENCRYPTED
+#include "encryption.h"
+#endif
 
 // This option selects whether to use explicit polling or IRQs for USB events.
 // In some test cases polling mode can run slightly faster, but it uses more power.
@@ -83,6 +88,36 @@
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
 #endif
 #endif
+
+#if MBOOT_ENCRYPTED
+// DFU chunk buffer, used to cache incoming blocks of data from USB
+static uint32_t next_page_erase = -1;
+static uint32_t fw_enc_buff_addr = 0;
+static uint32_t fw_enc_buff_next = 0;
+static struct _fw_enc_buff {
+    chunk_header_v1_t header;
+    uint8_t data[MBOOT_ENC_CHUNKSIZE + 36 + 8];  // + hydro_secretbox_HEADERBYTES + align(8)
+} fw_enc_buff;
+
+// Instantiate encryption key space in mboot flash
+__attribute__((section(".footer"), used))
+const public_key_t _mboot_public_key = {0xFF};
+
+// Pointer to fixed encryption key in mboot flash
+static public_key_t *mboot_public_key = (public_key_t *)(MBOOT_PUBLIC_KEY_LOCATION);
+
+// Pointer to fw_footer in application flash
+static fw_footer_v1_t *__fw_footer = (fw_footer_v1_t *)(FW_FOOTER_LOCATION);
+
+// Encrypted dfu files using gzip require a decompress buffer. Larger is faster,
+#ifndef MBOOT_ENC_GZIP_BUFFER_SIZE
+#define MBOOT_ENC_GZIP_BUFFER_SIZE 4096
+#endif
+
+#endif // MBOOT_ENCRYPTED
+
+// Global dfu state
+static dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
@@ -144,6 +179,13 @@ static void __fatal_error(const char *msg) {
     NVIC_SystemReset();
     for (;;) {
     }
+}
+
+void sha256_hash(uint8_t out[], const void *source, size_t len) {
+    static CRYAL_SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, source, len);
+    sha256_final(&ctx, out);
 }
 
 /******************************************************************************/
@@ -504,11 +546,19 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 
 static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
     int32_t sector = flash_get_sector_info(addr, NULL, NULL);
-    if (sector <= 0) {
+    if (sector == 0
+        #if MBOOT_ENCRYPTED
+        && addr != (uint32_t)mboot_public_key   // Allow writing the mboot private key
+        #endif
+        ) {
         // Don't allow to write the sector with this bootloader in it
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
-                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
+        dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
+        return -1;
+    }
+    if (sector < 0) {
+        dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
+        dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
         return -1;
     }
 
@@ -555,14 +605,14 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         *next_addr = addr + MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
         ret = spiflash_page_erase(MBOOT_SPIFLASH_SPIFLASH,
-            addr - MBOOT_SPIFLASH_ADDR, MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE);
+                addr - MBOOT_SPIFLASH_ADDR, MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE);
     } else
     #endif
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
         *next_addr = addr + MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
         ret = spiflash_page_erase(MBOOT_SPIFLASH2_SPIFLASH,
-            addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
+                addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
     } else
     #endif
     {
@@ -574,6 +624,14 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
 }
 
 void do_read(uint32_t addr, int len, uint8_t *buf) {
+    #if MBOOT_ENCRYPTED
+    // read disabled on encrypted mboot
+    dfu_context.status = DFU_STATUS_ERROR_FILE;
+    dfu_context.error = MBOOT_ERROR_STR_INVALID_READ_IDX;
+    led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
+    return;
+    #endif
+
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -592,8 +650,49 @@ void do_read(uint32_t addr, int len, uint8_t *buf) {
     led0_state(LED0_STATE_SLOW_FLASH);
 }
 
-int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+#if MBOOT_ENCRYPTED
+#define DICT_SIZE (1 << 15)
+
+static int gz_stream_read(TINF_DATA *tinf, size_t len, uint8_t *buf) {
+    tinf->dest = buf;
+    tinf->dest_limit = buf + len;
+    int st = uzlib_uncompress_chksum(tinf);
+    if (st < 0) {
+        return st;
+    }
+    return tinf->dest - buf;
+}
+
+bool encryption_enabled() {
+    for (uint8_t i = 0; i < sizeof(public_key_t); i++) {
+        if (((char *)(*mboot_public_key))[i] != 0xFF) {
+            return true;
+        }
+    }
+    return false;
+}
+#endif  // MBOOT_ENCRYPTED
+
+int hw_write(uint32_t addr, uint8_t *src8, size_t len) {
     int ret = -1;
+    #if MBOOT_ENCRYPTED
+    // In encrypted mode the erase is automatically managed.
+    // Note: this scheme requires blocks be written in sequence, which is the norm anyway.
+    if (addr >= APPLICATION_ADDR) {
+        if (next_page_erase == -1) {
+            next_page_erase = addr;
+        }
+        while ((addr + len) > next_page_erase) {
+            uint32_t next_addr;
+            ret = do_page_erase(next_page_erase, &next_addr);
+            if (ret != 0) {
+                return -1;
+            }
+            next_page_erase = next_addr;
+        }
+    }
+    #endif  // MBOOT_ENCRYPTED
+
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -616,6 +715,224 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
     return ret;
 }
 
+int do_write(uint32_t addr, uint8_t *src8, size_t len) {
+    #if !MBOOT_ENCRYPTED
+    return hw_write(addr, src8, len);
+
+    #else
+    bool gzip = false;
+    uint8_t decrypted[sizeof(fw_enc_buff.data)];
+
+    if (!encryption_enabled()) {
+        // The un-encrypted application footer must be programmed first
+        // to store the encryption public key
+        MP_STATIC_ASSERT(sizeof(fw_footer_v1_t) == 0xD0); // should match FOOTER_LENGTH in tools/mboot_signed_dfu.py
+        if (addr == (uint32_t)__fw_footer) {
+            // Check the footer is valid then write the public key into mboot
+            fw_footer_v1_t *ftr = (fw_footer_v1_t *)src8;
+            if (ftr->footer_vers == FOOTER_VERSION && flash_is_valid_addr(ftr->sections[0].address)) {
+                int ret = hw_write((uint32_t)mboot_public_key, ftr->public_key, sizeof(public_key_t));
+                return ret;
+            }
+            dfu_context.status = DFU_STATUS_ERROR_VERIFY;
+            dfu_context.error = MBOOT_ERROR_STR_UNENCRYPTED_IDX;
+            return -1;
+        } else {
+            // Don't support flashing in un-encrypted mode
+            dfu_context.status = DFU_STATUS_ERROR_VENDOR;
+            dfu_context.error = MBOOT_ERROR_STR_UNENCRYPTED_IDX;
+            return -1;
+        }
+
+    } else {  // encryption_enabled()
+        if (addr == (uint32_t)APPLICATION_ADDR) {
+            // Base address of main firmware, reset any previous state
+            fw_enc_buff_addr = fw_enc_buff_next = 0;
+            next_page_erase = addr;
+        }
+
+        int32_t buff_addr = fw_enc_buff_addr;
+        int32_t buff_next = fw_enc_buff_next;
+
+        if ((fw_enc_buff_addr == 0) || (fw_enc_buff_addr == addr)) {
+            // Start of chunk been sent
+            buff_addr = addr;
+            fw_enc_buff_addr = addr;
+            memcpy(&fw_enc_buff, src8, len);
+            fw_enc_buff_next = addr + len;
+
+        } else
+
+        if (((addr - buff_addr) + len) > sizeof(fw_enc_buff)) {
+            // buffer's been filled, process existing buffer
+            // Copy new data into buffer afterwards
+            fw_enc_buff_addr = 0;
+
+        } else if (addr < buff_addr) {
+            // new addr chunk outside buffer, process existing buffer
+            // Copy new data into buffer afterwards
+            fw_enc_buff_addr = 0;
+
+        } else if (addr == buff_next) {
+            // Next normal chunk into buffer
+            memcpy(&fw_enc_buff.data[addr - buff_addr - sizeof(chunk_header_v1_t)], src8, len);
+            fw_enc_buff_next = addr + len;
+
+        } else {
+            // New addr range, process existing buffer
+            // Copy new data into buffer afterwards
+            fw_enc_buff_addr = 0;
+        }
+
+        size_t fw_enc_buff_len = fw_enc_buff_next - buff_addr;
+
+        if (fw_enc_buff.header.header_vers != 1) {
+            dfu_context.status = DFU_STATUS_ERROR_FILE;
+            dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
+            return -1;
+        }
+        if (fw_enc_buff.header.address != buff_addr) {
+            // Chunk address doesn't agree with dfu address, abort
+            dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
+            dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
+            return -1;
+        }
+
+        if (fw_enc_buff.header.length > fw_enc_buff_len) {
+            // Don't have entire chunk yet
+            return 0;
+        }
+
+        if (hydro_sign_verify(fw_enc_buff.header.signature, fw_enc_buff.data, fw_enc_buff.header.length, ENC_CONTEXT, *mboot_public_key) != 0) {
+            // Signature failed
+            if (fw_enc_buff_addr == 0) {
+                // We should have a full chunk here, if it fails we abort entire process
+                dfu_context.status = DFU_STATUS_ERROR_VERIFY;
+                dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
+                return -1;
+            } else {
+                return 0;
+            }
+        } else {
+            // Signature passes, we have valid message to flash
+            if (hydro_secretbox_decrypt(decrypted, fw_enc_buff.data, fw_enc_buff.header.length, 0, ENC_CONTEXT, *mboot_public_key) != 0) {
+                dfu_context.status = DFU_STATUS_ERROR_VERIFY;
+                dfu_context.error = MBOOT_ERROR_STR_INVALID_SIG_IDX;
+                return -1;
+            }
+
+            if (fw_enc_buff.header.format == GZIP) {
+                gzip = true;
+            }
+
+            // Use the decrypted message contents going formward
+            len = fw_enc_buff.header.length - hydro_secretbox_HEADERBYTES;
+            src8 = decrypted;
+            addr = buff_addr;
+        }
+
+        // We've just validated the previous buffer and a decrypted copy is about to be flashed
+        // Reset the buffer and copy this new chunk into it.
+        if (fw_enc_buff_addr == 0) {
+            fw_enc_buff_addr = addr;
+            memcpy(&fw_enc_buff.data[0], src8, len);
+            fw_enc_buff_next = addr + len;
+        }
+
+        // If we get here it means we've got a verified and decrypted chunk ready to write.
+        // Reset buffer marker for next chunk
+        fw_enc_buff_addr = 0;
+    }
+
+    uint8_t ret = 0;
+    if (gzip) {
+        TINF_DATA tinf = {0};
+        uint8_t buf[MBOOT_ENC_GZIP_BUFFER_SIZE];
+        uint8_t dict[DICT_SIZE];
+
+        tinf.source = src8;
+        tinf.source_limit = src8 + len;
+        tinf.dest = buf;
+        tinf.dest_limit = buf + sizeof(buf);
+
+        uzlib_uncompress_init(&tinf, dict, DICT_SIZE);
+
+        int read = -1;
+        while (tinf.source < tinf.source_limit) {
+            read = gz_stream_read(&tinf, sizeof(buf), buf);
+            if (read == 0) {
+                break;  // finished decompressing
+            } else if (read < 0) {
+                return -1;  // error reading
+            }
+
+            if (addr == APPLICATION_ADDR) {
+                // Mark the 2 lower bits to indicate invalid app firmware
+                // These will be written to 0 later after hash checks out
+                buf[0] |= APP_VALIDITY_BITS;
+            }
+            ret |= hw_write(addr, buf, read);
+            addr += read;
+        }
+
+    } else {  // ! gzip
+        if (addr == APPLICATION_ADDR) {
+            // Mark the 2 lower bits to indicate invalid app firmware
+            // These will be written to 0 later after hash checks out
+            src8[0] |= APP_VALIDITY_BITS;
+        }
+        ret = hw_write(addr, src8, len);
+    }
+
+    if (addr >= (uint32_t)__fw_footer && !encryption_enabled()) {
+        // If this is the first time it's flashed an encryption key, snapshot in mboot
+        ret = hw_write((uint32_t)mboot_public_key, __fw_footer->public_key, sizeof(public_key_t));
+    }
+    return ret;
+    #endif  // MBOOT_ENCRYPTED
+}
+
+#if MBOOT_ENCRYPTED
+void check_hash_reset() {
+    if (!encryption_enabled()) {
+        do_reset();
+    }
+    // Check hash
+    led0_state(LED0_STATE_FAST_FLASH);
+    bool passed = true;
+
+    if (__fw_footer->footer_vers != FOOTER_VERSION) {
+        passed = false;
+    } else {
+        for (uint8_t i = 0; i < MBOOT_FW_SECTIONS; i++) {
+            volatile fw_footer_section_v1_t section = __fw_footer->sections[i];
+            if (section.address != -1) {
+                uint8_t hash[sizeof(section.sha256)] = {0};
+                uint32_t address = section.address;
+                uint32_t length = section.length;
+                if (i == 0) {
+                    // First byte skipped from hash for APP_VALIDITY_BITS
+                    address += 1;
+                    length -= 1;
+                }
+                sha256_hash(hash, (const uint8_t *)(address), length);
+                if (memcmp(hash, (uint8_t *)section.sha256, sizeof(hash)) != 0) {
+                    passed = false;
+                }
+            }
+        }
+    }
+    if (passed) {
+        uint32_t buf = *(volatile uint32_t *)APPLICATION_ADDR;
+
+        if ((buf & APP_VALIDITY_BITS) == APP_VALIDITY_BITS) {
+            buf &= ~APP_VALIDITY_BITS;
+            hw_write(APPLICATION_ADDR, (void *)&buf, 4);
+        }
+    }
+    do_reset();
+}
+#endif  // MBOOT_ENCRYPTED
 /******************************************************************************/
 // I2C slave interface
 
@@ -709,8 +1026,13 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     } else if (buf[0] == I2C_CMD_MASSERASE && len == 0) {
         len = do_mass_erase();
     } else if (buf[0] == I2C_CMD_PAGEERASE && len == 4) {
+        #if MBOOT_ENCRYPTED
+        // erase handled automatically for encrypted mode
+        len = 0;
+        #else
         uint32_t next_addr;
         len = do_page_erase(get_le32(buf + 1), &next_addr);
+        #endif
     } else if (buf[0] == I2C_CMD_SETRDADDR && len == 4) {
         i2c_obj.cmd_rdaddr = get_le32(buf + 1);
         len = 0;
@@ -729,20 +1051,20 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
             // Mark the 2 lower bits to indicate invalid app firmware
             buf[1] |= APP_VALIDITY_BITS;
         }
+        led0_state(LED0_STATE_FAST_FLASH);
         int ret = do_write(i2c_obj.cmd_wraddr, buf + 1, len);
         if (ret < 0) {
             len = ret;
+            led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
         } else {
             i2c_obj.cmd_wraddr += len;
             len = 0;
+            led0_state(LED0_STATE_SLOW_FLASH);
         }
     } else if (buf[0] == I2C_CMD_CALCHASH && len == 4) {
         uint32_t hashlen = get_le32(buf + 1);
-        static CRYAL_SHA256_CTX ctx;
-        sha256_init(&ctx);
-        sha256_update(&ctx, (const void*)i2c_obj.cmd_rdaddr, hashlen);
+        sha256_hash(buf, (const void *)i2c_obj.cmd_rdaddr, hashlen);
         i2c_obj.cmd_rdaddr += hashlen;
-        sha256_final(&ctx, buf);
         len = 32;
     } else if (buf[0] == I2C_CMD_MARKVALID && len == 0) {
         uint32_t buf;
@@ -811,8 +1133,13 @@ static int dfu_process_dnload(void) {
                 }
             } else if (dfu_context.wLength == 5) {
                 // erase page
+                #if MBOOT_ENCRYPTED
+                // erase handled automatically for encrypted mode
+                ret = 0;
+                #else
                 uint32_t next_addr;
                 ret = do_page_erase(get_le32(&dfu_context.buf[1]), &next_addr);
+                #endif
             }
         } else if (dfu_context.wLength >= 1 && dfu_context.buf[0] == DFU_CMD_DNLOAD_SET_ADDRESS) {
             if (dfu_context.wLength == 5) {
@@ -823,12 +1150,15 @@ static int dfu_process_dnload(void) {
         }
     } else if (dfu_context.wBlockNum > 1) {
         // write data to memory
+        led0_state(LED0_STATE_FAST_FLASH);
         uint32_t addr = (dfu_context.wBlockNum - 2) * DFU_XFER_SIZE + dfu_context.addr;
         ret = do_write(addr, dfu_context.buf, dfu_context.wLength);
     }
     if (ret == 0) {
+        led0_state(LED0_STATE_SLOW_FLASH);
         return DFU_STATE_DNLOAD_IDLE;
     } else {
+        led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
         return DFU_STATE_ERROR;
     }
 }
@@ -862,7 +1192,11 @@ static void dfu_handle_rx(int cmd, int arg, int len, const void *buf) {
 
 static void dfu_process(void) {
     if (dfu_context.state == DFU_STATE_MANIFEST) {
+        #if MBOOT_ENCRYPTED
+        check_hash_reset();
+        #else
         do_reset();
+        #endif
     }
 
     if (dfu_context.state == DFU_STATE_BUSY) {
@@ -1067,6 +1401,20 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
         case MBOOT_ERROR_STR_INVALID_ADDRESS_IDX:
             USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_ADDRESS, str_desc, length);
             return str_desc;
+
+        #if MBOOT_ENCRYPTED
+        case MBOOT_ERROR_STR_UNENCRYPTED_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_UNENCRYPTED, str_desc, length);
+            return str_desc;
+
+        case MBOOT_ERROR_STR_INVALID_SIG_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_SIG, str_desc, length);
+            return str_desc;
+
+        case MBOOT_ERROR_STR_INVALID_READ_IDX:
+            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
+            return str_desc;
+        #endif
 
         default:
             return NULL;
@@ -1369,6 +1717,15 @@ enter_bootloader:
 
     // set the system clock to be HSE
     SystemClock_Config();
+
+    #if MBOOT_ENCRYPTED
+    if (!encryption_enabled()) {
+        if (__fw_footer->footer_vers == FOOTER_VERSION && flash_is_valid_addr(__fw_footer->sections[0].address)) {
+            // firmware footer has been pre-flashed, copy encryption key to mboot
+            hw_write((uint32_t)mboot_public_key, __fw_footer->public_key, sizeof(public_key_t));
+        }
+    }
+    #endif
 
     #if USE_USB_POLLING
     // irqs with a priority value greater or equal to "pri" will be disabled

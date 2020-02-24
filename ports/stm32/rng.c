@@ -55,11 +55,13 @@ uint32_t rng_get(void) {
     return RNG->DR;
 }
 
+#if !MBOOT
 // Return a 30-bit hardware generated random number.
 STATIC mp_obj_t pyb_rng_get(void) {
     return mp_obj_new_int(rng_get() >> 2);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
+#endif
 
 #else // MICROPY_HW_ENABLE_RNG
 

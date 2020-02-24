@@ -104,6 +104,4 @@ typedef struct _dfu_state_t {
     uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
 } dfu_context_t;
 
-static dfu_context_t dfu_context SECTION_NOZERO_BSS;
-
 #endif // MICROPY_INCLUDED_STM32_MBOOT_DFU_H
