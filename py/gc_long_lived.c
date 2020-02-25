@@ -85,11 +85,13 @@ mp_obj_property_t *make_property_long_lived(mp_obj_property_t *prop, uint8_t max
     return gc_make_long_lived(prop);
 }
 
+extern const mp_obj_dict_t mcu_module_globals;
+
 mp_obj_dict_t *make_dict_long_lived(mp_obj_dict_t *dict, uint8_t max_depth) {
     #ifndef MICROPY_ENABLE_GC
     return dict;
     #endif
-    if (dict == NULL || max_depth == 0 || dict == &MP_STATE_VM(dict_main)) {
+    if (dict == NULL || max_depth == 0 || dict == &MP_STATE_VM(dict_main) || dict->map.is_fixed) {
         return dict;
     }
     // Don't recurse unnecessarily. Return immediately if we've already seen this dict.
