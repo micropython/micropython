@@ -32,7 +32,7 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
-#define MICROPY_HW_LED_STATUS       (&pin_P1_11)
+#define MICROPY_HW_LED_STATUS       (&pin_P1_09)
 
 // Board does not have a 32kHz crystal. It does have a 32MHz crystal.
 #define BOARD_HAS_32KHZ_XTAL (0)
