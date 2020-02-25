@@ -203,26 +203,13 @@ void pin_set(uint pin, int value) {
 
     uint32_t enable = 0;
     uint32_t disable = 0;
-    switch (pin_mode[pin]) {
-        case GPIO_MODE_INPUT:
-            value = -1;
-            disable = 1;
-            break;
-
-        case GPIO_MODE_OUTPUT:
-            enable = 1;
-            break;
-
-        case GPIO_MODE_OPEN_DRAIN:
-            if (value == -1) {
-                return;
-            } else if (value == 0) {
-                enable = 1;
-            } else {
-                value = -1;
-                disable = 1;
-            }
-            break;
+    if (pin_mode[pin] == GPIO_MODE_INPUT)
+    {
+        value = -1;
+        disable = 1;
+    } else {
+        // GPIO_MODE_OUTPUT and GPIO_MODE_OPEN_DRAIN:
+        enable = 1;
     }
 
     enable <<= pin;
@@ -300,6 +287,10 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, cons
         if ((pull & GPIO_PULL_UP) != 0) {
             PIN_PULLUP_EN(self->periph);
         }
+    }
+
+    if (mode == GPIO_MODE_OPEN_DRAIN) {
+        mp_hal_pin_open_drain(self->phys_port);
     }
 
     pin_set(self->phys_port, value);
