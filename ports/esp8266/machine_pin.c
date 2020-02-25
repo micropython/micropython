@@ -46,14 +46,6 @@
     (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
     | GPIO_PIN_INT_TYPE_SET(trig))) \
 
-#define GPIO_MODE_INPUT (0)
-#define GPIO_MODE_OUTPUT (1)
-#define GPIO_MODE_OPEN_DRAIN (2) // synthesised
-#define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (1)
-// Removed in SDK 1.1.0
-// #define GPIO_PULL_DOWN (2)
-
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
     uint16_t phys_port;
@@ -84,7 +76,7 @@ const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 16, -1, -1},
 };
 
-STATIC uint8_t pin_mode[16 + 1];
+uint8_t pin_mode[16 + 1];
 
 // forward declaration
 STATIC const pin_irq_obj_t pin_irq_obj[16];
