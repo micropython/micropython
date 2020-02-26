@@ -42,6 +42,8 @@
 #define MICROPY_NLR_NUM_REGS_XTENSA         (10)
 #define MICROPY_NLR_NUM_REGS_XTENSAWIN      (17)
 
+// *FORMAT-OFF*
+
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
 #if !MICROPY_NLR_SETJMP
 // A lot of nlr-related things need different treatment on Windows
@@ -82,6 +84,8 @@
     //#warning "No native NLR support for this arch, using setjmp implementation"
 #endif
 #endif
+
+// *FORMAT-ON*
 
 #if MICROPY_NLR_SETJMP
 #include <setjmp.h>

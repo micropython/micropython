@@ -41,6 +41,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
+// *FORMAT-OFF*
 #define DIG_MASK ((MPZ_LONG_1 << MPZ_DIG_SIZE) - 1)
 STATIC const mpz_dig_t maxsize_dig[] = {
     #define NUM_DIG 1
@@ -64,6 +65,7 @@ STATIC const mpz_dig_t maxsize_dig[] = {
      #endif
     #endif
 };
+// *FORMAT-ON*
 const mp_obj_int_t mp_maxsize_obj = {
     {&mp_type_int},
     {.fixed_dig = 1, .len = NUM_DIG, .alloc = NUM_DIG, .dig = (mpz_dig_t*)maxsize_dig}

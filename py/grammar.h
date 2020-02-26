@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 // rules for writing rules:
 // - zero_or_more is implemented using opt_rule around a one_or_more rule
 // - don't put opt_rule in arguments of or rule; instead, wrap the call to this or rule in opt_rule

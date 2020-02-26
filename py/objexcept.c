@@ -224,6 +224,8 @@ const mp_obj_type_t mp_type_BaseException = {
     .attr = mp_obj_exception_attr,
 };
 
+// *FORMAT-OFF*
+
 // List of all exceptions, arranged as in the table at:
 // http://docs.python.org/3/library/exceptions.html
 MP_DEFINE_EXCEPTION(SystemExit, BaseException)
@@ -302,6 +304,8 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(BytesWarning, Warning)
     MP_DEFINE_EXCEPTION(ResourceWarning, Warning)
     */
+
+// *FORMAT-ON*
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
