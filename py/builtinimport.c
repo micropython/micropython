@@ -315,6 +315,7 @@ STATIC void evaluate_relative_import(mp_int_t level, size_t *mod_len, const char
 
 STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name, mp_obj_t outer_module_obj, vstr_t *path, bool override_main) {
     mp_import_stat_t stat = MP_IMPORT_STAT_NO_EXIST;
+    bool store_on_parent = true;
 
     // Exact-match built-in (or already-loaded) takes priority.
     mp_obj_t module_obj = mp_module_get_loaded_or_builtin(full_mod_name);
@@ -345,6 +346,21 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         #endif
     } else {
         DEBUG_printf("Searching for sub-module\n");
+
+        if (module_obj == MP_OBJ_NULL) {
+            // See if the outer module has this module as an attr.
+            // e.g. built-in modules can add modules to their globals dict
+            // to provide something that behaves like built-in packages.
+            mp_obj_t dest[2] = { MP_OBJ_NULL };
+            mp_type_module.attr(outer_module_obj, level_mod_name, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                // Ensure that it's actually a module.
+                if (mp_obj_get_type(dest[0]) == &mp_type_module) {
+                    module_obj = dest[0];
+                    store_on_parent = false;
+                }
+            }
+        }
 
         // Add the current part of the module name to the path.
         vstr_add_char(path, PATH_SEP_CHAR[0]);
@@ -418,7 +434,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         }
     }
 
-    if (outer_module_obj != MP_OBJ_NULL) {
+    if (store_on_parent && outer_module_obj != MP_OBJ_NULL) {
         // If it's a sub-module (not a built-in one), then make it available on
         // the parent module.
         mp_store_attr(outer_module_obj, level_mod_name, module_obj);
