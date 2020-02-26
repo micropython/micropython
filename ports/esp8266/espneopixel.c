@@ -62,4 +62,69 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
   mp_hal_quiet_timing_exit(irq_state);
 }
 
+
+#define DELAYTICKS(X) tuntil = mp_hal_ticks_cpu() + X;   while (mp_hal_ticks_cpu() < tuntil)
+
+void my9291_pulse(uint32_t pulse, uint32_t pinMask, uint32_t ticksdelay) {
+  uint32_t tuntil; 
+  while (pulse > 0) {
+    GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinMask);       // Set high
+    DELAYTICKS(ticksdelay); 
+    GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinMask);       // Set low
+    DELAYTICKS(ticksdelay); 
+    pulse--; 
+  }
+}
+
+
+void /*ICACHE_RAM_ATTR*/ esp_my9291_write(uint8_t pinDI, uint8_t pinDCK, uint8_t *data, uint32_t numBytes) {
+  uint8_t d, mask;
+  uint32_t ticks12us, ticks1us, tuntil, pinDIMask, pinDCKMask;
+
+  bool iscmd = (numBytes == 1); 
+  pinDIMask = 1 << pinDI;
+  pinDCKMask = 1 << pinDCK;
+  uint32_t fcpu = system_get_cpu_freq()*1000000;
+  ticks12us  = fcpu/83333;
+  ticks1us = fcpu/2000000;  // half a microsecond (to slow it down to arduino esp8266 implementation speed)
+  
+  uint32_t irq_state = mp_hal_quiet_timing_enter(); 
+  if (iscmd) {
+    DELAYTICKS(ticks12us);
+    my9291_pulse(32, pinDCKMask, ticks1us); // clear any data 
+    DELAYTICKS(ticks12us);
+    my9291_pulse(12, pinDIMask, ticks1us); 
+  }
+  DELAYTICKS(ticks12us);
+  while (numBytes>0) {
+    d = *data++; 
+    mask = 0x80; 
+    GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinDCKMask);     // Set low
+    while (mask != 0) {
+      if (d&mask) 
+        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinDIMask);  // Set high
+      else
+        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinDIMask);  // Set low
+      DELAYTICKS(ticks1us); 
+      GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinDCKMask);   // Set high
+      DELAYTICKS(ticks1us); 
+      mask >>= 1; 
+      if (d&mask)
+        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinDIMask);  // Set high
+      else
+        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinDIMask);  // Set low
+      DELAYTICKS(ticks1us); 
+      GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinDCKMask);   // Set low
+      DELAYTICKS(ticks1us); 
+      mask >>= 1; 
+    }
+    GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinDIMask);      // Set low
+    numBytes--; 
+  }
+  DELAYTICKS(ticks12us);
+  my9291_pulse((iscmd ? 16 : 8), pinDIMask, ticks1us); 
+  DELAYTICKS(ticks12us);
+  mp_hal_quiet_timing_exit(irq_state);
+}
+
 #endif // MICROPY_ESP8266_NEOPIXEL
