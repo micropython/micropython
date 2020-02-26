@@ -28,7 +28,8 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
         nonlocal payload
         payload += struct.pack('BB', len(value) + 1, adv_type) + value
 
-    _append(_ADV_TYPE_FLAGS, struct.pack('B', (0x01 if limited_disc else 0x02) + (0x00 if br_edr else 0x04)))
+    _append(_ADV_TYPE_FLAGS,
+            struct.pack('B', (0x01 if limited_disc else 0x02) + (0x00 if br_edr else 0x04)))
 
     if name:
         _append(_ADV_TYPE_NAME, name)
@@ -76,10 +77,14 @@ def decode_services(payload):
 
 
 def demo():
-    payload = advertising_payload(name='micropython', services=[bluetooth.UUID(0x181A), bluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')])
+    payload = advertising_payload(
+        name='micropython',
+        services=[bluetooth.UUID(0x181A),
+                  bluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')])
     print(payload)
     print(decode_name(payload))
     print(decode_services(payload))
+
 
 if __name__ == '__main__':
     demo()

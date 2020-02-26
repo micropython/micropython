@@ -26,7 +26,7 @@
 # THE SOFTWARE.
 
 START_HEADER_SIZE = 4
-LED_START = 0b11100000  # Three "1" bits, followed by 5 brightness bits
+LED_START = 0b11100000 # Three "1" bits, followed by 5 brightness bits
 
 # Pixel color order constants
 RGB = (0, 1, 2)
@@ -62,9 +62,7 @@ class DotStar:
         dotstar = DotStar(spi, 1)
         dotstar[0] = (128, 0, 0) # Red
     """
-
-    def __init__(self, spi, n, *, brightness=1.0, auto_write=True,
-                 pixel_order=BGR):
+    def __init__(self, spi, n, *, brightness=1.0, auto_write=True, pixel_order=BGR):
         self._spi = spi
         self._n = n
         # Supply one extra clock cycle for each two pixels in the strip.
@@ -178,8 +176,7 @@ class DotStar:
         if index >= self._n or index < 0:
             raise IndexError
         offset = index * 4
-        return tuple(self._buf[offset + (3 - i) + START_HEADER_SIZE]
-                     for i in range(3))
+        return tuple(self._buf[offset + (3 - i) + START_HEADER_SIZE] for i in range(3))
 
     def __len__(self):
         return self._n

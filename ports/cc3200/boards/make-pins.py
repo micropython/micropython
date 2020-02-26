@@ -7,15 +7,16 @@ import argparse
 import sys
 import csv
 
+SUPPORTED_AFS = {
+    'UART': ('TX', 'RX', 'RTS', 'CTS'),
+    'SPI': ('CLK', 'MOSI', 'MISO', 'CS0'),
+    #'I2S': ('CLK', 'FS', 'DAT0', 'DAT1'),
+    'I2C': ('SDA', 'SCL'),
+    'TIM': ('PWM'),
+    'SD': ('CLK', 'CMD', 'DAT0'),
+    'ADC': ('CH0', 'CH1', 'CH2', 'CH3')
+}
 
-SUPPORTED_AFS = { 'UART': ('TX', 'RX', 'RTS', 'CTS'),
-                  'SPI': ('CLK', 'MOSI', 'MISO', 'CS0'),
-                  #'I2S': ('CLK', 'FS', 'DAT0', 'DAT1'),
-                  'I2C': ('SDA', 'SCL'),
-                  'TIM': ('PWM'),
-                  'SD': ('CLK', 'CMD', 'DAT0'),
-                  'ADC': ('CH0', 'CH1', 'CH2', 'CH3')
-                }
 
 def parse_port_pin(name_str):
     """Parses a string and returns a (port, gpio_bit) tuple."""
@@ -42,7 +43,8 @@ class AF:
         self.type = type
 
     def print(self):
-        print ('    AF({:16s}, {:4d}, {:8s}, {:4d}, {:8s}),    // {}'.format(self.name, self.idx, self.fn, self.unit, self.type, self.name))
+        print('    AF({:16s}, {:4d}, {:8s}, {:4d}, {:8s}),    // {}'.format(
+            self.name, self.idx, self.fn, self.unit, self.type, self.name))
 
 
 class Pin:
@@ -66,10 +68,11 @@ class Pin:
                 af.print()
             print('};')
             print('pin_obj_t pin_{:4s} = PIN({:6s}, {:1d}, {:3d}, {:2d}, pin_{}_af, {});\n'.format(
-                   self.name, self.name, self.port, self.gpio_bit, self.pin_num, self.name, len(self.afs)))
+                self.name, self.name, self.port, self.gpio_bit, self.pin_num, self.name,
+                len(self.afs)))
         else:
             print('pin_obj_t pin_{:4s} = PIN({:6s}, {:1d}, {:3d}, {:2d}, NULL, 0);\n'.format(
-                   self.name, self.name, self.port, self.gpio_bit, self.pin_num))
+                self.name, self.name, self.port, self.gpio_bit, self.pin_num))
 
     def print_header(self, hdr_file):
         hdr_file.write('extern pin_obj_t pin_{:s};\n'.format(self.name))
@@ -77,7 +80,7 @@ class Pin:
 
 class Pins:
     def __init__(self):
-        self.board_pins = []   # list of pin objects
+        self.board_pins = [] # list of pin objects
 
     def find_pin(self, port, gpio_bit):
         for pin in self.board_pins:
@@ -103,16 +106,17 @@ class Pins:
                 except:
                     continue
                 if not row[pin_col].isdigit():
-                    raise ValueError("Invalid pin number {:s} in row {:s}".format(row[pin_col]), row)
+                    raise ValueError("Invalid pin number {:s} in row {:s}".format(row[pin_col]),
+                                     row)
                 # Pin numbers must start from 0 when used with the TI API
-                pin_num = int(row[pin_col]) - 1;        
+                pin_num = int(row[pin_col]) - 1
                 pin = Pin(row[pinname_col], port_num, gpio_bit, pin_num)
                 self.board_pins.append(pin)
                 af_idx = 0
                 for af in row[af_start_col:]:
                     af_splitted = af.split('_')
                     fn_name = af_splitted[0].rstrip('0123456789')
-                    if  fn_name in SUPPORTED_AFS:
+                    if fn_name in SUPPORTED_AFS:
                         type_name = af_splitted[1]
                         if type_name in SUPPORTED_AFS[fn_name]:
                             unit_idx = af_splitted[0][-1]
@@ -136,9 +140,11 @@ class Pins:
         print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
         for pin in pins:
             if pin.board_pin:
-                print('    {{ MP_ROM_QSTR(MP_QSTR_{:6s}), MP_ROM_PTR(&pin_{:6s}) }},'.format(pin.name, pin.name))
+                print('    {{ MP_ROM_QSTR(MP_QSTR_{:6s}), MP_ROM_PTR(&pin_{:6s}) }},'.format(
+                    pin.name, pin.name))
         print('};')
-        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
+        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.
+              format(label, label))
 
     def print(self):
         for pin in self.board_pins:
@@ -171,40 +177,35 @@ class Pins:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog="make-pins.py",
-        usage="%(prog)s [options] [command]",
-        description="Generate board specific pin file"
-    )
+    parser = argparse.ArgumentParser(prog="make-pins.py",
+                                     usage="%(prog)s [options] [command]",
+                                     description="Generate board specific pin file")
+    parser.add_argument("-a",
+                        "--af",
+                        dest="af_filename",
+                        help="Specifies the alternate function file for the chip",
+                        default="cc3200_af.csv")
     parser.add_argument(
-        "-a", "--af",
-        dest="af_filename",
-        help="Specifies the alternate function file for the chip",
-        default="cc3200_af.csv"
-    )
-    parser.add_argument(
-        "-b", "--board",
+        "-b",
+        "--board",
         dest="board_filename",
         help="Specifies the board file",
     )
-    parser.add_argument(
-        "-p", "--prefix",
-        dest="prefix_filename",
-        help="Specifies beginning portion of generated pins file",
-        default="cc3200_prefix.c"
-    )
-    parser.add_argument(
-        "-q", "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h"
-    )
-    parser.add_argument(
-        "-r", "--hdr",
-        dest="hdr_filename",
-        help="Specifies name of generated pin header file",
-        default="build/pins.h"
-    )
+    parser.add_argument("-p",
+                        "--prefix",
+                        dest="prefix_filename",
+                        help="Specifies beginning portion of generated pins file",
+                        default="cc3200_prefix.c")
+    parser.add_argument("-q",
+                        "--qstr",
+                        dest="qstr_filename",
+                        help="Specifies name of generated qstr header file",
+                        default="build/pins_qstr.h")
+    parser.add_argument("-r",
+                        "--hdr",
+                        dest="hdr_filename",
+                        help="Specifies name of generated pin header file",
+                        default="build/pins.h")
     args = parser.parse_args(sys.argv[1:])
 
     pins = Pins()

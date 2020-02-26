@@ -20,11 +20,11 @@
 
 from ssd1306 import SSD1306_I2C
 
-SET_COL_ADDR        = const(0x21)
-SET_PAGE_ADDR       = const(0x22)
+SET_COL_ADDR = const(0x21)
+SET_PAGE_ADDR = const(0x22)
+
 
 class SSD1306_I2C_Mod(SSD1306_I2C):
-
     def show(self):
         x0 = 0
         x1 = self.width - 1
@@ -44,10 +44,9 @@ class SSD1306_I2C_Mod(SSD1306_I2C):
         leftover = len(self.buffer) - (num_of_chunks * chunk_size)
 
         for i in range(0, num_of_chunks):
-            self.write_data(self.buffer[chunk_size*i:chunk_size*(i+1)])
+            self.write_data(self.buffer[chunk_size * i:chunk_size * (i + 1)])
         if (leftover > 0):
             self.write_data(self.buffer[chunk_size * num_of_chunks:])
-
 
     def write_data(self, buf):
         buffer = bytearray([0x40]) + buf # Co=0, D/C#=1

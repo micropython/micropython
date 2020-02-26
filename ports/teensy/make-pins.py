@@ -8,12 +8,12 @@ import sys
 import csv
 
 SUPPORTED_FN = {
-    'FTM'   : ['CH0',  'CH1',  'CH2',  'CH3', 'CH4', 'CH5', 'CH6', 'CH7',
-               'QD_PHA', 'QD_PHB'],
-    'I2C'   : ['SDA', 'SCL'],
-    'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
-    'SPI'   : ['NSS', 'SCK', 'MISO', 'MOSI']
+    'FTM': ['CH0', 'CH1', 'CH2', 'CH3', 'CH4', 'CH5', 'CH6', 'CH7', 'QD_PHA', 'QD_PHB'],
+    'I2C': ['SDA', 'SCL'],
+    'UART': ['RX', 'TX', 'CTS', 'RTS'],
+    'SPI': ['NSS', 'SCK', 'MISO', 'MOSI']
 }
+
 
 def parse_port_pin(name_str):
     """Parses a string and returns a (port-num, pin-num) tuple."""
@@ -29,6 +29,7 @@ def parse_port_pin(name_str):
         raise ValueError("Expecting numeric pin number.")
     return (port, int(pin_str))
 
+
 def split_name_num(name_num):
     num = None
     for num_idx in range(len(name_num) - 1, -1, -1):
@@ -43,7 +44,6 @@ def split_name_num(name_num):
 
 class AlternateFunction(object):
     """Holds the information associated with a pins alternate function."""
-
     def __init__(self, idx, af_str):
         self.idx = idx
         self.af_str = af_str
@@ -77,14 +77,15 @@ class AlternateFunction(object):
     def print(self):
         """Prints the C representation of this AF."""
         if self.supported:
-            print('  AF',  end='')
+            print('  AF', end='')
         else:
             print('  //', end='')
         fn_num = self.fn_num
         if fn_num is None:
             fn_num = 0
-        print('({:2d}, {:8s}, {:2d}, {:10s}, {:8s}), // {:s}'.format(self.idx,
-              self.func, fn_num, self.pin_type, self.ptr(), self.af_str))
+        print('({:2d}, {:8s}, {:2d}, {:10s}, {:8s}), // {:s}'.format(self.idx, self.func,
+                                                                     fn_num, self.pin_type,
+                                                                     self.ptr(), self.af_str))
 
     def qstr_list(self):
         return [self.mux_name()]
@@ -92,7 +93,6 @@ class AlternateFunction(object):
 
 class Pin(object):
     """Holds the information associated with a pin."""
-
     def __init__(self, port, pin):
         self.port = port
         self.pin = pin
@@ -117,7 +117,7 @@ class Pin(object):
     def parse_adc(self, adc_str):
         if (adc_str[:3] != 'ADC'):
             return
-        (adc,channel) = adc_str.split('_')
+        (adc, channel) = adc_str.split('_')
         for idx in range(3, len(adc)):
             adc_num = int(adc[idx]) # 1, 2, or 3
             self.adc_num |= (1 << (adc_num - 1))
@@ -142,7 +142,7 @@ class Pin(object):
 
     def adc_num_str(self):
         str = ''
-        for adc_num in range(1,4):
+        for adc_num in range(1, 4):
             if self.adc_num & (1 << (adc_num - 1)):
                 if len(str) > 0:
                     str += ' | '
@@ -154,26 +154,23 @@ class Pin(object):
 
     def print(self):
         if self.alt_fn_count == 0:
-            print("// ",  end='')
+            print("// ", end='')
         print('const pin_af_obj_t {:s}[] = {{'.format(self.alt_fn_name()))
         for alt_fn in self.alt_fn:
             alt_fn.print()
         if self.alt_fn_count == 0:
-            print("// ",  end='')
+            print("// ", end='')
         print('};')
         print('')
         print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:d}, {:s}, {:s}, {:d});'.format(
-            self.cpu_pin_name(), self.port_letter(), self.pin,
-            self.alt_fn_count, self.alt_fn_name(null_if_0=True),
-            self.adc_num_str(), self.adc_channel))
+            self.cpu_pin_name(), self.port_letter(), self.pin, self.alt_fn_count,
+            self.alt_fn_name(null_if_0=True), self.adc_num_str(), self.adc_channel))
         print('')
 
     def print_header(self, hdr_file):
-        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.
-                       format(self.cpu_pin_name()))
+        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.format(self.cpu_pin_name()))
         if self.alt_fn_count > 0:
-            hdr_file.write('extern const pin_af_obj_t pin_{:s}_af[];\n'.
-                           format(self.cpu_pin_name()))
+            hdr_file.write('extern const pin_af_obj_t pin_{:s}_af[];\n'.format(self.cpu_pin_name()))
 
     def qstr_list(self):
         result = []
@@ -184,7 +181,6 @@ class Pin(object):
 
 
 class NamedPin(object):
-
     def __init__(self, name, pin):
         self._name = name
         self._pin = pin
@@ -197,9 +193,8 @@ class NamedPin(object):
 
 
 class Pins(object):
-
     def __init__(self):
-        self.cpu_pins = []   # list of NamedPin objects
+        self.cpu_pins = [] # list of NamedPin objects
         self.board_pins = [] # list of NamedPin objects
 
     def find_pin(self, port_num, pin_num):
@@ -240,9 +235,11 @@ class Pins(object):
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(
+                    named_pin.name(), pin.cpu_pin_name()))
         print('};')
-        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
+        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.
+              format(label, label))
 
     def print(self):
         for named_pin in self.cpu_pins:
@@ -254,21 +251,20 @@ class Pins(object):
         self.print_named('board', self.board_pins)
 
     def print_adc(self, adc_num):
-        print('');
+        print('')
         print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
         for channel in range(16):
             adc_found = False
             for named_pin in self.cpu_pins:
                 pin = named_pin.pin()
-                if (pin.is_board_pin() and
-                    (pin.adc_num & (1 << (adc_num - 1))) and (pin.adc_channel == channel)):
+                if (pin.is_board_pin() and (pin.adc_num & (1 << (adc_num - 1)))
+                        and (pin.adc_channel == channel)):
                     print('  &pin_{:s}, // {:d}'.format(pin.cpu_pin_name(), channel))
                     adc_found = True
                     break
             if not adc_found:
                 print('  NULL,    // {:d}'.format(channel))
         print('};')
-
 
     def print_header(self, hdr_filename):
         with open(hdr_filename, 'wt') as hdr_file:
@@ -293,9 +289,8 @@ class Pins(object):
             for qstr in sorted(qstr_set):
                 print('Q({})'.format(qstr), file=qstr_file)
 
-
     def print_af_hdr(self, af_const_filename):
-        with open(af_const_filename,  'wt') as af_const_file:
+        with open(af_const_filename, 'wt') as af_const_file:
             af_hdr_set = set([])
             mux_name_width = 0
             for named_pin in self.cpu_pins:
@@ -310,68 +305,58 @@ class Pins(object):
             for mux_name in sorted(af_hdr_set):
                 key = 'MP_OBJ_NEW_QSTR(MP_QSTR_{}),'.format(mux_name)
                 val = 'MP_OBJ_NEW_SMALL_INT(GPIO_{})'.format(mux_name)
-                print('    { %-*s %s },' % (mux_name_width + 26, key, val),
-                      file=af_const_file)
+                print('    { %-*s %s },' % (mux_name_width + 26, key, val), file=af_const_file)
 
     def print_af_py(self, af_py_filename):
-        with open(af_py_filename,  'wt') as af_py_file:
-            print('PINS_AF = (', file=af_py_file);
+        with open(af_py_filename, 'wt') as af_py_file:
+            print('PINS_AF = (', file=af_py_file)
             for named_pin in self.board_pins:
                 print("  ('%s', " % named_pin.name(), end='', file=af_py_file)
                 for af in named_pin.pin().alt_fn:
                     if af.is_supported():
                         print("(%d, '%s'), " % (af.idx, af.af_str), end='', file=af_py_file)
                 print('),', file=af_py_file)
-            print(')',  file=af_py_file)
+            print(')', file=af_py_file)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog="make-pins.py",
-        usage="%(prog)s [options] [command]",
-        description="Generate board specific pin file"
-    )
+    parser = argparse.ArgumentParser(prog="make-pins.py",
+                                     usage="%(prog)s [options] [command]",
+                                     description="Generate board specific pin file")
+    parser.add_argument("-a",
+                        "--af",
+                        dest="af_filename",
+                        help="Specifies the alternate function file for the chip",
+                        default="mk20dx256_af.csv")
+    parser.add_argument("--af-const",
+                        dest="af_const_filename",
+                        help="Specifies header file for alternate function constants.",
+                        default="build/pins_af_const.h")
+    parser.add_argument("--af-py",
+                        dest="af_py_filename",
+                        help="Specifies the filename for the python alternate function mappings.",
+                        default="build/pins_af.py")
     parser.add_argument(
-        "-a", "--af",
-        dest="af_filename",
-        help="Specifies the alternate function file for the chip",
-        default="mk20dx256_af.csv"
-    )
-    parser.add_argument(
-        "--af-const",
-        dest="af_const_filename",
-        help="Specifies header file for alternate function constants.",
-        default="build/pins_af_const.h"
-    )
-    parser.add_argument(
-        "--af-py",
-        dest="af_py_filename",
-        help="Specifies the filename for the python alternate function mappings.",
-        default="build/pins_af.py"
-    )
-    parser.add_argument(
-        "-b", "--board",
+        "-b",
+        "--board",
         dest="board_filename",
         help="Specifies the board file",
     )
-    parser.add_argument(
-        "-p", "--prefix",
-        dest="prefix_filename",
-        help="Specifies beginning portion of generated pins file",
-        default="mk20dx256_prefix.c"
-    )
-    parser.add_argument(
-        "-q", "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h"
-    )
-    parser.add_argument(
-        "-r", "--hdr",
-        dest="hdr_filename",
-        help="Specifies name of generated pin header file",
-        default="build/pins.h"
-    )
+    parser.add_argument("-p",
+                        "--prefix",
+                        dest="prefix_filename",
+                        help="Specifies beginning portion of generated pins file",
+                        default="mk20dx256_prefix.c")
+    parser.add_argument("-q",
+                        "--qstr",
+                        dest="qstr_filename",
+                        help="Specifies name of generated qstr header file",
+                        default="build/pins_qstr.h")
+    parser.add_argument("-r",
+                        "--hdr",
+                        dest="hdr_filename",
+                        help="Specifies name of generated pin header file",
+                        default="build/pins.h")
     args = parser.parse_args(sys.argv[1:])
 
     pins = Pins()

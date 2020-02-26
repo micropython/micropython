@@ -16,9 +16,9 @@ _SLAVE_SEND_DELAY = const(10)
 
 if sys.platform == 'pyboard':
     cfg = {'spi': 2, 'miso': 'Y7', 'mosi': 'Y8', 'sck': 'Y6', 'csn': 'Y5', 'ce': 'Y4'}
-elif sys.platform == 'esp8266':  # Hardware SPI
+elif sys.platform == 'esp8266': # Hardware SPI
     cfg = {'spi': 1, 'miso': 12, 'mosi': 13, 'sck': 14, 'csn': 4, 'ce': 5}
-elif sys.platform == 'esp32':  # Software SPI
+elif sys.platform == 'esp32': # Software SPI
     cfg = {'spi': -1, 'miso': 32, 'mosi': 33, 'sck': 25, 'csn': 26, 'ce': 27}
 else:
     raise ValueError('Unsupported platform {}'.format(sys.platform))
@@ -26,6 +26,7 @@ else:
 # Addresses are in little-endian format. They correspond to big-endian
 # 0xf0f0f0f0e1, 0xf0f0f0f0d2
 pipes = (b'\xe1\xf0\xf0\xf0\xf0', b'\xd2\xf0\xf0\xf0\xf0')
+
 
 def master():
     csn = Pin(cfg['csn'], mode=Pin.OUT, value=1)
@@ -77,13 +78,15 @@ def master():
             got_millis, = struct.unpack('i', nrf.recv())
 
             # print response and round-trip delay
-            print('got response:', got_millis, '(delay', utime.ticks_diff(utime.ticks_ms(), got_millis), 'ms)')
+            print('got response:', got_millis, '(delay',
+                  utime.ticks_diff(utime.ticks_ms(), got_millis), 'ms)')
             num_successes += 1
 
         # delay then loop
         utime.sleep_ms(250)
 
     print('master finished sending; successes=%d, failures=%d' % (num_successes, num_failures))
+
 
 def slave():
     csn = Pin(cfg['csn'], mode=Pin.OUT, value=1)
@@ -123,6 +126,7 @@ def slave():
                 pass
             print('sent response')
             nrf.start_listening()
+
 
 try:
     import pyb

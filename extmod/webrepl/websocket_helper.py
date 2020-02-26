@@ -10,6 +10,7 @@ except:
 
 DEBUG = 0
 
+
 def server_handshake(sock):
     clr = sock.makefile("rwb", 0)
     l = clr.readline()
@@ -66,9 +67,11 @@ Sec-WebSocket-Key: foo\r
 \r
 """)
     l = cl.readline()
-#    print(l)
+    #    print(l)
     while 1:
         l = cl.readline()
         if l == b"\r\n":
             break
+
+
 #        sys.stdout.write(l)

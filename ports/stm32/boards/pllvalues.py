@@ -7,8 +7,10 @@ for the machine.freq() function.
 from __future__ import print_function
 import re
 
+
 class MCU:
-    def __init__(self, range_sysclk, range_m, range_n, range_p, range_q, range_vco_in, range_vco_out):
+    def __init__(self, range_sysclk, range_m, range_n, range_p, range_q, range_vco_in,
+                 range_vco_out):
         self.range_sysclk = range_sysclk
         self.range_m = range_m
         self.range_n = range_n
@@ -16,6 +18,7 @@ class MCU:
         self.range_q = range_q
         self.range_vco_in = range_vco_in
         self.range_vco_out = range_vco_out
+
 
 mcu_default = MCU(
     range_sysclk=range(2, 216 + 1, 2),
@@ -37,8 +40,10 @@ mcu_h7 = MCU(
     range_vco_out=range(150, 960 + 1), # 150-420=medium, 192-960=wide
 )
 
+
 def close_int(x):
     return abs(x - round(x)) < 0.01
+
 
 # original version that requires N/M to be an integer (for simplicity)
 def compute_pll(hse, sys):
@@ -68,6 +73,7 @@ def compute_pll(hse, sys):
         return (M, N, P, Q)
     # no valid values found
     return None
+
 
 # improved version that doesn't require N/M to be an integer
 def compute_pll2(hse, sys, relax_pll48):
@@ -113,6 +119,7 @@ def compute_pll2(hse, sys, relax_pll48):
         # no valid values found which give 48MHz on PLL48
         return None
 
+
 def compute_derived(hse, pll):
     hse = float(hse) # float for Python 2
     M, N, P, Q = pll
@@ -121,6 +128,7 @@ def compute_derived(hse, pll):
     pllck = hse / M * N / P
     pll48ck = hse / M * N / Q
     return (vco_in, vco_out, pllck, pll48ck)
+
 
 def verify_pll(hse, pll):
     M, N, P, Q = pll
@@ -140,6 +148,7 @@ def verify_pll(hse, pll):
     assert mcu.range_vco_in[0] <= vco_in <= mcu.range_vco_in[-1]
     assert mcu.range_vco_out[0] <= vco_out <= mcu.range_vco_out[-1]
 
+
 def compute_pll_table(source_clk, relax_pll48):
     valid_plls = []
     for sysclk in mcu.range_sysclk:
@@ -148,6 +157,7 @@ def compute_pll_table(source_clk, relax_pll48):
             verify_pll(source_clk, pll)
             valid_plls.append((sysclk, pll))
     return valid_plls
+
 
 def generate_c_table(hse, valid_plls):
     valid_plls.sort()
@@ -165,29 +175,31 @@ def generate_c_table(hse, valid_plls):
         m_mask = 0xff
         p_shift = 16
         p_mask = 0xff
-    print("#define PLL_FREQ_TABLE_SYS(pll) ((pll) & %d)" % (sys_mask,))
+    print("#define PLL_FREQ_TABLE_SYS(pll) ((pll) & %d)" % (sys_mask, ))
     print("#define PLL_FREQ_TABLE_M(pll) (((pll) >> %d) & %d)" % (m_shift, m_mask))
     print("#define PLL_FREQ_TABLE_P(pll) (((((pll) >> %d) & %d) + 1) * 2)" % (p_shift, p_mask))
-    print("typedef %s pll_freq_table_t;" % (typedef,))
+    print("typedef %s pll_freq_table_t;" % (typedef, ))
     print("// (M, P/2-1, SYS) values for %u MHz source" % hse)
-    print("static const pll_freq_table_t pll_freq_table[%u] = {" % (len(valid_plls),))
+    print("static const pll_freq_table_t pll_freq_table[%u] = {" % (len(valid_plls), ))
     for sys, (M, N, P, Q) in valid_plls:
         print("    (%u << %u) | (%u << %u) | %u," % (M, m_shift, P // 2 - 1, p_shift, sys), end='')
         if M >= 2:
             vco_in, vco_out, pllck, pll48ck = compute_derived(hse, (M, N, P, Q))
-            print(" // M=%u N=%u P=%u Q=%u vco_in=%.2f vco_out=%.2f pll48=%.2f"
-                % (M, N, P, Q, vco_in, vco_out, pll48ck), end=''
-            )
+            print(" // M=%u N=%u P=%u Q=%u vco_in=%.2f vco_out=%.2f pll48=%.2f" %
+                  (M, N, P, Q, vco_in, vco_out, pll48ck),
+                  end='')
         print()
     print("};")
+
 
 def print_table(hse, valid_plls):
     print("HSE =", hse, "MHz")
     print("sys :  M      N     P     Q : VCO_IN VCO_OUT   PLLCK PLL48CK")
     out_format = "%3u : %2u  %.1f  %.2f  %.2f :  %5.2f  %6.2f  %6.2f  %6.2f"
     for sys, pll in valid_plls:
-        print(out_format % ((sys,) + pll + compute_derived(hse, pll)))
+        print(out_format % ((sys, ) + pll + compute_derived(hse, pll)))
     print("found %u valid configurations" % len(valid_plls))
+
 
 def search_header_for_hsx_values(filename, vals):
     regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
@@ -209,6 +221,7 @@ def search_header_for_hsx_values(filename, vals):
                 else:
                     vals[1] = val
     return vals
+
 
 def main():
     global mcu
@@ -275,6 +288,7 @@ def main():
         print('#endif')
     else:
         print_table(hse, hse_valid_plls)
+
 
 if __name__ == "__main__":
     main()

@@ -24,6 +24,7 @@ orange_led = pyb.LED(3)
 blue_led = pyb.LED(4)
 all_leds = (red_led, green_led, orange_led, blue_led)
 
+
 def run_loop(leds=all_leds):
     """
     Start the loop.
@@ -40,6 +41,7 @@ def run_loop(leds=all_leds):
                 [led.off() for led in leds]
         except OSError: # VCPInterrupt # Ctrl+C in interpreter mode.
             break
+
 
 if __name__ == '__main__':
     run_loop()

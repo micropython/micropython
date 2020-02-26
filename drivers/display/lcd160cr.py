@@ -29,6 +29,7 @@ _uart_baud_table = {
     460800: 8,
 }
 
+
 class LCD160CR:
     def __init__(self, connect=None, *, pwr=None, i2c=None, spi=None, i2c_addr=98):
         if connect in ('X', 'Y', 'XY', 'YX'):
@@ -292,7 +293,7 @@ class LCD160CR:
                 ix += len(line2) - 1
 
     def screen_load(self, buf):
-        l = self.w * self.h * 2+2
+        l = self.w * self.h * 2 + 2
         self._fcmd2b('<BBHBBB', 0x70, l, 16, self.w, self.h)
         n = 0
         ar = memoryview(buf)
@@ -315,7 +316,8 @@ class LCD160CR:
         self._fcmd2('<BBHH', 0x63, fg, bg)
 
     def set_font(self, font, scale=0, bold=0, trans=0, scroll=0):
-        self._fcmd2('<BBBB', 0x46, (scroll << 7) | (trans << 6) | ((font & 3) << 4) | (bold & 0xf), scale & 0xff)
+        self._fcmd2('<BBBB', 0x46, (scroll << 7) | (trans << 6) | ((font & 3) << 4) | (bold & 0xf),
+                    scale & 0xff)
 
     def write(self, s):
         # TODO: eventually check for room in LCD input queue
@@ -424,7 +426,8 @@ class LCD160CR:
     #### ADVANCED COMMANDS ####
 
     def set_spi_win(self, x, y, w, h):
-        pack_into('<BBBHHHHHHHH', self.buf19, 0, 2, 0x55, 10, x, y, x + w - 1, y + h - 1, 0, 0, 0, 0xffff)
+        pack_into('<BBBHHHHHHHH', self.buf19, 0, 2, 0x55, 10, x, y, x + w - 1, y + h - 1, 0, 0, 0,
+                  0xffff)
         self._send(self.buf19)
 
     def fast_spi(self, flush=True):

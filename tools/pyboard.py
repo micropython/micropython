@@ -24,7 +24,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
 """
 pyboard interface
 
@@ -77,13 +76,16 @@ except AttributeError:
     # Python2 doesn't have buffer attr
     stdout = sys.stdout
 
+
 def stdout_write_bytes(b):
     b = b.replace(b"\x04", b"")
     stdout.write(b)
     stdout.flush()
 
+
 class PyboardError(Exception):
     pass
+
 
 class TelnetToSerial:
     def __init__(self, ip, user, password, read_timeout=None):
@@ -99,7 +101,8 @@ class TelnetToSerial:
                 time.sleep(0.2)
                 self.tn.write(bytes(password, 'ascii') + b"\r\n")
 
-                if b'for more information.' in self.tn.read_until(b'Type "help()" for more information.', timeout=read_timeout):
+                if b'for more information.' in self.tn.read_until(
+                        b'Type "help()" for more information.', timeout=read_timeout):
                     # login successful
                     from collections import deque
                     self.fifo = deque()
@@ -151,8 +154,12 @@ class ProcessToSerial:
 
     def __init__(self, cmd):
         import subprocess
-        self.subp = subprocess.Popen(cmd, bufsize=0, shell=True, preexec_fn=os.setsid,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.subp = subprocess.Popen(cmd,
+                                     bufsize=0,
+                                     shell=True,
+                                     preexec_fn=os.setsid,
+                                     stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE)
 
         # Initially was implemented with selectors, but that adds Python3
         # dependency. However, there can be race conditions communicating
@@ -193,13 +200,17 @@ class ProcessPtyToTerminal:
     """Execute a process which creates a PTY and prints slave PTY as
     first line of its output, and emulate serial connection using
     this PTY."""
-
     def __init__(self, cmd):
         import subprocess
         import re
         import serial
-        self.subp = subprocess.Popen(cmd.split(), bufsize=0, shell=False, preexec_fn=os.setsid,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.subp = subprocess.Popen(cmd.split(),
+                                     bufsize=0,
+                                     shell=False,
+                                     preexec_fn=os.setsid,
+                                     stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
         pty_line = self.subp.stderr.readline().decode("utf-8")
         m = re.search(r"/dev/pts/[0-9]+", pty_line)
         if not m:
@@ -355,7 +366,7 @@ class Pyboard:
             raise PyboardError('could not exec command (response: %r)' % data)
 
     def exec_raw(self, command, timeout=10, data_consumer=None):
-        self.exec_raw_no_follow(command);
+        self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
     def eval(self, expression):
@@ -394,7 +405,7 @@ class Pyboard:
         with open(dest, 'wb') as f:
             while True:
                 data = bytearray()
-                self.exec_("print(r(%u))" % chunk_size, data_consumer=lambda d:data.extend(d))
+                self.exec_("print(r(%u))" % chunk_size, data_consumer=lambda d: data.extend(d))
                 assert data.endswith(b'\r\n\x04')
                 data = eval(str(data[:-3], 'ascii'))
                 if not data:
@@ -409,7 +420,7 @@ class Pyboard:
                 data = f.read(chunk_size)
                 if not data:
                     break
-                if sys.version_info < (3,):
+                if sys.version_info < (3, ):
                     self.exec_('w(b' + repr(data) + ')')
                 else:
                     self.exec_('w(' + repr(data) + ')')
@@ -424,9 +435,11 @@ class Pyboard:
     def fs_rm(self, src):
         self.exec_("import uos\nuos.remove('%s')" % src)
 
+
 # in Python2 exec is a keyword so one must use "exec_"
 # but for Python3 we want to provide the nicer version "exec"
 setattr(Pyboard, "exec", Pyboard.exec_)
+
 
 def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', password='python'):
     pyb = Pyboard(device, baudrate, user, password)
@@ -436,11 +449,13 @@ def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', pas
     pyb.exit_raw_repl()
     pyb.close()
 
+
 def filesystem_command(pyb, args):
     def fname_remote(src):
         if src.startswith(':'):
             src = src[1:]
         return src
+
     def fname_cp_dest(src, dest):
         src = src.rsplit('/', 1)[-1]
         if dest is None or dest == '':
@@ -470,8 +485,13 @@ def filesystem_command(pyb, args):
                 print(fmt % (src, dest2))
                 op(src, dest2)
         else:
-            op = {'ls': pyb.fs_ls, 'cat': pyb.fs_cat, 'mkdir': pyb.fs_mkdir,
-                'rmdir': pyb.fs_rmdir, 'rm': pyb.fs_rm}[cmd]
+            op = {
+                'ls': pyb.fs_ls,
+                'cat': pyb.fs_cat,
+                'mkdir': pyb.fs_mkdir,
+                'rmdir': pyb.fs_rmdir,
+                'rm': pyb.fs_rm
+            }[cmd]
             if cmd == 'ls' and not args:
                 args = ['']
             for src in args:
@@ -483,6 +503,7 @@ def filesystem_command(pyb, args):
         pyb.exit_raw_repl()
         pyb.close()
         sys.exit(1)
+
 
 _injected_import_hook_code = """\
 import uos, uio
@@ -511,19 +532,37 @@ uos.umount('/_')
 del _injected_buf, _FS
 """
 
+
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
-    cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('--device',
+                            default='/dev/ttyACM0',
+                            help='the serial device or the IP address of the pyboard')
+    cmd_parser.add_argument('-b',
+                            '--baudrate',
+                            default=115200,
+                            help='the baud rate of the serial device')
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-c', '--command', help='program passed in as string')
-    cmd_parser.add_argument('-w', '--wait', default=0, type=int, help='seconds to wait for USB connected board to become available')
+    cmd_parser.add_argument('-w',
+                            '--wait',
+                            default=0,
+                            type=int,
+                            help='seconds to wait for USB connected board to become available')
     group = cmd_parser.add_mutually_exclusive_group()
-    group.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
-    group.add_argument('--no-follow', action='store_true', help='Do not follow the output after running the scripts.')
-    cmd_parser.add_argument('-f', '--filesystem', action='store_true', help='perform a filesystem action')
+    group.add_argument(
+        '--follow',
+        action='store_true',
+        help='follow the output after running the scripts [default if no scripts given]')
+    group.add_argument('--no-follow',
+                       action='store_true',
+                       help='Do not follow the output after running the scripts.')
+    cmd_parser.add_argument('-f',
+                            '--filesystem',
+                            action='store_true',
+                            help='perform a filesystem action')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
 
@@ -601,6 +640,7 @@ def main():
 
     # close the connection to the pyboard
     pyb.close()
+
 
 if __name__ == "__main__":
     main()

@@ -18,7 +18,7 @@ from micropython import const
 from pyb import Pin
 from pyb import SPI
 
-READWRITE_CMD = const(0x80) 
+READWRITE_CMD = const(0x80)
 MULTIPLEBYTE_CMD = const(0x40)
 WHO_AM_I_ADDR = const(0x0f)
 OUT_X_ADDR = const(0x29)
@@ -37,6 +37,7 @@ LIS3DSH_CTRL_REG5_ADDR = const(0x24)
 # Configuration for 100Hz sampling rate, +-2g range
 LIS3DSH_CTRL_REG4_CONF = const(0b01100111)
 LIS3DSH_CTRL_REG5_CONF = const(0b00000000)
+
 
 class STAccel:
     def __init__(self):

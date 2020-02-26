@@ -4,8 +4,10 @@
 from micropython import const
 import _onewire as _ow
 
+
 class OneWireError(Exception):
     pass
+
 
 class OneWire:
     SEARCH_ROM = const(0xf0)

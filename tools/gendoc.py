@@ -7,6 +7,7 @@ import argparse
 import re
 import markdown
 
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:
@@ -15,9 +16,11 @@ def re_match_first(regexs, line):
             return name, match
     return None, None
 
+
 def makedirs(d):
     if not os.path.isdir(d):
         os.makedirs(d)
+
 
 class Lexer:
     class LexerError(Exception):
@@ -66,6 +69,7 @@ class Lexer:
     def error(self, msg):
         print('({}:{}) {}'.format(self.filename, self.cur_line, msg))
         raise Lexer.LexerError
+
 
 class MarkdownWriter:
     def __init__(self):
@@ -119,8 +123,9 @@ class MarkdownWriter:
     def constant(self, ctx, name, descr):
         self.single_line('`{}.{}` - {}'.format(ctx, name, descr))
 
+
 class ReStructuredTextWriter:
-    head_chars = {1:'=', 2:'-', 3:'.'}
+    head_chars = {1: '=', 2: '-', 3: '.'}
 
     def __init__(self):
         pass
@@ -183,8 +188,10 @@ class ReStructuredTextWriter:
         self.lines.append('.. data:: ' + name)
         self.para(descr, indent='   ')
 
+
 class DocValidateError(Exception):
     pass
+
 
 class DocItem:
     def __init__(self):
@@ -202,6 +209,7 @@ class DocItem:
     def dump(self, writer):
         writer.para(self.doc)
 
+
 class DocConstant(DocItem):
     def __init__(self, name, descr):
         super().__init__()
@@ -210,6 +218,7 @@ class DocConstant(DocItem):
 
     def dump(self, ctx, writer):
         writer.constant(ctx, self.name, self.descr)
+
 
 class DocFunction(DocItem):
     def __init__(self, name, args):
@@ -220,6 +229,7 @@ class DocFunction(DocItem):
     def dump(self, ctx, writer):
         writer.function(ctx, self.name, self.args, self.doc)
 
+
 class DocMethod(DocItem):
     def __init__(self, name, args):
         super().__init__()
@@ -228,6 +238,7 @@ class DocMethod(DocItem):
 
     def dump(self, ctx, writer):
         writer.method(ctx, self.name, self.args, self.doc)
+
 
 class DocClass(DocItem):
     def __init__(self, name, descr):
@@ -270,20 +281,21 @@ class DocClass(DocItem):
         super().dump(writer)
         if len(self.constructors) > 0:
             writer.heading(2, 'Constructors')
-            for f in sorted(self.constructors.values(), key=lambda x:x.name):
+            for f in sorted(self.constructors.values(), key=lambda x: x.name):
                 f.dump(self.name, writer)
         if len(self.classmethods) > 0:
             writer.heading(2, 'Class methods')
-            for f in sorted(self.classmethods.values(), key=lambda x:x.name):
+            for f in sorted(self.classmethods.values(), key=lambda x: x.name):
                 f.dump(self.name, writer)
         if len(self.methods) > 0:
             writer.heading(2, 'Methods')
-            for f in sorted(self.methods.values(), key=lambda x:x.name):
+            for f in sorted(self.methods.values(), key=lambda x: x.name):
                 f.dump(self.name.lower(), writer)
         if len(self.constants) > 0:
             writer.heading(2, 'Constants')
-            for c in sorted(self.constants.values(), key=lambda x:x.name):
+            for c in sorted(self.constants.values(), key=lambda x: x.name):
                 c.dump(self.name, writer)
+
 
 class DocModule(DocItem):
     def __init__(self, name, descr):
@@ -343,15 +355,15 @@ class DocModule(DocItem):
         writer.module(self.name, self.descr, self.doc)
         if self.functions:
             writer.heading(2, 'Functions')
-            for f in sorted(self.functions.values(), key=lambda x:x.name):
+            for f in sorted(self.functions.values(), key=lambda x: x.name):
                 f.dump(self.name, writer)
         if self.constants:
             writer.heading(2, 'Constants')
-            for c in sorted(self.constants.values(), key=lambda x:x.name):
+            for c in sorted(self.constants.values(), key=lambda x: x.name):
                 c.dump(self.name, writer)
         if self.classes:
             writer.heading(2, 'Classes')
-            for c in sorted(self.classes.values(), key=lambda x:x.name):
+            for c in sorted(self.classes.values(), key=lambda x: x.name):
                 writer.para('[`{}.{}`]({}) - {}'.format(self.name, c.name, c.name, c.descr))
 
     def write_html(self, dir):
@@ -380,6 +392,7 @@ class DocModule(DocItem):
             c.dump(rst_writer)
             with open(dir + '/' + self.name + '.' + c.name + '.rst', 'wt') as f:
                 f.write(rst_writer.end())
+
 
 class Doc:
     def __init__(self):
@@ -439,7 +452,7 @@ class Doc:
     def dump(self, writer):
         writer.heading(1, 'Modules')
         writer.para('These are the Python modules that are implemented.')
-        for m in sorted(self.modules.values(), key=lambda x:x.name):
+        for m in sorted(self.modules.values(), key=lambda x: x.name):
             writer.para('[`{}`]({}/) - {}'.format(m.name, m.name, m.descr))
 
     def write_html(self, dir):
@@ -459,6 +472,7 @@ class Doc:
         for m in self.modules.values():
             m.write_rst(dir)
 
+
 regex_descr = r'(?P<descr>.*)'
 
 doc_regexs = (
@@ -471,6 +485,7 @@ doc_regexs = (
     #(Doc.process_classref, re.compile(r'\\classref (?P<id>[A-Za-z0-9_]+)$')),
     (Doc.process_class, re.compile(r'\\class (?P<id>[A-Za-z0-9_]+) - ' + regex_descr + r'$')),
 )
+
 
 def process_file(file, doc):
     lex = Lexer(file)
@@ -495,9 +510,14 @@ def process_file(file, doc):
 
     return True
 
+
 def main():
-    cmd_parser = argparse.ArgumentParser(description='Generate documentation for pyboard API from C files.')
-    cmd_parser.add_argument('--outdir', metavar='<output dir>', default='gendoc-out', help='ouput directory')
+    cmd_parser = argparse.ArgumentParser(
+        description='Generate documentation for pyboard API from C files.')
+    cmd_parser.add_argument('--outdir',
+                            metavar='<output dir>',
+                            default='gendoc-out',
+                            help='ouput directory')
     cmd_parser.add_argument('--format', default='html', help='output format: html or rst')
     cmd_parser.add_argument('files', nargs='+', help='input files')
     args = cmd_parser.parse_args()
@@ -523,6 +543,7 @@ def main():
         return
 
     print('written to', args.outdir)
+
 
 if __name__ == "__main__":
     main()

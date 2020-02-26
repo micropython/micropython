@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 
 # Microsoft UF2
-# 
+#
 # The MIT License (MIT)
-# 
+#
 # Copyright (c) Microsoft Corporation
-# 
+#
 # All rights reserved.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,10 +34,9 @@ import os
 import os.path
 import argparse
 
-
 UF2_MAGIC_START0 = 0x0A324655 # "UF2\n"
 UF2_MAGIC_START1 = 0x9E5D5157 # Randomly selected
-UF2_MAGIC_END    = 0x0AB16F30 # Ditto
+UF2_MAGIC_END = 0x0AB16F30 # Ditto
 
 families = {
     'SAMD21': 0x68ed2b88,
@@ -58,6 +57,7 @@ def is_uf2(buf):
     w = struct.unpack("<II", buf[0:8])
     return w[0] == UF2_MAGIC_START0 and w[1] == UF2_MAGIC_START1
 
+
 def is_hex(buf):
     try:
         w = buf[0:30].decode("utf-8")
@@ -66,6 +66,7 @@ def is_hex(buf):
     if w[0] == ':' and re.match(b"^[:0-9a-fA-F\r\n]+$", buf):
         return True
     return False
+
 
 def convert_from_uf2(buf):
     global appstartaddr
@@ -92,16 +93,17 @@ def convert_from_uf2(buf):
         padding = newaddr - curraddr
         if padding < 0:
             assert False, "Block out of order at " + ptr
-        if padding > 10*1024*1024:
+        if padding > 10 * 1024 * 1024:
             assert False, "More than 10M of padding needed at " + ptr
         if padding % 4 != 0:
             assert False, "Non-word padding size at " + ptr
         while padding > 0:
             padding -= 4
             outp += b"\x00\x00\x00\x00"
-        outp += block[32 : 32 + datalen]
+        outp += block[32:32 + datalen]
         curraddr = newaddr + datalen
     return outp
+
 
 def convert_to_carray(file_content):
     outp = "const unsigned char bindata[] __attribute__((aligned(16))) = {"
@@ -111,6 +113,7 @@ def convert_to_carray(file_content):
         outp += "0x%02x, " % ord(file_content[i])
     outp += "\n};\n"
     return outp
+
 
 def convert_to_uf2(file_content):
     global familyid
@@ -125,15 +128,15 @@ def convert_to_uf2(file_content):
         flags = 0x0
         if familyid:
             flags |= 0x2000
-        hd = struct.pack(b"<IIIIIIII",
-            UF2_MAGIC_START0, UF2_MAGIC_START1,
-            flags, ptr + appstartaddr, 256, blockno, numblocks, familyid)
+        hd = struct.pack(b"<IIIIIIII", UF2_MAGIC_START0, UF2_MAGIC_START1, flags,
+                         ptr + appstartaddr, 256, blockno, numblocks, familyid)
         while len(chunk) < 256:
             chunk += b"\x00"
         block = hd + chunk + datapadding + struct.pack(b"<I", UF2_MAGIC_END)
         assert len(block) == 512
         outp += block
     return outp
+
 
 class Block:
     def __init__(self, addr):
@@ -145,14 +148,14 @@ class Block:
         flags = 0x0
         if familyid:
             flags |= 0x2000
-        hd = struct.pack("<IIIIIIII",
-            UF2_MAGIC_START0, UF2_MAGIC_START1,
-            flags, self.addr, 256, blockno, numblocks, familyid)
+        hd = struct.pack("<IIIIIIII", UF2_MAGIC_START0, UF2_MAGIC_START1, flags, self.addr, 256,
+                         blockno, numblocks, familyid)
         hd += self.bytes[0:256]
         while len(hd) < 512 - 4:
             hd += b"\x00"
         hd += struct.pack("<I", UF2_MAGIC_END)
         return hd
+
 
 def convert_from_hex_to_uf2(buf):
     global appstartaddr
@@ -166,7 +169,7 @@ def convert_from_hex_to_uf2(buf):
         i = 1
         rec = []
         while i < len(line) - 1:
-            rec.append(int(line[i:i+2], 16))
+            rec.append(int(line[i:i + 2], 16))
             i += 2
         tp = rec[3]
         if tp == 4:
@@ -194,12 +197,14 @@ def convert_from_hex_to_uf2(buf):
         resfile += blocks[i].encode(i, numblocks)
     return resfile
 
+
 def get_drives():
     drives = []
     if sys.platform == "win32":
-        r = subprocess.check_output(["wmic", "PATH", "Win32_LogicalDisk",
-                                     "get", "DeviceID,", "VolumeName,",
-                                     "FileSystem,", "DriveType"])
+        r = subprocess.check_output([
+            "wmic", "PATH", "Win32_LogicalDisk", "get", "DeviceID,", "VolumeName,", "FileSystem,",
+            "DriveType"
+        ])
         for line in r.split('\n'):
             words = re.split('\s+', line)
             if len(words) >= 3 and words[1] == "2" and words[2] == "FAT":
@@ -214,7 +219,6 @@ def get_drives():
                 rootpath = tmp
         for d in os.listdir(rootpath):
             drives.append(os.path.join(rootpath, d))
-
 
     def has_info(d):
         try:
@@ -244,27 +248,42 @@ def write_file(name, buf):
 
 def main():
     global appstartaddr, familyid
+
     def error(msg):
         print(msg)
         sys.exit(1)
+
     parser = argparse.ArgumentParser(description='Convert to UF2 or flash directly.')
-    parser.add_argument('input', metavar='INPUT', type=str, nargs='?',
+    parser.add_argument('input',
+                        metavar='INPUT',
+                        type=str,
+                        nargs='?',
                         help='input file (HEX, BIN or UF2)')
-    parser.add_argument('-b' , '--base', dest='base', type=str,
+    parser.add_argument('-b',
+                        '--base',
+                        dest='base',
+                        type=str,
                         default="0x2000",
                         help='set base address of application for BIN format (default: 0x2000)')
-    parser.add_argument('-o' , '--output', metavar="FILE", dest='output', type=str,
-                        help='write output to named file; defaults to "flash.uf2" or "flash.bin" where sensible')
-    parser.add_argument('-d' , '--device', dest="device_path",
-                        help='select a device path to flash')
-    parser.add_argument('-l' , '--list', action='store_true',
-                        help='list connected devices')
-    parser.add_argument('-c' , '--convert', action='store_true',
-                        help='do not flash, just convert')
-    parser.add_argument('-f' , '--family', dest='family', type=str,
+    parser.add_argument(
+        '-o',
+        '--output',
+        metavar="FILE",
+        dest='output',
+        type=str,
+        help='write output to named file; defaults to "flash.uf2" or "flash.bin" where sensible')
+    parser.add_argument('-d', '--device', dest="device_path", help='select a device path to flash')
+    parser.add_argument('-l', '--list', action='store_true', help='list connected devices')
+    parser.add_argument('-c', '--convert', action='store_true', help='do not flash, just convert')
+    parser.add_argument('-f',
+                        '--family',
+                        dest='family',
+                        type=str,
                         default="0x0",
                         help='specify familyID - number or name (default: 0x0)')
-    parser.add_argument('-C' , '--carray', action='store_true',
+    parser.add_argument('-C',
+                        '--carray',
+                        action='store_true',
                         help='convert binary file to a C array, not UF2')
     args = parser.parse_args()
     appstartaddr = int(args.base, 0)

@@ -15,6 +15,7 @@ import subprocess
 import sys
 import types
 
+
 def create_zip(zip_filename, zip_dir):
     abs_zip_filename = os.path.abspath(zip_filename)
     save_cwd = os.getcwd()
@@ -23,6 +24,7 @@ def create_zip(zip_filename, zip_dir):
         os.remove(abs_zip_filename)
     subprocess.check_call(['zip', '-0', '-r', '-D', abs_zip_filename, '.'])
     os.chdir(save_cwd)
+
 
 def create_c_from_file(c_filename, zip_filename):
     with open(zip_filename, 'rb') as zip_file:
@@ -43,28 +45,22 @@ def create_c_from_file(c_filename, zip_filename):
                 print('', file=c_file)
             print('};', file=c_file)
 
+
 def main():
-    parser = argparse.ArgumentParser(
-        prog='make-memzip.py',
-        usage='%(prog)s [options] [command]',
-        description='Generates a C source memzip file.'
-    )
-    parser.add_argument(
-        '-z', '--zip-file',
-        dest='zip_filename',
-        help='Specifies the name of the created zip file.',
-        default='memzip_files.zip'
-    )
-    parser.add_argument(
-        '-c', '--c-file',
-        dest='c_filename',
-        help='Specifies the name of the created C source file.',
-        default='memzip_files.c'
-    )
-    parser.add_argument(
-        dest='source_dir',
-        default='memzip_files'
-    )
+    parser = argparse.ArgumentParser(prog='make-memzip.py',
+                                     usage='%(prog)s [options] [command]',
+                                     description='Generates a C source memzip file.')
+    parser.add_argument('-z',
+                        '--zip-file',
+                        dest='zip_filename',
+                        help='Specifies the name of the created zip file.',
+                        default='memzip_files.zip')
+    parser.add_argument('-c',
+                        '--c-file',
+                        dest='c_filename',
+                        help='Specifies the name of the created C source file.',
+                        default='memzip_files.c')
+    parser.add_argument(dest='source_dir', default='memzip_files')
     args = parser.parse_args(sys.argv[1:])
 
     print('args.zip_filename =', args.zip_filename)
@@ -74,6 +70,6 @@ def main():
     create_zip(args.zip_filename, args.source_dir)
     create_c_from_file(args.c_filename, args.zip_filename)
 
+
 if __name__ == "__main__":
     main()
-

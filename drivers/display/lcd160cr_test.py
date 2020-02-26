@@ -3,10 +3,12 @@
 
 import time, math, framebuf, lcd160cr
 
+
 def get_lcd(lcd):
     if type(lcd) is str:
         lcd = lcd160cr.LCD160CR(lcd)
     return lcd
+
 
 def show_adc(lcd, adc):
     data = [adc.read_core_temp(), adc.read_core_vbat(), 3.3]
@@ -21,7 +23,7 @@ def show_adc(lcd, adc):
             lcd.set_pos(0, 100 + i * 16)
         else:
             lcd.set_font(2, trans=1)
-            lcd.set_pos(0, lcd.h-60 + i * 16)
+            lcd.set_pos(0, lcd.h - 60 + i * 16)
         lcd.write('%4s: ' % ('TEMP', 'VBAT', 'VREF')[i])
         if i > 0:
             s = '%6.3fV' % data[i]
@@ -31,8 +33,9 @@ def show_adc(lcd, adc):
             lcd.set_font(1, bold=0, scale=1)
         else:
             lcd.set_font(1, bold=0, scale=1, trans=1)
-            lcd.set_pos(45, lcd.h-60 + i * 16)
+            lcd.set_pos(45, lcd.h - 60 + i * 16)
         lcd.write(s)
+
 
 def test_features(lcd, orient=lcd160cr.PORTRAIT):
     # if we run on pyboard then use ADC and RTC features
@@ -80,15 +83,13 @@ def test_features(lcd, orient=lcd160cr.PORTRAIT):
             if tx2 >= 0 and ty2 >= 0 and tx2 < w and ty2 < h:
                 tx, ty = tx2, ty2
         else:
-             tx = (tx + 1) % w
-             ty = (ty + 1) % h
+            tx = (tx + 1) % w
+            ty = (ty + 1) % h
 
         # create and show the inline framebuf
         fbuf.fill(lcd.rgb(128 + int(64 * math.cos(0.1 * i)), 128, 192))
-        fbuf.line(w // 2, h // 2,
-            w // 2 + int(40 * math.cos(0.2 * i)),
-            h // 2 + int(40 * math.sin(0.2 * i)),
-            lcd.rgb(128, 255, 64))
+        fbuf.line(w // 2, h // 2, w // 2 + int(40 * math.cos(0.2 * i)),
+                  h // 2 + int(40 * math.sin(0.2 * i)), lcd.rgb(128, 255, 64))
         fbuf.hline(0, ty, w, lcd.rgb(64, 64, 64))
         fbuf.vline(tx, 0, h, lcd.rgb(64, 64, 64))
         fbuf.rect(tx - 3, ty - 3, 7, 7, lcd.rgb(64, 64, 64))
@@ -97,9 +98,8 @@ def test_features(lcd, orient=lcd160cr.PORTRAIT):
             y = h // 2 - 8 + int(32 * math.sin(0.05 * i + phase))
             fbuf.blit(mlogo, x, y)
         for j in range(-3, 3):
-            fbuf.text('MicroPython',
-                5, h // 2 + 9 * j + int(20 * math.sin(0.1 * (i + j))),
-                lcd.rgb(128 + 10 * j, 0, 128 - 10 * j))
+            fbuf.text('MicroPython', 5, h // 2 + 9 * j + int(20 * math.sin(0.1 * (i + j))),
+                      lcd.rgb(128 + 10 * j, 0, 128 - 10 * j))
         lcd.show_framebuf(fbuf)
 
         # show results from the ADC
@@ -111,7 +111,8 @@ def test_features(lcd, orient=lcd160cr.PORTRAIT):
             lcd.set_pos(2, 0)
             lcd.set_font(1)
             t = rtc.datetime()
-            lcd.write('%4d-%02d-%02d %2d:%02d:%02d.%01d' % (t[0], t[1], t[2], t[4], t[5], t[6], t[7] // 100000))
+            lcd.write('%4d-%02d-%02d %2d:%02d:%02d.%01d' %
+                      (t[0], t[1], t[2], t[4], t[5], t[6], t[7] // 100000))
 
         # compute the frame rate
         t1 = time.ticks_us()
@@ -121,6 +122,7 @@ def test_features(lcd, orient=lcd160cr.PORTRAIT):
         # show the frame rate
         lcd.set_pos(2, 9)
         lcd.write('%.2f fps' % (1000000 / dt))
+
 
 def test_mandel(lcd, orient=lcd160cr.PORTRAIT):
     # set orientation and clear screen
@@ -161,10 +163,12 @@ def test_mandel(lcd, orient=lcd160cr.PORTRAIT):
             line[2 * u + 1] = rgb >> 8
         spi.write(line)
 
+
 def test_all(lcd, orient=lcd160cr.PORTRAIT):
     lcd = get_lcd(lcd)
     test_features(lcd, orient)
     test_mandel(lcd, orient)
+
 
 print('To run all tests: test_all(<lcd>)')
 print('Individual tests are: test_features, test_mandel')

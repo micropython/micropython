@@ -41,6 +41,7 @@ def flash_led(r0):
     cmp(r0, 0)
     bgt(loop1)
 
+
 # flash LED #2 using inline assembler
 # this version uses half-word sortes, and the convenience assembler operation 'movwt'
 @micropython.asm_thumb
@@ -80,6 +81,7 @@ def flash_led_v2(r0):
     label(loop_entry)
     cmp(r0, 0)
     bgt(loop1)
+
 
 flash_led(5)
 flash_led_v2(5)

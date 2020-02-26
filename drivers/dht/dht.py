@@ -6,6 +6,7 @@ try:
 except:
     from pyb import dht_readinto
 
+
 class DHTBase:
     def __init__(self, pin):
         self.pin = pin
@@ -17,12 +18,14 @@ class DHTBase:
         if (buf[0] + buf[1] + buf[2] + buf[3]) & 0xff != buf[4]:
             raise Exception("checksum error")
 
+
 class DHT11(DHTBase):
     def humidity(self):
         return self.buf[0]
 
     def temperature(self):
         return self.buf[2]
+
 
 class DHT22(DHTBase):
     def humidity(self):

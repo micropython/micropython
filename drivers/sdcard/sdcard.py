@@ -23,7 +23,6 @@ Example usage on ESP8266:
 from micropython import const
 import time
 
-
 _CMD_TIMEOUT = const(100)
 
 _R1_IDLE_STATE = const(1 << 0)
@@ -101,7 +100,7 @@ class SDCard:
         elif csd[0] & 0xc0 == 0x00: # CSD version 1.0 (old, <=2GB)
             c_size = csd[6] & 0b11 | csd[7] << 2 | (csd[8] & 0b11000000) << 4
             c_size_mult = ((csd[9] & 0b11) << 1) | csd[10] >> 7
-            self.sectors = (c_size + 1) * (2 ** (c_size_mult + 2))
+            self.sectors = (c_size + 1) * (2**(c_size_mult + 2))
         else:
             raise OSError("SD card CSD format not supported")
         #print('sectors', self.sectors)
@@ -247,7 +246,7 @@ class SDCard:
             mv = memoryview(buf)
             while nblocks:
                 # receive the data and release card
-                self.readinto(mv[offset : offset + 512])
+                self.readinto(mv[offset:offset + 512])
                 offset += 512
                 nblocks -= 1
             if self.cmd(12, 0, 0xff, skip1=True):
@@ -271,7 +270,7 @@ class SDCard:
             offset = 0
             mv = memoryview(buf)
             while nblocks:
-                self.write(_TOKEN_CMD25, mv[offset : offset + 512])
+                self.write(_TOKEN_CMD25, mv[offset:offset + 512])
                 offset += 512
                 nblocks -= 1
             self.write_token(_TOKEN_STOP_TRAN)

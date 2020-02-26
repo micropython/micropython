@@ -20,6 +20,7 @@ def write_out(fname, output):
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
 
+
 def process_file(f):
     re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
     re_qstr = re.compile(r'MP_QSTR_[_a-zA-Z0-9]+')
@@ -92,6 +93,7 @@ if __name__ == "__main__":
 
     class Args:
         pass
+
     args = Args()
     args.command = sys.argv[1]
     args.input_filename = sys.argv[2]

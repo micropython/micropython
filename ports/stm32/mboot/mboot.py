@@ -3,7 +3,6 @@
 
 import struct, time, os, hashlib
 
-
 I2C_CMD_ECHO = 1
 I2C_CMD_GETID = 2
 I2C_CMD_GETCAPS = 3
@@ -137,7 +136,9 @@ class Bootloader:
                     if p[0] <= addr < p[0] + p[1]:
                         # found page
                         if not page_erased[i]:
-                            print('\r% 3u%% erase 0x%08x' % (100 * (addr - start_addr) // fsize, addr), end='')
+                            print('\r% 3u%% erase 0x%08x' % (100 *
+                                                             (addr - start_addr) // fsize, addr),
+                                  end='')
                             self.pageerase(addr)
                             page_erased[i] = True
                         break

@@ -41,11 +41,13 @@ from machine import ADC
 from machine import Pin
 from ubluepy import Peripheral, Scanner, constants
 
+
 def bytes_to_str(bytes):
     string = ""
     for b in bytes:
         string += chr(b)
     return string
+
 
 def get_device_names(scan_entries):
     dev_names = []
@@ -53,9 +55,10 @@ def get_device_names(scan_entries):
         scan = e.getScanData()
         if scan:
             for s in scan:
-               if s[0] == constants.ad_types.AD_TYPE_COMPLETE_LOCAL_NAME:
-                   dev_names.append((e, bytes_to_str(s[2])))
+                if s[0] == constants.ad_types.AD_TYPE_COMPLETE_LOCAL_NAME:
+                    dev_names.append((e, bytes_to_str(s[2])))
     return dev_names
+
 
 def find_device_by_name(name):
     s = Scanner()
@@ -65,6 +68,7 @@ def find_device_by_name(name):
     for dev in device_names:
         if name == dev[1]:
             return dev[0]
+
 
 class PowerUp3:
     def __init__(self):
@@ -76,14 +80,14 @@ class PowerUp3:
         self.btn_speed_off = Pin("P16", mode=Pin.IN, pull=Pin.PULL_UP)
 
         self.x_mid = 0
-        
+
         self.calibrate()
         self.connect()
         self.loop()
-        
+
     def read_stick_x(self):
         return self.x_adc.value()
-        
+
     def button_speed_up(self):
         return not bool(self.btn_speed_up.value())
 

@@ -7,6 +7,7 @@ _CONVERT = const(0x44)
 _RD_SCRATCH = const(0xbe)
 _WR_SCRATCH = const(0x4e)
 
+
 class DS18X20:
     def __init__(self, onewire):
         self.ow = onewire

@@ -6,14 +6,17 @@ import machine
 RC = "./boot.py"
 CONFIG = "./webrepl_cfg.py"
 
+
 def input_choice(prompt, choices):
     while 1:
         resp = input(prompt)
         if resp in choices:
             return resp
 
+
 def getpass(prompt):
     return input(prompt)
+
 
 def input_pass():
     while 1:
@@ -77,7 +80,8 @@ def main():
 
     if resp == "E":
         if exists(CONFIG):
-            resp2 = input_choice("Would you like to change WebREPL password? (y/n) ", ("y", "n", ""))
+            resp2 = input_choice("Would you like to change WebREPL password? (y/n) ",
+                                 ("y", "n", ""))
         else:
             print("To enable WebREPL, you must set password for it")
             resp2 = "y"
@@ -86,7 +90,6 @@ def main():
             passwd = input_pass()
             with open(CONFIG, "w") as f:
                 f.write("PASS = %r\n" % passwd)
-
 
     if resp not in ("D", "E") or (resp == "D" and not status) or (resp == "E" and status):
         print("No further action required")
@@ -98,5 +101,6 @@ def main():
     resp = input_choice("Would you like to reboot now? (y/n) ", ("y", "n", ""))
     if resp == "y":
         machine.reset()
+
 
 main()

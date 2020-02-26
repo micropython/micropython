@@ -4,7 +4,6 @@
 import struct, time
 import uzlib, machine, stm
 
-
 FLASH_KEY1 = 0x45670123
 FLASH_KEY2 = 0xcdef89ab
 
@@ -17,6 +16,7 @@ def check_mem_contains(addr, buf):
             return False
     return True
 
+
 def check_mem_erased(addr, size):
     mem16 = stm.mem16
     r = range(0, size, 2)
@@ -24,6 +24,7 @@ def check_mem_erased(addr, size):
         if mem16[addr + off] != 0xffff:
             return False
     return True
+
 
 def dfu_read(filename):
     f = open(filename, 'rb')
@@ -71,16 +72,20 @@ def dfu_read(filename):
 
     return elems
 
+
 def flash_wait_not_busy():
     while stm.mem32[stm.FLASH + stm.FLASH_SR] & 1 << 16:
         machine.idle()
+
 
 def flash_unlock():
     stm.mem32[stm.FLASH + stm.FLASH_KEYR] = FLASH_KEY1
     stm.mem32[stm.FLASH + stm.FLASH_KEYR] = FLASH_KEY2
 
+
 def flash_lock():
     stm.mem32[stm.FLASH + stm.FLASH_CR] = 1 << 31 # LOCK
+
 
 def flash_erase_sector(sector):
     assert 0 <= sector <= 7 # for F722
@@ -95,6 +100,7 @@ def flash_erase_sector(sector):
     flash_wait_not_busy()
     stm.mem32[stm.FLASH + stm.FLASH_CR] = 0
 
+
 def flash_write(addr, buf):
     assert len(buf) % 4 == 0
     flash_wait_not_busy()
@@ -107,6 +113,7 @@ def flash_write(addr, buf):
         stm.mem32[addr + off] = struct.unpack_from('I', buf, off)[0]
         flash_wait_not_busy()
     stm.mem32[stm.FLASH + stm.FLASH_CR] = 0
+
 
 def update_mboot(filename):
     print('Loading file', filename)
@@ -150,6 +157,7 @@ def update_mboot(filename):
 
     print('Programming finished, can now reset or turn off.')
 
+
 def update_mpy(filename, fs_base, fs_len):
     # Check firmware is of .dfu.gz type
     try:
@@ -166,7 +174,9 @@ def update_mpy(filename, fs_base, fs_len):
     ELEM_TYPE_FSLOAD = 3
     ELEM_MOUNT_FAT = 1
     mount_point = 1
-    mount = struct.pack('<BBBBLL', ELEM_TYPE_MOUNT, 10, mount_point, ELEM_MOUNT_FAT, fs_base, fs_len)
-    fsup = struct.pack('<BBB', ELEM_TYPE_FSLOAD, 1 + len(filename), mount_point) + bytes(filename, 'ascii')
+    mount = struct.pack('<BBBBLL', ELEM_TYPE_MOUNT, 10, mount_point, ELEM_MOUNT_FAT, fs_base,
+                        fs_len)
+    fsup = struct.pack('<BBB', ELEM_TYPE_FSLOAD, 1 + len(filename), mount_point) + bytes(
+        filename, 'ascii')
     end = struct.pack('<BB', ELEM_TYPE_END, 0)
     machine.bootloader(mount + fsup + end)

@@ -1,6 +1,7 @@
 import uos
 from flashbdev import bdev
 
+
 def check_bootsec():
     buf = bytearray(bdev.ioctl(5, 0)) # 5 is SEC_SIZE
     bdev.readblocks(0, buf)
@@ -13,6 +14,7 @@ def check_bootsec():
         return True
     fs_corrupted()
 
+
 def fs_corrupted():
     import time
     while 1:
@@ -23,6 +25,7 @@ factory reprogramming of MicroPython firmware (completely erase flash, followed
 by firmware programming).
 """)
         time.sleep(3)
+
 
 def setup():
     check_bootsec()

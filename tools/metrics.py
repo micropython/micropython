@@ -23,7 +23,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
 """
 This script is used to compute metrics, like code size, of the various ports.
 
@@ -47,12 +46,14 @@ import sys, re, subprocess
 
 MAKE_FLAGS = ['-j3', 'CFLAGS_EXTRA=-DNDEBUG']
 
+
 class PortData:
     def __init__(self, name, dir, output, make_flags=None):
         self.name = name
         self.dir = dir
         self.output = output
         self.make_flags = make_flags
+
 
 port_data = {
     'b': PortData('bare-arm', 'bare-arm', 'build/firmware.elf'),
@@ -67,6 +68,7 @@ port_data = {
     'd': PortData('samd', 'samd', 'build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/firmware.elf'),
 }
 
+
 def syscmd(*args):
     sys.stdout.flush()
     a2 = []
@@ -76,6 +78,7 @@ def syscmd(*args):
         elif a:
             a2.extend(a)
     subprocess.run(a2)
+
 
 def parse_port_list(args):
     if not args:
@@ -90,6 +93,7 @@ def parse_port_list(args):
                     print('unknown port:', port_char)
                     sys.exit(1)
         return ports
+
 
 def read_build_log(filename):
     data = dict()
@@ -111,6 +115,7 @@ def read_build_log(filename):
         else:
             is_size_line = line.startswith('text\t ')
     return data
+
 
 def do_diff(args):
     """Compute the difference between firmware sizes."""
@@ -151,6 +156,7 @@ def do_diff(args):
             warn = '[incl%s]' % warn
         print('%11s: %+5u %+.3f%% %s%s' % (name, delta, percent, board, warn))
 
+
 def do_clean(args):
     """Clean ports."""
 
@@ -159,6 +165,7 @@ def do_clean(args):
     print('CLEANING')
     for port in ports:
         syscmd('make', '-C', 'ports/{}'.format(port.dir), port.make_flags, 'clean')
+
 
 def do_build(args):
     """Build ports and print firmware sizes."""
@@ -174,6 +181,7 @@ def do_build(args):
 
     do_sizes(args)
 
+
 def do_sizes(args):
     """Compute and print sizes of firmware."""
 
@@ -182,6 +190,7 @@ def do_sizes(args):
     print('COMPUTING SIZES')
     for port in ports:
         syscmd('size', 'ports/{}/{}'.format(port.dir, port.output))
+
 
 def main():
     # Get command to execute
@@ -200,6 +209,7 @@ def main():
         print("{}: unknown command '{}'".format(sys.argv[0], cmd))
         sys.exit(1)
     cmd(sys.argv[1:])
+
 
 if __name__ == '__main__':
     main()

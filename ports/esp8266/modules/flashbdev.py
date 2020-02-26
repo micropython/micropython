@@ -1,5 +1,6 @@
 import esp
 
+
 class FlashBdev:
 
     SEC_SIZE = 4096
@@ -24,16 +25,17 @@ class FlashBdev:
 
     def ioctl(self, op, arg):
         #print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
+        if op == 4: # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return self.blocks
-        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
+        if op == 5: # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
-        if op == 6:  # MP_BLOCKDEV_IOCTL_BLOCK_ERASE
+        if op == 6: # MP_BLOCKDEV_IOCTL_BLOCK_ERASE
             esp.flash_erase(arg + self.START_SEC)
             return 0
 
+
 size = esp.flash_size()
-if size < 1024*1024:
+if size < 1024 * 1024:
     bdev = None
 else:
     # 20K at the flash end is reserved for SDK params storage
