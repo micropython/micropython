@@ -102,13 +102,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 
-    if (path_num == 0) {
-#endif
-        // mp_sys_path is empty, so just use the given file name
-        vstr_add_strn(dest, file_str, file_len);
-        return stat_dir_or_file(dest);
-#if MICROPY_PY_SYS
-    } else {
+    if (path_num != 0) {
         // go through each path looking for a directory or file
         for (size_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
@@ -129,6 +123,10 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         return MP_IMPORT_STAT_NO_EXIST;
     }
 #endif
+
+    // mp_sys_path is empty, so just use the given file name
+    vstr_add_strn(dest, file_str, file_len);
+    return stat_dir_or_file(dest);
 }
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
