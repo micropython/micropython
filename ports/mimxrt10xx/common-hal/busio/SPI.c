@@ -95,8 +95,7 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
             | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-#define LPSPI_CLOCK_SOURCE_DIVIDER (7U)
-#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (LPSPI_CLOCK_SOURCE_DIVIDER + 1U))
+#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv)))
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
