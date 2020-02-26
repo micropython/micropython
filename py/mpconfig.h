@@ -560,6 +560,12 @@
 #define MICROPY_ENABLE_EXTERNAL_IMPORT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to enable importing foo.py with __name__ set to '__main__'
+// Used by the unix port for the -m flag.
+#ifndef MICROPY_ENABLE_MODULE_OVERRIDE_MAIN
+#define MICROPY_ENABLE_MODULE_OVERRIDE_MAIN (0)
+#endif
+
 // Whether to use the POSIX reader for importing files
 #ifndef MICROPY_READER_POSIX
 #define MICROPY_READER_POSIX (0)
