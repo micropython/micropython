@@ -72,18 +72,18 @@ typedef struct _sdcard_obj_t {
 #define _SECTOR_SIZE(self) (self->card.csd.sector_size)
 
 STATIC esp_err_t check_esp_err(esp_err_t code) {
-    switch(code) {
-    case ESP_OK:
-        return ESP_OK;
-    case ESP_ERR_NO_MEM:
-        code = MP_ENOMEM;
-        break;
-    case ESP_ERR_TIMEOUT:
-        code = MP_ETIMEDOUT;
-        break;
-    case ESP_ERR_NOT_SUPPORTED:
-        code = MP_EOPNOTSUPP;
-        break;
+    switch (code) {
+        case ESP_OK:
+            return ESP_OK;
+        case ESP_ERR_NO_MEM:
+            code = MP_ENOMEM;
+            break;
+        case ESP_ERR_TIMEOUT:
+            code = MP_ETIMEDOUT;
+            break;
+        case ESP_ERR_NOT_SUPPORTED:
+            code = MP_EOPNOTSUPP;
+            break;
     }
 
     mp_raise_OSError(code);
@@ -100,7 +100,7 @@ STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
 
 #define SET_CONFIG_PIN(config, pin_var, arg_id) \
     if (arg_vals[arg_id].u_obj != mp_const_none) \
-        config.pin_var = pin_or_int(arg_vals[arg_id].u_obj)
+    config.pin_var = pin_or_int(arg_vals[arg_id].u_obj)
 
 STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {
     if (force || !(self->flags & SDCARD_CARD_FLAGS_CARD_INIT_DONE)) {
@@ -165,15 +165,15 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
     mp_arg_parse_all(n_args, args, &kw_args,
-                     MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
 
     DEBUG_printf("  slot=%d, width=%d, cd=%p, wp=%p",
-                 arg_vals[ARG_slot].u_int, arg_vals[ARG_width].u_int,
-                 arg_vals[ARG_cd].u_obj, arg_vals[ARG_wp].u_obj);
+        arg_vals[ARG_slot].u_int, arg_vals[ARG_width].u_int,
+        arg_vals[ARG_cd].u_obj, arg_vals[ARG_wp].u_obj);
 
     DEBUG_printf("  miso=%p, mosi=%p, sck=%p, cs=%p",
-                 arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
-                 arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
+        arg_vals[ARG_miso].u_obj, arg_vals[ARG_mosi].u_obj,
+        arg_vals[ARG_sck].u_obj, arg_vals[ARG_cs].u_obj);
 
     int slot_num = arg_vals[ARG_slot].u_int;
     if (slot_num < 0 || slot_num > 3) {
@@ -216,13 +216,14 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
             {
                 .gpio_miso = GPIO_NUM_19,
                 .gpio_mosi = GPIO_NUM_23,
-                .gpio_sck  = GPIO_NUM_18,
-                .gpio_cs   = GPIO_NUM_5,
-                .gpio_cd   = SDSPI_SLOT_NO_CD,
-                .gpio_wp   = SDSPI_SLOT_NO_WP,
+                .gpio_sck = GPIO_NUM_18,
+                .gpio_cs = GPIO_NUM_5,
+                .gpio_cd = SDSPI_SLOT_NO_CD,
+                .gpio_wp = SDSPI_SLOT_NO_WP,
                 .dma_channel = 2
             },
-            SDSPI_SLOT_CONFIG_DEFAULT() };
+            SDSPI_SLOT_CONFIG_DEFAULT()
+        };
 
         DEBUG_printf("  Setting up SPI slot configuration");
         sdspi_slot_config_t slot_config = slot_defaults[slot_num];
@@ -352,14 +353,16 @@ STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
 
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
             err = sdcard_ensure_card_init(self, false);
-            if (err != ESP_OK)
+            if (err != ESP_OK) {
                 return MP_OBJ_NEW_SMALL_INT(-1);
+            }
             return MP_OBJ_NEW_SMALL_INT(self->card.csd.capacity);
 
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             err = sdcard_ensure_card_init(self, false);
-            if (err != ESP_OK)
+            if (err != ESP_OK) {
                 return MP_OBJ_NEW_SMALL_INT(-1);
+            }
             return MP_OBJ_NEW_SMALL_INT(_SECTOR_SIZE(self));
 
         default: // unknown command
@@ -384,7 +387,7 @@ const mp_obj_type_t machine_sdcard_type = {
     { &mp_type_type },
     .name = MP_QSTR_SDCard,
     .make_new = machine_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_sdcard_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_sdcard_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_SDCARD

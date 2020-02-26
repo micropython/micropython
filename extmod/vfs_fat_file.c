@@ -107,7 +107,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(o_in);
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
 
         switch (s->whence) {
             case 0: // SEEK_SET
@@ -181,11 +181,11 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
             case '+':
                 mode |= FA_READ | FA_WRITE;
                 break;
-            #if MICROPY_PY_IO_FILEIO
+                #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &mp_type_vfs_fat_fileio;
                 break;
-            #endif
+                #endif
             case 't':
                 type = &mp_type_vfs_fat_textio;
                 break;
@@ -251,7 +251,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_fat_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&vfs_fat_rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 #endif
 
@@ -270,7 +270,7 @@ const mp_obj_type_t mp_type_vfs_fat_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_fat_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&vfs_fat_rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes

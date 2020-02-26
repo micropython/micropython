@@ -162,10 +162,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
-    #if defined(MICROPY_HW_BDEV_READBLOCK)
+        #if defined(MICROPY_HW_BDEV_READBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
-    #endif
+        #endif
     } else {
         return false;
     }
@@ -176,10 +176,10 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;
-    #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
+        #if defined(MICROPY_HW_BDEV_WRITEBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return MICROPY_HW_BDEV_WRITEBLOCK(src, block - FLASH_PART1_START_BLOCK);
-    #endif
+        #endif
     } else {
         return false;
     }
@@ -375,27 +375,31 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
                 // Will be using extended block protocol
                 if (self == &pyb_flash_obj) {
                     ret = -1;
-                #if defined(SPIFLASH)
+                    #if defined(SPIFLASH)
                 } else {
                     // Switch to use native block size of SPI flash
                     self->use_native_block_size = true;
-                #endif
+                    #endif
                 }
             }
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
-        case MP_BLOCKDEV_IOCTL_DEINIT: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case MP_BLOCKDEV_IOCTL_SYNC: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);                                             // TODO properly
+        case MP_BLOCKDEV_IOCTL_SYNC:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);
 
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: {
             mp_int_t n;
             if (self == &pyb_flash_obj) {
                 // Get true size
                 n = storage_get_block_count();
-            #if defined(SPIFLASH)
+                #if defined(SPIFLASH)
             } else if (self->use_native_block_size) {
                 n = self->len / PYB_FLASH_NATIVE_BLOCK_SIZE;
-            #endif
+                #endif
             } else {
                 n = self->len / FLASH_BLOCK_SIZE;
             }
@@ -423,7 +427,8 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
 
-        default: return mp_const_none;
+        default:
+            return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
@@ -441,7 +446,7 @@ const mp_obj_type_t pyb_flash_type = {
     .name = MP_QSTR_Flash,
     .print = pyb_flash_print,
     .make_new = pyb_flash_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_flash_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_flash_locals_dict,
 };
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {

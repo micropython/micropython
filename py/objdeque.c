@@ -82,12 +82,12 @@ STATIC mp_obj_t deque_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_NEW_SMALL_INT(len);
         }
-        #if MICROPY_PY_SYS_GETSIZEOF
+            #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(mp_obj_t) * self->alloc;
             return MP_OBJ_NEW_SMALL_INT(sz);
         }
-        #endif
+            #endif
         default:
             return MP_OBJ_NULL; // op not supported
     }
@@ -161,7 +161,7 @@ const mp_obj_type_t mp_type_deque = {
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
     .unary_op = deque_unary_op,
-    .locals_dict = (mp_obj_dict_t*)&deque_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
 };
 
 #endif // MICROPY_PY_COLLECTIONS_DEQUE

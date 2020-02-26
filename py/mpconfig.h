@@ -34,8 +34,8 @@
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION ( \
     MICROPY_VERSION_MAJOR << 16 \
-    | MICROPY_VERSION_MINOR << 8 \
-    | MICROPY_VERSION_MICRO)
+        | MICROPY_VERSION_MINOR << 8 \
+        | MICROPY_VERSION_MICRO)
 
 // String version
 #define MICROPY_VERSION_STRING \
@@ -1489,7 +1489,7 @@ typedef double mp_float_t;
 #elif defined(MP_ENDIANNESS_BIG)
 #define MP_ENDIANNESS_LITTLE (!MP_ENDIANNESS_BIG)
 #else
-  // Endianness not defined by port so try to autodetect it.
+// Endianness not defined by port so try to autodetect it.
   #if defined(__BYTE_ORDER__)
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       #define MP_ENDIANNESS_LITTLE (1)
@@ -1605,7 +1605,7 @@ typedef double mp_float_t;
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
+# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff) ))
 # define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
 # define MP_HTOBE32(x) (x)

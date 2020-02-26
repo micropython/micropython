@@ -103,14 +103,14 @@
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
 STATIC void asm_x86_write_byte_1(asm_x86_t *as, byte b1) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
     if (c != NULL) {
         c[0] = b1;
     }
 }
 
 STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -118,7 +118,7 @@ STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
 }
 
 STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -127,7 +127,7 @@ STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
 }
 
 STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
     if (c != NULL) {
         c[0] = IMM32_L0(w32);
         c[1] = IMM32_L1(w32);
@@ -255,11 +255,11 @@ void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_XOR_R32_TO_RM32);
 }
 
-void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
 }
 
-void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 7, OPCODE_SAR_RM32_CL);
 }
 
@@ -368,7 +368,7 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x86_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x86_write_word32(as, rel);
@@ -390,7 +390,7 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x86_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x86_write_word32(as, rel);
@@ -488,8 +488,7 @@ void asm_x86_push_local(asm_x86_t *as, int local_num) {
     asm_x86_push_disp(as, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, local_num));
 }
 
-void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
-{
+void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32) {
     asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_ESP);
     asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_esp(as, local_num), temp_r32);
     asm_x86_push_r32(as, temp_r32);

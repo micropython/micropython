@@ -243,12 +243,12 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 #ifdef _WIN64
 #define SSIZE_MAX                   _I64_MAX
-typedef __int64                     ssize_t;
+typedef __int64 ssize_t;
 #else
 #define SSIZE_MAX                   _I32_MAX
-typedef int                         ssize_t;
+typedef int ssize_t;
 #endif
-typedef mp_off_t                    off_t;
+typedef mp_off_t off_t;
 
 
 // Put static/global variables in sections with a known name

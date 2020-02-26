@@ -73,18 +73,18 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 /******************************************************************************/
 // Types and objects
 
-#define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_ ## x
+#define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_##x
 
 #define mp_type_type                        (*mp_fun_table.type_type)
 #define mp_type_str                         (*mp_fun_table.type_str)
 #define mp_type_list                        (*mp_fun_table.type_list)
-#define mp_type_EOFError                    (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_EOFError)))
-#define mp_type_IndexError                  (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_IndexError)))
-#define mp_type_KeyError                    (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_KeyError)))
-#define mp_type_NotImplementedError         (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_NotImplementedError)))
-#define mp_type_RuntimeError                (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_RuntimeError)))
-#define mp_type_TypeError                   (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_TypeError)))
-#define mp_type_ValueError                  (*(mp_obj_type_t*)(mp_load_global(MP_QSTR_ValueError)))
+#define mp_type_EOFError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_EOFError)))
+#define mp_type_IndexError                  (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_IndexError)))
+#define mp_type_KeyError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_KeyError)))
+#define mp_type_NotImplementedError         (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_NotImplementedError)))
+#define mp_type_RuntimeError                (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_RuntimeError)))
+#define mp_type_TypeError                   (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_TypeError)))
+#define mp_type_ValueError                  (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_ValueError)))
 
 #define mp_stream_read_obj                  (*mp_fun_table.stream_read_obj)
 #define mp_stream_readinto_obj              (*mp_fun_table.stream_readinto_obj)
@@ -110,7 +110,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_cast_to_native_base(o, t)    (mp_obj_cast_to_native_base_dyn((o), (t)))
 #define mp_obj_get_int(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_INT))
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
-#define mp_obj_str_get_str(s)               ((void*)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
+#define mp_obj_str_get_str(s)               ((void *)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
@@ -119,9 +119,9 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
-static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte* data, size_t len) {
+static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
     if (type == &mp_type_str) {
-        return mp_obj_new_str((const char*)data, len);
+        return mp_obj_new_str((const char *)data, len);
     } else {
         return mp_obj_new_bytes(data, len);
     }
@@ -137,7 +137,7 @@ static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const
         // This is a very simple version of mp_obj_is_subclass_fast that could be improved.
         return MP_OBJ_NULL;
     } else {
-        mp_obj_instance_t *self = (mp_obj_instance_t*)MP_OBJ_TO_PTR(self_in);
+        mp_obj_instance_t *self = (mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in);
         return self->subobj[0];
     }
 }
@@ -177,7 +177,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     mp_raw_code_t rc; \
     rc.kind = MP_CODE_NATIVE_VIPER; \
     rc.scope_flags = 0; \
-    rc.const_table = (void*)self->const_table; \
+    rc.const_table = (void *)self->const_table; \
     (void)rc;
 
 #define MP_DYNRUNTIME_INIT_EXIT \

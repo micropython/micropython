@@ -134,7 +134,7 @@ const mp_obj_type_t zephyr_disk_access_type = {
     .name = MP_QSTR_DiskAccess,
     .print = zephyr_disk_access_print,
     .make_new = zephyr_disk_access_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_disk_access_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_disk_access_locals_dict,
 };
 #endif // CONFIG_DISK_ACCESS
 
@@ -256,6 +256,6 @@ const mp_obj_type_t zephyr_flash_area_type = {
     .name = MP_QSTR_FlashArea,
     .print = zephyr_flash_area_print,
     .make_new = zephyr_flash_area_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_flash_area_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_flash_area_locals_dict,
 };
 #endif // CONFIG_FLASH_MAP

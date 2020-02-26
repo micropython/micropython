@@ -95,17 +95,17 @@ mp_int_t mp_float_hash(mp_float_t src) {
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_float_t o_val = mp_obj_float_get(o_in);
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
     const int precision = 6;
     #else
     const int precision = 7;
     #endif
-#else
+    #else
     char buf[32];
     const int precision = 16;
-#endif
+    #endif
     mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
@@ -142,10 +142,14 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
-        case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(val != 0);
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
+        case MP_UNARY_OP_POSITIVE:
+            return o_in;
+        case MP_UNARY_OP_NEGATIVE:
+            return mp_obj_new_float(-val);
         case MP_UNARY_OP_ABS: {
             if (signbit(val)) {
                 return mp_obj_new_float(-val);
@@ -153,7 +157,8 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
                 return o_in;
             }
         }
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -237,15 +242,21 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
 
     switch (op) {
         case MP_BINARY_OP_ADD:
-        case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+        case MP_BINARY_OP_INPLACE_ADD:
+            lhs_val += rhs_val;
+            break;
         case MP_BINARY_OP_SUBTRACT:
-        case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
+            lhs_val -= rhs_val;
+            break;
         case MP_BINARY_OP_MULTIPLY:
-        case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_MULTIPLY:
+            lhs_val *= rhs_val;
+            break;
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
-                zero_division_error:
+            zero_division_error:
                 mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
@@ -300,11 +311,16 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             };
             return mp_obj_new_tuple(2, tuple);
         }
-        case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
-        case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
-        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_val == rhs_val);
-        case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
-        case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
+        case MP_BINARY_OP_LESS:
+            return mp_obj_new_bool(lhs_val < rhs_val);
+        case MP_BINARY_OP_MORE:
+            return mp_obj_new_bool(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL:
+            return mp_obj_new_bool(lhs_val == rhs_val);
+        case MP_BINARY_OP_LESS_EQUAL:
+            return mp_obj_new_bool(lhs_val <= rhs_val);
+        case MP_BINARY_OP_MORE_EQUAL:
+            return mp_obj_new_bool(lhs_val >= rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported

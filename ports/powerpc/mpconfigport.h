@@ -93,7 +93,7 @@
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // This port is 64-bit
 #define UINT_FMT "%lu"

@@ -35,10 +35,10 @@
 
 typedef enum
 {
-  HAL_OK       = 0x00,
-  HAL_ERROR    = 0x01,
-  HAL_BUSY     = 0x02,
-  HAL_TIMEOUT  = 0x03
+    HAL_OK       = 0x00,
+    HAL_ERROR    = 0x01,
+    HAL_BUSY     = 0x02,
+    HAL_TIMEOUT  = 0x03
 } HAL_StatusTypeDef;
 
 static inline uint32_t hal_tick_fake(void) {
@@ -58,9 +58,9 @@ void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_delay_ms(mp_uint_t ms);
 void mp_hal_delay_us(mp_uint_t us);
 
-const char * nrfx_error_code_lookup(uint32_t err_code);
+const char *nrfx_error_code_lookup(uint32_t err_code);
 
-#define mp_hal_pin_obj_t const pin_obj_t*
+#define mp_hal_pin_obj_t const pin_obj_t *
 #define mp_hal_get_pin_obj(o)    pin_find(o)
 #define mp_hal_pin_high(p)       nrf_gpio_pin_set(p->pin)
 #define mp_hal_pin_low(p)        nrf_gpio_pin_clear(p->pin)

@@ -76,11 +76,11 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[0] = self->stop;
     } else if (attr == MP_QSTR_step) {
         dest[0] = self->step;
-    #if MICROPY_PY_BUILTINS_SLICE_INDICES
+        #if MICROPY_PY_BUILTINS_SLICE_INDICES
     } else if (attr == MP_QSTR_indices) {
         dest[0] = MP_OBJ_FROM_PTR(&slice_indices_obj);
         dest[1] = self_in;
-    #endif
+        #endif
     }
 }
 #endif
@@ -96,11 +96,11 @@ const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
     .attr = slice_attr,
-#elif MICROPY_PY_BUILTINS_SLICE_INDICES
-    .locals_dict = (mp_obj_dict_t*)&slice_locals_dict,
-#endif
+    #elif MICROPY_PY_BUILTINS_SLICE_INDICES
+    .locals_dict = (mp_obj_dict_t *)&slice_locals_dict,
+    #endif
 };
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {

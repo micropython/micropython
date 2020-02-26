@@ -162,7 +162,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
         extern void mp_js_hook(void); \
         mp_js_hook(); \
-    }
+}
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 

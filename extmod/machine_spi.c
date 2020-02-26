@@ -64,16 +64,16 @@ mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
     spi_p->init(s, n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
 
 STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
-    mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
     if (spi_p->deinit != NULL) {
         spi_p->deinit(s);
     }
@@ -82,8 +82,8 @@ STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
 STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
-    mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(self);
-    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
+    mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
+    mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
     spi_p->transfer(s, len, src, dest);
 }
 
@@ -108,7 +108,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machin
 STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf) {
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    mp_machine_spi_transfer(self, src.len, (const uint8_t*)src.buf, NULL);
+    mp_machine_spi_transfer(self, src.len, (const uint8_t *)src.buf, NULL);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
@@ -223,7 +223,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
 }
 
 STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
+    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
@@ -261,7 +261,7 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
 }
 
 STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
+    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
     mp_soft_spi_transfer(&self->spi, len, src, dest);
 }
 
@@ -277,7 +277,7 @@ const mp_obj_type_t mp_machine_soft_spi_type = {
     .print = mp_machine_soft_spi_print,
     .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &mp_machine_soft_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_SPI

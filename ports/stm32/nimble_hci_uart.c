@@ -61,7 +61,7 @@ void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
 
 void nimble_hci_uart_tx_strn(const char *str, uint len) {
     MICROPY_PY_LWIP_ENTER
-    rfcore_ble_hci_cmd(len, (const uint8_t*)str);
+    rfcore_ble_hci_cmd(len, (const uint8_t *)str);
     MICROPY_PY_LWIP_EXIT
 }
 

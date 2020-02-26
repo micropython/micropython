@@ -52,7 +52,7 @@ const mp_arg_t mp_irq_init_args[] = {
 mp_irq_obj_t *mp_irq_new(const mp_irq_methods_t *methods, mp_obj_t parent) {
     mp_irq_obj_t *self = m_new0(mp_irq_obj_t, 1);
     self->base.type = &mp_irq_type;
-    self->methods = (mp_irq_methods_t*)methods;
+    self->methods = (mp_irq_methods_t *)methods;
     self->parent = parent;
     self->handler = mp_const_none;
     self->ishard = false;
@@ -120,5 +120,5 @@ const mp_obj_type_t mp_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_irq,
     .call = mp_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&mp_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_irq_locals_dict,
 };

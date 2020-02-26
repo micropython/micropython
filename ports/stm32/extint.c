@@ -433,13 +433,13 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
-#else
+    #else
     EXTI->SWIER &= ~(1 << line);
     EXTI->SWIER |= (1 << line);
-#endif
+    #endif
 }
 
 void extint_trigger_mode(uint line, uint32_t mode) {
@@ -624,7 +624,7 @@ const mp_obj_type_t extint_type = {
     .name = MP_QSTR_ExtInt,
     .print = extint_obj_print,
     .make_new = extint_make_new,
-    .locals_dict = (mp_obj_dict_t*)&extint_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&extint_locals_dict,
 };
 
 void extint_init0(void) {
@@ -634,7 +634,7 @@ void extint_init0(void) {
         }
         MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
         pyb_extint_mode[i] = EXTI_Mode_Interrupt;
-   }
+    }
 }
 
 // Interrupt handler

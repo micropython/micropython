@@ -47,36 +47,36 @@
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
 
 STATIC int8_t ble_hs_err_to_errno_table[] = {
-    [BLE_HS_EAGAIN]             = MP_EAGAIN,
-    [BLE_HS_EALREADY]           = MP_EALREADY,
-    [BLE_HS_EINVAL]             = MP_EINVAL,
-    [BLE_HS_EMSGSIZE]           = MP_EIO,
-    [BLE_HS_ENOENT]             = MP_ENOENT,
-    [BLE_HS_ENOMEM]             = MP_ENOMEM,
-    [BLE_HS_ENOTCONN]           = MP_ENOTCONN,
-    [BLE_HS_ENOTSUP]            = MP_EOPNOTSUPP,
-    [BLE_HS_EAPP]               = MP_EIO,
-    [BLE_HS_EBADDATA]           = MP_EIO,
-    [BLE_HS_EOS]                = MP_EIO,
-    [BLE_HS_ECONTROLLER]        = MP_EIO,
-    [BLE_HS_ETIMEOUT]           = MP_ETIMEDOUT,
-    [BLE_HS_EDONE]              = MP_EIO,  // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
-    [BLE_HS_EBUSY]              = MP_EBUSY,
-    [BLE_HS_EREJECT]            = MP_EIO,
-    [BLE_HS_EUNKNOWN]           = MP_EIO,
-    [BLE_HS_EROLE]              = MP_EIO,
-    [BLE_HS_ETIMEOUT_HCI]       = MP_EIO,
-    [BLE_HS_ENOMEM_EVT]         = MP_EIO,
-    [BLE_HS_ENOADDR]            = MP_EIO,
-    [BLE_HS_ENOTSYNCED]         = MP_EIO,
-    [BLE_HS_EAUTHEN]            = MP_EIO,
-    [BLE_HS_EAUTHOR]            = MP_EIO,
-    [BLE_HS_EENCRYPT]           = MP_EIO,
-    [BLE_HS_EENCRYPT_KEY_SZ]    = MP_EIO,
-    [BLE_HS_ESTORE_CAP]         = MP_EIO,
-    [BLE_HS_ESTORE_FAIL]        = MP_EIO,
-    [BLE_HS_EPREEMPTED]         = MP_EIO,
-    [BLE_HS_EDISABLED]          = MP_EIO,
+    [BLE_HS_EAGAIN] = MP_EAGAIN,
+    [BLE_HS_EALREADY] = MP_EALREADY,
+    [BLE_HS_EINVAL] = MP_EINVAL,
+    [BLE_HS_EMSGSIZE] = MP_EIO,
+    [BLE_HS_ENOENT] = MP_ENOENT,
+    [BLE_HS_ENOMEM] = MP_ENOMEM,
+    [BLE_HS_ENOTCONN] = MP_ENOTCONN,
+    [BLE_HS_ENOTSUP] = MP_EOPNOTSUPP,
+    [BLE_HS_EAPP] = MP_EIO,
+    [BLE_HS_EBADDATA] = MP_EIO,
+    [BLE_HS_EOS] = MP_EIO,
+    [BLE_HS_ECONTROLLER] = MP_EIO,
+    [BLE_HS_ETIMEOUT] = MP_ETIMEDOUT,
+    [BLE_HS_EDONE] = MP_EIO,               // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
+    [BLE_HS_EBUSY] = MP_EBUSY,
+    [BLE_HS_EREJECT] = MP_EIO,
+    [BLE_HS_EUNKNOWN] = MP_EIO,
+    [BLE_HS_EROLE] = MP_EIO,
+    [BLE_HS_ETIMEOUT_HCI] = MP_EIO,
+    [BLE_HS_ENOMEM_EVT] = MP_EIO,
+    [BLE_HS_ENOADDR] = MP_EIO,
+    [BLE_HS_ENOTSYNCED] = MP_EIO,
+    [BLE_HS_EAUTHEN] = MP_EIO,
+    [BLE_HS_EAUTHOR] = MP_EIO,
+    [BLE_HS_EENCRYPT] = MP_EIO,
+    [BLE_HS_EENCRYPT_KEY_SZ] = MP_EIO,
+    [BLE_HS_ESTORE_CAP] = MP_EIO,
+    [BLE_HS_ESTORE_FAIL] = MP_EIO,
+    [BLE_HS_EPREEMPTED] = MP_EIO,
+    [BLE_HS_EDISABLED] = MP_EIO,
 };
 
 STATIC int ble_hs_err_to_errno(int err) {
@@ -88,22 +88,22 @@ STATIC int ble_hs_err_to_errno(int err) {
 }
 
 // Note: modbluetooth UUIDs store their data in LE.
-STATIC ble_uuid_t* create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
+STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
     if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
         ble_uuid16_t *result = m_new(ble_uuid16_t, 1);
         result->u.type = BLE_UUID_TYPE_16;
         result->value = (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
         ble_uuid32_t *result = m_new(ble_uuid32_t, 1);
         result->u.type = BLE_UUID_TYPE_32;
         result->value = (uuid->data[1] << 24) | (uuid->data[1] << 16) | (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
         ble_uuid128_t *result = m_new(ble_uuid128_t, 1);
         result->u.type = BLE_UUID_TYPE_128;
         memcpy(result->value, uuid->data, 16);
-        return (ble_uuid_t*)result;
+        return (ble_uuid_t *)result;
     } else {
         return NULL;
     }
@@ -139,7 +139,7 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
 // modbluetooth (and the layers above it) work in BE for addresses, Nimble works in LE.
 STATIC void reverse_addr_byte_order(uint8_t *addr_out, const uint8_t *addr_in) {
     for (int i = 0; i < 6; ++i) {
-        addr_out[i] = addr_in[5-i];
+        addr_out[i] = addr_in[5 - i];
     }
 }
 
@@ -196,7 +196,7 @@ STATIC void sync_cb(void) {
     }
 
     if (MP_BLUETOOTH_MAX_ATTR_SIZE > 20) {
-        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE+3);
+        rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_MAX_ATTR_SIZE + 3);
         assert(rc == 0);
     }
 
@@ -244,7 +244,7 @@ STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
             create_gatts_db_entry(ctxt->dsc.handle);
 
             // Unlike characteristics, we have to manually provide a way to get the handle back to the register method.
-            *((uint16_t*)ctxt->dsc.dsc_def->arg) = ctxt->dsc.handle;
+            *((uint16_t *)ctxt->dsc.dsc_def->arg) = ctxt->dsc.handle;
             break;
 
         default:
@@ -622,7 +622,7 @@ STATIC void gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16
     len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len);
     while (len > 0 && om != NULL) {
         size_t n = MIN(om->om_len, len);
-        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t*), n);
+        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t *), n);
         len -= n;
         om = SLIST_NEXT(om, om_next);
     }
@@ -642,7 +642,7 @@ STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
         return 0;
     }
 
-    if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND || event->disc.event_type ==  BLE_HCI_ADV_RPT_EVTYPE_NONCONN_IND) {
+    if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND || event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_NONCONN_IND) {
         bool connectable = event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND;
         uint8_t addr[6];
         reverse_addr_byte_order(addr, event->disc.addr.val);

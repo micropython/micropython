@@ -49,7 +49,7 @@ void *mp_pystack_alloc(size_t n_bytes) {
     void *ptr = MP_STATE_THREAD(pystack_cur);
     MP_STATE_THREAD(pystack_cur) += n_bytes;
     #if MP_PYSTACK_DEBUG
-    *(size_t*)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN) = n_bytes;
+    *(size_t *)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN) = n_bytes;
     #endif
     return ptr;
 }

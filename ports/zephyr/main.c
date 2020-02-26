@@ -57,7 +57,7 @@ static char heap[MICROPY_HEAP_SIZE];
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
     // network addresses.
-#if 0
+    #if 0
     #ifdef CONFIG_NETWORKING
     if (net_if_get_default() == NULL) {
         // If there's no default networking interface,
@@ -78,7 +78,7 @@ void init_zephyr(void) {
     static struct in6_addr in6addr_my = {{{0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}};
     net_if_ipv6_addr_add(net_if_get_default(), &in6addr_my, NET_ADDR_MANUAL, 0);
     #endif
-#endif
+    #endif
 }
 
 int real_main(void) {
@@ -160,7 +160,9 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 NORETURN void nlr_jump_fail(void *val) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 #ifndef NDEBUG

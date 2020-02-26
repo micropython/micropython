@@ -111,9 +111,9 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG1_NUM_BLOCKS (256) // Sector 1: 128k / 512b = 256 blocks
 
 #elif defined(STM32L432xx) || \
-      defined(STM32L451xx) || defined(STM32L452xx) || defined(STM32L462xx) || \
-      defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx) || \
-      defined(STM32WB)
+    defined(STM32L451xx) || defined(STM32L452xx) || defined(STM32L462xx) || \
+    defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx) || \
+    defined(STM32WB)
 
 // The STM32L4xx doesn't have CCRAM, so we use SRAM2 for this, although
 // actual location and size is defined by the linker script.
@@ -187,7 +187,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
     }
     if (flash_cache_sector_id != flash_sector_id) {
         flash_bdev_ioctl(BDEV_IOCTL_SYNC, 0);
-        memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
+        memcpy((void *)CACHE_MEM_START_ADDR, (const void *)flash_sector_start, flash_sector_size);
         flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;
         flash_cache_sector_size = flash_sector_size;
@@ -195,7 +195,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
     flash_flags |= FLASH_FLAG_DIRTY;
     led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
     flash_tick_counter_last_write = HAL_GetTick();
-    return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
+    return (uint8_t *)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
 
 static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
@@ -204,10 +204,10 @@ static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
     if (flash_cache_sector_id == flash_sector_id) {
         // in cache, copy from there
-        return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
+        return (uint8_t *)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
     }
     // not in cache, copy straight from flash
-    return (uint8_t*)flash_addr;
+    return (uint8_t *)flash_addr;
 }
 
 static uint32_t convert_block_to_flash_addr(uint32_t block) {
@@ -258,7 +258,7 @@ static void flash_bdev_irq_handler(void) {
     // On file close and flash unmount we get a forced write, so we can afford to wait a while
     if ((flash_flags & FLASH_FLAG_FORCE_WRITE) || HAL_GetTick() - flash_tick_counter_last_write >= 5000) {
         // sync the cache RAM buffer by writing it to the flash page
-        flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_write(flash_cache_sector_start, (const uint32_t *)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
         // clear the flash flags now that we have a clean cache
         flash_flags = 0;
         // indicate a clean cache with LED off

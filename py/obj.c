@@ -60,10 +60,10 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     } else if (mp_obj_is_obj(o_in)) {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;
-    #if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
     } else if ((((mp_uint_t)(o_in)) & 0xff800007) != 0x00000006) {
         return &mp_type_float;
-    #endif
+        #endif
     } else {
         static const mp_obj_type_t *const types[] = {
             &mp_type_str, &mp_type_NoneType, &mp_type_str, &mp_type_bool,
@@ -77,16 +77,16 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
         return &mp_type_int;
     } else if (mp_obj_is_qstr(o_in)) {
         return &mp_type_str;
-    #if MICROPY_PY_BUILTINS_FLOAT && ( \
-        MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
+        #if MICROPY_PY_BUILTINS_FLOAT && ( \
+            MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
     } else if (mp_obj_is_float(o_in)) {
         return &mp_type_float;
-    #endif
-    #if MICROPY_OBJ_IMMEDIATE_OBJS
+        #endif
+        #if MICROPY_OBJ_IMMEDIATE_OBJS
     } else if (mp_obj_is_immediate_obj(o_in)) {
         static const mp_obj_type_t *const types[2] = {&mp_type_NoneType, &mp_type_bool};
         return types[MP_OBJ_IMMEDIATE_OBJ_VALUE(o_in) & 1];
-    #endif
+        #endif
     } else {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;
@@ -102,15 +102,15 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
-#ifndef NDEBUG
+    #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
         return;
     }
-#endif
+    #endif
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
-        type->print((mp_print_t*)print, o_in, kind);
+        type->print((mp_print_t *)print, o_in, kind);
     } else {
         mp_printf(print, "<%q>", type->name);
     }
@@ -129,11 +129,11 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
             assert(n % 3 == 0);
             mp_print_str(print, "Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
-#if MICROPY_ENABLE_SOURCE_LINE
+                #if MICROPY_ENABLE_SOURCE_LINE
                 mp_printf(print, "  File \"%q\", line %d", values[i], (int)values[i + 1]);
-#else
+                #else
                 mp_printf(print, "  File \"%q\"", values[i]);
-#endif
+                #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTRnull) {
@@ -218,20 +218,20 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         if (mp_obj_is_str(o2)) {
             // both strings, use special function
             return mp_obj_str_equal(o1, o2) ? local_true : local_false;
-        #if MICROPY_PY_STR_BYTES_CMP_WARN
+            #if MICROPY_PY_STR_BYTES_CMP_WARN
         } else if (mp_obj_is_type(o2, &mp_type_bytes)) {
         str_bytes_cmp:
             mp_warning(MP_WARN_CAT(BytesWarning), "Comparison between bytes and str");
             return local_false;
-        #endif
+            #endif
         } else {
             goto skip_one_pass;
         }
-    #if MICROPY_PY_STR_BYTES_CMP_WARN
+        #if MICROPY_PY_STR_BYTES_CMP_WARN
     } else if (mp_obj_is_str(o2) && mp_obj_is_type(o1, &mp_type_bytes)) {
         // o1 is not a string (else caught above), so the objects are not equal
         goto str_bytes_cmp;
-    #endif
+        #endif
     }
 
     // fast path for small ints
@@ -341,10 +341,10 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
         val = 1;
     } else if (mp_obj_is_small_int(arg)) {
         val = MP_OBJ_SMALL_INT_VALUE(arg);
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (mp_obj_is_type(arg, &mp_type_int)) {
         val = mp_obj_int_as_float_impl(arg);
-    #endif
+        #endif
     } else if (mp_obj_is_float(arg)) {
         val = mp_obj_float_get(arg);
     } else {
@@ -381,11 +381,11 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (mp_obj_is_small_int(arg)) {
         *real = MP_OBJ_SMALL_INT_VALUE(arg);
         *imag = 0;
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+        #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (mp_obj_is_type(arg, &mp_type_int)) {
         *real = mp_obj_int_as_float_impl(arg);
         *imag = 0;
-    #endif
+        #endif
     } else if (mp_obj_is_float(arg)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;
@@ -507,10 +507,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+        #if !MICROPY_PY_BUILTINS_STR_UNICODE
         // It's simple - unicode is slow, non-unicode is fast
         mp_obj_is_str(o_in) ||
-#endif
+        #endif
         mp_obj_is_type(o_in, &mp_type_bytes)) {
         GET_STR_LEN(o_in, l);
         return MP_OBJ_NEW_SMALL_INT(l);
@@ -589,7 +589,9 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     switch (op) {
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }

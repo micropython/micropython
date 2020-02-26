@@ -268,7 +268,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
         *buf++ = uart_rx_char();
         if (--size == 0 || !uart_rx_wait(self->timeout_char * 1000)) {
             // return number of bytes read
-            return buf - (uint8_t*)buf_in;
+            return buf - (uint8_t *)buf_in;
         }
     }
 }
@@ -328,5 +328,5 @@ const mp_obj_type_t pyb_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };

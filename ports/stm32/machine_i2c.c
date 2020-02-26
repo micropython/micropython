@@ -214,22 +214,22 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (mp_obj_is_str(args[ARG_id].u_obj)) {
         const char *port = mp_obj_str_get_str(args[ARG_id].u_obj);
         if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
+            #ifdef MICROPY_HW_I2C1_NAME
         } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
             i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C2_NAME
         } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
             i2c_id = 2;
-        #endif
-        #ifdef MICROPY_HW_I2C3_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C3_NAME
         } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
             i2c_id = 3;
-        #endif
-        #ifdef MICROPY_HW_I2C4_NAME
+            #endif
+            #ifdef MICROPY_HW_I2C4_NAME
         } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
             i2c_id = 4;
-        #endif
+            #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
         }
@@ -242,7 +242,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     }
 
     // get static peripheral object
-    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t*)&machine_hard_i2c_obj[i2c_id - 1];
+    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)&machine_hard_i2c_obj[i2c_id - 1];
 
     // here we would check the scl/sda pins and configure them, but it's not implemented
     if (args[ARG_scl].u_obj != MP_OBJ_NULL || args[ARG_sda].u_obj != MP_OBJ_NULL) {
@@ -272,7 +272,7 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_HW_I2C

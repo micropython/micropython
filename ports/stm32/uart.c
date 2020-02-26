@@ -130,46 +130,57 @@ bool uart_exists(int uart_id) {
     }
     switch (uart_id) {
         #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
-        case PYB_UART_1: return true;
+        case PYB_UART_1:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
-        case PYB_UART_2: return true;
+        case PYB_UART_2:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
-        case PYB_UART_3: return true;
+        case PYB_UART_3:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
-        case PYB_UART_4: return true;
+        case PYB_UART_4:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
-        case PYB_UART_5: return true;
+        case PYB_UART_5:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART6_TX) && defined(MICROPY_HW_UART6_RX)
-        case PYB_UART_6: return true;
+        case PYB_UART_6:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART7_TX) && defined(MICROPY_HW_UART7_RX)
-        case PYB_UART_7: return true;
+        case PYB_UART_7:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART8_TX) && defined(MICROPY_HW_UART8_RX)
-        case PYB_UART_8: return true;
+        case PYB_UART_8:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART9_TX) && defined(MICROPY_HW_UART9_RX)
-        case PYB_UART_9: return true;
+        case PYB_UART_9:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART10_TX) && defined(MICROPY_HW_UART10_RX)
-        case PYB_UART_10: return true;
+        case PYB_UART_10:
+            return true;
         #endif
 
-        default: return false;
+        default:
+            return false;
     }
 }
 
@@ -457,14 +468,14 @@ void uart_deinit(pyb_uart_obj_t *self) {
         __HAL_RCC_USART1_FORCE_RESET();
         __HAL_RCC_USART1_RELEASE_RESET();
         __HAL_RCC_USART1_CLK_DISABLE();
-    #if defined(USART2)
+        #if defined(USART2)
     } else if (self->uart_id == 2) {
         HAL_NVIC_DisableIRQ(USART2_IRQn);
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_DISABLE();
-    #endif
-    #if defined(USART3)
+        #endif
+        #if defined(USART3)
     } else if (self->uart_id == 3) {
         #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
@@ -472,80 +483,80 @@ void uart_deinit(pyb_uart_obj_t *self) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE();
-    #endif
-    #if defined(UART4)
+        #endif
+        #if defined(UART4)
     } else if (self->uart_id == 4) {
         HAL_NVIC_DisableIRQ(UART4_IRQn);
         __HAL_RCC_UART4_FORCE_RESET();
         __HAL_RCC_UART4_RELEASE_RESET();
         __HAL_RCC_UART4_CLK_DISABLE();
-    #endif
-    #if defined(USART4)
+        #endif
+        #if defined(USART4)
     } else if (self->uart_id == 4) {
         __HAL_RCC_USART4_FORCE_RESET();
         __HAL_RCC_USART4_RELEASE_RESET();
         __HAL_RCC_USART4_CLK_DISABLE();
-    #endif
-    #if defined(UART5)
+        #endif
+        #if defined(UART5)
     } else if (self->uart_id == 5) {
         HAL_NVIC_DisableIRQ(UART5_IRQn);
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
         __HAL_RCC_UART5_CLK_DISABLE();
-    #endif
-    #if defined(USART5)
+        #endif
+        #if defined(USART5)
     } else if (self->uart_id == 5) {
         __HAL_RCC_USART5_FORCE_RESET();
         __HAL_RCC_USART5_RELEASE_RESET();
         __HAL_RCC_USART5_CLK_DISABLE();
-    #endif
-    #if defined(UART6)
+        #endif
+        #if defined(UART6)
     } else if (self->uart_id == 6) {
         HAL_NVIC_DisableIRQ(USART6_IRQn);
         __HAL_RCC_USART6_FORCE_RESET();
         __HAL_RCC_USART6_RELEASE_RESET();
         __HAL_RCC_USART6_CLK_DISABLE();
-    #endif
-    #if defined(UART7)
+        #endif
+        #if defined(UART7)
     } else if (self->uart_id == 7) {
         HAL_NVIC_DisableIRQ(UART7_IRQn);
         __HAL_RCC_UART7_FORCE_RESET();
         __HAL_RCC_UART7_RELEASE_RESET();
         __HAL_RCC_UART7_CLK_DISABLE();
-    #endif
-    #if defined(USART7)
+        #endif
+        #if defined(USART7)
     } else if (self->uart_id == 7) {
         __HAL_RCC_USART7_FORCE_RESET();
         __HAL_RCC_USART7_RELEASE_RESET();
         __HAL_RCC_USART7_CLK_DISABLE();
-    #endif
-    #if defined(UART8)
+        #endif
+        #if defined(UART8)
     } else if (self->uart_id == 8) {
         HAL_NVIC_DisableIRQ(UART8_IRQn);
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
         __HAL_RCC_UART8_CLK_DISABLE();
-    #endif
-    #if defined(USART8)
+        #endif
+        #if defined(USART8)
     } else if (self->uart_id == 8) {
         __HAL_RCC_USART8_FORCE_RESET();
         __HAL_RCC_USART8_RELEASE_RESET();
         __HAL_RCC_USART8_CLK_DISABLE();
-    #endif
-    #if defined(UART9)
+        #endif
+        #if defined(UART9)
     } else if (self->uart_id == 9) {
         HAL_NVIC_DisableIRQ(UART9_IRQn);
         __HAL_RCC_UART9_FORCE_RESET();
         __HAL_RCC_UART9_RELEASE_RESET();
         __HAL_RCC_UART9_CLK_DISABLE();
-    #endif
-    #if defined(UART10)
+        #endif
+        #if defined(UART10)
     } else if (self->uart_id == 10) {
         HAL_NVIC_DisableIRQ(UART10_IRQn);
         __HAL_RCC_UART10_FORCE_RESET();
         __HAL_RCC_UART10_RELEASE_RESET();
         __HAL_RCC_UART10_CLK_DISABLE();
-    #endif
+        #endif
     }
 }
 
@@ -661,7 +672,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         // buffering via IRQ
         int data;
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            data = ((uint16_t*)self->read_buf)[self->read_buf_tail];
+            data = ((uint16_t *)self->read_buf)[self->read_buf_tail];
         } else {
             data = self->read_buf[self->read_buf_tail];
         }
@@ -744,7 +755,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
         timeout = 2 * self->timeout_char;
     }
 
-    const uint8_t *src = (const uint8_t*)src_in;
+    const uint8_t *src = (const uint8_t *)src_in;
     size_t num_tx = 0;
     USART_TypeDef *uart = self->uartx;
 
@@ -755,7 +766,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
         }
         uint32_t data;
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            data = *((uint16_t*)src) & 0x1ff;
+            data = *((uint16_t *)src) & 0x1ff;
             src += 2;
         } else {
             data = *src++;
@@ -811,7 +822,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                     pendsv_kbd_intr();
                 } else {
                     if (self->char_width == CHAR_WIDTH_9BIT) {
-                        ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
+                        ((uint16_t *)self->read_buf)[self->read_buf_head] = data;
                     } else {
                         self->read_buf[self->read_buf_head] = data;
                     }

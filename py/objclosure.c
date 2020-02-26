@@ -81,9 +81,9 @@ STATIC void closure_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_
 const mp_obj_type_t closure_type = {
     { &mp_type_type },
     .name = MP_QSTR_closure,
-#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = closure_print,
-#endif
+    #endif
     .call = closure_call,
 };
 

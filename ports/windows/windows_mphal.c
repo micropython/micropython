@@ -47,8 +47,8 @@ STATIC void assure_stdin_handle() {
 STATIC void assure_conout_handle() {
     if (!con_out) {
         con_out = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE,
-                      NULL, OPEN_EXISTING, 0, 0);
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL, OPEN_EXISTING, 0, 0);
         assert(con_out != INVALID_HANDLE_VALUE);
     }
 }
@@ -198,25 +198,25 @@ int mp_hal_stdin_rx_chr(void) {
     DWORD num_read;
     INPUT_RECORD rec;
     for (;;) {
-      MP_THREAD_GIL_EXIT();
-      status = ReadConsoleInput(std_in, &rec, 1, &num_read)
-      MP_THREAD_GIL_ENTER();
-      if (!status || !num_read) {
-          return CHAR_CTRL_C; // EOF, ctrl-D
-      }
-      if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
-          continue;
-      }
-      const bool ctrl_key_down = (rec.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
-                                 (rec.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED);
-      const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode, ctrl_key_down);
-      if (ret) {
-          return ret;
-      }
-      const char c = rec.Event.KeyEvent.uChar.AsciiChar;
-      if (c) { // plain ascii char, return it
-          return c;
-      }
+        MP_THREAD_GIL_EXIT();
+        status = ReadConsoleInput(std_in, &rec, 1, &num_read)
+            MP_THREAD_GIL_ENTER();
+        if (!status || !num_read) {
+            return CHAR_CTRL_C; // EOF, ctrl-D
+        }
+        if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
+            continue;
+        }
+        const bool ctrl_key_down = (rec.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
+            (rec.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED);
+        const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode, ctrl_key_down);
+        if (ret) {
+            return ret;
+        }
+        const char c = rec.Event.KeyEvent.uChar.AsciiChar;
+        if (c) { // plain ascii char, return it
+            return c;
+        }
     }
 }
 
@@ -249,9 +249,9 @@ mp_uint_t mp_hal_ticks_us(void) {
 mp_uint_t mp_hal_ticks_cpu(void) {
     LARGE_INTEGER value;
     QueryPerformanceCounter(&value);
-#ifdef _WIN64
+    #ifdef _WIN64
     return value.QuadPart;
-#else
+    #else
     return value.LowPart;
-#endif
+    #endif
 }

@@ -166,7 +166,7 @@ STATIC int vfs_mount_and_chdir(mp_obj_t bdev, mp_obj_t mount_point) {
     mp_int_t ret = -MP_EIO;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t args[] = { bdev, mount_point };
-        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
         mp_vfs_chdir(mount_point);
         ret = 0; // success
         nlr_pop();
@@ -203,7 +203,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     #if MICROPY_VFS_LFS1
     if (memcmp(&buf[40], "littlefs", 8) == 0) {
         // LFS1
-        lfs1_superblock_t *superblock = (void*)&buf[12];
+        lfs1_superblock_t *superblock = (void *)&buf[12];
         uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
         uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
         len = block_count * block_size;
@@ -213,7 +213,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     #if MICROPY_VFS_LFS2
     if (memcmp(&buf[8], "littlefs", 8) == 0) {
         // LFS2
-        lfs2_superblock_t *superblock = (void*)&buf[20];
+        lfs2_superblock_t *superblock = (void *)&buf[20];
         uint32_t block_size = lfs2_fromle32(superblock->block_size);
         uint32_t block_count = lfs2_fromle32(superblock->block_count);
         len = block_count * block_size;
@@ -473,20 +473,20 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
 
-    #if defined(STM32F4) ||  defined(STM32F7)
-        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-        // which behaves more or less like normal SRAM.
-        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #elif defined(CCMDATARAM_BASE)
-        // enable the CCM RAM
-        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
-        #endif
+    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+    #elif defined(CCMDATARAM_BASE)
+    // enable the CCM RAM
+    __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
+    #endif
     #elif defined(STM32H7)
-        // Enable D2 SRAM1/2/3 clocks.
-        __HAL_RCC_D2SRAM1_CLK_ENABLE();
-        __HAL_RCC_D2SRAM2_CLK_ENABLE();
-        __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    // Enable D2 SRAM1/2/3 clocks.
+    __HAL_RCC_D2SRAM1_CLK_ENABLE();
+    __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
 
 
@@ -549,9 +549,9 @@ void stm32_main(uint32_t reset_mode) {
         cyw43_init(&cyw43_state);
         uint8_t buf[8];
         memcpy(&buf[0], "PYBD", 4);
-        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char *)&buf[4]);
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
-        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"pybd0123");
     }
     #endif
 
@@ -594,7 +594,7 @@ soft_reset:
     // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above
     mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char*)&_estack - (char*)&_sstack - 1024);
+    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
