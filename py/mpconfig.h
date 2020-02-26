@@ -829,6 +829,12 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_WEAK_LINKS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether to enable importing foo.py with __name__ set to '__main__'
+// Used by the unix port for the -m flag.
+#ifndef MICROPY_MODULE_OVERRIDE_MAIN_IMPORT
+#define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (0)
+#endif
+
 // Whether frozen modules are supported in the form of strings
 #ifndef MICROPY_MODULE_FROZEN_STR
 #define MICROPY_MODULE_FROZEN_STR (0)
