@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+// *INDENT-OFF*
+
 // for machine module
 Q(/)
 // entries for sys.path

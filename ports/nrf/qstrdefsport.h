@@ -25,6 +25,8 @@
  */
 
 // qstrs specific to this port
+// *INDENT-OFF*
+
 Q(a)
 Q(a#)
 Q(a#:1)

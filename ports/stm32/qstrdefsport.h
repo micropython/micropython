@@ -25,6 +25,7 @@
  */
 
 // qstrs specific to this port
+// *INDENT-OFF*
 
 // Entries for sys.path
 Q(/flash)
