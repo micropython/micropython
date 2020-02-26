@@ -421,7 +421,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                                        MP_MAP_LOOKUP);
                 }
 
-                if (el != NULL) {
+                if (el != NULL && MP_OBJ_IS_TYPE(el->value, &mp_type_module)) {
                     module_obj = el->value;
                     mp_module_call_init(mod_name, module_obj);
                 } else {
