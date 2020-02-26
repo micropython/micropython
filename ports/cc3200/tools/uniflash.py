@@ -19,11 +19,13 @@ import subprocess
 
 
 def print_exception(e):
-    print ('Exception: {}, on line {}'.format(e, sys.exc_info()[-1].tb_lineno))
+    print('Exception: {}, on line {}'.format(e, sys.exc_info()[-1].tb_lineno))
 
 
 def execute(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
     cmd_log = ""
 
     # Poll process for new output until finished
@@ -43,12 +45,21 @@ def execute(command):
     else:
         raise ProcessException(command, exitCode, output)
 
+
 def main():
-    cmd_parser = argparse.ArgumentParser(description='Flash the WiPy and optionally run a small test on it.')
-    cmd_parser.add_argument('-u', '--uniflash', default=None, help='the path to the uniflash cli executable')
-    cmd_parser.add_argument('-c', '--config', default=None, help='the path to the uniflash config file')
+    cmd_parser = argparse.ArgumentParser(
+        description='Flash the WiPy and optionally run a small test on it.'
+    )
+    cmd_parser.add_argument(
+        '-u', '--uniflash', default=None, help='the path to the uniflash cli executable'
+    )
+    cmd_parser.add_argument(
+        '-c', '--config', default=None, help='the path to the uniflash config file'
+    )
     cmd_parser.add_argument('-p', '--port', default=8, help='the com serial port')
-    cmd_parser.add_argument('-s', '--servicepack', default=None, help='the path to the servicepack file')
+    cmd_parser.add_argument(
+        '-s', '--servicepack', default=None, help='the path to the servicepack file'
+    )
     args = cmd_parser.parse_args()
 
     output = ""
@@ -59,9 +70,33 @@ def main():
         if args.uniflash == None or args.config == None:
             raise ValueError('uniflash path and config path are mandatory')
         if args.servicepack == None:
-            output += execute([args.uniflash, '-config', args.config, '-setOptions', com_port, '-operations', 'format', 'program'])
+            output += execute(
+                [
+                    args.uniflash,
+                    '-config',
+                    args.config,
+                    '-setOptions',
+                    com_port,
+                    '-operations',
+                    'format',
+                    'program',
+                ]
+            )
         else:
-            output += execute([args.uniflash, '-config', args.config, '-setOptions', com_port, servicepack_path, '-operations', 'format', 'servicePackUpdate', 'program'])
+            output += execute(
+                [
+                    args.uniflash,
+                    '-config',
+                    args.config,
+                    '-setOptions',
+                    com_port,
+                    servicepack_path,
+                    '-operations',
+                    'format',
+                    'servicePackUpdate',
+                    'program',
+                ]
+            )
     except Exception as e:
         print_exception(e)
         output = ""
@@ -76,6 +111,7 @@ def main():
             print("ERROR: Programming failed!")
             print("======================================")
             sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

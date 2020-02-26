@@ -13,6 +13,7 @@ import sys
 #   - iterating through bytes is different
 #   - codepoint2name lives in a different module
 import platform
+
 if platform.python_version_tuple()[0] == '2':
     bytes_cons = lambda val, enc=None: bytearray(val)
     from htmlentitydefs import codepoint2name
@@ -21,7 +22,7 @@ elif platform.python_version_tuple()[0] == '3':
     from html.entities import codepoint2name
 # end compatibility code
 
-codepoint2name[ord('-')] = 'hyphen';
+codepoint2name[ord('-')] = 'hyphen'
 
 # add some custom names to map characters that aren't in HTML
 codepoint2name[ord(' ')] = 'space'
@@ -55,7 +56,7 @@ codepoint2name[ord('~')] = 'tilde'
 
 static_qstr_list = [
     "",
-    "__dir__", # Put __dir__ after empty qstr for builtin dir() to work
+    "__dir__",  # Put __dir__ after empty qstr for builtin dir() to work
     "\n",
     " ",
     "*",
@@ -229,6 +230,7 @@ def compute_hash(qstr, bytes_hash):
     # Make sure that valid hash is never zero, zero means "hash not computed"
     return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
 
+
 def qstr_escape(qst):
     def esc_char(m):
         c = ord(m.group(0))
@@ -237,7 +239,9 @@ def qstr_escape(qst):
         except KeyError:
             name = '0x%02x' % c
         return "_" + name + '_'
+
     return re.sub(r'[^A-Za-z0-9_]', esc_char, qst)
+
 
 def parse_input_headers(infiles):
     qcfgs = {}
@@ -312,6 +316,7 @@ def parse_input_headers(infiles):
 
     return qcfgs, qstrs
 
+
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qbytes = bytes_cons(qstr, 'utf8')
     qlen = len(qbytes)
@@ -325,9 +330,14 @@ def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     if qlen >= (1 << (8 * cfg_bytes_len)):
         print('qstr is too long:', qstr)
         assert False
-    qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(((qlen >> (8 * i)) & 0xff) for i in range(cfg_bytes_len))
-    qhash_str = ('\\x%02x' * cfg_bytes_hash) % tuple(((qhash >> (8 * i)) & 0xff) for i in range(cfg_bytes_hash))
+    qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(
+        ((qlen >> (8 * i)) & 0xFF) for i in range(cfg_bytes_len)
+    )
+    qhash_str = ('\\x%02x' * cfg_bytes_hash) % tuple(
+        ((qhash >> (8 * i)) & 0xFF) for i in range(cfg_bytes_hash)
+    )
     return '(const byte*)"%s%s" "%s"' % (qhash_str, qlen_str, qdata)
+
 
 def print_qstr_data(qcfgs, qstrs):
     # get config variables
@@ -339,16 +349,21 @@ def print_qstr_data(qcfgs, qstrs):
     print('')
 
     # add NULL qstr with no hash or data
-    print('QDEF(MP_QSTRnull, (const byte*)"%s%s" "")' % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len))
+    print(
+        'QDEF(MP_QSTRnull, (const byte*)"%s%s" "")'
+        % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len)
+    )
 
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
         print('QDEF(MP_QSTR_%s, %s)' % (ident, qbytes))
 
+
 def do_work(infiles):
     qcfgs, qstrs = parse_input_headers(infiles)
     print_qstr_data(qcfgs, qstrs)
+
 
 if __name__ == "__main__":
     do_work(sys.argv[1:])

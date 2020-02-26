@@ -18,8 +18,10 @@ def escape(s):
     }
     return "\"\"\n\"{}\"".format(''.join([lookup[x] if x in lookup else x for x in s]))
 
+
 def chew_filename(t):
-    return { 'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t }
+    return {'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t}
+
 
 def script_to_map(test_file):
     r = {"name": chew_filename(test_file)["func"]}
@@ -28,6 +30,7 @@ def script_to_map(test_file):
     with open(test_file + ".exp", "rb") as f:
         r["output"] = escape(f.read())
     return r
+
 
 test_function = (
     "void {name}(void* data) {{\n"
@@ -43,20 +46,22 @@ test_function = (
 testcase_struct = (
     "struct testcase_t {name}_tests[] = {{\n{body}\n  END_OF_TESTCASES\n}};"
 )
-testcase_member = (
-    "  {{ \"{desc}\", {func}, TT_ENABLED_, 0, 0 }},"
-)
+testcase_member = "  {{ \"{desc}\", {func}, TT_ENABLED_, 0, 0 }},"
 
-testgroup_struct = (
-    "struct testgroup_t groups[] = {{\n{body}\n  END_OF_GROUPS\n}};"
-)
-testgroup_member = (
-    "  {{ \"{name}\", {name}_tests }},"
-)
+testgroup_struct = "struct testgroup_t groups[] = {{\n{body}\n  END_OF_GROUPS\n}};"
+testgroup_member = "  {{ \"{name}\", {name}_tests }},"
 
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
-test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'float', 'inlineasm', 'qemu-arm',) # 'import', 'io',)
+test_dirs = (
+    'basics',
+    'micropython',
+    'misc',
+    'extmod',
+    'float',
+    'inlineasm',
+    'qemu-arm',
+)  # 'import', 'io',)
 exclude_tests = (
     # pattern matching in .exp
     'basics/bytes_compare3.py',
@@ -68,16 +73,21 @@ exclude_tests = (
     # doesn't output to python stdout
     'extmod/ure_debug.py',
     'extmod/vfs_basic.py',
-    'extmod/vfs_fat_ramdisk.py', 'extmod/vfs_fat_fileio.py',
-    'extmod/vfs_fat_fsusermount.py', 'extmod/vfs_fat_oldproto.py',
+    'extmod/vfs_fat_ramdisk.py',
+    'extmod/vfs_fat_fileio.py',
+    'extmod/vfs_fat_fsusermount.py',
+    'extmod/vfs_fat_oldproto.py',
     # rounding issues
     'float/float_divmod.py',
     # requires double precision floating point to work
     'float/float2int_doubleprec_intbig.py',
     'float/float_parse_doubleprec.py',
     # inline asm FP tests (require Cortex-M4)
-    'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py',
-    'inlineasm/asmfpmuldiv.py','inlineasm/asmfpsqrt.py',
+    'inlineasm/asmfpaddsub.py',
+    'inlineasm/asmfpcmp.py',
+    'inlineasm/asmfpldrstr.py',
+    'inlineasm/asmfpmuldiv.py',
+    'inlineasm/asmfpsqrt.py',
     # different filename in output
     'micropython/emg_exc.py',
     'micropython/heapalloc_traceback.py',
@@ -94,13 +104,19 @@ exclude_tests = (
 output = []
 tests = []
 
-argparser = argparse.ArgumentParser(description='Convert native MicroPython tests to tinytest/upytesthelper C code')
-argparser.add_argument('--stdin', action="store_true", help='read list of tests from stdin')
+argparser = argparse.ArgumentParser(
+    description='Convert native MicroPython tests to tinytest/upytesthelper C code'
+)
+argparser.add_argument(
+    '--stdin', action="store_true", help='read list of tests from stdin'
+)
 args = argparser.parse_args()
 
 if not args.stdin:
     for group in test_dirs:
-        tests += [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
+        tests += [
+            test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests
+        ]
 else:
     for l in sys.stdin:
         tests.append(l.rstrip())

@@ -2,8 +2,10 @@
 
 import array
 
+
 def isclose(a, b):
     return abs(a - b) < 1e-3
+
 
 def test():
     tests = [
@@ -22,5 +24,6 @@ def test():
 
     if not all(tests):
         raise SystemExit(1)
+
 
 test()

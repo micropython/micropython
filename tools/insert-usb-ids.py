@@ -10,6 +10,7 @@ import string
 
 needed_keys = ('USB_PID_CDC_MSC', 'USB_PID_CDC_HID', 'USB_PID_CDC', 'USB_VID')
 
+
 def parse_usb_ids(filename):
     rv = dict()
     for line in open(filename).readlines():
@@ -25,6 +26,7 @@ def parse_usb_ids(filename):
         if k not in rv:
             raise Exception("Unable to parse %s from %s" % (k, filename))
     return rv
+
 
 if __name__ == "__main__":
     usb_ids_file = sys.argv[1]

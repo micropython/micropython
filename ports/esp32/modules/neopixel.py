@@ -6,7 +6,7 @@ from esp import neopixel_write
 
 class NeoPixel:
     ORDER = (1, 0, 2, 3)
-    
+
     def __init__(self, pin, n, bpp=3, timing=1):
         self.pin = pin
         self.n = n
@@ -22,8 +22,7 @@ class NeoPixel:
 
     def __getitem__(self, index):
         offset = index * self.bpp
-        return tuple(self.buf[offset + self.ORDER[i]]
-                     for i in range(self.bpp))
+        return tuple(self.buf[offset + self.ORDER[i]] for i in range(self.bpp))
 
     def fill(self, color):
         for i in range(self.n):

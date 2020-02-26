@@ -4,6 +4,7 @@
 import pyb
 import pins_af
 
+
 def af():
     max_name_width = 0
     max_af_width = 0
@@ -13,21 +14,26 @@ def af():
             max_af_width = max(max_af_width, len(af_entry[1]))
     for pin_entry in pins_af.PINS_AF:
         pin_name = pin_entry[0]
-        print('%-*s ' % (max_name_width, pin_name),  end='')
+        print('%-*s ' % (max_name_width, pin_name), end='')
         for af_entry in pin_entry[1:]:
             print('%2d: %-*s ' % (af_entry[0], max_af_width, af_entry[1]), end='')
         print('')
 
+
 def pins():
-    mode_str = { pyb.Pin.IN     : 'IN',
-                 pyb.Pin.OUT_PP : 'OUT_PP',
-                 pyb.Pin.OUT_OD : 'OUT_OD',
-                 pyb.Pin.AF_PP  : 'AF_PP',
-                 pyb.Pin.AF_OD  : 'AF_OD',
-                 pyb.Pin.ANALOG : 'ANALOG' }
-    pull_str = { pyb.Pin.PULL_NONE : '',
-                 pyb.Pin.PULL_UP   : 'PULL_UP',
-                 pyb.Pin.PULL_DOWN : 'PULL_DOWN' }
+    mode_str = {
+        pyb.Pin.IN: 'IN',
+        pyb.Pin.OUT_PP: 'OUT_PP',
+        pyb.Pin.OUT_OD: 'OUT_OD',
+        pyb.Pin.AF_PP: 'AF_PP',
+        pyb.Pin.AF_OD: 'AF_OD',
+        pyb.Pin.ANALOG: 'ANALOG',
+    }
+    pull_str = {
+        pyb.Pin.PULL_NONE: '',
+        pyb.Pin.PULL_UP: 'PULL_UP',
+        pyb.Pin.PULL_DOWN: 'PULL_DOWN',
+    }
     width = [0, 0, 0, 0]
     rows = []
     for pin_entry in pins_af.PINS_AF:

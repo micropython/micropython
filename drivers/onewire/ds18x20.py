@@ -4,8 +4,9 @@
 from micropython import const
 
 _CONVERT = const(0x44)
-_RD_SCRATCH = const(0xbe)
-_WR_SCRATCH = const(0x4e)
+_RD_SCRATCH = const(0xBE)
+_WR_SCRATCH = const(0x4E)
+
 
 class DS18X20:
     def __init__(self, onewire):
@@ -40,12 +41,12 @@ class DS18X20:
         if rom[0] == 0x10:
             if buf[1]:
                 t = buf[0] >> 1 | 0x80
-                t = -((~t + 1) & 0xff)
+                t = -((~t + 1) & 0xFF)
             else:
                 t = buf[0] >> 1
             return t - 0.25 + (buf[7] - buf[6]) / buf[7]
         else:
             t = buf[1] << 8 | buf[0]
-            if t & 0x8000: # sign bit set
-                t = -((t ^ 0xffff) + 1)
+            if t & 0x8000:  # sign bit set
+                t = -((t ^ 0xFFFF) + 1)
             return t / 16

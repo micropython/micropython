@@ -20,6 +20,7 @@ def write_out(fname, output):
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
 
+
 def process_file(f):
     re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
     re_qstr = re.compile(r'MP_QSTR_[_a-zA-Z0-9]+')
@@ -51,6 +52,7 @@ def process_file(f):
 def cat_together():
     import glob
     import hashlib
+
     hasher = hashlib.md5()
     all_lines = []
     outf = open(args.output_dir + "/out", "wb")
@@ -64,7 +66,7 @@ def cat_together():
     outf.close()
     hasher.update(all_lines)
     new_hash = hasher.hexdigest()
-    #print(new_hash)
+    # print(new_hash)
     old_hash = None
     try:
         with open(args.output_file + ".hash") as f:
@@ -92,6 +94,7 @@ if __name__ == "__main__":
 
     class Args:
         pass
+
     args = Args()
     args.command = sys.argv[1]
     args.input_filename = sys.argv[2]

@@ -21,5 +21,5 @@ with open(file_out, 'wb') as fout:
             data = fin.read()
             fout.write(data)
             cur_offset += len(data)
-            print('%-12s% 8d' % (name, len(data))) 
+            print('%-12s% 8d' % (name, len(data)))
     print('%-12s% 8d' % ('total', cur_offset))

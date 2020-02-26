@@ -22,6 +22,7 @@ def asm_sum_words(r0, r1):
 
     mov(r0, r2)
 
+
 @micropython.asm_thumb
 def asm_sum_bytes(r0, r1):
 
@@ -45,6 +46,7 @@ def asm_sum_bytes(r0, r1):
     bgt(loop1)
 
     mov(r0, r2)
+
 
 import array
 

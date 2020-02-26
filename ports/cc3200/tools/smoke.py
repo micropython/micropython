@@ -9,17 +9,42 @@ Execute it like this:
 python3 run-tests --target wipy --device 192.168.1.1 ../cc3200/tools/smoke.py
 """
 
-pin_map = [23, 24, 11, 12, 13, 14, 15, 16, 17, 22, 28, 10, 9, 8, 7, 6, 30, 31, 3, 0, 4, 5]
+pin_map = [
+    23,
+    24,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    22,
+    28,
+    10,
+    9,
+    8,
+    7,
+    6,
+    30,
+    31,
+    3,
+    0,
+    4,
+    5,
+]
 test_bytes = os.urandom(1024)
 
-def test_pin_read (pull):
+
+def test_pin_read(pull):
     # enable the pull resistor on all pins, then read the value
     for p in pin_map:
         pin = Pin('GP' + str(p), mode=Pin.IN, pull=pull)
         # read the pin value
         print(pin())
 
-def test_pin_shorts (pull):
+
+def test_pin_shorts(pull):
     if pull == Pin.PULL_UP:
         pull_inverted = Pin.PULL_DOWN
     else:
@@ -35,6 +60,7 @@ def test_pin_shorts (pull):
         i += 1
         # read the pin value
         print(pin())
+
 
 test_pin_read(Pin.PULL_UP)
 test_pin_read(Pin.PULL_DOWN)
@@ -72,5 +98,4 @@ time1 = rtc.now()
 time.sleep_ms(1000)
 time2 = rtc.now()
 print(time2[5] - time1[5] == 1)
-print(time2[6] - time1[6] < 5000) # microseconds
-
+print(time2[6] - time1[6] < 5000)  # microseconds

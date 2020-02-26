@@ -70,8 +70,8 @@ R_386_GOTPC = 10
 R_ARM_THM_CALL = 10
 R_XTENSA_DIFF32 = 19
 R_XTENSA_SLOT0_OP = 20
-R_ARM_BASE_PREL = 25 # aka R_ARM_GOTPC
-R_ARM_GOT_BREL = 26 # aka R_ARM_GOT32
+R_ARM_BASE_PREL = 25  # aka R_ARM_GOTPC
+R_ARM_GOT_BREL = 26  # aka R_ARM_GOT32
 R_ARM_THM_JUMP24 = 30
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
@@ -79,28 +79,34 @@ R_386_GOT32X = 43
 ################################################################################
 # Architecture configuration
 
+
 def asm_jump_x86(entry):
-    return struct.pack('<BI', 0xe9, entry - 5)
+    return struct.pack('<BI', 0xE9, entry - 5)
+
 
 def asm_jump_arm(entry):
     b_off = entry - 4
     if b_off >> 11 == 0 or b_off >> 11 == -1:
         # Signed value fits in 12 bits
-        b0 = 0xe000 | (b_off >> 1 & 0x07ff)
+        b0 = 0xE000 | (b_off >> 1 & 0x07FF)
         b1 = 0
     else:
         # Use large jump
-        b0 = 0xf000 | (b_off >> 12 & 0x07ff)
-        b1 = 0xb800 | (b_off >> 1 & 0x7ff)
+        b0 = 0xF000 | (b_off >> 12 & 0x07FF)
+        b1 = 0xB800 | (b_off >> 1 & 0x7FF)
     return struct.pack('<HH', b0, b1)
+
 
 def asm_jump_xtensa(entry):
     jump_offset = entry - 4
     jump_op = jump_offset << 6 | 6
-    return struct.pack('<BH', jump_op & 0xff, jump_op >> 8)
+    return struct.pack('<BH', jump_op & 0xFF, jump_op >> 8)
+
 
 class ArchData:
-    def __init__(self, name, mpy_feature, qstr_entry_size, word_size, arch_got, asm_jump):
+    def __init__(
+        self, name, mpy_feature, qstr_entry_size, word_size, arch_got, asm_jump
+    ):
         self.name = name
         self.mpy_feature = mpy_feature
         self.qstr_entry_size = qstr_entry_size
@@ -109,57 +115,87 @@ class ArchData:
         self.asm_jump = asm_jump
         self.separate_rodata = name == 'EM_XTENSA' and qstr_entry_size == 4
 
+
 ARCH_DATA = {
     'x86': ArchData(
         'EM_386',
-        MP_NATIVE_ARCH_X86 << 2 | MICROPY_PY_BUILTINS_STR_UNICODE | MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE,
-        2, 4, (R_386_PC32, R_386_GOT32, R_386_GOT32X), asm_jump_x86,
+        MP_NATIVE_ARCH_X86 << 2
+        | MICROPY_PY_BUILTINS_STR_UNICODE
+        | MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE,
+        2,
+        4,
+        (R_386_PC32, R_386_GOT32, R_386_GOT32X),
+        asm_jump_x86,
     ),
     'x64': ArchData(
         'EM_X86_64',
-        MP_NATIVE_ARCH_X64 << 2 | MICROPY_PY_BUILTINS_STR_UNICODE | MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE,
-        2, 8, (R_X86_64_REX_GOTPCRELX,), asm_jump_x86,
+        MP_NATIVE_ARCH_X64 << 2
+        | MICROPY_PY_BUILTINS_STR_UNICODE
+        | MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE,
+        2,
+        8,
+        (R_X86_64_REX_GOTPCRELX,),
+        asm_jump_x86,
     ),
     'armv7m': ArchData(
         'EM_ARM',
         MP_NATIVE_ARCH_ARMV7M << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
-        2, 4, (R_ARM_GOT_BREL,), asm_jump_arm,
+        2,
+        4,
+        (R_ARM_GOT_BREL,),
+        asm_jump_arm,
     ),
     'armv7emsp': ArchData(
         'EM_ARM',
         MP_NATIVE_ARCH_ARMV7EMSP << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
-        2, 4, (R_ARM_GOT_BREL,), asm_jump_arm,
+        2,
+        4,
+        (R_ARM_GOT_BREL,),
+        asm_jump_arm,
     ),
     'armv7emdp': ArchData(
         'EM_ARM',
         MP_NATIVE_ARCH_ARMV7EMDP << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
-        2, 4, (R_ARM_GOT_BREL,), asm_jump_arm,
+        2,
+        4,
+        (R_ARM_GOT_BREL,),
+        asm_jump_arm,
     ),
     'xtensa': ArchData(
         'EM_XTENSA',
         MP_NATIVE_ARCH_XTENSA << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
-        2, 4, (R_XTENSA_32, R_XTENSA_PLT), asm_jump_xtensa,
+        2,
+        4,
+        (R_XTENSA_32, R_XTENSA_PLT),
+        asm_jump_xtensa,
     ),
     'xtensawin': ArchData(
         'EM_XTENSA',
         MP_NATIVE_ARCH_XTENSAWIN << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
-        4, 4, (R_XTENSA_32, R_XTENSA_PLT), asm_jump_xtensa,
+        4,
+        4,
+        (R_XTENSA_32, R_XTENSA_PLT),
+        asm_jump_xtensa,
     ),
 }
 
 ################################################################################
 # Helper functions
 
+
 def align_to(value, align):
     return (value + align - 1) & ~(align - 1)
+
 
 def unpack_u24le(data, offset):
     return data[offset] | data[offset + 1] << 8 | data[offset + 2] << 16
 
+
 def pack_u24le(data, offset, value):
-    data[offset] = value & 0xff
-    data[offset + 1] = value >> 8 & 0xff
-    data[offset + 2] = value >> 16 & 0xff
+    data[offset] = value & 0xFF
+    data[offset + 1] = value >> 8 & 0xFF
+    data[offset + 2] = value >> 16 & 0xFF
+
 
 def xxd(text):
     for i in range(0, len(text), 16):
@@ -167,9 +203,10 @@ def xxd(text):
         for j in range(4):
             off = i + j * 4
             if off < len(text):
-                d = int.from_bytes(text[off:off + 4], 'little')
+                d = int.from_bytes(text[off : off + 4], 'little')
                 print(' {:08x}'.format(d), end='')
         print()
+
 
 # Smaller numbers are enabled first
 LOG_LEVEL_1 = 1
@@ -177,12 +214,15 @@ LOG_LEVEL_2 = 2
 LOG_LEVEL_3 = 3
 log_level = LOG_LEVEL_1
 
+
 def log(level, msg):
     if level <= log_level:
         print(msg)
 
+
 ################################################################################
 # Qstr extraction
+
 
 def extract_qstrs(source_files):
     def read_qstrs(f):
@@ -200,12 +240,14 @@ def extract_qstrs(source_files):
                             vals.add(m.group())
                     if m:
                         s = m.span()
-                        line = line[:s[0]] + line[s[1]:]
+                        line = line[: s[0]] + line[s[1] :]
                     else:
                         line = ''
             return vals, objs
 
-    static_qstrs = ['MP_QSTR_' + qstrutil.qstr_escape(q) for q in qstrutil.static_qstr_list]
+    static_qstrs = [
+        'MP_QSTR_' + qstrutil.qstr_escape(q) for q in qstrutil.static_qstr_list
+    ]
 
     qstr_vals = set()
     qstr_objs = set()
@@ -217,11 +259,14 @@ def extract_qstrs(source_files):
 
     return static_qstrs, qstr_vals, qstr_objs
 
+
 ################################################################################
 # Linker
 
+
 class LinkError(Exception):
     pass
+
 
 class Section:
     def __init__(self, name, data, alignment, filename=None):
@@ -236,6 +281,7 @@ class Section:
     def from_elfsec(elfsec, filename):
         assert elfsec.header.sh_addr == 0
         return Section(elfsec.name, elfsec.data(), elfsec.data_alignment, filename)
+
 
 class GOTEntry:
     def __init__(self, name, sym, link_addr=0):
@@ -256,19 +302,21 @@ class GOTEntry:
     def isbss(self):
         return self.sec_name.startswith('.bss')
 
+
 class LiteralEntry:
     def __init__(self, value, offset):
         self.value = value
         self.offset = offset
 
+
 class LinkEnv:
     def __init__(self, arch):
         self.arch = ARCH_DATA[arch]
-        self.sections = []          # list of sections in order of output
+        self.sections = []  # list of sections in order of output
         self.literal_sections = []  # list of literal sections (xtensa only)
-        self.known_syms = {}        # dict of symbols that are defined
-        self.unresolved_syms = []   # list of unresolved symbols
-        self.mpy_relocs = []        # list of relocations needed in the output .mpy file
+        self.known_syms = {}  # dict of symbols that are defined
+        self.unresolved_syms = []  # list of unresolved symbols
+        self.mpy_relocs = []  # list of relocations needed in the output .mpy file
 
     def check_arch(self, arch_name):
         if arch_name != self.arch.name:
@@ -277,7 +325,10 @@ class LinkEnv:
     def print_sections(self):
         log(LOG_LEVEL_2, 'sections:')
         for sec in self.sections:
-            log(LOG_LEVEL_2, '  {:08x} {} size={}'.format(sec.addr, sec.name, len(sec.data)))
+            log(
+                LOG_LEVEL_2,
+                '  {:08x} {} size={}'.format(sec.addr, sec.name, len(sec.data)),
+            )
 
     def find_addr(self, name):
         if name in self.known_syms:
@@ -285,12 +336,16 @@ class LinkEnv:
             return s.section.addr + s['st_value']
         raise LinkError('unknown symbol: {}'.format(name))
 
+
 def build_got_generic(env):
     env.got_entries = {}
     for sec in env.sections:
         for r in sec.reloc:
             s = r.sym
-            if not (s.entry['st_info']['bind'] == 'STB_GLOBAL' and r['r_info_type'] in env.arch.arch_got):
+            if not (
+                s.entry['st_info']['bind'] == 'STB_GLOBAL'
+                and r['r_info_type'] in env.arch.arch_got
+            ):
                 continue
             s_type = s.entry['st_info']['type']
             assert s_type in ('STT_NOTYPE', 'STT_FUNC', 'STT_OBJECT'), s_type
@@ -298,6 +353,7 @@ def build_got_generic(env):
             if s.name in env.got_entries:
                 continue
             env.got_entries[s.name] = GOTEntry(s.name, s)
+
 
 def build_got_xtensa(env):
     env.got_entries = {}
@@ -312,7 +368,12 @@ def build_got_xtensa(env):
         for r in sec.reloc:
             s = r.sym
             s_type = s.entry['st_info']['type']
-            assert s_type in ('STT_NOTYPE', 'STT_FUNC', 'STT_OBJECT', 'STT_SECTION'), s_type
+            assert s_type in (
+                'STT_NOTYPE',
+                'STT_FUNC',
+                'STT_OBJECT',
+                'STT_SECTION',
+            ), s_type
             assert r['r_info_type'] in env.arch.arch_got
             assert r['r_offset'] % env.arch.word_size == 0
             # This entry is a global pointer
@@ -342,7 +403,10 @@ def build_got_xtensa(env):
                 if value in env.lit_entries:
                     # Deduplicate literals
                     continue
-                env.lit_entries[value] = LiteralEntry(value, len(env.lit_entries) * env.arch.word_size)
+                env.lit_entries[value] = LiteralEntry(
+                    value, len(env.lit_entries) * env.arch.word_size
+                )
+
 
 def populate_got(env):
     # Compute GOT destination addresses
@@ -356,8 +420,13 @@ def populate_got(env):
         got_entry.link_addr += sec.addr + addr
 
     # Get sorted GOT, sorted by external, text, rodata, bss so relocations can be combined
-    got_list = sorted(env.got_entries.values(),
-        key=lambda g: g.isexternal() + 2 * g.istext() + 3 * g.isrodata() + 4 * g.isbss())
+    got_list = sorted(
+        env.got_entries.values(),
+        key=lambda g: g.isexternal()
+        + 2 * g.istext()
+        + 3 * g.isrodata()
+        + 4 * g.isbss(),
+    )
 
     # Layout and populate the GOT
     offset = 0
@@ -365,7 +434,9 @@ def populate_got(env):
         got_entry.offset = offset
         offset += env.arch.word_size
         o = env.got_section.addr + got_entry.offset
-        env.full_text[o:o + env.arch.word_size] = got_entry.link_addr.to_bytes(env.arch.word_size, 'little')
+        env.full_text[o : o + env.arch.word_size] = got_entry.link_addr.to_bytes(
+            env.arch.word_size, 'little'
+        )
 
     # Create a relocation for each GOT entry
     for got_entry in got_list:
@@ -388,7 +459,13 @@ def populate_got(env):
     # Print out the final GOT
     log(LOG_LEVEL_2, 'GOT: {:08x}'.format(env.got_section.addr))
     for g in got_list:
-        log(LOG_LEVEL_2, '  {:08x} {} -> {}+{:08x}'.format(g.offset, g.name, g.sec_name, g.link_addr))
+        log(
+            LOG_LEVEL_2,
+            '  {:08x} {} -> {}+{:08x}'.format(
+                g.offset, g.name, g.sec_name, g.link_addr
+            ),
+        )
+
 
 def populate_lit(env):
     log(LOG_LEVEL_2, 'LIT: {:08x}'.format(env.lit_section.addr))
@@ -396,7 +473,10 @@ def populate_lit(env):
         value = lit_entry.value
         log(LOG_LEVEL_2, '  {:08x} = {:08x}'.format(lit_entry.offset, value))
         o = env.lit_section.addr + lit_entry.offset
-        env.full_text[o:o + env.arch.word_size] = value.to_bytes(env.arch.word_size, 'little')
+        env.full_text[o : o + env.arch.word_size] = value.to_bytes(
+            env.arch.word_size, 'little'
+        )
+
 
 def do_relocation_text(env, text_addr, r):
     # Extract relevant info about symbol that's being relocated
@@ -416,11 +496,17 @@ def do_relocation_text(env, text_addr, r):
     reloc_type = 'le32'
     log_name = None
 
-    if (env.arch.name == 'EM_386' and r_info_type in (R_386_PC32, R_386_PLT32)
-        or env.arch.name == 'EM_X86_64' and r_info_type in (R_X86_64_PC32, R_X86_64_PLT32)
-        or env.arch.name == 'EM_ARM' and r_info_type in (R_ARM_REL32, R_ARM_THM_CALL, R_ARM_THM_JUMP24)
-        or s_bind == 'STB_LOCAL' and env.arch.name == 'EM_XTENSA' and r_info_type == R_XTENSA_32 # not GOT
-        ):
+    if (
+        env.arch.name == 'EM_386'
+        and r_info_type in (R_386_PC32, R_386_PLT32)
+        or env.arch.name == 'EM_X86_64'
+        and r_info_type in (R_X86_64_PC32, R_X86_64_PLT32)
+        or env.arch.name == 'EM_ARM'
+        and r_info_type in (R_ARM_REL32, R_ARM_THM_CALL, R_ARM_THM_JUMP24)
+        or s_bind == 'STB_LOCAL'
+        and env.arch.name == 'EM_XTENSA'
+        and r_info_type == R_XTENSA_32  # not GOT
+    ):
         # Standard relocation to fixed location within text/rodata
         if hasattr(s, 'resolved'):
             s = s.resolved
@@ -431,10 +517,16 @@ def do_relocation_text(env, text_addr, r):
             raise LinkError('fixed relocation to rodata with rodata referenced via GOT')
 
         if sec.name.startswith('.bss'):
-            raise LinkError('{}: fixed relocation to bss (bss variables can\'t be static)'.format(s.filename))
+            raise LinkError(
+                '{}: fixed relocation to bss (bss variables can\'t be static)'.format(
+                    s.filename
+                )
+            )
 
         if sec.name.startswith('.external'):
-            raise LinkError('{}: fixed relocation to external symbol: {}'.format(s.filename, s.name))
+            raise LinkError(
+                '{}: fixed relocation to external symbol: {}'.format(s.filename, s.name)
+            )
 
         addr = sec.addr + s['st_value']
         reloc = addr - r_offset + r_addend
@@ -445,17 +537,23 @@ def do_relocation_text(env, text_addr, r):
             #   R_ARM_THM_JUMP24: b.w
             reloc_type = 'thumb_b'
 
-    elif (env.arch.name == 'EM_386' and r_info_type == R_386_GOTPC
-        or env.arch.name == 'EM_ARM' and r_info_type == R_ARM_BASE_PREL
-        ):
+    elif (
+        env.arch.name == 'EM_386'
+        and r_info_type == R_386_GOTPC
+        or env.arch.name == 'EM_ARM'
+        and r_info_type == R_ARM_BASE_PREL
+    ):
         # Relocation to GOT address itself
         assert s.name == '_GLOBAL_OFFSET_TABLE_'
         addr = env.got_section.addr
         reloc = addr - r_offset + r_addend
 
-    elif (env.arch.name == 'EM_386' and r_info_type in (R_386_GOT32, R_386_GOT32X)
-        or env.arch.name == 'EM_ARM' and r_info_type == R_ARM_GOT_BREL
-        ):
+    elif (
+        env.arch.name == 'EM_386'
+        and r_info_type in (R_386_GOT32, R_386_GOT32X)
+        or env.arch.name == 'EM_ARM'
+        and r_info_type == R_ARM_GOT_BREL
+    ):
         # Relcation pointing to GOT
         reloc = addr = env.got_entries[s.name].offset
 
@@ -500,23 +598,23 @@ def do_relocation_text(env, text_addr, r):
 
     # Write relocation
     if reloc_type == 'le32':
-        existing, = struct.unpack_from('<I', env.full_text, r_offset)
-        struct.pack_into('<I', env.full_text, r_offset, (existing + reloc) & 0xffffffff)
+        (existing,) = struct.unpack_from('<I', env.full_text, r_offset)
+        struct.pack_into('<I', env.full_text, r_offset, (existing + reloc) & 0xFFFFFFFF)
     elif reloc_type == 'thumb_b':
         b_h, b_l = struct.unpack_from('<HH', env.full_text, r_offset)
-        existing = (b_h & 0x7ff) << 12 | (b_l & 0x7ff) << 1
-        if existing >= 0x400000: # 2's complement
+        existing = (b_h & 0x7FF) << 12 | (b_l & 0x7FF) << 1
+        if existing >= 0x400000:  # 2's complement
             existing -= 0x800000
         new = existing + reloc
-        b_h = (b_h & 0xf800) | (new >> 12) & 0x7ff
-        b_l = (b_l & 0xf800) | (new >> 1) & 0x7ff
+        b_h = (b_h & 0xF800) | (new >> 12) & 0x7FF
+        b_l = (b_l & 0xF800) | (new >> 1) & 0x7FF
         struct.pack_into('<HH', env.full_text, r_offset, b_h, b_l)
     elif reloc_type == 'xtensa_l32r':
         l32r = unpack_u24le(env.full_text, r_offset)
-        assert l32r & 0xf == 1 # RI16 encoded l32r
+        assert l32r & 0xF == 1  # RI16 encoded l32r
         l32r_imm16 = l32r >> 8
-        l32r_imm16 = (l32r_imm16 + reloc >> 2) & 0xffff
-        l32r = l32r & 0xff | l32r_imm16 << 8
+        l32r_imm16 = (l32r_imm16 + reloc >> 2) & 0xFFFF
+        l32r = l32r & 0xFF | l32r_imm16 << 8
         pack_u24le(env.full_text, r_offset, l32r)
     else:
         assert 0, reloc_type
@@ -529,6 +627,7 @@ def do_relocation_text(env, text_addr, r):
             log_name = s.name
     log(LOG_LEVEL_3, '  {:08x} {} -> {:08x}'.format(r_offset, log_name, addr))
 
+
 def do_relocation_data(env, text_addr, r):
     s = r.sym
     s_type = s.entry['st_info']['type']
@@ -540,10 +639,16 @@ def do_relocation_data(env, text_addr, r):
     except KeyError:
         r_addend = 0
 
-    if (env.arch.name == 'EM_386' and r_info_type == R_386_32
-        or env.arch.name == 'EM_X86_64' and r_info_type == R_X86_64_64
-        or env.arch.name == 'EM_ARM' and r_info_type == R_ARM_ABS32
-        or env.arch.name == 'EM_XTENSA' and r_info_type == R_XTENSA_32):
+    if (
+        env.arch.name == 'EM_386'
+        and r_info_type == R_386_32
+        or env.arch.name == 'EM_X86_64'
+        and r_info_type == R_X86_64_64
+        or env.arch.name == 'EM_ARM'
+        and r_info_type == R_ARM_ABS32
+        or env.arch.name == 'EM_XTENSA'
+        and r_info_type == R_XTENSA_32
+    ):
         # Relocation in data.rel.ro to internal/external symbol
         if env.arch.word_size == 4:
             struct_type = '<I'
@@ -561,7 +666,7 @@ def do_relocation_data(env, text_addr, r):
             data = env.full_rodata
         else:
             data = env.full_text
-        existing, = struct.unpack_from(struct_type, data, r_offset)
+        (existing,) = struct.unpack_from(struct_type, data, r_offset)
         if sec.name.startswith(('.text', '.rodata', '.data.rel.ro', '.bss')):
             struct.pack_into(struct_type, data, r_offset, existing + addr)
             kind = sec.name
@@ -580,6 +685,7 @@ def do_relocation_data(env, text_addr, r):
         # Unknown/unsupported relocation
         assert 0, r_info_type
 
+
 def load_object_file(env, felf):
     with open(felf, 'rb') as f:
         elf = elffile.ELFFile(f)
@@ -589,13 +695,15 @@ def load_object_file(env, felf):
         symtab = list(elf.get_section_by_name('.symtab').iter_symbols())
 
         # Load needed sections from ELF file
-        sections_shndx = {} # maps elf shndx to Section object
+        sections_shndx = {}  # maps elf shndx to Section object
         for idx, s in enumerate(elf.iter_sections()):
             if s.header.sh_type in ('SHT_PROGBITS', 'SHT_NOBITS'):
                 if s.data_size == 0:
                     # Ignore empty sections
                     pass
-                elif s.name.startswith(('.literal', '.text', '.rodata', '.data.rel.ro', '.bss')):
+                elif s.name.startswith(
+                    ('.literal', '.text', '.rodata', '.data.rel.ro', '.bss')
+                ):
                     sec = Section.from_elfsec(s, felf)
                     sections_shndx[idx] = sec
                     if s.name.startswith('.literal'):
@@ -625,12 +733,18 @@ def load_object_file(env, felf):
                 sym.section = sections_shndx[shndx]
                 if sym['st_info']['bind'] == 'STB_GLOBAL':
                     # Defined global symbol
-                    if sym.name in env.known_syms and not sym.name.startswith('__x86.get_pc_thunk.'):
+                    if sym.name in env.known_syms and not sym.name.startswith(
+                        '__x86.get_pc_thunk.'
+                    ):
                         raise LinkError('duplicate symbol: {}'.format(sym.name))
                     env.known_syms[sym.name] = sym
-            elif sym.entry['st_shndx'] == 'SHN_UNDEF' and sym['st_info']['bind'] == 'STB_GLOBAL':
+            elif (
+                sym.entry['st_shndx'] == 'SHN_UNDEF'
+                and sym['st_info']['bind'] == 'STB_GLOBAL'
+            ):
                 # Undefined global symbol, needs resolving
                 env.unresolved_syms.append(sym)
+
 
 def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Build GOT information
@@ -654,31 +768,42 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
         env.sections.insert(1, env.lit_section)
 
     # Create section to contain mp_native_qstr_val_table
-    env.qstr_val_section = Section('.text.QSTR_VAL', bytearray(native_qstr_vals_len * env.arch.qstr_entry_size), env.arch.qstr_entry_size)
+    env.qstr_val_section = Section(
+        '.text.QSTR_VAL',
+        bytearray(native_qstr_vals_len * env.arch.qstr_entry_size),
+        env.arch.qstr_entry_size,
+    )
     env.sections.append(env.qstr_val_section)
 
     # Create section to contain mp_native_qstr_obj_table
-    env.qstr_obj_section = Section('.text.QSTR_OBJ', bytearray(native_qstr_objs_len * env.arch.word_size), env.arch.word_size)
+    env.qstr_obj_section = Section(
+        '.text.QSTR_OBJ',
+        bytearray(native_qstr_objs_len * env.arch.word_size),
+        env.arch.word_size,
+    )
     env.sections.append(env.qstr_obj_section)
 
     # Resolve unknown symbols
     mp_fun_table_sec = Section('.external.mp_fun_table', b'', 0)
-    fun_table = {key: 67 + idx
-        for idx, key in enumerate([
-            'mp_type_type',
-            'mp_type_str',
-            'mp_type_list',
-            'mp_type_dict',
-            'mp_type_fun_builtin_0',
-            'mp_type_fun_builtin_1',
-            'mp_type_fun_builtin_2',
-            'mp_type_fun_builtin_3',
-            'mp_type_fun_builtin_var',
-            'mp_stream_read_obj',
-            'mp_stream_readinto_obj',
-            'mp_stream_unbuffered_readline_obj',
-            'mp_stream_write_obj',
-        ])
+    fun_table = {
+        key: 67 + idx
+        for idx, key in enumerate(
+            [
+                'mp_type_type',
+                'mp_type_str',
+                'mp_type_list',
+                'mp_type_dict',
+                'mp_type_fun_builtin_0',
+                'mp_type_fun_builtin_1',
+                'mp_type_fun_builtin_2',
+                'mp_type_fun_builtin_3',
+                'mp_type_fun_builtin_var',
+                'mp_stream_read_obj',
+                'mp_stream_readinto_obj',
+                'mp_stream_unbuffered_readline_obj',
+                'mp_stream_write_obj',
+            ]
+        )
     }
     for sym in env.unresolved_syms:
         assert sym['st_value'] == 0
@@ -697,14 +822,18 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
                 sym.section = mp_fun_table_sec
                 sym.mp_fun_table_offset = fun_table[sym.name]
             else:
-                raise LinkError('{}: undefined symbol: {}'.format(sym.filename, sym.name))
+                raise LinkError(
+                    '{}: undefined symbol: {}'.format(sym.filename, sym.name)
+                )
 
     # Align sections, assign their addresses, and create full_text
-    env.full_text = bytearray(env.arch.asm_jump(8)) # dummy, to be filled in later
+    env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
     env.full_rodata = bytearray(0)
     env.full_bss = bytearray(0)
     for sec in env.sections:
-        if env.arch.separate_rodata and sec.name.startswith(('.rodata', '.data.rel.ro')):
+        if env.arch.separate_rodata and sec.name.startswith(
+            ('.rodata', '.data.rel.ro')
+        ):
             data = env.full_rodata
         elif sec.name.startswith('.bss'):
             data = env.full_bss
@@ -724,7 +853,10 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     for sec in env.sections:
         if not sec.reloc:
             continue
-        log(LOG_LEVEL_3, '{}: {} relocations via {}:'.format(sec.filename, sec.name, sec.reloc_name))
+        log(
+            LOG_LEVEL_3,
+            '{}: {} relocations via {}:'.format(sec.filename, sec.name, sec.reloc_name),
+        )
         for r in sec.reloc:
             if sec.name.startswith(('.text', '.rodata')):
                 do_relocation_text(env, sec.addr, r)
@@ -733,8 +865,10 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             else:
                 assert 0, sec.name
 
+
 ################################################################################
 # .mpy output
+
 
 class MPYOutput:
     def open(self, fname):
@@ -750,10 +884,10 @@ class MPYOutput:
 
     def write_uint(self, val):
         b = bytearray()
-        b.insert(0, val & 0x7f)
+        b.insert(0, val & 0x7F)
         val >>= 7
         while val:
-            b.insert(0, 0x80 | (val & 0x7f))
+            b.insert(0, 0x80 | (val & 0x7F))
             val >>= 7
         self.write_bytes(b)
 
@@ -774,7 +908,7 @@ class MPYOutput:
             assert 6 <= dest <= 127
             assert n == 1
         dest = dest << 1 | need_offset
-        assert 0 <= dest <= 0xfe, dest
+        assert 0 <= dest <= 0xFE, dest
         self.write_bytes(bytes([dest]))
         if need_offset:
             if base == '.text':
@@ -785,10 +919,11 @@ class MPYOutput:
         if n > 1:
             self.write_uint(n)
 
+
 def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     # Write jump instruction to start of text
     jump = env.arch.asm_jump(entry_offset)
-    env.full_text[:len(jump)] = jump
+    env.full_text[: len(jump)] = jump
 
     log(LOG_LEVEL_1, 'arch:         {}'.format(env.arch.name))
     log(LOG_LEVEL_1, 'text size:    {}'.format(len(env.full_text)))
@@ -797,19 +932,23 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     log(LOG_LEVEL_1, 'bss size:     {}'.format(len(env.full_bss)))
     log(LOG_LEVEL_1, 'GOT entries:  {}'.format(len(env.got_entries)))
 
-    #xxd(env.full_text)
+    # xxd(env.full_text)
 
     out = MPYOutput()
     out.open(fmpy)
 
     # MPY: header
-    out.write_bytes(bytearray([
-        ord('M'),
-        MPY_VERSION,
-        env.arch.mpy_feature,
-        MP_SMALL_INT_BITS,
-        QSTR_WINDOW_SIZE,
-    ]))
+    out.write_bytes(
+        bytearray(
+            [
+                ord('M'),
+                MPY_VERSION,
+                env.arch.mpy_feature,
+                MP_SMALL_INT_BITS,
+                QSTR_WINDOW_SIZE,
+            ]
+        )
+    )
 
     # MPY: kind/len
     out.write_uint(len(env.full_text) << 2 | (MP_CODE_NATIVE_VIPER - MP_CODE_BYTECODE))
@@ -887,8 +1026,10 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
 
     out.close()
 
+
 ################################################################################
 # main
+
 
 def do_preprocess(args):
     if args.output is None:
@@ -896,22 +1037,30 @@ def do_preprocess(args):
         args.output = args.files[0][:-1] + 'config.h'
     static_qstrs, qstr_vals, qstr_objs = extract_qstrs(args.files)
     with open(args.output, 'w') as f:
-        print('#include <stdint.h>\n'
+        print(
+            '#include <stdint.h>\n'
             'typedef uintptr_t mp_uint_t;\n'
             'typedef intptr_t mp_int_t;\n'
-            'typedef uintptr_t mp_off_t;', file=f)
+            'typedef uintptr_t mp_off_t;',
+            file=f,
+        )
         for i, q in enumerate(static_qstrs):
             print('#define %s (%u)' % (q, i + 1), file=f)
         for i, q in enumerate(sorted(qstr_vals)):
             print('#define %s (mp_native_qstr_val_table[%d])' % (q, i), file=f)
         for i, q in enumerate(sorted(qstr_objs)):
-            print('#define MP_OBJ_NEW_QSTR_%s ((mp_obj_t)mp_native_qstr_obj_table[%d])' % (q, i), file=f)
+            print(
+                '#define MP_OBJ_NEW_QSTR_%s ((mp_obj_t)mp_native_qstr_obj_table[%d])'
+                % (q, i),
+                file=f,
+            )
         if args.arch == 'xtensawin':
-            qstr_type = 'uint32_t' # esp32 can only read 32-bit values from IRAM
+            qstr_type = 'uint32_t'  # esp32 can only read 32-bit values from IRAM
         else:
             qstr_type = 'uint16_t'
         print('extern const {} mp_native_qstr_val_table[];'.format(qstr_type), file=f)
         print('extern const mp_uint_t mp_native_qstr_obj_table[];', file=f)
+
 
 def do_link(args):
     if args.output is None:
@@ -936,19 +1085,38 @@ def do_link(args):
         for file in args.files:
             load_object_file(env, file)
         link_objects(env, len(native_qstr_vals), len(native_qstr_objs))
-        build_mpy(env, env.find_addr('mpy_init'), args.output, native_qstr_vals, native_qstr_objs)
+        build_mpy(
+            env,
+            env.find_addr('mpy_init'),
+            args.output,
+            native_qstr_vals,
+            native_qstr_objs,
+        )
     except LinkError as er:
         print('LinkError:', er.args[0])
         sys.exit(1)
 
+
 def main():
     import argparse
+
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--verbose', '-v', action='count', default=1, help='increase verbosity')
+    cmd_parser.add_argument(
+        '--verbose', '-v', action='count', default=1, help='increase verbosity'
+    )
     cmd_parser.add_argument('--arch', default='x64', help='architecture')
-    cmd_parser.add_argument('--preprocess', action='store_true', help='preprocess source files')
-    cmd_parser.add_argument('--qstrs', default=None, help='file defining additional qstrs')
-    cmd_parser.add_argument('--output', '-o', default=None, help='output .mpy file (default to input with .o->.mpy)')
+    cmd_parser.add_argument(
+        '--preprocess', action='store_true', help='preprocess source files'
+    )
+    cmd_parser.add_argument(
+        '--qstrs', default=None, help='file defining additional qstrs'
+    )
+    cmd_parser.add_argument(
+        '--output',
+        '-o',
+        default=None,
+        help='output .mpy file (default to input with .o->.mpy)',
+    )
     cmd_parser.add_argument('files', nargs='+', help='input files')
     args = cmd_parser.parse_args()
 
@@ -959,6 +1127,7 @@ def main():
         do_preprocess(args)
     else:
         do_link(args)
+
 
 if __name__ == '__main__':
     main()

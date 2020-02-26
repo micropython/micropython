@@ -27,6 +27,7 @@ else:
 # 0xf0f0f0f0e1, 0xf0f0f0f0d2
 pipes = (b'\xe1\xf0\xf0\xf0\xf0', b'\xd2\xf0\xf0\xf0\xf0')
 
+
 def master():
     csn = Pin(cfg['csn'], mode=Pin.OUT, value=1)
     ce = Pin(cfg['ce'], mode=Pin.OUT, value=0)
@@ -51,7 +52,7 @@ def master():
         # stop listening and send packet
         nrf.stop_listening()
         millis = utime.ticks_ms()
-        led_state = max(1, (led_state << 1) & 0x0f)
+        led_state = max(1, (led_state << 1) & 0x0F)
         print('sending:', millis, led_state)
         try:
             nrf.send(struct.pack('ii', millis, led_state))
@@ -74,16 +75,26 @@ def master():
 
         else:
             # recv packet
-            got_millis, = struct.unpack('i', nrf.recv())
+            (got_millis,) = struct.unpack('i', nrf.recv())
 
             # print response and round-trip delay
-            print('got response:', got_millis, '(delay', utime.ticks_diff(utime.ticks_ms(), got_millis), 'ms)')
+            print(
+                'got response:',
+                got_millis,
+                '(delay',
+                utime.ticks_diff(utime.ticks_ms(), got_millis),
+                'ms)',
+            )
             num_successes += 1
 
         # delay then loop
         utime.sleep_ms(250)
 
-    print('master finished sending; successes=%d, failures=%d' % (num_successes, num_failures))
+    print(
+        'master finished sending; successes=%d, failures=%d'
+        % (num_successes, num_failures)
+    )
+
 
 def slave():
     csn = Pin(cfg['csn'], mode=Pin.OUT, value=1)
@@ -124,8 +135,10 @@ def slave():
             print('sent response')
             nrf.start_listening()
 
+
 try:
     import pyb
+
     leds = [pyb.LED(i + 1) for i in range(4)]
 except:
     leds = []

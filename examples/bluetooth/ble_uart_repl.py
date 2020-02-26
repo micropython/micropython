@@ -24,10 +24,12 @@ else:
 def schedule_in(handler, delay_ms):
     def _wrap(_arg):
         handler()
+
     if _timer:
         _timer.init(mode=machine.Timer.ONE_SHOT, period=delay_ms, callback=_wrap)
     else:
         micropython.schedule(_wrap, None)
+
 
 # Simple buffering stream to support the dupterm requirements.
 class BLEUARTStream(io.IOBase):

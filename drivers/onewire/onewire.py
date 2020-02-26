@@ -4,13 +4,15 @@
 from micropython import const
 import _onewire as _ow
 
+
 class OneWireError(Exception):
     pass
 
+
 class OneWire:
-    SEARCH_ROM = const(0xf0)
+    SEARCH_ROM = const(0xF0)
     MATCH_ROM = const(0x55)
-    SKIP_ROM = const(0xcc)
+    SKIP_ROM = const(0xCC)
 
     def __init__(self, pin):
         self.pin = pin
@@ -51,7 +53,7 @@ class OneWire:
         devices = []
         diff = 65
         rom = False
-        for i in range(0xff):
+        for i in range(0xFF):
             rom, diff = self._search_rom(rom, diff)
             if rom:
                 devices += [rom]
@@ -73,10 +75,10 @@ class OneWire:
             for bit in range(8):
                 b = self.readbit()
                 if self.readbit():
-                    if b: # there are no devices or there is an error on the bus
+                    if b:  # there are no devices or there is an error on the bus
                         return None, 0
                 else:
-                    if not b: # collision, two devices with different bit meaning
+                    if not b:  # collision, two devices with different bit meaning
                         if diff > i or ((l_rom[byte] & (1 << bit)) and diff != i):
                             b = 1
                             next_diff = i

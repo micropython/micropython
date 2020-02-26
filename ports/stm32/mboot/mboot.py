@@ -119,7 +119,7 @@ class Bootloader:
     def deployfile(self, filename, addr):
         pages = self.getlayout()
         page_erased = [False] * len(pages)
-        buf = bytearray(128) # maximum payload supported by I2C protocol
+        buf = bytearray(128)  # maximum payload supported by I2C protocol
         start_addr = addr
         self.setwraddr(addr)
         fsize = os.stat(filename)[6]
@@ -137,7 +137,11 @@ class Bootloader:
                     if p[0] <= addr < p[0] + p[1]:
                         # found page
                         if not page_erased[i]:
-                            print('\r% 3u%% erase 0x%08x' % (100 * (addr - start_addr) // fsize, addr), end='')
+                            print(
+                                '\r% 3u%% erase 0x%08x'
+                                % (100 * (addr - start_addr) // fsize, addr),
+                                end='',
+                            )
                             self.pageerase(addr)
                             page_erased[i] = True
                         break
@@ -158,7 +162,10 @@ class Bootloader:
                 addr += n
                 ntotal = addr - start_addr
                 if ntotal % 2048 == 0 or ntotal == fsize:
-                    print('\r% 3u%% % 7u bytes   ' % (100 * ntotal // fsize, ntotal), end='')
+                    print(
+                        '\r% 3u%% % 7u bytes   ' % (100 * ntotal // fsize, ntotal),
+                        end='',
+                    )
             t1 = time.ticks_ms()
         print()
         print('rate: %.2f KiB/sec' % (1024 * ntotal / (t1 - t0) / 1000))

@@ -29,6 +29,7 @@ _uart_baud_table = {
     460800: 8,
 }
 
+
 class LCD160CR:
     def __init__(self, connect=None, *, pwr=None, i2c=None, spi=None, i2c_addr=98):
         if connect in ('X', 'Y', 'XY', 'YX'):
@@ -41,7 +42,9 @@ class LCD160CR:
             y = 'A7'
         else:
             if pwr is None or i2c is None or spi is None:
-                raise ValueError('must specify valid "connect" or all of "pwr", "i2c" and "spi"')
+                raise ValueError(
+                    'must specify valid "connect" or all of "pwr", "i2c" and "spi"'
+                )
 
         if pwr is None:
             pwr = machine.Pin(y, machine.Pin.OUT)
@@ -74,8 +77,8 @@ class LCD160CR:
 
         # set default orientation and window
         self.set_orient(PORTRAIT)
-        self._fcmd2b('<BBBBBB', 0x76, 0, 0, self.w, self.h) # viewport 'v'
-        self._fcmd2b('<BBBBBB', 0x79, 0, 0, self.w, self.h) # window 'y'
+        self._fcmd2b('<BBBBBB', 0x76, 0, 0, self.w, self.h)  # viewport 'v'
+        self._fcmd2b('<BBBBBB', 0x79, 0, 0, self.w, self.h)  # window 'y'
 
     def _send(self, cmd):
         i = self.i2c.writeto(self.i2c_addr, cmd)
@@ -135,7 +138,7 @@ class LCD160CR:
 
     @staticmethod
     def rgb(r, g, b):
-        return ((b & 0xf8) << 8) | ((g & 0xfc) << 3) | (r >> 3)
+        return ((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)
 
     @staticmethod
     def clip_line(c, w, h):
@@ -222,7 +225,7 @@ class LCD160CR:
         # 0x0e set i2c addr
         if addr & 3:
             raise ValueError('must specify mod 4 aligned address')
-        self._fcmd2('<BBW', 0x0e, 0x433249 | (addr << 24))
+        self._fcmd2('<BBW', 0x0E, 0x433249 | (addr << 24))
 
     def set_uart_baudrate(self, baudrate):
         try:
@@ -280,25 +283,25 @@ class LCD160CR:
             # split line if more than 254 bytes needed
             buflen = (w + 1) // 2
             line = bytearray(2 * buflen + 1)
-            line2 = memoryview(line)[:2 * (w - buflen) + 1]
+            line2 = memoryview(line)[: 2 * (w - buflen) + 1]
         for i in range(min(len(buf) // (2 * w), h)):
             ix = i * w * 2
             self.get_line(x, y + i, line)
-            buf[ix:ix + len(line) - 1] = memoryview(line)[1:]
+            buf[ix : ix + len(line) - 1] = memoryview(line)[1:]
             ix += len(line) - 1
             if line2:
                 self.get_line(x + buflen, y + i, line2)
-                buf[ix:ix + len(line2) - 1] = memoryview(line2)[1:]
+                buf[ix : ix + len(line2) - 1] = memoryview(line2)[1:]
                 ix += len(line2) - 1
 
     def screen_load(self, buf):
-        l = self.w * self.h * 2+2
+        l = self.w * self.h * 2 + 2
         self._fcmd2b('<BBHBBB', 0x70, l, 16, self.w, self.h)
         n = 0
         ar = memoryview(buf)
         while n < len(buf):
             if len(buf) - n >= 0x200:
-                self._send(ar[n:n + 0x200])
+                self._send(ar[n : n + 0x200])
                 n += 0x200
             else:
                 self._send(ar[n:])
@@ -315,7 +318,12 @@ class LCD160CR:
         self._fcmd2('<BBHH', 0x63, fg, bg)
 
     def set_font(self, font, scale=0, bold=0, trans=0, scroll=0):
-        self._fcmd2('<BBBB', 0x46, (scroll << 7) | (trans << 6) | ((font & 3) << 4) | (bold & 0xf), scale & 0xff)
+        self._fcmd2(
+            '<BBBB',
+            0x46,
+            (scroll << 7) | (trans << 6) | ((font & 3) << 4) | (bold & 0xF),
+            scale & 0xFF,
+        )
 
     def write(self, s):
         # TODO: eventually check for room in LCD input queue
@@ -331,7 +339,7 @@ class LCD160CR:
 
     def dot(self, x, y):
         if 0 <= x < self.w and 0 <= y < self.h:
-            self._fcmd2('<BBBB', 0x4b, x, y)
+            self._fcmd2('<BBBB', 0x4B, x, y)
 
     def rect(self, x, y, w, h, cmd=0x72):
         if x + w <= 0 or y + h <= 0 or x >= self.w or y >= self.h:
@@ -375,10 +383,10 @@ class LCD160CR:
         ar4[2] = x2
         ar4[3] = y2
         if self.clip_line(ar4, self.w, self.h):
-            self._fcmd2b('<BBBBBB', 0x4c, ar4[0], ar4[1], ar4[2], ar4[3])
+            self._fcmd2b('<BBBBBB', 0x4C, ar4[0], ar4[1], ar4[2], ar4[3])
 
     def dot_no_clip(self, x, y):
-        self._fcmd2('<BBBB', 0x4b, x, y)
+        self._fcmd2('<BBBB', 0x4B, x, y)
 
     def rect_no_clip(self, x, y, w, h):
         self._fcmd2b('<BBBBBB', 0x72, x, y, w, h)
@@ -390,7 +398,7 @@ class LCD160CR:
         self._fcmd2b('<BBBBBB', 0x51, x, y, w, h)
 
     def line_no_clip(self, x1, y1, x2, y2):
-        self._fcmd2b('<BBBBBB', 0x4c, x1, y1, x2, y2)
+        self._fcmd2b('<BBBBBB', 0x4C, x1, y1, x2, y2)
 
     def poly_dot(self, data):
         if len(data) & 1:
@@ -407,7 +415,9 @@ class LCD160CR:
     #### TOUCH COMMANDS ####
 
     def touch_config(self, calib=False, save=False, irq=None):
-        self._fcmd2('<BBBB', 0x7a, (irq is not None) << 2 | save << 1 | calib, bool(irq) << 7)
+        self._fcmd2(
+            '<BBBB', 0x7A, (irq is not None) << 2 | save << 1 | calib, bool(irq) << 7
+        )
 
     def is_touched(self):
         self._send(b'\x02T')
@@ -416,7 +426,7 @@ class LCD160CR:
         return b[1] >> 7 != 0
 
     def get_touch(self):
-        self._send(b'\x02T') # implicit LCD output flush
+        self._send(b'\x02T')  # implicit LCD output flush
         b = self.buf[4]
         self._waitfor(3, b)
         return b[1] >> 7, b[2], b[3]
@@ -424,7 +434,22 @@ class LCD160CR:
     #### ADVANCED COMMANDS ####
 
     def set_spi_win(self, x, y, w, h):
-        pack_into('<BBBHHHHHHHH', self.buf19, 0, 2, 0x55, 10, x, y, x + w - 1, y + h - 1, 0, 0, 0, 0xffff)
+        pack_into(
+            '<BBBHHHHHHHH',
+            self.buf19,
+            0,
+            2,
+            0x55,
+            10,
+            x,
+            y,
+            x + w - 1,
+            y + h - 1,
+            0,
+            0,
+            0,
+            0xFFFF,
+        )
         self._send(self.buf19)
 
     def fast_spi(self, flush=True):
@@ -439,8 +464,25 @@ class LCD160CR:
     def set_scroll(self, on):
         self._fcmd2('<BBB', 0x15, on)
 
-    def set_scroll_win(self, win, x=-1, y=0, w=0, h=0, vec=0, pat=0, fill=0x07e0, color=0):
-        pack_into('<BBBHHHHHHHH', self.buf19, 0, 2, 0x55, win, x, y, w, h, vec, pat, fill, color)
+    def set_scroll_win(
+        self, win, x=-1, y=0, w=0, h=0, vec=0, pat=0, fill=0x07E0, color=0
+    ):
+        pack_into(
+            '<BBBHHHHHHHH',
+            self.buf19,
+            0,
+            2,
+            0x55,
+            win,
+            x,
+            y,
+            w,
+            h,
+            vec,
+            pat,
+            fill,
+            color,
+        )
         self._send(self.buf19)
 
     def set_scroll_win_param(self, win, param, value):
@@ -454,10 +496,10 @@ class LCD160CR:
         self._send(s)
 
     def jpeg_start(self, l):
-        if l > 0xffff:
+        if l > 0xFFFF:
             raise ValueError('length must be 65535 or less')
         self.oflush()
-        self._fcmd2('<BBH', 0x6a, l)
+        self._fcmd2('<BBH', 0x6A, l)
 
     def jpeg_data(self, buf):
         self._send(buf)

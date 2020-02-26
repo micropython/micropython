@@ -33,6 +33,7 @@ import subprocess
 ###########################################################################
 # Public functions to be used in the manifest
 
+
 def include(manifest):
     """Include another manifest.
 
@@ -54,6 +55,7 @@ def include(manifest):
             os.chdir(os.path.dirname(manifest))
             exec(f.read())
             os.chdir(prev_cwd)
+
 
 def freeze(path, script=None, opt=0):
     """Freeze the input, automatically determining its type.  A .py script
@@ -84,6 +86,7 @@ def freeze(path, script=None, opt=0):
 
     freeze_internal(KIND_AUTO, path, script, opt)
 
+
 def freeze_as_str(path):
     """Freeze the given `path` and all .py scripts within it as a string,
     which will be compiled upon import.
@@ -91,12 +94,14 @@ def freeze_as_str(path):
 
     freeze_internal(KIND_AS_STR, path, None, 0)
 
+
 def freeze_as_mpy(path, script=None, opt=0):
     """Freeze the input (see above) by first compiling the .py scripts to
     .mpy files, then freezing the resulting .mpy files.
     """
 
     freeze_internal(KIND_AS_MPY, path, script, opt)
+
 
 def freeze_mpy(path, script=None, opt=0):
     """Freeze the input (see above), which must be .mpy files that are
@@ -118,8 +123,10 @@ VARS = {}
 
 manifest_list = []
 
+
 class FreezeError(Exception):
     pass
+
 
 def system(cmd):
     try:
@@ -128,6 +135,7 @@ def system(cmd):
     except subprocess.CalledProcessError as er:
         return -1, er.output
 
+
 def convert_path(path):
     # Perform variable substituion.
     for name, value in VARS.items():
@@ -135,6 +143,7 @@ def convert_path(path):
     # Convert to absolute path (so that future operations don't rely on
     # still being chdir'ed).
     return os.path.abspath(path)
+
 
 def get_timestamp(path, default=None):
     try:
@@ -145,12 +154,14 @@ def get_timestamp(path, default=None):
             raise FreezeError('cannot stat {}'.format(path))
         return default
 
+
 def get_timestamp_newest(path):
     ts_newest = 0
     for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
         for f in filenames:
             ts_newest = max(ts_newest, get_timestamp(os.path.join(dirpath, f)))
     return ts_newest
+
 
 def mkdir(path):
     cur_path = ''
@@ -159,10 +170,11 @@ def mkdir(path):
         try:
             os.mkdir(cur_path)
         except OSError as er:
-            if er.args[0] == 17: # file exists
+            if er.args[0] == 17:  # file exists
                 pass
             else:
                 raise er
+
 
 def freeze_internal(kind, path, script, opt):
     path = convert_path(path)
@@ -173,7 +185,7 @@ def freeze_internal(kind, path, script, opt):
     elif script is None:
         for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
             for f in filenames:
-                freeze_internal(kind, path, (dirpath + '/' + f)[len(path) + 1:], opt)
+                freeze_internal(kind, path, (dirpath + '/' + f)[len(path) + 1 :], opt)
     elif not isinstance(script, str):
         for s in script:
             freeze_internal(kind, path, s, opt)
@@ -189,17 +201,27 @@ def freeze_internal(kind, path, script, opt):
                 return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
-            raise FreezeError('expecting a {} file, got {}'.format(wanted_extension, script))
+            raise FreezeError(
+                'expecting a {} file, got {}'.format(wanted_extension, script)
+            )
         manifest_list.append((kind, path, script, opt))
+
 
 def main():
     # Parse arguments
     import argparse
-    cmd_parser = argparse.ArgumentParser(description='A tool to generate frozen content in MicroPython firmware images.')
+
+    cmd_parser = argparse.ArgumentParser(
+        description='A tool to generate frozen content in MicroPython firmware images.'
+    )
     cmd_parser.add_argument('-o', '--output', help='output path')
     cmd_parser.add_argument('-b', '--build-dir', help='output path')
-    cmd_parser.add_argument('-f', '--mpy-cross-flags', default='', help='flags to pass to mpy-cross')
-    cmd_parser.add_argument('-v', '--var', action='append', help='variables to substitute')
+    cmd_parser.add_argument(
+        '-f', '--mpy-cross-flags', default='', help='flags to pass to mpy-cross'
+    )
+    cmd_parser.add_argument(
+        '-v', '--var', action='append', help='variables to substitute'
+    )
     cmd_parser.add_argument('files', nargs='+', help='input manifest list')
     args = cmd_parser.parse_args()
 
@@ -251,7 +273,11 @@ def main():
             if ts_infile >= ts_outfile:
                 print('MPY', script)
                 mkdir(outfile)
-                res, out = system([MPY_CROSS] + args.mpy_cross_flags.split() + ['-o', outfile, '-s', script, '-O{}'.format(opt), infile])
+                res, out = system(
+                    [MPY_CROSS]
+                    + args.mpy_cross_flags.split()
+                    + ['-o', outfile, '-s', script, '-O{}'.format(opt), infile]
+                )
                 if res != 0:
                     print('error compiling {}: {}'.format(infile, out))
                     raise SystemExit(1)
@@ -277,7 +303,16 @@ def main():
 
     # Freeze .mpy files
     if mpy_files:
-        res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+        res, output_mpy = system(
+            [
+                sys.executable,
+                MPY_TOOL,
+                '-f',
+                '-q',
+                args.build_dir + '/genhdr/qstrdefs.preprocessed.h',
+            ]
+            + mpy_files
+        )
         if res != 0:
             print('error freezing mpy {}:'.format(mpy_files))
             print(str(output_mpy, 'utf8'))
@@ -301,6 +336,7 @@ def main():
         f.write(output_str)
         f.write(b'//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n')
         f.write(output_mpy)
+
 
 if __name__ == '__main__':
     main()

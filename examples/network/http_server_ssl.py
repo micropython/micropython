@@ -1,4 +1,5 @@
 import ubinascii as binascii
+
 try:
     import usocket as socket
 except:
@@ -17,7 +18,8 @@ key = binascii.unhexlify(
     b'8f022100d598d870ffe4a34df8de57047a50b97b71f4d23e323f527837c9edae88c79483'
     b'02210098560c89a70385c36eb07fd7083235c4c1184e525d838aedf7128958bedfdbb102'
     b'2051c0dab7057a8176ca966f3feb81123d4974a733df0f958525f547dfd1c271f9022044'
-    b'6c2cafad455a671a8cf398e642e1be3b18a3d3aec2e67a9478f83c964c4f1f')
+    b'6c2cafad455a671a8cf398e642e1be3b18a3d3aec2e67a9478f83c964c4f1f'
+)
 cert = binascii.unhexlify(
     b'308201d53082017f020203e8300d06092a864886f70d01010505003075310b3009060355'
     b'0406130258583114301206035504080c0b54686550726f76696e63653110300e06035504'
@@ -32,7 +34,8 @@ cert = binascii.unhexlify(
     b'a1d4c056580d8ff1a639460f867013c8391cdc9f2e573b0f872d0203010001300d06092a'
     b'864886f70d0101050500034100b0513fe2829e9ecbe55b6dd14c0ede7502bde5d46153c8'
     b'e960ae3ebc247371b525caeb41bbcf34686015a44c50d226e66aef0a97a63874ca5944ef'
-    b'979b57f0b3')
+    b'979b57f0b3'
+)
 
 
 CONTENT = b"""\
@@ -40,6 +43,7 @@ HTTP/1.0 200 OK
 
 Hello #%d from MicroPython!
 """
+
 
 def main(use_stream=True):
     s = socket.socket()

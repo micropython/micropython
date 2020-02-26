@@ -57,8 +57,21 @@ RSTCHARS = ['=', '-', '~', '`', ':']
 SPLIT = '"""\n|categories: |description: |cause: |workaround: '
 TAB = '    '
 
-Output = namedtuple('output', ['name', 'class_', 'desc', 'cause', 'workaround', 'code',
-                               'output_cpy', 'output_upy', 'status'])
+Output = namedtuple(
+    'output',
+    [
+        'name',
+        'class_',
+        'desc',
+        'cause',
+        'workaround',
+        'code',
+        'output_cpy',
+        'output_upy',
+        'status',
+    ],
+)
+
 
 def readfiles():
     """ Reads test files """
@@ -70,8 +83,9 @@ def readfiles():
         text = open(TESTPATH + test, 'r').read()
 
         try:
-            class_, desc, cause, workaround, code = [x.rstrip() for x in \
-                                                    list(filter(None, re.split(SPLIT, text)))]
+            class_, desc, cause, workaround, code = [
+                x.rstrip() for x in list(filter(None, re.split(SPLIT, text)))
+            ]
             output = Output(test, class_, desc, cause, workaround, code, '', '', '')
             files.append(output)
         except IndexError:
@@ -79,12 +93,14 @@ def readfiles():
 
     return files
 
+
 def uimports(code):
     """ converts CPython module names into MicroPython equivalents """
     for uimport in UIMPORTLIST:
         uimport = bytes(uimport, 'utf8')
         code = code.replace(uimport, b'u' + uimport)
     return code
+
 
 def run_tests(tests):
     """ executes all tests """
@@ -94,10 +110,22 @@ def run_tests(tests):
             input_cpy = f.read()
         input_upy = uimports(input_cpy)
 
-        process = subprocess.Popen(CPYTHON3, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            CPYTHON3,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         output_cpy = [com.decode('utf8') for com in process.communicate(input_cpy)]
 
-        process = subprocess.Popen(MICROPYTHON, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            MICROPYTHON,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         output_upy = [com.decode('utf8') for com in process.communicate(input_upy)]
 
         if output_cpy[0] == output_upy[0] and output_cpy[1] == output_upy[1]:
@@ -106,12 +134,22 @@ def run_tests(tests):
         else:
             status = 'Unsupported'
 
-        output = Output(test.name, test.class_, test.desc, test.cause,
-                        test.workaround, test.code, output_cpy, output_upy, status)
+        output = Output(
+            test.name,
+            test.class_,
+            test.desc,
+            test.cause,
+            test.workaround,
+            test.code,
+            output_cpy,
+            output_upy,
+            status,
+        )
         results.append(output)
 
     results.sort(key=lambda x: x.class_)
     return results
+
 
 def indent(block, spaces):
     """ indents paragraphs of text for rst formatting """
@@ -119,6 +157,7 @@ def indent(block, spaces):
     for line in block.split('\n'):
         new_block += spaces + line + '\n'
     return new_block
+
 
 def gen_table(contents):
     """ creates a table given any set of columns """
@@ -141,7 +180,7 @@ def gen_table(contents):
     table = table_divider
     for i in range(len(ylengths)):
         row = [column[i] for column in contents]
-        row = [entry + '\n' * (ylengths[i]-len(entry.split('\n'))) for entry in row]
+        row = [entry + '\n' * (ylengths[i] - len(entry.split('\n'))) for entry in row]
         row = [entry.split('\n') for entry in row]
         for j in range(ylengths[i]):
             k = 0
@@ -152,6 +191,7 @@ def gen_table(contents):
             table += '|\n'
         table += table_divider
     return table + '\n'
+
 
 def gen_rst(results):
     """ creates restructured text documents to display tests """
@@ -178,11 +218,15 @@ def gen_rst(results):
                     rst.write(HEADER)
                     rst.write(section[i] + '\n')
                     rst.write(RSTCHARS[0] * len(section[i]))
-                    rst.write(time.strftime("\nGenerated %a %d %b %Y %X UTC\n\n", time.gmtime()))
+                    rst.write(
+                        time.strftime(
+                            "\nGenerated %a %d %b %Y %X UTC\n\n", time.gmtime()
+                        )
+                    )
                     toctree.append(filename)
                 else:
                     rst.write(section[i] + '\n')
-                    rst.write(RSTCHARS[min(i, len(RSTCHARS)-1)] * len(section[i]))
+                    rst.write(RSTCHARS[min(i, len(RSTCHARS) - 1)] * len(section[i]))
                     rst.write('\n\n')
         class_ = section
         rst.write('.. _cpydiff_%s:\n\n' % output.name.rsplit('.', 1)[0])
@@ -212,6 +256,7 @@ def gen_rst(results):
     for section in toctree:
         index.write(indent(section + '.rst', TAB))
 
+
 def main():
     """ Main function """
 
@@ -222,5 +267,6 @@ def main():
     files = readfiles()
     results = run_tests(files)
     gen_rst(results)
+
 
 main()
