@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2016-2017 Linaro Limited
+ * Copyright (c) 2020 NXP
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +34,7 @@
 #include <net/net_context.h>
 #endif
 
+#include "py/mperrno.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
@@ -44,6 +46,8 @@
 #if MICROPY_VFS
 #include "extmod/vfs.h"
 #endif
+
+#include "modzephyr.h"
 
 #ifdef TEST
 #include "lib/upytesthelper/upytesthelper.h"
@@ -81,6 +85,31 @@ void init_zephyr(void) {
     #endif
 }
 
+#if MICROPY_VFS
+STATIC void vfs_init(void) {
+    mp_obj_t bdev = NULL;
+    mp_obj_t mount_point;
+    const char *mount_point_str = NULL;
+    int ret = 0;
+
+    #ifdef CONFIG_DISK_ACCESS_SDHC
+    mp_obj_t args[] = { mp_obj_new_str(CONFIG_DISK_SDHC_VOLUME_NAME, strlen(CONFIG_DISK_SDHC_VOLUME_NAME)) };
+    bdev = zephyr_disk_access_type.make_new(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
+    mount_point_str = "/sd";
+    #elif defined(CONFIG_FLASH_MAP) && defined(DT_FLASH_AREA_STORAGE_ID)
+    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(DT_FLASH_AREA_STORAGE_ID), MP_OBJ_NEW_SMALL_INT(4096) };
+    bdev = zephyr_flash_area_type.make_new(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
+    mount_point_str = "/flash";
+    #endif
+
+    if ((bdev != NULL)) {
+        mount_point = mp_obj_new_str(mount_point_str, strlen(mount_point_str));
+        ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
+        // TODO: if this failed, make a new file system and try to mount again
+    }
+}
+#endif // MICROPY_VFS
+
 int real_main(void) {
     mp_stack_ctrl_init();
     // Make MicroPython's stack limit somewhat smaller than full stack available
@@ -103,6 +132,10 @@ soft_reset:
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if MICROPY_VFS
+    vfs_init();
+    #endif
 
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
