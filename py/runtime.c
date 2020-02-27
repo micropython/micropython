@@ -527,6 +527,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return res;
             }
+#endif
 #if MICROPY_PY_BUILTINS_COMPLEX
         } else if (mp_obj_is_type(rhs, &mp_type_complex)) {
             mp_obj_t res = mp_obj_complex_binary_op(op, lhs_val, 0, rhs);
@@ -535,7 +536,6 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             } else {
                 return res;
             }
-#endif
 #endif
         }
     }
