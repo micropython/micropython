@@ -284,14 +284,14 @@ much more efficient than expressing the same operation as a Python loop.
 .. method:: eig(m)
 
    :param m: a square matrix
-   :return tuple (eigenvectors, eigenvaues):
+   :return tuple (eigenvectors, eigenvalues):
 
    Computes the eigenvalues and eigenvectors of a square matrix
 
 
 .. method:: eye(size, \*, dtype=float)
 
-   :param int: size - The number of rows and colums in the matrix
+   :param int: size - The number of rows and columns in the matrix
 
    Returns a square matrix with all the diagonal elements set to 1 and all
    other elements set to 0
