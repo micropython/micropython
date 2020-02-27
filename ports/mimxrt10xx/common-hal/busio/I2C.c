@@ -34,10 +34,8 @@
 
 #include "fsl_lpi2c.h"
 
-//TODO
+#define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (1+CLOCK_GetDiv(kCLOCK_Lpi2cDiv)))
 
-#define I2C_CLOCK_SOURCE_DIVIDER (5U)
-#define I2C_CLOCK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllClk) / 8 / (I2C_CLOCK_SOURCE_DIVIDER + 1U))
 
 static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
