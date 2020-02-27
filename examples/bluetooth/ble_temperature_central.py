@@ -72,7 +72,7 @@ class BLETemperatureCentral:
             if connectable and _ENV_SENSE_UUID in decode_services(adv_data):
                 # Found a potential device, remember it and stop scanning.
                 self._addr_type = addr_type
-                self._addr = bytes(addr) # Note: The addr buffer is owned by modbluetooth, need to copy it.
+                self._addr = bytes(addr) # Note: addr buffer is owned by caller so need to copy it.
                 self._name = decode_name(adv_data) or '?'
                 self._ble.gap_scan(None)
 
