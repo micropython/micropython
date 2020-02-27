@@ -18,9 +18,28 @@ stages:
   - name: test
 
 # define the jobs for the stages
-# order of the jobs has longest running first to optimise total time
+# approx order of the jobs has longest running first to optimise total time
 jobs:
   include:
+    # check code formatting
+    - stage: test
+      os: linux
+      arch: arm64
+      dist: bionic
+      env: NAME="code formatting"
+      install:
+        - sudo apt-get install python3-pip
+        - sudo pip3 install black
+        - black --version
+      script:
+        - git clone https://github.com/uncrustify/uncrustify.git $HOME/uncrustify
+        - git -C $HOME/uncrustify checkout uncrustify-0.70.1
+        - mkdir -p $HOME/uncrustify/build
+        - (cd $HOME/uncrustify/build && cmake ..)
+        - make -C $HOME/uncrustify/build
+        - PATH=$HOME/uncrustify/build:$PATH tools/codeformat.py
+        - git diff --exit-code
+
     # stm32 port
     - stage: test
       env: NAME="stm32 port build"
