@@ -133,10 +133,11 @@ void *m_malloc0(size_t num_bytes) {
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
+void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes)
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes) {
+void *m_realloc(void *ptr, size_t new_num_bytes)
 #endif
+{
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL && new_num_bytes != 0) {
         m_malloc_fail(new_num_bytes);
@@ -161,10 +162,11 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move) {
+void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move)
 #else
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
+void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
 #endif
+{
     void *new_ptr = realloc_ext(ptr, new_num_bytes, allow_move);
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
@@ -189,10 +191,11 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void m_free(void *ptr, size_t num_bytes) {
+void m_free(void *ptr, size_t num_bytes)
 #else
-void m_free(void *ptr) {
+void m_free(void *ptr)
 #endif
+{
     free(ptr);
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(current_bytes_allocated) -= num_bytes;
