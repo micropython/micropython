@@ -384,8 +384,12 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             }
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
-        case MP_BLOCKDEV_IOCTL_DEINIT: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case MP_BLOCKDEV_IOCTL_SYNC: storage_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);                                             // TODO properly
+        case MP_BLOCKDEV_IOCTL_SYNC:
+            storage_flush();
+            return MP_OBJ_NEW_SMALL_INT(0);
 
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: {
             mp_int_t n;
@@ -423,7 +427,8 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
 
-        default: return mp_const_none;
+        default:
+            return mp_const_none;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
@@ -441,7 +446,7 @@ const mp_obj_type_t pyb_flash_type = {
     .name = MP_QSTR_Flash,
     .print = pyb_flash_print,
     .make_new = pyb_flash_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_flash_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_flash_locals_dict,
 };
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {

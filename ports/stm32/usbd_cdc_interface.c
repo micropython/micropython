@@ -62,7 +62,7 @@
 static uint8_t usbd_cdc_connect_tx_timer;
 
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
-    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
 
     // Reset the CDC state due to a new USB host connection
     // Note: we don't reset tx_buf_ptr_* in order to allow the output buffer to
@@ -86,7 +86,7 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
 }
 
 void usbd_cdc_deinit(usbd_cdc_state_t *cdc_in) {
-    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
     cdc->connect_state = USBD_CDC_CONNECT_STATE_DISCONNECTED;
 }
 
@@ -95,8 +95,8 @@ void usbd_cdc_deinit(usbd_cdc_state_t *cdc_in) {
 // pbuf: buffer containing command data (request parameters)
 // length: number of data to be sent (in bytes)
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
-    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t *pbuf, uint16_t length) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
 
     switch (cmd) {
         case CDC_SEND_ENCAPSULATED_COMMAND:
@@ -121,11 +121,11 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
 
         case CDC_SET_LINE_CODING:
             #if 0
-            LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
-                                    (pbuf[2] << 16) | (pbuf[3] << 24));
-            LineCoding.format     = pbuf[4];
+            LineCoding.bitrate = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | \
+                (pbuf[2] << 16) | (pbuf[3] << 24));
+            LineCoding.format = pbuf[4];
             LineCoding.paritytype = pbuf[5];
-            LineCoding.datatype   = pbuf[6];
+            LineCoding.datatype = pbuf[6];
             /* Set the new configuration */
             #endif
             break;
@@ -175,7 +175,7 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
 // (cdc.base.tx_in_progress must be 0)
 void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc_in) {
 
-    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
     cdc->tx_buf_ptr_out = cdc->tx_buf_ptr_out_shadow;
 
     if (cdc->tx_buf_ptr_out == cdc->tx_buf_ptr_in && !cdc->tx_need_empty_packet) {
@@ -224,14 +224,14 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     if (usbd_cdc_connect_tx_timer > 0) {
         --usbd_cdc_connect_tx_timer;
     } else {
-        usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
+        usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef *)hpcd->pData)->pClassData;
         #if !MICROPY_HW_USB_IS_MULTI_OTG
         USB->CNTR &= ~USB_CNTR_SOFM;
         #else
         hpcd->Instance->GINTMSK &= ~USB_OTG_GINTMSK_SOFM;
         #endif
         for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
-            usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc[i];
+            usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)usbd->cdc[i];
             if (cdc->connect_state == USBD_CDC_CONNECT_STATE_CONNECTING) {
                 cdc->connect_state = USBD_CDC_CONNECT_STATE_CONNECTED;
                 usbd_cdc_try_tx(cdc);
@@ -263,7 +263,7 @@ void usbd_cdc_rx_check_resume(usbd_cdc_itf_t *cdc) {
 // len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
 int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
-    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t *)cdc_in;
 
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
@@ -318,7 +318,7 @@ int usbd_cdc_tx(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len, uint32_t 
         // Wait until the device is connected and the buffer has space, with a given timeout
         uint32_t start = HAL_GetTick();
         while (cdc->connect_state == USBD_CDC_CONNECT_STATE_DISCONNECTED
-            || ((cdc->tx_buf_ptr_in + 1) & (USBD_CDC_TX_DATA_SIZE - 1)) == cdc->tx_buf_ptr_out) {
+               || ((cdc->tx_buf_ptr_in + 1) & (USBD_CDC_TX_DATA_SIZE - 1)) == cdc->tx_buf_ptr_out) {
             usbd_cdc_try_tx(cdc);
             // Wraparound of tick is taken care of by 2's complement arithmetic.
             if (HAL_GetTick() - start >= timeout) {

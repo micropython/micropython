@@ -301,11 +301,11 @@ struct _mp_bluetooth_nimble_root_pointers_t;
     mp_obj_list_t mod_network_nic_list; \
     \
     MICROPY_PORT_ROOT_POINTER_MBEDTLS \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
+        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((uint32_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((uint32_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 

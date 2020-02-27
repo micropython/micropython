@@ -153,7 +153,7 @@ STATIC void dac_set_value(uint32_t dac_channel, uint32_t align, uint32_t value) 
         base = (uint32_t)&DAC->DHR12R2;
     #endif
     }
-    *(volatile uint32_t*)(base + align) = value;
+    *(volatile uint32_t *)(base + align) = value;
 }
 
 STATIC void dac_start(uint32_t dac_channel) {
@@ -500,7 +500,7 @@ const mp_obj_type_t pyb_dac_type = {
     .name = MP_QSTR_DAC,
     .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_dac_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_dac_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_DAC

@@ -134,7 +134,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // Get static peripheral object
-    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t*)&machine_hw_i2c_obj[i2c_id];
+    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t *)&machine_hw_i2c_obj[i2c_id];
 
     bool first_init = false;
     if (self->base.type == NULL) {
@@ -175,5 +175,5 @@ STATIC const mp_obj_type_t machine_hw_i2c_type = {
     .print = machine_hw_i2c_print,
     .make_new = machine_hw_i2c_make_new,
     .protocol = &machine_hw_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };

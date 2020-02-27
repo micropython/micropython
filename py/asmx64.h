@@ -79,12 +79,12 @@ static inline void asm_x64_end_pass(asm_x64_t *as) {
     (void)as;
 }
 
-void asm_x64_nop(asm_x64_t* as);
-void asm_x64_push_r64(asm_x64_t* as, int src_r64);
-void asm_x64_pop_r64(asm_x64_t* as, int dest_r64);
-void asm_x64_mov_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
+void asm_x64_nop(asm_x64_t *as);
+void asm_x64_push_r64(asm_x64_t *as, int src_r64);
+void asm_x64_pop_r64(asm_x64_t *as, int dest_r64);
+void asm_x64_mov_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 size_t asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64);
-void asm_x64_mov_i64_to_r64(asm_x64_t* as, int64_t src_i64, int dest_r64);
+void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r64);
 void asm_x64_mov_r8_to_mem8(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
 void asm_x64_mov_r16_to_mem16(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp);
@@ -97,25 +97,25 @@ void asm_x64_mov_mem64_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest
 void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_or_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
-void asm_x64_shl_r64_cl(asm_x64_t* as, int dest_r64);
-void asm_x64_sar_r64_cl(asm_x64_t* as, int dest_r64);
-void asm_x64_add_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
-void asm_x64_sub_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
-void asm_x64_mul_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
-void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
-void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
+void asm_x64_shl_r64_cl(asm_x64_t *as, int dest_r64);
+void asm_x64_sar_r64_cl(asm_x64_t *as, int dest_r64);
+void asm_x64_add_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
+void asm_x64_sub_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
+void asm_x64_mul_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
+void asm_x64_cmp_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b);
+void asm_x64_test_r8_with_r8(asm_x64_t *as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r64_with_r64(asm_x64_t *as, int src_r64_a, int src_r64_b);
-void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
+void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8);
 void asm_x64_jmp_reg(asm_x64_t *as, int src_r64);
-void asm_x64_jmp_label(asm_x64_t* as, mp_uint_t label);
-void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, mp_uint_t label);
-void asm_x64_entry(asm_x64_t* as, int num_locals);
-void asm_x64_exit(asm_x64_t* as);
-void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
-void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
-void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
+void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label);
+void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label);
+void asm_x64_entry(asm_x64_t *as, int num_locals);
+void asm_x64_exit(asm_x64_t *as);
+void asm_x64_mov_local_to_r64(asm_x64_t *as, int src_local_num, int dest_r64);
+void asm_x64_mov_r64_to_local(asm_x64_t *as, int src_r64, int dest_local_num);
+void asm_x64_mov_local_addr_to_r64(asm_x64_t *as, int local_num, int dest_r64);
 void asm_x64_mov_reg_pcrel(asm_x64_t *as, int dest_r64, mp_uint_t label);
-void asm_x64_call_ind(asm_x64_t* as, size_t fun_id, int temp_r32);
+void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 
 // Holds a pointer to mp_fun_table
 #define ASM_X64_REG_FUN_TABLE ASM_X64_REG_RBP

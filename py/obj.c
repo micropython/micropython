@@ -77,11 +77,11 @@ const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
         return &mp_type_int;
     } else if (mp_obj_is_qstr(o_in)) {
         return &mp_type_str;
-    #if MICROPY_PY_BUILTINS_FLOAT && ( \
-        MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
+        #if MICROPY_PY_BUILTINS_FLOAT && ( \
+            MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D)
     } else if (mp_obj_is_float(o_in)) {
         return &mp_type_float;
-    #endif
+        #endif
     #if MICROPY_OBJ_IMMEDIATE_OBJS
     } else if (mp_obj_is_immediate_obj(o_in)) {
         static const mp_obj_type_t *const types[2] = {&mp_type_NoneType, &mp_type_bool};
@@ -102,15 +102,15 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
-#ifndef NDEBUG
+    #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
         return;
     }
-#endif
+    #endif
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
-        type->print((mp_print_t*)print, o_in, kind);
+        type->print((mp_print_t *)print, o_in, kind);
     } else {
         mp_printf(print, "<%q>", type->name);
     }
@@ -129,11 +129,11 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
             assert(n % 3 == 0);
             mp_print_str(print, "Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
-#if MICROPY_ENABLE_SOURCE_LINE
+                #if MICROPY_ENABLE_SOURCE_LINE
                 mp_printf(print, "  File \"%q\", line %d", values[i], (int)values[i + 1]);
-#else
+                #else
                 mp_printf(print, "  File \"%q\"", values[i]);
-#endif
+                #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTRnull) {
@@ -507,10 +507,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+        #if !MICROPY_PY_BUILTINS_STR_UNICODE
         // It's simple - unicode is slow, non-unicode is fast
         mp_obj_is_str(o_in) ||
-#endif
+        #endif
         mp_obj_is_type(o_in, &mp_type_bytes)) {
         GET_STR_LEN(o_in, l);
         return MP_OBJ_NEW_SMALL_INT(l);
@@ -589,7 +589,9 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
 
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     switch (op) {
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }

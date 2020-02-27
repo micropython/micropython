@@ -34,7 +34,7 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API(config) *c, int cmd, int arg, bool must_return_int) {
+STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
     int ret_i = 0;
     if (must_return_int || ret != mp_const_none) {
@@ -43,27 +43,27 @@ STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API(config) *c, int cmd, int
     return ret_i;
 }
 
-STATIC int MP_VFS_LFSx(dev_read)(const struct LFSx_API(config) *c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
+STATIC int MP_VFS_LFSx(dev_read)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_read_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API(config) *c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
+STATIC int MP_VFS_LFSx(dev_prog)(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, const void *buffer, LFSx_API(size_t) size) {
     return mp_vfs_blockdev_write_ext(c->context, block, off, size, buffer);
 }
 
-STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API(config) *c, LFSx_API(block_t) block) {
+STATIC int MP_VFS_LFSx(dev_erase)(const struct LFSx_API (config) * c, LFSx_API(block_t) block) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_BLOCK_ERASE, block, true);
 }
 
-STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API(config) *c) {
+STATIC int MP_VFS_LFSx(dev_sync)(const struct LFSx_API (config) * c) {
     return MP_VFS_LFSx(dev_ioctl)(c, MP_BLOCKDEV_IOCTL_SYNC, 0, false);
 }
 
-STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx *self, mp_obj_t bdev, size_t read_size, size_t prog_size, size_t lookahead) {
+STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size_t read_size, size_t prog_size, size_t lookahead) {
     self->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
     mp_vfs_blockdev_init(&self->blockdev, bdev);
 
-    struct LFSx_API(config) *config = &self->config;
+    struct LFSx_API (config) * config = &self->config;
     memset(config, 0, sizeof(*config));
 
     config->context = &self->blockdev;
@@ -98,7 +98,7 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx *self, mp_obj_t bdev, size_
     #endif
 }
 
-const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx *self, mp_obj_t path_in) {
+const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     if (path[0] != '/') {
         size_t l = vstr_len(&self->cur_dir);
@@ -111,7 +111,7 @@ const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx *self, mp_obj_t path_in) {
     return path;
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(lfs_make_allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
 
@@ -147,7 +147,7 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(MP_VFS_LFSx(mkfs_obj), MP_ROM_PTR(&MP_VF
 // Implementation of mp_vfs_lfs_file_open is provided in vfs_lfsx_file.c
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(open_obj), MP_VFS_LFSx(file_open));
 
-typedef struct MP_VFS_LFSx(_ilistdir_it_t) {
+typedef struct MP_VFS_LFSx (_ilistdir_it_t) {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     bool is_str;
@@ -156,9 +156,9 @@ typedef struct MP_VFS_LFSx(_ilistdir_it_t) {
 } MP_VFS_LFSx(ilistdir_it_t);
 
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
-    MP_VFS_LFSx(ilistdir_it_t) *self = MP_OBJ_TO_PTR(self_in);
+    MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
 
-    struct LFSx_API(info) info;
+    struct LFSx_API (info) info;
     for (;;) {
         int ret = LFSx_API(dir_read)(&self->vfs->lfs, &self->dir, &info);
         if (ret == 0) {
@@ -166,7 +166,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
             return MP_OBJ_STOP_ITERATION;
         }
         if (!(info.name[0] == '.' && (info.name[1] == '\0'
-            || (info.name[1] == '.' && info.name[2] == '\0')))) {
+                                      || (info.name[1] == '.' && info.name[2] == '\0')))) {
             break;
         }
     }
@@ -176,7 +176,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     if (self->is_str) {
         t->items[0] = mp_obj_new_str(info.name, strlen(info.name));
     } else {
-        t->items[0] = mp_obj_new_bytes((const byte*)info.name, strlen(info.name));
+        t->items[0] = mp_obj_new_bytes((const byte *)info.name, strlen(info.name));
     }
     t->items[1] = MP_OBJ_NEW_SMALL_INT(info.type == LFSx_MACRO(_TYPE_REG) ? MP_S_IFREG : MP_S_IFDIR);
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
@@ -198,7 +198,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
         path = vstr_null_terminated_str(&self->cur_dir);
     }
 
-    MP_VFS_LFSx(ilistdir_it_t) *iter = m_new_obj(MP_VFS_LFSx(ilistdir_it_t));
+    MP_VFS_LFSx(ilistdir_it_t) * iter = m_new_obj(MP_VFS_LFSx(ilistdir_it_t));
     iter->base.type = &mp_type_polymorph_iter;
     iter->iternext = MP_VFS_LFSx(ilistdir_it_iternext);
     iter->is_str = is_str_type;
@@ -267,7 +267,7 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     if (path[1] != '\0') {
         // Not at root, check it exists
-        struct LFSx_API(info) info;
+        struct LFSx_API (info) info;
         int ret = LFSx_API(stat)(&self->lfs, path, &info);
         if (ret < 0 || info.type != LFSx_MACRO(_TYPE_DIR)) {
             mp_raise_OSError(-MP_ENOENT);
@@ -305,7 +305,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(getcwd_obj), MP_VFS_LFSx(getcwd));
 STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path = mp_obj_str_get_str(path_in);
-    struct LFSx_API(info) info;
+    struct LFSx_API (info) info;
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -329,7 +329,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(stat_obj), MP_VFS_LFSx(stat));
 
 STATIC int LFSx_API(traverse_cb)(void *data, LFSx_API(block_t) bl) {
     (void)bl;
-    uint32_t *n = (uint32_t*)data;
+    uint32_t *n = (uint32_t *)data;
     *n += 1;
     return LFSx_MACRO(_ERR_OK);
 }
@@ -399,7 +399,7 @@ STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_ta
 
 STATIC mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path) {
     MP_OBJ_VFS_LFSx *self = self_in;
-    struct LFSx_API(info) info;
+    struct LFSx_API (info) info;
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret == 0) {
         if (info.type == LFSx_MACRO(_TYPE_REG)) {
@@ -424,5 +424,5 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     #endif
     .make_new = MP_VFS_LFSx(make_new),
     .protocol = &MP_VFS_LFSx(proto),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
 };

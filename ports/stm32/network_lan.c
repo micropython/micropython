@@ -50,7 +50,7 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         netif->ip_addr.addr >> 8 & 0xff,
         netif->ip_addr.addr >> 16 & 0xff,
         netif->ip_addr.addr >> 24
-    );
+        );
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -159,7 +159,7 @@ const mp_obj_type_t network_lan_type = {
     .name = MP_QSTR_LAN,
     .print = network_lan_print,
     .make_new = network_lan_make_new,
-    .locals_dict = (mp_obj_dict_t*)&network_lan_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&network_lan_locals_dict,
 };
 
 #endif // defined(MICROPY_HW_ETH_MDC)

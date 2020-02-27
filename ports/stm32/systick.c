@@ -154,7 +154,7 @@ mp_uint_t mp_hal_ticks_us(void) {
     mp_uint_t irq_state = disable_irq();
     uint32_t counter = SysTick->VAL;
     uint32_t milliseconds = HAL_GetTick();
-    uint32_t status  = SysTick->CTRL;
+    uint32_t status = SysTick->CTRL;
     enable_irq(irq_state);
 
     // It's still possible for the countflag bit to get set if the counter was

@@ -25,6 +25,7 @@ import os
 def module_name(f):
     return f
 
+
 modules = []
 
 if len(sys.argv) > 1:
@@ -35,7 +36,7 @@ if len(sys.argv) > 1:
         for f in filenames:
             fullpath = dirpath + "/" + f
             st = os.stat(fullpath)
-            modules.append((fullpath[root_len + 1:], st))
+            modules.append((fullpath[root_len + 1 :], st))
 
 print("#include <stdint.h>")
 print("const char mp_frozen_str_names[] = {")
@@ -62,8 +63,8 @@ for f, st in modules:
     # data.  We could just encode all characters as hex digits but it's nice
     # to be able to read the resulting C code as ASCII when possible.
 
-    data = bytearray(data) # so Python2 extracts each byte as an integer
-    esc_dict = {ord('\n'): '\\n', ord('\r'): '\\r', ord('"'): '\\"', ord('\\'): '\\\\'}
+    data = bytearray(data)  # so Python2 extracts each byte as an integer
+    esc_dict = {ord("\n"): "\\n", ord("\r"): "\\r", ord('"'): '\\"', ord("\\"): "\\\\"}
     chrs = ['"']
     break_str = False
     for c in data:
@@ -76,9 +77,9 @@ for f, st in modules:
                     break_str = False
                 chrs.append(chr(c))
             else:
-                chrs.append('\\x%02x' % c)
+                chrs.append("\\x%02x" % c)
                 break_str = True
     chrs.append('\\0"')
-    print(''.join(chrs))
+    print("".join(chrs))
 
 print("};")

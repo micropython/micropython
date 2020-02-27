@@ -128,5 +128,5 @@ const mp_obj_type_t machine_timer_type = {
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_timer_locals_dict,
 };

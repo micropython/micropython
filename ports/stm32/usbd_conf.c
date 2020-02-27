@@ -363,7 +363,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const uint8_t *fifo_size) {
     #if MICROPY_HW_USB_FS
-    if (pdev->id ==  USB_PHY_FS_ID) {
+    if (pdev->id == USB_PHY_FS_ID) {
         #if defined(STM32WB)
         PWR->CR2 |= PWR_CR2_USV; // USB supply is valid
         #endif
@@ -631,7 +631,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   * @param  ep_addr: Endpoint Number
   * @retval Recived Data Size
   */
-uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr) {
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr) {
     return HAL_PCD_EP_GetRxCount(pdev->pData, ep_addr);
 }
 

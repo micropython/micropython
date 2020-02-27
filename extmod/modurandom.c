@@ -41,15 +41,14 @@ STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
 #endif
 
-STATIC uint32_t yasmarang(void)
-{
-   yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
-   yasmarang_pad = (yasmarang_pad<<3) + (yasmarang_pad>>29);
-   yasmarang_n = yasmarang_pad | 2;
-   yasmarang_d ^= (yasmarang_pad<<31) + (yasmarang_pad>>1);
-   yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d>>8) ^ 1;
+STATIC uint32_t yasmarang(void) {
+    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
+    yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
+    yasmarang_n = yasmarang_pad | 2;
+    yasmarang_d ^= (yasmarang_pad << 31) + (yasmarang_pad >> 1);
+    yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
 
-   return (yasmarang_pad^(yasmarang_d<<5)^(yasmarang_pad>>18)^(yasmarang_dat<<1));
+    return yasmarang_pad ^ (yasmarang_d << 5) ^ (yasmarang_pad >> 18) ^ (yasmarang_dat << 1);
 }  /* yasmarang */
 
 // End of Yasmarang
@@ -221,7 +220,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_urandom_globals, mp_module_urandom_globals
 
 const mp_obj_module_t mp_module_urandom = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_urandom_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 #endif
 

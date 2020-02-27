@@ -43,14 +43,14 @@ STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
-#include "genhdr/modstm_const.h"
+    #include "genhdr/modstm_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&stm_module_globals,
+    .globals = (mp_obj_dict_t *)&stm_module_globals,
 };
 
 #endif // MICROPY_PY_STM

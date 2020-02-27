@@ -49,8 +49,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 extern k_tid_t const _main_thread;
 extern k_tid_t const _idle_thread;
 
-static void thread_stack_dump(const struct k_thread *thread, void *user_data)
-{
+static void thread_stack_dump(const struct k_thread *thread, void *user_data) {
     const char *th_name = k_thread_name_get((k_tid_t)thread);
 
     if (th_name == NULL) {
@@ -59,7 +58,7 @@ static void thread_stack_dump(const struct k_thread *thread, void *user_data)
         th_name = tid;
     }
 
-    stack_analyze(th_name, (char*)thread->stack_info.start, thread->stack_info.size);
+    stack_analyze(th_name, (char *)thread->stack_info.start, thread->stack_info.size);
 }
 
 STATIC mp_obj_t mod_stacks_analyze(void) {
@@ -104,7 +103,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_zephyr = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_ZEPHYR

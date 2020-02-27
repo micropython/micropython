@@ -125,7 +125,7 @@ void servo_timer_irq_callback(void) {
 
 STATIC void servo_init_channel(pyb_servo_obj_t *s) {
     static const uint8_t channel_table[4] =
-        {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
+    {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
     uint32_t channel = channel_table[s->pin->pin];
 
     // GPIO configuration
@@ -153,13 +153,25 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
 STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     int p = mp_obj_get_int(port);
     int v = mp_obj_get_int(value);
-    if (v < 50) { v = 50; }
-    if (v > 250) { v = 250; }
+    if (v < 50) {
+        v = 50;
+    }
+    if (v > 250) {
+        v = 250;
+    }
     switch (p) {
-        case 1: TIM5->CCR1 = v; break;
-        case 2: TIM5->CCR2 = v; break;
-        case 3: TIM5->CCR3 = v; break;
-        case 4: TIM5->CCR4 = v; break;
+        case 1:
+            TIM5->CCR1 = v;
+            break;
+        case 2:
+            TIM5->CCR2 = v;
+            break;
+        case 3:
+            TIM5->CCR3 = v;
+            break;
+        case 4:
+            TIM5->CCR4 = v;
+            break;
     }
     return mp_const_none;
 }
@@ -265,11 +277,11 @@ STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
         // get angle
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 90 / self->pulse_angle_90);
     } else {
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_float(args[1]) / 90.0;
-#else
+        #else
         self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_int(args[1]) / 90;
-#endif
+        #endif
         if (n_args == 2) {
             // set angle immediately
             self->time_left = 0;
@@ -295,11 +307,11 @@ STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
         // get speed
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 100 / self->pulse_speed_100);
     } else {
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_float(args[1]) / 100.0;
-#else
+        #else
         self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_int(args[1]) / 100;
-#endif
+        #endif
         if (n_args == 2) {
             // set speed immediately
             self->time_left = 0;
@@ -329,7 +341,7 @@ const mp_obj_type_t pyb_servo_type = {
     .name = MP_QSTR_Servo,
     .print = pyb_servo_print,
     .make_new = pyb_servo_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_servo_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_servo_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_SERVO

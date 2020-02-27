@@ -1,4 +1,5 @@
 import sys
+
 try:
     import ubinascii as binascii
 except:
@@ -10,10 +11,11 @@ except:
 
 DEBUG = 0
 
+
 def server_handshake(sock):
     clr = sock.makefile("rwb", 0)
     l = clr.readline()
-    #sys.stdout.write(repr(l))
+    # sys.stdout.write(repr(l))
 
     webkey = None
 
@@ -23,11 +25,11 @@ def server_handshake(sock):
             raise OSError("EOF in headers")
         if l == b"\r\n":
             break
-    #    sys.stdout.write(l)
+        #    sys.stdout.write(l)
         h, v = [x.strip() for x in l.split(b":", 1)]
         if DEBUG:
             print((h, v))
-        if h == b'Sec-WebSocket-Key':
+        if h == b"Sec-WebSocket-Key":
             webkey = v
 
     if not webkey:
@@ -43,11 +45,13 @@ def server_handshake(sock):
     if DEBUG:
         print("respkey:", respkey)
 
-    sock.send(b"""\
+    sock.send(
+        b"""\
 HTTP/1.1 101 Switching Protocols\r
 Upgrade: websocket\r
 Connection: Upgrade\r
-Sec-WebSocket-Accept: """)
+Sec-WebSocket-Accept: """
+    )
     sock.send(respkey)
     sock.send("\r\n\r\n")
 
@@ -57,18 +61,22 @@ Sec-WebSocket-Accept: """)
 # servers.
 def client_handshake(sock):
     cl = sock.makefile("rwb", 0)
-    cl.write(b"""\
+    cl.write(
+        b"""\
 GET / HTTP/1.1\r
 Host: echo.websocket.org\r
 Connection: Upgrade\r
 Upgrade: websocket\r
 Sec-WebSocket-Key: foo\r
 \r
-""")
+"""
+    )
     l = cl.readline()
-#    print(l)
+    #    print(l)
     while 1:
         l = cl.readline()
         if l == b"\r\n":
             break
+
+
 #        sys.stdout.write(l)

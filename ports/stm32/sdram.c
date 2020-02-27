@@ -50,7 +50,7 @@
 #ifdef FMC_SDRAM_BANK
 
 static void sdram_init_seq(SDRAM_HandleTypeDef
-        *hsdram, FMC_SDRAM_CommandTypeDef *command);
+    *hsdram, FMC_SDRAM_CommandTypeDef *command);
 extern void __fatal_error(const char *msg);
 
 bool sdram_init(void) {
@@ -135,36 +135,36 @@ bool sdram_init(void) {
     hsdram.Instance = FMC_SDRAM_DEVICE;
     /* Timing configuration for 90 Mhz of SD clock frequency (180Mhz/2) */
     /* TMRD: 2 Clock cycles */
-    SDRAM_Timing.LoadToActiveDelay    = MICROPY_HW_SDRAM_TIMING_TMRD;
+    SDRAM_Timing.LoadToActiveDelay = MICROPY_HW_SDRAM_TIMING_TMRD;
     /* TXSR: min=70ns (6x11.90ns) */
     SDRAM_Timing.ExitSelfRefreshDelay = MICROPY_HW_SDRAM_TIMING_TXSR;
     /* TRAS */
-    SDRAM_Timing.SelfRefreshTime      = MICROPY_HW_SDRAM_TIMING_TRAS;
+    SDRAM_Timing.SelfRefreshTime = MICROPY_HW_SDRAM_TIMING_TRAS;
     /* TRC */
-    SDRAM_Timing.RowCycleDelay        = MICROPY_HW_SDRAM_TIMING_TRC;
+    SDRAM_Timing.RowCycleDelay = MICROPY_HW_SDRAM_TIMING_TRC;
     /* TWR */
-    SDRAM_Timing.WriteRecoveryTime    = MICROPY_HW_SDRAM_TIMING_TWR;
+    SDRAM_Timing.WriteRecoveryTime = MICROPY_HW_SDRAM_TIMING_TWR;
     /* TRP */
-    SDRAM_Timing.RPDelay              = MICROPY_HW_SDRAM_TIMING_TRP;
+    SDRAM_Timing.RPDelay = MICROPY_HW_SDRAM_TIMING_TRP;
     /* TRCD */
-    SDRAM_Timing.RCDDelay             = MICROPY_HW_SDRAM_TIMING_TRCD;
+    SDRAM_Timing.RCDDelay = MICROPY_HW_SDRAM_TIMING_TRCD;
 
-    #define _FMC_INIT(x, n) x ## _ ## n
+    #define _FMC_INIT(x, n) x##_##n
     #define FMC_INIT(x, n) _FMC_INIT(x,  n)
 
-    hsdram.Init.SDBank             = FMC_SDRAM_BANK;
-    hsdram.Init.ColumnBitsNumber   = FMC_INIT(FMC_SDRAM_COLUMN_BITS_NUM, MICROPY_HW_SDRAM_COLUMN_BITS_NUM);
-    hsdram.Init.RowBitsNumber      = FMC_INIT(FMC_SDRAM_ROW_BITS_NUM, MICROPY_HW_SDRAM_ROW_BITS_NUM);
-    hsdram.Init.MemoryDataWidth    = FMC_INIT(FMC_SDRAM_MEM_BUS_WIDTH, MICROPY_HW_SDRAM_MEM_BUS_WIDTH);
+    hsdram.Init.SDBank = FMC_SDRAM_BANK;
+    hsdram.Init.ColumnBitsNumber = FMC_INIT(FMC_SDRAM_COLUMN_BITS_NUM, MICROPY_HW_SDRAM_COLUMN_BITS_NUM);
+    hsdram.Init.RowBitsNumber = FMC_INIT(FMC_SDRAM_ROW_BITS_NUM, MICROPY_HW_SDRAM_ROW_BITS_NUM);
+    hsdram.Init.MemoryDataWidth = FMC_INIT(FMC_SDRAM_MEM_BUS_WIDTH, MICROPY_HW_SDRAM_MEM_BUS_WIDTH);
     hsdram.Init.InternalBankNumber = FMC_INIT(FMC_SDRAM_INTERN_BANKS_NUM, MICROPY_HW_SDRAM_INTERN_BANKS_NUM);
-    hsdram.Init.CASLatency         = FMC_INIT(FMC_SDRAM_CAS_LATENCY, MICROPY_HW_SDRAM_CAS_LATENCY);
-    hsdram.Init.SDClockPeriod      = FMC_INIT(FMC_SDRAM_CLOCK_PERIOD, MICROPY_HW_SDRAM_CLOCK_PERIOD);
-    hsdram.Init.ReadPipeDelay      = FMC_INIT(FMC_SDRAM_RPIPE_DELAY, MICROPY_HW_SDRAM_RPIPE_DELAY);
-    hsdram.Init.ReadBurst          = (MICROPY_HW_SDRAM_RBURST) ? FMC_SDRAM_RBURST_ENABLE : FMC_SDRAM_RBURST_DISABLE;
-    hsdram.Init.WriteProtection    = (MICROPY_HW_SDRAM_WRITE_PROTECTION) ? FMC_SDRAM_WRITE_PROTECTION_ENABLE : FMC_SDRAM_WRITE_PROTECTION_DISABLE;
+    hsdram.Init.CASLatency = FMC_INIT(FMC_SDRAM_CAS_LATENCY, MICROPY_HW_SDRAM_CAS_LATENCY);
+    hsdram.Init.SDClockPeriod = FMC_INIT(FMC_SDRAM_CLOCK_PERIOD, MICROPY_HW_SDRAM_CLOCK_PERIOD);
+    hsdram.Init.ReadPipeDelay = FMC_INIT(FMC_SDRAM_RPIPE_DELAY, MICROPY_HW_SDRAM_RPIPE_DELAY);
+    hsdram.Init.ReadBurst = (MICROPY_HW_SDRAM_RBURST) ? FMC_SDRAM_RBURST_ENABLE : FMC_SDRAM_RBURST_DISABLE;
+    hsdram.Init.WriteProtection = (MICROPY_HW_SDRAM_WRITE_PROTECTION) ? FMC_SDRAM_WRITE_PROTECTION_ENABLE : FMC_SDRAM_WRITE_PROTECTION_DISABLE;
 
     /* Initialize the SDRAM controller */
-    if(HAL_SDRAM_Init(&hsdram, &SDRAM_Timing) != HAL_OK) {
+    if (HAL_SDRAM_Init(&hsdram, &SDRAM_Timing) != HAL_OK) {
         return false;
     }
 
@@ -173,23 +173,22 @@ bool sdram_init(void) {
 }
 
 void *sdram_start(void) {
-    return (void*)SDRAM_START_ADDRESS;
+    return (void *)SDRAM_START_ADDRESS;
 }
 
 void *sdram_end(void) {
-    return (void*)(SDRAM_START_ADDRESS + MICROPY_HW_SDRAM_SIZE);
+    return (void *)(SDRAM_START_ADDRESS + MICROPY_HW_SDRAM_SIZE);
 }
 
 static void sdram_init_seq(SDRAM_HandleTypeDef
-        *hsdram, FMC_SDRAM_CommandTypeDef *command)
-{
+    *hsdram, FMC_SDRAM_CommandTypeDef *command) {
     /* Program the SDRAM external device */
-    __IO uint32_t tmpmrd =0;
+    __IO uint32_t tmpmrd = 0;
 
     /* Step 3:  Configure a clock configuration enable command */
-    command->CommandMode           = FMC_SDRAM_CMD_CLK_ENABLE;
-    command->CommandTarget         = FMC_SDRAM_CMD_TARGET_BANK;
-    command->AutoRefreshNumber     = 1;
+    command->CommandMode = FMC_SDRAM_CMD_CLK_ENABLE;
+    command->CommandTarget = FMC_SDRAM_CMD_TARGET_BANK;
+    command->AutoRefreshNumber = 1;
     command->ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -199,18 +198,18 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     HAL_Delay(100);
 
     /* Step 5: Configure a PALL (precharge all) command */
-    command->CommandMode           = FMC_SDRAM_CMD_PALL;
-    command->CommandTarget         = FMC_SDRAM_CMD_TARGET_BANK;
-    command->AutoRefreshNumber     = 1;
+    command->CommandMode = FMC_SDRAM_CMD_PALL;
+    command->CommandTarget = FMC_SDRAM_CMD_TARGET_BANK;
+    command->AutoRefreshNumber = 1;
     command->ModeRegisterDefinition = 0;
 
     /* Send the command */
     HAL_SDRAM_SendCommand(hsdram, command, 0x1000);
 
     /* Step 6 : Configure a Auto-Refresh command */
-    command->CommandMode           = FMC_SDRAM_CMD_AUTOREFRESH_MODE;
-    command->CommandTarget         = FMC_SDRAM_CMD_TARGET_BANK;
-    command->AutoRefreshNumber     = MICROPY_HW_SDRAM_AUTOREFRESH_NUM;
+    command->CommandMode = FMC_SDRAM_CMD_AUTOREFRESH_MODE;
+    command->CommandTarget = FMC_SDRAM_CMD_TARGET_BANK;
+    command->AutoRefreshNumber = MICROPY_HW_SDRAM_AUTOREFRESH_NUM;
     command->ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -218,14 +217,14 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
 
     /* Step 7: Program the external memory mode register */
     tmpmrd = (uint32_t)FMC_INIT(SDRAM_MODEREG_BURST_LENGTH, MICROPY_HW_SDRAM_BURST_LENGTH) |
-        SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL   |
+        SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL |
         FMC_INIT(SDRAM_MODEREG_CAS_LATENCY, MICROPY_HW_SDRAM_CAS_LATENCY) |
         SDRAM_MODEREG_OPERATING_MODE_STANDARD |
         SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
 
-    command->CommandMode           = FMC_SDRAM_CMD_LOAD_MODE;
-    command->CommandTarget         = FMC_SDRAM_CMD_TARGET_BANK;
-    command->AutoRefreshNumber     = 1;
+    command->CommandMode = FMC_SDRAM_CMD_LOAD_MODE;
+    command->CommandTarget = FMC_SDRAM_CMD_TARGET_BANK;
+    command->AutoRefreshNumber = 1;
     command->ModeRegisterDefinition = tmpmrd;
 
     /* Send the command */
@@ -258,7 +257,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
 bool sdram_test(bool fast) {
     uint8_t const pattern = 0xaa;
     uint8_t const antipattern = 0x55;
-    uint8_t *const mem_base = (uint8_t*)sdram_start();
+    uint8_t *const mem_base = (uint8_t *)sdram_start();
 
     /* test data bus */
     for (uint8_t i = 1; i; i <<= 1) {

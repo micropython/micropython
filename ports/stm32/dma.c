@@ -96,22 +96,22 @@ struct _dma_descr_t {
 // vary depending on the peripheral instance so they get passed separately
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
-    .Channel             = 0,
+    .Channel = 0,
     #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
-    .Request             = 0,
+    .Request = 0,
     #endif
-    .Direction           = 0,
-    .PeriphInc           = DMA_PINC_DISABLE,
-    .MemInc              = DMA_MINC_ENABLE,
+    .Direction = 0,
+    .PeriphInc = DMA_PINC_DISABLE,
+    .MemInc = DMA_MINC_ENABLE,
     .PeriphDataAlignment = DMA_PDATAALIGN_BYTE,
-    .MemDataAlignment    = DMA_MDATAALIGN_BYTE,
-    .Mode                = DMA_NORMAL,
-    .Priority            = DMA_PRIORITY_LOW,
+    .MemDataAlignment = DMA_MDATAALIGN_BYTE,
+    .Mode = DMA_NORMAL,
+    .Priority = DMA_PRIORITY_LOW,
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
-    .FIFOMode            = DMA_FIFOMODE_DISABLE,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
-    .MemBurst            = DMA_MBURST_INC4,
-    .PeriphBurst         = DMA_PBURST_INC4
+    .FIFOMode = DMA_FIFOMODE_DISABLE,
+    .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst = DMA_MBURST_INC4,
+    .PeriphBurst = DMA_PBURST_INC4
     #endif
 };
 
@@ -119,26 +119,26 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
-    .Channel             = 0,
+    .Channel = 0,
     #elif defined(STM32L0) || defined(STM32L4)
-    .Request             = 0,
+    .Request = 0,
     #endif
-    .Direction           = 0,
-    .PeriphInc           = DMA_PINC_DISABLE,
-    .MemInc              = DMA_MINC_ENABLE,
+    .Direction = 0,
+    .PeriphInc = DMA_PINC_DISABLE,
+    .MemInc = DMA_MINC_ENABLE,
     .PeriphDataAlignment = DMA_PDATAALIGN_WORD,
-    .MemDataAlignment    = DMA_MDATAALIGN_WORD,
+    .MemDataAlignment = DMA_MDATAALIGN_WORD,
     #if defined(STM32F4) || defined(STM32F7)
-    .Mode                = DMA_PFCTRL,
+    .Mode = DMA_PFCTRL,
     #elif defined(STM32L0) || defined(STM32L4)
-    .Mode                = DMA_NORMAL,
+    .Mode = DMA_NORMAL,
     #endif
-    .Priority            = DMA_PRIORITY_VERY_HIGH,
+    .Priority = DMA_PRIORITY_VERY_HIGH,
     #if defined(STM32F4) || defined(STM32F7)
-    .FIFOMode            = DMA_FIFOMODE_ENABLE,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
-    .MemBurst            = DMA_MBURST_INC4,
-    .PeriphBurst         = DMA_PBURST_INC4,
+    .FIFOMode = DMA_FIFOMODE_ENABLE,
+    .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst = DMA_MBURST_INC4,
+    .PeriphBurst = DMA_PBURST_INC4,
     #endif
 };
 #endif
@@ -147,22 +147,22 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 // Default parameters to dma_init() for DAC tx
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
-    .Channel             = 0,
+    .Channel = 0,
     #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
-    .Request             = 0,
+    .Request = 0,
     #endif
-    .Direction           = 0,
-    .PeriphInc           = DMA_PINC_DISABLE,
-    .MemInc              = DMA_MINC_ENABLE,
+    .Direction = 0,
+    .PeriphInc = DMA_PINC_DISABLE,
+    .MemInc = DMA_MINC_ENABLE,
     .PeriphDataAlignment = DMA_PDATAALIGN_BYTE,
-    .MemDataAlignment    = DMA_MDATAALIGN_BYTE,
-    .Mode                = DMA_NORMAL,
-    .Priority            = DMA_PRIORITY_HIGH,
+    .MemDataAlignment = DMA_MDATAALIGN_BYTE,
+    .Mode = DMA_NORMAL,
+    .Priority = DMA_PRIORITY_HIGH,
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
-    .FIFOMode            = DMA_FIFOMODE_DISABLE,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_HALFFULL,
-    .MemBurst            = DMA_MBURST_SINGLE,
-    .PeriphBurst         = DMA_PBURST_SINGLE,
+    .FIFOMode = DMA_FIFOMODE_DISABLE,
+    .FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL,
+    .MemBurst = DMA_MBURST_SINGLE,
+    .PeriphBurst = DMA_PBURST_SINGLE,
     #endif
 };
 #endif
@@ -170,21 +170,21 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
 #if MICROPY_HW_ENABLE_DCMI
 static const DMA_InitTypeDef dma_init_struct_dcmi = {
     #if defined(STM32H7)
-    .Request             = DMA_REQUEST_DCMI,
+    .Request = DMA_REQUEST_DCMI,
     #else
-    .Channel             = DMA_CHANNEL_1,
+    .Channel = DMA_CHANNEL_1,
     #endif
-    .Direction           = DMA_PERIPH_TO_MEMORY,
-    .PeriphInc           = DMA_PINC_DISABLE,
-    .MemInc              = DMA_MINC_ENABLE,
+    .Direction = DMA_PERIPH_TO_MEMORY,
+    .PeriphInc = DMA_PINC_DISABLE,
+    .MemInc = DMA_MINC_ENABLE,
     .PeriphDataAlignment = DMA_PDATAALIGN_WORD,
-    .MemDataAlignment    = DMA_MDATAALIGN_WORD,
-    .Mode                = DMA_NORMAL,
-    .Priority            = DMA_PRIORITY_HIGH,
-    .FIFOMode            = DMA_FIFOMODE_ENABLE,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
-    .MemBurst            = DMA_MBURST_INC4,
-    .PeriphBurst         = DMA_PBURST_SINGLE
+    .MemDataAlignment = DMA_MDATAALIGN_WORD,
+    .Mode = DMA_NORMAL,
+    .Priority = DMA_PRIORITY_HIGH,
+    .FIFOMode = DMA_FIFOMODE_ENABLE,
+    .FIFOThreshold = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst = DMA_MBURST_INC4,
+    .PeriphBurst = DMA_PBURST_SINGLE
 };
 #endif
 
@@ -566,22 +566,118 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void) {
 
 #elif defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
-void DMA1_Stream0_IRQHandler(void) { IRQ_ENTER(DMA1_Stream0_IRQn); if (dma_handle[dma_id_0] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_0]); } IRQ_EXIT(DMA1_Stream0_IRQn); }
-void DMA1_Stream1_IRQHandler(void) { IRQ_ENTER(DMA1_Stream1_IRQn); if (dma_handle[dma_id_1] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_1]); } IRQ_EXIT(DMA1_Stream1_IRQn); }
-void DMA1_Stream2_IRQHandler(void) { IRQ_ENTER(DMA1_Stream2_IRQn); if (dma_handle[dma_id_2] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_2]); } IRQ_EXIT(DMA1_Stream2_IRQn); }
-void DMA1_Stream3_IRQHandler(void) { IRQ_ENTER(DMA1_Stream3_IRQn); if (dma_handle[dma_id_3] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_3]); } IRQ_EXIT(DMA1_Stream3_IRQn); }
-void DMA1_Stream4_IRQHandler(void) { IRQ_ENTER(DMA1_Stream4_IRQn); if (dma_handle[dma_id_4] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_4]); } IRQ_EXIT(DMA1_Stream4_IRQn); }
-void DMA1_Stream5_IRQHandler(void) { IRQ_ENTER(DMA1_Stream5_IRQn); if (dma_handle[dma_id_5] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_5]); } IRQ_EXIT(DMA1_Stream5_IRQn); }
-void DMA1_Stream6_IRQHandler(void) { IRQ_ENTER(DMA1_Stream6_IRQn); if (dma_handle[dma_id_6] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_6]); } IRQ_EXIT(DMA1_Stream6_IRQn); }
-void DMA1_Stream7_IRQHandler(void) { IRQ_ENTER(DMA1_Stream7_IRQn); if (dma_handle[dma_id_7] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_7]); } IRQ_EXIT(DMA1_Stream7_IRQn); }
-void DMA2_Stream0_IRQHandler(void) { IRQ_ENTER(DMA2_Stream0_IRQn); if (dma_handle[dma_id_8] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_8]); } IRQ_EXIT(DMA2_Stream0_IRQn); }
-void DMA2_Stream1_IRQHandler(void) { IRQ_ENTER(DMA2_Stream1_IRQn); if (dma_handle[dma_id_9] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_9]); } IRQ_EXIT(DMA2_Stream1_IRQn); }
-void DMA2_Stream2_IRQHandler(void) { IRQ_ENTER(DMA2_Stream2_IRQn); if (dma_handle[dma_id_10] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_10]); } IRQ_EXIT(DMA2_Stream2_IRQn); }
-void DMA2_Stream3_IRQHandler(void) { IRQ_ENTER(DMA2_Stream3_IRQn); if (dma_handle[dma_id_11] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_11]); } IRQ_EXIT(DMA2_Stream3_IRQn); }
-void DMA2_Stream4_IRQHandler(void) { IRQ_ENTER(DMA2_Stream4_IRQn); if (dma_handle[dma_id_12] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_12]); } IRQ_EXIT(DMA2_Stream4_IRQn); }
-void DMA2_Stream5_IRQHandler(void) { IRQ_ENTER(DMA2_Stream5_IRQn); if (dma_handle[dma_id_13] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_13]); } IRQ_EXIT(DMA2_Stream5_IRQn); }
-void DMA2_Stream6_IRQHandler(void) { IRQ_ENTER(DMA2_Stream6_IRQn); if (dma_handle[dma_id_14] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_14]); } IRQ_EXIT(DMA2_Stream6_IRQn); }
-void DMA2_Stream7_IRQHandler(void) { IRQ_ENTER(DMA2_Stream7_IRQn); if (dma_handle[dma_id_15] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_15]); } IRQ_EXIT(DMA2_Stream7_IRQn); }
+void DMA1_Stream0_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream0_IRQn);
+    if (dma_handle[dma_id_0] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_0]);
+    }
+    IRQ_EXIT(DMA1_Stream0_IRQn);
+}
+void DMA1_Stream1_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream1_IRQn);
+    if (dma_handle[dma_id_1] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_1]);
+    }
+    IRQ_EXIT(DMA1_Stream1_IRQn);
+}
+void DMA1_Stream2_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream2_IRQn);
+    if (dma_handle[dma_id_2] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_2]);
+    }
+    IRQ_EXIT(DMA1_Stream2_IRQn);
+}
+void DMA1_Stream3_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream3_IRQn);
+    if (dma_handle[dma_id_3] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_3]);
+    }
+    IRQ_EXIT(DMA1_Stream3_IRQn);
+}
+void DMA1_Stream4_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream4_IRQn);
+    if (dma_handle[dma_id_4] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_4]);
+    }
+    IRQ_EXIT(DMA1_Stream4_IRQn);
+}
+void DMA1_Stream5_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream5_IRQn);
+    if (dma_handle[dma_id_5] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_5]);
+    }
+    IRQ_EXIT(DMA1_Stream5_IRQn);
+}
+void DMA1_Stream6_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream6_IRQn);
+    if (dma_handle[dma_id_6] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_6]);
+    }
+    IRQ_EXIT(DMA1_Stream6_IRQn);
+}
+void DMA1_Stream7_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Stream7_IRQn);
+    if (dma_handle[dma_id_7] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_7]);
+    }
+    IRQ_EXIT(DMA1_Stream7_IRQn);
+}
+void DMA2_Stream0_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream0_IRQn);
+    if (dma_handle[dma_id_8] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_8]);
+    }
+    IRQ_EXIT(DMA2_Stream0_IRQn);
+}
+void DMA2_Stream1_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream1_IRQn);
+    if (dma_handle[dma_id_9] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_9]);
+    }
+    IRQ_EXIT(DMA2_Stream1_IRQn);
+}
+void DMA2_Stream2_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream2_IRQn);
+    if (dma_handle[dma_id_10] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_10]);
+    }
+    IRQ_EXIT(DMA2_Stream2_IRQn);
+}
+void DMA2_Stream3_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream3_IRQn);
+    if (dma_handle[dma_id_11] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_11]);
+    }
+    IRQ_EXIT(DMA2_Stream3_IRQn);
+}
+void DMA2_Stream4_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream4_IRQn);
+    if (dma_handle[dma_id_12] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_12]);
+    }
+    IRQ_EXIT(DMA2_Stream4_IRQn);
+}
+void DMA2_Stream5_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream5_IRQn);
+    if (dma_handle[dma_id_13] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_13]);
+    }
+    IRQ_EXIT(DMA2_Stream5_IRQn);
+}
+void DMA2_Stream6_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream6_IRQn);
+    if (dma_handle[dma_id_14] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_14]);
+    }
+    IRQ_EXIT(DMA2_Stream6_IRQn);
+}
+void DMA2_Stream7_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Stream7_IRQn);
+    if (dma_handle[dma_id_15] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_15]);
+    }
+    IRQ_EXIT(DMA2_Stream7_IRQn);
+}
 
 #elif defined(STM32L0)
 
@@ -623,20 +719,104 @@ void DMA1_Channel4_5_6_7_IRQHandler(void) {
 
 #elif defined(STM32L4)
 
-void DMA1_Channel1_IRQHandler(void) { IRQ_ENTER(DMA1_Channel1_IRQn); if (dma_handle[dma_id_0] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_0]); } IRQ_EXIT(DMA1_Channel1_IRQn); }
-void DMA1_Channel2_IRQHandler(void) { IRQ_ENTER(DMA1_Channel2_IRQn); if (dma_handle[dma_id_1] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_1]); } IRQ_EXIT(DMA1_Channel2_IRQn); }
-void DMA1_Channel3_IRQHandler(void) { IRQ_ENTER(DMA1_Channel3_IRQn); if (dma_handle[dma_id_2] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_2]); } IRQ_EXIT(DMA1_Channel3_IRQn); }
-void DMA1_Channel4_IRQHandler(void) { IRQ_ENTER(DMA1_Channel4_IRQn); if (dma_handle[dma_id_3] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_3]); } IRQ_EXIT(DMA1_Channel4_IRQn); }
-void DMA1_Channel5_IRQHandler(void) { IRQ_ENTER(DMA1_Channel5_IRQn); if (dma_handle[dma_id_4] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_4]); } IRQ_EXIT(DMA1_Channel5_IRQn); }
-void DMA1_Channel6_IRQHandler(void) { IRQ_ENTER(DMA1_Channel6_IRQn); if (dma_handle[dma_id_5] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_5]); } IRQ_EXIT(DMA1_Channel6_IRQn); }
-void DMA1_Channel7_IRQHandler(void) { IRQ_ENTER(DMA1_Channel7_IRQn); if (dma_handle[dma_id_6] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_6]); } IRQ_EXIT(DMA1_Channel7_IRQn); }
-void DMA2_Channel1_IRQHandler(void) { IRQ_ENTER(DMA2_Channel1_IRQn); if (dma_handle[dma_id_7] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_7]); } IRQ_EXIT(DMA2_Channel1_IRQn); }
-void DMA2_Channel2_IRQHandler(void) { IRQ_ENTER(DMA2_Channel2_IRQn); if (dma_handle[dma_id_8] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_8]); } IRQ_EXIT(DMA2_Channel2_IRQn); }
-void DMA2_Channel3_IRQHandler(void) { IRQ_ENTER(DMA2_Channel3_IRQn); if (dma_handle[dma_id_9] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_9]); } IRQ_EXIT(DMA2_Channel3_IRQn); }
-void DMA2_Channel4_IRQHandler(void) { IRQ_ENTER(DMA2_Channel4_IRQn); if (dma_handle[dma_id_10] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_10]);} IRQ_EXIT(DMA2_Channel4_IRQn); }
-void DMA2_Channel5_IRQHandler(void) { IRQ_ENTER(DMA2_Channel5_IRQn); if (dma_handle[dma_id_11] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_11]);} IRQ_EXIT(DMA2_Channel5_IRQn); }
-void DMA2_Channel6_IRQHandler(void) { IRQ_ENTER(DMA2_Channel6_IRQn); if (dma_handle[dma_id_12] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_12]);} IRQ_EXIT(DMA2_Channel6_IRQn); }
-void DMA2_Channel7_IRQHandler(void) { IRQ_ENTER(DMA2_Channel7_IRQn); if (dma_handle[dma_id_13] != NULL) { HAL_DMA_IRQHandler(dma_handle[dma_id_13]);} IRQ_EXIT(DMA2_Channel7_IRQn); }
+void DMA1_Channel1_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel1_IRQn);
+    if (dma_handle[dma_id_0] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_0]);
+    }
+    IRQ_EXIT(DMA1_Channel1_IRQn);
+}
+void DMA1_Channel2_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel2_IRQn);
+    if (dma_handle[dma_id_1] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_1]);
+    }
+    IRQ_EXIT(DMA1_Channel2_IRQn);
+}
+void DMA1_Channel3_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel3_IRQn);
+    if (dma_handle[dma_id_2] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_2]);
+    }
+    IRQ_EXIT(DMA1_Channel3_IRQn);
+}
+void DMA1_Channel4_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel4_IRQn);
+    if (dma_handle[dma_id_3] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_3]);
+    }
+    IRQ_EXIT(DMA1_Channel4_IRQn);
+}
+void DMA1_Channel5_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel5_IRQn);
+    if (dma_handle[dma_id_4] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_4]);
+    }
+    IRQ_EXIT(DMA1_Channel5_IRQn);
+}
+void DMA1_Channel6_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel6_IRQn);
+    if (dma_handle[dma_id_5] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_5]);
+    }
+    IRQ_EXIT(DMA1_Channel6_IRQn);
+}
+void DMA1_Channel7_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel7_IRQn);
+    if (dma_handle[dma_id_6] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_6]);
+    }
+    IRQ_EXIT(DMA1_Channel7_IRQn);
+}
+void DMA2_Channel1_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel1_IRQn);
+    if (dma_handle[dma_id_7] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_7]);
+    }
+    IRQ_EXIT(DMA2_Channel1_IRQn);
+}
+void DMA2_Channel2_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel2_IRQn);
+    if (dma_handle[dma_id_8] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_8]);
+    }
+    IRQ_EXIT(DMA2_Channel2_IRQn);
+}
+void DMA2_Channel3_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel3_IRQn);
+    if (dma_handle[dma_id_9] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_9]);
+    }
+    IRQ_EXIT(DMA2_Channel3_IRQn);
+}
+void DMA2_Channel4_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel4_IRQn);
+    if (dma_handle[dma_id_10] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_10]);
+    }
+    IRQ_EXIT(DMA2_Channel4_IRQn);
+}
+void DMA2_Channel5_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel5_IRQn);
+    if (dma_handle[dma_id_11] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_11]);
+    }
+    IRQ_EXIT(DMA2_Channel5_IRQn);
+}
+void DMA2_Channel6_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel6_IRQn);
+    if (dma_handle[dma_id_12] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_12]);
+    }
+    IRQ_EXIT(DMA2_Channel6_IRQn);
+}
+void DMA2_Channel7_IRQHandler(void) {
+    IRQ_ENTER(DMA2_Channel7_IRQn);
+    if (dma_handle[dma_id_13] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_13]);
+    }
+    IRQ_EXIT(DMA2_Channel7_IRQn);
+}
 
 #endif
 
@@ -709,14 +889,14 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Parent = data;
 }
 
-void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data){
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
     // Some drivers allocate the DMA_HandleTypeDef from the stack
     // (i.e. dac, i2c, spi) and for those cases we need to clear the
     // structure so we don't get random values from the stack)
     memset(dma, 0, sizeof(*dma));
 
     if (dma_descr != NULL) {
-        dma_id_t dma_id  = dma_descr->id;
+        dma_id_t dma_id = dma_descr->id;
 
         dma_init_handle(dma, dma_descr, dir, data);
         // set global pointer for IRQ handler
@@ -802,7 +982,7 @@ static void dma_idle_handler(uint32_t tick) {
         return;
     }
 
-    static const uint32_t   controller_mask[] = {
+    static const uint32_t controller_mask[] = {
         DMA1_ENABLE_MASK,
         #if defined(DMA2)
         DMA2_ENABLE_MASK,
@@ -849,7 +1029,7 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         | descr->init->MemInc       // MINC
         | descr->init->PeriphInc    // PINC
         | config                    // MSIZE | PSIZE | CIRC | DIR
-        ;
+    ;
 
     // Select channel that the DMA stream uses
     #if defined(STM32F0)
@@ -859,7 +1039,7 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         __HAL_DMA2_REMAP(descr->sub_instance);
     }
     #else
-    DMA_Request_TypeDef *dma_ctrl = (void*)(((uint32_t)dma & ~0xff) + (DMA1_CSELR_BASE - DMA1_BASE)); // DMA1_CSELR or DMA2_CSELR
+    DMA_Request_TypeDef *dma_ctrl = (void *)(((uint32_t)dma & ~0xff) + (DMA1_CSELR_BASE - DMA1_BASE)); // DMA1_CSELR or DMA2_CSELR
     uint32_t channel_number = (((uint32_t)dma & 0xff) - 0x08) / 20; // 0 through 6
     uint32_t channel_pos = channel_number * 4;
     dma_ctrl->CSELR = (dma_ctrl->CSELR & ~(0xf << channel_pos)) | (descr->sub_instance << channel_pos);
@@ -900,13 +1080,13 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         | init->MemInc              // MINC
         | init->PeriphInc           // PINC
         | config                    // MSIZE | PSIZE | CIRC | DIR
-        ;
+    ;
 
     // Set FIFO control register
     dma->FCR =
         init->FIFOMode              // DMDIS
         | init->FIFOThreshold       // FTH
-        ;
+    ;
 }
 
 void dma_nohal_deinit(const dma_descr_t *descr) {

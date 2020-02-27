@@ -141,7 +141,7 @@ typedef long mp_off_t;
 #else
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)(p)) //Avoid compiler warning about different const qualifiers
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)(p)) //Avoid compiler warning about different const qualifiers
 #define restrict
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)
@@ -152,11 +152,11 @@ typedef long mp_off_t;
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 #ifdef _WIN64
 #define SSIZE_MAX                   _I64_MAX
-typedef __int64                     ssize_t;
+typedef __int64 ssize_t;
 #else
 #define SSIZE_MAX                   _I32_MAX
-typedef int                         ssize_t;
+typedef int ssize_t;
 #endif
-typedef mp_off_t                    off_t;
+typedef mp_off_t off_t;
 
 #endif

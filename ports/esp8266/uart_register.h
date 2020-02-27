@@ -6,7 +6,7 @@
 
 #ifndef UART_REGISTER_H_INCLUDED
 #define UART_REGISTER_H_INCLUDED
-#define REG_UART_BASE( i )  (0x60000000+(i)*0xf00)
+#define REG_UART_BASE( i )  (0x60000000 + (i) * 0xf00)
 //version value:32'h062000
 
 #define UART_FIFO( i )                          (REG_UART_BASE( i ) + 0x0)

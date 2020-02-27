@@ -88,7 +88,7 @@ STATIC MP_DEFINE_CONST_DICT(uos_vfs_module_globals, uos_vfs_module_globals_table
 
 const mp_obj_module_t mp_module_uos_vfs = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&uos_vfs_module_globals,
+    .globals = (mp_obj_dict_t *)&uos_vfs_module_globals,
 };
 
 #endif // MICROPY_VFS

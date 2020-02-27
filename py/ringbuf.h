@@ -42,11 +42,11 @@ typedef struct _ringbuf_t {
 
 // Dynamic initialization. This needs to become findable as a root pointer!
 #define ringbuf_alloc(r, sz) \
-{ \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
-    (r)->iget = (r)->iput = 0; \
-}
+    { \
+        (r)->buf = m_new(uint8_t, sz); \
+        (r)->size = sz; \
+        (r)->iget = (r)->iput = 0; \
+    }
 
 static inline int ringbuf_get(ringbuf_t *r) {
     if (r->iget == r->iput) {

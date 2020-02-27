@@ -166,5 +166,5 @@ const mp_obj_type_t pyb_pwm_type = {
     .name = MP_QSTR_PWM,
     .print = pyb_pwm_print,
     .make_new = pyb_pwm_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_pwm_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_pwm_locals_dict,
 };

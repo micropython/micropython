@@ -9,6 +9,7 @@ import _webrepl
 listen_s = None
 client_s = None
 
+
 def setup_conn(port, accept_handler):
     global listen_s
     listen_s = socket.socket()
@@ -44,7 +45,7 @@ def accept_conn(listen_sock):
     ws = _webrepl._webrepl(ws)
     cl.setblocking(False)
     # notify REPL on socket incoming data (ESP32/ESP8266-only)
-    if hasattr(uos, 'dupterm_notify'):
+    if hasattr(uos, "dupterm_notify"):
         cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
     uos.dupterm(ws)
 
@@ -63,6 +64,7 @@ def start(port=8266, password=None):
     if password is None:
         try:
             import webrepl_cfg
+
             _webrepl.password(webrepl_cfg.PASS)
             setup_conn(port, accept_conn)
             print("Started webrepl in normal mode")

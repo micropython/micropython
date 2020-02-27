@@ -446,5 +446,5 @@ const mp_obj_type_t machine_adc_type = {
     .name = MP_QSTR_ADC,
     .print = machine_adc_print,
     .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };

@@ -86,7 +86,7 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     // Optimized formula avoiding if conditions. We adjust difference "forward",
     // wrap it around and adjust back.
     mp_int_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-                   - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
     return MP_OBJ_NEW_SMALL_INT(diff);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_diff_obj, time_ticks_diff);
