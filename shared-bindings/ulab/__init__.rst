@@ -129,8 +129,6 @@ Array type codes
 
 Basic Array defining functions
 ------------------------------
-See also `ulab.linalg.eye` and `ulab.numerical.linspace` for other useful
-array defining functions.
 
 .. method:: ones(shape, \*, dtype=float)
 
@@ -157,6 +155,33 @@ array defining functions.
 
    Return a new square array of size, with the diagonal elements set to 1
    and the other elements set to 0.
+
+.. method:: linspace(start, stop, \*, dtype=float, num=50, endpoint=True)
+
+   .. param: start
+
+      First value in the array
+
+   .. param: stop
+
+      Final value in the array
+
+   .. param int: num
+
+      Count of values in the array
+
+   .. param: dtype
+
+      Type of values in the array
+
+   .. param bool: endpoint
+
+      Whether the ``stop`` value is included.  Note that even when
+      endpoint=True, the exact ``stop`` value may not be included due to the
+      inaccuracy of floating point arithmetic.
+
+   Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly.
+
 
 
 :mod:`ulab.vector` --- Element-by-element functions
@@ -288,14 +313,6 @@ much more efficient than expressing the same operation as a Python loop.
 
    Computes the eigenvalues and eigenvectors of a square matrix
 
-
-.. method:: eye(size, \*, dtype=float)
-
-   :param int: size - The number of rows and columns in the matrix
-
-   Returns a square matrix with all the diagonal elements set to 1 and all
-   other elements set to 0
-
 .. method:: inv(m)
 
    :param ~ulab.array m: a square matrix
@@ -386,32 +403,6 @@ operate over the flattened array (None), rows (0), or columns (1).
 
    Returns a new array that reverses the order of the elements along the
    given axis, or along all axes if axis is None.
-
-.. method:: linspace(start, stop, \*, dtype=float, num=50, endpoint=True)
-
-   .. param: start
-
-      First value in the array
-
-   .. param: stop
-
-      Final value in the array
-
-   .. param int: num
-
-      Count of values in the array
-
-   .. param: dtype
-
-      Type of values in the array
-
-   .. param bool: endpoint
-
-      Whether the ``stop`` value is included.  Note that even when
-      endpoint=True, the exact ``stop`` value may not be included due to the
-      inaccuracy of floating point arithmetic.
-
-   Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly.
 
 .. method:: max(array, \*, axis=None)
 

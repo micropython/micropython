@@ -107,14 +107,15 @@ endif
 
 ifeq ($(MICROPY_PY_ULAB),1)
 SRC_MOD += $(addprefix extmod/ulab/code/, \
-filter.c \
+create.c \
 fft.c \
+filter.c \
 linalg.c \
 ndarray.c \
 numerical.c \
 poly.c \
-vectorise.c \
 ulab.c \
+vectorise.c \
 	)
 CFLAGS_MOD += -DMICROPY_PY_ULAB=1 -DMODULE_ULAB_ENABLED=1
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-sign-compare -Wno-missing-prototypes -Wno-unused-parameter -Wno-missing-declarations -Wno-error -Wno-shadow -Wno-maybe-uninitialized -DCIRCUITPY

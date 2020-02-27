@@ -12,7 +12,7 @@ ulab.array([1,2,3], dtype=ulab.uint16)
 ulab.array([1,2,3], dtype=ulab.float)
 ulab.zeros(3)
 ulab.ones(3)
-a = ulab.linalg.eye(3)
+a = ulab.eye(3)
 a.shape
 a.size
 a.itemsize
@@ -33,7 +33,7 @@ a[0]
 a[:]
 a[0] = 0
 a[:] = ulab.zeros((3,3))
-a = ulab.linalg.eye(3)
+a = ulab.eye(3)
 ulab.vector.acos(a)
 ulab.vector.acosh(a)
 ulab.vector.asin(a)
@@ -62,8 +62,8 @@ ulab.linalg.inv(a)
 ulab.linalg.eig(a)
 ulab.linalg.det(a)
 ulab.filter.convolve(ulab.array([1,2,3]), ulab.array([1,10,100,1000]))
-ulab.numerical.linspace(0, 10, num=3)
-a = ulab.numerical.linspace(0, 10, num=256, endpoint=True)
+ulab.linspace(0, 10, num=3)
+a = ulab.linspace(0, 10, num=256, endpoint=True)
 ulab.fft.spectrum(a)
 p, q = ulab.fft.fft(a)
 ulab.fft.ifft(p)
