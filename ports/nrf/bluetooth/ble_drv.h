@@ -33,8 +33,6 @@
 
 #include "ble.h"
 
-#define MAX_TX_IN_PROGRESS 10
-
 #ifndef BLE_GATT_ATT_MTU_DEFAULT
     #define BLE_GATT_ATT_MTU_DEFAULT GATT_MTU_SIZE_DEFAULT
 #endif
@@ -59,7 +57,7 @@ typedef enum {
 } sd_flash_operation_status_t;
 
 // Flag indicating progress of internal flash operation.
-extern sd_flash_operation_status_t sd_flash_operation_status;
+extern volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 typedef struct ble_drv_evt_handler_entry {
     struct ble_drv_evt_handler_entry *next;

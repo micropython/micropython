@@ -49,8 +49,8 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     gc_never_free(self->bus);
 
     self->frequency = baudrate;
-    self->polarity = common_hal_busio_spi_get_polarity(spi);
-    self->phase = common_hal_busio_spi_get_phase(spi);
+    self->polarity = 0;
+    self->phase = 0;
 
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);

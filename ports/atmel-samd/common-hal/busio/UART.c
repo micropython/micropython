@@ -34,8 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
-
-#include "tick.h"
+#include "supervisor/shared/tick.h"
 
 #include "hpl_sercom_config.h"
 #include "peripheral_clk_config.h"
@@ -53,15 +52,22 @@ static void usart_async_rxc_callback(const struct usart_async_descriptor *const 
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
+
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
     uint32_t rx_pinmux = 0;
     uint8_t rx_pad = 255; // Unset pad
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
+
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
 
     if (bits > 8) {
         mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
@@ -151,7 +157,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
         if (self->buffer == NULL) {
             common_hal_busio_uart_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), self->buffer_length * sizeof(uint8_t));
         }
     } else {
         self->buffer_length = 0;
@@ -272,10 +278,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     usart_async_get_io_descriptor(usart_desc_p, &io);
 
     size_t total_read = 0;
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Busy-wait until timeout or until we've read enough chars.
-    while (ticks_ms - start_ticks <= self->timeout_ms) {
+    while (supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = io_read(io, data, len);
 
@@ -289,7 +295,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         }
         if (num_read > 0) {
             // Reset the timeout on every character read.
-            start_ticks = ticks_ms;
+            start_ticks = supervisor_ticks_ms64();
         }
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
@@ -323,29 +329,23 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     struct io_descriptor *io;
     usart_async_get_io_descriptor(usart_desc_p, &io);
 
+    // Start writing characters. This is non-blocking and will
+    // return immediately after setting up the write.
     if (io_write(io, data, len) < 0) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
-    // Wait until write is complete or timeout.
-    bool done = false;
-    uint64_t start_ticks = ticks_ms;
-    // Busy-wait for timeout.
-    while (ticks_ms - start_ticks < self->timeout_ms) {
-        if (usart_async_is_tx_empty(usart_desc_p)) {
-            done = true;
+    // Busy-wait until all characters transmitted.
+    struct usart_async_status async_status;
+    while (true) {
+        usart_async_get_status(usart_desc_p, &async_status);
+        if (async_status.txcnt >= len) {
             break;
         }
         RUN_BACKGROUND_TASKS;
     }
 
-    if (!done) {
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
-    }
-
-    // All the characters got written.
     return len;
 }
 
@@ -368,6 +368,14 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
     self->baudrate = baudrate;
 }
 
+mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
+    return (mp_float_t) (self->timeout_ms / 1000.0f);
+}
+
+void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
+    self->timeout_ms = timeout * 1000;
+}
+
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
     // This assignment is only here because the usart_async routines take a *const argument.
     struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
@@ -383,12 +391,14 @@ void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
 
 }
 
+// True if there are no characters still to be written.
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
     if (self->tx_pin == NO_PIN) {
         return false;
     }
     // This assignment is only here because the usart_async routines take a *const argument.
-    const struct _usart_async_device * const usart_device_p =
-        (struct _usart_async_device * const) &self->usart_desc.device;
-    return _usart_async_is_byte_sent(usart_device_p);
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    struct usart_async_status async_status;
+    usart_async_get_status(usart_desc_p, &async_status);
+    return !(async_status.flags & USART_ASYNC_STATUS_BUSY);
 }

@@ -12,12 +12,13 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4", "cxd56"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4", "cxd56", "mimxrt10xx"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
 BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
+HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
 
 # Default extensions
@@ -26,6 +27,7 @@ extension_by_port = {
     "atmel-samd": UF2,
     "stm32f4": BIN,
     "cxd56": SPK,
+    "mimxrt10xx": HEX_UF2,
 }
 
 # Per board overrides
@@ -49,6 +51,7 @@ extension_by_board = {
 aliases_by_board = {
     "circuitplayground_express": ["circuitplayground_express_4h", "circuitplayground_express_digikey_pycon2019"],
     "pybadge": ["edgebadge"],
+    "pyportal": ["pyportal_pynt"],
     "gemma_m0": ["gemma_m0_pycon2018"],
     "pewpew10": ["pewpew13"]
 }

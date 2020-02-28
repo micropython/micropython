@@ -350,6 +350,7 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
 STATIC const mp_vfs_proto_t vfs_posix_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = mp_vfs_posix_import_stat,
 };
 

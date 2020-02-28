@@ -51,7 +51,7 @@
 //|     Layer
 //|     Text
 //|
-//| .. function:: render(x0, y0, x1, y1, layers, buffer, display[, scale])
+//| .. function:: render(x0, y0, x1, y1, layers, buffer, display[, scale[, background]])
 //|
 //|     Render and send to the display a fragment of the screen.
 //|
@@ -63,6 +63,7 @@
 //|     :param bytearray buffer: A buffer to use for rendering.
 //|     :param ~displayio.Display display: The display to use.
 //|     :param int scale: How many times should the image be scaled up.
+//|     :param int background: What color to display when nothing is there.
 //|
 //|     There are also no sanity checks, outside of the basic overflow
 //|     checking. The caller is responsible for making the passed parameters
@@ -92,12 +93,16 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     }
     displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);
     uint8_t scale = 1;
-    if (n_args >= 8) {
+    if (n_args > 7) {
         scale = mp_obj_get_int(args[7]);
+    }
+    uint16_t background = 0;
+    if (n_args > 8) {
+        background = mp_obj_get_int(args[8]);
     }
 
     render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
-                 display, scale);
+                 display, scale, background);
 
     return mp_const_none;
 }

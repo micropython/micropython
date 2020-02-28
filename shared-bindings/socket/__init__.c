@@ -500,6 +500,7 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
 }
 
 STATIC const mp_stream_p_t socket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = socket_ioctl,
     .is_text = false,
 };

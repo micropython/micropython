@@ -41,8 +41,6 @@
 //|
 //| Represents any shape made by defining boundaries that may be mirrored.
 //|
-//| .. warning:: This will likely be changed before 4.0.0. Consider it very experimental.
-//|
 //| .. class:: Shape(width, height, *, mirror_x=False, mirror_y=False)
 //|
 //|   Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the

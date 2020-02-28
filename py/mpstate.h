@@ -92,7 +92,7 @@ typedef struct _mp_state_mem_t {
     size_t gc_alloc_threshold;
     #endif
 
-    size_t gc_first_free_atb_index;
+    size_t gc_first_free_atb_index[MICROPY_ATB_INDICES];
     size_t gc_last_free_atb_index;
 
     #if MICROPY_PY_GC_COLLECT_RETVAL

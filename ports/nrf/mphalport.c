@@ -31,12 +31,13 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
+#include "supervisor/shared/tick.h"
 
 /*------------------------------------------------------------------*/
 /* delay
  *------------------------------------------------------------------*/
 void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = ticks_ms;
+    uint64_t start_tick = supervisor_ticks_ms64();
     uint64_t duration = 0;
     while (duration < delay) {
         RUN_BACKGROUND_TASKS;
@@ -45,7 +46,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
            MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
             break;
         }
-        duration = (ticks_ms - start_tick);
+        duration = (supervisor_ticks_ms64() - start_tick);
         // TODO(tannewt): Go to sleep for a little while while we wait.
     }
 }

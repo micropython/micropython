@@ -374,6 +374,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
 
 STATIC const mp_stream_p_t usocket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = socket_read,
     .write = socket_write,
     .ioctl = socket_ioctl,

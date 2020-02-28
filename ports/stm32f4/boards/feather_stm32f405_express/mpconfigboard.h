@@ -32,16 +32,20 @@
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define AUTORESET_DELAY_MS 500
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
-
 #define MICROPY_HW_NEOPIXEL (&pin_PC00)
+
+#define BOARD_OSC_DIV (12)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)
 #define SPI_FLASH_MISO_PIN          (&pin_PB04)
 #define SPI_FLASH_SCK_PIN           (&pin_PB03)
 #define SPI_FLASH_CS_PIN            (&pin_PA15)
+
+// Bootloader only
+#ifdef UF2_BOOTLOADER_ENABLED
+    #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
+#endif
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB07)

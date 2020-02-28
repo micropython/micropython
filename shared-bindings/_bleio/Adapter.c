@@ -29,6 +29,7 @@
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
@@ -116,7 +117,7 @@ const mp_obj_property_t bleio_adapter_address_obj = {
 
 //|   .. attribute:: name
 //|
-//|       name of the BLE adapter used once connected. Not used in advertisements.
+//|       name of the BLE adapter used once connected.
 //|       The name is "CIRCUITPY" + the last four hex digits of ``adapter.address``,
 //|       to make it easy to distinguish multiple CircuitPython boards.
 //|
@@ -143,6 +144,9 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|
 //|     Starts advertising until `stop_advertising` is called or if connectable, another device
 //|     connects to us.
+//|
+//|     .. warning: If data is longer than 31 bytes, then this will automatically advertise as an
+//|        extended advertisement that older BLE 4.x clients won't be able to scan for.
 //|
 //|     :param buf data: advertising data packet bytes
 //|     :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
@@ -182,7 +186,12 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
                                  ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
-    common_hal_bleio_adapter_start_advertising(self, args[ARG_connectable].u_bool, interval,
+    bool connectable = args[ARG_connectable].u_bool;
+    if (data_bufinfo.len > 31 && connectable && scan_response_bufinfo.len > 0) {
+        mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
+    }
+
+    common_hal_bleio_adapter_start_advertising(self, connectable, interval,
                                                &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;
@@ -351,22 +360,35 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
 
+//|   .. method:: erase_bonding()
+//|
+//|     Erase all bonding information stored in flash memory.
+STATIC mp_obj_t bleio_adapter_erase_bonding(mp_obj_t self_in) {
+    bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_bleio_adapter_erase_bonding(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_erase_bonding_obj, bleio_adapter_erase_bonding);
 
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&bleio_adapter_name_obj) },
+    { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&bleio_adapter_name_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_start_advertising),        MP_ROM_PTR(&bleio_adapter_start_advertising_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_advertising),         MP_ROM_PTR(&bleio_adapter_stop_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start_advertising), MP_ROM_PTR(&bleio_adapter_start_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_advertising),  MP_ROM_PTR(&bleio_adapter_stop_advertising_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_scan), MP_ROM_PTR(&bleio_adapter_start_scan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop_scan), MP_ROM_PTR(&bleio_adapter_stop_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_scan),  MP_ROM_PTR(&bleio_adapter_stop_scan_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&bleio_adapter_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&bleio_adapter_connect_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_connected), MP_ROM_PTR(&bleio_adapter_connected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connected),   MP_ROM_PTR(&bleio_adapter_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_connections), MP_ROM_PTR(&bleio_adapter_connections_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_erase_bonding), MP_ROM_PTR(&bleio_adapter_erase_bonding_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict_table);

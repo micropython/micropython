@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8019
 USB_PRODUCT = "CircuitPlayground Express with displayio"
@@ -17,7 +16,6 @@ CIRCUITPY_BITBANGIO = 0
 CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_I2CSLAVE = 0
 CIRCUITPY_PIXELBUF = 0
-CIRCUITPY_GAMEPAD = 0
 CIRCUITPY_RTC = 0
 
 SUPEROPT_GC = 0

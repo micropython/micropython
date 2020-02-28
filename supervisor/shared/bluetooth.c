@@ -51,8 +51,12 @@ bleio_characteristic_obj_t supervisor_ble_length_characteristic;
 bleio_uuid_obj_t supervisor_ble_length_uuid;
 bleio_characteristic_obj_t supervisor_ble_contents_characteristic;
 bleio_uuid_obj_t supervisor_ble_contents_uuid;
+
+// This is the base UUID for CircuitPython services and characteristics.
 const uint8_t circuitpython_base_uuid[16] = {0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x00, 0x00, 0xaf, 0xad };
-uint8_t circuitpython_advertising_data[] = { 0x02, 0x01, 0x06, 0x02, 0x0a, 0x00, 0x11, 0x07, 0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x00, 0x01, 0xaf, 0xad, 0x06, 0x08, 0x43, 0x49, 0x52, 0x43, 0x55 }; 
+// This standard advertisement advertises the CircuitPython editing service and a CIRCUITPY short name.
+uint8_t circuitpython_advertising_data[] = { 0x02, 0x01, 0x06, 0x02, 0x0a, 0x00, 0x11, 0x07, 0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x00, 0x01, 0xaf, 0xad, 0x06, 0x08, 0x43, 0x49, 0x52, 0x43, 0x55 };
+// This scan response advertises the full CIRCUITPYXXXX device name.
 uint8_t circuitpython_scan_response_data[15] = {0x0e, 0x09, 0x43, 0x49, 0x52, 0x43, 0x55, 0x49, 0x54, 0x50, 0x59, 0x00, 0x00, 0x00, 0x00};
 mp_obj_list_t service_list;
 mp_obj_t service_list_items[1];
@@ -60,6 +64,9 @@ mp_obj_list_t characteristic_list;
 mp_obj_t characteristic_list_items[4];
 
 void supervisor_bluetooth_start_advertising(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -75,6 +82,10 @@ void supervisor_bluetooth_start_advertising(void) {
 }
 
 void supervisor_start_bluetooth(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
+
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
 
     supervisor_ble_service_uuid.base.type = &bleio_uuid_type;
@@ -86,7 +97,7 @@ void supervisor_start_bluetooth(void) {
     characteristic_list.len = 0;
     characteristic_list.items = characteristic_list_items;
     mp_seq_clear(characteristic_list.items, 0, characteristic_list.alloc, sizeof(*characteristic_list.items));
-    
+
     _common_hal_bleio_service_construct(&supervisor_ble_service, &supervisor_ble_service_uuid, false /* is secondary */, &characteristic_list);
 
     // File length
@@ -199,6 +210,9 @@ uint32_t current_command[1024 / sizeof(uint32_t)];
 volatile size_t current_offset;
 
 void supervisor_bluetooth_background(void) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return;
+    #endif
     if (!run_ble_background) {
         return;
     }
@@ -225,7 +239,7 @@ void supervisor_bluetooth_background(void) {
     uint16_t current_length = ((uint16_t*) current_command)[0];
     if (current_length > 0 && current_length == current_offset) {
         uint16_t command = ((uint16_t *) current_command)[1];
-        
+
         if (command == 1) {
             uint16_t max_len = 20; //supervisor_ble_contents_characteristic.max_length;
             uint8_t buf[max_len];
@@ -274,7 +288,7 @@ void supervisor_bluetooth_background(void) {
                     f_write(&active_file, &data, 1, &actual);
                 }
             }
-            
+
             f_lseek(&active_file, offset);
             uint8_t* data = (uint8_t *) (current_command + 4);
             UINT written;
@@ -292,6 +306,9 @@ void supervisor_bluetooth_background(void) {
 
 // This happens in an interrupt so we need to be quick.
 bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
+    #if !CIRCUITPY_BLE_FILE_SERVICE
+    return false;
+    #endif
     // Catch writes to filename or contents. Length is read-only.
 
     bool done = false;

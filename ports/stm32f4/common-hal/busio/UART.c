@@ -36,10 +36,11 @@
 #include "supervisor/shared/translate.h"
 
 #include "tick.h"
-#include "stm32f4xx_hal.h" 
+#include "stm32f4xx_hal.h"
 
 #define ALL_UARTS 0xFFFF
 
+//arrays use 0 based numbering: UART1 is stored at index 0
 STATIC bool reserved_uart[MAX_UART];
 int errflag; //Used to restart read halts
 
@@ -47,15 +48,7 @@ STATIC void uart_clock_enable(uint16_t mask);
 STATIC void uart_clock_disable(uint16_t mask);
 STATIC void uart_assign_irq(busio_uart_obj_t* self, USART_TypeDef* USARTx);
 
-void uart_reset(void) {
-    for (uint8_t i = 0; i < MAX_UART; i++) {
-        reserved_uart[i] = false;
-        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
-    }
-    uart_clock_disable(ALL_UARTS);
-}
-
-STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval, 
+STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval,
                                             int uart_index, bool uart_taken) {
     if (pin_eval) {
         //assign a root pointer pointer for IRQ
@@ -70,18 +63,32 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eva
     }
 }
 
-void common_hal_busio_uart_construct(busio_uart_obj_t* self,
-        const mcu_pin_obj_t* tx, const mcu_pin_obj_t* rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
+void uart_reset(void) {
+    for (uint8_t i = 0; i < MAX_UART; i++) {
+        reserved_uart[i] = false;
+        MP_STATE_PORT(cpy_uart_obj_all)[i] = NULL;
+    }
+    uart_clock_disable(ALL_UARTS);
+}
+
+void common_hal_busio_uart_construct(busio_uart_obj_t *self,
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
 
     //match pins to UART objects
     USART_TypeDef * USARTx;
 
-    uint8_t tx_len = sizeof(mcu_uart_tx_list)/sizeof(*mcu_uart_tx_list);
-    uint8_t rx_len = sizeof(mcu_uart_rx_list)/sizeof(*mcu_uart_rx_list);
+    uint8_t tx_len = MP_ARRAY_SIZE(mcu_uart_tx_list);
+    uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
     bool uart_taken = false;
     uint8_t uart_index = 0; //origin 0 corrected
+
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert == true)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
     
     //Can have both pins, or either
     if ((tx != mp_const_none) && (rx != mp_const_none)) {
@@ -90,7 +97,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
             if (mcu_uart_tx_list[i].pin == tx) {
                 //rx
                 for (uint j = 0; j < rx_len; j++) {
-                    if (mcu_uart_rx_list[j].pin == rx 
+                    if (mcu_uart_rx_list[j].pin == rx
                         && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
                         //keep looking if the UART is taken, edge case
                         if (reserved_uart[mcu_uart_tx_list[i].uart_index - 1]) {
@@ -106,7 +113,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
             }
         }
         uart_index = self->tx->uart_index - 1;
-        USARTx = assign_uart_or_throw(self, (self->tx != NULL && self->rx != NULL), 
+        USARTx = assign_uart_or_throw(self, (self->tx != NULL && self->rx != NULL),
             uart_index, uart_taken);
     } else if (tx == mp_const_none) {
         //If there is no tx, run only rx
@@ -123,7 +130,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
             }
         }
         uart_index = self->rx->uart_index - 1;
-        USARTx = assign_uart_or_throw(self, (self->rx != NULL), 
+        USARTx = assign_uart_or_throw(self, (self->rx != NULL),
             uart_index, uart_taken);
     } else if (rx == mp_const_none) {
         //If there is no rx, run only tx
@@ -140,7 +147,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
             }
         }
         uart_index = self->tx->uart_index - 1;
-        USARTx = assign_uart_or_throw(self, (self->tx != NULL), 
+        USARTx = assign_uart_or_throw(self, (self->tx != NULL),
             uart_index, uart_taken);
     } else {
         //both pins cannot be empty
@@ -173,7 +180,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = self->rx->altfn_index; 
+        GPIO_InitStruct.Alternate = self->rx->altfn_index;
         HAL_GPIO_Init(pin_port(rx->port), &GPIO_InitStruct);
     }
 
@@ -186,7 +193,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t* self,
     self->handle.Init.BaudRate = baudrate;
     self->handle.Init.WordLength = (bits == 9) ? UART_WORDLENGTH_9B : UART_WORDLENGTH_8B;
     self->handle.Init.StopBits = (stop > 1) ? UART_STOPBITS_2 : UART_STOPBITS_1;
-    self->handle.Init.Parity = (parity == PARITY_ODD) ? UART_PARITY_ODD : 
+    self->handle.Init.Parity = (parity == PARITY_ODD) ? UART_PARITY_ODD :
                                (parity == PARITY_EVEN) ? UART_PARITY_EVEN :
                                UART_PARITY_NONE;
     self->handle.Init.Mode = (self->tx != NULL && self->rx != NULL) ? UART_MODE_TX_RX :
@@ -234,7 +241,7 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) return;
-    
+
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = mp_const_none;
@@ -250,10 +257,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     size_t rx_bytes = 0;
-    uint64_t start_ticks = ticks_ms;
+    uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout, same as nrf
-    while ( (ringbuf_count(&self->rbuf) < len) && (ticks_ms - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_count(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         //restart if it failed in the callback
         if (errflag != HAL_OK) {
@@ -279,7 +286,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
     }
-    return rx_bytes; 
+    return rx_bytes;
 }
 
 // Write characters.
@@ -290,13 +297,15 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     bool write_err = false; //write error shouldn't disable interrupts
 
     HAL_NVIC_DisableIRQ(self->irq);
-    if (HAL_UART_Transmit(&self->handle, (uint8_t*)data, len, self->timeout_ms) != HAL_OK) {
+    if (HAL_UART_Transmit(&self->handle, (uint8_t*)data, len, HAL_MAX_DELAY) != HAL_OK) {
         write_err = true;
     }
     HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
     HAL_NVIC_EnableIRQ(self->irq);
 
-    if (write_err) mp_raise_ValueError(translate("UART write error"));
+    if (write_err) {
+        mp_raise_ValueError(translate("UART write error"));
+    }
     return len;
 }
 
@@ -312,7 +321,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
             }
             ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
             errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
-            
+
             return;
         }
     }
@@ -358,6 +367,14 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
     }
 
     self->baudrate = baudrate;
+}
+
+mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
+    return (mp_float_t) (self->timeout_ms / 1000.0f);
+}
+
+void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
+    self->timeout_ms = timeout * 1000;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
@@ -414,71 +431,71 @@ STATIC void uart_clock_enable(uint16_t mask) {
     if (mask & (1 << 0)) {
         __HAL_RCC_USART1_FORCE_RESET();
         __HAL_RCC_USART1_RELEASE_RESET();
-        __HAL_RCC_USART1_CLK_ENABLE(); 
+        __HAL_RCC_USART1_CLK_ENABLE();
     }
     #endif
     #ifdef USART2
     if (mask & (1 << 1)) {
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
-        __HAL_RCC_USART2_CLK_ENABLE(); 
+        __HAL_RCC_USART2_CLK_ENABLE();
     }
     #endif
     #ifdef USART3
     if (mask & (1 << 2)) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
-        __HAL_RCC_USART3_CLK_ENABLE(); 
+        __HAL_RCC_USART3_CLK_ENABLE();
     }
     #endif
     #ifdef UART4
     if (mask & (1 << 3)) {
         __HAL_RCC_UART4_FORCE_RESET();
         __HAL_RCC_UART4_RELEASE_RESET();
-        __HAL_RCC_UART4_CLK_ENABLE(); 
+        __HAL_RCC_UART4_CLK_ENABLE();
     }
     #endif
     #ifdef UART5
     if (mask & (1 << 4)) {
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
-        __HAL_RCC_UART5_CLK_ENABLE(); 
+        __HAL_RCC_UART5_CLK_ENABLE();
     }
     #endif
     #ifdef USART6
     if (mask & (1 << 5)) {
         __HAL_RCC_USART6_FORCE_RESET();
         __HAL_RCC_USART6_RELEASE_RESET();
-        __HAL_RCC_USART6_CLK_ENABLE(); 
-    } 
+        __HAL_RCC_USART6_CLK_ENABLE();
+    }
     #endif
     #ifdef UART7
     if (mask & (1 << 6)) {
         __HAL_RCC_UART7_FORCE_RESET();
         __HAL_RCC_UART7_RELEASE_RESET();
-        __HAL_RCC_UART7_CLK_ENABLE(); 
-    } 
+        __HAL_RCC_UART7_CLK_ENABLE();
+    }
     #endif
     #ifdef UART8
     if (mask & (1 << 7)) {
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
-        __HAL_RCC_UART8_CLK_ENABLE(); 
-    } 
+        __HAL_RCC_UART8_CLK_ENABLE();
+    }
     #endif
     #ifdef UART9
     if (mask & (1 << 8)) {
         __HAL_RCC_UART9_FORCE_RESET();
         __HAL_RCC_UART9_RELEASE_RESET();
-        __HAL_RCC_UART9_CLK_ENABLE(); 
-    } 
+        __HAL_RCC_UART9_CLK_ENABLE();
+    }
     #endif
     #ifdef UART10
     if (mask & (1 << 9)) {
         __HAL_RCC_UART10_FORCE_RESET();
         __HAL_RCC_UART10_RELEASE_RESET();
-        __HAL_RCC_UART10_CLK_ENABLE(); 
-    } 
+        __HAL_RCC_UART10_CLK_ENABLE();
+    }
     #endif
 }
 
@@ -487,103 +504,123 @@ STATIC void uart_clock_disable(uint16_t mask) {
     if (mask & (1 << 0)) {
         __HAL_RCC_USART1_FORCE_RESET();
         __HAL_RCC_USART1_RELEASE_RESET();
-        __HAL_RCC_USART1_CLK_DISABLE(); 
+        __HAL_RCC_USART1_CLK_DISABLE();
     }
     #endif
     #ifdef USART2
     if (mask & (1 << 1)) {
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
-        __HAL_RCC_USART2_CLK_DISABLE(); 
+        __HAL_RCC_USART2_CLK_DISABLE();
     }
     #endif
     #ifdef USART3
     if (mask & (1 << 2)) {
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
-        __HAL_RCC_USART3_CLK_DISABLE(); 
+        __HAL_RCC_USART3_CLK_DISABLE();
     }
     #endif
     #ifdef UART4
     if (mask & (1 << 3)) {
         __HAL_RCC_UART4_FORCE_RESET();
         __HAL_RCC_UART4_RELEASE_RESET();
-        __HAL_RCC_UART4_CLK_DISABLE(); 
+        __HAL_RCC_UART4_CLK_DISABLE();
     }
     #endif
     #ifdef UART5
     if (mask & (1 << 4)) {
         __HAL_RCC_UART5_FORCE_RESET();
         __HAL_RCC_UART5_RELEASE_RESET();
-        __HAL_RCC_UART5_CLK_DISABLE(); 
+        __HAL_RCC_UART5_CLK_DISABLE();
     }
     #endif
     #ifdef USART6
     if (mask & (1 << 5)) {
         __HAL_RCC_USART6_FORCE_RESET();
         __HAL_RCC_USART6_RELEASE_RESET();
-        __HAL_RCC_USART6_CLK_DISABLE(); 
-    } 
+        __HAL_RCC_USART6_CLK_DISABLE();
+    }
     #endif
     #ifdef UART7
     if (mask & (1 << 6)) {
         __HAL_RCC_UART7_FORCE_RESET();
         __HAL_RCC_UART7_RELEASE_RESET();
-        __HAL_RCC_UART7_CLK_DISABLE(); 
-    } 
+        __HAL_RCC_UART7_CLK_DISABLE();
+    }
     #endif
     #ifdef UART8
     if (mask & (1 << 7)) {
         __HAL_RCC_UART8_FORCE_RESET();
         __HAL_RCC_UART8_RELEASE_RESET();
-        __HAL_RCC_UART8_CLK_DISABLE(); 
-    } 
+        __HAL_RCC_UART8_CLK_DISABLE();
+    }
     #endif
     #ifdef UART9
     if (mask & (1 << 8)) {
         __HAL_RCC_UART9_FORCE_RESET();
         __HAL_RCC_UART9_RELEASE_RESET();
-        __HAL_RCC_UART9_CLK_DISABLE(); 
-    } 
+        __HAL_RCC_UART9_CLK_DISABLE();
+    }
     #endif
     #ifdef UART10
     if (mask & (1 << 9)) {
         __HAL_RCC_UART10_FORCE_RESET();
         __HAL_RCC_UART10_RELEASE_RESET();
-        __HAL_RCC_UART10_CLK_DISABLE(); 
-    } 
+        __HAL_RCC_UART10_CLK_DISABLE();
+    }
     #endif
 }
 
 STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef * USARTx) {
     #ifdef USART1
-    if (USARTx == USART1) self->irq = USART1_IRQn;
+    if (USARTx == USART1) {
+        self->irq = USART1_IRQn;
+    }
     #endif
     #ifdef USART2
-    if (USARTx == USART2) self->irq = USART2_IRQn;
+    if (USARTx == USART2) {
+        self->irq = USART2_IRQn;
+    }
     #endif
     #ifdef USART3
-    if (USARTx == USART3) self->irq = USART3_IRQn;
+    if (USARTx == USART3) {
+        self->irq = USART3_IRQn;
+    }
     #endif
     #ifdef UART4
-    if (USARTx == UART4) self->irq = UART4_IRQn;
+    if (USARTx == UART4) {
+        self->irq = UART4_IRQn;
+    }
     #endif
     #ifdef UART5
-    if (USARTx == UART5) self->irq = UART5_IRQn;
+    if (USARTx == UART5) {
+        self->irq = UART5_IRQn;
+    }
     #endif
     #ifdef USART6
-    if (USARTx == USART6) self->irq = USART6_IRQn;
+    if (USARTx == USART6) {
+        self->irq = USART6_IRQn;
+    }
     #endif
     #ifdef UART7
-    if (USARTx == UART7) self->irq = UART7_IRQn;
+    if (USARTx == UART7) {
+        self->irq = UART7_IRQn;
+    }
     #endif
     #ifdef UART8
-    if (USARTx == UART8) self->irq = UART8_IRQn;
+    if (USARTx == UART8) {
+        self->irq = UART8_IRQn;
+    }
     #endif
     #ifdef UART9
-    if (USARTx == UART9) self->irq = UART9_IRQn;
+    if (USARTx == UART9) {
+        self->irq = UART9_IRQn;
+    }
     #endif
     #ifdef UART10
-    if (USARTx == UART10) self->irq = UART10_IRQn;
+    if (USARTx == UART10) {
+        self->irq = UART10_IRQn;
+    }
     #endif
 }

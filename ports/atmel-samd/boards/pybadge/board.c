@@ -31,6 +31,7 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "supervisor/shared/board.h"
 #include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
@@ -51,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0x00, // _MADCTL top to bottom refresh in vsync aligned order.
+    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -71,7 +72,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, mp_const_none);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -91,7 +92,7 @@ void board_init(void) {
         128, // Height (after rotation)
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // grayscale
         false, // pixels in byte share row. only used for depth < 8
@@ -118,4 +119,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    board_reset_user_neopixels();
 }

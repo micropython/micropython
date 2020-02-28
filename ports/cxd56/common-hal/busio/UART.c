@@ -53,11 +53,17 @@ STATIC busio_uart_dev_t busio_uart_dev[] = {
 };
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, uint32_t baudrate,
-    uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-    uint16_t receiver_buffer_size) {
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
     struct termios tio;
 
+    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
+    
     if (bits != 8) {
         mp_raise_ValueError(translate("Could not initialize UART"));
     }
@@ -102,7 +108,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->tx_pin = tx;
     self->rx_pin = rx;
     self->baudrate = baudrate;
-    self->timeout = timeout;
+    self->timeout_us = timeout * 1000000;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -135,7 +141,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     FD_SET(busio_uart_dev[self->number].fd, &rfds);
 
     tv.tv_sec = 0;
-    tv.tv_usec = self->timeout * 1000;
+    tv.tv_usec = self->timeout_us;
 
     retval = select(busio_uart_dev[self->number].fd + 1, &rfds, NULL, NULL, &tv);
 
@@ -170,6 +176,14 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
     tio.c_speed = baudrate;
     ioctl(busio_uart_dev[self->number].fd, TCSETS, (long unsigned int)&tio);
     ioctl(busio_uart_dev[self->number].fd, TCFLSH, (long unsigned int)NULL);
+}
+
+mp_float_t common_hal_busio_uart_get_timeout(busio_uart_obj_t *self) {
+    return (mp_float_t) (self->timeout_us / 1000000.0f);
+}
+
+void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeout) {
+    self->timeout_us = timeout * 1000000;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {

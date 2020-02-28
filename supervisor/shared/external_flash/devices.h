@@ -105,6 +105,25 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Adesto Tech AT25SF041 1MiB SPI flash. It's on the SparkFun
+// SAMD51 Thing Plus board
+// Datasheet: https://www.adestotech.com/wp-content/uploads/DS-AT25SF041_044.pdf
+#define AT25SF041A {\
+    .total_size = (1 << 19), /* 512 KiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x1f, \
+    .memory_type = 0x84, \
+    .capacity = 0x01, \
+    .max_clock_speed_mhz = 85, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
 #define GD25Q16C {\
@@ -371,6 +390,23 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Winbond W25Q80DV 1MiB SPI flash.. Note that W25Q80DL has a different memory type (0x60)
+// Datasheet: https://www.winbond.com/resource-files/w25q80dv%20dl_revh_10022015.pdf
+#define W25Q80DV {\
+    .total_size = (1 << 20), /* 1 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
+    .capacity = 0x14, \
+    .max_clock_speed_mhz = 104, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
 
 // Settings for the Winbond W25Q128JV-SQ 16MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q128jv%20revf%2003272018%20plus.pdf
