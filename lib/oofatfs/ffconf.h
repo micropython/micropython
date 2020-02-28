@@ -343,12 +343,6 @@
 /  SemaphoreHandle_t and etc.. A header file for O/S definitions needs to be
 /  included somewhere in the scope of ff.h. */
 
-// Set to nonzero if buffers passed to disk_read have a word alignment
-// restriction
-#ifndef _FS_DISK_READ_ALIGNED
-#define _FS_DISK_READ_ALIGNED 0
-#endif
-
 /* #include <windows.h> // O/S definitions  */
 
 
