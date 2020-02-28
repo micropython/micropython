@@ -22,8 +22,8 @@ HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
 
 # Example:
-# https://d111q2jukuzyg1.cloudfront.net/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
-DOWNLOAD_BASE_URL = "https://d111q2jukuzyg1.cloudfront.net/bin"
+# https://downloads.circuitpython.org/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
+DOWNLOAD_BASE_URL = "https://downloads.circuitpython.org/bin"
 
 # Default extensions
 extension_by_port = {
