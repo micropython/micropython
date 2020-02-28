@@ -276,10 +276,3 @@ jobs:
     - name: Install upload deps
       run: |
         pip install uritemplate
-    - name: Upload to Release
-      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
-      working-directory: tools
-      env:
-        UPLOAD_URL: ${{ github.event.release.upload_url }}
-        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.BLINKA_GITHUB_ACCESS_TOKEN }}
-      if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested')
