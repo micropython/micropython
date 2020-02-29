@@ -219,7 +219,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 }
 
 bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t* self) {
-    return self->clock_pin == mp_const_none;
+    return self->clock_pin == NULL;
 }
 
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
@@ -237,8 +237,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
 
     reset_pin_number(self->clock_pin->number);
     reset_pin_number(self->data_pin->number);
-    self->clock_pin = mp_const_none;
-    self->data_pin = mp_const_none;
+    self->clock_pin = NULL;
+    self->data_pin = NULL;
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {
