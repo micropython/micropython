@@ -729,7 +729,7 @@ typedef double mp_float_t;
 
 // Whether to support module-level __getattr__ (see PEP 562)
 #ifndef MICROPY_MODULE_GETATTR
-#define MICROPY_MODULE_GETATTR (0)
+#define MICROPY_MODULE_GETATTR (1)
 #endif
 
 // Whether module weak links are supported
