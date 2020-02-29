@@ -37,10 +37,10 @@ extension_by_port = {
 # Per board overrides
 extension_by_board = {
     # samd
-    "arduino_mkr1300": BIN,
-    "arduino_mkrzero": BIN,
-    "arduino_nano_33_iot": BIN,
-    "arduino_zero": BIN,
+    "arduino_mkr1300": BIN_UF2,
+    "arduino_mkrzero": BIN_UF2,
+    "arduino_nano_33_iot": BIN_UF2,
+    "arduino_zero": BIN_UF2,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN_UF2,
