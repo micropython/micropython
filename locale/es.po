@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-19 08:44+0000\n"
+"POT-Creation-Date: 2020-02-29 14:52-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -903,9 +903,12 @@ msgstr "Pin inválido para canal derecho"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins"
 msgstr "pines inválidos"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Invalid pins for PWMOut"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -1135,6 +1138,7 @@ msgstr ""
 "PWM frecuencia no esta escrito cuando el variable_frequency es falso en "
 "construcion"
 
+#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm32f4/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr ""
@@ -1175,10 +1179,6 @@ msgstr "Pull no se usa cuando la dirección es output."
 
 #: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not yet supported"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not yet supported"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c

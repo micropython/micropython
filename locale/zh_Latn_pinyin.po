@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-19 08:44+0000\n"
+"POT-Creation-Date: 2020-02-29 14:52-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -908,9 +908,12 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Invalid pins for PWMOut"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -1140,6 +1143,7 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
 
+#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm32f4/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "Shàng bù zhīchí ParallelBus"
@@ -1179,10 +1183,6 @@ msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 #: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not yet supported"
 msgstr "Shàng bù zhīchí PulseIn"
-
-#: ports/stm32f4/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not yet supported"
-msgstr "Shàng bù zhīchí PulseOut"
 
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -3080,6 +3080,9 @@ msgstr "líng bù"
 
 #~ msgid "Pixel beyond bounds of buffer"
 #~ msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
+
+#~ msgid "PulseOut not yet supported"
+#~ msgstr "Shàng bù zhīchí PulseOut"
 
 #~ msgid "Range out of bounds"
 #~ msgstr "Fànwéi chāochū biānjiè"
