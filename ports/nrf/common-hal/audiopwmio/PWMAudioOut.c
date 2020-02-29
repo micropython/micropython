@@ -155,10 +155,9 @@ void audiopwmout_background() {
     }
 }
 
+// Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
-    assert_pin_free(left_channel);
-    assert_pin_free(right_channel);
     self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL);
     if (!self->pwm) {
         mp_raise_RuntimeError(translate("All timers in use"));

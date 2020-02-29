@@ -34,6 +34,7 @@ NRF_PDM_Type *nrf_pdm = NRF_PDM;
 
 static uint32_t dummy_buffer[4];
 
+// Caller validates that pins are free.
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
                                            const mcu_pin_obj_t* clock_pin,
                                            const mcu_pin_obj_t* data_pin,
@@ -41,8 +42,6 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
                                            uint8_t bit_depth,
                                            bool mono,
                                            uint8_t oversample) {
-    assert_pin_free(clock_pin);
-    assert_pin_free(data_pin);
     claim_pin(clock_pin);
     claim_pin(data_pin);
 
