@@ -103,12 +103,12 @@ mp_obj_t common_hal_board_create_uart(void) {
 #ifdef DEFAULT_UART_BUS_RTS
     const mcu_pin_obj_t* rts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RTS);
 #else
-    const mcu_pin_obj_t* rts = mp_const_none;
+    const mcu_pin_obj_t* rts = NULL;
 #endif
 #ifdef DEFAULT_UART_BUS_CTS
     const mcu_pin_obj_t* cts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_CTS);
 #else
-    const mcu_pin_obj_t* cts = mp_const_none;
+    const mcu_pin_obj_t* cts = NULL;
 #endif
 #ifdef DEFAULT_UART_IS_RS485
     const mcu_pin_obj_t* rs485_dir = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RS485DIR);
@@ -118,7 +118,7 @@ mp_obj_t common_hal_board_create_uart(void) {
     const bool rs485_invert = false;
 #endif
 #else
-    const mcu_pin_obj_t* rs485_dir = mp_const_none;
+    const mcu_pin_obj_t* rs485_dir = NULL;
     const bool rs485_invert = false;
 #endif
 

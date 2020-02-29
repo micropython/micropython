@@ -155,7 +155,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     self->clock_pin_number = clock->number;
     claim_pin(clock);
 
-    if (mosi != mp_const_none) {
+    if (mosi != NULL) {
         config.mosi_pin = mosi->number;
         self->MOSI_pin_number = mosi->number;
         claim_pin(mosi);
@@ -163,7 +163,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
         self->MOSI_pin_number = NO_PIN;
     }
 
-    if (miso != mp_const_none) {
+    if (miso != NULL) {
         config.miso_pin = miso->number;
         self->MISO_pin_number = mosi->number;
         claim_pin(miso);

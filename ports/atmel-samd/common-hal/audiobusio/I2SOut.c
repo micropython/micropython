@@ -204,7 +204,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
-    return self->bit_clock == mp_const_none;
+    return self->bit_clock == NULL;
 }
 
 void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
@@ -213,11 +213,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     }
 
     reset_pin_number(self->bit_clock->number);
-    self->bit_clock = mp_const_none;
+    self->bit_clock = NULL;
     reset_pin_number(self->word_select->number);
-    self->word_select = mp_const_none;
+    self->word_select = NULL;
     reset_pin_number(self->data->number);
-    self->data = mp_const_none;
+    self->data = NULL;
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,

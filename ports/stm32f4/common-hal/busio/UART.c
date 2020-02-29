@@ -86,12 +86,12 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool uart_taken = false;
     uint8_t uart_index = 0; //origin 0 corrected
 
-    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert == true)) {
+    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert == true)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
-    
+
     //Can have both pins, or either
-    if ((tx != mp_const_none) && (rx != mp_const_none)) {
+    if ((tx != NULL) && (rx != NULL)) {
         //normal find loop if both pins exist
         for (uint i = 0; i < tx_len; i++) {
             if (mcu_uart_tx_list[i].pin == tx) {
@@ -115,7 +115,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_index = self->tx->uart_index - 1;
         USARTx = assign_uart_or_throw(self, (self->tx != NULL && self->rx != NULL),
             uart_index, uart_taken);
-    } else if (tx == mp_const_none) {
+    } else if (tx == NULL) {
         //If there is no tx, run only rx
         for (uint i = 0; i < rx_len; i++) {
             if (mcu_uart_rx_list[i].pin == rx) {
@@ -132,7 +132,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_index = self->rx->uart_index - 1;
         USARTx = assign_uart_or_throw(self, (self->rx != NULL),
             uart_index, uart_taken);
-    } else if (rx == mp_const_none) {
+    } else if (rx == NULL) {
         //If there is no rx, run only tx
         for (uint i = 0; i < tx_len; i++) {
             if (mcu_uart_tx_list[i].pin == tx) {
@@ -236,7 +236,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->tx->pin == mp_const_none;
+    return self->tx->pin == NULL;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -244,8 +244,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
     reset_pin_number(self->tx->pin->port,self->tx->pin->number);
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
-    self->tx = mp_const_none;
-    self->rx = mp_const_none;
+    self->tx = NULL;
+    self->rx = NULL;
     gc_free(self->rbuf.buf);
     self->rbuf.size = 0;
     self->rbuf.iput = self->rbuf.iget = 0;

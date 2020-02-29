@@ -49,7 +49,7 @@ STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
-    //SPI2 and 3 are on PCLK1, if they exist. 
+    //SPI2 and 3 are on PCLK1, if they exist.
     #ifdef SPI2
         if (instance == SPI2) return HAL_RCC_GetPCLK1Freq();
     #endif
@@ -113,7 +113,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     for (uint i = 0; i < sck_len; i++) {
         if (mcu_spi_sck_list[i].pin == sck) {
             //if both MOSI and MISO exist, loop search normally
-            if ((mosi != mp_const_none) && (miso != mp_const_none)) {
+            if ((mosi != NULL) && (miso != NULL)) {
                 //MOSI
                 for (uint j = 0; j < mosi_len; j++) {
                     if (mcu_spi_mosi_list[j].pin == mosi) {
@@ -133,11 +133,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 self->miso = &mcu_spi_miso_list[k];
                                 break;
                             }
-                        }   
+                        }
                     }
                 }
             // if just MISO, reduce search
-            } else if (miso != mp_const_none) {
+            } else if (miso != NULL) {
                 for (uint j = 0; j < miso_len; j++) {
                     if ((mcu_spi_miso_list[j].pin == miso) //only SCK and MISO need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[j].spi_index)) {
@@ -152,9 +152,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         self->miso = &mcu_spi_miso_list[j];
                         break;
                     }
-                }  
+                }
             // if just MOSI, reduce search
-            } else if (mosi != mp_const_none) {
+            } else if (mosi != NULL) {
                 for (uint j = 0; j < mosi_len; j++) {
                     if ((mcu_spi_mosi_list[j].pin == mosi) //only SCK and MOSI need the same index
                         && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)) {
@@ -169,7 +169,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         self->miso = NULL;
                         break;
                     }
-                }  
+                }
             } else {
                 //throw an error immediately
                 mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
@@ -179,8 +179,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     //handle typedef selection, errors
     if ( (self->sck != NULL && self->mosi != NULL && self->miso != NULL) ||
-        (self->sck != NULL && self->mosi != NULL && miso == mp_const_none) ||
-        (self->sck != NULL && self->miso != NULL && mosi == mp_const_none)) {
+        (self->sck != NULL && self->mosi != NULL && miso == NULL) ||
+        (self->sck != NULL && self->miso != NULL && mosi == NULL)) {
         SPIx = mcu_spi_banks[self->sck->spi_index - 1];
     } else {
         if (spi_taken) {
@@ -196,7 +196,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = self->sck->altfn_index; 
+    GPIO_InitStruct.Alternate = self->sck->altfn_index;
     HAL_GPIO_Init(pin_port(sck->port), &GPIO_InitStruct);
 
     if (self->mosi != NULL) {
@@ -204,7 +204,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = self->mosi->altfn_index; 
+        GPIO_InitStruct.Alternate = self->mosi->altfn_index;
         HAL_GPIO_Init(pin_port(mosi->port), &GPIO_InitStruct);
     }
 
@@ -213,14 +213,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = self->miso->altfn_index; 
+        GPIO_InitStruct.Alternate = self->miso->altfn_index;
         HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
     }
 
     spi_clock_enable(1 << (self->sck->spi_index - 1));
     reserved_spi[self->sck->spi_index - 1] = true;
-    
-    self->handle.Instance = SPIx; 
+
+    self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
     // Direction change only required for RX-only, see RefMan RM0090:884
     self->handle.Init.Direction = (self->mosi == NULL) ? SPI_CR1_RXONLY : SPI_DIRECTION_2LINES;
@@ -269,7 +269,7 @@ void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
-    return self->sck->pin == mp_const_none;
+    return self->sck->pin == NULL;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
@@ -287,15 +287,15 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (self->miso != NULL) {
         reset_pin_number(self->miso->pin->port,self->miso->pin->number);
     }
-    self->sck = mp_const_none;
-    self->mosi = mp_const_none;
-    self->miso = mp_const_none;
+    self->sck = NULL;
+    self->mosi = NULL;
+    self->miso = NULL;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     //This resets the SPI, so check before updating it redundantly
-    if (baudrate == self->baudrate && polarity== self->polarity 
+    if (baudrate == self->baudrate && polarity== self->polarity
         && phase == self->phase && bits == self->bits) {
         return true;
     }
@@ -307,7 +307,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = (polarity) ? SPI_POLARITY_HIGH : SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = (phase) ? SPI_PHASE_2EDGE : SPI_PHASE_1EDGE;
 
-    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler, 
+    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler,
                                             get_busclock(self->handle.Instance));
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK)
@@ -325,7 +325,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
     bool grabbed_lock = false;
 
-    //Critical section code that may be required at some point. 
+    //Critical section code that may be required at some point.
     // uint32_t store_primask = __get_PRIMASK();
     // __disable_irq();
     // __DMB();
@@ -367,7 +367,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     return result == HAL_OK;
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, 
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
         uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (self->miso == NULL || self->mosi == NULL) {
         mp_raise_ValueError(translate("Missing MISO or MOSI Pin"));
