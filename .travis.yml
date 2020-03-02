@@ -66,6 +66,7 @@ jobs:
 
     # qemu-arm port
     - stage: test
+      dist: bionic # needed for more recent version of qemu-system-arm with mps2-an385 target
       env: NAME="qemu-arm port build and tests"
       install:
         - sudo apt-get install gcc-arm-none-eabi

@@ -7,7 +7,7 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-BOARD ?= netduino2
+BOARD ?= mps2-an385
 
 ifeq ($(BOARD),netduino2)
 CFLAGS += -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
