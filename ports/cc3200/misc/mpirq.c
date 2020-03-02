@@ -33,7 +33,6 @@
 #include "inc/hw_types.h"
 #include "interrupt.h"
 #include "pybsleep.h"
-#include "mpexception.h"
 #include "mperror.h"
 #include "mpirq.h"
 
@@ -112,7 +111,7 @@ void mp_irq_remove (const mp_obj_t parent) {
 
 uint mp_irq_translate_priority (uint priority) {
     if (priority < 1 || priority > MP_ARRAY_SIZE(mp_irq_priorities)) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     return mp_irq_priorities[priority - 1];
 }

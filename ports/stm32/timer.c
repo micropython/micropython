@@ -296,7 +296,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
         if (freq <= 0) {
             goto bad_freq;
         bad_freq:
-            mp_raise_ValueError("must have positive freq");
+            mp_raise_ValueError(MP_ERROR_TEXT("must have positive freq"));
         }
         period = source_freq / freq;
     }
@@ -323,7 +323,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
 STATIC uint32_t compute_prescaler_period_from_t(pyb_timer_obj_t *self, int32_t t_num, int32_t t_den, uint32_t *period_out) {
     uint32_t source_freq = timer_get_source_freq(self->tim_id);
     if (t_num <= 0 || t_den <= 0) {
-        mp_raise_ValueError("must have positive freq");
+        mp_raise_ValueError(MP_ERROR_TEXT("must have positive freq"));
     }
     uint64_t period = (uint64_t)source_freq * (uint64_t)t_num / (uint64_t)t_den;
     uint32_t prescaler = 1;
@@ -345,7 +345,7 @@ STATIC uint32_t compute_prescaler_period_from_t(pyb_timer_obj_t *self, int32_t t
                 prescaler |= period_lsb;
             }
             if (prescaler > 0x10000) {
-                mp_raise_ValueError("period too large");
+                mp_raise_ValueError(MP_ERROR_TEXT("period too large"));
             }
         }
     }
@@ -491,7 +491,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
 
 TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer) {
     if (mp_obj_get_type(timer) != &pyb_timer_type) {
-        mp_raise_ValueError("need a Timer object");
+        mp_raise_ValueError(MP_ERROR_TEXT("need a Timer object"));
     }
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(timer);
     return &self->tim;
@@ -623,12 +623,12 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         // set prescaler and period from desired period and tick_hz scale
         init->Prescaler = compute_prescaler_period_from_t(self, args[ARG_period].u_int, args[ARG_tick_hz].u_int, &init->Period);
     } else {
-        mp_raise_TypeError("must specify either freq, period, or prescaler and period");
+        mp_raise_TypeError(MP_ERROR_TEXT("must specify either freq, period, or prescaler and period"));
     }
 
     init->CounterMode = args[ARG_mode].u_int;
     if (!IS_TIM_COUNTER_MODE(init->CounterMode)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid mode (%d)", init->CounterMode);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid mode (%d)"), init->CounterMode);
     }
 
     init->ClockDivision = args[ARG_div].u_int == 2 ? TIM_CLOCKDIVISION_DIV2 :
@@ -889,7 +889,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // check if the timer exists
     if (tim_id <= 0 || tim_id > MICROPY_HW_MAX_TIMER || tim_instance_table[tim_id - 1] == 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, "Timer(%d) doesn't exist", tim_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) doesn't exist"), tim_id);
     }
 
     pyb_timer_obj_t *tim;
@@ -1038,7 +1038,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_int_t channel = mp_obj_get_int(pos_args[1]);
 
     if (channel < 1 || channel > 4) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid channel (%d)", channel);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid channel (%d)"), channel);
     }
 
     pyb_timer_channel_obj_t *chan = self->channel;
@@ -1091,12 +1091,12 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_obj_t pin_obj = args[2].u_obj;
     if (pin_obj != mp_const_none) {
         if (!mp_obj_is_type(pin_obj, &pin_type)) {
-            mp_raise_ValueError("pin argument needs to be be a Pin type");
+            mp_raise_ValueError(MP_ERROR_TEXT("pin argument needs to be be a Pin type"));
         }
         const pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have an af for Timer(%d)", pin->name, self->tim_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an af for Timer(%d)"), pin->name, self->tim_id);
         }
         // pin.init(mode=AF_PP, af=idx)
         const mp_obj_t args2[6] = {
@@ -1177,7 +1177,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             #endif
 
             if (!IS_TIM_OC_POLARITY(oc_config.OCPolarity)) {
-                mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", oc_config.OCPolarity);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid polarity (%d)"), oc_config.OCPolarity);
             }
             HAL_TIM_OC_ConfigChannel(&self->tim, &oc_config, TIMER_CHANNEL(chan));
             if (chan->callback == mp_const_none) {
@@ -1206,7 +1206,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             ic_config.ICFilter = 0;
 
             if (!IS_TIM_IC_POLARITY(ic_config.ICPolarity)) {
-                mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", ic_config.ICPolarity);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid polarity (%d)"), ic_config.ICPolarity);
             }
             HAL_TIM_IC_ConfigChannel(&self->tim, &ic_config, TIMER_CHANNEL(chan));
             if (chan->callback == mp_const_none) {
@@ -1236,7 +1236,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             enc_config.IC2Filter = 0;
 
             if (!IS_TIM_IC_POLARITY(enc_config.IC1Polarity)) {
-                mp_raise_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", enc_config.IC1Polarity);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid polarity (%d)"), enc_config.IC1Polarity);
             }
             // Only Timers 1, 2, 3, 4, 5, and 8 support encoder mode
             if (
@@ -1258,7 +1258,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
                 && self->tim.Instance != TIM8
                 #endif
                 ) {
-                mp_raise_msg_varg(&mp_type_ValueError, "encoder not supported on timer %d", self->tim_id);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("encoder not supported on timer %d"), self->tim_id);
             }
 
             // Disable & clear the timer interrupt so that we don't trigger
@@ -1275,7 +1275,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         }
 
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, "invalid mode (%d)", chan->mode);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid mode (%d)"), chan->mode);
     }
 
     return MP_OBJ_FROM_PTR(chan);
@@ -1390,7 +1390,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
         HAL_NVIC_EnableIRQ(self->irqn);
     } else {
-        mp_raise_ValueError("callback must be None or a callable object");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
     }
     return mp_const_none;
 }
@@ -1553,7 +1553,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
                 break;
         }
     } else {
-        mp_raise_ValueError("callback must be None or a callable object");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
     }
     return mp_const_none;
 }

@@ -52,7 +52,7 @@ mp_obj_t mp_machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
             extern mp_obj_t MICROPY_PY_MACHINE_SPI_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
             return MICROPY_PY_MACHINE_SPI_MAKE_NEW(type, n_args, n_kw, args);
             #else
-            mp_raise_ValueError("invalid SPI peripheral");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid SPI peripheral"));
             #endif
         }
         --n_args;
@@ -119,7 +119,7 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp
     mp_buffer_info_t dest;
     mp_get_buffer_raise(rd_buf, &dest, MP_BUFFER_WRITE);
     if (src.len != dest.len) {
-        mp_raise_ValueError("buffers must be the same length");
+        mp_raise_ValueError(MP_ERROR_TEXT("buffers must be the same length"));
     }
     mp_machine_spi_transfer(self, src.len, src.buf, dest.buf);
     return mp_const_none;
@@ -202,15 +202,15 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     self->spi.polarity = args[ARG_polarity].u_int;
     self->spi.phase = args[ARG_phase].u_int;
     if (args[ARG_bits].u_int != 8) {
-        mp_raise_ValueError("bits must be 8");
+        mp_raise_ValueError(MP_ERROR_TEXT("bits must be 8"));
     }
     if (args[ARG_firstbit].u_int != MICROPY_PY_MACHINE_SPI_MSB) {
-        mp_raise_ValueError("firstbit must be MSB");
+        mp_raise_ValueError(MP_ERROR_TEXT("firstbit must be MSB"));
     }
     if (args[ARG_sck].u_obj == MP_OBJ_NULL
         || args[ARG_mosi].u_obj == MP_OBJ_NULL
         || args[ARG_miso].u_obj == MP_OBJ_NULL) {
-        mp_raise_ValueError("must specify all of sck/mosi/miso");
+        mp_raise_ValueError(MP_ERROR_TEXT("must specify all of sck/mosi/miso"));
     }
     self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);

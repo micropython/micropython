@@ -15,7 +15,7 @@ void mp_stack_check(void) {
     // Assumes descending stack on target
     volatile char dummy;
     if (stack_top - &dummy >= STACK_LIMIT) {
-        mp_raise_msg(&mp_type_RuntimeError, "maximum recursion depth exceeded");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("maximum recursion depth exceeded"));
     }
 }
 

@@ -169,7 +169,7 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
     return mp_const_none;
 
 pin_error:
-    mp_raise_msg_varg(&mp_type_ValueError, "pin %d does not exist", pin);
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %d does not exist"), pin);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);

@@ -295,7 +295,7 @@ success:
     return stack_top;
 
 fail:
-    mp_raise_ValueError("syntax error in JSON");
+    mp_raise_ValueError(MP_ERROR_TEXT("syntax error in JSON"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 

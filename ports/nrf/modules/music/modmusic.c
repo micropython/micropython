@@ -284,7 +284,7 @@ STATIC mp_obj_t microbit_music_stop(mp_uint_t n_args, const mp_obj_t *args) {
 #ifdef MICROPY_HW_MUSIC_PIN
         pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
-        mp_raise_ValueError("pin parameter not given");
+        mp_raise_ValueError(MP_ERROR_TEXT("pin parameter not given"));
 #endif
     } else {
         pin = (pin_obj_t *)args[0];
@@ -337,7 +337,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
 #ifdef MICROPY_HW_MUSIC_PIN
         pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
-        mp_raise_ValueError("pin parameter not given");
+        mp_raise_ValueError(MP_ERROR_TEXT("pin parameter not given"));
 #endif
     } else {
         pin = (pin_obj_t *)args[1].u_obj;
@@ -392,7 +392,7 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
 #ifdef MICROPY_HW_MUSIC_PIN
         pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
-        mp_raise_ValueError("pin parameter not given");
+        mp_raise_ValueError(MP_ERROR_TEXT("pin parameter not given"));
 #endif
     } else {
         pin = (pin_obj_t *)args[2].u_obj;
@@ -408,7 +408,7 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
 //TODO: pwm_release(pin->name);
     } else if (pwm_set_period_us(1000000/frequency)) {
         pwm_release(pin->pin); // TODO: remove pin setting.
-        mp_raise_ValueError("invalid pitch");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pitch"));
     }
     if (duration >= 0) {
         // use async machinery to stop the pitch after the duration

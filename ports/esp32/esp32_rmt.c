@@ -61,7 +61,7 @@ typedef struct _esp32_rmt_obj_t {
 //        At least update the method in machine_time.c.
 STATIC esp_err_t check_esp_err(esp_err_t code) {
     if (code) {
-        mp_raise_msg(&mp_type_OSError, esp_err_to_name(code));
+        mp_raise_msg(&mp_type_OSError, (mp_rom_error_text_t)esp_err_to_name(code));
     }
 
     return code;
@@ -80,7 +80,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t clock_div = args[2].u_int;
 
     if (clock_div < 1 || clock_div > 255) {
-        mp_raise_ValueError("clock_div must be between 1 and 255");
+        mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
     }
 
     esp32_rmt_obj_t *self = m_new_obj_with_finaliser(esp32_rmt_obj_t);
@@ -189,7 +189,7 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, 
     mp_uint_t start = args[2].u_int;
 
     if (start < 0 || start > 1) {
-        mp_raise_ValueError("start must be 0 or 1");
+        mp_raise_ValueError(MP_ERROR_TEXT("start must be 0 or 1"));
     }
 
     size_t pulses_length = 0;

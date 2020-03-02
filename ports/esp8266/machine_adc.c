@@ -64,7 +64,7 @@ mp_obj_t machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
         case 1:
             return &machine_adc_vdd3;
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, "ADC(%d) doesn't exist", chn);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ADC(%d) doesn't exist"), chn);
     }
 }
 

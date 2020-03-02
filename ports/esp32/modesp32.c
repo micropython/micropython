@@ -46,9 +46,9 @@
 STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {
-        mp_raise_ValueError("no resources");
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
-    //mp_raise_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF");
+    //mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("touchpad wakeup not available for this version of ESP-IDF"));
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
@@ -58,7 +58,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
 STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     if (machine_rtc_config.wake_on_touch) {
-        mp_raise_ValueError("no resources");
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
     enum {ARG_pin, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -74,7 +74,7 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
         gpio_num_t pin_id = machine_pin_get_id(args[ARG_pin].u_obj);
         if (pin_id != machine_rtc_config.ext0_pin) {
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_ValueError("invalid pin");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
             }
             machine_rtc_config.ext0_pin = pin_id;
         }
@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
             gpio_num_t pin_id = machine_pin_get_id(elem[i]);
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_ValueError("invalid pin");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
                 break;
             }
             ext1_pins |= (1ll << pin_id);

@@ -82,13 +82,13 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         const byte *data = (const byte *)mp_obj_str_get_data(args->key.u_obj, &len);
         int res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_RSA_KEY, data, len, NULL);
         if (res != SSL_OK) {
-            mp_raise_ValueError("invalid key");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
         }
 
         data = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &len);
         res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
         if (res != SSL_OK) {
-            mp_raise_ValueError("invalid cert");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
         }
     }
 

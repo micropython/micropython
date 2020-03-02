@@ -91,7 +91,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
         self->type = MP_BLUETOOTH_UUID_TYPE_16;
         mp_int_t value = mp_obj_get_int(all_args[0]);
         if (value > 65535) {
-            mp_raise_ValueError("invalid UUID");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid UUID"));
         }
         self->data[0] = value & 0xff;
         self->data[1] = (value >> 8) & 0xff;
@@ -112,12 +112,12 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
                     continue;
                 }
                 if (!unichar_isxdigit(c)) {
-                    mp_raise_ValueError("invalid char in UUID");
+                    mp_raise_ValueError(MP_ERROR_TEXT("invalid char in UUID"));
                 }
                 c = unichar_xdigit_value(c);
                 uuid_i--;
                 if (uuid_i < 0) {
-                    mp_raise_ValueError("UUID too long");
+                    mp_raise_ValueError(MP_ERROR_TEXT("UUID too long"));
                 }
                 if (uuid_i % 2 == 0) {
                     // lower nibble
@@ -128,7 +128,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
                 }
             }
             if (uuid_i > 0) {
-                mp_raise_ValueError("UUID too short");
+                mp_raise_ValueError(MP_ERROR_TEXT("UUID too short"));
             }
         }
     }
@@ -283,7 +283,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
-            mp_raise_TypeError("must query one param");
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
@@ -295,12 +295,12 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
             case MP_QSTR_rxbuf:
                 return mp_obj_new_int(self->ringbuf.size);
             default:
-                mp_raise_ValueError("unknown config param");
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
         // Set config value(s)
         if (n_args != 1) {
-            mp_raise_TypeError("can't specify pos and kw args");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
@@ -341,7 +341,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         break;
                     }
                     default:
-                        mp_raise_ValueError("unknown config param");
+                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
         }
@@ -361,7 +361,7 @@ STATIC mp_obj_t bluetooth_ble_irq(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_obj_t callback = args[ARG_handler].u_obj;
     if (callback != mp_const_none && !mp_obj_is_callable(callback)) {
-        mp_raise_ValueError("invalid callback");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
     }
 
     // Update the callback.
@@ -414,7 +414,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_gap_advertise_obj, 1, bluetooth_
 
 STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t characteristics_in, uint16_t **handles, size_t *num_handles) {
     if (!mp_obj_is_type(uuid_in, &bluetooth_uuid_type)) {
-        mp_raise_ValueError("invalid service UUID");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid service UUID"));
     }
     mp_obj_bluetooth_uuid_t *service_uuid = MP_OBJ_TO_PTR(uuid_in);
 
@@ -451,11 +451,11 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
         mp_obj_get_array(characteristic_obj, &characteristic_len, &characteristic_items);
 
         if (characteristic_len < 2 || characteristic_len > 3) {
-            mp_raise_ValueError("invalid characteristic tuple");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid characteristic tuple"));
         }
         mp_obj_t uuid_obj = characteristic_items[0];
         if (!mp_obj_is_type(uuid_obj, &bluetooth_uuid_type)) {
-            mp_raise_ValueError("invalid characteristic UUID");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid characteristic UUID"));
         }
 
         (*handles)[handle_index++] = 0xffff;
@@ -487,7 +487,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
                 mp_obj_get_array_fixed_n(descriptor_obj, 2, &descriptor_items);
                 mp_obj_t desc_uuid_obj = descriptor_items[0];
                 if (!mp_obj_is_type(desc_uuid_obj, &bluetooth_uuid_type)) {
-                    mp_raise_ValueError("invalid descriptor UUID");
+                    mp_raise_ValueError(MP_ERROR_TEXT("invalid descriptor UUID"));
                 }
 
                 descriptor_uuids[descriptor_index] = MP_OBJ_TO_PTR(desc_uuid_obj);
@@ -567,7 +567,7 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len != 6) {
-        mp_raise_ValueError("invalid addr");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid addr"));
     }
     mp_int_t scan_duration_ms = MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS;
     if (n_args == 4) {

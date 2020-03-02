@@ -154,7 +154,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MICROPY_HW_RTC_USER_MEM_MAX) {
-            mp_raise_ValueError("buffer too long");
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too long"));
         }
         memcpy((char *)rtc_user_mem_data, (char *)bufinfo.buf, bufinfo.len);
         rtc_user_mem_len = bufinfo.len;

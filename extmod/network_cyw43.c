@@ -196,7 +196,7 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     int scan_res = cyw43_wifi_scan(self->cyw, &opts, MP_OBJ_TO_PTR(res), network_cyw43_scan_cb);
 
     if (scan_res < 0) {
-        mp_raise_msg(&mp_type_OSError, "STA must be active");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
     // Wait for scan to finish, with a 10s timeout
@@ -279,7 +279,7 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_stations: {
             // return list of connected stations
             if (self->itf != CYW43_ITF_AP) {
-                mp_raise_ValueError("AP required");
+                mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
             }
             int num_stas;
             uint8_t macs[32 * 6];
@@ -295,7 +295,7 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_raise_ValueError("unknown status param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_cyw43_status_obj, 1, 2, network_cyw43_status);
 
@@ -316,7 +316,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
-            mp_raise_TypeError("must query one param");
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
@@ -354,12 +354,12 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
             default:
-                mp_raise_ValueError("unknown config param");
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
         // Set config value(s)
         if (n_args != 1) {
-            mp_raise_TypeError("can't specify pos and kw args");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
@@ -420,7 +420,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         break;
                     }
                     default:
-                        mp_raise_ValueError("unknown config param");
+                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
         }

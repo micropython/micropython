@@ -181,7 +181,7 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
                     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_rssi());
                 }
         }
-        mp_raise_ValueError("unknown status param");
+        mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
@@ -229,7 +229,7 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
     if ((wifi_get_opmode() & STATION_MODE) == 0) {
-        mp_raise_msg(&mp_type_OSError, "STA must be active");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
@@ -246,7 +246,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
         ets_loop_iter();
     }
     if (list == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_OSError, "scan failed");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("scan failed"));
     }
     return list;
 }
@@ -317,7 +317,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             wifi_softap_dhcps_stop();
         }
         if (!wifi_set_ip_info(self->if_id, &info)) {
-            mp_raise_msg(&mp_type_OSError, "wifi_set_ip_info() failed");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("wifi_set_ip_info() failed"));
         }
         dns_setserver(0, &dns_addr);
         if (restart_dhcp_server) {
@@ -330,7 +330,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig)
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
-        mp_raise_TypeError("either pos or kw args are allowed");
+        mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -357,7 +357,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
-                            mp_raise_ValueError("invalid buffer length");
+                            mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
                         }
                         wifi_set_macaddr(self->if_id, bufinfo.buf);
                         break;
@@ -427,7 +427,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     // Get config
 
     if (n_args != 2) {
-        mp_raise_TypeError("can query only one param");
+        mp_raise_TypeError(MP_ERROR_TEXT("can query only one param"));
     }
 
     mp_obj_t val;
@@ -480,7 +480,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return val;
 
 unknown:
-    mp_raise_ValueError("unknown config param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 

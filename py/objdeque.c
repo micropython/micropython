@@ -102,7 +102,7 @@ STATIC mp_obj_t mp_obj_deque_append(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     if (self->flags & FLAG_CHECK_OVERFLOW && new_i_put == self->i_get) {
-        mp_raise_msg(&mp_type_IndexError, "full");
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("full"));
     }
 
     self->items[self->i_put] = arg;
@@ -122,7 +122,7 @@ STATIC mp_obj_t deque_popleft(mp_obj_t self_in) {
     mp_obj_deque_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->i_get == self->i_put) {
-        mp_raise_msg(&mp_type_IndexError, "empty");
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty"));
     }
 
     mp_obj_t ret = self->items[self->i_get];

@@ -144,15 +144,15 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw,
 
     ip_addr_t iplocal, ipremote;
     if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {
-        mp_raise_ValueError("not a valid local IP");
+        mp_raise_ValueError(MP_ERROR_TEXT("not a valid local IP"));
     }
     if (!ipaddr_aton(mp_obj_str_get_str(args[2]), &ipremote)) {
-        mp_raise_ValueError("not a valid remote IP");
+        mp_raise_ValueError(MP_ERROR_TEXT("not a valid remote IP"));
     }
 
     struct netif *n = &lwip_slip_obj.lwip_netif;
     if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
-        mp_raise_ValueError("out of memory");
+        mp_raise_ValueError(MP_ERROR_TEXT("out of memory"));
     }
     netif_set_up(n);
     netif_set_default(n);

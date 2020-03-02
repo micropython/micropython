@@ -92,7 +92,7 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
         || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
         // CPython: io.UnsupportedOperation, OSError subclass
-        mp_raise_msg(&mp_type_OSError, "stream operation not supported");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("stream operation not supported"));
     }
     return stream_p;
 }

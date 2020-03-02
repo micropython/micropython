@@ -42,7 +42,6 @@
 #include "sdhost.h"
 #include "sd_diskio.h"
 #include "pybsd.h"
-#include "mpexception.h"
 #include "pybsleep.h"
 #include "pybpin.h"
 #include "pins.h"

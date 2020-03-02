@@ -68,19 +68,19 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     struct device *dev = device_get_binding(dev_name);
 
     if (dev == NULL) {
-        mp_raise_ValueError("device not found");
+        mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
     }
 
     if ((args[ARG_scl].u_obj != MP_OBJ_NULL) || (args[ARG_sda].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of scl/sda is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));
     }
 
     if ((args[ARG_freq].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of freq is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of freq is not implemented"));
     }
 
     if ((args[ARG_timeout].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of timeout is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of timeout is not implemented"));
     }
 
     machine_hard_i2c_obj_t *self = m_new_obj(machine_hard_i2c_obj_t);

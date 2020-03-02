@@ -174,7 +174,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 
     // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
     if (len < 8 || len > 9) {
-        mp_raise_TypeError("mktime needs a tuple of length 8 or 9");
+        mp_raise_TypeError(MP_ERROR_TEXT("mktime needs a tuple of length 8 or 9"));
     }
 
     struct tm time = {
@@ -192,7 +192,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
     }
     time_t ret = mktime(&time);
     if (ret == -1) {
-        mp_raise_msg(&mp_type_OverflowError, "invalid mktime usage");
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("invalid mktime usage"));
     }
     return mp_obj_new_int(ret);
 }

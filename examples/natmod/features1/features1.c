@@ -45,7 +45,7 @@ STATIC mp_int_t fibonacci_helper(mp_int_t x) {
 STATIC mp_obj_t fibonacci(mp_obj_t x_in) {
     mp_int_t x = mp_obj_get_int(x_in);
     if (x < 0) {
-        mp_raise_ValueError("can't compute negative Fibonacci number");
+        mp_raise_ValueError(MP_ERROR_TEXT("can't compute negative Fibonacci number"));
     }
     return mp_obj_new_int(fibonacci_helper(x));
 }

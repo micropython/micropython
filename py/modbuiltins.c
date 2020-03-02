@@ -158,7 +158,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         str[3] = (c & 0x3F) | 0x80;
         len = 4;
     } else {
-        mp_raise_ValueError("chr() arg not in range(0x110000)");
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
     return mp_obj_new_str_via_qstr((char *)str, len);
     #else
@@ -167,7 +167,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         uint8_t str[1] = {ord};
         return mp_obj_new_str_via_qstr((char *)str, 1);
     } else {
-        mp_raise_ValueError("chr() arg not in range(256)");
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(256)"));
     }
     #endif
 }
@@ -286,7 +286,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
             if (default_elem != NULL) {
                 best_obj = default_elem->value;
             } else {
-                mp_raise_ValueError("arg is an empty sequence");
+                mp_raise_ValueError(MP_ERROR_TEXT("arg is an empty sequence"));
             }
         }
         return best_obj;
@@ -373,10 +373,10 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     }
 
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-    mp_raise_TypeError("ord expects a character");
+    mp_raise_TypeError(MP_ERROR_TEXT("ord expects a character"));
     #else
     mp_raise_msg_varg(&mp_type_TypeError,
-        "ord() expected a character, but string of length %d found", (int)len);
+        MP_ERROR_TEXT("ord() expected a character, but string of length %d found"), (int)len);
     #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
@@ -387,7 +387,7 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
             return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
         default:
             #if !MICROPY_PY_BUILTINS_POW3
-            mp_raise_NotImplementedError("3-arg pow() not supported");
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
             #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
             return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
             #else
@@ -545,7 +545,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args > 1) {
-        mp_raise_TypeError("must use keyword argument for key function");
+        mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
     mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);

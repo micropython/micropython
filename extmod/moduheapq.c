@@ -33,7 +33,7 @@
 
 STATIC mp_obj_list_t *uheapq_get_heap(mp_obj_t heap_in) {
     if (!mp_obj_is_type(heap_in, &mp_type_list)) {
-        mp_raise_TypeError("heap must be a list");
+        mp_raise_TypeError(MP_ERROR_TEXT("heap must be a list"));
     }
     return MP_OBJ_TO_PTR(heap_in);
 }
@@ -81,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_uheapq_heappush_obj, mod_uheapq_heappush);
 STATIC mp_obj_t mod_uheapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = uheapq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_msg(&mp_type_IndexError, "empty heap");
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
     }
     mp_obj_t item = heap->items[0];
     heap->len -= 1;

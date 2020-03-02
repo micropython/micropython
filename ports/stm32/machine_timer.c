@@ -87,7 +87,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         ++args;
     }
     if (id != -1) {
-        mp_raise_ValueError("Timer doesn't exist");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer doesn't exist"));
     }
 
     if (n_args > 0 || n_kw > 0) {

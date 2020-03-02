@@ -42,7 +42,7 @@
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
-void error_check(bool status, const char *msg) {
+void error_check(bool status, mp_rom_error_text_t msg) {
     if (!status) {
         mp_raise_msg(&mp_type_OSError, msg);
     }
@@ -120,7 +120,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len & 0x3) {
-        mp_raise_ValueError("len must be multiple of 4");
+        mp_raise_ValueError(MP_ERROR_TEXT("len must be multiple of 4"));
     }
     ets_loop_iter(); // flash access takes time so run any pending tasks
     SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
@@ -289,7 +289,7 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     len = (len + 3) & ~3;
     if (esp_native_code_cur + len > esp_native_code_end) {
         mp_raise_msg_varg(&mp_type_MemoryError,
-            "memory allocation failed, allocating %u bytes for native code", (uint)len);
+            MP_ERROR_TEXT("memory allocation failed, allocating %u bytes for native code"), (uint)len);
     }
 
     void *dest;
@@ -342,7 +342,7 @@ STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in)
         esp_native_code_erased = esp_native_code_start;
         // memory-mapped flash is limited in extents to 1MByte
         if (esp_native_code_end > FLASH_END - FLASH_START) {
-            mp_raise_ValueError("flash location must be below 1MByte");
+            mp_raise_ValueError(MP_ERROR_TEXT("flash location must be below 1MByte"));
         }
     }
     return mp_const_none;

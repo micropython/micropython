@@ -576,7 +576,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     if (res != 0) {
         // CPython: socket.gaierror
-        mp_raise_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res);
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("[addrinfo error %d]"), res);
     }
     assert(addr_list);
 

@@ -74,7 +74,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
 
     int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
     if (ret) {
-        mp_raise_ValueError("invalid pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
     }
 
     return mp_const_none;
@@ -86,7 +86,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 
     // get the wanted port
     if (!mp_obj_is_type(args[0], &mp_type_tuple)) {
-        mp_raise_ValueError("Pin id must be tuple of (\"GPIO_x\", pin#)");
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin id must be tuple of (\"GPIO_x\", pin#)"));
     }
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(args[0], 2, &items);
@@ -94,7 +94,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(items[1]);
     struct device *wanted_port = device_get_binding(drv_name);
     if (!wanted_port) {
-        mp_raise_ValueError("invalid port");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid port"));
     }
 
     machine_pin_obj_t *pin = m_new_obj(machine_pin_obj_t);
