@@ -530,7 +530,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_obj_t *items;
         mp_obj_get_array(args[ARG_msc].u_obj, &msc_n, &items);
         if (msc_n > USBD_MSC_MAX_LUN) {
-            mp_raise_ValueError("too many logical units");
+            mp_raise_ValueError(MP_ERROR_TEXT("too many logical units"));
         }
         for (size_t i = 0; i < msc_n; ++i) {
             const mp_obj_type_t *type = mp_obj_get_type(items[i]);
@@ -544,7 +544,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
                 ) {
                 msc_unit[i] = type;
             } else {
-                mp_raise_ValueError("unsupported logical unit");
+                mp_raise_ValueError(MP_ERROR_TEXT("unsupported logical unit"));
             }
         }
     }
@@ -592,7 +592,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return mp_const_none;
 
 bad_mode:
-    mp_raise_ValueError("bad USB mode");
+    mp_raise_ValueError(MP_ERROR_TEXT("bad USB mode"));
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 0, pyb_usb_mode);
 
@@ -935,7 +935,7 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
         mp_obj_t *items;
         mp_obj_get_array(report_in, &bufinfo.len, &items);
         if (bufinfo.len > sizeof(temp_buf)) {
-            mp_raise_ValueError("tuple/list too large for HID report; use bytearray instead");
+            mp_raise_ValueError(MP_ERROR_TEXT("tuple/list too large for HID report; use bytearray instead"));
         }
         for (int i = 0; i < bufinfo.len; i++) {
             temp_buf[i] = mp_obj_get_int(items[i]);

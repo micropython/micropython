@@ -357,7 +357,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if !MICROPY_EMIT_MACHINE_CODE
     if (kind != MP_CODE_BYTECODE) {
-        mp_raise_ValueError("incompatible .mpy file");
+        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     #endif
 
@@ -542,12 +542,12 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
-        mp_raise_ValueError("incompatible .mpy file");
+        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError("incompatible .mpy arch");
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
         }
     }
     qstr_window_t qw;

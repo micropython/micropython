@@ -149,7 +149,7 @@ void ets_event_poll(void) {
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
     printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
-    mp_raise_msg(&mp_type_AssertionError, "C-level assert");
+    mp_raise_msg(&mp_type_AssertionError, MP_ERROR_TEXT("C-level assert"));
 }
 
 void mp_hal_signal_input(void) {

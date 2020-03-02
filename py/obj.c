@@ -360,10 +360,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("can't convert to float");
+        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "can't convert %s to float", mp_obj_get_type_str(arg));
+            MP_ERROR_TEXT("can't convert %s to float"), mp_obj_get_type_str(arg));
         #endif
     }
 
@@ -393,10 +393,10 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("can't convert to complex");
+        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "can't convert %s to complex", mp_obj_get_type_str(arg));
+            MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
         #endif
     }
 }
@@ -411,10 +411,10 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
         mp_obj_list_get(o, len, items);
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("expected tuple/list");
+        mp_raise_TypeError(MP_ERROR_TEXT("expected tuple/list"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "object '%s' isn't a tuple or list", mp_obj_get_type_str(o));
+            MP_ERROR_TEXT("object '%s' isn't a tuple or list"), mp_obj_get_type_str(o));
         #endif
     }
 }
@@ -425,10 +425,10 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_ValueError("tuple/list has wrong length");
+        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
         #else
         mp_raise_msg_varg(&mp_type_ValueError,
-            "requested length %d but object has length %d", (int)len, (int)seq_len);
+            MP_ERROR_TEXT("requested length %d but object has length %d"), (int)len, (int)seq_len);
         #endif
     }
 }
@@ -440,10 +440,10 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("indices must be integers");
+        mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "%q indices must be integers, not %s",
+            MP_ERROR_TEXT("%q indices must be integers, not %s"),
             type->name, mp_obj_get_type_str(index));
         #endif
     }
@@ -460,9 +460,9 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     } else {
         if (i < 0 || (mp_uint_t)i >= len) {
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-            mp_raise_msg(&mp_type_IndexError, "index out of range");
+            mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("index out of range"));
             #else
-            mp_raise_msg_varg(&mp_type_IndexError, "%q index out of range", type->name);
+            mp_raise_msg_varg(&mp_type_IndexError, MP_ERROR_TEXT("%q index out of range"), type->name);
             #endif
         }
     }
@@ -494,10 +494,10 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == MP_OBJ_NULL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("object has no len");
+        mp_raise_TypeError(MP_ERROR_TEXT("object has no len"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "object of type '%s' has no len()", mp_obj_get_type_str(o_in));
+            MP_ERROR_TEXT("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
         #endif
     } else {
         return len;
@@ -535,24 +535,24 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     }
     if (value == MP_OBJ_NULL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("object doesn't support item deletion");
+        mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item deletion"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "'%s' object doesn't support item deletion", mp_obj_get_type_str(base));
+            MP_ERROR_TEXT("'%s' object doesn't support item deletion"), mp_obj_get_type_str(base));
         #endif
     } else if (value == MP_OBJ_SENTINEL) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("object isn't subscriptable");
+        mp_raise_TypeError(MP_ERROR_TEXT("object isn't subscriptable"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "'%s' object isn't subscriptable", mp_obj_get_type_str(base));
+            MP_ERROR_TEXT("'%s' object isn't subscriptable"), mp_obj_get_type_str(base));
         #endif
     } else {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError("object doesn't support item assignment");
+        mp_raise_TypeError(MP_ERROR_TEXT("object doesn't support item assignment"));
         #else
         mp_raise_msg_varg(&mp_type_TypeError,
-            "'%s' object doesn't support item assignment", mp_obj_get_type_str(base));
+            MP_ERROR_TEXT("'%s' object doesn't support item assignment"), mp_obj_get_type_str(base));
         #endif
     }
 }
@@ -583,7 +583,7 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
 
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (!mp_get_buffer(obj, bufinfo, flags)) {
-        mp_raise_TypeError("object with buffer protocol required");
+        mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
     }
 }
 

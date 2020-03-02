@@ -377,7 +377,7 @@ STATIC mp_obj_t wiznet5k_status(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_raise_ValueError("unknown config param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_status_obj, 1, 2, wiznet5k_status);
 
@@ -387,7 +387,7 @@ STATIC mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *k
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
-            mp_raise_TypeError("must query one param");
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
@@ -397,12 +397,12 @@ STATIC mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *k
                 return mp_obj_new_bytes(buf, 6);
             }
             default:
-                mp_raise_ValueError("unknown config param");
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
         // Set config value(s)
         if (n_args != 1) {
-            mp_raise_TypeError("can't specify pos and kw args");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
@@ -424,7 +424,7 @@ STATIC mp_obj_t wiznet5k_config(size_t n_args, const mp_obj_t *args, mp_map_t *k
                         break;
                     }
                     default:
-                        mp_raise_ValueError("unknown config param");
+                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
         }

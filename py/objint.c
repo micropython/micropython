@@ -137,9 +137,9 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        mp_raise_msg(&mp_type_OverflowError, "can't convert inf to int");
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert inf to int"));
     } else if (cl == FP_NAN) {
-        mp_raise_ValueError("can't convert NaN to int");
+        mp_raise_ValueError(MP_ERROR_TEXT("can't convert NaN to int"));
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {
@@ -156,7 +156,7 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
             return mp_obj_new_int_from_ll((long long)val);
         #endif
         } else {
-            mp_raise_ValueError("float too big");
+            mp_raise_ValueError(MP_ERROR_TEXT("float too big"));
         }
         #endif
     }
@@ -321,19 +321,19 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    mp_raise_msg(&mp_type_OverflowError, "long int not supported in this build");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("long int not supported in this build"));
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     return mp_const_none;
 }
 
@@ -343,7 +343,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     return mp_const_none;
 }
 
@@ -351,7 +351,7 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("small int overflow"));
     return mp_const_none;
 }
 

@@ -40,7 +40,6 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "random.h"
-#include "mpexception.h"
 #include "version.h"
 #include "pybsd.h"
 #include "pybuart.h"

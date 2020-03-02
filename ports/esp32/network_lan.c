@@ -111,7 +111,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     if (args[ARG_id].u_obj != mp_const_none) {
         if (mp_obj_get_int(args[ARG_id].u_obj) != 0) {
-            mp_raise_ValueError("invalid LAN interface identifier");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid LAN interface identifier"));
         }
     }
 
@@ -120,11 +120,11 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     self->phy_power_pin = args[ARG_power].u_obj == mp_const_none ? -1 : machine_pin_get_id(args[ARG_power].u_obj);
 
     if (args[ARG_phy_addr].u_int < 0x00 || args[ARG_phy_addr].u_int > 0x1f) {
-        mp_raise_ValueError("invalid phy address");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
     }
 
     if (args[ARG_phy_type].u_int != PHY_LAN8720 && args[ARG_phy_type].u_int != PHY_TLK110) {
-        mp_raise_ValueError("invalid phy type");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
     }
 
     if (args[ARG_clock_mode].u_int != -1 &&
@@ -133,7 +133,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         //args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_OUT &&
         args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO16_OUT &&
         args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO17_OUT) {
-        mp_raise_ValueError("invalid clock mode");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid clock mode"));
     }
 
     eth_config_t config;
@@ -165,7 +165,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         self->active = false;
         self->initialized = true;
     } else {
-        mp_raise_msg(&mp_type_OSError, "esp_eth_init() failed");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("esp_eth_init() failed"));
     }
     return MP_OBJ_FROM_PTR(&lan_obj);
 }
@@ -178,12 +178,12 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
         if (mp_obj_is_true(args[1])) {
             self->active = (esp_eth_enable() == ESP_OK);
             if (!self->active) {
-                mp_raise_msg(&mp_type_OSError, "ethernet enable failed");
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
             }
         } else {
             self->active = !(esp_eth_disable() == ESP_OK);
             if (self->active) {
-                mp_raise_msg(&mp_type_OSError, "ethernet disable failed");
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed"));
             }
         }
     }

@@ -118,13 +118,13 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
     (void)n_args;
     (void)items;
-    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("set unsupported"));
 }
 
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
     (void)self_in;
     (void)item;
-    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("set unsupported"));
 }
 #endif
 
@@ -133,7 +133,7 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     (void)ostart;
     (void)ostop;
     (void)ostep;
-    mp_raise_msg(&mp_type_RuntimeError, "slice unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("slice unsupported"));
 }
 #endif
 
@@ -249,22 +249,22 @@ STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
 
 STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
     (void)f;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
     (void)d;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
     (void)o;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
     (void)o;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 #endif

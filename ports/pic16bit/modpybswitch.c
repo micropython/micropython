@@ -49,7 +49,7 @@ STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_int_t sw_id = mp_obj_get_int(args[0]);
     if (!(1 <= sw_id && sw_id <= NUM_SWITCH)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "Switch %d does not exist", sw_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Switch %d does not exist"), sw_id);
     }
     return (mp_obj_t)&pyb_switch_obj[sw_id - 1];
 }

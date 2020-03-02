@@ -285,7 +285,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
             // recv argument given
             mp_get_buffer_raise(args[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
             if (bufinfo_recv.len != bufinfo_send.len) {
-                mp_raise_ValueError("recv must be same length as send");
+                mp_raise_ValueError(MP_ERROR_TEXT("recv must be same length as send"));
             }
             o_ret = args[1].u_obj;
         }

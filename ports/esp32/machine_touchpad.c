@@ -68,7 +68,7 @@ STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         }
     }
     if (!self) {
-        mp_raise_ValueError("invalid pin for touchpad");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for touchpad"));
     }
 
     static int initialized = 0;
@@ -81,7 +81,7 @@ STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     if (err == ESP_OK) {
         return MP_OBJ_FROM_PTR(self);
     }
-    mp_raise_ValueError("Touch pad error");
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 
 STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
@@ -91,7 +91,7 @@ STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
     if (err == ESP_OK) {
         return mp_const_none;
     }
-    mp_raise_ValueError("Touch pad error");
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mtp_config_obj, mtp_config);
 
@@ -102,7 +102,7 @@ STATIC mp_obj_t mtp_read(mp_obj_t self_in) {
     if (err == ESP_OK) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    mp_raise_ValueError("Touch pad error");
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mtp_read_obj, mtp_read);
 

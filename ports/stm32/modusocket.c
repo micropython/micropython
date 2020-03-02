@@ -432,7 +432,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     }
 
     if (!have_ip) {
-        mp_raise_msg(&mp_type_OSError, "no available NIC");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no available NIC"));
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));

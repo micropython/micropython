@@ -117,7 +117,7 @@ typedef struct _mp_obj_uctypes_struct_t {
 } mp_obj_uctypes_struct_t;
 
 STATIC NORETURN void syntax_error(void) {
-    mp_raise_TypeError("syntax error in uctypes descriptor");
+    mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -226,7 +226,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            mp_raise_TypeError("Cannot unambiguously get sizeof scalar");
+            mp_raise_TypeError(MP_ERROR_TEXT("Cannot unambiguously get sizeof scalar"));
         }
         syntax_error();
     }
@@ -424,7 +424,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         && !mp_obj_is_type(self->desc, &mp_type_ordereddict)
         #endif
         ) {
-        mp_raise_TypeError("struct: no fields");
+        mp_raise_TypeError(MP_ERROR_TEXT("struct: no fields"));
     }
 
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
@@ -557,7 +557,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     } else {
         // load / store
         if (!mp_obj_is_type(self->desc, &mp_type_tuple)) {
-            mp_raise_TypeError("struct: cannot index");
+            mp_raise_TypeError(MP_ERROR_TEXT("struct: cannot index"));
         }
 
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
@@ -571,7 +571,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
             arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
             if (index >= arr_sz) {
-                mp_raise_msg(&mp_type_IndexError, "struct: index out of range");
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("struct: index out of range"));
             }
 
             if (t->len == 2) {

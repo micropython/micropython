@@ -177,7 +177,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     int slot_num = arg_vals[ARG_slot].u_int;
     if (slot_num < 0 || slot_num > 3) {
-        mp_raise_ValueError("Slot number must be between 0 and 3 inclusive");
+        mp_raise_ValueError(MP_ERROR_TEXT("Slot number must be between 0 and 3 inclusive"));
     }
 
     // Slots 0 and 1 are native SD/MMC, slots 2 and 3 are SPI
@@ -253,7 +253,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         if (width == 1 || width == 4 || (width == 8 && slot_num == 0)) {
             slot_config.width = width;
         } else {
-            mp_raise_ValueError("Width must be 1 or 4 (or 8 on slot 0)");
+            mp_raise_ValueError(MP_ERROR_TEXT("Width must be 1 or 4 (or 8 on slot 0)"));
         }
 
         DEBUG_printf("  Calling init_slot()");

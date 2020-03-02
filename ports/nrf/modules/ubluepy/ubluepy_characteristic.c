@@ -63,7 +63,7 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
         s->p_uuid = MP_OBJ_TO_PTR(uuid_obj);
         // (void)sd_characterstic_add(s);
     } else {
-        mp_raise_ValueError("Invalid UUID parameter");
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid UUID parameter"));
     }
 
     if (args[1].u_int > 0) {

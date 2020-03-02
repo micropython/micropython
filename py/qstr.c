@@ -201,7 +201,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
         // check that len is not too big
         if (len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
             QSTR_EXIT();
-            mp_raise_msg(&mp_type_RuntimeError, "name too long");
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("name too long"));
         }
 
         // compute number of bytes needed to intern this string

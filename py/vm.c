@@ -342,7 +342,7 @@ dispatch_loop:
                     if (obj_shared == MP_OBJ_NULL) {
                         local_name_error: {
                             MARK_EXC_IP_SELECTIVE();
-                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, MP_ERROR_TEXT("local variable referenced before assignment"));
                             RAISE(obj);
                         }
                     }
@@ -1201,7 +1201,7 @@ unwind_return:
                         }
                     }
                     if (obj == MP_OBJ_NULL) {
-                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "no active exception to reraise");
+                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
                     }
                     RAISE(obj);
                 }
@@ -1349,7 +1349,7 @@ yield:
 #endif
                 {
 
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "opcode");
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
                     FRAME_LEAVE();

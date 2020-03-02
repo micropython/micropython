@@ -52,7 +52,7 @@ STATIC mp_obj_t productf(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_o
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_RW);
     if (bufinfo.typecode != 'f') {
-        mp_raise_ValueError("expecting float array");
+        mp_raise_ValueError(MP_ERROR_TEXT("expecting float array"));
     }
 
     // Compute product, store result back in first element of array

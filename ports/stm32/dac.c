@@ -118,7 +118,7 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
         return DAC_TRIGGER_T8_TRGO;
     #endif
     } else {
-        mp_raise_ValueError("Timer does not support DAC triggering");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer does not support DAC triggering"));
     }
 }
 
@@ -265,7 +265,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     if (args[0].u_int == 8 || args[0].u_int == 12) {
         self->bits = args[0].u_int;
     } else {
-        mp_raise_ValueError("unsupported bits");
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported bits"));
     }
 
     // set output buffer config
@@ -307,7 +307,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         } else if (pin == pin_A5) {
             dac_id = 2;
         } else {
-            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have DAC capabilities"), pin->name);
         }
     }
 
@@ -319,7 +319,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac_channel = DAC_CHANNEL_2;
     #endif
     } else {
-        mp_raise_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("DAC(%d) doesn't exist"), dac_id);
     }
 
     pyb_dac_obj_t *dac = &pyb_dac_obj[dac_id - 1];

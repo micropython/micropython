@@ -38,7 +38,6 @@
 #include "ftp.h"
 #include "pybwdt.h"
 #include "modusocket.h"
-#include "mpexception.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 
@@ -184,7 +183,7 @@ void servers_close_socket (int16_t *sd) {
 
 void servers_set_login (char *user, char *pass) {
     if (strlen(user) > SERVERS_USER_PASS_LEN_MAX || strlen(pass) > SERVERS_USER_PASS_LEN_MAX) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     memcpy(servers_user, user, SERVERS_USER_PASS_LEN_MAX);
     memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
@@ -193,7 +192,7 @@ void servers_set_login (char *user, char *pass) {
 void servers_set_timeout (uint32_t timeout) {
     if (timeout < SERVERS_MIN_TIMEOUT_MS) {
         // timeout is too low
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     servers_data.timeout = timeout;
 }

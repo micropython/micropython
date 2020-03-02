@@ -686,7 +686,7 @@ STATIC mp_obj_t pyb_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     #if MICROPY_HW_ENABLE_MMCARD
     if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_MMC) {
-        mp_raise_ValueError("peripheral used by MMCard");
+        mp_raise_ValueError(MP_ERROR_TEXT("peripheral used by MMCard"));
     }
     #endif
 
@@ -704,7 +704,7 @@ STATIC mp_obj_t pyb_mmcard_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     #if MICROPY_HW_ENABLE_SDCARD
     if (pyb_sdmmc_flags & PYB_SDMMC_FLAG_SD) {
-        mp_raise_ValueError("peripheral used by SDCard");
+        mp_raise_ValueError(MP_ERROR_TEXT("peripheral used by SDCard"));
     }
     #endif
 
@@ -768,7 +768,7 @@ STATIC mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
 
     if (ret != 0) {
         m_del(uint8_t, dest, SDCARD_BLOCK_SIZE);
-        mp_raise_msg_varg(&mp_type_Exception, "sdcard_read_blocks failed [%u]", ret);
+        mp_raise_msg_varg(&mp_type_Exception, MP_ERROR_TEXT("sdcard_read_blocks failed [%u]"), ret);
     }
 
     return mp_obj_new_bytearray_by_ref(SDCARD_BLOCK_SIZE, dest);
@@ -780,13 +780,13 @@ STATIC mp_obj_t sd_write(mp_obj_t self, mp_obj_t block_num, mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len % SDCARD_BLOCK_SIZE != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, "writes must be a multiple of %d bytes", SDCARD_BLOCK_SIZE);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("writes must be a multiple of %d bytes"), SDCARD_BLOCK_SIZE);
     }
 
     mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
 
     if (ret != 0) {
-        mp_raise_msg_varg(&mp_type_Exception, "sdcard_write_blocks failed [%u]", ret);
+        mp_raise_msg_varg(&mp_type_Exception, MP_ERROR_TEXT("sdcard_write_blocks failed [%u]"), ret);
     }
 
     return mp_const_none;

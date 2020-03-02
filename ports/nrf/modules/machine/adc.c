@@ -101,7 +101,7 @@ STATIC int adc_find(mp_obj_t id) {
         if (pin->adc_num & PIN_ADC1) {
             adc_idx = pin->adc_channel;
         } else {
-            mp_raise_ValueError("invalid Pin for ADC");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid Pin for ADC"));
         }
     }
 
@@ -109,7 +109,7 @@ STATIC int adc_find(mp_obj_t id) {
         && machine_adc_obj[adc_idx].id != (uint8_t)-1) {
         return adc_idx;
     }
-    mp_raise_ValueError("ADC doesn't exist");
+    mp_raise_ValueError(MP_ERROR_TEXT("ADC doesn't exist"));
 }
 
 /// \method __str__()

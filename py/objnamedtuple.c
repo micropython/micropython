@@ -87,7 +87,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        mp_raise_msg(&mp_type_AttributeError, "can't set attribute");
+        mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("can't set attribute"));
     }
 }
 
@@ -99,11 +99,11 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         mp_arg_error_terse_mismatch();
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_raise_msg_varg(&mp_type_TypeError,
-            "function takes %d positional arguments but %d were given",
+            MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
             num_fields, n_args + n_kw);
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
         mp_raise_msg_varg(&mp_type_TypeError,
-            "%q() takes %d positional arguments but %d were given",
+            MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
             type->base.name, num_fields, n_args + n_kw);
         #endif
     }
@@ -124,7 +124,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_msg_varg(&mp_type_TypeError, "unexpected keyword argument '%q'", kw);
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("unexpected keyword argument '%q'"), kw);
             #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
@@ -132,7 +132,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             mp_arg_error_terse_mismatch();
             #else
             mp_raise_msg_varg(&mp_type_TypeError,
-                "function got multiple values for argument '%q'", kw);
+                MP_ERROR_TEXT("function got multiple values for argument '%q'"), kw);
             #endif
         }
         tuple->items[id] = args[i + 1];

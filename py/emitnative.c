@@ -841,7 +841,7 @@ STATIC vtype_kind_t load_reg_stack_imm(emit_t *emit, int reg_dest, const stack_i
         } else if (si->vtype == VTYPE_PTR_NONE) {
             emit_native_mov_reg_const(emit, reg_dest, MP_F_CONST_NONE_OBJ);
         } else {
-            mp_raise_NotImplementedError("conversion to object");
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("conversion to object"));
         }
         return VTYPE_PYOBJ;
     }
@@ -1415,7 +1415,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     DEBUG_printf("load_fast(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
-        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "local '%q' used before type known", qst);
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, MP_ERROR_TEXT("local '%q' used before type known"), qst);
     }
     emit_native_pre(emit);
     if (local_num < REG_LOCAL_NUM && CAN_USE_REGS_FOR_LOCALS(emit)) {
@@ -1590,7 +1590,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't load from '%q'", vtype_to_qstr(vtype_base));
+                        MP_ERROR_TEXT("can't load from '%q'"), vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1600,7 +1600,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't load with '%q' index", vtype_to_qstr(vtype_index));
+                    MP_ERROR_TEXT("can't load with '%q' index"), vtype_to_qstr(vtype_index));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1628,7 +1628,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't load from '%q'", vtype_to_qstr(vtype_base));
+                        MP_ERROR_TEXT("can't load from '%q'"), vtype_to_qstr(vtype_base));
             }
         }
         emit_post_push_reg(emit, VTYPE_INT, REG_RET);
@@ -1652,7 +1652,7 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
     } else if (emit->local_vtype[local_num] != vtype) {
         // type of local is not the same as object stored in it
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "local '%q' has type '%q' but source is '%q'",
+            MP_ERROR_TEXT("local '%q' has type '%q' but source is '%q'"),
             qst, vtype_to_qstr(emit->local_vtype[local_num]), vtype_to_qstr(vtype));
     }
 }
@@ -1753,7 +1753,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #endif
             if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store '%q'", vtype_to_qstr(vtype_value));
+                    MP_ERROR_TEXT("can't store '%q'"), vtype_to_qstr(vtype_value));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1819,7 +1819,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't store to '%q'", vtype_to_qstr(vtype_base));
+                        MP_ERROR_TEXT("can't store to '%q'"), vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1830,7 +1830,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store with '%q' index", vtype_to_qstr(vtype_index));
+                    MP_ERROR_TEXT("can't store with '%q' index"), vtype_to_qstr(vtype_index));
             }
             #if N_X86
             // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
@@ -1840,7 +1840,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #endif
             if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "can't store '%q'", vtype_to_qstr(vtype_value));
+                    MP_ERROR_TEXT("can't store '%q'"), vtype_to_qstr(vtype_value));
             }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
@@ -1880,7 +1880,7 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                        "can't store to '%q'", vtype_to_qstr(vtype_base));
+                        MP_ERROR_TEXT("can't store to '%q'"), vtype_to_qstr(vtype_base));
             }
         }
 
@@ -2002,7 +2002,7 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bo
         }
         if (!(vtype == VTYPE_BOOL || vtype == VTYPE_INT || vtype == VTYPE_UINT)) {
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                "can't implicitly convert '%q' to 'bool'", vtype_to_qstr(vtype));
+                MP_ERROR_TEXT("can't implicitly convert '%q' to 'bool'"), vtype_to_qstr(vtype));
         }
     }
     // For non-pop need to save the vtype so that emit_native_adjust_stack_size
@@ -2281,7 +2281,7 @@ STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
     } else {
         adjust_stack(emit, 1);
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "unary op %q not implemented", mp_unary_op_method_name[op]);
+            MP_ERROR_TEXT("unary op %q not implemented"), mp_unary_op_method_name[op]);
     }
 }
 
@@ -2440,7 +2440,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             // TODO other ops not yet implemented
             adjust_stack(emit, 1);
             EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                "binary op %q not implemented", mp_binary_op_method_name[op]);
+                MP_ERROR_TEXT("binary op %q not implemented"), mp_binary_op_method_name[op]);
         }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
         emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
@@ -2461,7 +2461,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     } else {
         adjust_stack(emit, -1);
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            "can't do binary op between '%q' and '%q'",
+            MP_ERROR_TEXT("can't do binary op between '%q' and '%q'"),
             vtype_to_qstr(vtype_lhs), vtype_to_qstr(vtype_rhs));
     }
 }
@@ -2639,7 +2639,7 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 break;
             default:
                 // this can happen when casting a cast: int(int)
-                mp_raise_NotImplementedError("casting");
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("casting"));
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
@@ -2703,7 +2703,7 @@ STATIC void emit_native_return_value(emit_t *emit) {
             emit_pre_pop_reg(emit, &vtype, return_vtype == VTYPE_PYOBJ ? REG_PARENT_RET : REG_ARG_1);
             if (vtype != return_vtype) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-                    "return expected '%q' but got '%q'",
+                    MP_ERROR_TEXT("return expected '%q' but got '%q'"),
                     vtype_to_qstr(return_vtype), vtype_to_qstr(vtype));
             }
         }
@@ -2732,7 +2732,7 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     vtype_kind_t vtype_exc;
     emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise
     if (vtype_exc != VTYPE_PYOBJ) {
-        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "must raise an object");
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, MP_ERROR_TEXT("must raise an object"));
     }
     // TODO probably make this 1 call to the runtime (which could even call convert, native_raise(obj, type))
     emit_call(emit, MP_F_NATIVE_RAISE);
@@ -2742,7 +2742,7 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
     // Note: 1 (yield) or 3 (yield from) labels are reserved for this function, starting at *emit->label_slot
 
     if (emit->do_viper_types) {
-        mp_raise_NotImplementedError("native yield");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("native yield"));
     }
     emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
 

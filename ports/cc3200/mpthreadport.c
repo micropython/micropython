@@ -132,7 +132,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", *stack_size / sizeof(void *), arg, 2, stack, tcb);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
-        mp_raise_msg(&mp_type_OSError, "can't create thread");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't create thread"));
     }
 
     // add thread to linked list of all threads

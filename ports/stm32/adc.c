@@ -305,7 +305,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     ADC_MultiModeTypeDef multimode;
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(&adc_obj->handle, &multimode) != HAL_OK) {
-        mp_raise_msg_varg(&mp_type_ValueError, "Can not set multimode on ADC1 channel: %d", adc_obj->channel);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Can not set multimode on ADC1 channel: %d"), adc_obj->channel);
     }
     #endif
 }
@@ -413,20 +413,20 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC_MASK) == 0) {
             // No ADC1 function on that pin
-            mp_raise_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %q does not have ADC capabilities"), pin->name);
         }
         channel = pin->adc_channel;
     }
 
     if (!is_adcx_channel(channel)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid ADC Channel: %d"), channel);
     }
 
 
     if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
         // these channels correspond to physical GPIO ports so make sure they exist
         if (pin_adc_table[channel] == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("channel %d not available on this board"), channel);
         }
     }
 
@@ -572,10 +572,10 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     mp_obj_get_array(buf_array_in, &nbufs, &buf_array);
 
     if (nadcs < 1) {
-        mp_raise_ValueError("need at least 1 ADC");
+        mp_raise_ValueError(MP_ERROR_TEXT("need at least 1 ADC"));
     }
     if (nadcs != nbufs) {
-        mp_raise_ValueError("length of ADC and buffer lists differ");
+        mp_raise_ValueError(MP_ERROR_TEXT("length of ADC and buffer lists differ"));
     }
 
     // Get buf for first ADC, get word size, check other buffers match in type
@@ -587,7 +587,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
         mp_buffer_info_t bufinfo_curr;
         mp_get_buffer_raise(buf_array[array_index], &bufinfo_curr, MP_BUFFER_WRITE);
         if ((bufinfo.len != bufinfo_curr.len) || (bufinfo.typecode != bufinfo_curr.typecode)) {
-            mp_raise_ValueError("size and type of buffers must match");
+            mp_raise_ValueError(MP_ERROR_TEXT("size and type of buffers must match"));
         }
         bufptrs[array_index] = bufinfo_curr.buf;
     }
@@ -708,7 +708,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
             break;
         #endif
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, "resolution %d not supported", resolution);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("resolution %d not supported"), resolution);
     }
 
     for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {

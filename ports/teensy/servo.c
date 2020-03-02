@@ -68,7 +68,7 @@ static mp_obj_t servo_obj_attach(mp_obj_t self_in, mp_obj_t pin_obj) {
     return mp_const_none;
 
 pin_error:
-    mp_raise_msg_varg(MP_QSTR_ValueError, "pin %d does not exist", pin);
+    mp_raise_msg_varg(MP_QSTR_ValueError, MP_ERROR_TEXT("pin %d does not exist"), pin);
 }
 
 static mp_obj_t servo_obj_detach(mp_obj_t self_in) {
@@ -215,7 +215,7 @@ mp_obj_t pyb_Servo(void) {
         self->servo_id++;
     }
     m_del_obj(pyb_servo_obj_t, self);
-    mp_raise_ValueError("No available servo ids");
+    mp_raise_ValueError(MP_ERROR_TEXT("No available servo ids"));
     return mp_const_none;
 }
 

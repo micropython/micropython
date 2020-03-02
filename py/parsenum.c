@@ -55,7 +55,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     // check radix base
     if ((base != 0 && base < 2) || base > 36) {
         // this won't be reached if lex!=NULL
-        mp_raise_ValueError("int() arg 2 must be >= 2 and <= 36");
+        mp_raise_ValueError(MP_ERROR_TEXT("int() arg 2 must be >= 2 and <= 36"));
     }
 
     // skip leading space
@@ -147,11 +147,11 @@ value_error:
     {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_ValueError,
-            "invalid syntax for integer");
+            MP_ERROR_TEXT("invalid syntax for integer"));
         raise_exc(exc, lex);
         #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "invalid syntax for integer with base %d", base);
+            MP_ERROR_TEXT("invalid syntax for integer with base %d"), base);
         raise_exc(exc, lex);
         #else
         vstr_t vstr;
@@ -344,7 +344,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     }
     #else
     if (imag || force_complex) {
-        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
     }
     #endif
     else {
@@ -352,9 +352,9 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     }
 
 value_error:
-    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid syntax for number"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("invalid syntax for number")), lex);
 
     #else
-    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "decimal numbers not supported"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("decimal numbers not supported")), lex);
     #endif
 }

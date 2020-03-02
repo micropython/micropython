@@ -126,7 +126,7 @@ STATIC void machine_pin_isr_handler(void *arg) {
 
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &machine_pin_type) {
-        mp_raise_ValueError("expecting a pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
     }
     machine_pin_obj_t *self = pin_in;
     return self->id;
@@ -162,7 +162,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
         if (self->id >= 34 && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
-            mp_raise_ValueError("pin can only be input");
+            mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
         } else {
             gpio_set_direction(self->id, pin_io_mode);
         }
@@ -205,7 +205,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
     }
     if (self == NULL || self->base.type == NULL) {
-        mp_raise_ValueError("invalid pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -282,24 +282,24 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
             mp_int_t wake;
             if (mp_obj_get_int_maybe(wake_obj, &wake)) {
                 if (wake < 2 || wake > 7) {
-                    mp_raise_ValueError("bad wake value");
+                    mp_raise_ValueError(MP_ERROR_TEXT("bad wake value"));
                 }
             } else {
-                mp_raise_ValueError("bad wake value");
+                mp_raise_ValueError(MP_ERROR_TEXT("bad wake value"));
             }
 
             if (machine_rtc_config.wake_on_touch) { // not compatible
-                mp_raise_ValueError("no resources");
+                mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
 
             if (!RTC_IS_VALID_EXT_PIN(self->id)) {
-                mp_raise_ValueError("invalid pin for wake");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for wake"));
             }
 
             if (machine_rtc_config.ext0_pin == -1) {
                 machine_rtc_config.ext0_pin = self->id;
             } else if (machine_rtc_config.ext0_pin != self->id) {
-                mp_raise_ValueError("no resources");
+                mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
 
             machine_rtc_config.ext0_level = trigger == GPIO_PIN_INTR_LOLEVEL ? 0 : 1;

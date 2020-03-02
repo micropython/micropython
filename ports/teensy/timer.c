@@ -114,7 +114,7 @@ mp_uint_t get_prescaler_shift(mp_int_t prescaler) {
             return prescaler_shift;
         }
     }
-    mp_raise_msg_varg(&mp_type_TypeError, "prescaler must be a power of 2 between 1 and 128, not %d", prescaler);
+    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("prescaler must be a power of 2 between 1 and 128, not %d"), prescaler);
 }
 
 /******************************************************************************/
@@ -254,7 +254,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
         // set prescaler and period from frequency
 
         if (vals[0].u_int == 0) {
-            mp_raise_ValueError("can't have 0 frequency");
+            mp_raise_ValueError(MP_ERROR_TEXT("can't have 0 frequency"));
         }
 
         uint32_t period = MAX(1, F_BUS / vals[0].u_int);
@@ -273,15 +273,15 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
         init->PrescalerShift = get_prescaler_shift(vals[1].u_int);
         init->Period = vals[2].u_int;
         if (!IS_FTM_PERIOD(init->Period)) {
-            mp_raise_msg_varg(&mp_type_TypeError, "period must be between 0 and 65535, not %d", init->Period);
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("period must be between 0 and 65535, not %d"), init->Period);
         }
     } else {
-        mp_raise_TypeError("must specify either freq, or prescaler and period");
+        mp_raise_TypeError(MP_ERROR_TEXT("must specify either freq, or prescaler and period"));
     }
 
     init->CounterMode = vals[3].u_int;
     if (!IS_FTM_COUNTERMODE(init->CounterMode)) {
-        mp_raise_msg_varg(&mp_type_TypeError, "invalid counter mode: %d", init->CounterMode);
+        mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("invalid counter mode: %d"), init->CounterMode);
     }
 
     // Currently core/mk20dx128.c sets SIM_SCGC6_FTM0, SIM_SCGC6_FTM1, SIM_SCGC3_FTM2
@@ -332,7 +332,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
             tim->irqn = IRQ_FTM2;
             break;
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, "Timer %d does not exist", tim->tim_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer %d does not exist"), tim->tim_id);
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -454,7 +454,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
     mp_int_t channel = mp_obj_get_int(args[1]);
 
     if (channel < 0 || channel > 7) {
-        mp_raise_msg_varg(&mp_type_ValueError, "Invalid channel (%d)", channel);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid channel (%d)"), channel);
     }
 
     pyb_timer_channel_obj_t *chan = self->channel;
@@ -507,12 +507,12 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
     mp_obj_t pin_obj = vals[1].u_obj;
     if (pin_obj != mp_const_none) {
         if (!mp_obj_is_type(pin_obj, &pin_type)) {
-            mp_raise_ValueError("pin argument needs to be be a Pin type");
+            mp_raise_ValueError(MP_ERROR_TEXT("pin argument needs to be be a Pin type"));
         }
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_FTM, self->tim_id);
         if (af == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, "pin %s doesn't have an af for TIM%d", qstr_str(pin->name), self->tim_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %s doesn't have an af for TIM%d"), qstr_str(pin->name), self->tim_id);
         }
         // pin.init(mode=AF_PP, af=idx)
         const mp_obj_t args[6] = {
@@ -569,7 +569,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
             }
 
             if (!IS_FTM_OC_POLARITY(oc_config.OCPolarity)) {
-                mp_raise_msg_varg(&mp_type_ValueError, "Invalid polarity (%d)", oc_config.OCPolarity);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid polarity (%d)"), oc_config.OCPolarity);
             }
             HAL_FTM_OC_ConfigChannel(&self->ftm, &oc_config, channel);
             if (chan->callback == mp_const_none) {
@@ -589,7 +589,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
             }
 
             if (!IS_FTM_IC_POLARITY(ic_config.ICPolarity)) {
-                mp_raise_msg_varg(&mp_type_ValueError, "Invalid polarity (%d)", ic_config.ICPolarity);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid polarity (%d)"), ic_config.ICPolarity);
             }
             HAL_FTM_IC_ConfigChannel(&self->ftm, &ic_config, chan->channel);
             if (chan->callback == mp_const_none) {
@@ -601,7 +601,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *args, mp_map_t 
         }
 
         default:
-            mp_raise_msg_varg(&mp_type_ValueError, "Invalid mode (%d)", chan->mode);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid mode (%d)"), chan->mode);
     }
 
     return chan;
@@ -677,7 +677,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         // start timer, so that it interrupts on overflow
         HAL_FTM_Base_Start_IT(&self->ftm);
     } else {
-        mp_raise_ValueError("callback must be None or a callable object");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
     }
     return mp_const_none;
 }
@@ -855,7 +855,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
                 break;
         }
     } else {
-        mp_raise_ValueError("callback must be None or a callable object");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
     }
     return mp_const_none;
 }
