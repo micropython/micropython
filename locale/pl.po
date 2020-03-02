@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 14:52-0500\n"
+"POT-Creation-Date: 2020-03-02 11:20-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1168,6 +1168,10 @@ msgstr "Podciągnięcie nieużywane w trybie wyjścia."
 
 #: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not yet supported"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PulseOut.c
+msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c

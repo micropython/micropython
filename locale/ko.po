@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 14:52-0500\n"
+"POT-Creation-Date: 2020-03-02 11:20-0500\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1167,6 +1167,10 @@ msgstr ""
 
 #: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not yet supported"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PulseOut.c
+msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c

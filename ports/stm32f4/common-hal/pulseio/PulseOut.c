@@ -105,12 +105,17 @@ STATIC void pulseout_event_handler(void) {
 }
 
 void pulseout_reset() {
+    #if HAS_BASIC_TIM
     __HAL_RCC_TIM7_CLK_DISABLE();
     refcount = 0;
+    #endif
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                            const pulseio_pwmout_obj_t* carrier) {
+#if !(HAS_BASIC_TIM)
+    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
+#else
     // Add to active PulseOuts
     refcount++;
 
@@ -145,6 +150,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     self->pwmout = (pulseio_pwmout_obj_t*)carrier;
 
     turn_off(self);
+#endif
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
@@ -160,7 +166,9 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
     refcount--;
     if (refcount == 0) {
+        #if HAS_BASIC_TIM
         __HAL_RCC_TIM7_CLK_DISABLE();
+        #endif
     }
 }
 

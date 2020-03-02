@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 14:52-0500\n"
+"POT-Creation-Date: 2020-03-02 11:20-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1185,6 +1185,10 @@ msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 
 #: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not yet supported"
+msgstr ""
+
+#: ports/stm32f4/common-hal/pulseio/PulseOut.c
+msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
