@@ -3,4 +3,5 @@
 /mpy-cross.static
 /mpy-cross.static.exe
 /mpy-cross.static-raspbian
+/mpy-cross.fuzz
 /pitools
