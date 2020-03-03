@@ -1,3 +1,9 @@
+try:
+    '' % ()
+except TypeError:
+    print("SKIP")
+    raise SystemExit
+
 print("%%" % ())
 print("=%s=" % 1)
 print("=%s=%s=" % (1, 2))
@@ -33,6 +39,9 @@ print("%c" % 48)
 print("%c" % 'a')
 print("%10s" % 'abc')
 print("%-10s" % 'abc')
+
+print('%c' % False)
+print('%c' % True)
 
 # Should be able to print dicts; in this case they aren't used
 # to lookup keywords in formats like %(foo)s

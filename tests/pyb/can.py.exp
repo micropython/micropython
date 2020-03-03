@@ -1,11 +1,7 @@
 ValueError -1
 ValueError 0
 CAN 1
-CAN 2
 ValueError 3
-CAN YA
-CAN YB
-ValueError YC
 CAN(1)
 True
 CAN(1, CAN.LOOPBACK, extframe=False, auto_restart=False)
@@ -70,7 +66,4 @@ False
 (7, True, 6, b'')
 False
 (32, True, 9, b'')
-(1, True, 0, b'')
-(2, True, 1, b'')
-(3, True, 2, b'')
-False
+OSError(110,)

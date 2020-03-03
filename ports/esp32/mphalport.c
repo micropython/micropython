@@ -31,7 +31,12 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#if MICROPY_ESP_IDF_4
+#include "esp32/rom/uart.h"
+#else
 #include "rom/uart.h"
+#endif
 
 #include "py/obj.h"
 #include "py/stream.h"
@@ -152,7 +157,7 @@ void mp_hal_delay_us(uint32_t us) {
         if (dt + pend_overhead < us) {
             // we have enough time to service pending events
             // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 }

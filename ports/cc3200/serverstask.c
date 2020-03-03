@@ -88,7 +88,7 @@ void TASK_Servers (void *pvParameters) {
     telnet_init();
     ftp_init();
 
-    for ( ;; ) {
+    for ( ;;) {
 
         if (servers_data.do_enable) {
             // enable network services
@@ -97,16 +97,14 @@ void TASK_Servers (void *pvParameters) {
             // now set/clear the flags
             servers_data.enabled = true;
             servers_data.do_enable = false;
-        }
-        else if (servers_data.do_disable) {
+        } else if (servers_data.do_disable) {
             // disable network services
             telnet_disable();
             ftp_disable();
             // now clear the flags
             servers_data.do_disable = false;
             servers_data.enabled = false;
-        }
-        else if (servers_data.do_reset) {
+        } else if (servers_data.do_reset) {
             // resetting the servers is needed to prevent half-open sockets
             servers_data.do_reset = false;
             if (servers_data.enabled) {
@@ -120,8 +118,7 @@ void TASK_Servers (void *pvParameters) {
 
         if (cycle) {
             telnet_run();
-        }
-        else {
+        } else {
             ftp_run();
         }
 

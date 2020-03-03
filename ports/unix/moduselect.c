@@ -39,6 +39,7 @@
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "fdfile.h"
 
 #define DEBUG 0
@@ -188,7 +189,9 @@ STATIC int poll_poll_internal(size_t n_args, const mp_obj_t *args) {
 
     self->flags = flags;
 
+    MP_THREAD_GIL_EXIT();
     int n_ready = poll(self->entries, self->len, timeout);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(n_ready, errno);
     return n_ready;
 }
@@ -312,7 +315,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
     .name = MP_QSTR_poll,
     .getiter = mp_identity_getiter,
     .iternext = poll_iternext,
-    .locals_dict = (void*)&poll_locals_dict,
+    .locals_dict = (void *)&poll_locals_dict,
 };
 
 STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
@@ -345,7 +348,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_select_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
 #endif // MICROPY_PY_USELECT_POSIX

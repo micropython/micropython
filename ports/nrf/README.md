@@ -30,14 +30,19 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * PCA10031 (dongle)
   * [WT51822-S4AT](http://www.wireless-tag.com/wireless_module/BLE/WT51822-S4AT.html)
 * nRF52832
-  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html) 
+  * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html)
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
   * [Thingy:52](http://www.nordicsemi.com/eng/Products/Nordic-Thingy-52)
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
   * [IBK-BLYST-NANO breakout board](https://www.crowdsupply.com/i-syst/blyst-nano)
   * [BLUEIO-TAG-EVIM BLYST Nano Sensor board](https://www.crowdsupply.com/i-syst/blyst-nano)
+  * [uBlox EVK-NINA-B1](https://www.u-blox.com/en/product/evk-nina-b1)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
+  * [PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
+  * [Particle Xenon](https://docs.particle.io/xenon/)
+* nRF9160
+  * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
 
 ## Compile and Flash
 
@@ -45,11 +50,11 @@ Prerequisite steps for building the nrf port:
 
     git clone <URL>.git micropython
     cd micropython
-    git submodule update --init
     make -C mpy-cross
 
 By default, the PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
 
+    make submodules
     make
     make flash
 
@@ -71,7 +76,7 @@ the compilation:
 GNU ARM Embedded Toolchain 7.2.1/4Q17. It's recommended to use a toolchain after
 this release, for example 7.3.1/2Q18 or 8.2.1/4Q18. The alternative would be to
 build the target using the LTO=0 as described above.
- 
+
 ## Compile and Flash with Bluetooth Stack
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
@@ -102,12 +107,12 @@ To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze
 
-## Enable MICROPY_FATFS
-As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_FATFS is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` and `MICROPY_VFS_FAT` in mpconfigport.h.
+## Enable MICROPY_VFS_FAT
+As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
 
 For example:
 
-     make BOARD=pca10040 MICROPY_FATFS=1
+     make BOARD=pca10040 MICROPY_VFS_FAT=1
 
 ## Target Boards and Make Flags
 
@@ -125,7 +130,11 @@ arduino_primo        | s132                    | Peripheral and Central | [PyOCD
 ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
+evk_nina_b1          | s132                    | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
+pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
+particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
+pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
 
 ## IDAP-M/IDAP-Link Targets
 
@@ -152,6 +161,14 @@ Install the necessary tools to flash and debug using OpenOCD:
 
     sudo apt-get install openocd
     sudo pip install pyOCD
+
+## Black Magic Probe Targets
+
+This requires no further dependencies other than `arm-none-eabi-gdb`.
+
+`make deploy` will use gdb to load and run new firmware. See
+[this guide](https://github.com/blacksphere/blackmagic/wiki/Useful-GDB-commands)
+for more tips about using the BMP with GDB.
 
 ## Bluetooth LE REPL
 

@@ -36,39 +36,39 @@
 #define MPU_REGION_SDRAM2   (MPU_REGION_NUMBER5)
 
 #define MPU_CONFIG_DISABLE(srd, size) ( \
-    MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos \
-    | MPU_REGION_NO_ACCESS          << MPU_RASR_AP_Pos \
-    | MPU_TEX_LEVEL0                << MPU_RASR_TEX_Pos \
-    | MPU_ACCESS_NOT_SHAREABLE      << MPU_RASR_S_Pos \
-    | MPU_ACCESS_NOT_CACHEABLE      << MPU_RASR_C_Pos \
-    | MPU_ACCESS_NOT_BUFFERABLE     << MPU_RASR_B_Pos \
-    | (srd)                         << MPU_RASR_SRD_Pos \
-    | (size)                        << MPU_RASR_SIZE_Pos \
-    | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_NO_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL0 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_NOT_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
+        | (srd) << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
     )
 
 #define MPU_CONFIG_ETH(size) ( \
-    MPU_INSTRUCTION_ACCESS_DISABLE  << MPU_RASR_XN_Pos \
-    | MPU_REGION_FULL_ACCESS        << MPU_RASR_AP_Pos \
-    | MPU_TEX_LEVEL1                << MPU_RASR_TEX_Pos \
-    | MPU_ACCESS_SHAREABLE          << MPU_RASR_S_Pos \
-    | MPU_ACCESS_NOT_CACHEABLE      << MPU_RASR_C_Pos \
-    | MPU_ACCESS_NOT_BUFFERABLE     << MPU_RASR_B_Pos \
-    | 0x00                          << MPU_RASR_SRD_Pos \
-    | (size)                        << MPU_RASR_SIZE_Pos \
-    | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
+    MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_NOT_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_NOT_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
     )
 
 #define MPU_CONFIG_SDRAM(size) ( \
-    MPU_INSTRUCTION_ACCESS_ENABLE   << MPU_RASR_XN_Pos \
-    | MPU_REGION_FULL_ACCESS        << MPU_RASR_AP_Pos \
-    | MPU_TEX_LEVEL1                << MPU_RASR_TEX_Pos \
-    | MPU_ACCESS_NOT_SHAREABLE      << MPU_RASR_S_Pos \
-    | MPU_ACCESS_CACHEABLE          << MPU_RASR_C_Pos \
-    | MPU_ACCESS_BUFFERABLE         << MPU_RASR_B_Pos \
-    | 0x00                          << MPU_RASR_SRD_Pos \
-    | (size)                        << MPU_RASR_SIZE_Pos \
-    | MPU_REGION_ENABLE             << MPU_RASR_ENABLE_Pos \
+    MPU_INSTRUCTION_ACCESS_ENABLE << MPU_RASR_XN_Pos \
+        | MPU_REGION_FULL_ACCESS << MPU_RASR_AP_Pos \
+        | MPU_TEX_LEVEL1 << MPU_RASR_TEX_Pos \
+        | MPU_ACCESS_NOT_SHAREABLE << MPU_RASR_S_Pos \
+        | MPU_ACCESS_CACHEABLE << MPU_RASR_C_Pos \
+        | MPU_ACCESS_BUFFERABLE << MPU_RASR_B_Pos \
+        | 0x00 << MPU_RASR_SRD_Pos \
+        | (size) << MPU_RASR_SIZE_Pos \
+        | MPU_REGION_ENABLE << MPU_RASR_ENABLE_Pos \
     )
 
 static inline void mpu_init(void) {
@@ -78,8 +78,8 @@ static inline void mpu_init(void) {
     __ISB();
 }
 
-static inline void mpu_config_start(void) {
-    __disable_irq();
+static inline uint32_t mpu_config_start(void) {
+    return disable_irq();
 }
 
 static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32_t attr_size) {
@@ -88,11 +88,11 @@ static inline void mpu_config_region(uint32_t region, uint32_t base_addr, uint32
     MPU->RASR = attr_size;
 }
 
-static inline void mpu_config_end(void) {
+static inline void mpu_config_end(uint32_t irq_state) {
     __ISB();
     __DSB();
     __DMB();
-    __enable_irq();
+    enable_irq(irq_state);
 }
 
 #else

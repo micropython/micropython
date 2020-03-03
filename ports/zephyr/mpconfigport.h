@@ -72,6 +72,7 @@
 #endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_UOS              (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_ZEPHYR           (1)
@@ -80,6 +81,15 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+#define MICROPY_VFS                 (1)
+#define MICROPY_READER_VFS          (MICROPY_VFS)
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_NORTC            (1)
 
 // Saving extra crumbs to make sure binary fits in 128K
 #define MICROPY_COMP_CONST_FOLDING  (0)
@@ -113,16 +123,21 @@ typedef long mp_off_t;
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_zephyr;
 extern const struct _mp_obj_module_t mp_module_zsensor;
 
+#if MICROPY_PY_UOS
+#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
+#else
+#define MICROPY_PY_UOS_DEF
+#endif
+
 #if MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#define MICROPY_PY_USOCKET_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
 #else
 #define MICROPY_PY_USOCKET_DEF
-#define MICROPY_PY_USOCKET_WEAK_DEF
 #endif
 
 #if MICROPY_PY_UTIME
@@ -145,15 +160,12 @@ extern const struct _mp_obj_module_t mp_module_zsensor;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
+    MICROPY_PY_UOS_DEF \
     MICROPY_PY_USOCKET_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_ZEPHYR_DEF \
     MICROPY_PY_ZSENSOR_DEF \
 
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) }, \
-    MICROPY_PY_USOCKET_WEAK_DEF \
-
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },

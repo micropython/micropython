@@ -1,12 +1,12 @@
 File cmdline/cmd_verbose.py, code block '<module>' (descriptor: \.\+, bytecode \.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
- 02 \.\+
+ 08 \.\+
 ########
-\.\+5b
+\.\+63
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-  bc=-1 line=1
+  bc=0 line=1
   bc=0 line=3
 00 LOAD_NAME print (cache=0)
 04 LOAD_CONST_SMALL_INT 1

@@ -17,6 +17,10 @@ OUTDIR_PREFIX = $(BOARD)
 MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
+MICROPY_VFS_FAT ?= 1
+MICROPY_VFS_LFS1 ?= 0
+MICROPY_VFS_LFS2 ?= 1
+
 # Default target
 all:
 
@@ -38,6 +42,7 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 
 SRC_C = main.c \
 	help.c \
+	moduos.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
@@ -46,6 +51,8 @@ SRC_C = main.c \
 	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
+	zephyr_storage.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
@@ -59,7 +66,7 @@ SRC_QSTR += $(SRC_C)
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 CFLAGS = $(Z_CFLAGS) \
-	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
+	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(INC)
 
 include $(TOP)/py/mkrules.mk
 
@@ -108,4 +115,4 @@ outdir/$(BOARD)/Makefile: $(CONF_FILE)
 
 $(Z_EXPORTS): outdir/$(BOARD)/Makefile
 	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
-	make -C outdir/$(BOARD) syscall_macros_h_target syscall_list_h_target kobj_types_h_target
+	make -C outdir/$(BOARD) syscall_list_h_target kobj_types_h_target

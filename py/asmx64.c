@@ -123,14 +123,14 @@ static inline byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int n) {
 }
 
 STATIC void asm_x64_write_byte_1(asm_x64_t *as, byte b1) {
-    byte* c = asm_x64_get_cur_to_write_bytes(as, 1);
+    byte *c = asm_x64_get_cur_to_write_bytes(as, 1);
     if (c != NULL) {
         c[0] = b1;
     }
 }
 
 STATIC void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
-    byte* c = asm_x64_get_cur_to_write_bytes(as, 2);
+    byte *c = asm_x64_get_cur_to_write_bytes(as, 2);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -138,7 +138,7 @@ STATIC void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
 }
 
 STATIC void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
-    byte* c = asm_x64_get_cur_to_write_bytes(as, 3);
+    byte *c = asm_x64_get_cur_to_write_bytes(as, 3);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -147,7 +147,7 @@ STATIC void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
 }
 
 STATIC void asm_x64_write_word32(asm_x64_t *as, int w32) {
-    byte* c = asm_x64_get_cur_to_write_bytes(as, 4);
+    byte *c = asm_x64_get_cur_to_write_bytes(as, 4);
     if (c != NULL) {
         c[0] = IMM32_L0(w32);
         c[1] = IMM32_L1(w32);
@@ -157,7 +157,7 @@ STATIC void asm_x64_write_word32(asm_x64_t *as, int w32) {
 }
 
 STATIC void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
-    byte* c = asm_x64_get_cur_to_write_bytes(as, 8);
+    byte *c = asm_x64_get_cur_to_write_bytes(as, 8);
     if (c != NULL) {
         c[0] = IMM32_L0(w64);
         c[1] = IMM32_L1(w64);
@@ -378,11 +378,11 @@ void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_XOR_R64_TO_RM64);
 }
 
-void asm_x64_shl_r64_cl(asm_x64_t* as, int dest_r64) {
+void asm_x64_shl_r64_cl(asm_x64_t *as, int dest_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, 4, OPCODE_SHL_RM64_CL);
 }
 
-void asm_x64_sar_r64_cl(asm_x64_t* as, int dest_r64) {
+void asm_x64_sar_r64_cl(asm_x64_t *as, int dest_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, 7, OPCODE_SAR_RM64_CL);
 }
 
@@ -500,7 +500,7 @@ void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x64_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x64_write_word32(as, rel);
@@ -522,7 +522,7 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x64_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x64_write_word32(as, rel);

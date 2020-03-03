@@ -4,71 +4,32 @@
 class ADC -- analog to digital conversion
 =========================================
 
-Usage::
+The ADC class provides an interface to analog-to-digital convertors, and
+represents a single endpoint that can sample a continuous voltage and
+convert it to a discretised value.
+
+Example usage::
 
    import machine
 
-   adc = machine.ADC()             # create an ADC object
-   apin = adc.channel(pin='GP3')   # create an analog pin on GP3
-   val = apin()                    # read an analog value
+   adc = machine.ADC(pin)   # create an ADC object acting on a pin
+   val = adc.read_u16()     # read a raw analog value in the range 0-65535
 
 Constructors
 ------------
 
-.. class:: ADC(id=0, \*, bits=12)
+.. class:: ADC(id)
 
-   Create an ADC object associated with the given pin.
-   This allows you to then read analog values on that pin.
-   For more info check the `pinout and alternate functions
-   table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_ 
-
-   .. warning:: 
-
-      ADC pin input range is 0-1.4V (being 1.8V the absolute maximum that it 
-      can withstand). When GP2, GP3, GP4 or GP5 are remapped to the 
-      ADC block, 1.8 V is the maximum. If these pins are used in digital mode, 
-      then the maximum allowed input is 3.6V.
+   Access the ADC associated with a source identified by *id*.  This
+   *id* may be an integer (usually specifying a channel number), a
+   :ref:`Pin <machine.Pin>` object, or other value supported by the
+   underlying machine.
 
 Methods
 -------
 
-.. method:: ADC.channel(id, \*, pin)
+.. method:: ADC.read_u16()
 
-   Create an analog pin. If only channel ID is given, the correct pin will
-   be selected. Alternatively, only the pin can be passed and the correct
-   channel will be selected. Examples::
-
-      # all of these are equivalent and enable ADC channel 1 on GP3
-      apin = adc.channel(1)
-      apin = adc.channel(pin='GP3')
-      apin = adc.channel(id=1, pin='GP3')
-
-.. method:: ADC.init()
-
-   Enable the ADC block.
-
-.. method:: ADC.deinit()
-
-   Disable the ADC block.
-
-class ADCChannel --- read analog values from internal or external sources
-=========================================================================
-
-ADC channels can be connected to internal points of the MCU or to GPIO pins.
-ADC channels are created using the ADC.channel method.
-
-.. method:: adcchannel()
-
-   Fast method to read the channel value.
-
-.. method:: adcchannel.value()
-
-   Read the channel value.
-
-.. method:: adcchannel.init()
-
-   Re-init (and effectively enable) the ADC channel.
-
-.. method:: adcchannel.deinit()
-
-   Disable the ADC channel.
+   Take an analog reading and return an integer in the range 0-65535.
+   The return value represents the raw reading taken by the ADC, scaled
+   such that the minimum value is 0 and the maximum value is 65535.

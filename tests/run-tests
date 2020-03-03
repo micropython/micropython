@@ -130,7 +130,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
-                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
+                subprocess.check_output([MPYCROSS] + args.mpy_cross_flags.split() + ['-o', 'mpytest.mpy', '-X', 'emit=' + args.emit, test_file])
                 cmdlist.extend(['-m', 'mpytest'])
             else:
                 cmdlist.append(test_file)
@@ -221,10 +221,13 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_tests = set()
     skip_native = False
     skip_int_big = False
+    skip_bytearray = False
     skip_set_type = False
+    skip_slice = False
     skip_async = False
     skip_const = False
     skip_revops = False
+    skip_io_module = False
     skip_endian = False
     has_complex = True
     has_coverage = False
@@ -244,10 +247,20 @@ def run_tests(pyb, tests, args, base_path="."):
         if output != b'1000000000000000000000000000000000000000000000\n':
             skip_int_big = True
 
+        # Check if bytearray is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'bytearray.py')
+        if output != b'bytearray\n':
+            skip_bytearray = True
+
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'set_check.py')
         if output == b'CRASH':
             skip_set_type = True
+
+        # Check if slice is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'slice.py')
+        if output != b'slice\n':
+            skip_slice = True
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'async_check.py')
@@ -264,17 +277,47 @@ def run_tests(pyb, tests, args, base_path="."):
         if output == b'TypeError\n':
             skip_revops = True
 
+        # Check if uio module exists, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, 'uio_module.py')
+        if output != b'uio\n':
+            skip_io_module = True
+
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
-        if not 'True' in str(t, 'ascii'):
+        if 'True' not in str(t, 'ascii'):
             skip_tests.add('cmdline/repl_emacs_keys.py')
 
+        # Check if words movement in repl is supported, and skip such tests if it's not
+        t = run_feature_check(pyb, args, base_path, 'repl_words_move_check.py')
+        if 'True' not in str(t, 'ascii'):
+            skip_tests.add('cmdline/repl_words_move.py')
+
         upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
-        upy_float_precision = int(run_feature_check(pyb, args, base_path, 'float.py'))
+        upy_float_precision = run_feature_check(pyb, args, base_path, 'float.py')
+        if upy_float_precision == b'CRASH':
+            upy_float_precision = 0
+        else:
+            upy_float_precision = int(upy_float_precision)
         has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
         has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
         cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
         skip_endian = (upy_byteorder != cpy_byteorder)
+
+    # These tests don't test slice explicitly but rather use it to perform the test
+    misc_slice_tests = (
+        'builtin_range',
+        'class_super',
+        'containment',
+        'errno1',
+        'fun_str',
+        'generator1',
+        'globals_del',
+        'memoryview1',
+        'memoryview_gc',
+        'object1',
+        'python34',
+        'struct_endian',
+    )
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
@@ -341,14 +384,14 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
         elif args.target == 'nrf':
             skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
-            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
-            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
             skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
             skip_tests.add('micropython/opt_level.py')      # no support for line numbers
             skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
             for t in tests:
                 if t.startswith('basics/io_'):
                     skip_tests.add(t)
+        elif args.target == 'qemu-arm':
+            skip_tests.add('misc/print_exception.py')       # requires sys stdfiles
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -375,6 +418,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
+        skip_tests.add('micropython/opt_level_lineno.py') # native doesn't have proper traceback info
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
 
     for test_file in tests:
@@ -394,18 +438,24 @@ def run_tests(pyb, tests, args, base_path="."):
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith("async_")
         is_const = test_name.startswith("const")
+        is_io_module = test_name.startswith("io_")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
+        skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
+        skip_it |= skip_slice and is_slice
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and test_name.startswith("class_reverse_op")
+        skip_it |= skip_io_module and is_io_module
 
         if args.list_tests:
             if not skip_it:
@@ -501,7 +551,14 @@ class append_filter(argparse.Action):
 def main():
     cmd_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='Run and manage tests for MicroPython.',
+        description='''Run and manage tests for MicroPython.
+
+When running tests, run-tests compares the MicroPython output of the test with the output
+produced by running the test through CPython unless a <test>.exp file is found, in which
+case it is used as comparison.
+If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the current
+directory with the MicroPython output and the expectations, respectively.
+''',
         epilog='''\
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
@@ -518,17 +575,19 @@ the last matching regex is used:
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('-e', '--exclude', action=append_filter, metavar='REGEX', dest='filters', help='exclude test by regex on path/name.py')
     cmd_parser.add_argument('-i', '--include', action=append_filter, metavar='REGEX', dest='filters', help='include test by regex on path/name.py')
-    cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
+    cmd_parser.add_argument('--write-exp', action='store_true', help='use CPython to generate .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--list-tests', action='store_true', help='list tests instead of running them')
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
+    cmd_parser.add_argument('--mpy-cross-flags', default='-mcache-lookup-bc', help='flags to pass to mpy-cross')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
+    LOCAL_TARGETS = ('unix', 'qemu-arm',)
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
-    if args.target == 'unix' or args.list_tests:
+    if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
@@ -537,24 +596,28 @@ the last matching regex is used:
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     else:
-        raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
+        raise ValueError('target must be one of %s' % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
 
     if len(args.files) == 0:
         if args.test_dirs is None:
+            test_dirs = ('basics', 'micropython', 'misc', 'extmod',)
             if args.target == 'pyboard':
                 # run pyboard tests
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs += ('float', 'stress', 'pyb', 'pybnative', 'inlineasm')
             elif args.target in ('esp8266', 'esp32', 'minimal', 'nrf'):
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
+                test_dirs += ('float',)
             elif args.target == 'wipy':
                 # run WiPy tests
-                test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
-            else:
+                test_dirs += ('wipy',)
+            elif args.target == 'unix':
                 # run PC tests
-                test_dirs = (
-                    'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
-                )
+                test_dirs += ('float', 'import', 'io', 'stress', 'unicode', 'unix', 'cmdline',)
+            elif args.target == 'qemu-arm':
+                if not args.write_exp:
+                    raise ValueError('--target=qemu-arm must be used with --write-exp')
+                # Generate expected output files for qemu run.
+                # This list should match the test_dirs tuple in tinytest-codegen.py.
+                test_dirs += ('float', 'inlineasm', 'qemu-arm',)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs

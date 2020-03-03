@@ -26,6 +26,7 @@
  * THE SOFTWARE.
  */
 
+#if !MICROPY_ESP_IDF_4
 #include "py/runtime.h"
 #include "py/mphal.h"
 
@@ -54,7 +55,7 @@ const mp_obj_type_t lan_if_type;
 STATIC lan_if_obj_t lan_obj = {{&lan_if_type}, ESP_IF_ETH, false, false};
 
 STATIC void phy_power_enable(bool enable) {
-    lan_if_obj_t* self = &lan_obj;
+    lan_if_obj_t *self = &lan_obj;
 
     if (self->phy_power_pin != -1) {
 
@@ -82,13 +83,13 @@ STATIC void phy_power_enable(bool enable) {
 }
 
 STATIC void init_lan_rmii() {
-    lan_if_obj_t* self = &lan_obj;
+    lan_if_obj_t *self = &lan_obj;
     phy_rmii_configure_data_interface_pins();
     phy_rmii_smi_configure_pins(self->mdc_pin, self->mdio_pin);
 }
 
 STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    lan_if_obj_t* self = &lan_obj;
+    lan_if_obj_t *self = &lan_obj;
 
     if (self->initialized) {
         return MP_OBJ_FROM_PTR(&lan_obj);
@@ -205,6 +206,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&lan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
@@ -213,5 +215,7 @@ STATIC MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);
 const mp_obj_type_t lan_if_type = {
     { &mp_type_type },
     .name = MP_QSTR_LAN,
-    .locals_dict = (mp_obj_dict_t*)&lan_if_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&lan_if_locals_dict,
 };
+
+#endif // !MICROPY_ESP_IDF_4

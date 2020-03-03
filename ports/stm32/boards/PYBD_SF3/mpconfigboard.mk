@@ -10,7 +10,12 @@ TEXT0_SECTIONS = .isr_vector .text .data
 TEXT1_SECTIONS = .text_ext
 
 # MicroPython settings
+MICROPY_PY_BLUETOOTH = 1
+MICROPY_BLUETOOTH_NIMBLE = 1
 MICROPY_PY_LWIP = 1
 MICROPY_PY_NETWORK_CYW43 = 1
 MICROPY_PY_USSL = 1
 MICROPY_SSL_MBEDTLS = 1
+
+# PYBD-specific frozen modules
+FROZEN_MANIFEST = boards/PYBD_SF2/manifest.py

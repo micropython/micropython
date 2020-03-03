@@ -10,7 +10,7 @@ $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
 include ../../py/mkenv.mk
-include $(BOARD_DIR)/board.mk
+include $(BOARD_DIR)/mpconfigboard.mk
 
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -18,6 +18,8 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
+
+GIT_SUBMODULES = lib/asf4 lib/tinyusb
 
 INC += -I.
 INC += -I$(TOP)

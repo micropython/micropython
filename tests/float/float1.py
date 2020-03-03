@@ -64,6 +64,8 @@ print(1.2 <= 3.4)
 print(1.2 <= -3.4)
 print(1.2 >= 3.4)
 print(1.2 >= -3.4)
+print(0.0 == False, 1.0 == True)
+print(False == 0.0, True == 1.0)
 
 # comparison of nan is special
 nan = float('nan')

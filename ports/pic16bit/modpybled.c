@@ -50,7 +50,7 @@ STATIC mp_obj_t pyb_led_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_int_t led_id = mp_obj_get_int(args[0]);
     if (!(1 <= led_id && led_id <= NUM_LED)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED %d does not exist", led_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "LED %d does not exist", led_id);
     }
     return (mp_obj_t)&pyb_led_obj[led_id - 1];
 }

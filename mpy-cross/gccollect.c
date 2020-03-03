@@ -49,20 +49,20 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     register long r13 asm ("r13");
     register long r14 asm ("r14");
     register long r15 asm ("r15");
-#ifdef __clang__
+    #ifdef __clang__
     // TODO:
     // This is dirty workaround for Clang. It tries to get around
     // uncompliant (wrt to GCC) behavior of handling register variables.
     // Application of this patch here is random, and done only to unbreak
     // MacOS build. Better, cross-arch ways to deal with Clang issues should
     // be found.
-    asm("" : "=r"(rbx));
-    asm("" : "=r"(rbp));
-    asm("" : "=r"(r12));
-    asm("" : "=r"(r13));
-    asm("" : "=r"(r14));
-    asm("" : "=r"(r15));
-#endif
+    asm ("" : "=r" (rbx));
+    asm ("" : "=r" (rbp));
+    asm ("" : "=r" (r12));
+    asm ("" : "=r" (r13));
+    asm ("" : "=r" (r14));
+    asm ("" : "=r" (r15));
+    #endif
     arr[0] = rbx;
     arr[1] = rbp;
     arr[2] = r12;
@@ -141,7 +141,7 @@ void gc_collect(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
-    void **regs_ptr = (void**)(void*)&regs;
+    void **regs_ptr = (void **)(void *)&regs;
     gc_collect_root(regs_ptr, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&regs) / sizeof(mp_uint_t));
     gc_collect_end();
 }

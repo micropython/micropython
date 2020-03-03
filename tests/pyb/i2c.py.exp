@@ -1,12 +1,4 @@
 ValueError -1
 ValueError 0
 I2C 1
-I2C 2
-ValueError 3
-I2C X
-I2C Y
-ValueError Z
 []
-[76]
-True
-b'\x01'

@@ -24,7 +24,15 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
+
+// Variant-specific definitions.
+#include "mpconfigvariant.h"
+
+// The minimal variant's config covers everything.
+// If we're building the minimal variant, ignore the rest of this file.
+#ifndef MICROPY_UNIX_MINIMAL
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
@@ -36,7 +44,7 @@
 #endif
 #if !defined(MICROPY_EMIT_THUMB) && defined(__thumb2__)
     #define MICROPY_EMIT_THUMB      (1)
-    #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+    #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #endif
 // Some compilers define __thumb2__ and __arm__ at the same time, let
 // autodetected thumb2 emitter have priority.
@@ -64,12 +72,15 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
 #endif
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
@@ -89,11 +100,19 @@
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_ATEXIT       (1)
+#if MICROPY_PY_SYS_SETTRACE
+#define MICROPY_PERSISTENT_CODE_SAVE (1)
+#define MICROPY_COMP_CONST (0)
+#endif
+#ifndef MICROPY_PY_SYS_PLATFORM
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
+#endif
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
@@ -103,11 +122,11 @@
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #endif
+#define MICROPY_PY_MATH_ISCLOSE     (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
-#define MICROPY_MODULE_FROZEN_STR   (1)
 
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)
@@ -146,7 +165,6 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_VFS_FAT                (0)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
@@ -253,7 +271,7 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-void mp_unix_alloc_exec(size_t min_size, void** ptr, size_t *size);
+void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size);
 void mp_unix_free_exec(void *ptr, size_t size);
 void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
@@ -267,7 +285,12 @@ void mp_unix_mark_exec(void);
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #else
-#define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
+#define MP_PLAT_PRINT_STRN(str, len) do { \
+        MP_THREAD_GIL_EXIT(); \
+        ssize_t ret = write(1, str, len); \
+        MP_THREAD_GIL_ENTER(); \
+        (void)ret; \
+} while (0)
 #endif
 
 #ifdef __linux__
@@ -325,3 +348,5 @@ void mp_unix_mark_exec(void);
 // For debugging purposes, make printf() available to any source file.
 #include <stdio.h>
 #endif
+
+#endif // MICROPY_UNIX_MINIMAL

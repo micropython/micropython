@@ -256,15 +256,15 @@ static const uint16_t render_timings[] =
 // The scale is (approximately) exponential,
 // each step is approx x1.9 greater than the previous.
 {   0, // Bright, Ticks Duration, Relative power
-    2,   //   1,   2,     32µs,     inf
-    2,   //   2,   4,     64µs,     200%
-    4,   //   3,   8,     128µs,    200%
-    7,   //   4,   15,    240µs,    187%
-    13,  //   5,   28,    448µs,    187%
-    25,  //   6,   53,    848µs,    189%
-    49,  //   7,   102,   1632µs,   192%
-    97,  //   8,   199,   3184µs,   195%
-// Always on  9,   375,   6000µs,   188%
+    2,   //   1,   2,     32us,     inf
+    2,   //   2,   4,     64us,     200%
+    4,   //   3,   8,     128us,    200%
+    7,   //   4,   15,    240us,    187%
+    13,  //   5,   28,    448us,    187%
+    25,  //   6,   53,    848us,    189%
+    49,  //   7,   102,   1632us,   192%
+    97,  //   8,   199,   3184us,   195%
+// Always on  9,   375,   6000us,   188%
 };
 
 #define DISPLAY_TICKER_SLOT 1
@@ -281,7 +281,7 @@ static int32_t callback(void) {
         return -1;
     }
     display->previous_brightness = brightness;
-    // Return interval (in 16µs ticks) until next callback
+    // Return interval (in 16us ticks) until next callback
     return render_timings[brightness];
 }
 

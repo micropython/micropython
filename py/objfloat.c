@@ -60,21 +60,7 @@ const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 // must return actual integer value if it fits in mp_int_t
 mp_int_t mp_float_hash(mp_float_t src) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-typedef uint64_t mp_float_uint_t;
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-typedef uint32_t mp_float_uint_t;
-#endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_uint_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
-        #else
-        struct { mp_float_uint_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
-        #endif
-        mp_float_uint_t i;
-    } u = {.f = src};
-
+    mp_float_union_t u = {.f = src};
     mp_int_t val;
     const int adj_exp = (int)u.p.exp - MP_FLOAT_EXP_BIAS;
     if (adj_exp < 0) {
@@ -109,17 +95,17 @@ typedef uint32_t mp_float_uint_t;
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_float_t o_val = mp_obj_float_get(o_in);
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
     const int precision = 6;
     #else
     const int precision = 7;
     #endif
-#else
+    #else
     char buf[32];
     const int precision = 16;
-#endif
+    #endif
     mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
@@ -156,10 +142,14 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
-        case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(val != 0);
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
+        case MP_UNARY_OP_POSITIVE:
+            return o_in;
+        case MP_UNARY_OP_NEGATIVE:
+            return mp_obj_new_float(-val);
         case MP_UNARY_OP_ABS: {
             if (signbit(val)) {
                 return mp_obj_new_float(-val);
@@ -167,24 +157,24 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
                 return o_in;
             }
         }
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
 STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_val = mp_obj_float_get(lhs_in);
-#if MICROPY_PY_BUILTINS_COMPLEX
+    #if MICROPY_PY_BUILTINS_COMPLEX
     if (mp_obj_is_type(rhs_in, &mp_type_complex)) {
         return mp_obj_complex_binary_op(op, lhs_val, 0, rhs_in);
-    } else
-#endif
-    {
-        return mp_obj_float_binary_op(op, lhs_val, rhs_in);
     }
+    #endif
+    return mp_obj_float_binary_op(op, lhs_val, rhs_in);
 }
 
 const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,
@@ -252,15 +242,21 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
 
     switch (op) {
         case MP_BINARY_OP_ADD:
-        case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
+        case MP_BINARY_OP_INPLACE_ADD:
+            lhs_val += rhs_val;
+            break;
         case MP_BINARY_OP_SUBTRACT:
-        case MP_BINARY_OP_INPLACE_SUBTRACT: lhs_val -= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_SUBTRACT:
+            lhs_val -= rhs_val;
+            break;
         case MP_BINARY_OP_MULTIPLY:
-        case MP_BINARY_OP_INPLACE_MULTIPLY: lhs_val *= rhs_val; break;
+        case MP_BINARY_OP_INPLACE_MULTIPLY:
+            lhs_val *= rhs_val;
+            break;
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
-                zero_division_error:
+            zero_division_error:
                 mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
@@ -315,11 +311,16 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             };
             return mp_obj_new_tuple(2, tuple);
         }
-        case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
-        case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
-        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_val == rhs_val);
-        case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
-        case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
+        case MP_BINARY_OP_LESS:
+            return mp_obj_new_bool(lhs_val < rhs_val);
+        case MP_BINARY_OP_MORE:
+            return mp_obj_new_bool(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL:
+            return mp_obj_new_bool(lhs_val == rhs_val);
+        case MP_BINARY_OP_LESS_EQUAL:
+            return mp_obj_new_bool(lhs_val <= rhs_val);
+        case MP_BINARY_OP_MORE_EQUAL:
+            return mp_obj_new_bool(lhs_val >= rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported

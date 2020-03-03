@@ -96,7 +96,7 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 1;
     map->is_ordered = 1;
-    map->table = (mp_map_elem_t*)table;
+    map->table = (mp_map_elem_t *)table;
 }
 
 // Differentiate from mp_map_clear() - semantics is different

@@ -68,27 +68,18 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // create new object
     fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
     vfs->base.type = type;
-    vfs->flags = FSUSER_FREE_OBJ;
     vfs->fatfs.drv = vfs;
 
-    // load block protocol methods
-    mp_load_method(args[0], MP_QSTR_readblocks, vfs->readblocks);
-    mp_load_method_maybe(args[0], MP_QSTR_writeblocks, vfs->writeblocks);
-    mp_load_method_maybe(args[0], MP_QSTR_ioctl, vfs->u.ioctl);
-    if (vfs->u.ioctl[0] != MP_OBJ_NULL) {
-        // device supports new block protocol, so indicate it
-        vfs->flags |= FSUSER_HAVE_IOCTL;
-    } else {
-        // no ioctl method, so assume the device uses the old block protocol
-        mp_load_method_maybe(args[0], MP_QSTR_sync, vfs->u.old.sync);
-        mp_load_method(args[0], MP_QSTR_count, vfs->u.old.count);
-    }
+    // Initialise underlying block device
+    vfs->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
+    vfs->blockdev.block_size = FF_MIN_SS; // default, will be populated by call to MP_BLOCKDEV_IOCTL_BLOCK_SIZE
+    mp_vfs_blockdev_init(&vfs->blockdev, args[0]);
 
     // mount the block device so the VFS methods can be used
     FRESULT res = f_mount(&vfs->fatfs);
     if (res == FR_NO_FILESYSTEM) {
         // don't error out if no filesystem, to let mkfs()/mount() create one if wanted
-        vfs->flags |= FSUSER_NO_FILESYSTEM;
+        vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NO_FILESYSTEM;
     } else if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -151,7 +142,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
-            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+            t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
         if (fno.fattrib & AM_DIR) {
             // dir
@@ -327,7 +318,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         (fno.ftime >> 11) & 0x1f,
         (fno.ftime >> 5) & 0x3f,
         2 * (fno.ftime & 0x1f)
-    );
+        );
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -380,11 +371,11 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
     //  1. readonly=True keyword argument
     //  2. nonexistent writeblocks method (then writeblocks[0] == MP_OBJ_NULL already)
     if (mp_obj_is_true(readonly)) {
-        self->writeblocks[0] = MP_OBJ_NULL;
+        self->blockdev.writeblocks[0] = MP_OBJ_NULL;
     }
 
     // check if we need to make the filesystem
-    FRESULT res = (self->flags & FSUSER_NO_FILESYSTEM) ? FR_NO_FILESYSTEM : FR_OK;
+    FRESULT res = (self->blockdev.flags & MP_BLOCKDEV_FLAG_NO_FILESYSTEM) ? FR_NO_FILESYSTEM : FR_OK;
     if (res == FR_NO_FILESYSTEM && mp_obj_is_true(mkfs)) {
         uint8_t working_buf[FF_MAX_SS];
         res = f_mkfs(&self->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
@@ -392,7 +383,7 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-    self->flags &= ~FSUSER_NO_FILESYSTEM;
+    self->blockdev.flags &= ~MP_BLOCKDEV_FLAG_NO_FILESYSTEM;
 
     return mp_const_none;
 }
@@ -434,7 +425,7 @@ const mp_obj_type_t mp_fat_vfs_type = {
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
     .protocol = &fat_vfs_proto,
-    .locals_dict = (mp_obj_dict_t*)&fat_vfs_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
 
 };
 

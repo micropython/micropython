@@ -59,30 +59,30 @@ STATIC mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 }
 
 #define MATH_FUN_1(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { \
         return math_generic_1(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_1_TO_BOOL(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_bool(c_name(mp_obj_get_float(x_obj))); } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_bool(c_name(mp_obj_get_float(x_obj))); } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_1_TO_INT(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int_from_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_int_from_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_2(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
         return math_generic_2(x_obj, y_obj, MICROPY_FLOAT_C_FUN(c_name)); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #if MP_NEED_LOG2
 #undef log2
@@ -170,6 +170,42 @@ MATH_FUN_1(gamma, tgamma)
 MATH_FUN_1(lgamma, lgamma)
 #endif
 //TODO: fsum
+
+#if MICROPY_PY_MATH_ISCLOSE
+STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    const mp_float_t a = mp_obj_get_float(args[ARG_a].u_obj);
+    const mp_float_t b = mp_obj_get_float(args[ARG_b].u_obj);
+    const mp_float_t rel_tol = args[ARG_rel_tol].u_obj == MP_OBJ_NULL
+        ? (mp_float_t)1e-9 : mp_obj_get_float(args[ARG_rel_tol].u_obj);
+    const mp_float_t abs_tol = mp_obj_get_float(args[ARG_abs_tol].u_obj);
+    if (rel_tol < (mp_float_t)0.0 || abs_tol < (mp_float_t)0.0) {
+        math_error();
+    }
+    if (a == b) {
+        return mp_const_true;
+    }
+    const mp_float_t difference = MICROPY_FLOAT_C_FUN(fabs)(a - b);
+    if (isinf(difference)) { // Either a or b is inf
+        return mp_const_false;
+    }
+    if ((difference <= abs_tol) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * a)) ||
+        (difference <= MICROPY_FLOAT_C_FUN(fabs)(rel_tol * b))) {
+        return mp_const_true;
+    }
+    return mp_const_false;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_math_isclose_obj, 2, mp_math_isclose);
+#endif
 
 // Function that takes a variable number of arguments
 
@@ -335,6 +371,9 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isfinite), MP_ROM_PTR(&mp_math_isfinite_obj) },
     { MP_ROM_QSTR(MP_QSTR_isinf), MP_ROM_PTR(&mp_math_isinf_obj) },
     { MP_ROM_QSTR(MP_QSTR_isnan), MP_ROM_PTR(&mp_math_isnan_obj) },
+    #if MICROPY_PY_MATH_ISCLOSE
+    { MP_ROM_QSTR(MP_QSTR_isclose), MP_ROM_PTR(&mp_math_isclose_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_trunc), MP_ROM_PTR(&mp_math_trunc_obj) },
     { MP_ROM_QSTR(MP_QSTR_radians), MP_ROM_PTR(&mp_math_radians_obj) },
     { MP_ROM_QSTR(MP_QSTR_degrees), MP_ROM_PTR(&mp_math_degrees_obj) },
@@ -353,7 +392,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table
 
 const mp_obj_module_t mp_module_math = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_math_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_math_globals,
 };
 
 #endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH

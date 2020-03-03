@@ -30,16 +30,23 @@
 
 #include "py/runtime.h"
 #include "py/bc.h"
+#include "py/objstr.h"
 #include "py/objgenerator.h"
 #include "py/objfun.h"
 #include "py/stackctrl.h"
+
+// Instance of GeneratorExit exception - needed by generator.close()
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
-    mp_obj_dict_t *globals;
+    // mp_const_none: Not-running, no exception.
+    // MP_OBJ_NULL: Running, no exception.
+    // other: Not running, pending exception.
+    mp_obj_t pend_exc;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
@@ -48,17 +55,18 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode);
-    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self_fun->bytecode));
+    const uint8_t *ip = self_fun->bytecode;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
 
-    o->globals = self_fun->globals;
+    o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
 }
@@ -83,8 +91,15 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude, and extract n_state from it
-    uintptr_t prelude_offset = ((uintptr_t*)self_fun->bytecode)[0];
-    size_t n_state = mp_decode_uint_value(self_fun->bytecode + prelude_offset);
+    uintptr_t prelude_offset = ((uintptr_t *)self_fun->bytecode)[0];
+    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    // Prelude is in bytes object in const_table, at index prelude_offset
+    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->const_table[prelude_offset]);
+    prelude_offset = (const byte *)prelude_bytes->data - self_fun->bytecode;
+    #endif
+    const uint8_t *ip = self_fun->bytecode + prelude_offset;
+    size_t n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args);
     size_t n_exc_stack = 0;
 
     // Allocate the generator object, with room for local stack and exception stack
@@ -93,17 +108,18 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     o->base.type = &mp_type_gen_instance;
 
     // Parse the input arguments and set up the code state
-    o->globals = self_fun->globals;
+    o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = (const byte*)prelude_offset;
+    o->code_state.ip = (const byte *)prelude_offset;
+    o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
 
     // Indicate we are a native function, which doesn't use this variable
-    o->code_state.exc_sp = NULL;
+    o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
-    uintptr_t start_offset = ((uintptr_t*)self_fun->bytecode)[1];
-    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void*)(self_fun->bytecode + start_offset));
+    uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
+    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void *)(self_fun->bytecode + start_offset));
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -138,42 +154,43 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         *ret_val = MP_OBJ_STOP_ITERATION;
         return MP_VM_RETURN_NORMAL;
     }
+
+    // Ensure the generator cannot be reentered during execution
+    if (self->pend_exc == MP_OBJ_NULL) {
+        mp_raise_ValueError("generator already executing");
+    }
+
+    #if MICROPY_PY_GENERATOR_PEND_THROW
+    // If exception is pending (set using .pend_throw()), process it now.
+    if (self->pend_exc != mp_const_none) {
+        throw_value = self->pend_exc;
+    }
+    #endif
+
+    // If the generator is started, allow sending a value.
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
             mp_raise_TypeError("can't send non-None value to a just-started generator");
         }
     } else {
-        #if MICROPY_PY_GENERATOR_PEND_THROW
-        // If exception is pending (set using .pend_throw()), process it now.
-        if (*self->code_state.sp != mp_const_none) {
-            throw_value = *self->code_state.sp;
-            *self->code_state.sp = MP_OBJ_NULL;
-        } else
-        #endif
-        {
-            *self->code_state.sp = send_value;
-        }
+        *self->code_state.sp = send_value;
     }
 
-    // We set self->globals=NULL while executing, for a sentinel to ensure the generator
-    // cannot be reentered during execution
-    if (self->globals == NULL) {
-        mp_raise_ValueError("generator already executing");
-    }
+    // Mark as running
+    self->pend_exc = MP_OBJ_NULL;
 
     // Set up the correct globals context for the generator and execute it
     self->code_state.old_globals = mp_globals_get();
-    mp_globals_set(self->globals);
-    self->globals = NULL;
+    mp_globals_set(self->code_state.fun_bc->globals);
 
     mp_vm_return_kind_t ret_kind;
 
     #if MICROPY_EMIT_NATIVE
-    if (self->code_state.exc_sp == NULL) {
+    if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
         // A native generator, with entry point 2 words into the "bytecode" pointer
-        typedef uintptr_t (*mp_fun_native_gen_t)(void*, mp_obj_t);
-        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void*)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
-        ret_kind = fun((void*)&self->code_state, throw_value);
+        typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
+        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        ret_kind = fun((void *)&self->code_state, throw_value);
     } else
     #endif
     {
@@ -181,8 +198,10 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
     }
 
-    self->globals = mp_globals_get();
     mp_globals_set(self->code_state.old_globals);
+
+    // Mark as not running
+    self->pend_exc = mp_const_none;
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
@@ -224,7 +243,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             if (ret == mp_const_none || ret == MP_OBJ_STOP_ITERATION) {
                 return MP_OBJ_STOP_ITERATION;
             } else {
-                nlr_raise(mp_obj_new_exception_args(&mp_type_StopIteration, 1, &ret));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_StopIteration, ret));
             }
 
         case MP_VM_RETURN_YIELD:
@@ -242,7 +261,7 @@ STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
 STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
     mp_obj_t ret = gen_resume_and_raise(self_in, send_value, MP_OBJ_NULL);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -269,7 +288,7 @@ STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
+        mp_raise_type(&mp_type_StopIteration);
     } else {
         return ret;
     }
@@ -300,11 +319,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 #if MICROPY_PY_GENERATOR_PEND_THROW
 STATIC mp_obj_t gen_instance_pend_throw(mp_obj_t self_in, mp_obj_t exc_in) {
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->code_state.sp == self->code_state.state - 1) {
-        mp_raise_TypeError("can't pend throw to just-started generator");
+    if (self->pend_exc == MP_OBJ_NULL) {
+        mp_raise_ValueError("generator already executing");
     }
-    mp_obj_t prev = *self->code_state.sp;
-    *self->code_state.sp = exc_in;
+    mp_obj_t prev = self->pend_exc;
+    self->pend_exc = exc_in;
     return prev;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_throw);
@@ -328,5 +347,5 @@ const mp_obj_type_t mp_type_gen_instance = {
     .unary_op = mp_generic_unary_op,
     .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
-    .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
 };

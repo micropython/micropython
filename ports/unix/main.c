@@ -59,12 +59,14 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
+long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t dummy = write(STDERR_FILENO, str, len);
+    MP_THREAD_GIL_ENTER();
     mp_uos_dupterm_tx_strn(str, len);
     (void)dummy;
 }
@@ -114,7 +116,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
             const vstr_t *vstr = source;
             lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
         } else if (source_kind == LEX_SRC_FILENAME) {
-            lex = mp_lexer_new_from_file((const char*)source);
+            lex = mp_lexer_new_from_file((const char *)source);
         } else { // LEX_SRC_STDIN
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
         }
@@ -138,26 +140,22 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         }
         #endif
 
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
 
         if (!compile_only) {
             // execute it
             mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
         }
 
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(true);
         nlr_pop();
         return 0;
 
     } else {
         // uncaught exception
         mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(false);
         return handle_uncaught_exception(nlr.ret_val);
     }
 }
@@ -301,32 +299,43 @@ STATIC int do_str(const char *str) {
     return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int usage(char **argv) {
+STATIC void print_help(char **argv) {
     printf(
-"usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
-"Options:\n"
-"-v : verbose (trace various operations); can be multiple\n"
-"-O[N] : apply bytecode optimizations of level N\n"
-"\n"
-"Implementation specific options (-X):\n", argv[0]
-);
+        "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
+        "Options:\n"
+        "-h : print this help message\n"
+        "-i : enable inspection via REPL after running command/module/file\n"
+        #if MICROPY_DEBUG_PRINTERS
+        "-v : verbose (trace various operations); can be multiple\n"
+        #endif
+        "-O[N] : apply bytecode optimizations of level N\n"
+        "\n"
+        "Implementation specific options (-X):\n", argv[0]
+        );
     int impl_opts_cnt = 0;
     printf(
-"  compile-only                 -- parse and compile only\n"
-"  emit={bytecode,native,viper} -- set the default code emitter\n"
-);
+        "  compile-only                 -- parse and compile only\n"
+        #if MICROPY_EMIT_NATIVE
+        "  emit={bytecode,native,viper} -- set the default code emitter\n"
+        #else
+        "  emit=bytecode                -- set the default code emitter\n"
+        #endif
+        );
     impl_opts_cnt++;
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
-, heap_size);
+        "  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
+        , heap_size);
     impl_opts_cnt++;
-#endif
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
     }
+}
 
+STATIC int invalid_args(void) {
+    fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
@@ -334,20 +343,26 @@ STATIC int usage(char **argv) {
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
+            if (strcmp(argv[a], "-h") == 0) {
+                print_help(argv);
+                exit(0);
+            }
             if (strcmp(argv[a], "-X") == 0) {
                 if (a + 1 >= argc) {
-                    exit(usage(argv));
+                    exit(invalid_args());
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
                     compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
+                #if MICROPY_EMIT_NATIVE
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
                     emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
                 } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
                     emit_opt = MP_EMIT_OPT_VIPER;
-#if MICROPY_ENABLE_GC
+                #endif
+                #if MICROPY_ENABLE_GC
                 } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
@@ -380,11 +395,10 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
-#endif
+                #endif
                 } else {
-invalid_arg:
-                    printf("Invalid option\n");
-                    exit(usage(argv));
+                invalid_arg:
+                    exit(invalid_args());
                 }
                 a++;
             }
@@ -438,10 +452,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     pre_process_options(argc, argv);
 
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
-#endif
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[1024];
@@ -450,6 +464,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_init();
 
+    #if MICROPY_EMIT_NATIVE
+    // Set default emitter options
+    MP_STATE_VM(default_emit_opt) = emit_opt;
+    #else
+    (void)emit_opt;
+    #endif
+
     #if MICROPY_VFS_POSIX
     {
         // Mount the host FS at the root of our internal VFS
@@ -457,7 +478,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             mp_type_vfs_posix.make_new(&mp_type_vfs_posix, 0, 0, NULL),
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
-        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
         MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
     }
     #endif
@@ -472,7 +493,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         #endif
     }
     size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == ':') {
+    if (*path == PATHLIST_SEP_CHAR) {
         path_num++;
     }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
@@ -486,25 +507,25 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
-    char *p = path;
-    for (mp_uint_t i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-        if (p1 == NULL) {
-            p1 = p + strlen(p);
+        char *p = path;
+        for (mp_uint_t i = 1; i < path_num; i++) {
+            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+            if (p1 == NULL) {
+                p1 = p + strlen(p);
+            }
+            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+                // Expand standalone ~ to $HOME
+                int home_l = strlen(home);
+                vstr_t vstr;
+                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_add_strn(&vstr, home, home_l);
+                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            } else {
+                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+            }
+            p = p1 + 1;
         }
-        if (p[0] == '~' && p[1] == '/' && home != NULL) {
-            // Expand standalone ~ to $HOME
-            int home_l = strlen(home);
-            vstr_t vstr;
-            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
-            vstr_add_strn(&vstr, home, home_l);
-            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
-        } else {
-            path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
-        }
-        p = p1 + 1;
-    }
     }
 
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
@@ -545,7 +566,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 inspect = true;
             } else if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
                 ret = do_str(argv[a + 1]);
                 if (ret & FORCED_EXIT) {
@@ -554,7 +575,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
-                    return usage(argv);
+                    return invalid_args();
                 }
                 mp_obj_t import_args[4];
                 import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
@@ -606,10 +627,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
                     MP_STATE_VM(mp_optimise_value) = 0;
-                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++) {;
+                    }
                 }
             } else {
-                return usage(argv);
+                return invalid_args();
             }
         } else {
             char *pathbuf = malloc(PATH_MAX);
@@ -632,6 +654,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
+    const char *inspect_env = getenv("MICROPYINSPECT");
+    if (inspect_env && inspect_env[0] != '\0') {
+        inspect = true;
+    }
     if (ret == NOTHING_EXECUTED || inspect) {
         if (isatty(0)) {
             prompt_read_history();
@@ -641,6 +667,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
         }
     }
+
+    #if MICROPY_PY_SYS_SETTRACE
+    MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_ATEXIT
+    // Beware, the sys.settrace callback should be disabled before running sys.atexit.
+    if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
+        mp_call_function_0(MP_STATE_VM(sys_exitfunc));
+    }
+    #endif
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     if (mp_verbose_flag) {
@@ -658,11 +695,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_deinit();
 
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.
     free(heap);
-#endif
+    #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
@@ -683,6 +720,6 @@ uint mp_import_stat(const char *path) {
 #endif
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught NLR %p\n", val);
+    fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }

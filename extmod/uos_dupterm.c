@@ -106,9 +106,9 @@ int mp_uos_dupterm_rx_chr(void) {
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (errcode == 0 && out_sz != 0) {
                 return buf[0];
-             } else {
+            } else {
                 continue;
-             }
+            }
         }
         #endif
 

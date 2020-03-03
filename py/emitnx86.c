@@ -1,7 +1,7 @@
 // x86 specific stuff
 
 #include "py/mpconfig.h"
-#include "py/runtime0.h"
+#include "py/nativeglue.h"
 
 #if MICROPY_EMIT_X86
 
@@ -34,13 +34,11 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_BINARY_OP] = 3,
     [MP_F_BUILD_TUPLE] = 2,
     [MP_F_BUILD_LIST] = 2,
-    [MP_F_LIST_APPEND] = 2,
     [MP_F_BUILD_MAP] = 1,
-    [MP_F_STORE_MAP] = 3,
-    #if MICROPY_PY_BUILTINS_SET
     [MP_F_BUILD_SET] = 2,
     [MP_F_STORE_SET] = 2,
-    #endif
+    [MP_F_LIST_APPEND] = 2,
+    [MP_F_STORE_MAP] = 3,
     [MP_F_MAKE_FUNCTION_FROM_RAW_CODE] = 3,
     [MP_F_NATIVE_CALL_FUNCTION_N_KW] = 3,
     [MP_F_CALL_METHOD_N_KW] = 3,
@@ -53,20 +51,18 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_IMPORT_NAME] = 3,
     [MP_F_IMPORT_FROM] = 2,
     [MP_F_IMPORT_ALL] = 1,
-    #if MICROPY_PY_BUILTINS_SLICE
     [MP_F_NEW_SLICE] = 3,
-    #endif
     [MP_F_UNPACK_SEQUENCE] = 3,
     [MP_F_UNPACK_EX] = 3,
     [MP_F_DELETE_NAME] = 1,
     [MP_F_DELETE_GLOBAL] = 1,
-    [MP_F_NEW_CELL] = 1,
     [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
     [MP_F_ARG_CHECK_NUM_SIG] = 3,
     [MP_F_SETUP_CODE_STATE] = 4,
     [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,
     [MP_F_SMALL_INT_MODULO] = 2,
     [MP_F_NATIVE_YIELD_FROM] = 3,
+    [MP_F_SETJMP] = 1,
 };
 
 #define N_X86 (1)

@@ -1,7 +1,7 @@
 import pyb
 
 # test basic functionality
-ext = pyb.ExtInt('Y1', pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_DOWN, lambda l:print('line:', l))
+ext = pyb.ExtInt('X5', pyb.ExtInt.IRQ_RISING, pyb.Pin.PULL_DOWN, lambda l:print('line:', l))
 ext.disable()
 ext.enable()
 print(ext.line())

@@ -33,7 +33,6 @@
 #ifndef MICROPY_VFS
 #define MICROPY_VFS                 (0)
 #endif
-#define MICROPY_VFS_FAT             (MICROPY_VFS)
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -45,6 +44,7 @@
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_INFO           (1)
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_KBD_EXCEPTION       (1)
@@ -118,8 +118,8 @@
 #define MICROPY_PY_IO_FILEIO        (0)
 #define MICROPY_PY_UERRNO           (0)
 #define MICROPY_PY_UBINASCII        (0)
-#define MICROPY_PY_URANDOM          (0)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
+#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_UCTYPES          (0)
 #define MICROPY_PY_UZLIB            (0)
 #define MICROPY_PY_UJSON            (0)
@@ -174,10 +174,6 @@
 #define MICROPY_PY_MACHINE_RTCOUNTER (0)
 #endif
 
-#ifndef MICROPY_PY_RANDOM_HW_RNG
-#define MICROPY_PY_RANDOM_HW_RNG    (0)
-#endif
-
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
@@ -199,7 +195,7 @@
 
 #define BYTES_PER_WORD (4)
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
@@ -218,7 +214,6 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
-extern const struct _mp_obj_module_t random_module;
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -230,12 +225,6 @@ extern const struct _mp_obj_module_t random_module;
 #define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
 #else
 #define MUSIC_MODULE
-#endif
-
-#if MICROPY_PY_RANDOM_HW_RNG
-#define RANDOM_MODULE                       { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
-#else
-#define RANDOM_MODULE
 #endif
 
 #if BOARD_SPECIFIC_MODULES
@@ -263,7 +252,6 @@ extern const struct _mp_obj_module_t ble_module;
     BLE_MODULE \
     MUSIC_MODULE \
     UBLUEPY_MODULE \
-    RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
 
 
@@ -275,15 +263,10 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
-    RANDOM_MODULE \
     MICROPY_BOARD_BUILTINS \
 
 
 #endif // BLUETOOTH_SD
-
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

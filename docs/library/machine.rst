@@ -27,6 +27,12 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
+.. function:: soft_reset()
+
+   Performs a soft reset of the interpreter, deleting all Python objects and
+   resetting the Python heap.  It tries to retain the method by which the user
+   is connected to the MicroPython REPL (eg serial, USB, Wifi).
+
 .. function:: reset_cause()
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
@@ -105,7 +111,7 @@ Miscellaneous functions
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
 
-.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000)
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000, /)
 
    Time a pulse on the given *pin*, and return the duration of the pulse in
    microseconds.  The *pulse_level* argument should be 0 to time a low pulse

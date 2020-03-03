@@ -1,0 +1,28 @@
+test <class 'VfsLfs1'>
+<io.TextIOWrapper>
+<io.FileIO>
+open OSError
+littlefs
+littlefs
+b'littlefsmore'
+b'littlefs'
+b'littlefsMORE'
+0
+3
+open OSError
+littlefs
+b'littlefsMORE'
+test <class 'VfsLfs2'>
+<io.TextIOWrapper>
+<io.FileIO>
+open OSError
+littlefs
+littlefs
+b'littlefsmore'
+b'littlefs'
+b'littlefsMORE'
+0
+3
+open OSError
+littlefs
+b'littlefsMORE'

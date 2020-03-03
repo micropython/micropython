@@ -190,7 +190,7 @@ void ble_uart_init0(void) {
     ble_uart_char_tx.service_handle = ble_uart_service.handle;
     bool retval = ble_drv_characteristic_add(&ble_uart_char_tx);
     if (retval) {
-    	ble_uart_char_tx.p_service = &ble_uart_service;
+        ble_uart_char_tx.p_service = &ble_uart_service;
     }
     mp_obj_list_append(ble_uart_service.char_list, MP_OBJ_FROM_PTR(&ble_uart_char_tx));
 
@@ -198,7 +198,7 @@ void ble_uart_init0(void) {
     ble_uart_char_rx.service_handle = ble_uart_service.handle;
     retval = ble_drv_characteristic_add(&ble_uart_char_rx);
     if (retval) {
-    	ble_uart_char_rx.p_service = &ble_uart_service;
+        ble_uart_char_rx.p_service = &ble_uart_service;
     }
     mp_obj_list_append(ble_uart_service.char_list, MP_OBJ_FROM_PTR(&ble_uart_char_rx));
 

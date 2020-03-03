@@ -26,9 +26,10 @@
     <PyBaseDir>$([System.IO.Path]::GetFullPath(`$(MSBuildThisFileDirectory)..\..\..`))\</PyBaseDir>
     <PyWinDir>$(PyBaseDir)ports\windows\</PyWinDir>
     <PyBuildDir Condition="'$(PyBuildDir)' == ''">$(PyWinDir)build\</PyBuildDir>
+    <PyTargetDir Condition="'$(PyTargetDir)' == ''">$(PyWinDir)</PyTargetDir>
 
     <!-- All include directories needed for uPy -->
-    <PyIncDirs>$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc</PyIncDirs>
+    <PyIncDirs>$(PyIncDirs);$(PyBaseDir);$(PyWinDir);$(PyBuildDir);$(PyWinDir)msvc</PyIncDirs>
 
     <!-- Within PyBuildDir different subdirectories are used based on configuration and platform.
          By default these are chosen based on the Configuration and Platform properties, but

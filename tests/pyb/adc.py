@@ -1,7 +1,7 @@
 from pyb import ADC, Timer
 
 adct = ADC(16) # Temperature 930 -> 20C
-print(adct)
+print(str(adct)[:19])
 adcv = ADC(17) # Voltage 1500 -> 3.3V
 print(adcv)
 

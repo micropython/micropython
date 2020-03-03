@@ -12,9 +12,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "lib/utils/gchelper.h"
-
-#include "tinytest.h"
-#include "tinytest_macros.h"
+#include "lib/tinytest/tinytest.h"
+#include "lib/tinytest/tinytest_macros.h"
 
 #define HEAP_SIZE (100 * 1024)
 
@@ -24,7 +23,7 @@ int main() {
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
     static uint32_t heap[HEAP_SIZE / sizeof(uint32_t)];
-    upytest_set_heap(heap, (char*)heap + HEAP_SIZE);
+    upytest_set_heap(heap, (char *)heap + HEAP_SIZE);
     int r = tinytest_main(0, NULL, groups);
     printf("status: %d\n", r);
     return r;
@@ -38,7 +37,7 @@ void gc_collect(void) {
     uintptr_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
 
     gc_collect_end();
 }

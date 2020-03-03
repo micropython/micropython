@@ -68,7 +68,7 @@ __attribute__((naked)) void exit(int status) {
         ".notclean:\n"
         "movs r0, #0x18\n" // SYS_EXIT
         "bkpt 0xab\n"
-    );
+        );
     for (;;) {
     }
 }

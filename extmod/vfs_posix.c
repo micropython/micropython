@@ -26,11 +26,13 @@
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/mpthread.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 
 #if MICROPY_VFS_POSIX
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -62,7 +64,7 @@ STATIC mp_obj_t vfs_posix_get_path_obj(mp_obj_vfs_posix_t *self, mp_obj_t path) 
     }
 }
 
-STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char*)) {
+STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char *)) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = f(vfs_posix_get_path_str(self, path_in));
     if (ret != 0) {
@@ -169,12 +171,15 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 
     for (;;) {
+        MP_THREAD_GIL_EXIT();
         struct dirent *dirent = readdir(self->dir);
         if (dirent == NULL) {
             closedir(self->dir);
+            MP_THREAD_GIL_ENTER();
             self->dir = NULL;
             return MP_OBJ_STOP_ITERATION;
         }
+        MP_THREAD_GIL_ENTER();
         const char *fn = dirent->d_name;
 
         if (fn[0] == '.' && (fn[1] == 0 || fn[1] == '.')) {
@@ -188,7 +193,7 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
-            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+            t->items[0] = mp_obj_new_bytes((const byte *)fn, strlen(fn));
         }
 
         #ifdef _DIRENT_HAVE_D_TYPE
@@ -228,7 +233,9 @@ STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     if (path[0] == '\0') {
         path = ".";
     }
+    MP_THREAD_GIL_EXIT();
     iter->dir = opendir(path);
+    MP_THREAD_GIL_ENTER();
     if (iter->dir == NULL) {
         mp_raise_OSError(errno);
     }
@@ -244,7 +251,10 @@ typedef struct _mp_obj_listdir_t {
 
 STATIC mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = mkdir(vfs_posix_get_path_str(self, path_in), 0777);
+    const char *path = vfs_posix_get_path_str(self, path_in);
+    MP_THREAD_GIL_EXIT();
+    int ret = mkdir(path, 0777);
+    MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
     }
@@ -261,7 +271,9 @@ STATIC mp_obj_t vfs_posix_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *old_path = vfs_posix_get_path_str(self, old_path_in);
     const char *new_path = vfs_posix_get_path_str(self, new_path_in);
+    MP_THREAD_GIL_EXIT();
     int ret = rename(old_path, new_path);
+    MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
     }
@@ -277,7 +289,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_rmdir_obj, vfs_posix_rmdir);
 STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     struct stat sb;
-    int ret = stat(vfs_posix_get_path_str(self, path_in), &sb);
+    const char *path = vfs_posix_get_path_str(self, path_in);
+    MP_THREAD_GIL_EXIT();
+    int ret = stat(path, &sb);
+    MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
     }
@@ -320,7 +335,9 @@ STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     STRUCT_STATVFS sb;
     const char *path = vfs_posix_get_path_str(self, path_in);
+    MP_THREAD_GIL_EXIT();
     int ret = STATVFS(path, &sb);
+    MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
     }
@@ -365,7 +382,7 @@ const mp_obj_type_t mp_type_vfs_posix = {
     .name = MP_QSTR_VfsPosix,
     .make_new = vfs_posix_make_new,
     .protocol = &vfs_posix_proto,
-    .locals_dict = (mp_obj_dict_t*)&vfs_posix_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
 };
 
 #endif // MICROPY_VFS_POSIX

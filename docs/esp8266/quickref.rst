@@ -188,7 +188,7 @@ class::
     spi.init(baudrate=200000) # set the baudrate
 
     spi.read(10)            # read 10 bytes on MISO
-    spi.read(10, 0xff)      # read 10 bytes while outputing 0xff on MOSI
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
 
     buf = bytearray(50)     # create a buffer
     spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
@@ -242,6 +242,16 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc = RTC()
     rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
+
+    # synchronize with ntp
+    # need to be connected to wifi
+    import ntptime
+    ntptime.settime() # set the rtc datetime from the remote server
+    rtc.datetime()    # get the date and time in UTC
+
+.. note:: Not all methods are implemented: `RTC.now()`, `RTC.irq(handler=*) <RTC.irq>`
+          (using a custom handler), `RTC.init()` and `RTC.deinit()` are
+          currently not supported.
 
 Deep-sleep mode
 ---------------

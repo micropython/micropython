@@ -154,9 +154,9 @@ STATIC int spi_find(mp_obj_t id) {
 void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
     nrfx_spi_xfer_desc_t xfer_desc = {
         .p_tx_buffer = src,
-	.tx_length   = len,
-	.p_rx_buffer = dest,
-	.rx_length   = len
+        .tx_length   = len,
+        .p_rx_buffer = dest,
+        .rx_length   = len
     };
 
     nrfx_spi_xfer(self->p_spi, &xfer_desc, 0);
@@ -340,7 +340,7 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
 
     // Active high
     if (args[ARG_INIT_polarity].u_int == 0) {
-	if (args[ARG_INIT_phase].u_int == 0) {
+        if (args[ARG_INIT_phase].u_int == 0) {
             // First clock edge
             self->p_config->mode = NRF_SPI_MODE_0;
         } else {
@@ -349,7 +349,7 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
         }
     // Active low
     } else {
-	if (args[ARG_INIT_phase].u_int == 0) {
+        if (args[ARG_INIT_phase].u_int == 0) {
             // First clock edge
             self->p_config->mode = NRF_SPI_MODE_2;
         } else {

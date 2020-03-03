@@ -46,7 +46,7 @@ size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr n
 #if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
 STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
-    const qstr *fields = ((mp_obj_namedtuple_type_t*)self->tuple.base.type)->fields;
+    const qstr *fields = ((mp_obj_namedtuple_type_t *)self->tuple.base.type)->fields;
     mp_obj_t dict = mp_obj_new_dict(self->tuple.len);
     //make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
@@ -64,7 +64,7 @@ STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
     (void)kind;
     mp_obj_namedtuple_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "%q", o->tuple.base.type->name);
-    const qstr *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
+    const qstr *fields = ((mp_obj_namedtuple_type_t *)o->tuple.base.type)->fields;
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }
 
@@ -79,7 +79,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             return;
         }
         #endif
-        size_t id = mp_obj_namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
+        size_t id = mp_obj_namedtuple_find_field((mp_obj_namedtuple_type_t *)self->tuple.base.type, attr);
         if (id == (size_t)-1) {
             return;
         }
@@ -92,19 +92,19 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
+    const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t *)type_in;
     size_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_msg_varg(&mp_type_TypeError,
                 "function takes %d positional arguments but %d were given",
-                num_fields, n_args + n_kw));
+                num_fields, n_args + n_kw);
         } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            mp_raise_msg_varg(&mp_type_TypeError,
                 "%q() takes %d positional arguments but %d were given",
-                type->base.name, num_fields, n_args + n_kw));
+                type->base.name, num_fields, n_args + n_kw);
         }
     }
 
@@ -124,16 +124,15 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "unexpected keyword argument '%q'", kw));
+                mp_raise_msg_varg(&mp_type_TypeError, "unexpected keyword argument '%q'", kw);
             }
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "function got multiple values for argument '%q'", kw));
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    "function got multiple values for argument '%q'", kw);
             }
         }
         tuple->items[id] = args[i + 1];
@@ -155,6 +154,7 @@ mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = mp_obj_new_namedtuple_base(n_fields, fields);
     o->base.base.type = &mp_type_type;
+    o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
     o->base.name = name;
     o->base.print = namedtuple_print;
     o->base.make_new = namedtuple_make_new;

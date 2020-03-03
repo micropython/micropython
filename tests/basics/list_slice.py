@@ -1,6 +1,11 @@
 # test list slices, getting values
 
 x = list(range(10))
+
+print(x[1:])
+print(x[:-1])
+print(x[2:3])
+
 a = 2
 b = 4
 c = 3

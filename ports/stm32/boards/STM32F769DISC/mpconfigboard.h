@@ -26,7 +26,7 @@ void board_early_init(void);
 
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
 
-// 512MBit external QSPI flash, to be memory mapped
+// 512MBit external QSPI flash, used for either the filesystem or XIP memory mapped
 #define MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 (29)
 #define MICROPY_HW_QSPIFLASH_CS     (pin_B6)
 #define MICROPY_HW_QSPIFLASH_SCK    (pin_B2)
@@ -34,6 +34,21 @@ void board_early_init(void);
 #define MICROPY_HW_QSPIFLASH_IO1    (pin_C10)
 #define MICROPY_HW_QSPIFLASH_IO2    (pin_E2)
 #define MICROPY_HW_QSPIFLASH_IO3    (pin_D13)
+
+// SPI flash, block device config (when used as the filesystem)
+extern const struct _mp_spiflash_config_t spiflash_config;
+extern struct _spi_bdev_t spi_bdev;
+#if !USE_QSPI_XIP
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
+    (op) == BDEV_IOCTL_NUM_BLOCKS ? (64 * 1024 * 1024 / FLASH_BLOCK_SIZE) : \
+    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
+    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
+)
+#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
+#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
+#endif
 
 // UART config
 #define MICROPY_HW_UART1_TX         (pin_A9)
@@ -87,6 +102,8 @@ void board_early_init(void);
 
 // USB config (CN15 - USB OTG HS with external PHY)
 #define MICROPY_HW_USB_HS (1)
+#define MICROPY_HW_USB_HS_ULPI_NXT  (pin_H4)
+#define MICROPY_HW_USB_HS_ULPI_DIR  (pin_I11)
 
 // Ethernet via RMII
 #define MICROPY_HW_ETH_MDC          (pin_C1)
@@ -100,7 +117,14 @@ void board_early_init(void);
 #define MICROPY_HW_ETH_RMII_TXD1    (pin_G14)
 
 #if 0
-// Optional SDRAM configuration; requires SYSCLK <= 200MHz
+// Optional SDRAM configuration.
+
+// Note: This requires SYSCLK <= 200MHz. 192MHz example below:
+// #define MICROPY_HW_CLK_PLLM (25)
+// #define MICROPY_HW_CLK_PLLN (384)
+// #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
+// #define MICROPY_HW_CLK_PLLQ (8)
+
 #define MICROPY_HW_SDRAM_SIZE (128 * 1024 * 1024 / 8) // 128 Mbit
 #define MICROPY_HW_SDRAM_STARTUP_TEST (0)
 #define MICROPY_HEAP_START sdram_start()
@@ -119,7 +143,7 @@ void board_early_init(void);
 #define MICROPY_HW_SDRAM_BURST_LENGTH       1
 #define MICROPY_HW_SDRAM_CAS_LATENCY        2
 #define MICROPY_HW_SDRAM_COLUMN_BITS_NUM    8
-#define MICROPY_HW_SDRAM_ROW_BITS_NUM       13
+#define MICROPY_HW_SDRAM_ROW_BITS_NUM       12
 #define MICROPY_HW_SDRAM_MEM_BUS_WIDTH      32
 #define MICROPY_HW_SDRAM_INTERN_BANKS_NUM   4
 #define MICROPY_HW_SDRAM_CLOCK_PERIOD       2
@@ -192,11 +216,9 @@ void board_early_init(void);
 // Bootloader configuration
 
 // Give Mboot access to the external QSPI flash
-extern const struct _mp_spiflash_config_t spiflash_config;
-extern struct _mp_spiflash_t spiflash_instance;
 #define MBOOT_SPIFLASH_ADDR                     (0x90000000)
 #define MBOOT_SPIFLASH_BYTE_SIZE                (512 * 128 * 1024)
 #define MBOOT_SPIFLASH_LAYOUT                   "/0x90000000/512*128Kg"
 #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE    (128 / 4) // 128k page, 4k erase block
 #define MBOOT_SPIFLASH_CONFIG                   (&spiflash_config)
-#define MBOOT_SPIFLASH_SPIFLASH                 (&spiflash_instance)
+#define MBOOT_SPIFLASH_SPIFLASH                 (&spi_bdev.spiflash)

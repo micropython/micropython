@@ -32,23 +32,23 @@
 #endif
 
 const char nrf5_help_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online help please visit http://micropython.org/help/.\n"
-"\n"
-"Quick overview of commands for the board:\n"
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online help please visit http://micropython.org/help/.\n"
+    "\n"
+    "Quick overview of commands for the board:\n"
 #if MICROPY_HW_HAS_LED
-"  board.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
-"\n"
+    "  board.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
+    "\n"
 #endif
 #if BLUETOOTH_SD
-HELP_TEXT_SD
+    HELP_TEXT_SD
 #endif
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-D        -- on a blank line, do a soft reset of the board\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
+    "Control commands:\n"
+    "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
+    "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
+    "  CTRL-D        -- on a blank line, do a soft reset of the board\n"
+    "  CTRL-E        -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
 ;

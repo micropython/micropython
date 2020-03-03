@@ -77,11 +77,12 @@ The :mod:`network` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.config('mac')      # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
 A useful function for connecting to your local WiFi network is::
@@ -203,7 +204,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     adc = ADC(Pin(32))          # create ADC object on ADC pin
     adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attentuation (voltage range roughly 0.0v - 3.6v)
+    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
     adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
     adc.read()                  # read value using the newly configured attenuation and width
 
@@ -257,7 +258,7 @@ class::
     spi.init(baudrate=200000) # set the baudrate
 
     spi.read(10)            # read 10 bytes on MISO
-    spi.read(10, 0xff)      # read 10 bytes while outputing 0xff on MOSI
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
 
     buf = bytearray(50)     # create a buffer
     spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
@@ -359,11 +360,25 @@ Notes:
   To further reduce power consumption it is possible to disable the internal pullups::
 
     p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
-    
+
   After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
   it is an output pin) via::
-    
+
     p1 = Pin(4, Pin.OUT, None)
+
+RMT
+---
+
+The RMT is ESP32-specific and allows generation of accurate digital pulses with
+12.5ns resolution.  See :ref:`esp32.RMT <esp32.RMT>` for details.  Usage is::
+
+    import esp32
+    from machine import Pin
+
+    r = esp32.RMT(0, pin=Pin(18), clock_div=8)
+    r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
+    # The channel resolution is 100ns (1/(source_freq/clock_div)).
+    r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 OneWire driver
 --------------
@@ -421,7 +436,7 @@ For low-level driving of a NeoPixel::
    ``NeoPixel`` object.
 
 
-Capacitive Touch
+Capacitive touch
 ----------------
 
 Use the ``TouchPad`` class in the ``machine`` module::

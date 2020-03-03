@@ -70,6 +70,10 @@
 #include "softpwm.h"
 #endif
 
+#if MICROPY_HW_USB_CDC
+#include "usb_cdc.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -81,7 +85,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t pn = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&pn, source_name, MP_EMIT_OPT_NONE, true);
+        mp_obj_t module_fun = mp_compile(&pn, source_name, true);
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
@@ -94,13 +98,19 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
-    
+
+
 soft_reset:
+
+    led_init();
+
+    led_state(1, 1); // MICROPY_HW_LED_1 aka MICROPY_HW_LED_RED
+
     mp_stack_set_top(&_ram_end);
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
+    mp_stack_set_limit((char *)&_ram_end - (char *)&_heap_end - 400);
 
     machine_init();
 
@@ -111,39 +121,38 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_init(mp_sys_argv, 0);
 
-    pyb_set_repl_info(MP_OBJ_NEW_SMALL_INT(0));
-
     readline_init0();
 
-#if MICROPY_PY_MACHINE_HW_SPI
+
+    #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_I2C
+    #if MICROPY_PY_MACHINE_I2C
     i2c_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_ADC
+    #if MICROPY_PY_MACHINE_ADC
     adc_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_HW_PWM
+    #if MICROPY_PY_MACHINE_HW_PWM
     pwm_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_RTCOUNTER
+    #if MICROPY_PY_MACHINE_RTCOUNTER
     rtc_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_TIMER
+    #if MICROPY_PY_MACHINE_TIMER
     timer_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_UART
+    #if MICROPY_PY_MACHINE_UART
     uart_init0();
-#endif
+    #endif
 
-#if (MICROPY_PY_BLE_NUS == 0)
+    #if (MICROPY_PY_BLE_NUS == 0) && (MICROPY_HW_USB_CDC == 0)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(0),
@@ -151,15 +160,15 @@ soft_reset:
         };
         MP_STATE_PORT(board_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
-#endif
+    #endif
 
-pin_init0();
+    pin_init0();
 
-#if MICROPY_MBFS
+    #if MICROPY_MBFS
     microbit_filesystem_init();
-#endif
+    #endif
 
-#if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // create vfs object
@@ -169,7 +178,7 @@ pin_init0();
         }
         vfs->str = "/sd";
         vfs->len = 3;
-        vfs->flags = FSUSER_FREE_OBJ;
+        vfs->flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
         sdcard_init_vfs(vfs);
 
         // put the sd device in slot 1 (it will be unused at this point)
@@ -185,51 +194,49 @@ pin_init0();
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
-			// use SD card as current directory
-			f_chdrive("/sd");
+            // use SD card as current directory
+            f_chdrive("/sd");
         }
-        no_mem_for_sd:;
+    no_mem_for_sd:;
     }
-#endif
-
-#if (MICROPY_HW_HAS_LED)
-    led_init();
-
-    do_str("import board\r\n" \
-           "board.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
-#endif
+    #endif
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
 
-#if MICROPY_PY_BLE_NUS
+    #if MICROPY_PY_BLE_NUS
     ble_uart_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     ticker_init0();
     softpwm_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MUSIC
+    #if MICROPY_PY_MUSIC
     microbit_music_init0();
-#endif
-#if BOARD_SPECIFIC_MODULES
+    #endif
+    #if BOARD_SPECIFIC_MODULES
     board_modules_init0();
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     ticker_start();
     pwm_start();
-#endif
+    #endif
 
-#if MICROPY_VFS || MICROPY_MBFS
+    led_state(1, 0);
+
+    #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
     pyexec_file_if_exists("boot.py");
     pyexec_file_if_exists("main.py");
-#endif
+    #endif
+
+    #if MICROPY_HW_USB_CDC
+    usb_cdc_init();
+    #endif
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -248,9 +255,9 @@ pin_init0();
 
     printf("MPY: soft reboot\n");
 
-#if BLUETOOTH_SD
+    #if BLUETOOTH_SD
     sd_softdevice_disable();
-#endif
+    #endif
 
     goto soft_reset;
 
@@ -290,26 +297,27 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
-void HardFault_Handler(void)
-{
-#if defined(NRF52_SERIES)
-	static volatile uint32_t reg;
-	static volatile uint32_t reg2;
-	static volatile uint32_t bfar;
-	reg = SCB->HFSR;
-	reg2 = SCB->CFSR;
-	bfar = SCB->BFAR;
-	for (int i = 0; i < 0; i++)
-	{
-		(void)reg;
-		(void)reg2;
-		(void)bfar;
-	}
-#endif
+
+void HardFault_Handler(void) {
+    #if defined(NRF52_SERIES) || defined(NRF91_SERIES)
+    static volatile uint32_t reg;
+    static volatile uint32_t reg2;
+    static volatile uint32_t bfar;
+    reg = SCB->HFSR;
+    reg2 = SCB->CFSR;
+    bfar = SCB->BFAR;
+    for (int i = 0; i < 0; i++) {
+        (void)reg;
+        (void)reg2;
+        (void)bfar;
+    }
+    #endif
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 void nlr_jump_fail(void *val) {
@@ -323,4 +331,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 
-void _start(void) {main(0, NULL);}
+void _start(void) {
+    main(0, NULL);
+}

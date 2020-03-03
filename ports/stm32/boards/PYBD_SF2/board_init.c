@@ -24,8 +24,22 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "py/mphal.h"
 #include "storage.h"
+
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+#define OTP_ADDR (0x1ff079e0)
+#else
+#define OTP_ADDR (0x1ff0f3c0)
+#endif
+#define OTP ((pyb_otp_t*)OTP_ADDR)
+
+typedef struct _pyb_otp_t {
+    uint16_t series;
+    uint16_t rev;
+    uint8_t mac[6];
+} pyb_otp_t;
 
 void mboot_board_early_init(void) {
     // Enable 500mA on WBUS-DIP28
@@ -40,7 +54,23 @@ void board_early_init(void) {
     spi_bdev_ioctl(&spi_bdev2, BDEV_IOCTL_INIT, (uint32_t)&spiflash2_config);
 }
 
+#if !BUILDING_MBOOT
+
 void board_sleep(int value) {
     mp_spiflash_deepsleep(&spi_bdev.spiflash, value);
     mp_spiflash_deepsleep(&spi_bdev2.spiflash, value);
 }
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    // Check if OTP region has a valid MAC address, and use it if it does
+    if (OTP->series == 0x00d1 && OTP->mac[0] == 'H' && OTP->mac[1] == 'J' && OTP->mac[2] == '0') {
+        memcpy(buf, OTP->mac, 6);
+        buf[5] += idx;
+        return;
+    }
+
+    // Generate a random locally administered MAC address (LAA)
+    mp_hal_generate_laa_mac(idx, buf);
+}
+
+#endif

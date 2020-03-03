@@ -130,46 +130,57 @@ bool uart_exists(int uart_id) {
     }
     switch (uart_id) {
         #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
-        case PYB_UART_1: return true;
+        case PYB_UART_1:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
-        case PYB_UART_2: return true;
+        case PYB_UART_2:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
-        case PYB_UART_3: return true;
+        case PYB_UART_3:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
-        case PYB_UART_4: return true;
+        case PYB_UART_4:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
-        case PYB_UART_5: return true;
+        case PYB_UART_5:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART6_TX) && defined(MICROPY_HW_UART6_RX)
-        case PYB_UART_6: return true;
+        case PYB_UART_6:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART7_TX) && defined(MICROPY_HW_UART7_RX)
-        case PYB_UART_7: return true;
+        case PYB_UART_7:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART8_TX) && defined(MICROPY_HW_UART8_RX)
-        case PYB_UART_8: return true;
+        case PYB_UART_8:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART9_TX) && defined(MICROPY_HW_UART9_RX)
-        case PYB_UART_9: return true;
+        case PYB_UART_9:
+            return true;
         #endif
 
         #if defined(MICROPY_HW_UART10_TX) && defined(MICROPY_HW_UART10_RX)
-        case PYB_UART_10: return true;
+        case PYB_UART_10:
+            return true;
         #endif
 
-        default: return false;
+        default:
+            return false;
     }
 }
 
@@ -247,6 +258,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             UARTx = USART4;
             irqn = USART3_8_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
+            #elif defined(STM32L0)
+            UARTx = USART4;
+            irqn = USART4_5_IRQn;
+            __HAL_RCC_USART4_CLK_ENABLE();
             #else
             UARTx = UART4;
             irqn = UART4_IRQn;
@@ -254,6 +269,16 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #endif
             pins[0] = MICROPY_HW_UART4_TX;
             pins[1] = MICROPY_HW_UART4_RX;
+            #if defined(MICROPY_HW_UART4_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART4_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART4_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART4_CTS;
+            }
+            #endif
             break;
         #endif
 
@@ -263,6 +288,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #if defined(STM32F0)
             UARTx = USART5;
             irqn = USART3_8_IRQn;
+            __HAL_RCC_USART5_CLK_ENABLE();
+            #elif defined(STM32L0)
+            UARTx = USART5;
+            irqn = USART4_5_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
             #else
             UARTx = UART5;
@@ -643,7 +672,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         // buffering via IRQ
         int data;
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            data = ((uint16_t*)self->read_buf)[self->read_buf_tail];
+            data = ((uint16_t *)self->read_buf)[self->read_buf_tail];
         } else {
             data = self->read_buf[self->read_buf_tail];
         }
@@ -726,7 +755,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
         timeout = 2 * self->timeout_char;
     }
 
-    const uint8_t *src = (const uint8_t*)src_in;
+    const uint8_t *src = (const uint8_t *)src_in;
     size_t num_tx = 0;
     USART_TypeDef *uart = self->uartx;
 
@@ -737,7 +766,7 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
         }
         uint32_t data;
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            data = *((uint16_t*)src) & 0x1ff;
+            data = *((uint16_t *)src) & 0x1ff;
             src += 2;
         } else {
             data = *src++;
@@ -793,7 +822,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                     pendsv_kbd_intr();
                 } else {
                     if (self->char_width == CHAR_WIDTH_9BIT) {
-                        ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
+                        ((uint16_t *)self->read_buf)[self->read_buf_head] = data;
                     } else {
                         self->read_buf[self->read_buf_head] = data;
                     }

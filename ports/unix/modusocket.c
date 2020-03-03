@@ -45,6 +45,7 @@
 #include "py/stream.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -93,7 +94,9 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
+    MP_THREAD_GIL_EXIT();
     mp_int_t r = read(o->fd, buf, size);
+    MP_THREAD_GIL_ENTER();
     if (r == -1) {
         int err = errno;
         // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
@@ -110,7 +113,9 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 
 STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_socket_t *o = MP_OBJ_TO_PTR(o_in);
+    MP_THREAD_GIL_EXIT();
     mp_int_t r = write(o->fd, buf, size);
+    MP_THREAD_GIL_ENTER();
     if (r == -1) {
         int err = errno;
         // On blocking socket, we get EAGAIN in case SO_RCVTIMEO/SO_SNDTIMEO
@@ -137,7 +142,9 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             // The rationale MicroPython follows is that close() just releases
             // file descriptor. If you're interested to catch I/O errors before
             // closing fd, fsync() it.
+            MP_THREAD_GIL_EXIT();
             close(self->fd);
+            MP_THREAD_GIL_ENTER();
             return 0;
 
         case MP_STREAM_GET_FILENO:
@@ -159,7 +166,9 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
+    MP_THREAD_GIL_EXIT();
     int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
+    MP_THREAD_GIL_ENTER();
     int err = errno;
     if (r == -1 && self->blocking && err == EINPROGRESS) {
         // EINPROGRESS on a blocking socket means the operation timed out
@@ -174,7 +183,9 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(addr_in, &bufinfo, MP_BUFFER_READ);
+    MP_THREAD_GIL_EXIT();
     int r = bind(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
@@ -182,7 +193,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
 STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+    MP_THREAD_GIL_EXIT();
     int r = listen(self->fd, MP_OBJ_SMALL_INT_VALUE(backlog_in));
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
@@ -194,7 +207,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     //struct sockaddr_storage addr;
     byte addr[32];
     socklen_t addr_len = sizeof(addr);
-    int fd = accept(self->fd, (struct sockaddr*)&addr, &addr_len);
+    MP_THREAD_GIL_EXIT();
+    int fd = accept(self->fd, (struct sockaddr *)&addr, &addr_len);
+    MP_THREAD_GIL_ENTER();
     int err = errno;
     if (fd == -1 && self->blocking && err == EAGAIN) {
         // EAGAIN on a blocking socket means the operation timed out
@@ -223,7 +238,9 @@ STATIC mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
     }
 
     byte *buf = m_new(byte, sz);
+    MP_THREAD_GIL_EXIT();
     int out_sz = recv(self->fd, buf, sz, flags);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
     mp_obj_t ret = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
@@ -245,7 +262,9 @@ STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     socklen_t addr_len = sizeof(addr);
 
     byte *buf = m_new(byte, sz);
-    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr*)&addr, &addr_len);
+    MP_THREAD_GIL_EXIT();
+    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr *)&addr, &addr_len);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
     mp_obj_t buf_o = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
@@ -253,7 +272,7 @@ STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = buf_o;
-    t->items[1] = mp_obj_from_sockaddr((struct sockaddr*)&addr, addr_len);
+    t->items[1] = mp_obj_from_sockaddr((struct sockaddr *)&addr, addr_len);
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -272,7 +291,9 @@ STATIC mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    MP_THREAD_GIL_EXIT();
     int out_sz = send(self->fd, bufinfo.buf, bufinfo.len, flags);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
     return MP_OBJ_NEW_SMALL_INT(out_sz);
@@ -292,8 +313,10 @@ STATIC mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo, addr_bi;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     mp_get_buffer_raise(dst_addr, &addr_bi, MP_BUFFER_READ);
+    MP_THREAD_GIL_EXIT();
     int out_sz = sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
-                        (struct sockaddr *)addr_bi.buf, addr_bi.len);
+        (struct sockaddr *)addr_bi.buf, addr_bi.len);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(out_sz, errno);
 
     return MP_OBJ_NEW_SMALL_INT(out_sz);
@@ -319,7 +342,9 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         optval = bufinfo.buf;
         optlen = bufinfo.len;
     }
+    MP_THREAD_GIL_EXIT();
     int r = setsockopt(self->fd, level, option, optval, optlen);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
@@ -328,14 +353,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_s
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     int val = mp_obj_is_true(flag_in);
+    MP_THREAD_GIL_EXIT();
     int flags = fcntl(self->fd, F_GETFL, 0);
-    RAISE_ERRNO(flags, errno);
+    if (flags == -1) {
+        MP_THREAD_GIL_ENTER();
+        RAISE_ERRNO(flags, errno);
+    }
     if (val) {
         flags &= ~O_NONBLOCK;
     } else {
         flags |= O_NONBLOCK;
     }
     flags = fcntl(self->fd, F_SETFL, flags);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(flags, errno);
     self->blocking = val;
     return mp_const_none;
@@ -368,9 +398,14 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 
     if (new_blocking) {
         int r;
+        MP_THREAD_GIL_EXIT();
         r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
-        RAISE_ERRNO(r, errno);
+        if (r == -1) {
+            MP_THREAD_GIL_ENTER();
+            RAISE_ERRNO(r, errno);
+        }
         r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+        MP_THREAD_GIL_ENTER();
         RAISE_ERRNO(r, errno);
     }
 
@@ -390,7 +425,7 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
     new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
-    return mp_builtin_open(n_args, new_args, (mp_map_t*)&mp_const_empty_map);
+    return mp_builtin_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
@@ -415,7 +450,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
         }
     }
 
+    MP_THREAD_GIL_EXIT();
     int fd = socket(family, type, proto);
+    MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(fd, errno);
     return MP_OBJ_FROM_PTR(socket_new(fd));
 }
@@ -457,7 +494,7 @@ const mp_obj_type_t mp_type_socket = {
     .getiter = NULL,
     .iternext = NULL,
     .protocol = &usocket_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&usocket_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&usocket_locals_dict,
 };
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
@@ -511,8 +548,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
-#ifdef __UCLIBC_MAJOR__
-#if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
+        #ifdef __UCLIBC_MAJOR__
+        #if __UCLIBC_MAJOR__ == 0 && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 32))
 // "warning" requires -Wno-cpp which is a relatively new gcc option, so we choose not to use it.
 //#warning Working around uClibc bug with numeric service name
         // Older versions og uClibc have bugs when numeric ports in service
@@ -523,8 +560,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         // Note that this is crude workaround, precluding UDP socket addresses
         // to be returned. TODO: set only if not set by Python args.
         hints.ai_socktype = SOCK_STREAM;
-#endif
-#endif
+        #endif
+        #endif
     } else {
         serv = mp_obj_str_get_str(args[1]);
     }
@@ -537,11 +574,13 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     }
 
     struct addrinfo *addr_list;
+    MP_THREAD_GIL_EXIT();
     int res = getaddrinfo(host, serv, &hints, &addr_list);
+    MP_THREAD_GIL_ENTER();
 
     if (res != 0) {
         // CPython: socket.gaierror
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res));
+        mp_raise_msg_varg(&mp_type_OSError, "[addrinfo error %d]", res);
     }
     assert(addr_list);
 
@@ -569,30 +608,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 4, mod
 STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(sockaddr_in, &bufinfo, MP_BUFFER_READ);
-    switch (((struct sockaddr*)bufinfo.buf)->sa_family) {
+    switch (((struct sockaddr *)bufinfo.buf)->sa_family) {
         case AF_INET: {
-            struct sockaddr_in *sa = (struct sockaddr_in*)bufinfo.buf;
+            struct sockaddr_in *sa = (struct sockaddr_in *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
-            t->items[1] = mp_obj_new_bytes((byte*)&sa->sin_addr, sizeof(sa->sin_addr));
+            t->items[1] = mp_obj_new_bytes((byte *)&sa->sin_addr, sizeof(sa->sin_addr));
             t->items[2] = MP_OBJ_NEW_SMALL_INT(ntohs(sa->sin_port));
             return MP_OBJ_FROM_PTR(t);
         }
         case AF_INET6: {
-            struct sockaddr_in6 *sa = (struct sockaddr_in6*)bufinfo.buf;
+            struct sockaddr_in6 *sa = (struct sockaddr_in6 *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET6);
-            t->items[1] = mp_obj_new_bytes((byte*)&sa->sin6_addr, sizeof(sa->sin6_addr));
+            t->items[1] = mp_obj_new_bytes((byte *)&sa->sin6_addr, sizeof(sa->sin6_addr));
             t->items[2] = MP_OBJ_NEW_SMALL_INT(ntohs(sa->sin6_port));
             t->items[3] = MP_OBJ_NEW_SMALL_INT(ntohl(sa->sin6_flowinfo));
             t->items[4] = MP_OBJ_NEW_SMALL_INT(ntohl(sa->sin6_scope_id));
             return MP_OBJ_FROM_PTR(t);
         }
         default: {
-            struct sockaddr *sa = (struct sockaddr*)bufinfo.buf;
+            struct sockaddr *sa = (struct sockaddr *)bufinfo.buf;
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
             t->items[0] = MP_OBJ_NEW_SMALL_INT(sa->sa_family);
-            t->items[1] = mp_obj_new_bytes((byte*)sa->sa_data, bufinfo.len - offsetof(struct sockaddr, sa_data));
+            t->items[1] = mp_obj_new_bytes((byte *)sa->sa_data, bufinfo.len - offsetof(struct sockaddr, sa_data));
             return MP_OBJ_FROM_PTR(t);
         }
     }
@@ -608,7 +647,7 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_inet_ntop), MP_ROM_PTR(&mod_socket_inet_ntop_obj) },
     { MP_ROM_QSTR(MP_QSTR_sockaddr), MP_ROM_PTR(&mod_socket_sockaddr_obj) },
 
-#define C(name) { MP_ROM_QSTR(MP_QSTR_ ## name), MP_ROM_INT(name) }
+#define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(name) }
     C(AF_UNIX),
     C(AF_INET),
     C(AF_INET6),
@@ -632,5 +671,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_t
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };

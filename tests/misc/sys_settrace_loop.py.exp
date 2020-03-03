@@ -1,0 +1,72 @@
+### trace_handler::main event: call
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:33
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:35
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:36
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:37
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:36
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:37
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:36
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:37
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:36
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:37
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:38
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+test_for_loop 3
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:41
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:42
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:43
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:45
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:44
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:45
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:44
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:45
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:44
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:45
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+### trace_handler::main event: line
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:46
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+test_while_loop 3
+### trace_handler::main event: return
+ 0:   @__main__:test_loop => miscmisc/sys_settrace_loop.py:46
+ 1:   @__main__:<module> => miscmisc/sys_settrace_loop.py:49
+Total traces executed:  23

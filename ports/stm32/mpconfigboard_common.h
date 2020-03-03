@@ -196,7 +196,7 @@
 #define PYB_EXTI_NUM_VECTORS (30) // TODO (22 configurable, 7 direct)
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (22)
-#define MICROPY_HW_MAX_UART (4)
+#define MICROPY_HW_MAX_UART (5)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
@@ -275,6 +275,9 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
+#if defined(STM32H7)
+#define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
+#endif
 #else
 #define MICROPY_HW_ENABLE_CAN (0)
 #define MICROPY_HW_MAX_CAN (0)
@@ -285,6 +288,13 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Whether the USB peripheral is device-only, or multiple OTG
+#if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+#define MICROPY_HW_USB_IS_MULTI_OTG (0)
+#else
+#define MICROPY_HW_USB_IS_MULTI_OTG (1)
 #endif
 
 // Configure maximum number of CDC VCP interfaces, and whether MSC/HID are supported
@@ -304,11 +314,11 @@
 // D-cache clean/invalidate helpers
 #if __DCACHE_PRESENT == 1
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
-    (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #define MP_HAL_CLEAN_DCACHE(addr, size) \
-    (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+    (SCB_CleanDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #else
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)

@@ -60,6 +60,7 @@
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
@@ -80,12 +81,16 @@
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_PLATFORM     "win32"
+#ifndef MICROPY_PY_SYS_PATH_DEFAULT
+#define MICROPY_PY_SYS_PATH_DEFAULT "~/.micropython/lib"
+#endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
+#define MICROPY_PY_MATH_ISCLOSE     (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
@@ -238,12 +243,12 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 #ifdef _WIN64
 #define SSIZE_MAX                   _I64_MAX
-typedef __int64                     ssize_t;
+typedef __int64 ssize_t;
 #else
 #define SSIZE_MAX                   _I32_MAX
-typedef int                         ssize_t;
+typedef int ssize_t;
 #endif
-typedef mp_off_t                    off_t;
+typedef mp_off_t off_t;
 
 
 // Put static/global variables in sections with a known name

@@ -60,7 +60,6 @@
 #define ASM_X86_REG_ARG_2 ASM_X86_REG_ECX
 #define ASM_X86_REG_ARG_3 ASM_X86_REG_EDX
 #define ASM_X86_REG_ARG_4 ASM_X86_REG_EBX
-#define ASM_X86_REG_ARG_5 ASM_X86_REG_ESI
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned
@@ -82,7 +81,7 @@ static inline void asm_x86_end_pass(asm_x86_t *as) {
     (void)as;
 }
 
-void asm_x86_mov_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
+void asm_x86_mov_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 size_t asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);
 void asm_x86_mov_r8_to_mem8(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
 void asm_x86_mov_r16_to_mem16(asm_x86_t *as, int src_r32, int dest_r32, int dest_disp);
@@ -93,26 +92,26 @@ void asm_x86_mov_mem32_to_r32(asm_x86_t *as, int src_r32, int src_disp, int dest
 void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_or_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
-void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32);
-void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32);
-void asm_x86_add_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
-void asm_x86_sub_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
-void asm_x86_mul_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
-void asm_x86_cmp_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
-void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
-void asm_x86_test_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
-void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
+void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32);
+void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32);
+void asm_x86_add_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
+void asm_x86_sub_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
+void asm_x86_mul_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
+void asm_x86_cmp_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b);
+void asm_x86_test_r8_with_r8(asm_x86_t *as, int src_r32_a, int src_r32_b);
+void asm_x86_test_r32_with_r32(asm_x86_t *as, int src_r32_a, int src_r32_b);
+void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8);
 void asm_x86_jmp_reg(asm_x86_t *as, int src_r86);
-void asm_x86_jmp_label(asm_x86_t* as, mp_uint_t label);
-void asm_x86_jcc_label(asm_x86_t* as, mp_uint_t jcc_type, mp_uint_t label);
-void asm_x86_entry(asm_x86_t* as, int num_locals);
-void asm_x86_exit(asm_x86_t* as);
+void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label);
+void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label);
+void asm_x86_entry(asm_x86_t *as, int num_locals);
+void asm_x86_exit(asm_x86_t *as);
 void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
-void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);
-void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
-void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
+void asm_x86_mov_local_to_r32(asm_x86_t *as, int src_local_num, int dest_r32);
+void asm_x86_mov_r32_to_local(asm_x86_t *as, int src_r32, int dest_local_num);
+void asm_x86_mov_local_addr_to_r32(asm_x86_t *as, int local_num, int dest_r32);
 void asm_x86_mov_reg_pcrel(asm_x86_t *as, int dest_r64, mp_uint_t label);
-void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r32);
+void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32);
 
 // Holds a pointer to mp_fun_table
 #define ASM_X86_REG_FUN_TABLE ASM_X86_REG_EBP
@@ -129,7 +128,6 @@ void asm_x86_call_ind(asm_x86_t* as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define REG_ARG_2 ASM_X86_REG_ARG_2
 #define REG_ARG_3 ASM_X86_REG_ARG_3
 #define REG_ARG_4 ASM_X86_REG_ARG_4
-#define REG_ARG_5 ASM_X86_REG_ARG_5
 
 // caller-save, so can be used as temporaries
 #define REG_TEMP0 ASM_X86_REG_EAX

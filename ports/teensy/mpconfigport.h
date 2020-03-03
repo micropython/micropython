@@ -9,6 +9,7 @@
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_INFO           (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
@@ -72,13 +73,13 @@ typedef long mp_off_t;
 // to know the machine-specific values, see irq.h.
 
 #ifndef __disable_irq
-#define __disable_irq() __asm__ volatile("CPSID i");
+#define __disable_irq() __asm__ volatile ("CPSID i");
 #endif
 
 __attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void) {
     uint32_t result;
     __asm volatile ("MRS %0, primask" : "=r" (result));
-    return(result);
+    return result;
 }
 
 __attribute__(( always_inline )) static inline void __set_PRIMASK(uint32_t priMask) {

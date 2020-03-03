@@ -9,7 +9,7 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 
 ifeq ($(CROSS), 1)
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 endif
 
 INC += -I.
@@ -27,6 +27,8 @@ LD = gcc
 CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
+
+CSUPEROPT = -Os # save some code space
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
