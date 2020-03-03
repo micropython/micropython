@@ -477,6 +477,9 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     mp_parse_node_t pn;
     mp_lexer_t *lex = parser->lexer;
     if (lex->tok_kind == MP_TOKEN_NAME) {
+        if(lex->vstr.len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
+            mp_raise_msg(&mp_type_SyntaxError, translate("Name too long"));
+        }
         qstr id = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         #if MICROPY_COMP_CONST
         // if name is a standalone identifier, look it up in the table of dynamic constants

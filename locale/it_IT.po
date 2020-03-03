@@ -186,6 +186,10 @@ msgid "'align' requires 1 argument"
 msgstr "'align' richiede 1 argomento"
 
 #: py/compile.c
+msgid "'async for' or 'async with' outside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'await' outside function"
 msgstr "'await' al di fuori della funzione"
 
@@ -687,6 +691,10 @@ msgstr ""
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
+#: extmod/ulab/code/fft.c
+msgid "FFT is defined for ndarrays only"
+msgstr ""
+
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
 msgstr ""
@@ -1009,6 +1017,10 @@ msgstr ""
 
 #: ports/stm32f4/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
+msgstr ""
+
+#: py/parse.c
+msgid "Name too long"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -1610,6 +1622,10 @@ msgstr "gli indirizzi sono vuoti"
 msgid "arg is an empty sequence"
 msgstr "l'argomento è una sequenza vuota"
 
+#: extmod/ulab/code/numerical.c
+msgid "argsort argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "il tipo dell'argomento è errato"
@@ -1623,6 +1639,10 @@ msgstr "discrepanza di numero/tipo di argomenti"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argomento dovrebbe essere un '%q' e non un '%q'"
 
+#: extmod/ulab/code/linalg.c
+msgid "arguments must be ndarrays"
+msgstr ""
+
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr ""
@@ -1630,6 +1650,18 @@ msgstr ""
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "attributi non ancora supportati"
+
+#: extmod/ulab/code/numerical.c
+msgid "axis must be -1, 0, None, or 1"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "axis must be -1, 0, or 1"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "axis must be None, 0, or 1"
+msgstr ""
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1877,6 +1909,10 @@ msgstr "impossibile imporate il nome %q"
 msgid "cannot perform relative import"
 msgstr "impossibile effettuare l'importazione relativa"
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array (incompatible input/output shape)"
+msgstr ""
+
 #: py/emitnative.c
 msgid "casting"
 msgstr "casting"
@@ -1935,6 +1971,30 @@ msgstr "la costante deve essere un intero"
 msgid "conversion to object"
 msgstr "conversione in oggetto"
 
+#: extmod/ulab/code/filter.c
+msgid "convolve arguments must be linear arrays"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "convolve arguments must be ndarrays"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "convolve arguments must not be empty"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "could not broadast input array from shape"
+msgstr ""
+
+#: extmod/ulab/code/poly.c
+msgid "could not invert Vandermonde matrix"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "ddof must be smaller than length of data set"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "numeri decimali non supportati"
@@ -1963,6 +2023,10 @@ msgstr "destination_length deve essere un int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "sequanza di aggiornamento del dizionario ha la lunghezza errata"
 
+#: extmod/ulab/code/numerical.c
+msgid "diff argument must be an ndarray"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -1975,6 +2039,10 @@ msgstr "vuoto"
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
 msgstr "heap vuoto"
+
+#: extmod/ulab/code/ndarray.c
+msgid "empty index range"
+msgstr ""
 
 #: py/objstr.c
 msgid "empty separator"
@@ -2043,6 +2111,10 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr "il filesystem deve fornire un metodo di mount"
 
+#: extmod/ulab/code/ndarray.c
+msgid "first argument must be an iterable"
+msgstr ""
+
 #: py/objtype.c
 msgid "first argument to super() must be type"
 msgstr ""
@@ -2050,6 +2122,14 @@ msgstr ""
 #: extmod/machine_spi.c
 msgid "firstbit must be MSB"
 msgstr "il primo bit deve essere il più significativo (MSB)"
+
+#: extmod/ulab/code/ndarray.c
+msgid "flattening order must be either 'C', or 'F'"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "flip argument must be an ndarray"
+msgstr ""
 
 #: py/objint.c
 msgid "float too big"
@@ -2066,6 +2146,10 @@ msgstr "la formattazione richiede un dict"
 #: py/objdeque.c
 msgid "full"
 msgstr "pieno"
+
+#: extmod/ulab/code/linalg.c
+msgid "function defined for ndarrays only"
+msgstr ""
 
 #: py/argcheck.c
 msgid "function does not take keyword arguments"
@@ -2144,6 +2228,10 @@ msgstr ""
 msgid "incorrect padding"
 msgstr "padding incorretto"
 
+#: extmod/ulab/code/ndarray.c
+msgid "index is out of bounds"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
@@ -2154,9 +2242,45 @@ msgstr "indice fuori intervallo"
 msgid "indices must be integers"
 msgstr "gli indici devono essere interi"
 
+#: extmod/ulab/code/ndarray.c
+msgid "indices must be integers, slices, or Boolean lists"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler deve essere una funzione"
+
+#: extmod/ulab/code/create.c
+msgid "input argument must be an integer or a 2-tuple"
+msgstr ""
+
+#: extmod/ulab/code/fft.c
+msgid "input array length must be power of 2"
+msgstr ""
+
+#: extmod/ulab/code/poly.c
+msgid "input data must be an iterable"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "input matrix is asymmetric"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "input matrix is singular"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "input must be square matrix"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "input must be tuple, list, range, or ndarray"
+msgstr ""
+
+#: extmod/ulab/code/poly.c
+msgid "input vectors must be of equal length"
+msgstr ""
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2238,6 +2362,14 @@ msgstr ""
 "il secondo argomento di issubclass() deve essere una classe o una tupla di "
 "classi"
 
+#: extmod/ulab/code/ndarray.c
+msgid "iterables are not of the same length"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "iterations did not converge"
+msgstr ""
+
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
@@ -2297,6 +2429,10 @@ msgstr "map buffer troppo piccolo"
 msgid "math domain error"
 msgstr "errore di dominio matematico"
 
+#: extmod/ulab/code/linalg.c
+msgid "matrix dimensions do not match"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
@@ -2320,6 +2456,10 @@ msgstr "allocazione di memoria fallita, l'heap è bloccato"
 msgid "module not found"
 msgstr "modulo non trovato"
 
+#: extmod/ulab/code/poly.c
+msgid "more degrees of freedom than data points"
+msgstr ""
+
 #: py/compile.c
 msgid "multiple *x in assignment"
 msgstr "*x multipli nell'assegnamento"
@@ -2342,6 +2482,10 @@ msgstr "è necessario specificare tutte le sck/mosi/miso"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "n must be between 0, and 9"
 msgstr ""
 
 #: py/runtime.c
@@ -2433,6 +2577,14 @@ msgstr ""
 msgid "not enough arguments for format string"
 msgstr "argomenti non sufficienti per la stringa di formattazione"
 
+#: extmod/ulab/code/poly.c
+msgid "number of arguments must be 2, or 3"
+msgstr ""
+
+#: extmod/ulab/code/create.c
+msgid "number of points must be at least 2"
+msgstr ""
+
 #: py/obj.c
 #, c-format
 msgid "object '%s' is not a tuple or list"
@@ -2492,6 +2644,14 @@ msgstr "indirizzo fuori limite"
 msgid "only bit_depth=16 is supported"
 msgstr ""
 
+#: extmod/ulab/code/linalg.c
+msgid "only ndarray objects can be inverted"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "only ndarrays can be inverted"
+msgstr ""
+
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
@@ -2500,6 +2660,22 @@ msgstr ""
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo slice con step=1 (aka None) sono supportate"
+
+#: extmod/ulab/code/linalg.c
+msgid "only square matrices can be inverted"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "operands could not be broadcast together"
+msgstr ""
+
+#: extmod/ulab/code/numerical.c
+msgid "operation is not implemented on ndarrays"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "operation is not supported for given type"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
@@ -2579,6 +2755,10 @@ msgstr "pow() con 3 argomenti richiede interi"
 msgid "queue overflow"
 msgstr "overflow della coda"
 
+#: extmod/ulab/code/fft.c
+msgid "real and imaginary parts must be of equal length"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "importazione relativa"
@@ -2595,6 +2775,10 @@ msgstr ""
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
 msgstr "return aspettava '%q' ma ha ottenuto '%q'"
+
+#: extmod/ulab/code/ndarray.c
+msgid "right hand side must be an ndarray, or a scalar"
+msgstr ""
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -2620,6 +2804,10 @@ msgstr ""
 msgid "script compilation not supported"
 msgstr "compilazione dello scrip non suportata"
 
+#: extmod/ulab/code/ndarray.c
+msgid "shape must be a 2-tuple"
+msgstr ""
+
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
 msgstr "segno non permesso nello spcificatore di formato della stringa"
@@ -2631,6 +2819,10 @@ msgstr "segno non permesso nello spcificatore di formato 'c' della stringa"
 #: py/objstr.c
 msgid "single '}' encountered in format string"
 msgstr "'}' singolo presente nella stringa di formattazione"
+
+#: extmod/ulab/code/linalg.c
+msgid "size is defined for ndarrays only"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
@@ -2647,6 +2839,10 @@ msgstr "small int overflow"
 #: main.c
 msgid "soft reboot\n"
 msgstr "soft reboot\n"
+
+#: extmod/ulab/code/numerical.c
+msgid "sort argument must be an ndarray"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -2739,12 +2935,16 @@ msgstr "timestamp è fuori intervallo per il time_t della piattaforma"
 msgid "too many arguments provided with the given format"
 msgstr "troppi argomenti forniti con il formato specificato"
 
+#: extmod/ulab/code/ndarray.c
+msgid "too many indices"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
 msgstr "troppi valori da scompattare (%d attesi)"
 
-#: py/objstr.c
+#: extmod/ulab/code/linalg.c py/objstr.c
 msgid "tuple index out of range"
 msgstr "indice della tupla fuori intervallo"
 
@@ -2875,6 +3075,14 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
+#: extmod/ulab/code/linalg.c
+msgid "wrong argument type"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "wrong input type"
+msgstr ""
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "numero di argomenti errato"
@@ -2882,6 +3090,10 @@ msgstr "numero di argomenti errato"
 #: py/runtime.c
 msgid "wrong number of values to unpack"
 msgstr "numero di valori da scompattare non corretto"
+
+#: extmod/ulab/code/ndarray.c
+msgid "wrong operand type on the right hand side"
+msgstr ""
 
 #: shared-module/displayio/Shape.c
 #, fuzzy
