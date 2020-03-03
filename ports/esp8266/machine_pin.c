@@ -46,14 +46,6 @@
         (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
         | GPIO_PIN_INT_TYPE_SET(trig))) \
 
-#define GPIO_MODE_INPUT (0)
-#define GPIO_MODE_OUTPUT (1)
-#define GPIO_MODE_OPEN_DRAIN (2) // synthesised
-#define GPIO_PULL_NONE (0)
-#define GPIO_PULL_UP (1)
-// Removed in SDK 1.1.0
-//#define GPIO_PULL_DOWN (2)
-
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
     uint16_t phys_port;
@@ -81,7 +73,7 @@ const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 16, -1, -1},
 };
 
-STATIC uint8_t pin_mode[16 + 1];
+uint8_t pin_mode[16 + 1];
 
 // forward declaration
 STATIC const pin_irq_obj_t pin_irq_obj[16];
@@ -203,13 +195,26 @@ void pin_set(uint pin, int value) {
 
     uint32_t enable = 0;
     uint32_t disable = 0;
-    if (pin_mode[pin] == GPIO_MODE_INPUT)
-    {
-        value = -1;
-        disable = 1;
-    } else {
-        // GPIO_MODE_OUTPUT and GPIO_MODE_OPEN_DRAIN:
-        enable = 1;
+    switch (pin_mode[pin]) {
+        case GPIO_MODE_INPUT:
+            value = -1;
+            disable = 1;
+            break;
+
+        case GPIO_MODE_OUTPUT:
+            enable = 1;
+            break;
+
+        case GPIO_MODE_OPEN_DRAIN:
+            if (value == -1) {
+                return;
+            } else if (value == 0) {
+                enable = 1;
+            } else {
+                value = -1;
+                disable = 1;
+            }
+            break;
     }
 
     enable <<= pin;
@@ -287,10 +292,6 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, cons
         if ((pull & GPIO_PULL_UP) != 0) {
             PIN_PULLUP_EN(self->periph);
         }
-    }
-
-    if (mode == GPIO_MODE_OPEN_DRAIN) {
-        mp_hal_pin_open_drain(self->phys_port);
     }
 
     pin_set(self->phys_port, value);

@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "esppwm.h"
+#include "esp_mphal.h"
 
 #include "py/runtime.h"
 #include "modmachine.h"
@@ -75,6 +76,10 @@ STATIC void pyb_pwm_init_helper(pyb_pwm_obj_t *self, size_t n_args, const mp_obj
     }
     if (args[ARG_duty].u_int != -1) {
         pwm_set_duty(args[ARG_duty].u_int, self->channel);
+    }
+
+    if (pin_mode[self->pin->phys_port] == GPIO_MODE_OPEN_DRAIN) {
+        mp_hal_pin_open_drain(self->pin->phys_port);
     }
 
     pwm_start();
@@ -139,6 +144,10 @@ STATIC mp_obj_t pyb_pwm_duty(size_t n_args, const mp_obj_t *args) {
     if (!self->active) {
         pwm_add(self->pin->phys_port, self->pin->periph, self->pin->func);
         self->active = 1;
+
+        if (pin_mode[self->pin->phys_port] == GPIO_MODE_OPEN_DRAIN) {
+            mp_hal_pin_open_drain(self->pin->phys_port);
+        }
     }
     if (n_args == 1) {
         // get
