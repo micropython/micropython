@@ -1,1 +1,3 @@
 PROG ?= micropython-dev
+
+MICROPY_ROM_TEXT_COMPRESSION = 1
