@@ -38,6 +38,8 @@ CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 LIBS =
 
 SRC_C = \
