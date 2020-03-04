@@ -483,6 +483,26 @@ STATIC HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_star
     return HAL_OK;
 }
 
+/*
+Problem: Where will the information for circular, callbackhalf, callbackfull, callbackerror get stored. Currently, spi_t holds all the STM32HAL SPI type of parameters.
+
+I propose to modify struct _spi_t (in ports/stm32/spi.h) to add the following member:
+
+typedef struct _spi_t {
+    SPI_HandleTypeDef *spi;
+    const dma_descr_t *tx_dma_descr;
+    const dma_descr_t *rx_dma_descr;
+    const dma_mode_t      *dma_mode; // Null if normal blocking behavior
+} spi_t;
+
+In order to add an optional DMA configuration structure. This will hold the DMA mode (CIRCULAR, callbackhalf, callbackfull, callbackerror). If NORMAL (default) is specified the dma_mode pointer would be NULL.
+
+To support bigger parts, DMA mode could also include:
+DUALBUFFER, etc.
+
+Each of these modes would carry a union of parameters (some required, some optional) for each of the separate DMA modes. The definition of the union would be part specific depending upon the DMA modes supported and the settings in mpconfigport.h.
+*/
+
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is

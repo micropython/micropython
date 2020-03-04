@@ -29,10 +29,31 @@
 #include "drivers/bus/spi.h"
 #include "dma.h"
 
+#ifdef DMA_MODES
+
+/**
+  * @brief  SPI DMA handle Structure definition
+  */
+typedef struct __SPI_DMAHandleTypeDef
+{
+     uint32_t Mode; /*!< Specifies the operation mode of the SPI DMAy Channelx. This parameter can be a value of CIRCULAR.*/
+
+    void  (* XferCpltCallback)(struct __DMA_HandleTypeDef * hdma);     /*!< DMA transfer complete callback       */
+
+    void  (* XferHalfCpltCallback)(struct __DMA_HandleTypeDef * hdma); /*!< DMA Half transfer complete callback  */
+
+    void  (* XferErrorCallback)(struct __DMA_HandleTypeDef * hdma);    /*!< DMA transfer error callback          */
+} SPI_DMAHandleTypeDef;
+#endif
+
+
 typedef struct _spi_t {
     SPI_HandleTypeDef *spi;
     const dma_descr_t *tx_dma_descr;
     const dma_descr_t *rx_dma_descr;
+#ifdef DMA_MODES
+    const dma_mode_t      *dma_modes; // Null if normal blocking behavior
+#endif
 } spi_t;
 
 typedef struct _spi_proto_cfg_t {
