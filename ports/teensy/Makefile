@@ -26,6 +26,9 @@ $(info Using toolchain from PATH)
 CROSS_COMPILE ?= arm-none-eabi-
 endif
 
+# Enable compression of error messages.
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
