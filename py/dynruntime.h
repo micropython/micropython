@@ -33,6 +33,10 @@
 #include "py/objstr.h"
 #include "py/objtype.h"
 
+#if !MICROPY_ENABLE_DYNRUNTIME
+#error "dynruntime.h included in non-dynamic-module build."
+#endif
+
 #undef MP_ROM_QSTR
 #undef MP_OBJ_QSTR_VALUE
 #undef MP_OBJ_NEW_QSTR
