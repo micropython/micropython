@@ -24,6 +24,9 @@ QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $
 # File containing description of content to be frozen into firmware.
 FROZEN_MANIFEST ?= boards/manifest.py
 
+# Enable compression of error messages on all STM32 builds.
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
