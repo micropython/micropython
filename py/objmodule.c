@@ -206,6 +206,14 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
 #endif
 #endif
+#if MICROPY_PY_ULAB
+#if CIRCUITPY
+// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
+// TODO: move to shared-bindings/
+#else
+    { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
+#endif
+#endif
 #if MICROPY_PY_URE
 #if CIRCUITPY
 // CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
