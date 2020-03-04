@@ -37,6 +37,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
+#include "ets_alt_task.h"
 #include "modmachine.h"
 
 #define GET_TRIGGER(phys_port) \
@@ -103,23 +104,26 @@ void pin_init0(void) {
 }
 
 void pin_intr_handler(uint32_t status) {
-    mp_sched_lock();
-    gc_lock();
     status &= 0xffff;
     for (int p = 0; status; ++p, status >>= 1) {
         if (status & 1) {
             mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
             if (handler != MP_OBJ_NULL) {
                 if (pin_irq_is_hard[p]) {
+                    int orig_ets_loop_iter_disable = ets_loop_iter_disable;
+                    ets_loop_iter_disable = 1;
+                    mp_sched_lock();
+                    gc_lock();
                     mp_call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                    gc_unlock();
+                    mp_sched_unlock();
+                    ets_loop_iter_disable = orig_ets_loop_iter_disable;
                 } else {
                     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
                 }
             }
         }
     }
-    gc_unlock();
-    mp_sched_unlock();
 }
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
