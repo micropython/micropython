@@ -79,8 +79,8 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
           Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
                         Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split qstr $(DestDir)qstr.i.last $(DestDir)qstr _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat qstr _ $(DestDir)qstr $(QstrDefsCollected)"/>
   </Target>
 
   <Target Name="MakeModuleDefs" DependsOnTargets="MakeDestDir">
