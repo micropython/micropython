@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-27 11:02-0600\n"
+"POT-Creation-Date: 2020-03-03 20:13-0600\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -189,6 +189,10 @@ msgstr "'S' hé 'O' bù zhīchí géshì lèixíng"
 #: py/compile.c
 msgid "'align' requires 1 argument"
 msgstr "'align' xūyào 1 gè cānshù"
+
+#: py/compile.c
+msgid "'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -912,9 +916,12 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Invalid pins for PWMOut"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -1004,6 +1011,10 @@ msgstr "Bìxū shì %q zi lèi."
 #: ports/stm32f4/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
+
+#: py/parse.c
+msgid "Name too long"
+msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Negative step not supported"
@@ -1186,8 +1197,8 @@ msgid "PulseIn not yet supported"
 msgstr "Shàng bù zhīchí PulseIn"
 
 #: ports/stm32f4/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not yet supported"
-msgstr "Shàng bù zhīchí PulseOut"
+msgid "PulseOut not supported on this chip"
+msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2229,7 +2240,7 @@ msgstr ""
 msgid "inline assembler must be a function"
 msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr ""
 
@@ -2554,7 +2565,7 @@ msgstr "géshì zìfú chuàn cān shǔ bùzú"
 msgid "number of arguments must be 2, or 3"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
 msgstr ""
 
@@ -3285,6 +3296,9 @@ msgstr "líng bù"
 
 #~ msgid "Pixel beyond bounds of buffer"
 #~ msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
+
+#~ msgid "PulseOut not yet supported"
+#~ msgstr "Shàng bù zhīchí PulseOut"
 
 #~ msgid "Range out of bounds"
 #~ msgstr "Fànwéi chāochū biānjiè"

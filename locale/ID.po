@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-27 11:02-0600\n"
+"POT-Creation-Date: 2020-03-03 20:13-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -183,6 +183,10 @@ msgstr ""
 #: py/compile.c
 msgid "'align' requires 1 argument"
 msgstr "'align' membutuhkan 1 argumen"
+
+#: py/compile.c
+msgid "'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -910,9 +914,12 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins"
 msgstr "Pin-pin tidak valid"
+
+#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+msgid "Invalid pins for PWMOut"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
@@ -1001,6 +1008,10 @@ msgstr ""
 
 #: ports/stm32f4/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
+msgstr ""
+
+#: py/parse.c
+msgid "Name too long"
 msgstr ""
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
@@ -1181,7 +1192,7 @@ msgid "PulseIn not yet supported"
 msgstr ""
 
 #: ports/stm32f4/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not yet supported"
+msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm32f4/common-hal/os/__init__.c
@@ -2216,7 +2227,7 @@ msgstr ""
 msgid "inline assembler must be a function"
 msgstr "inline assembler harus sebuah fungsi"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr ""
 
@@ -2539,7 +2550,7 @@ msgstr ""
 msgid "number of arguments must be 2, or 3"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
 msgstr ""
 
