@@ -16,6 +16,8 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -m
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 CSUPEROPT = -Os # save some code space
 
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
