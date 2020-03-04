@@ -29,6 +29,9 @@ FROZEN_MANIFEST ?= boards/manifest.py
 FROZEN_DIR ?=
 FROZEN_MPY_DIR ?=
 
+# Enable compression of error messages.
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
