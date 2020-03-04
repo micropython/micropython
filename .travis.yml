@@ -100,6 +100,7 @@ jobs:
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --emit native)
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy -d basics float micropython)
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy --emit native -d basics float micropython)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-multitests.py multi_net/*.py)
         # test when input script comes from stdin
         - cat tests/basics/0prelim.py | ports/unix/micropython-coverage | grep -q 'abc'
         # test building native mpy modules
