@@ -35,6 +35,9 @@ MICROPY_VFS_LFS2 = 1
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
+# Enable compression of error messages.
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
