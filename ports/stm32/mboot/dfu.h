@@ -67,6 +67,12 @@ typedef enum {
     DFU_CMD_DNLOAD = 8,
 } dfu_cmd_t;
 
+enum {
+    DFU_CMD_DNLOAD_SET_ADDRESS = 0x21,
+    DFU_CMD_DNLOAD_ERASE = 0x41,
+    DFU_CMD_DNLOAD_READ_UNPROTECT = 0x92,
+};
+
 // Error status flags
 typedef enum {
     DFU_STATUS_OK = 0x00,  // No error condition is present.
