@@ -1,7 +1,12 @@
 include ../py/mkenv.mk
 
+ifeq ($(OS),Windows_NT)
+# define main target
+PROG = mpy-cross.exe
+else
 # define main target
 PROG = mpy-cross
+endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
