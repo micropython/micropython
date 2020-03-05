@@ -161,6 +161,13 @@ def clr_status():
 def get_status():
     """Get the status of the last operation."""
     stat = __dev.ctrl_transfer(0xA1, __DFU_GETSTATUS, 0, __DFU_INTERFACE, 6, 20000)
+
+    # firmware can provide an optional string for any error
+    if stat[5]:
+        message = get_string(__dev, stat[5])
+        if message:
+            print(message)
+
     return stat[4]
 
 
