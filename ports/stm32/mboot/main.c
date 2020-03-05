@@ -441,6 +441,11 @@ static int usrbtn_state(void) {
 /******************************************************************************/
 // FLASH
 
+#if defined(STM32WB)
+#define FLASH_END FLASH_END_ADDR
+#endif
+#define APPLICATION_FLASH_LENGTH (FLASH_END + 1 - APPLICATION_ADDR)
+
 #ifndef MBOOT_SPIFLASH_LAYOUT
 #define MBOOT_SPIFLASH_LAYOUT ""
 #endif
@@ -464,8 +469,9 @@ static int usrbtn_state(void) {
 #endif
 
 static int mboot_flash_mass_erase(void) {
-    // TODO
-    return -1;
+    // Erase all flash pages after mboot.
+    int ret = flash_erase(APPLICATION_ADDR, APPLICATION_FLASH_LENGTH / sizeof(uint32_t));
+    return ret;
 }
 
 static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
@@ -523,7 +529,7 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
 // Writable address space interface
 
 static int do_mass_erase(void) {
-    // TODO
+    // TODO spiflash erase ?
     return mboot_flash_mass_erase();
 }
 
@@ -791,20 +797,45 @@ static void dfu_init(void) {
     dfu_context.addr = 0x08000000;
 }
 
+// The DFU_GETSTATUS response before dfu_process_dnload is run should include the needed timeout adjustments
+static size_t get_timeout_ms(void) {
+    if (dfu_context.wBlockNum == 0) {
+        // download control commands
+        if (dfu_context.wLength >= 1 && dfu_context.buf[0] == DFU_CMD_DNLOAD_ERASE) {
+            if (dfu_context.wLength == 1) {
+                // mass erase command
+                // It takes 10-12 seconds to erase a 2MB stm part. Extrapolate a suitable timeout from this.
+                return APPLICATION_FLASH_LENGTH / 170;
+
+            } else if (dfu_context.wLength == 5) {
+                // erase page command
+                return 500;
+            }
+        }
+    } else if (dfu_context.wBlockNum > 1) {
+        // write data to memory command
+        return 500;
+    }
+    return 0;
+}
+
 static int dfu_process_dnload(void) {
     int ret = -1;
     if (dfu_context.wBlockNum == 0) {
         // download control commands
-        if (dfu_context.wLength >= 1 && dfu_context.buf[0] == 0x41) {
+        if (dfu_context.wLength >= 1 && dfu_context.buf[0] == DFU_CMD_DNLOAD_ERASE) {
             if (dfu_context.wLength == 1) {
                 // mass erase
                 ret = do_mass_erase();
+                if (ret != 0) {
+                    dfu_context.cmd = DFU_CMD_NONE;
+                }
             } else if (dfu_context.wLength == 5) {
                 // erase page
                 uint32_t next_addr;
                 ret = do_page_erase(get_le32(&dfu_context.buf[1]), &next_addr);
             }
-        } else if (dfu_context.wLength >= 1 && dfu_context.buf[0] == 0x21) {
+        } else if (dfu_context.wLength >= 1 && dfu_context.buf[0] == DFU_CMD_DNLOAD_SET_ADDRESS) {
             if (dfu_context.wLength == 5) {
                 // set address
                 dfu_context.addr = get_le32(&dfu_context.buf[1]);
@@ -888,12 +919,16 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
             default:
                 dfu_context.state = DFU_STATE_BUSY;
         }
-        buf[0] = dfu_context.status; // bStatus
-        buf[1] = 0; // bwPollTimeout (ms)
-        buf[2] = 0; // bwPollTimeout (ms)
-        buf[3] = 0; // bwPollTimeout (ms)
-        buf[4] = dfu_context.state; // bState
-        buf[5] = dfu_context.error; // iString
+        size_t timeout_ms = get_timeout_ms();
+        buf[0] = dfu_context.status;          // bStatus
+        buf[1] = (timeout_ms >> 16) & 0xFF;   // bwPollTimeout (ms)
+        buf[2] = (timeout_ms >> 8) & 0xFF;    // bwPollTimeout (ms)
+        buf[3] = timeout_ms & 0xFF;           // bwPollTimeout (ms)
+        buf[4] = dfu_context.state;           // bState
+        buf[5] = dfu_context.error;           // iString
+        // Clear errors now they've been sent
+        dfu_context.status = DFU_STATUS_OK;
+        dfu_context.error = 0;
         return 6;
     }
     return -1;
