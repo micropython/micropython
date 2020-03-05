@@ -579,7 +579,7 @@ the last matching regex is used:
                 # run PC tests
                 test_dirs = (
                     'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
+                    'stress', 'unicode', 'extmod', '../extmod/ulab/tests', 'unix', 'cmdline',
                 )
         else:
             # run tests from these directories

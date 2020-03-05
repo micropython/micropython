@@ -138,23 +138,26 @@ typedef struct {
     .pin = tim_pin, \
 }
 
-//Starter Lines
+//Access Lines
 
 #ifdef STM32F401xE
 #define HAS_DAC 0
 #define HAS_TRNG 0
+#define HAS_BASIC_TIM 0
 #include "stm32f401xe/periph.h"
 #endif
 
 #ifdef STM32F411xE
 #define HAS_DAC 0
 #define HAS_TRNG 0
+#define HAS_BASIC_TIM 0
 #include "stm32f411xe/periph.h"
 #endif
 
 #ifdef STM32F412Zx
 #define HAS_DAC 0
 #define HAS_TRNG 1
+#define HAS_BASIC_TIM 1
 #include "stm32f412zx/periph.h"
 #endif
 
@@ -163,12 +166,14 @@ typedef struct {
 #ifdef STM32F405xx
 #define HAS_DAC 1
 #define HAS_TRNG 1
+#define HAS_BASIC_TIM 1
 #include "stm32f405xx/periph.h"
 #endif
 
 #ifdef STM32F407xx
 #define HAS_DAC 1
 #define HAS_TRNG 1
+#define HAS_BASIC_TIM 1
 #include "stm32f407xx/periph.h"
 #endif
 

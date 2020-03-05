@@ -163,7 +163,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         } else if (var_freq_mismatch) {
             mp_raise_ValueError(translate("Cannot vary frequency on a timer that is already in use"));
         } else {
-            mp_raise_ValueError(translate("Invalid pins"));
+            mp_raise_ValueError(translate("Invalid pins for PWMOut"));
         }
     }
 
