@@ -76,12 +76,12 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *data0 = validate_is_free_pin(args[ARG_data0].u_obj);
-    mcu_pin_obj_t *command = validate_is_free_pin(args[ARG_command].u_obj);
-    mcu_pin_obj_t *chip_select = validate_is_free_pin(args[ARG_chip_select].u_obj);
-    mcu_pin_obj_t *write = validate_is_free_pin(args[ARG_write].u_obj);
-    mcu_pin_obj_t *read = validate_is_free_pin(args[ARG_read].u_obj);
-    mcu_pin_obj_t *reset = validate_is_free_pin(args[ARG_reset].u_obj);
+    mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
+    mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
+    mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
+    mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
+    mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
     displayio_parallelbus_obj_t* self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {

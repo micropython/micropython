@@ -84,7 +84,7 @@ const mp_obj_type_t mcu_pin_type = {
     .print = mcu_pin_print
 };
 
-mcu_pin_obj_t *validate_is_pin(mp_obj_t obj) {
+mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
     if (!MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), mcu_pin_type.name);
     }
@@ -92,25 +92,25 @@ mcu_pin_obj_t *validate_is_pin(mp_obj_t obj) {
 }
 
 // Validate that the obj is a pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
-mcu_pin_obj_t *validate_is_pin_or_none(mp_obj_t obj) {
+mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj) {
     if (obj == mp_const_none) {
         return NULL;
     }
-    return validate_is_pin(obj);
+    return validate_obj_is_pin(obj);
 }
 
-mcu_pin_obj_t *validate_is_free_pin(mp_obj_t obj) {
-    mcu_pin_obj_t *pin = validate_is_pin(obj);
+mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj) {
+    mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
     assert_pin_free(pin);
     return pin;
 }
 
 // Validate that the obj is a free pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
-mcu_pin_obj_t *validate_is_free_pin_or_none(mp_obj_t obj) {
+mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj) {
     if (obj == mp_const_none) {
         return NULL;
     }
-    mcu_pin_obj_t *pin = validate_is_pin(obj);
+    mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
     assert_pin_free(pin);
     return pin;
 }

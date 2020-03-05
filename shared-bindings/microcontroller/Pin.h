@@ -33,10 +33,10 @@
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t mcu_pin_type;
 
-mcu_pin_obj_t *validate_is_pin(mp_obj_t obj);
-mcu_pin_obj_t *validate_is_pin_or_none(mp_obj_t obj);
-mcu_pin_obj_t *validate_is_free_pin(mp_obj_t obj);
-mcu_pin_obj_t *validate_is_free_pin_or_none(mp_obj_t obj);
+mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj);
+mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj);
+mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj);
+mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj);
 
 void assert_pin_free(const mcu_pin_obj_t* pin);
 

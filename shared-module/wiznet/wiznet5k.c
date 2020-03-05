@@ -379,12 +379,12 @@ void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket) {
 }
 
 /// Create and return a WIZNET5K object.
-mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
+mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, const mcu_pin_obj_t *rst_in) {
 
     // init the wiznet5k object
     wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
-    wiznet5k_obj.spi = MP_OBJ_TO_PTR(spi_in);
+    wiznet5k_obj.spi = spi_in;
     wiznet5k_obj.socket_used = 0;
     wiznet5k_obj.dhcp_socket = -1;
 

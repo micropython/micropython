@@ -68,7 +68,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
     self->base.type = &digitalio_digitalinout_type;
 
-    mcu_pin_obj_t *pin = validate_is_free_pin(args[0]);
+    mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);

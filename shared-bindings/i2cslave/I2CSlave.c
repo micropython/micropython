@@ -77,8 +77,8 @@ STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t* scl = validate_is_free_pin(args[ARG_scl].u_obj);
-    const mcu_pin_obj_t* sda = validate_is_free_pin(args[ARG_sda].u_obj);
+    const mcu_pin_obj_t* scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t* sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_addresses].u_obj, &iter_buf);
