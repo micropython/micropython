@@ -448,6 +448,22 @@ void led_state_all(unsigned int mask) {
     #endif
 }
 
+typedef enum {
+    LED_STATE_OFF = 0,
+    LED_STATE_ON,
+    LED_STATE_SLOW_FLASH,
+    LED_STATE_FAST_FLASH,
+    LED_STATE_INVERTED_FLASH,
+} led_state_t;
+static led_state_t _led0_state;
+
+void led0_state(led_state_t state) {
+    _led0_state = state;
+    if (state == LED_STATE_OFF || state == LED_STATE_ON) {
+        led_state(LED0, state);
+    }
+}
+
 /******************************************************************************/
 // USR BUTTON
 
@@ -676,62 +692,70 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 #endif
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr) {
-    led_state(LED0, 1);
+    int ret = -1;
+    led0_state(LED_STATE_ON);
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         *next_addr = addr + MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
-        return spiflash_page_erase(MBOOT_SPIFLASH_SPIFLASH,
+        ret = spiflash_page_erase(MBOOT_SPIFLASH_SPIFLASH,
             addr - MBOOT_SPIFLASH_ADDR, MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE);
-    }
+    } else
     #endif
-
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
         *next_addr = addr + MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE * MP_SPIFLASH_ERASE_BLOCK_SIZE;
-        return spiflash_page_erase(MBOOT_SPIFLASH2_SPIFLASH,
+        ret = spiflash_page_erase(MBOOT_SPIFLASH2_SPIFLASH,
             addr - MBOOT_SPIFLASH2_ADDR, MBOOT_SPIFLASH2_ERASE_BLOCKS_PER_PAGE);
-    }
+    } else
     #endif
+    {    
+        ret = flash_page_erase(addr, next_addr);
+    }
 
-    return flash_page_erase(addr, next_addr);
+    led0_state((ret == 0) ? LED_STATE_SLOW_FLASH : LED_STATE_INVERTED_FLASH);
+    return ret;
 }
 
 void do_read(uint32_t addr, int len, uint8_t *buf) {
+    led0_state(LED_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, buf);
-        return;
-    }
+    } else 
     #endif
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, buf);
         return;
-    }
+    } else 
     #endif
-
-    // Other addresses, just read directly from memory
-    memcpy(buf, (void*)addr, len);
+    {
+        // Other addresses, just read directly from memory
+        memcpy(buf, (void*)addr, len);
+    }
+    led0_state(LED_STATE_SLOW_FLASH);
 }
 
 int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
-    static uint32_t led_tog = 0;
-    led_state(LED0, (led_tog++) & 4);
-
+    int ret = -1;
+    led0_state(LED_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
-        return mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, src8);
-    }
+        ret = mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, src8);
+    } else
     #endif
-
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
-        return mp_spiflash_write(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, src8);
-    }
+        ret = mp_spiflash_write(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, src8);
+    } else 
     #endif
-
-    return flash_write(addr, src8, len);
+    {
+        ret = flash_write(addr, src8, len);
+    }
+    
+    led0_state((ret == 0) ? LED_STATE_SLOW_FLASH : LED_STATE_INVERTED_FLASH);
+    return ret;
 }
 
 /******************************************************************************/
@@ -1227,11 +1251,13 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
         }
     } else if (req->bmRequest == 0xa1) {
         // device-to-host request
+        led0_state(LED_STATE_FAST_FLASH);
         int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_XFER_SIZE);
         if (len >= 0) {
             self->tx_pending = true;
             USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);
         }
+        led0_state(LED_STATE_SLOW_FLASH);
     }
     return USBD_OK;
 }
@@ -1369,6 +1395,7 @@ static int get_reset_mode(void) {
         // Timeout is roughly 20s, where reset_mode=1
         systick_init();
         led_init();
+        led0_state(LED_STATE_OFF);
         reset_mode = 0;
         for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
             if (i % 32 == 0) {
@@ -1521,11 +1548,8 @@ enter_bootloader:
     #endif
 
     led_state_all(0);
+    led0_state(LED_STATE_SLOW_FLASH);
 
-    #if USE_USB_POLLING
-    uint32_t ss = systick_ms;
-    int ss2 = -1;
-    #endif
     #if MBOOT_USB_RESET_ON_DISCONNECT
     bool has_connected = false;
     #endif
@@ -1544,23 +1568,8 @@ enter_bootloader:
         if (!pyb_usbdd.tx_pending) {
             dfu_process();
         }
-        #endif
-
-        #if USE_USB_POLLING
-        //__WFI(); // slows it down way too much; might work with 10x faster systick
-        if (systick_ms - ss > 50) {
-            ss += 50;
-            ss2 = (ss2 + 1) % 20;
-            switch (ss2) {
-                case 0: led_state(LED0, 1); break;
-                case 1: led_state(LED0, 0); break;
-            }
-        }
-        #else
-        led_state(LED0, 1);
-        mp_hal_delay_ms(50);
-        led_state(LED0, 0);
-        mp_hal_delay_ms(950);
+        #else  // ! USE_USB_POLLING
+        __WFI();
         #endif
 
         #if MBOOT_USB_RESET_ON_DISCONNECT
@@ -1571,6 +1580,26 @@ enter_bootloader:
             do_reset();
         }
         #endif
+    }
+}
+
+void led_status() {
+    if (_led0_state > LED_STATE_ON) {
+        static uint32_t ss = 0;
+        static int ss2 = -1;
+
+        if (systick_ms - ss > 50) {
+            uint8_t rate = 20;
+            if (_led0_state == LED_STATE_FAST_FLASH) rate = 2;
+
+            ss += 50;
+            ss2 = (ss2 + 1) % rate;
+            bool invert = (_led0_state == LED_STATE_INVERTED_FLASH);
+            switch (ss2) {
+                case 0: led_state(LED0, (invert)?0:1); break;
+                case 1: led_state(LED0, (invert)?1:0); break;
+            }
+        }
     }
 }
 
@@ -1611,6 +1640,10 @@ void SysTick_Handler(void) {
     // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
     // work properly.
     SysTick->CTRL;
+
+    // Update the led state from here to ensure it's always consistent regardless of
+    // other processing going on in interrupts or main
+    led_status();
 }
 
 #if defined(MBOOT_I2C_SCL)
