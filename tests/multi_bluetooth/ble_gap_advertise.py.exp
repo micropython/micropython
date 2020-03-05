@@ -1,0 +1,5 @@
+--- instance0 ---
+gap_advertise(20_000)
+gap_advertise(None)
+--- instance1 ---
+adv_data: b'\x02\x01\x06\x04\xffMPY'
