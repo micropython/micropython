@@ -36,7 +36,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 
-#include "tick.h"
 #include "nrfx_gpiote.h"
 
 // obj array to map pin -> self since nrfx hide the mapping
@@ -55,9 +54,10 @@ static int _find_pulsein_obj(pulseio_pulsein_obj_t* obj) {
 
 static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     // Grab the current time first.
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
+    uint32_t current_us = 0;
+    uint64_t current_ms = 0;
+    // FIXME! We need a higher resolution clock to measure against.
+    //current_tick(&current_ms, &current_us);
 
     // current_tick gives us the remaining us until the next tick but we want the number since the last ms.
     current_us = 1000 - current_us;

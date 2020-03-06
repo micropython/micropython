@@ -36,7 +36,6 @@
 #include "nrfx_power.h"
 #include "nrf_nvic.h"
 #include "nrf_sdm.h"
-#include "tick.h"
 #include "py/gc.h"
 #include "py/objstr.h"
 #include "py/runtime.h"

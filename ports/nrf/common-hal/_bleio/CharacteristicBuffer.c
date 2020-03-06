@@ -35,8 +35,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "tick.h"
-
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "supervisor/shared/tick.h"

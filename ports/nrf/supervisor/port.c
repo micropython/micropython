@@ -28,8 +28,10 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 
+#include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
 #include "nrfx/drivers/include/nrfx_power.h"
+#include "nrfx/drivers/include/nrfx_rtc.h"
 
 #include "nrf/cache.h"
 #include "nrf/clocks.h"
@@ -48,7 +50,6 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
-#include "tick.h"
 
 #include "shared-bindings/rtc/__init__.h"
 
@@ -62,6 +63,37 @@
 
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
+}
+
+const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
+
+const nrfx_rtc_config_t rtc_config = {
+    .prescaler = RTC_FREQ_TO_PRESCALER(1024),
+    .reliable = 0,
+    .tick_latency = 0,
+    .interrupt_priority = 6
+};
+
+static volatile uint64_t overflowed_ticks = 0;
+
+void rtc_handler(nrfx_rtc_int_type_t int_type) {
+    if (int_type == NRFX_RTC_INT_OVERFLOW) {
+        overflowed_ticks += (1L<<24);
+    }
+    // Do things common to all ports when the tick occurs
+    if (int_type == NRFX_RTC_INT_TICK) {
+        supervisor_tick();
+    }
+}
+
+void tick_init(void) {
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+    }
+    nrfx_rtc_counter_clear(&rtc_instance);
+    nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);
+    nrfx_rtc_enable(&rtc_instance);
+    nrfx_rtc_overflow_enable(&rtc_instance, true);
 }
 
 safe_mode_t port_init(void) {
@@ -88,10 +120,6 @@ safe_mode_t port_init(void) {
 #if CIRCUITPY_ANALOGIO
     analogin_init();
 #endif
-
-    #if CIRCUITPY_RTC
-    rtc_init();
-    #endif
 
     return NO_SAFE_MODE;
 }
@@ -122,10 +150,6 @@ void reset_port(void) {
 #endif
 
     timers_reset();
-
-#if CIRCUITPY_RTC
-    rtc_reset();
-#endif
 
 #if CIRCUITPY_BLEIO
     bleio_reset();
@@ -170,6 +194,40 @@ void port_set_saved_word(uint32_t value) {
 uint32_t port_get_saved_word(void) {
     return _ebss;
 }
+
+uint64_t port_get_raw_ticks(void) {
+    return overflowed_ticks + nrfx_rtc_counter_get(&rtc_instance);
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    nrfx_rtc_tick_enable(&rtc_instance, true);
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    nrfx_rtc_tick_disable(&rtc_instance);
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    uint32_t current_ticks = nrfx_rtc_counter_get(&rtc_instance);
+    uint32_t diff = 3;
+    if (ticks > diff) {
+        diff = ticks;
+    }
+    nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
+}
+
+void port_sleep_until_interrupt(void) {
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    if (NVIC_GetPendingIRQ(FPU_IRQn)) {
+        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
+        (void) __get_FPSCR();
+        NVIC_ClearPendingIRQ(FPU_IRQn);
+    }
+    sd_app_evt_wait();
+}
+
 
 void HardFault_Handler(void) {
     reset_into_safe_mode(HARD_CRASH);
