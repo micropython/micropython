@@ -50,7 +50,6 @@ safe_mode_t port_init(void) {
     stm32f4_peripherals_gpio_init();
 
     tick_init();
-    board_init(); 
 
     return NO_SAFE_MODE;
 }
@@ -69,6 +68,14 @@ void reset_to_bootloader(void) {
 
 void reset_cpu(void) {
     NVIC_SystemReset();
+}
+
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
 }
 
 uint32_t *port_stack_get_limit(void) {

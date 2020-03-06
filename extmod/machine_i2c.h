@@ -27,10 +27,12 @@
 #define MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H
 
 #include "py/obj.h"
+#include "py/proto.h"
 
 // I2C protocol
 // the first 4 methods can be NULL, meaning operation is not supported
 typedef struct _mp_machine_i2c_p_t {
+    MP_PROTOCOL_HEAD
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);

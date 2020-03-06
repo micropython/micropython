@@ -14,6 +14,9 @@ MCU_VARIANT = stm32f4
 MCU_SUB_VARIANT = stm32f405xx
 MCU_PACKAGE = 64
 CMSIS_MCU = STM32F405xx
-LD_FILE = boards/STM32F405.ld
-TEXT0_ADDR = 0x08000000
-TEXT1_ADDR = 0x08010000
+
+# Default includes filesystem, but uses external flash
+LD_DEFAULT = boards/STM32F405_default.ld 
+LD_BOOT = boards/STM32F405_boot.ld # UF2 boot option
+UF2_OFFSET = 0x8010000
+

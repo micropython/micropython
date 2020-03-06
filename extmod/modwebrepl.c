@@ -331,6 +331,7 @@ STATIC const mp_rom_map_elem_t webrepl_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(webrepl_locals_dict, webrepl_locals_dict_table);
 
 STATIC const mp_stream_p_t webrepl_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = webrepl_read,
     .write = webrepl_write,
     .ioctl = webrepl_ioctl,

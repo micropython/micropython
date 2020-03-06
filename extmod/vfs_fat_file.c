@@ -28,6 +28,7 @@
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -199,7 +200,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_errno_str(fresult_to_errno_table[res], args[0].u_obj);
     }
     // If we're reading, turn on fast seek.
     if (mode == FA_READ) {
@@ -254,6 +255,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
@@ -272,6 +274,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
 #endif
 
 STATIC const mp_stream_p_t textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,

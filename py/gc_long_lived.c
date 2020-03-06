@@ -126,6 +126,11 @@ mp_obj_t make_obj_long_lived(mp_obj_t obj, uint8_t max_depth){
     if (obj == NULL) {
         return obj;
     }
+    // If not in the GC pool, do nothing. This can happen (at least) when
+    // there are frozen mp_type_bytes objects in ROM.
+    if (!VERIFY_PTR((void *)obj)) {
+        return obj;
+    }
     if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(obj);
         return MP_OBJ_FROM_PTR(make_fun_bc_long_lived(fun_bc, max_depth));

@@ -31,6 +31,10 @@
 
 #include "supervisor/shared/external_flash/devices.h"
 
+#include "shared-bindings/busio/SPI.h"
+
+extern busio_spi_obj_t supervisor_flash_spi_bus; //Used to share SPI bus on some boards
+
 // This API is implemented for both normal SPI peripherals and QSPI peripherals.
 
 bool spi_flash_command(uint8_t command);

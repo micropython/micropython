@@ -58,6 +58,7 @@ void common_hal_displayio_display_set_auto_refresh(displayio_display_obj_t* self
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t* self);
 uint16_t common_hal_displayio_display_get_height(displayio_display_obj_t* self);
 uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self);
+void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, int rotation);
 
 bool common_hal_displayio_display_get_auto_brightness(displayio_display_obj_t* self);
 void common_hal_displayio_display_set_auto_brightness(displayio_display_obj_t* self, bool auto_brightness);

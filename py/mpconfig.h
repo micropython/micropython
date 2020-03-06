@@ -244,6 +244,14 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Number of atb indices to cache. Allocations of fewer blocks will be faster
+// because the search will be accelerated by the index cache. This only applies
+// to short lived allocations because we assume the long lived allocations are
+// contiguous.
+#ifndef MICROPY_ATB_INDICES
+#define MICROPY_ATB_INDICES (8)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
@@ -1438,6 +1446,15 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+// To annotate that code is unreachable
+#ifndef MP_UNREACHABLE
+#if defined(__GNUC__)
+#define MP_UNREACHABLE __builtin_unreachable();
+#else
+#define MP_UNREACHABLE for (;;);
+#endif
 #endif
 
 #ifndef MP_HTOBE16

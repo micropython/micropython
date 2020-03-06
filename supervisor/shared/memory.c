@@ -39,11 +39,14 @@ uint32_t* low_address;
 uint32_t* high_address;
 
 void memory_init(void) {
-    low_address = port_stack_get_limit();
-    high_address = port_stack_get_top();
+    low_address = port_heap_get_bottom();
+    high_address = port_heap_get_top();
 }
 
 void free_memory(supervisor_allocation* allocation) {
+    if (allocation == NULL) {
+        return;
+    }
     int32_t index = 0;
     bool found = false;
     for (index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {

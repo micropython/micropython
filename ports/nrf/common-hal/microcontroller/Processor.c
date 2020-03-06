@@ -75,35 +75,34 @@ float common_hal_mcu_processor_get_voltage(void) {
         .reference = NRF_SAADC_REFERENCE_INTERNAL,
         .acq_time = NRF_SAADC_ACQTIME_10US,
         .mode = NRF_SAADC_MODE_SINGLE_ENDED,
-        .burst = NRF_SAADC_BURST_DISABLED,
-        .pin_p = NRF_SAADC_INPUT_VDD,
-        .pin_n = NRF_SAADC_INPUT_VDD,
+        .burst = NRF_SAADC_BURST_DISABLED
     };
 
-    nrf_saadc_resolution_set(NRF_SAADC_RESOLUTION_14BIT);
-    nrf_saadc_oversample_set(NRF_SAADC_OVERSAMPLE_DISABLED);
-    nrf_saadc_enable();
+    nrf_saadc_resolution_set(NRF_SAADC, NRF_SAADC_RESOLUTION_14BIT);
+    nrf_saadc_oversample_set(NRF_SAADC, NRF_SAADC_OVERSAMPLE_DISABLED);
+    nrf_saadc_enable(NRF_SAADC);
 
-    for (uint32_t i = 0; i < NRF_SAADC_CHANNEL_COUNT; i++) {
-        nrf_saadc_channel_input_set(i, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
+    for (uint32_t i = 0; i < SAADC_CH_NUM; i++) {
+        nrf_saadc_channel_input_set(NRF_SAADC, i, NRF_SAADC_INPUT_DISABLED, NRF_SAADC_INPUT_DISABLED);
     }
 
-    nrf_saadc_channel_init(0, &config);
-    nrf_saadc_buffer_init(&value, 1);
+    nrf_saadc_channel_init(NRF_SAADC, 0, &config);
+    nrf_saadc_channel_input_set(NRF_SAADC, 0, NRF_SAADC_INPUT_VDD, NRF_SAADC_INPUT_VDD);
+    nrf_saadc_buffer_init(NRF_SAADC, &value, 1);
 
-    nrf_saadc_task_trigger(NRF_SAADC_TASK_START);
-    while (nrf_saadc_event_check(NRF_SAADC_EVENT_STARTED) == 0) { }
-    nrf_saadc_event_clear(NRF_SAADC_EVENT_STARTED);
+    nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_START);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STARTED) == 0) { }
+    nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STARTED);
 
-    nrf_saadc_task_trigger(NRF_SAADC_TASK_SAMPLE);
-    while (nrf_saadc_event_check(NRF_SAADC_EVENT_END) == 0) { }
-    nrf_saadc_event_clear(NRF_SAADC_EVENT_END);
+    nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_SAMPLE);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_END) == 0) { }
+    nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_END);
 
-    nrf_saadc_task_trigger(NRF_SAADC_TASK_STOP);
-    while (nrf_saadc_event_check(NRF_SAADC_EVENT_STOPPED) == 0) { }
-    nrf_saadc_event_clear(NRF_SAADC_EVENT_STOPPED);
+    nrf_saadc_task_trigger(NRF_SAADC, NRF_SAADC_TASK_STOP);
+    while (nrf_saadc_event_check(NRF_SAADC, NRF_SAADC_EVENT_STOPPED) == 0) { }
+    nrf_saadc_event_clear(NRF_SAADC, NRF_SAADC_EVENT_STOPPED);
 
-    nrf_saadc_disable();
+    nrf_saadc_disable(NRF_SAADC);
 
     if (value < 0) {
         value = 0;

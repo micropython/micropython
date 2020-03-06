@@ -108,6 +108,7 @@ void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
 
 static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
     void *buffer = self->buffers[self->next_buffer];
+    void *buffer_start = buffer;
     NRF_I2S->TXD.PTR = (uintptr_t)buffer;
     self->next_buffer = !self->next_buffer;
     size_t bytesleft = self->buffer_length;
@@ -139,14 +140,14 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
             uint16_t *bp = (uint16_t*)buffer;
             uint16_t *be = (uint16_t*)(buffer + bytecount);
             uint16_t *sp = (uint16_t*)self->sample_data;
-            for (; bp != be; bp++) {
+            for (; bp < be;) {
                 *bp++ = *sp++ + 0x8000;
             }
         } else {
             uint8_t *bp = (uint8_t*)buffer;
             uint8_t *be = (uint8_t*)(buffer + bytecount);
             uint8_t *sp = (uint8_t*)self->sample_data;
-            for (; bp != be; bp++) {
+            for (; bp < be;) {
                 *bp++ = *sp++ + 0x80;
             }
         }
@@ -157,15 +158,17 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
 
     // Find the last frame of real audio data and replicate its samples until
     // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
-    if (self->bytes_per_sample == 1 && self->channel_count == 1) {
-        // For 8-bit mono, 4 copies of the final sample are required
-        self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
-    } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
-        // For 16-bit stereo, 1 copy of the final sample is required
-        self->hold_value = *(uint32_t*)(buffer-4);
-    } else {
-        // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
-        self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+    if(buffer != buffer_start) {
+        if (self->bytes_per_sample == 1 && self->channel_count == 1) {
+            // For 8-bit mono, 4 copies of the final sample are required
+            self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
+        } else if (self->bytes_per_sample == 2 && self->channel_count == 2) {
+            // For 16-bit stereo, 1 copy of the final sample is required
+            self->hold_value = *(uint32_t*)(buffer-4);
+        } else {
+            // For 8-bit stereo and 16-bit mono, 2 copies of the final sample are required
+            self->hold_value = 0x00010001 * *(uint16_t*)(buffer-2);
+        }
     }
 
     // Emulate pausing and stopping by filling the DMA buffer with copies of
@@ -218,6 +221,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     if (common_hal_audiobusio_i2sout_deinited(self)) {
         return;
     }
+    NRF_I2S->TASKS_STOP = 1;
+    NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     reset_pin_number(self->bit_clock_pin_number);
     self->bit_clock_pin_number = 0xff;
     reset_pin_number(self->word_select_pin_number);
@@ -240,11 +245,19 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
 
     uint32_t max_buffer_length;
     bool single_buffer, samples_signed;
-    audiosample_get_buffer_structure(sample, /* single channel */ false,
+    audiosample_get_buffer_structure(sample, /* single channel */ true,
         &single_buffer, &samples_signed, &max_buffer_length,
         &self->channel_count);
     self->single_buffer = single_buffer;
     self->samples_signed = samples_signed;
+
+
+    NRF_I2S->CONFIG.SWIDTH = self->bytes_per_sample == 1
+        ? I2S_CONFIG_SWIDTH_SWIDTH_8Bit
+        : I2S_CONFIG_SWIDTH_SWIDTH_16Bit;
+    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1
+        ? I2S_CONFIG_CHANNELS_CHANNELS_Left
+        : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
 
     choose_i2s_clocking(self, sample_rate);
     /* Allocate buffers based on a maximum duration
@@ -268,9 +281,6 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->paused = false;
     self->stopping = false;
     i2s_buffer_fill(self);
-
-    NRF_I2S->CONFIG.CHANNELS = self->channel_count == 1 ? I2S_CONFIG_CHANNELS_CHANNELS_Left : I2S_CONFIG_CHANNELS_CHANNELS_Stereo;
-
 
     NRF_I2S->RXTXD.MAXCNT = self->buffer_length / 4;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Enabled;

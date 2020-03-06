@@ -29,6 +29,8 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
+#include "supervisor/linker.h"
+
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,
@@ -84,10 +86,10 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-static inline mp_obj_dict_t *mp_locals_get(void) { return MP_STATE_THREAD(dict_locals); }
-static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
-static inline mp_obj_dict_t *mp_globals_get(void) { return MP_STATE_THREAD(dict_globals); }
-static inline void mp_globals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_globals) = d; }
+static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) { return MP_STATE_THREAD(dict_locals); }
+static inline void PLACE_IN_ITCM(mp_locals_set)(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
+static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_globals_get)(void) { return MP_STATE_THREAD(dict_globals); }
+static inline void PLACE_IN_ITCM(mp_globals_set)(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_globals) = d; }
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -159,6 +161,7 @@ NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);

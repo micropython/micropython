@@ -43,10 +43,10 @@
 nrf_nvic_state_t nrf_nvic_state = { 0 };
 
 // Flag indicating progress of internal flash operation.
-sd_flash_operation_status_t sd_flash_operation_status;
+volatile sd_flash_operation_status_t sd_flash_operation_status;
 
 __attribute__((aligned(4)))
-static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)];
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATTS_VAR_ATTR_LEN_MAX)];
 
 void ble_drv_reset() {
     // Linked list items will be gc'd.
@@ -134,6 +134,9 @@ void SD_EVT_IRQHandler(void) {
         }
 
         ble_evt_t* event = (ble_evt_t *)m_ble_evt_buf;
+        #if CIRCUITPY_VERBOSE_BLE
+        mp_printf(&mp_plat_print, "BLE event: 0x%04x\n", event->header.evt_id);
+        #endif
 
         if (supervisor_bluetooth_hook(event)) {
             continue;
@@ -142,11 +145,17 @@ void SD_EVT_IRQHandler(void) {
         ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
         bool done = false;
         while (it != NULL) {
+            #if CIRCUITPY_VERBOSE_BLE
+            // mp_printf(&mp_plat_print, "  calling handler: 0x%08lx, param: 0x%08lx\n", it->func-1, it->param);
+            #endif
             done = it->func(event, it->param) || done;
             it = it->next;
         }
-        if (!done) {
-            //mp_printf(&mp_plat_print, "Unhandled ble event: 0x%04x\n", event->header.evt_id);
+        #if CIRCUITPY_VERBOSE_BLE
+        if (event->header.evt_id == BLE_GATTS_EVT_WRITE) {
+            ble_gatts_evt_write_t* write_evt = &event->evt.gatts_evt.params.write;
+            mp_printf(&mp_plat_print, "Write to: UUID(0x%04x) handle %x of length %d auth %x\n", write_evt->uuid.uuid, write_evt->handle, write_evt->len, write_evt->auth_required);
         }
+        #endif
     }
 }

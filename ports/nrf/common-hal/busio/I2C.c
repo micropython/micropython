@@ -63,7 +63,7 @@ void i2c_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrf_twim_disable(twim_peripherals[i].twim.p_twim);
+        nrfx_twim_uninit(&twim_peripherals[i].twim);
         twim_peripherals[i].in_use = false;
     }
 }
@@ -115,6 +115,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
 
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     nrf_gpio_cfg_input(scl->number, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(sda->number, NRF_GPIO_PIN_PULLDOWN);
@@ -132,15 +133,21 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
+#endif
 
-    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG;
-    config.scl = scl->number;
-    config.sda = sda->number;
-    // change freq. only if it's less than the default 400K
-    if (frequency < 100000) {
-        config.frequency = NRF_TWIM_FREQ_100K;
-    } else if (frequency < 250000) {
+    nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
+
+#if defined(TWIM_FREQUENCY_FREQUENCY_K1000)
+    if (frequency >= 1000000) {
+        config.frequency = NRF_TWIM_FREQ_1000K;
+    } else
+#endif
+    if (frequency >= 400000) {
+      config.frequency = NRF_TWIM_FREQ_400K;
+    } else if (frequency >= 250000) {
       config.frequency = NRF_TWIM_FREQ_250K;
+    } else {
+        config.frequency = NRF_TWIM_FREQ_100K;
     }
 
     self->scl_pin_number = scl->number;
@@ -151,13 +158,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     // About to init. If we fail after this point, common_hal_busio_i2c_deinit() will set in_use to false.
     self->twim_peripheral->in_use = true;
     nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-
-    // A soft reset doesn't uninit the driver so we might end up with a invalid state
-    if (err == NRFX_ERROR_INVALID_STATE) {
-        nrfx_twim_uninit(&self->twim_peripheral->twim);
-        err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
-    }
-
     if (err != NRFX_SUCCESS) {
         common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
@@ -248,8 +248,10 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const u
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_TX(addr, (uint8_t*) data, xact_len);
+        uint32_t const flags = (stopBit ? 0 : NRFX_TWIM_FLAG_TX_NO_STOP);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_tx(&self->twim_peripheral->twim, addr, data, xact_len, !stopBit)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, flags)) ) {
             break;
         }
 
@@ -274,8 +276,9 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
     // break into MAX_XFER_LEN transaction
     while ( len ) {
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
+        nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_RX(addr, data, xact_len);
 
-        if ( NRFX_SUCCESS != (err = nrfx_twim_rx(&self->twim_peripheral->twim, addr, data, xact_len)) ) {
+        if ( NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, 0)) ) {
             break;
         }
 

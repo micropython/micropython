@@ -33,6 +33,7 @@
 #include "lib/oofatfs/diskio.h"
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
 
@@ -142,6 +143,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //|
 //|   Get the status of a file or directory.
 //|
+//|   .. note:: On builds without long integers, the number of seconds
+//|      for contemporary dates will not fit in a small integer.
+//|      So the time fields return 946684800,
+//|      which is the number of seconds corresponding to 1999-12-31.
+//|
 mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_stat(path);
@@ -195,11 +201,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 //|
 STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
-    uint8_t tmp[size];
-    if (!common_hal_os_urandom(tmp, size)) {
+    mp_obj_str_t *result = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(size));
+    if (!common_hal_os_urandom((uint8_t*) result->data, size)) {
         mp_raise_NotImplementedError(translate("No hardware random available"));
     }
-    return mp_obj_new_bytes(tmp, size);
+    return result;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 

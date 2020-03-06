@@ -42,12 +42,28 @@ void serial_write_compressed(const compressed_string_t* compressed) {
     serial_write(decompressed);
 }
 
+STATIC int put_utf8(char *buf, int u) {
+    if(u <= 0x7f) {
+        *buf = u;
+        return 1;
+    } else if(u <= 0x07ff) {
+        *buf++ = 0b11000000 | (u >> 6);
+        *buf   = 0b10000000 | (u & 0b00111111);
+        return 2;
+    } else { // u <= 0xffff)
+        *buf++ = 0b11000000 | (u >> 12);
+        *buf   = 0b10000000 | ((u >> 6) & 0b00111111);
+        *buf   = 0b10000000 | (u & 0b00111111);
+        return 3;
+    }
+}
+
 char* decompress(const compressed_string_t* compressed, char* decompressed) {
     uint8_t this_byte = 0;
     uint8_t this_bit = 7;
     uint8_t b = compressed->data[this_byte];
     // Stop one early because the last byte is always NULL.
-    for (uint16_t i = 0; i < compressed->length - 1; i++) {
+    for (uint16_t i = 0; i < compressed->length - 1;) {
         uint32_t bits = 0;
         uint8_t bit_length = 0;
         uint32_t max_code = lengths[0];
@@ -72,7 +88,7 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
             max_code = (max_code << 1) + lengths[bit_length];
             searched_length += lengths[bit_length];
         }
-        decompressed[i] = values[searched_length + bits - max_code];
+        i += put_utf8(decompressed + i, values[searched_length + bits - max_code]);
     }
 
     decompressed[compressed->length-1] = '\0';

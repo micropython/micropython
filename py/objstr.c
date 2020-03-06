@@ -1352,7 +1352,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            translate("unknown format code '%c' for object of type 'float'"),
+                            translate("unknown format code '%c' for object of type '%s'"),
                             type, mp_obj_get_type_str(arg));
                     }
             }
@@ -1388,7 +1388,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            translate("unknown format code '%c' for object of type 'str'"),
+                            translate("unknown format code '%c' for object of type '%s'"),
                             type, mp_obj_get_type_str(arg));
                     }
             }

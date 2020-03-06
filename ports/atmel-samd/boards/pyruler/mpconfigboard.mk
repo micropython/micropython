@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
 USB_PID = 0x804C
 USB_PRODUCT = "PyRuler"
@@ -12,3 +11,8 @@ LONGINT_IMPL = NONE
 CIRCUITPY_SMALL_BUILD = 1
 
 SUPEROPT_GC = 0
+
+CFLAGS_BOARD = --param max-inline-insns-auto=15
+ifeq ($(TRANSLATION), zh_Latn_pinyin)
+CFLAGS_INLINE_LIMIT = 35
+endif
