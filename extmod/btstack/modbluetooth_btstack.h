@@ -27,7 +27,11 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 #define MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
+
 #include "extmod/modbluetooth.h"
+
+#include "lib/btstack/src/btstack.h"
 
 typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // This stores both the advertising data and the scan response data, concatenated together.
@@ -37,6 +41,11 @@ typedef struct _mp_bluetooth_btstack_root_pointers_t {
 
     // Characteristic (and descriptor) value storage.
     mp_gatts_db_t gatts_db;
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    // Registration for notify/indicate events.
+    gatt_client_notification_t notification;
+    #endif
 } mp_bluetooth_btstack_root_pointers_t;
 
 enum {
@@ -50,5 +59,7 @@ extern volatile int mp_bluetooth_btstack_state;
 void mp_bluetooth_btstack_port_init(void);
 void mp_bluetooth_btstack_port_deinit(void);
 void mp_bluetooth_btstack_port_start(void);
+
+#endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
 #endif // MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H

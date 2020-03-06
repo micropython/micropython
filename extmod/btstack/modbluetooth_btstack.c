@@ -135,6 +135,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
         }
         uint8_t addr[6] = {0};
         mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, 0xff, addr);
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     } else if (event_type == GATT_EVENT_QUERY_COMPLETE) {
         DEBUG_EVENT_printf("  --> gatt query complete\n");
     } else if (event_type == GATT_EVENT_SERVICE_QUERY_RESULT) {
@@ -169,6 +170,25 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
         mp_bluetooth_gattc_on_data_available_chunk(data, len);
         mp_bluetooth_gattc_on_data_available_end();
         MICROPY_PY_BLUETOOTH_EXIT
+    } else if (event_type == GATT_EVENT_NOTIFICATION) {
+        DEBUG_EVENT_printf("  --> gatt notification\n");
+        uint16_t conn_handle = gatt_event_notification_get_handle(packet);
+        uint16_t value_handle = gatt_event_notification_get_value_handle(packet);
+        uint16_t len = gatt_event_notification_get_value_length(packet);
+        const uint8_t *data = gatt_event_notification_get_value(packet);
+        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, conn_handle, value_handle, len);
+        mp_bluetooth_gattc_on_data_available_chunk(data, len);
+        mp_bluetooth_gattc_on_data_available_end();
+    } else if (event_type == GATT_EVENT_INDICATION) {
+        DEBUG_EVENT_printf("  --> gatt indication\n");
+        uint16_t conn_handle = gatt_event_indication_get_handle(packet);
+        uint16_t value_handle = gatt_event_indication_get_value_handle(packet);
+        uint16_t len = gatt_event_indication_get_value_length(packet);
+        const uint8_t *data = gatt_event_indication_get_value(packet);
+        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_INDICATE, conn_handle, value_handle, len);
+        mp_bluetooth_gattc_on_data_available_chunk(data, len);
+        mp_bluetooth_gattc_on_data_available_end();
+    #endif
     } else {
         DEBUG_EVENT_printf("  --> hci event type: unknown (0x%02x)\n", event_type);
     }
@@ -225,11 +245,26 @@ int mp_bluetooth_init(void) {
     hci_event_callback_registration.callback = &btstack_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    // Enable GATT_EVENT_NOTIFICATION/GATT_EVENT_INDICATION for all connections and handles.
+    gatt_client_listen_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification, &btstack_packet_handler, GATT_CLIENT_ANY_CONNECTION, NULL);
+    #endif
+
     return 0;
 }
 
 void mp_bluetooth_deinit(void) {
     DEBUG_EVENT_printf("mp_bluetooth_deinit\n");
+
+    if (!MP_STATE_PORT(bluetooth_btstack_root_pointers)) {
+        return;
+    }
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    // Remove our registration for notify/indicate.
+    gatt_client_stop_listening_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification);
+    #endif
+
     mp_bluetooth_btstack_port_deinit();
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
@@ -560,6 +595,6 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
 
     return MP_EINVAL;
 }
-#endif
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
