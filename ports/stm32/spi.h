@@ -29,30 +29,36 @@
 #include "drivers/bus/spi.h"
 #include "dma.h"
 
-#ifdef DMA_MODES
+#ifdef SPIDMA_MODES
+#define SPI_CFG_MODE                0x00000000  // SPI DMA MODE
+#define SPI_CFG_MODE_NORMAL         0x00000001  // SPI DMA MODE NORMAL
+#define SPI_CFG_MODE_NONBLOCKING    0x00000002  // SPI DMA MODE NON-BLOCKING
+#define SPI_CFG_MODE_CIRCULAR       0x00000003  // SPI DMA MODE CIRCULAR
 
 /**
   * @brief  SPI DMA handle Structure definition
   */
+ typedef void  (* pf_hdma_void)(struct __DMA_HandleTypeDef *);
 typedef struct __SPI_DMAHandleTypeDef
 {
-     uint32_t Mode; /*!< Specifies the operation mode of the SPI DMAy Channelx. This parameter can be a value of CIRCULAR.*/
+    uint32_t mode; /*!< Specifies the operation mode of the SPI DMAy Channelx. This parameter can be a value of CIRCULAR.*/
 
-    void  (* XferCpltCallback)(struct __DMA_HandleTypeDef * hdma);     /*!< DMA transfer complete callback       */
+    pf_hdma_void callback;     /*!< DMA transfer complete callback       */
 
-    void  (* XferHalfCpltCallback)(struct __DMA_HandleTypeDef * hdma); /*!< DMA Half transfer complete callback  */
+    pf_hdma_void callbackhalf; /*!< DMA Half transfer complete callback  */
 
-    void  (* XferErrorCallback)(struct __DMA_HandleTypeDef * hdma);    /*!< DMA transfer error callback          */
+    pf_hdma_void callbackerror;    /*!< DMA transfer error callback          */
 } SPI_DMAHandleTypeDef;
 #endif
 
-
+typedef SPI_DMAHandleTypeDef  machine_hard_spi_dmamode_t;
+ 
 typedef struct _spi_t {
     SPI_HandleTypeDef *spi;
     const dma_descr_t *tx_dma_descr;
     const dma_descr_t *rx_dma_descr;
-#ifdef DMA_MODES
-    const dma_mode_t      *dma_modes; // Null if normal blocking behavior
+#ifdef SPIDMA_MODES
+    SPI_DMAHandleTypeDef        *dma_modes; // Null if normal blocking behavior
 #endif
 } spi_t;
 
@@ -98,8 +104,14 @@ void spi_init0(void);
 void spi_init(const spi_t *spi, bool enable_nss_pin);
 void spi_deinit(const spi_t *spi_obj);
 int spi_find_index(mp_obj_t id);
+#ifdef SPIDMA_MODES
+void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
+    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit,
+    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror);
+#else
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit);
+#endif
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
 void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy);
 const spi_t *spi_from_mp_obj(mp_obj_t o);

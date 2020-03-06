@@ -38,6 +38,13 @@
 #define MICROPY_PY_MACHINE_SPI_LSB (1)
 #endif
 
+#if SPIDMA_MODES
+// XXXTODO How to test for these values in spi.c?
+#define SPI_CFG_MODE_NORMAL (1)
+#define SPI_CFG_MODE_NONBLOCKING (2)
+#define SPI_CFG_MODE_CIRCULAR (3)
+#endif
+
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
 
@@ -136,9 +143,15 @@ STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPI_MSB) },
     { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPI_LSB) },
+#ifdef SPIDMA_MODES
+    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(SPI_CFG_MODE_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_NONBLOCKING), MP_ROM_INT(SPI_CFG_MODE_NONBLOCKING) },
+    { MP_ROM_QSTR(MP_QSTR_CIRCULAR), MP_ROM_INT(SPI_CFG_MODE_CIRCULAR) },
+#endif
 };
 
 MP_DEFINE_CONST_DICT(mp_machine_spi_locals_dict, machine_spi_locals_dict_table);
+
 
 /******************************************************************************/
 // Implementation of soft SPI

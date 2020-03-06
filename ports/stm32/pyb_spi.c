@@ -87,6 +87,12 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
         { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_NONE} },
+#ifdef SPIDMA_MODES
+        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = SPI_CFG_MODE_NORMAL} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+#endif
     };
 
     // parse args
@@ -97,9 +103,14 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
     SPI_InitTypeDef *init = &self->spi->spi->Init;
     init->Mode = args[0].u_int;
 
+#ifdef SPIDMA_MODES
+    spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
+        args[6].u_int, args[8].u_int,
+        args[11].u_int, args[12].u_obj, args[13].u_obj, args[14].u_obj);
+#else
     spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
         args[6].u_int, args[8].u_int);
-
+#endif
     init->Direction = args[5].u_int;
     init->NSS = args[7].u_int;
     init->TIMode = args[9].u_bool ? SPI_TIMODE_ENABLE : SPI_TIMODE_DISABLE;

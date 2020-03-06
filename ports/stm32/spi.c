@@ -45,6 +45,7 @@
 // SPI6_TX: DMA2_Stream5.CHANNEL_1
 // SPI6_RX: DMA2_Stream6.CHANNEL_1
 
+
 #if defined(MICROPY_HW_SPI1_SCK)
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
@@ -64,6 +65,59 @@ SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
+#ifdef SPIDMA_MODES
+#if defined(MICROPY_HW_SPI1_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle1 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+#if defined(MICROPY_HW_SPI2_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle2 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+#if defined(MICROPY_HW_SPI3_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle3 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+#if defined(MICROPY_HW_SPI4_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle4 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+#if defined(MICROPY_HW_SPI5_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle5 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+#if defined(MICROPY_HW_SPI6_SCK)
+SPI_DMAHandleTypeDef SPIDMAMODEHandle6 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+#endif
+
+const spi_t spi_obj[6] = {
+    #if defined(MICROPY_HW_SPI1_SCK)
+    {&SPIHandle1, &dma_SPI_1_TX, &dma_SPI_1_RX, &SPIDMAMODEHandle1},
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    {&SPIHandle2, &dma_SPI_2_TX, &dma_SPI_2_RX, &SPIDMAMODEHandle2},
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    {&SPIHandle3, &dma_SPI_3_TX, &dma_SPI_3_RX, &SPIDMAMODEHandle3},
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    {&SPIHandle4, &dma_SPI_4_TX, &dma_SPI_4_RX, &SPIDMAMODEHandle4},
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    {&SPIHandle5, &dma_SPI_5_TX, &dma_SPI_5_RX, &SPIDMAMODEHandle5},
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    {&SPIHandle6, &dma_SPI_6_TX, &dma_SPI_6_RX}, &SPIDMAMODEHandle6,
+    #else
+    {NULL, NULL, NULL, NULL},
+    #endif
+};
+#else
 const spi_t spi_obj[6] = {
     #if defined(MICROPY_HW_SPI1_SCK)
     {&SPIHandle1, &dma_SPI_1_TX, &dma_SPI_1_RX},
@@ -96,6 +150,7 @@ const spi_t spi_obj[6] = {
     {NULL, NULL, NULL},
     #endif
 };
+#endif
 
 #if defined(STM32H7)
 // STM32H7 HAL requires SPI IRQs to be enabled and handled.
@@ -239,10 +294,193 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     #endif
 }
 
+
+// mp_obj_t callback; // copied from timer.c
+//STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
+// Interrupt dispatch
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+//     #if MICROPY_HW_ENABLE_SERVO
+//     if (htim == &TIM5_Handle) {
+//         servo_timer_irq_callback();
+//     }
+//     #endif
+// }
+        // { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+
+//    // set IRQ priority (if not a special timer)
+//     if (self->tim_id != 5) {
+//         NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_TIMX);
+//         if (self->tim_id == 1) {
+//             #if defined(TIM1)
+//             NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX);
+//             #endif
+//         } else if (self->tim_id == 8) {
+//             #if defined(TIM8)
+//             NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX);
+//             #endif
+//         }
+//     }
+
+// /// \method callback(fun)
+// /// Set the function to be called when the timer triggers.
+// /// `fun` is passed 1 argument, the timer object.
+// /// If `fun` is `None` then the callback will be disabled.
+// STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
+//     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+//     if (callback == mp_const_none) {
+//         // stop interrupt (but not timer)
+//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
+//         self->callback = mp_const_none;
+//     } else if (mp_obj_is_callable(callback)) {
+//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
+//         self->callback = callback;
+//         // start timer, so that it interrupts on overflow, but clear any
+//         // pending interrupts which may have been set by initializing it.
+//         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+//         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
+//         HAL_NVIC_EnableIRQ(self->irqn);
+//     } else {
+//         mp_raise_ValueError("callback must be None or a callable object");
+//     }
+//     return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
+
+// void timer_irq_handler(uint tim_id) {
+//     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
+//         // get the timer object
+//         pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
+
+//         if (tim == NULL) {
+//             // Timer object has not been set, so we can't do anything.
+//             // This can happen under normal circumstances for timers like
+//             // 1 & 10 which use the same IRQ.
+//             return;
+//         }
+
+//         // Check for timer (versus timer channel) interrupt.
+//         timer_handle_irq_channel(tim, 0, tim->callback);
+//         uint32_t handled = TIMER_IRQ_MASK(0);
+
+//         // Check to see if a timer channel interrupt was pending
+//         pyb_timer_channel_obj_t *chan = tim->channel;
+//         while (chan != NULL) {
+//             timer_handle_irq_channel(tim, chan->channel, chan->callback);
+//             handled |= TIMER_IRQ_MASK(chan->channel);
+//             chan = chan->next;
+//         }
+
+//         // Finally, clear any remaining interrupt sources. Otherwise we'll
+//         // just get called continuously.
+//         uint32_t unhandled = tim->tim.Instance->DIER & 0xff & ~handled;
+//         if (unhandled != 0) {
+//             __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
+//             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
+//             mp_printf(MICROPY_ERROR_PRINTER, "unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
+//         }
+//     }
+// }
+
+// /// \method callback(fun)
+// /// Set the function to be called when the timer triggers.
+// /// `fun` is passed 1 argument, the timer object.
+// /// If `fun` is `None` then the callback will be disabled.
+// STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
+//     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+//     if (callback == mp_const_none) {
+//         // stop interrupt (but not timer)
+//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
+//         self->callback = mp_const_none;
+//     } else if (mp_obj_is_callable(callback)) {
+//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
+//         self->callback = callback;
+//         // start timer, so that it interrupts on overflow, but clear any
+//         // pending interrupts which may have been set by initializing it.
+//         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+//         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
+//         HAL_NVIC_EnableIRQ(self->irqn);
+//     } else {
+//         mp_raise_ValueError("callback must be None or a callable object");
+//     }
+//     return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
+
+    // // Start the timer running
+    // if (args[ARG_callback].u_obj == mp_const_none) {
+    //     HAL_TIM_Base_Start(&self->tim);
+    // } else {
+    //     pyb_timer_callback(MP_OBJ_FROM_PTR(self), args[ARG_callback].u_obj);
+    // }
+
+/////////////////////////////////////
+// How to handle the callback
+/////////////////////////////////////
+            // // execute callback if it's set
+            // if (callback != mp_const_none) {
+            //     mp_sched_lock();
+            //     // When executing code within a handler we must lock the GC to prevent
+            //     // any memory allocations.  We must also catch any exceptions.
+            //     gc_lock();
+            //     nlr_buf_t nlr;
+            //     if (nlr_push(&nlr) == 0) {
+            //         mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
+            //         nlr_pop();
+            //     } else {
+            //         // Uncaught exception; disable the callback so it doesn't run again.
+            //         tim->callback = mp_const_none;
+            //         __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
+            //         if (channel == 0) {
+            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+            //         } else {
+            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+            //         }
+            //         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            //     }
+            //     gc_unlock();
+            //     mp_sched_unlock();
+            // }
+
+
+           // // execute callback if it's set
+            // if (callback != mp_const_none) {
+            //     mp_sched_lock();
+            //     // When executing code within a handler we must lock the GC to prevent
+            //     // any memory allocations.  We must also catch any exceptions.
+            //     gc_lock();
+            //     nlr_buf_t nlr;
+            //     if (nlr_push(&nlr) == 0) {
+            //         mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
+            //         nlr_pop();
+            //     } else {
+            //         // Uncaught exception; disable the callback so it doesn't run again.
+            //         tim->callback = mp_const_none;
+            //         __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
+            //         if (channel == 0) {
+            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+            //         } else {
+            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+            //         }
+            //         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            //     }
+            //     gc_unlock();
+            //     mp_sched_unlock();
+            // }
+
+#ifdef SPIDMA_MODES
 // sets the parameters in the SPI_InitTypeDef struct
 // if an argument is -1 then the corresponding parameter is not changed
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
-    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
+    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit,
+    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror
+    ) {
+#else
+// sets the parameters in the SPI_InitTypeDef struct
+// if an argument is -1 then the corresponding parameter is not changed
+void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
+    int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit
+    ) {
+#endif
     SPI_HandleTypeDef *spi = spi_obj->spi;
     SPI_InitTypeDef *init = &spi->Init;
 
@@ -285,6 +523,45 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     if (firstbit != -1) {
         init->FirstBit = firstbit;
     }
+#ifdef SPIDMA_MODES
+    // { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(SPI_CFG_MODE_NORMAL) },
+    // { MP_ROM_QSTR(MP_QSTR_NONBLOCKING), MP_ROM_INT(SPI_CFG_MODE_NONBLOCKING) },
+    // { MP_ROM_QSTR(MP_QSTR_CIRCULAR), MP_ROM_INT(SPI_CFG_MODE_CIRCULAR) },
+    if (mode != -1)
+    {
+        if ((mode==SPI_CFG_MODE_NORMAL) || (mode==SPI_CFG_MODE_NONBLOCKING) || (mode == SPI_CFG_MODE_CIRCULAR))
+        {
+            spi_obj->dma_modes->mode = mode;
+            printf("mode = %d\n", (int)mode);
+            if (callback != (mp_obj_t) NULL)
+            {
+                // XXXTODO need to figure out what goes here
+                if (mp_obj_is_callable(callback)) {
+                    spi_obj->dma_modes->callback = callback;
+                    // mp_call_function_0(callback); // for testing
+                }
+            }
+            if (callbackhalf != (mp_obj_t) NULL)
+            {
+                if (mp_obj_is_callable(callbackhalf)) {
+                    spi_obj->dma_modes->callbackhalf = callbackhalf;
+                    // mp_call_function_0(callbackhalf); // for testing
+                }
+            }
+            if (callbackerror != (mp_obj_t) NULL)
+            {
+                if (mp_obj_is_callable(callbackerror)) {
+                    spi_obj->dma_modes->callbackerror = callbackerror;
+                    // mp_call_function_0(callbackerror); // for testing
+                }
+            }
+        }
+        else
+        {
+            printf("OSError: SPI_Init failed. Unknown mode\n");
+        }
+    }
+#endif
 }
 
 // TODO allow to take a list of pins to use
@@ -691,8 +968,15 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
             self->spi->spi->Init.NSS = SPI_NSS_SOFT;
             self->spi->spi->Init.TIMode = SPI_TIMODE_DISABLE;
             self->spi->spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+#ifdef SPIDMA_MODES
+            spi_set_params(self->spi, 0xffffffff, self->baudrate,
+                self->polarity, self->phase, self->bits, self->firstbit,
+                0xffffffff, (mp_obj_t) NULL, (mp_obj_t) NULL, (mp_obj_t) NULL
+                );
+#else
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
                 self->polarity, self->phase, self->bits, self->firstbit);
+#endif
             spi_init(self->spi, false);
             break;
 
@@ -713,3 +997,5 @@ const mp_spi_proto_t spi_proto = {
     .ioctl = spi_proto_ioctl,
     .transfer = spi_proto_transfer,
 };
+
+

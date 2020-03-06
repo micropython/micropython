@@ -1,0 +1,7 @@
+freeze('../../../../../../Micropython-Library-Development/lib/', 'uasyncio/asyn.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'uasyncio/core.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'uasyncio/__init__.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'uasyncio/queues.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'uasyncio/synchro.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'unittest.py')
+freeze('../../../../../../Micropython-Library-Development/lib/', 'upysh.py')

@@ -45,8 +45,13 @@ STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp
     spi_print(print, self->spi, false);
 }
 
+// XXXOTDO need to modify this structure for DMA_MODES
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso,
+#ifdef SPIDMA_MODES
+            ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror,
+#endif
+    };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
@@ -57,6 +62,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+#ifdef SPIDMA_MODES
+        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SPI_CFG_MODE_NORMAL} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+#endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -83,11 +94,19 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     init->CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     init->CRCPolynomial = 0;
 
+#ifdef SPIDMA_MODES
+    // set configurable paramaters
+    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
+        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+        args[ARG_firstbit].u_int,
+        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj
+        );
+#else
     // set configurable paramaters
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
-
+#endif
     // init the SPI bus
     spi_init(self->spi, false);
 
@@ -97,21 +116,41 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
 
+#ifdef SPIDMA_MODES
+    enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit,
+        ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror};
+#else
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
+#endif
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+#ifdef SPIDMA_MODES
+        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = SPI_CFG_MODE_NORMAL} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+#endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // set the SPI configuration values
+#ifdef SPIDMA_MODES
+    // set configurable paramaters
+    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
+        args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
+        args[ARG_firstbit].u_int,
+        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj
+        );
+#else
+    // set configurable paramaters
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
+#endif
 
     // re-init the SPI bus
     spi_init(self->spi, false);
@@ -141,3 +180,4 @@ const mp_obj_type_t machine_hard_spi_type = {
     .protocol = &machine_hard_spi_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };
+
