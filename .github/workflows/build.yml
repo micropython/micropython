@@ -29,7 +29,7 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
     - name: CircuitPython version
@@ -103,7 +103,7 @@ jobs:
         gcc --version
         python3 --version
         msgfmt --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
     - name: CircuitPython version
@@ -253,7 +253,7 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
     - name: mpy-cross
