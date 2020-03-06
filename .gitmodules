@@ -30,3 +30,6 @@
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
 	url = https://github.com/apache/mynewt-nimble.git
+[submodule "ports/esp32/modules/MicroWebSrv2"]
+	path = ports/esp32/modules/MicroWebSrv2
+	url = https://github.com/jczic/MicroWebSrv2.git
