@@ -25,18 +25,18 @@
  */
 
 #include "py/mphal.h"
+#include "supervisor/port.h"
 
 uint64_t common_hal_time_monotonic(void) {
     return supervisor_ticks_ms64();
 }
 
 uint64_t common_hal_time_monotonic_ns(void) {
-    uint64_t ms = 0;
-    uint32_t us_until_ms = 0;
-    // FIXME! Re-implement this.
-    // current_tick(&ms, &us_until_ms);
-    // us counts down.
-    return 1000 * (ms * 1000 + (1000 - us_until_ms));
+    uint8_t subticks = 0;
+    uint64_t ticks = port_get_raw_ticks(&subticks);
+    // A tick is 976562.5 nanoseconds so multiply it by the base and add half instead of doing float
+    // math.
+    return 976562 * ticks + ticks / 2 + 30518 * subticks;
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {

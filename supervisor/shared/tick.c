@@ -52,7 +52,7 @@ void supervisor_tick(void) {
     autoreload_tick();
 #endif
 #ifdef CIRCUITPY_GAMEPAD_TICKS
-    if (!(port_get_raw_ticks() & CIRCUITPY_GAMEPAD_TICKS)) {
+    if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
         gamepad_tick();
         #endif
@@ -66,7 +66,7 @@ void supervisor_tick(void) {
 uint64_t supervisor_ticks_ms64() {
     uint64_t result;
     common_hal_mcu_disable_interrupts();
-    result = port_get_raw_ticks();
+    result = port_get_raw_ticks(NULL);
     common_hal_mcu_enable_interrupts();
     result = result * 1000 / 1024;
     return result;
@@ -79,23 +79,24 @@ uint32_t supervisor_ticks_ms32() {
 extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    // uint64_t now = port_get_raw_ticks();
+    uint8_t subticks;
+    uint64_t now = port_get_raw_ticks(&subticks);
 
-    // if (now == background_ticks) {
-    //     return;
-    // }
-    // background_ticks = now;
+    if (now == background_ticks && (subticks & 0x3) != 0) {
+        return;
+    }
+    background_ticks = now;
 
     run_background_tasks();
 }
 
 void supervisor_fake_tick() {
-    uint32_t now = port_get_raw_ticks();
+    uint32_t now = port_get_raw_ticks(NULL);
     background_ticks = (now - 1);
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = port_get_raw_ticks();
+    uint64_t start_tick = port_get_raw_ticks(NULL);
     // Adjust the delay to ticks vs ms.
     delay = delay * 1024 / 1000;
     uint64_t duration = 0;
@@ -110,7 +111,23 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         // Sleep until an interrupt happens.
         port_sleep_until_interrupt();
         // asm("bkpt");
-        duration = (port_get_raw_ticks() - start_tick);
+        duration = (port_get_raw_ticks(NULL) - start_tick);
+        port_interrupt_after_ticks(duration);
+    }
+}
+
+volatile size_t tick_enable_count = 0;
+extern void supervisor_enable_tick(void) {
+    if (tick_enable_count == 0) {
+        port_enable_tick();
+    }
+    tick_enable_count++;
+}
+
+extern void supervisor_disable_tick(void) {
+    tick_enable_count--;
+    if (tick_enable_count == 0) {
+        port_disable_tick();
     }
 }
 

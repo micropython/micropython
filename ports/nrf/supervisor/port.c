@@ -68,7 +68,7 @@ static void power_warning_handler(void) {
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
 
 const nrfx_rtc_config_t rtc_config = {
-    .prescaler = RTC_FREQ_TO_PRESCALER(1024),
+    .prescaler = RTC_FREQ_TO_PRESCALER(0x8000),
     .reliable = 0,
     .tick_latency = 0,
     .interrupt_priority = 6
@@ -79,10 +79,11 @@ static volatile uint64_t overflowed_ticks = 0;
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         overflowed_ticks += (1L<<24);
-    }
-    // Do things common to all ports when the tick occurs
-    if (int_type == NRFX_RTC_INT_TICK) {
+    } else if (int_type == NRFX_RTC_INT_TICK && nrfx_rtc_counter_get(&rtc_instance) % 32 == 0) {
+        // Do things common to all ports when the tick occurs
         supervisor_tick();
+    } else if (int_type == NRFX_RTC_INT_COMPARE0) {
+        nrfx_rtc_cc_set(&rtc_instance, 0, 0, false);
     }
 }
 
@@ -195,8 +196,12 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-uint64_t port_get_raw_ticks(void) {
-    return overflowed_ticks + nrfx_rtc_counter_get(&rtc_instance);
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
+    if (subticks != NULL) {
+        *subticks = (rtc % 32);
+    }
+    return overflowed_ticks + rtc / 32;
 }
 
 // Enable 1/1024 second tick.
@@ -213,7 +218,10 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     uint32_t current_ticks = nrfx_rtc_counter_get(&rtc_instance);
     uint32_t diff = 3;
     if (ticks > diff) {
-        diff = ticks;
+        diff = ticks * 32;
+    }
+    if (diff > 0xffffff) {
+        diff = 0xffffff;
     }
     nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
 }
@@ -225,7 +233,15 @@ void port_sleep_until_interrupt(void) {
         (void) __get_FPSCR();
         NVIC_ClearPendingIRQ(FPU_IRQn);
     }
-    sd_app_evt_wait();
+    uint8_t sd_enabled;
+
+    sd_softdevice_is_enabled(&sd_enabled);
+    if (sd_enabled) {
+        sd_app_evt_wait();
+    } else {
+        // Call wait for interrupt ourselves if the SD isn't enabled.
+        __WFI();
+    }
 }
 
 
