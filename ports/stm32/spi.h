@@ -30,6 +30,7 @@
 #include "dma.h"
 
 #ifdef SPIDMA_MODES
+// XXXTODO how to get these to match the values in extmod/machine_spi.h
 #define SPI_CFG_MODE                0x00000000  // SPI DMA MODE
 #define SPI_CFG_MODE_NORMAL         0x00000001  // SPI DMA MODE NORMAL
 #define SPI_CFG_MODE_NONBLOCKING    0x00000002  // SPI DMA MODE NON-BLOCKING
@@ -38,16 +39,16 @@
 /**
   * @brief  SPI DMA handle Structure definition
   */
- typedef void  (* pf_hdma_void)(struct __DMA_HandleTypeDef *);
+//  typedef void  (* pf_hdma_void)(struct __DMA_HandleTypeDef *);
 typedef struct __SPI_DMAHandleTypeDef
 {
     uint32_t mode; /*!< Specifies the operation mode of the SPI DMAy Channelx. This parameter can be a value of CIRCULAR.*/
 
-    pf_hdma_void callback;     /*!< DMA transfer complete callback       */
+     mp_obj_t callback;     /*!< DMA transfer complete callback       */
 
-    pf_hdma_void callbackhalf; /*!< DMA Half transfer complete callback  */
+    mp_obj_t callbackhalf;  /*!< DMA Half transfer complete callback  */
 
-    pf_hdma_void callbackerror;    /*!< DMA transfer error callback          */
+    mp_obj_t callbackerror; /*!< DMA transfer error callback          */
 } SPI_DMAHandleTypeDef;
 #endif
 

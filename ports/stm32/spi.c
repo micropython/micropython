@@ -30,6 +30,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "spi.h"
+#include "py/gc.h"
+
 
 // Possible DMA configurations for SPI busses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
@@ -539,12 +541,19 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
                 if (mp_obj_is_callable(callback)) {
                     spi_obj->dma_modes->callback = callback;
                     // mp_call_function_0(callback); // for testing
+                    // mp_sched_schedule(callback, mp_const_none); // for testing
+                    // #define mp_const_none MP_OBJ_NEW_IMMEDIATE_OBJ(0)
+                    // #define mp_const_false MP_OBJ_NEW_IMMEDIATE_OBJ(1)
+                    // #define mp_const_true MP_OBJ_NEW_IMMEDIATE_OBJ(3)
+                    //mp_sched_schedule(callback, mp_obj_new_int(1)); 
+
                 }
             }
             if (callbackhalf != (mp_obj_t) NULL)
             {
                 if (mp_obj_is_callable(callbackhalf)) {
                     spi_obj->dma_modes->callbackhalf = callbackhalf;
+                    printf("callbackhalf = 0x%X", (unsigned int) callbackhalf);
                     // mp_call_function_0(callbackhalf); // for testing
                 }
             }
@@ -780,7 +789,257 @@ DUALBUFFER, etc.
 Each of these modes would carry a union of parameters (some required, some optional) for each of the separate DMA modes. The definition of the union would be part specific depending upon the DMA modes supported and the settings in mpconfigport.h.
 */
 
+#if SPIDMA_MODES
+void spi_transfer_orig(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+void spi_transfer_nonblocking(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+
+void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout)
+{
+    // XXXTODO check if a transfer is already in progress on this device. Error if already in progress.
+    printf("\nspi_transfer called\n");
+
+    if (self->dma_modes->mode == SPI_CFG_MODE_NORMAL)
+    {
+        printf("\nspi_transfer_orig called\n");
+
+        spi_transfer_orig(self, len, src, dest, timeout);
+    }
+    else if (self->dma_modes->mode == SPI_CFG_MODE_NONBLOCKING)
+    {
+        spi_transfer_nonblocking(self, len, src, dest, timeout);
+    }
+    else
+    {
+        spi_transfer_circular(self, len, src, dest, timeout);
+    }
+}
+
+void spi_transfer_orig(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
+#else
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
+#endif
+    // Note: there seems to be a problem sending 1 byte using DMA the first
+    // time directly after the SPI/DMA is initialised.  The cause of this is
+    // unknown but we sidestep the issue by using polling for 1 byte transfer.
+
+    // Note: DMA transfers are limited to 65535 bytes at a time.
+
+
+    HAL_StatusTypeDef status;
+
+    if (dest == NULL) {
+        // send only
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Transmit(self->spi, (uint8_t *)src, len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            self->spi->hdmarx = NULL;
+            MP_HAL_CLEAN_DCACHE(src, len);
+            uint32_t t_start = HAL_GetTick();
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                src += l;
+            } while (len);
+            dma_deinit(self->tx_dma_descr);
+        }
+    } else if (src == NULL) {
+        // receive only
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Receive(self->spi, dest, len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            if (self->spi->Init.Mode == SPI_MODE_MASTER) {
+                // in master mode the HAL actually does a TransmitReceive call
+                dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+                self->spi->hdmatx = &tx_dma;
+            } else {
+                self->spi->hdmatx = NULL;
+            }
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = &rx_dma;
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            uint32_t t_start = HAL_GetTick();
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_Receive_DMA(self->spi, dest, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                dest += l;
+            } while (len);
+            if (self->spi->hdmatx != NULL) {
+                dma_deinit(self->tx_dma_descr);
+            }
+            dma_deinit(self->rx_dma_descr);
+        }
+    } else {
+        // send and receive
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
+            // XXXTODO Schedule transfer complete callback?
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = &rx_dma;
+            MP_HAL_CLEAN_DCACHE(src, len);
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            uint32_t t_start = HAL_GetTick();
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                src += l;
+                dest += l;
+            } while (len);
+            dma_deinit(self->tx_dma_descr);
+            dma_deinit(self->rx_dma_descr);
+        }
+    }
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+}
+
+#if SPIDMA_MODES
+void spi_transfer_nonblocking(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
+    // Note: there seems to be a problem sending 1 byte using DMA the first
+    // time directly after the SPI/DMA is initialised.  The cause of this is
+    // unknown but we sidestep the issue by using polling for 1 byte transfer.
+
+    // Note: DMA transfers are limited to 65535 bytes at a time.
+
+    HAL_StatusTypeDef status;
+    if (dest == NULL) {
+        // send only
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Transmit(self->spi, (uint8_t *)src, len, timeout);
+            // XXXTODO schedule callback if defined
+        } else {
+            DMA_HandleTypeDef tx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            self->spi->hdmarx = NULL;
+            MP_HAL_CLEAN_DCACHE(src, len);
+            uint32_t t_start = HAL_GetTick();
+            // XXXTODO set up interrupts. Perhaps only 65k transfers should be allowed for now.
+            // Perhaps, ignore callbackhalf for non-blocking transfers
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                // XXXTODO this is the part to skip 
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                src += l;
+            } while (len);
+            dma_deinit(self->tx_dma_descr);
+        }
+    } else if (src == NULL) {
+        // receive only
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Receive(self->spi, dest, len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            if (self->spi->Init.Mode == SPI_MODE_MASTER) {
+                // in master mode the HAL actually does a TransmitReceive call
+                dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+                self->spi->hdmatx = &tx_dma;
+            } else {
+                self->spi->hdmatx = NULL;
+            }
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = &rx_dma;
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            uint32_t t_start = HAL_GetTick();
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_Receive_DMA(self->spi, dest, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                dest += l;
+            } while (len);
+            if (self->spi->hdmatx != NULL) {
+                dma_deinit(self->tx_dma_descr);
+            }
+            dma_deinit(self->rx_dma_descr);
+        }
+    } else {
+        // send and receive
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = &rx_dma;
+            MP_HAL_CLEAN_DCACHE(src, len);
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            uint32_t t_start = HAL_GetTick();
+            do {
+                uint32_t l = MIN(len, 65535);
+                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, l);
+                if (status != HAL_OK) {
+                    break;
+                }
+                status = spi_wait_dma_finished(self, t_start, timeout);
+                if (status != HAL_OK) {
+                    break;
+                }
+                len -= l;
+                src += l;
+                dest += l;
+            } while (len);
+            dma_deinit(self->tx_dma_descr);
+            dma_deinit(self->rx_dma_descr);
+        }
+    }
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+}
+
+
+void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
     // unknown but we sidestep the issue by using polling for 1 byte transfer.
@@ -799,6 +1058,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             self->spi->hdmatx = &tx_dma;
             self->spi->hdmarx = NULL;
             MP_HAL_CLEAN_DCACHE(src, len);
+            // XXXTODO set up interrupts. Max 65k transfers should be allowed for now.
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
@@ -886,6 +1146,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
         mp_hal_raise(status);
     }
 }
+#endif
 
 void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
@@ -919,6 +1180,7 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     }
     #endif
 
+    // XXXTODO add print support for new SPIDMA_MODES
     mp_printf(print, "SPI(%u", spi_num);
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
@@ -999,3 +1261,328 @@ const mp_spi_proto_t spi_proto = {
 };
 
 
+#ifdef SPIDMA_MODES
+
+/**
+  * @brief Tx Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+
+  printf("\nHAL_SPI_TxCpltCallback called\n");
+}
+
+/**
+  * @brief Rx Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+    UNUSED(hspi);
+
+    printf("\nHAL_SPI_RxCpltCallback called\n");
+
+}
+
+// /**
+//   * @brief  DMA handle Structure definition
+//   */
+// typedef struct __DMA_HandleTypeDef
+// {
+//   DMA_Channel_TypeDef    *Instance;                                                  /*!< Register base address                */
+
+//   DMA_InitTypeDef       Init;                                                        /*!< DMA communication parameters         */
+
+//   HAL_LockTypeDef       Lock;                                                        /*!< DMA locking object                   */
+
+//   __IO HAL_DMA_StateTypeDef  State;                                                  /*!< DMA transfer state                   */
+
+//   void                  *Parent;                                                     /*!< Parent object state                  */
+
+//   void                  (* XferCpltCallback)(struct __DMA_HandleTypeDef * hdma);     /*!< DMA transfer complete callback       */
+
+//   void                  (* XferHalfCpltCallback)(struct __DMA_HandleTypeDef * hdma); /*!< DMA Half transfer complete callback  */
+
+//   void                  (* XferErrorCallback)(struct __DMA_HandleTypeDef * hdma);    /*!< DMA transfer error callback          */
+
+//   void                  (* XferAbortCallback)( struct __DMA_HandleTypeDef * hdma);   /*!< DMA transfer abort callback          */
+
+//   __IO uint32_t          ErrorCode;                                                  /*!< DMA Error code                       */
+
+//   DMA_TypeDef            *DmaBaseAddress;                                            /*!< DMA Channel Base Address             */
+
+//   uint32_t               ChannelIndex;                                               /*!< DMA Channel Index                    */
+// }DMA_HandleTypeDef;
+
+// /**
+//   * @brief  SPI handle Structure definition
+//   */
+// typedef struct __SPI_HandleTypeDef
+// {
+//   SPI_TypeDef                *Instance;      /*!< SPI registers base address               */
+
+//   SPI_InitTypeDef            Init;           /*!< SPI communication parameters             */
+
+//   uint8_t                    *pTxBuffPtr;    /*!< Pointer to SPI Tx transfer Buffer        */
+
+//   uint16_t                   TxXferSize;     /*!< SPI Tx Transfer size                     */
+
+//   __IO uint16_t              TxXferCount;    /*!< SPI Tx Transfer Counter                  */
+
+//   uint8_t                    *pRxBuffPtr;    /*!< Pointer to SPI Rx transfer Buffer        */
+
+//   uint16_t                   RxXferSize;     /*!< SPI Rx Transfer size                     */
+
+//   __IO uint16_t              RxXferCount;    /*!< SPI Rx Transfer Counter                  */
+
+//   uint32_t                   CRCSize;        /*!< SPI CRC size used for the transfer       */
+
+//   void (*RxISR)(struct __SPI_HandleTypeDef *hspi);   /*!< function pointer on Rx ISR       */
+
+//   void (*TxISR)(struct __SPI_HandleTypeDef *hspi);   /*!< function pointer on Tx ISR       */
+
+//   DMA_HandleTypeDef          *hdmatx;        /*!< SPI Tx DMA Handle parameters             */
+
+//   DMA_HandleTypeDef          *hdmarx;        /*!< SPI Rx DMA Handle parameters             */
+
+//   HAL_LockTypeDef            Lock;           /*!< Locking object                           */
+
+//   __IO HAL_SPI_StateTypeDef  State;          /*!< SPI communication state                  */
+
+//   __IO uint32_t              ErrorCode;      /*!< SPI Error code                           */
+
+// } SPI_HandleTypeDef;
+
+STATIC void callcallback(mp_obj_t spi_id, mp_obj_t callback)
+{
+    // execute callback. vetted long before getting here.
+    mp_sched_lock();
+    // When executing code within a handler we must lock the GC to prevent
+    // any memory allocations.  We must also catch any exceptions.
+    gc_lock();
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_call_function_1(callback, spi_id);
+        nlr_pop();
+    } else {
+        // Uncaught exception
+        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in SPI(%d) interrupt handler\n", spi_id);
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+    }
+    gc_unlock();
+    mp_sched_unlock();
+}
+
+/**
+  * @brief Tx and Rx Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    int spi_obj_offset = -1;
+
+    printf("\nHAL_SPI_TxRxCpltCallback called\n");
+    if (0) {
+    }
+    #if defined(MICROPY_HW_SPI1_SCK)
+    else if (hspi->Instance == SPI1) {
+        spi_obj_offset = 0;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    else if (hspi->Instance == SPI2) {
+        spi_obj_offset = 1;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    else if (hspi->Instance == SPI3) {
+        spi_obj_offset = 2;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    else if (hspi->Instance == SPI4) {
+        spi_obj_offset = 3;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    else if (hspi->Instance == SPI5) {
+        spi_obj_offset = 4;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    else if (hspi->Instance == SPI6) {
+        spi_obj_offset = 5;
+    }
+    #endif
+
+    if ( spi_obj_offset >= 0)
+    {
+        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        if (dma_modes){
+            mp_obj_t callback = dma_modes->callback;
+            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
+            // execute callback if it's set. vetted long before getting here.
+            if (callback != (mp_obj_t) NULL){
+                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+            }
+        }
+    }
+}
+
+/**
+  * @brief Tx and Rx Half Transfer callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    printf("\nHAL_SPI_TxRxHalfCpltCallback called\n");
+    int spi_obj_offset = -1;
+
+    if (0) {
+    }
+    #if defined(MICROPY_HW_SPI1_SCK)
+    else if (hspi->Instance == SPI1) {
+        spi_obj_offset = 0;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    else if (hspi->Instance == SPI2) {
+        spi_obj_offset = 1;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    else if (hspi->Instance == SPI3) {
+        spi_obj_offset = 2;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    else if (hspi->Instance == SPI4) {
+        spi_obj_offset = 3;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    else if (hspi->Instance == SPI5) {
+        spi_obj_offset = 4;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    else if (hspi->Instance == SPI6) {
+        spi_obj_offset = 5;
+    }
+    #endif
+
+    if ( spi_obj_offset >= 0)
+    {
+        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        if (dma_modes){
+            mp_obj_t callback = dma_modes->callbackhalf;
+            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
+            // execute callback if it's set. vetted long before getting here.
+            if (callback != (mp_obj_t) NULL){
+                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+            }
+        }
+    }
+}
+
+/**
+  * @brief Tx Half Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    printf("\nHAL_SPI_TxHalfCpltCallback called\n");
+    HAL_SPI_TxRxHalfCpltCallback(hspi);
+}
+
+/**
+  * @brief Rx Half Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    printf("\nHAL_SPI_RxHalfCpltCallback called\n");
+    HAL_SPI_TxRxHalfCpltCallback(hspi);
+}
+
+
+
+/**
+  * @brief SPI error callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+    printf("\nHAL_SPI_ErrorCallback called\n");
+
+    /* NOTE : The ErrorCode parameter in the hspi handle is updated by the SPI processes
+            and user can use HAL_SPI_GetError() API to check the latest error occurred
+    */
+    int spi_obj_offset = -1;
+
+    printf("\nHAL_SPI_TxRxCpltCallback called\n");
+    if (0) {
+    }
+    #if defined(MICROPY_HW_SPI1_SCK)
+    else if (hspi->Instance == SPI1) {
+        spi_obj_offset = 0;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    else if (hspi->Instance == SPI2) {
+        spi_obj_offset = 1;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    else if (hspi->Instance == SPI3) {
+        spi_obj_offset = 2;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    else if (hspi->Instance == SPI4) {
+        spi_obj_offset = 3;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    else if (hspi->Instance == SPI5) {
+        spi_obj_offset = 4;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    else if (hspi->Instance == SPI6) {
+        spi_obj_offset = 5;
+    }
+    #endif
+
+    if ( spi_obj_offset >= 0)
+    {
+        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        if (dma_modes){
+            mp_obj_t callback = dma_modes->callbackerror;
+            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
+            // execute callback if it's set. vetted long before getting here.
+            if (callback != (mp_obj_t) NULL){
+                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+            }
+        }
+    }
+}
+#endif

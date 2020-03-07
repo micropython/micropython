@@ -64,9 +64,9 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 #ifdef SPIDMA_MODES
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SPI_CFG_MODE_NORMAL} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
+        { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
+        { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
 #endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
