@@ -58,6 +58,10 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 
+#if MICROPY_BLUETOOTH_NIMBLE
+#include "extmod/modbluetooth.h"
+#endif
+
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
@@ -135,6 +139,10 @@ soft_reset:
             }
         }
     }
+
+    #if MICROPY_BLUETOOTH_NIMBLE
+    mp_bluetooth_deinit();
+    #endif
 
     machine_timer_deinit_all();
 
