@@ -44,11 +44,15 @@ typedef struct __SPI_DMAHandleTypeDef
 {
     uint32_t mode; /*!< Specifies the operation mode of the SPI DMAy Channelx. This parameter can be a value of CIRCULAR.*/
 
-     mp_obj_t callback;     /*!< DMA transfer complete callback       */
+    mp_obj_t callback;     /*!< DMA transfer complete callback       */
 
     mp_obj_t callbackhalf;  /*!< DMA Half transfer complete callback  */
 
     mp_obj_t callbackerror; /*!< DMA transfer error callback          */
+
+    // Since DMA is happening in the background, these two structures need a place they can be stored (not on the stack frame)
+    DMA_HandleTypeDef tx_dma; /*!< Since DMA is happening in the background, this needs to be static and not on the stack frame */
+    DMA_HandleTypeDef rx_dma;  /*!< Since DMA is happening in the background, this needs to be static and not on the stack frame */
 } SPI_DMAHandleTypeDef;
 #endif
 
