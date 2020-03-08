@@ -68,6 +68,8 @@ SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
 #ifdef SPIDMA_MODES
+#define DEBUG_SPIDMA_MODES
+
 #if defined(MICROPY_HW_SPI1_SCK)
 SPI_DMAHandleTypeDef SPIDMAMODEHandle1 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
 #endif
@@ -296,178 +298,33 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     #endif
 }
 
-
-// mp_obj_t callback; // copied from timer.c
-//STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
-// Interrupt dispatch
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-//     #if MICROPY_HW_ENABLE_SERVO
-//     if (htim == &TIM5_Handle) {
-//         servo_timer_irq_callback();
-//     }
-//     #endif
-// }
-        // { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-
-//    // set IRQ priority (if not a special timer)
-//     if (self->tim_id != 5) {
-//         NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_TIMX);
-//         if (self->tim_id == 1) {
-//             #if defined(TIM1)
-//             NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX);
-//             #endif
-//         } else if (self->tim_id == 8) {
-//             #if defined(TIM8)
-//             NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX);
-//             #endif
-//         }
-//     }
-
-// /// \method callback(fun)
-// /// Set the function to be called when the timer triggers.
-// /// `fun` is passed 1 argument, the timer object.
-// /// If `fun` is `None` then the callback will be disabled.
-// STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
-//     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-//     if (callback == mp_const_none) {
-//         // stop interrupt (but not timer)
-//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
-//         self->callback = mp_const_none;
-//     } else if (mp_obj_is_callable(callback)) {
-//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
-//         self->callback = callback;
-//         // start timer, so that it interrupts on overflow, but clear any
-//         // pending interrupts which may have been set by initializing it.
-//         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
-//         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
-//         HAL_NVIC_EnableIRQ(self->irqn);
-//     } else {
-//         mp_raise_ValueError("callback must be None or a callable object");
-//     }
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
-
-// void timer_irq_handler(uint tim_id) {
-//     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
-//         // get the timer object
-//         pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
-
-//         if (tim == NULL) {
-//             // Timer object has not been set, so we can't do anything.
-//             // This can happen under normal circumstances for timers like
-//             // 1 & 10 which use the same IRQ.
-//             return;
-//         }
-
-//         // Check for timer (versus timer channel) interrupt.
-//         timer_handle_irq_channel(tim, 0, tim->callback);
-//         uint32_t handled = TIMER_IRQ_MASK(0);
-
-//         // Check to see if a timer channel interrupt was pending
-//         pyb_timer_channel_obj_t *chan = tim->channel;
-//         while (chan != NULL) {
-//             timer_handle_irq_channel(tim, chan->channel, chan->callback);
-//             handled |= TIMER_IRQ_MASK(chan->channel);
-//             chan = chan->next;
-//         }
-
-//         // Finally, clear any remaining interrupt sources. Otherwise we'll
-//         // just get called continuously.
-//         uint32_t unhandled = tim->tim.Instance->DIER & 0xff & ~handled;
-//         if (unhandled != 0) {
-//             __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
-//             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
-//             mp_printf(MICROPY_ERROR_PRINTER, "unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
-//         }
-//     }
-// }
-
-// /// \method callback(fun)
-// /// Set the function to be called when the timer triggers.
-// /// `fun` is passed 1 argument, the timer object.
-// /// If `fun` is `None` then the callback will be disabled.
-// STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
-//     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-//     if (callback == mp_const_none) {
-//         // stop interrupt (but not timer)
-//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
-//         self->callback = mp_const_none;
-//     } else if (mp_obj_is_callable(callback)) {
-//         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
-//         self->callback = callback;
-//         // start timer, so that it interrupts on overflow, but clear any
-//         // pending interrupts which may have been set by initializing it.
-//         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
-//         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
-//         HAL_NVIC_EnableIRQ(self->irqn);
-//     } else {
-//         mp_raise_ValueError("callback must be None or a callable object");
-//     }
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
-
-    // // Start the timer running
-    // if (args[ARG_callback].u_obj == mp_const_none) {
-    //     HAL_TIM_Base_Start(&self->tim);
-    // } else {
-    //     pyb_timer_callback(MP_OBJ_FROM_PTR(self), args[ARG_callback].u_obj);
-    // }
-
 /////////////////////////////////////
 // How to handle the callback
 /////////////////////////////////////
-            // // execute callback if it's set
-            // if (callback != mp_const_none) {
-            //     mp_sched_lock();
-            //     // When executing code within a handler we must lock the GC to prevent
-            //     // any memory allocations.  We must also catch any exceptions.
-            //     gc_lock();
-            //     nlr_buf_t nlr;
-            //     if (nlr_push(&nlr) == 0) {
-            //         mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
-            //         nlr_pop();
-            //     } else {
-            //         // Uncaught exception; disable the callback so it doesn't run again.
-            //         tim->callback = mp_const_none;
-            //         __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
-            //         if (channel == 0) {
-            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
-            //         } else {
-            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
-            //         }
-            //         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            //     }
-            //     gc_unlock();
-            //     mp_sched_unlock();
-            // }
-
-
-           // // execute callback if it's set
-            // if (callback != mp_const_none) {
-            //     mp_sched_lock();
-            //     // When executing code within a handler we must lock the GC to prevent
-            //     // any memory allocations.  We must also catch any exceptions.
-            //     gc_lock();
-            //     nlr_buf_t nlr;
-            //     if (nlr_push(&nlr) == 0) {
-            //         mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
-            //         nlr_pop();
-            //     } else {
-            //         // Uncaught exception; disable the callback so it doesn't run again.
-            //         tim->callback = mp_const_none;
-            //         __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
-            //         if (channel == 0) {
-            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
-            //         } else {
-            //             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
-            //         }
-            //         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            //     }
-            //     gc_unlock();
-            //     mp_sched_unlock();
-            // }
+// // execute callback if it's set
+// if (callback != mp_const_none) {
+//     mp_sched_lock();
+//     // When executing code within a handler we must lock the GC to prevent
+//     // any memory allocations.  We must also catch any exceptions.
+//     gc_lock();
+//     nlr_buf_t nlr;
+//     if (nlr_push(&nlr) == 0) {
+//         mp_call_function_1(callback, MP_OBJ_FROM_PTR(tim));
+//         nlr_pop();
+//     } else {
+//         // Uncaught exception; disable the callback so it doesn't run again.
+//         tim->callback = mp_const_none;
+//         __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
+//         if (channel == 0) {
+//             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+//         } else {
+//             mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+//         }
+//         mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+//     }
+//     gc_unlock();
+//     mp_sched_unlock();
+// }
 
 #ifdef SPIDMA_MODES
 // sets the parameters in the SPI_InitTypeDef struct
@@ -534,36 +391,20 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
         if ((mode==SPI_CFG_MODE_NORMAL) || (mode==SPI_CFG_MODE_NONBLOCKING) || (mode == SPI_CFG_MODE_CIRCULAR))
         {
             spi_obj->dma_modes->mode = mode;
-            printf("mode = %d\n", (int)mode);
-            if (callback != (mp_obj_t) NULL)
-            {
-                // XXXTODO need to figure out what goes here
-                if (mp_obj_is_callable(callback)) {
-                    spi_obj->dma_modes->callback = callback;
-                    // mp_call_function_0(callback); // for testing
-                    // mp_sched_schedule(callback, mp_const_none); // for testing
-                    // #define mp_const_none MP_OBJ_NEW_IMMEDIATE_OBJ(0)
-                    // #define mp_const_false MP_OBJ_NEW_IMMEDIATE_OBJ(1)
-                    // #define mp_const_true MP_OBJ_NEW_IMMEDIATE_OBJ(3)
-                    //mp_sched_schedule(callback, mp_obj_new_int(1)); 
+            // printf("mode = %d\n", (int)mode);
+            spi_obj->dma_modes->callback = callback; // if not set, this clears from previous times
+            spi_obj->dma_modes->callbackhalf = callbackhalf;
+            spi_obj->dma_modes->callbackerror = callbackerror;
 
-                }
-            }
-            if (callbackhalf != (mp_obj_t) NULL)
-            {
-                if (mp_obj_is_callable(callbackhalf)) {
-                    spi_obj->dma_modes->callbackhalf = callbackhalf;
-                    printf("callbackhalf = 0x%X", (unsigned int) callbackhalf);
-                    // mp_call_function_0(callbackhalf); // for testing
-                }
-            }
-            if (callbackerror != (mp_obj_t) NULL)
-            {
-                if (mp_obj_is_callable(callbackerror)) {
-                    spi_obj->dma_modes->callbackerror = callbackerror;
-                    // mp_call_function_0(callbackerror); // for testing
-                }
-            }
+            // if (mp_obj_is_callable(callback)) {
+            //     spi_obj->dma_modes->callback = callback;
+            //     // mp_call_function_0(callback); // for testing
+            //     // mp_sched_schedule(callback, mp_const_none); // for testing
+            //     // #define mp_const_none MP_OBJ_NEW_IMMEDIATE_OBJ(0)
+            //     // #define mp_const_false MP_OBJ_NEW_IMMEDIATE_OBJ(1)
+            //     // #define mp_const_true MP_OBJ_NEW_IMMEDIATE_OBJ(3)
+            //     //mp_sched_schedule(callback, mp_obj_new_int(1)); 
+            // }
         }
         else
         {
@@ -702,6 +543,8 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
 }
 
+// XXXTODO I believe this is the only way to stop a non-blocking or circular DMA opration
+// Need to implement this
 void spi_deinit(const spi_t *spi_obj) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
@@ -797,11 +640,21 @@ void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, ui
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout)
 {
     // XXXTODO check if a transfer is already in progress on this device. Error if already in progress.
-    printf("\nspi_transfer called\n");
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nspi_transfer called\n");
+    #endif
+
+    SPI_HandleTypeDef * hspi = self->spi;
+    if ((hspi->hdmatx != NULL) || (hspi->hdmarx != NULL))
+    {
+        mp_raise_msg(&mp_type_OSError, "spi_transfer failed. DMA operation already in progress");
+    }
 
     if (self->dma_modes->mode == SPI_CFG_MODE_NORMAL)
     {
-        printf("\nspi_transfer_orig called\n");
+        #ifdef DEBUG_SPIDMA_MODES
+            printf("\nspi_transfer_orig called\n");
+        #endif
 
         spi_transfer_orig(self, len, src, dest, timeout);
     }
@@ -922,114 +775,148 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
         }
     }
 
+    self->spi->hdmatx = NULL; // indicate we are done
+    self->spi->hdmarx = NULL;
+
     if (status != HAL_OK) {
         mp_hal_raise(status);
     }
 }
 
 #if SPIDMA_MODES
+
+
+int get_spi_id_from_Instance(const SPI_TypeDef *Instance){
+    int spi_id = -1;
+    
+    // SPI_TypeDef * Instance = self->spi->Instance;
+
+    if (0) {
+    }
+    #if defined(MICROPY_HW_SPI1_SCK)
+    else if (Instance == SPI1) {
+        spi_id = 1;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
+    else if (Instance == SPI2) {
+        spi_id = 2;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
+    else if (Instance == SPI3) {
+        spi_id = 3;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI4_SCK)
+    else if (Instance == SPI4) {
+        spi_id = 4;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI5_SCK)
+    else if (Instance == SPI5) {
+        spi_id = 5;
+    }
+    #endif
+    #if defined(MICROPY_HW_SPI6_SCK)
+    else if (Instance == SPI6) {
+        spi_id = 6;
+    }
+    #endif
+
+    return spi_id;
+}
+
+mp_obj_t get_mp_spi_id_from_Instance(const SPI_TypeDef *Instance){
+    return mp_obj_new_int(get_spi_id_from_Instance(Instance));
+}
+
 void spi_transfer_nonblocking(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
     // unknown but we sidestep the issue by using polling for 1 byte transfer.
-
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nspi_transfer_nonblocking enter\n");
+    #endif
     // Note: DMA transfers are limited to 65535 bytes at a time.
+    if (len > 65535){
+        mp_raise_ValueError("SPI NONBLOCKING mode requires transfers to be less than 65536");
+    }
 
     HAL_StatusTypeDef status;
     if (dest == NULL) {
         // send only
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_Transmit(self->spi, (uint8_t *)src, len, timeout);
-            // XXXTODO schedule callback if defined
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-            self->spi->hdmatx = &tx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = tx_dma;
             self->spi->hdmarx = NULL;
             MP_HAL_CLEAN_DCACHE(src, len);
-            uint32_t t_start = HAL_GetTick();
-            // XXXTODO set up interrupts. Perhaps only 65k transfers should be allowed for now.
-            // Perhaps, ignore callbackhalf for non-blocking transfers
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                // XXXTODO this is the part to skip 
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                src += l;
-            } while (len);
-            dma_deinit(self->tx_dma_descr);
+            status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, len);
         }
     } else if (src == NULL) {
         // receive only
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_Receive(self->spi, dest, len, timeout);
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma, rx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
             if (self->spi->Init.Mode == SPI_MODE_MASTER) {
                 // in master mode the HAL actually does a TransmitReceive call
-                dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-                self->spi->hdmatx = &tx_dma;
+                dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+                self->spi->hdmatx = tx_dma;
             } else {
                 self->spi->hdmatx = NULL;
             }
-            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
-            self->spi->hdmarx = &rx_dma;
+            dma_init(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = rx_dma;
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
-            uint32_t t_start = HAL_GetTick();
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_Receive_DMA(self->spi, dest, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                dest += l;
-            } while (len);
-            if (self->spi->hdmatx != NULL) {
-                dma_deinit(self->tx_dma_descr);
-            }
-            dma_deinit(self->rx_dma_descr);
+            status = HAL_SPI_Receive_DMA(self->spi, dest, len);
         }
     } else {
         // send and receive
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma, rx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-            self->spi->hdmatx = &tx_dma;
-            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
-            self->spi->hdmarx = &rx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
+            
+            dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = tx_dma;
+            dma_init(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
-            uint32_t t_start = HAL_GetTick();
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                src += l;
-                dest += l;
-            } while (len);
-            dma_deinit(self->tx_dma_descr);
-            dma_deinit(self->rx_dma_descr);
+            status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, len);
         }
     }
 
@@ -1263,104 +1150,6 @@ const mp_spi_proto_t spi_proto = {
 
 #ifdef SPIDMA_MODES
 
-/**
-  * @brief Tx Transfer completed callback.
-  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
-  *               the configuration information for SPI module.
-  * @retval None
-  */
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(hspi);
-
-  printf("\nHAL_SPI_TxCpltCallback called\n");
-}
-
-/**
-  * @brief Rx Transfer completed callback.
-  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
-  *               the configuration information for SPI module.
-  * @retval None
-  */
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-  /* Prevent unused argument(s) compilation warning */
-    UNUSED(hspi);
-
-    printf("\nHAL_SPI_RxCpltCallback called\n");
-
-}
-
-// /**
-//   * @brief  DMA handle Structure definition
-//   */
-// typedef struct __DMA_HandleTypeDef
-// {
-//   DMA_Channel_TypeDef    *Instance;                                                  /*!< Register base address                */
-
-//   DMA_InitTypeDef       Init;                                                        /*!< DMA communication parameters         */
-
-//   HAL_LockTypeDef       Lock;                                                        /*!< DMA locking object                   */
-
-//   __IO HAL_DMA_StateTypeDef  State;                                                  /*!< DMA transfer state                   */
-
-//   void                  *Parent;                                                     /*!< Parent object state                  */
-
-//   void                  (* XferCpltCallback)(struct __DMA_HandleTypeDef * hdma);     /*!< DMA transfer complete callback       */
-
-//   void                  (* XferHalfCpltCallback)(struct __DMA_HandleTypeDef * hdma); /*!< DMA Half transfer complete callback  */
-
-//   void                  (* XferErrorCallback)(struct __DMA_HandleTypeDef * hdma);    /*!< DMA transfer error callback          */
-
-//   void                  (* XferAbortCallback)( struct __DMA_HandleTypeDef * hdma);   /*!< DMA transfer abort callback          */
-
-//   __IO uint32_t          ErrorCode;                                                  /*!< DMA Error code                       */
-
-//   DMA_TypeDef            *DmaBaseAddress;                                            /*!< DMA Channel Base Address             */
-
-//   uint32_t               ChannelIndex;                                               /*!< DMA Channel Index                    */
-// }DMA_HandleTypeDef;
-
-// /**
-//   * @brief  SPI handle Structure definition
-//   */
-// typedef struct __SPI_HandleTypeDef
-// {
-//   SPI_TypeDef                *Instance;      /*!< SPI registers base address               */
-
-//   SPI_InitTypeDef            Init;           /*!< SPI communication parameters             */
-
-//   uint8_t                    *pTxBuffPtr;    /*!< Pointer to SPI Tx transfer Buffer        */
-
-//   uint16_t                   TxXferSize;     /*!< SPI Tx Transfer size                     */
-
-//   __IO uint16_t              TxXferCount;    /*!< SPI Tx Transfer Counter                  */
-
-//   uint8_t                    *pRxBuffPtr;    /*!< Pointer to SPI Rx transfer Buffer        */
-
-//   uint16_t                   RxXferSize;     /*!< SPI Rx Transfer size                     */
-
-//   __IO uint16_t              RxXferCount;    /*!< SPI Rx Transfer Counter                  */
-
-//   uint32_t                   CRCSize;        /*!< SPI CRC size used for the transfer       */
-
-//   void (*RxISR)(struct __SPI_HandleTypeDef *hspi);   /*!< function pointer on Rx ISR       */
-
-//   void (*TxISR)(struct __SPI_HandleTypeDef *hspi);   /*!< function pointer on Tx ISR       */
-
-//   DMA_HandleTypeDef          *hdmatx;        /*!< SPI Tx DMA Handle parameters             */
-
-//   DMA_HandleTypeDef          *hdmarx;        /*!< SPI Rx DMA Handle parameters             */
-
-//   HAL_LockTypeDef            Lock;           /*!< Locking object                           */
-
-//   __IO HAL_SPI_StateTypeDef  State;          /*!< SPI communication state                  */
-
-//   __IO uint32_t              ErrorCode;      /*!< SPI Error code                           */
-
-// } SPI_HandleTypeDef;
-
 STATIC void callcallback(mp_obj_t spi_id, mp_obj_t callback)
 {
     // execute callback. vetted long before getting here.
@@ -1389,55 +1178,99 @@ STATIC void callcallback(mp_obj_t spi_id, mp_obj_t callback)
   */
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    int spi_obj_offset = -1;
-
-    printf("\nHAL_SPI_TxRxCpltCallback called\n");
-    if (0) {
-    }
-    #if defined(MICROPY_HW_SPI1_SCK)
-    else if (hspi->Instance == SPI1) {
-        spi_obj_offset = 0;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
-    else if (hspi->Instance == SPI2) {
-        spi_obj_offset = 1;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
-    else if (hspi->Instance == SPI3) {
-        spi_obj_offset = 2;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
-    else if (hspi->Instance == SPI4) {
-        spi_obj_offset = 3;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
-    else if (hspi->Instance == SPI5) {
-        spi_obj_offset = 4;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
-    else if (hspi->Instance == SPI6) {
-        spi_obj_offset = 5;
-    }
+    // void led_toggle(int); /*void mp_hal_delay_ms(int);*/ while(1){led_toggle(1); mp_hal_delay_ms(500);}
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\ncalling HAL_SPI_TxRxCpltCallback\n");
     #endif
 
-    if ( spi_obj_offset >= 0)
+    SPI_TypeDef *Instance = hspi->Instance;
+    int spi_id = get_spi_id_from_Instance(Instance);
+    if (spi_id >= 0)
     {
-        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        const spi_t * _spi = &spi_obj[spi_id-1];
+        SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
         if (dma_modes){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+                if (hspi->hdmatx != NULL){
+                    dma_deinit(_spi->tx_dma_descr);
+                    hspi->hdmatx = NULL; // So we know there is no longer a DMA in process
+                }
+                if (hspi->hdmarx != NULL){
+                    dma_deinit(_spi->rx_dma_descr);
+                    hspi->hdmarx = NULL;
+                }
+            }
             mp_obj_t callback = dma_modes->callback;
-            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
-            // execute callback if it's set. vetted long before getting here.
             if (callback != (mp_obj_t) NULL){
-                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+                callcallback(mp_obj_new_int(spi_id), callback);
             }
         }
     }
 }
+
+
+/**
+  * @brief Tx Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    SPI_TypeDef *Instance = hspi->Instance;
+    int spi_id = get_spi_id_from_Instance(Instance);
+    if (spi_id >= 0)
+    {
+        const spi_t * _spi = &spi_obj[spi_id-1];
+        SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
+        if (dma_modes){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+                dma_deinit(_spi->tx_dma_descr);
+                if (hspi->hdmarx != NULL){
+                    dma_deinit(_spi->rx_dma_descr);
+                    hspi->hdmarx = NULL;
+                }
+                hspi->hdmatx = NULL; // So we know there is no longer a DMA in process
+            }
+            mp_obj_t callback = dma_modes->callback;
+            if (callback != (mp_obj_t) NULL){
+                callcallback(mp_obj_new_int(spi_id), callback);
+            }
+        }
+    }
+}
+
+/**
+  * @brief Rx Transfer completed callback.
+  * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    SPI_TypeDef *Instance = hspi->Instance;
+    int spi_id = get_spi_id_from_Instance(Instance);
+    if (spi_id >= 0)
+    {
+        const spi_t * _spi = &spi_obj[spi_id-1];
+        SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
+        if (dma_modes){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+                dma_deinit(_spi->rx_dma_descr);
+                if (hspi->hdmatx != NULL){
+                    dma_deinit(_spi->tx_dma_descr);
+                    hspi->hdmatx = NULL; // So we know there is no longer a DMA in process
+                }
+                hspi->hdmarx = NULL;
+            }
+            mp_obj_t callback = dma_modes->callback;
+            if (callback != (mp_obj_t) NULL){
+                callcallback(mp_obj_new_int(spi_id), callback);
+            }
+        }
+    }
+}
+
 
 /**
   * @brief Tx and Rx Half Transfer callback.
@@ -1447,51 +1280,22 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
   */
 void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    printf("\nHAL_SPI_TxRxHalfCpltCallback called\n");
-    int spi_obj_offset = -1;
-
-    if (0) {
-    }
-    #if defined(MICROPY_HW_SPI1_SCK)
-    else if (hspi->Instance == SPI1) {
-        spi_obj_offset = 0;
-    }
+    // void led_toggle(int); /*void mp_hal_delay_ms(int);*/ while(1){led_toggle(2); mp_hal_delay_ms(500);}
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nHAL_SPI_TxRxHalfCpltCallback called\n");
     #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
-    else if (hspi->Instance == SPI2) {
-        spi_obj_offset = 1;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
-    else if (hspi->Instance == SPI3) {
-        spi_obj_offset = 2;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
-    else if (hspi->Instance == SPI4) {
-        spi_obj_offset = 3;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
-    else if (hspi->Instance == SPI5) {
-        spi_obj_offset = 4;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
-    else if (hspi->Instance == SPI6) {
-        spi_obj_offset = 5;
-    }
-    #endif
-
-    if ( spi_obj_offset >= 0)
+    
+    SPI_TypeDef *Instance = hspi->Instance;
+    int spi_id = get_spi_id_from_Instance(Instance);
+    
+    if (spi_id >= 0)
     {
-        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        const spi_t * _spi = &spi_obj[spi_id-1];
+        SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
         if (dma_modes){
             mp_obj_t callback = dma_modes->callbackhalf;
-            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
-            // execute callback if it's set. vetted long before getting here.
             if (callback != (mp_obj_t) NULL){
-                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+                callcallback(mp_obj_new_int(spi_id), callback);
             }
         }
     }
@@ -1505,7 +1309,10 @@ void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
   */
 void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    printf("\nHAL_SPI_TxHalfCpltCallback called\n");
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nHAL_SPI_TxHalfCpltCallback called\n");
+    #endif
+    
     HAL_SPI_TxRxHalfCpltCallback(hspi);
 }
 
@@ -1517,7 +1324,9 @@ void HAL_SPI_TxHalfCpltCallback(SPI_HandleTypeDef *hspi)
   */
 void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    printf("\nHAL_SPI_RxHalfCpltCallback called\n");
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nHAL_SPI_RxHalfCpltCallback called\n");
+    #endif
     HAL_SPI_TxRxHalfCpltCallback(hspi);
 }
 
@@ -1531,56 +1340,22 @@ void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
   */
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
-    printf("\nHAL_SPI_ErrorCallback called\n");
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nHAL_SPI_ErrorCallback called\n");
+    #endif
 
     /* NOTE : The ErrorCode parameter in the hspi handle is updated by the SPI processes
             and user can use HAL_SPI_GetError() API to check the latest error occurred
     */
-    int spi_obj_offset = -1;
-
-    printf("\nHAL_SPI_TxRxCpltCallback called\n");
-    if (0) {
-    }
-    #if defined(MICROPY_HW_SPI1_SCK)
-    else if (hspi->Instance == SPI1) {
-        spi_obj_offset = 0;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI2_SCK)
-    else if (hspi->Instance == SPI2) {
-        spi_obj_offset = 1;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI3_SCK)
-    else if (hspi->Instance == SPI3) {
-        spi_obj_offset = 2;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI4_SCK)
-    else if (hspi->Instance == SPI4) {
-        spi_obj_offset = 3;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI5_SCK)
-    else if (hspi->Instance == SPI5) {
-        spi_obj_offset = 4;
-    }
-    #endif
-    #if defined(MICROPY_HW_SPI6_SCK)
-    else if (hspi->Instance == SPI6) {
-        spi_obj_offset = 5;
-    }
-    #endif
-
-    if ( spi_obj_offset >= 0)
+    SPI_TypeDef *Instance = hspi->Instance;
+    int spi_id = get_spi_id_from_Instance(Instance);
+    if (spi_id >= 0)
     {
-        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_obj_offset].dma_modes;
+        SPI_DMAHandleTypeDef * dma_modes = spi_obj[spi_id-1].dma_modes;
         if (dma_modes){
             mp_obj_t callback = dma_modes->callbackerror;
-            printf("\ncallback(spi_id = %d) = 0x%X\n", spi_obj_offset+1, (unsigned int) callback);
-            // execute callback if it's set. vetted long before getting here.
             if (callback != (mp_obj_t) NULL){
-                callcallback(mp_obj_new_int(spi_obj_offset+1), callback);
+                callcallback(mp_obj_new_int(spi_id), callback);
             }
         }
     }
