@@ -1800,7 +1800,7 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
 
-    if(!compile_require_async_context(comp, pns)) {
+    if (!compile_require_async_context(comp, pns)) {
         return;
     }
 
@@ -1965,7 +1965,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
 }
 
 STATIC void compile_async_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if(!compile_require_async_context(comp, pns)) {
+    if (!compile_require_async_context(comp, pns)) {
         return;
     }
     // get the nodes for the pre-bit of the with (the a as b, c as d, ... bit)
