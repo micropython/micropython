@@ -1784,7 +1784,7 @@ STATIC void compile_yield_from(compiler_t *comp) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int scope_flags = comp->scope_cur->scope_flags;
-    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+    if (scope_flags & MP_SCOPE_FLAG_GENERATOR) {
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns, "'async for' or 'async with' outside async function");
