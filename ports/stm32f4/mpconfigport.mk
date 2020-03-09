@@ -71,5 +71,7 @@ endif
 
 CFLAGS += -DMICROPY_CPYTHON_COMPAT=1
 
+MICROPY_PY_ULAB = 1
+
 #ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
 #endif
