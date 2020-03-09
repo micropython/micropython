@@ -39,7 +39,7 @@
 
 #include "stm32f4xx_hal.h"
 
-//DAC is shared between both channels. 
+//DAC is shared between both channels.
 #if HAS_DAC
 DAC_HandleTypeDef handle;
 #endif
@@ -97,7 +97,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     #if HAS_DAC
     reset_pin_number(self->pin->port,self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
     dac_on[self->dac_index] = false;
 
     //turn off the DAC if both channels are off

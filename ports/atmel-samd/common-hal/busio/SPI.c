@@ -89,8 +89,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     Sercom* sercom = NULL;
     uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
-    bool mosi_none = mosi == mp_const_none || mosi == NULL;
-    bool miso_none = miso == mp_const_none || miso == NULL;
+    bool mosi_none = mosi == NULL;
+    bool miso_none = miso == NULL;
     uint32_t mosi_pinmux = 0;
     uint32_t miso_pinmux = 0;
     uint8_t clock_pad = 0;

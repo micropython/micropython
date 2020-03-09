@@ -54,7 +54,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self) {
@@ -63,7 +63,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     }
 
     reset_pin_number(self->pin->port, self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
@@ -90,7 +90,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
         digitalio_digitalinout_obj_t *self) {
 
-    return (LL_GPIO_GetPinMode(pin_port(self->pin->port), pin_mask(self->pin->number)) 
+    return (LL_GPIO_GetPinMode(pin_port(self->pin->port), pin_mask(self->pin->number))
         == LL_GPIO_MODE_INPUT) ? DIRECTION_INPUT : DIRECTION_OUTPUT;
 }
 
@@ -111,7 +111,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_drive_mode_t drive_mode) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(self->pin->number);
-    GPIO_InitStruct.Mode = (drive_mode == DRIVE_MODE_OPEN_DRAIN ? 
+    GPIO_InitStruct.Mode = (drive_mode == DRIVE_MODE_OPEN_DRAIN ?
         GPIO_MODE_OUTPUT_OD : GPIO_MODE_OUTPUT_PP);
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -121,7 +121,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
         digitalio_digitalinout_obj_t *self) {
 
-    return LL_GPIO_GetPinOutputType(pin_port(self->pin->port), pin_mask(self->pin->number)) 
+    return LL_GPIO_GetPinOutputType(pin_port(self->pin->port), pin_mask(self->pin->number))
         == LL_GPIO_OUTPUT_OPENDRAIN ? DRIVE_MODE_OPEN_DRAIN : DRIVE_MODE_PUSH_PULL;
 }
 
@@ -145,7 +145,7 @@ void common_hal_digitalio_digitalinout_set_pull(
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t *self) {
-    
+
 
     switch (LL_GPIO_GetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number))) {
         case LL_GPIO_PULL_UP:

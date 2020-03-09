@@ -69,9 +69,8 @@ STATIC mp_obj_t bitbangio_onewire_make_new(const mp_obj_type_t *type, size_t n_a
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    assert_pin(args[ARG_pin].u_obj, false);
-    const mcu_pin_obj_t* pin = MP_OBJ_TO_PTR(args[ARG_pin].u_obj);
-    assert_pin_free(pin);
+
+    const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     bitbangio_onewire_obj_t *self = m_new_obj(bitbangio_onewire_obj_t);
     self->base.type = &bitbangio_onewire_type;

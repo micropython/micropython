@@ -71,23 +71,17 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t data0 = args[ARG_data0].u_obj;
-    mp_obj_t command = args[ARG_command].u_obj;
-    mp_obj_t chip_select = args[ARG_chip_select].u_obj;
-    mp_obj_t write = args[ARG_write].u_obj;
-    mp_obj_t read = args[ARG_read].u_obj;
-    mp_obj_t reset = args[ARG_reset].u_obj;
-    assert_pin_free(data0);
-    assert_pin_free(command);
-    assert_pin_free(chip_select);
-    assert_pin_free(write);
-    assert_pin_free(read);
-    assert_pin_free(reset);
+    mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
+    mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
+    mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
+    mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
+    mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
     displayio_parallelbus_obj_t* self = NULL;
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {

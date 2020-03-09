@@ -292,7 +292,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
@@ -319,7 +319,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         }
     }
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {

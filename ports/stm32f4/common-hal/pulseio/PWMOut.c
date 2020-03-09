@@ -72,7 +72,7 @@ STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     return (duty*period) / ((1 << 16) - 1);
 }
 
-STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler, 
+STATIC void timer_get_optimal_divisors(uint32_t*period, uint32_t*prescaler,
                                        uint32_t frequency, uint32_t source_freq) {
     //Find the largest possible period supported by this frequency
     for (int i = 0; i < (1 << 16); i++) {
@@ -139,7 +139,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 first_time_setup = false; //skip setting up the timer
             }
             //No problems taken, so set it up
-            self->tim = l_tim; 
+            self->tim = l_tim;
             break;
         }
     }
@@ -182,7 +182,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     uint32_t prescaler = 0; //prescaler is 15 bit
     uint32_t period = 0; //period is 16 bit
-    timer_get_optimal_divisors(&period, &prescaler, frequency, 
+    timer_get_optimal_divisors(&period, &prescaler, frequency,
                             timer_get_source_freq(self->tim->tim_index));
 
     //Timer init
@@ -240,7 +240,7 @@ void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
-    return self->tim == mp_const_none;
+    return self->tim == NULL;
 }
 
 void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
@@ -255,7 +255,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         HAL_TIM_PWM_Stop(&self->handle, self->channel);
     }
     reset_pin_number(self->tim->pin->port,self->tim->pin->number);
-    self->tim = mp_const_none;
+    self->tim = NULL;
 
     //if reserved timer has no active channels, we can disable it
     if (!reserved_tim[self->tim->tim_index - 1]) {
@@ -276,13 +276,13 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 
 void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
     //don't halt setup for the same frequency
-    if (frequency == self->frequency) { 
+    if (frequency == self->frequency) {
         return;
     }
 
     uint32_t prescaler = 0;
     uint32_t period = 0;
-    timer_get_optimal_divisors(&period, &prescaler, frequency, 
+    timer_get_optimal_divisors(&period, &prescaler, frequency,
                                 timer_get_source_freq(self->tim->tim_index));
 
     //shut down
@@ -290,7 +290,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
 
     //Only change altered values
     self->handle.Init.Period = period - 1;
-    self->handle.Init.Prescaler = prescaler - 1; 
+    self->handle.Init.Prescaler = prescaler - 1;
 
     //restart everything, adjusting for new speed
     if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {

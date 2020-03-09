@@ -141,13 +141,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    mp_obj_t backlight_pin_obj = args[ARG_backlight_pin].u_obj;
-    assert_pin(backlight_pin_obj, true);
-    const mcu_pin_obj_t* backlight_pin = NULL;
-    if (backlight_pin_obj != NULL && backlight_pin_obj != mp_const_none) {
-        backlight_pin = MP_OBJ_TO_PTR(backlight_pin_obj);
-        assert_pin_free(backlight_pin);
-    }
+    const mcu_pin_obj_t* backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
 
     mp_float_t brightness = mp_obj_get_float(args[ARG_brightness].u_obj);
 
