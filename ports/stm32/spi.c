@@ -68,25 +68,25 @@ SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
 #ifdef SPIDMA_MODES
-#define DEBUG_SPIDMA_MODES
+// #define DEBUG_SPIDMA_MODES
 
 #if defined(MICROPY_HW_SPI1_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle1 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle1 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI2_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle2 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle2 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle3 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle3 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL}, .callbackabort=NULL;
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle4 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle4 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI5_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle5 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle5 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI6_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle6 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL};
+SPI_DMAHandleTypeDef SPIDMAMODEHandle6 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 
 const spi_t spi_obj[6] = {
@@ -331,7 +331,7 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
 // if an argument is -1 then the corresponding parameter is not changed
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit,
-    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror
+    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror,  mp_obj_t callbackabort
     ) {
 #else
 // sets the parameters in the SPI_InitTypeDef struct
@@ -390,11 +390,13 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     {
         if ((mode==SPI_CFG_MODE_NORMAL) || (mode==SPI_CFG_MODE_NONBLOCKING) || (mode == SPI_CFG_MODE_CIRCULAR))
         {
-            spi_obj->dma_modes->mode = mode;
+            SPI_DMAHandleTypeDef *dma_modes = spi_obj->dma_modes; 
+            dma_modes->mode = mode;
             // printf("mode = %d\n", (int)mode);
-            spi_obj->dma_modes->callback = callback; // if not set, this clears from previous times
-            spi_obj->dma_modes->callbackhalf = callbackhalf;
-            spi_obj->dma_modes->callbackerror = callbackerror;
+            dma_modes->callback = callback; // if not set, this clears from previous times
+            dma_modes->callbackhalf = callbackhalf;
+            dma_modes->callbackerror = callbackerror;
+            dma_modes->callbackabort = callbackabort;
 
             // if (mp_obj_is_callable(callback)) {
             //     spi_obj->dma_modes->callback = callback;
@@ -543,11 +545,11 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #endif
 }
 
-// XXXTODO I believe this is the only way to stop a non-blocking or circular DMA opration
-// Need to implement this
+// I believe this is the only way to stop a non-blocking or circular DMA opration
 void spi_deinit(const spi_t *spi_obj) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
+
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
@@ -592,6 +594,49 @@ void spi_deinit(const spi_t *spi_obj) {
         HAL_NVIC_DisableIRQ(SPI6_IRQn);
     #endif
     }
+
+#ifdef SPIDMA_MODES
+    // void led_toggle(int); /*void mp_hal_delay_ms(int);*/ while(1){led_toggle(1); mp_hal_delay_ms(500);}
+#ifdef DEBUG_SPIDMA_MODES
+    printf("\ncalling spi_deinit\n");
+#endif
+
+    const spi_t * _spi = spi_obj;
+    SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
+    if (dma_modes){
+        bool callabort = false;
+#ifdef DEBUG_SPIDMA_MODES
+        printf("\ndma_modes->mode = %d\n",  (int) dma_modes->mode);
+        printf("\ndma_modes->mode = %d\n",  (int) dma_modes->mode);
+#endif
+
+        if ((dma_modes->mode == SPI_CFG_MODE_NONBLOCKING) || (dma_modes->mode == SPI_CFG_MODE_CIRCULAR)){
+            if (spi->hdmatx != NULL){
+                dma_deinit(_spi->tx_dma_descr);
+                spi->hdmatx = NULL; // So we know there is no longer a DMA in process
+                callabort = true;
+            }
+            if (spi->hdmarx != NULL){
+                dma_deinit(_spi->rx_dma_descr);
+                spi->hdmarx = NULL;
+                callabort = true;
+            }
+        }
+        if (callabort){
+#ifdef DEBUG_SPIDMA_MODES
+            printf("\ncalling abort\n");
+#endif
+            mp_obj_t callback = dma_modes->callbackabort;
+            if (callback != (mp_obj_t) NULL){
+                mp_obj_t get_mp_spi_id_from_Instance(const SPI_TypeDef *Instance);
+
+                SPI_TypeDef *Instance = spi->Instance;
+
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+        }
+    }
+#endif
 }
 
 STATIC HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_start, uint32_t timeout) {
@@ -636,6 +681,7 @@ Each of these modes would carry a union of parameters (some required, some optio
 void spi_transfer_orig(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
 void spi_transfer_nonblocking(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
 void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout);
+mp_obj_t get_mp_spi_id_from_Instance(const SPI_TypeDef *Instance);
 
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout)
 {
@@ -647,7 +693,13 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
     SPI_HandleTypeDef * hspi = self->spi;
     if ((hspi->hdmatx != NULL) || (hspi->hdmarx != NULL))
     {
+        SPI_TypeDef *Instance = self->spi->Instance;
+        mp_obj_t callback;
+        if ((callback = self->dma_modes->callbackerror) != (mp_obj_t) NULL){
+            mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+        }
         mp_raise_msg(&mp_type_OSError, "spi_transfer failed. DMA operation already in progress");
+        return;
     }
 
     if (self->dma_modes->mode == SPI_CFG_MODE_NORMAL)
@@ -909,6 +961,9 @@ void spi_transfer_nonblocking(const spi_t *self, size_t len, const uint8_t *src,
         } else {
             DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
             DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
+
+            // printf("\ntx mode = %d\n", (int) tx_dma->Init.Mode);
+            // printf("\nrx mode = %d\n", (int) tx_dma->Init.Mode);
             
             dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
             self->spi->hdmatx = tx_dma;
@@ -930,102 +985,97 @@ void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, ui
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
     // unknown but we sidestep the issue by using polling for 1 byte transfer.
-
+    #ifdef DEBUG_SPIDMA_MODES
+        printf("\nspi_transfer_circular\n");
+    #endif
     // Note: DMA transfers are limited to 65535 bytes at a time.
+    if (len > 65535){
+        mp_raise_ValueError("SPI CIRCULAR mode requires transfers to be less than 65536");
+    }
 
     HAL_StatusTypeDef status;
-
     if (dest == NULL) {
         // send only
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_Transmit(self->spi, (uint8_t *)src, len, timeout);
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-            self->spi->hdmatx = &tx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = tx_dma;
             self->spi->hdmarx = NULL;
             MP_HAL_CLEAN_DCACHE(src, len);
-            // XXXTODO set up interrupts. Max 65k transfers should be allowed for now.
-            uint32_t t_start = HAL_GetTick();
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                src += l;
-            } while (len);
-            dma_deinit(self->tx_dma_descr);
+            status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, len);
         }
     } else if (src == NULL) {
         // receive only
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_Receive(self->spi, dest, len, timeout);
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma, rx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
             if (self->spi->Init.Mode == SPI_MODE_MASTER) {
                 // in master mode the HAL actually does a TransmitReceive call
-                dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-                self->spi->hdmatx = &tx_dma;
+                dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+                self->spi->hdmatx = tx_dma;
             } else {
                 self->spi->hdmatx = NULL;
             }
-            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
-            self->spi->hdmarx = &rx_dma;
+            dma_init(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = rx_dma;
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
-            uint32_t t_start = HAL_GetTick();
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_Receive_DMA(self->spi, dest, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                dest += l;
-            } while (len);
-            if (self->spi->hdmatx != NULL) {
-                dma_deinit(self->tx_dma_descr);
-            }
-            dma_deinit(self->rx_dma_descr);
+            status = HAL_SPI_Receive_DMA(self->spi, dest, len);
         }
     } else {
         // send and receive
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
             status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
+            // schedule callback if defined
+            mp_obj_t callback;
+            SPI_TypeDef *Instance = self->spi->Instance;
+            if ((callback = self->dma_modes->callbackhalf) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
+            if ((callback = self->dma_modes->callback) != (mp_obj_t) NULL){
+                mp_call_function_1(callback, get_mp_spi_id_from_Instance(Instance));
+            }
         } else {
-            DMA_HandleTypeDef tx_dma, rx_dma;
-            dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
-            self->spi->hdmatx = &tx_dma;
-            dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
-            self->spi->hdmarx = &rx_dma;
+            DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
+            DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
+
+            tx_dma->Init.Mode = DMA_CIRCULAR;
+            rx_dma->Init.Mode = DMA_CIRCULAR;
+            
+            // printf("\ntx mode = %d\n", (int) tx_dma->Init.Mode);
+            // printf("\nrx mode = %d\n", (int) rx_dma->Init.Mode);
+
+
+            // mode is tx_dma->Init.Mode;
+            
+            dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = tx_dma;
+            dma_init(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            self->spi->hdmarx = rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
-            uint32_t t_start = HAL_GetTick();
-            do {
-                uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, l);
-                if (status != HAL_OK) {
-                    break;
-                }
-                status = spi_wait_dma_finished(self, t_start, timeout);
-                if (status != HAL_OK) {
-                    break;
-                }
-                len -= l;
-                src += l;
-                dest += l;
-            } while (len);
-            dma_deinit(self->tx_dma_descr);
-            dma_deinit(self->rx_dma_descr);
+            status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, len);
         }
     }
 
@@ -1120,7 +1170,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
 #ifdef SPIDMA_MODES
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
                 self->polarity, self->phase, self->bits, self->firstbit,
-                0xffffffff, (mp_obj_t) NULL, (mp_obj_t) NULL, (mp_obj_t) NULL
+                0xffffffff, (mp_obj_t) NULL, (mp_obj_t) NULL, (mp_obj_t) NULL, (mp_obj_t) NULL
                 );
 #else
             spi_set_params(self->spi, 0xffffffff, self->baudrate,
@@ -1190,7 +1240,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         const spi_t * _spi = &spi_obj[spi_id-1];
         SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
         if (dma_modes){
-            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){ // need to keep it going during CIRCULAR mode.
                 if (hspi->hdmatx != NULL){
                     dma_deinit(_spi->tx_dma_descr);
                     hspi->hdmatx = NULL; // So we know there is no longer a DMA in process
@@ -1224,7 +1274,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
         const spi_t * _spi = &spi_obj[spi_id-1];
         SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
         if (dma_modes){
-            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){ // need to keep it going during CIRCULAR mode.
                 dma_deinit(_spi->tx_dma_descr);
                 if (hspi->hdmarx != NULL){
                     dma_deinit(_spi->rx_dma_descr);
@@ -1255,7 +1305,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
         const spi_t * _spi = &spi_obj[spi_id-1];
         SPI_DMAHandleTypeDef * dma_modes = _spi->dma_modes;
         if (dma_modes){
-            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){
+            if (dma_modes->mode == SPI_CFG_MODE_NONBLOCKING){ // need to keep it going during CIRCULAR mode.
                 dma_deinit(_spi->rx_dma_descr);
                 if (hspi->hdmatx != NULL){
                     dma_deinit(_spi->tx_dma_descr);

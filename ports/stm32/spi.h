@@ -50,6 +50,8 @@ typedef struct __SPI_DMAHandleTypeDef
 
     mp_obj_t callbackerror; /*!< DMA transfer error callback          */
 
+    mp_obj_t callbackabort; /*!< DMA transfer aborted by user callback*/
+
     // Since DMA is happening in the background, these two structures need a place they can be stored (not on the stack frame)
     DMA_HandleTypeDef tx_dma; /*!< Since DMA is happening in the background, this needs to be static and not on the stack frame */
     DMA_HandleTypeDef rx_dma;  /*!< Since DMA is happening in the background, this needs to be static and not on the stack frame */
@@ -112,7 +114,7 @@ int spi_find_index(mp_obj_t id);
 #ifdef SPIDMA_MODES
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit,
-    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror);
+    uint32_t mode, mp_obj_t callback, mp_obj_t callbackhalf, mp_obj_t callbackerror, mp_obj_t callbackabort);
 #else
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit);

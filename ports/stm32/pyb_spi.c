@@ -106,7 +106,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
 #ifdef SPIDMA_MODES
     spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
         args[6].u_int, args[8].u_int,
-        args[11].u_int, args[12].u_obj, args[13].u_obj, args[14].u_obj);
+        args[11].u_int, args[12].u_obj, args[13].u_obj, args[14].u_obj, args[14].u_obj);
 #else
     spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
         args[6].u_int, args[8].u_int);

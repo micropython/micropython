@@ -49,7 +49,7 @@ STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso,
 #ifdef SPIDMA_MODES
-            ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror,
+            ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror, ARG_callbackabort
 #endif
     };
     static const mp_arg_t allowed_args[] = {
@@ -67,6 +67,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
         { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
         { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
+        { MP_QSTR_callbackabort,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t) NULL} },
 #endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -99,7 +100,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj
+        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj, args[ARG_callbackabort].u_obj
         );
 #else
     // set configurable paramaters
@@ -118,7 +119,7 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
 
 #ifdef SPIDMA_MODES
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit,
-        ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror};
+        ARG_mode, ARG_callback, ARG_callbackhalf, ARG_callbackerror, ARG_callbackabort};
 #else
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
 #endif
@@ -133,6 +134,7 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_callbackhalf, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_callbackerror,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callbackabort,MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 #endif
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -143,7 +145,7 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj
+        args[ARG_mode].u_int, args[ARG_callback].u_obj, args[ARG_callbackhalf].u_obj, args[ARG_callbackerror].u_obj, args[ARG_callbackabort].u_obj
         );
 #else
     // set configurable paramaters
