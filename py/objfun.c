@@ -188,7 +188,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will try to use the heap, with fallback to stack allocation.
-#define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
+#define VM_MAX_STATE_ON_STACK (sizeof(mp_uint_t) * 11)
 
 #define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
     { \

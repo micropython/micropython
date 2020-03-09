@@ -70,10 +70,7 @@ C_EXTS = (
 PY_EXTS = (".py",)
 
 
-FIXUP_REPLACEMENTS = (
-    (re.compile("sizeof\(([a-z_]+)\) \*\(([a-z_]+)\)"), r"sizeof(\1) * (\2)"),
-    (re.compile("([0-9]+) \*sizeof"), r"\1 * sizeof"),
-)
+FIXUP_REPLACEMENTS = ((re.compile("sizeof\(([a-z_]+)\) \*\(([a-z_]+)\)"), r"sizeof(\1) * (\2)"),)
 
 
 def list_files(paths, exclusions=None, prefix=""):
