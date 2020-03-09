@@ -24,20 +24,17 @@ jobs:
     # check code formatting
     - stage: test
       os: linux
-      arch: arm64
       dist: bionic
       env: NAME="code formatting"
+      before_install:
+        - sudo apt-add-repository --yes --update ppa:pybricks/ppa
       install:
-        - sudo apt-get install python3-pip
-        - sudo pip3 install black
+        - sudo apt-get install uncrustify python3-pip
+        - uncrustify --version
+        - pip3 install --user black
         - black --version
       script:
-        - git clone https://github.com/uncrustify/uncrustify.git $HOME/uncrustify
-        - git -C $HOME/uncrustify checkout uncrustify-0.70.1
-        - mkdir -p $HOME/uncrustify/build
-        - (cd $HOME/uncrustify/build && cmake ..)
-        - make -C $HOME/uncrustify/build
-        - PATH=$HOME/uncrustify/build:$PATH tools/codeformat.py
+        - tools/codeformat.py
         - git diff --exit-code
 
     # stm32 port
