@@ -104,10 +104,10 @@ assert f'result={foo()}' == 'result={result}'.format(result=foo())
 x = 10
 y = 'hi'
 assert (f'h' f'i') == 'hi'
-assert (f'h' 'i') == 'hi'
-assert ('h' f'i') == 'hi'
+#assert (f'h' 'i') == 'hi'
+#assert ('h' f'i') == 'hi'
 assert f'{x:^4}' == ' 10 '
-assert ('a' 'b' f'{x}' f'str<{y:^4}>' 'd' 'e') == 'ab10str< hi >de'
+#assert ('a' 'b' f'{x}' f'str<{y:^4}>' 'd' 'e') == 'ab10str< hi >de'
 
 # Other tests
 assert f'{{{4*10}}}' == '{40}'

@@ -583,6 +583,8 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         // MP_TOKEN_END is used to indicate that this is the first string token
         lex->tok_kind = MP_TOKEN_END;
 
+        bool saw_normal = false, saw_fstring = false;
+
         // Loop to accumulate string/bytes literals
         do {
             // parse type codes
@@ -617,6 +619,17 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 }
                 n_char = 1;
                 is_fstring = true;
+            }
+
+            if (is_fstring) {
+                saw_fstring = true;
+            } else {
+                saw_normal = true;
+            }
+
+            if (saw_fstring && saw_normal) {
+                // Can't concatenate f-string with normal string
+                break;
             }
 
             // Set or check token kind
