@@ -339,6 +339,11 @@ CIRCUITPY_SERIAL_UART = 0
 endif
 CFLAGS += -DCIRCUITPY_SERIAL_UART=$(CIRCUITPY_SERIAL_UART)
 
+# ulab numerics library
+ifndef MICROPY_PY_ULAB
+MICROPY_PY_ULAB = $(CIRCUITPY_FULL_BUILD)
+endif
+
 # Enabled micropython.native decorator (experimental)
 ifndef CIRCUITPY_ENABLE_MPY_NATIVE
 CIRCUITPY_ENABLE_MPY_NATIVE = 0
