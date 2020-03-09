@@ -628,8 +628,8 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules
-        os.environ['MICROPYPATH'] = ''
+        # clear search path to make sure tests use only builtin modules and those in extmod
+        os.environ['MICROPYPATH'] = os.pathsep + '../extmod'
 
     # Even if we run completely different tests in a different directory,
     # we need to access feature_check's from the same directory as the
