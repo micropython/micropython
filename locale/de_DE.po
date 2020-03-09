@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-03 20:13-0600\n"
+"POT-Creation-Date: 2020-03-09 08:19-0500\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -2085,6 +2085,26 @@ msgstr "Es wurden zusätzliche Keyword-Argumente angegeben"
 msgid "extra positional arguments given"
 msgstr "Es wurden zusätzliche Argumente ohne Keyword angegeben"
 
+#: py/parse.c
+msgid "f-string expression part cannot include a '#'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string expression part cannot include a backslash"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: empty expression not allowed"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: expecting '}'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: single '}' is not allowed"
+msgstr ""
+
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
@@ -2404,6 +2424,10 @@ msgstr ""
 #: py/objint.c
 msgid "long int not supported in this build"
 msgstr "long int wird in diesem Build nicht unterstützt"
+
+#: py/parse.c
+msgid "malformed f-string"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
@@ -2733,6 +2757,10 @@ msgstr ""
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "Warteschlangenüberlauf"
+
+#: py/parse.c
+msgid "raw f-strings are not implemented"
+msgstr ""
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
