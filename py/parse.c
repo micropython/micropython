@@ -1178,6 +1178,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
                     translate("unindent does not match any outer indentation level"));
                 break;
+#if MICROPY_COMP_FSTRING_LITERAL
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
             case MP_TOKEN_FSTRING_BACKSLASH:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
@@ -1213,6 +1214,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                     translate("malformed f-string"));
                 break;
+#endif
 #endif
             default:
                 exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,

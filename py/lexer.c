@@ -64,9 +64,11 @@ STATIC bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
+#if MICROPY_COMP_FSTRING_LITERAL
 STATIC bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
 }
+#endif
 
 STATIC bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
@@ -111,9 +113,13 @@ STATIC bool is_following_odigit(mp_lexer_t *lex) {
 
 STATIC bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
+#if MICROPY_COMP_FSTRING_LITERAL
         || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
         || ((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
             && is_char_following_following_or(lex, '\'', '\"'))
+#else
+        || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
+#endif
         || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
             && is_char_following_following_or(lex, '\'', '\"'));
 }
@@ -127,6 +133,7 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
+#if MICROPY_COMP_FSTRING_LITERAL
 STATIC void swap_char_banks(mp_lexer_t *lex) {
     if (lex->vstr_postfix_processing) {
         lex->chr3 = lex->chr0;
@@ -149,6 +156,7 @@ STATIC void swap_char_banks(mp_lexer_t *lex) {
         lex->vstr_postfix_idx = 0;
     }
 }
+#endif
 
 STATIC void next_char(mp_lexer_t *lex) {
     if (lex->chr0 == '\n') {
@@ -166,13 +174,16 @@ STATIC void next_char(mp_lexer_t *lex) {
     lex->chr0 = lex->chr1;
     lex->chr1 = lex->chr2;
 
+#if MICROPY_COMP_FSTRING_LITERAL
     if (lex->vstr_postfix_processing) {
         if (lex->vstr_postfix_idx == lex->vstr_postfix.len) {
             lex->chr2 = '\0';
         } else {
             lex->chr2 = lex->vstr_postfix.buf[lex->vstr_postfix_idx++];
         }
-    } else {
+    } else
+#endif
+    {
         lex->chr2 = lex->reader.readbyte(lex->reader.data);
     }
 
@@ -190,10 +201,12 @@ STATIC void next_char(mp_lexer_t *lex) {
         lex->chr2 = '\n';
     }
 
+#if MICROPY_COMP_FSTRING_LITERAL
     if (lex->vstr_postfix_processing && lex->chr0 == '\0') {
         lex->vstr_postfix_processing = false;
         swap_char_banks(lex);
     }
+#endif
 }
 
 STATIC void indent_push(mp_lexer_t *lex, size_t indent) {
@@ -334,8 +347,10 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
     }
 
     size_t n_closing = 0;
+#if MICROPY_COMP_FSTRING_LITERAL
     bool in_expression = false;
     bool expression_eat = true;
+#endif
 
     while (!is_end(lex) && (num_quotes > 1 || !is_char(lex, '\n')) && n_closing < num_quotes) {
         if (is_char(lex, quote_char)) {
@@ -343,6 +358,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
             vstr_add_char(&lex->vstr, CUR_CHAR(lex));
         } else {
             n_closing = 0;
+#if MICROPY_COMP_FSTRING_LITERAL
             if (is_fstring && is_char(lex, '{')) {
                 vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                 in_expression = !in_expression;
@@ -390,6 +406,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                 next_char(lex);
                 continue;
             }
+#endif
 
             if (is_char(lex, '\\')) {
                 next_char(lex);
@@ -525,12 +542,14 @@ STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
+#if MICROPY_COMP_FSTRING_LITERAL
     if (lex->vstr_postfix.len && !lex->vstr_postfix_processing) {
         // end format call injection
         vstr_add_char(&lex->vstr_postfix, ')');
         lex->vstr_postfix_processing = true;
         swap_char_banks(lex);
     }
+#endif
 
     // start new token text
     vstr_reset(&lex->vstr);
@@ -583,13 +602,19 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         // MP_TOKEN_END is used to indicate that this is the first string token
         lex->tok_kind = MP_TOKEN_END;
 
+#if MICROPY_COMP_FSTRING_LITERAL
         bool saw_normal = false, saw_fstring = false;
+#endif
 
         // Loop to accumulate string/bytes literals
         do {
             // parse type codes
             bool is_raw = false;
+#if MICROPY_COMP_FSTRING_LITERAL
             bool is_fstring = false;
+#else
+            const bool is_fstring = false;
+#endif
             mp_token_kind_t kind = MP_TOKEN_STRING;
             int n_char = 0;
             if (is_char(lex, 'u')) {
@@ -608,6 +633,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_BYTES;
                     n_char = 2;
                 }
+#if MICROPY_COMP_FSTRING_LITERAL
                 if (is_char_following(lex, 'f')) {
                     lex->tok_kind = MP_TOKEN_FSTRING_RAW;
                     break;
@@ -619,8 +645,10 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 }
                 n_char = 1;
                 is_fstring = true;
+#endif
             }
 
+#if MICROPY_COMP_FSTRING_LITERAL
             if (is_fstring) {
                 saw_fstring = true;
             } else {
@@ -631,6 +659,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 // Can't concatenate f-string with normal string
                 break;
             }
+#endif
 
             // Set or check token kind
             if (lex->tok_kind == MP_TOKEN_END) {
@@ -808,7 +837,9 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->num_indent_level = 1;
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
+#if MICROPY_COMP_FSTRING_LITERAL
     vstr_init(&lex->vstr_postfix, 0);
+#endif
 
     // store sentinel for first indentation level
     lex->indent_level[0] = 0;

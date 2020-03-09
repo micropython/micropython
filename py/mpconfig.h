@@ -377,6 +377,11 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
 #endif
 
+// Whether to include parsing of f-string literals
+#ifndef MICROPY_COMP_FSTRING_LITERAL
+#define MICROPY_COMP_FSTRING_LITERAL (1)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
