@@ -165,8 +165,9 @@ STATIC void btstack_uart_process(void) {
 
     // Append any new bytes to the recv buffer, notifying bstack if we've got
     // the number of bytes it was looking for.
-    while (uart_rx_any(&mp_bluetooth_hci_uart_obj) && recv_idx < recv_len) {
-        recv_buf[recv_idx++] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
+    int chr;
+    while (recv_idx < recv_len && (chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
+        recv_buf[recv_idx++] = chr;
         if (recv_idx == recv_len) {
             recv_idx = 0;
             recv_len = 0;

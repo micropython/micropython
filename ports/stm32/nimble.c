@@ -67,36 +67,19 @@ void mp_bluetooth_nimble_port_start(void) {
     ble_hs_start();
 }
 
-#if defined(STM32WB)
-
-#include "rfcore.h"
-
-void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
-    // Protect in case it's called from ble_npl_sem_pend at thread-level
-    MICROPY_PY_LWIP_ENTER
-    rfcore_ble_check_msg(rx_cb, rx_arg);
-    MICROPY_PY_LWIP_EXIT
-}
-
-#else
-
-#include "uart.h"
-
 void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
     bool host_wake = mp_bluetooth_hci_controller_woken();
 
-    while (uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
-        uint8_t data = uart_rx_char(&mp_bluetooth_hci_uart_obj);
+    int chr;
+    while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
         //printf("UART RX: %02x\n", data);
-        rx_cb(rx_arg, data);
+        rx_cb(rx_arg, chr);
     }
 
     if (host_wake) {
         mp_bluetooth_hci_controller_sleep_maybe();
     }
 }
-
-#endif // defined(STM32WB)
 
 void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len) {
     mp_bluetooth_hci_uart_write((const uint8_t *)str, len);

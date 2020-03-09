@@ -50,6 +50,7 @@ extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
 int mp_bluetooth_hci_uart_init(uint32_t port);
 int mp_bluetooth_hci_uart_activate(void);
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate);
+int mp_bluetooth_hci_uart_readchar(void);
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_HCI_H

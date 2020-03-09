@@ -56,7 +56,7 @@ typedef struct _tl_list_node_t {
 } tl_list_node_t;
 
 typedef struct _parse_hci_info_t {
-    int (*cb_fun)(void *, uint8_t);
+    int (*cb_fun)(void *, const uint8_t *, size_t);
     void *cb_env;
     bool was_hci_reset_evt;
 } parse_hci_info_t;
@@ -190,9 +190,7 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
             // Standard BT HCI ACL packet
             kind = "HCI_ACL";
             if (parse != NULL) {
-                for (size_t i = 0; i < len; ++i) {
-                    parse->cb_fun(parse->cb_env, buf[i]);
-                }
+                parse->cb_fun(parse->cb_env, buf, len);
             }
             break;
         }
@@ -205,12 +203,11 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                     len -= 1;
                     fix = true;
                 }
-                for (size_t i = 0; i < len; ++i) {
-                    parse->cb_fun(parse->cb_env, buf[i]);
-                }
+                parse->cb_fun(parse->cb_env, buf, len);
                 if (fix) {
                     len += 1;
-                    parse->cb_fun(parse->cb_env, 0x00); // success
+                    uint8_t data = 0x00; // success
+                    parse->cb_fun(parse->cb_env, &data, 1);
                 }
                 // Check for successful HCI_Reset event
                 parse->was_hci_reset_evt = buf[1] == 0x0e && buf[2] == 0x04 && buf[3] == 0x01
@@ -403,7 +400,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     IPCC->C1SCR = ch << 16;
 }
 
-void rfcore_ble_check_msg(int (*cb)(void *, uint8_t), void *env) {
+void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
     parse_hci_info_t parse = { cb, env, false };
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 

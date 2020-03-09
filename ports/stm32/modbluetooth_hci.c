@@ -54,7 +54,12 @@ void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms) {
 /******************************************************************************/
 // HCI over IPCC
 
+#include <string.h>
 #include "rfcore.h"
+
+STATIC uint16_t hci_uart_rx_buf_cur;
+STATIC uint16_t hci_uart_rx_buf_len;
+STATIC uint8_t hci_uart_rx_buf_data[256];
 
 int mp_bluetooth_hci_controller_deactivate(void) {
     return 0;
@@ -79,6 +84,8 @@ int mp_bluetooth_hci_uart_init(uint32_t port) {
 
 int mp_bluetooth_hci_uart_activate(void) {
     rfcore_ble_init();
+    hci_uart_rx_buf_cur = 0;
+    hci_uart_rx_buf_len = 0;
     return 0;
 }
 
@@ -92,6 +99,31 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     rfcore_ble_hci_cmd(len, (const uint8_t *)buf);
     MICROPY_PY_BLUETOOTH_EXIT
     return 0;
+}
+
+// Callback to copy data into local hci_uart_rx_buf_data buffer for subsequent use.
+STATIC int mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
+    (void)env;
+    if (hci_uart_rx_buf_len + len > MP_ARRAY_SIZE(hci_uart_rx_buf_data)) {
+        len = MP_ARRAY_SIZE(hci_uart_rx_buf_data) - hci_uart_rx_buf_len;
+    }
+    memcpy(hci_uart_rx_buf_data + hci_uart_rx_buf_len, buf, len);
+    hci_uart_rx_buf_len += len;
+    return 0;
+}
+
+int mp_bluetooth_hci_uart_readchar(void) {
+    if (hci_uart_rx_buf_cur >= hci_uart_rx_buf_len) {
+        hci_uart_rx_buf_cur = 0;
+        hci_uart_rx_buf_len = 0;
+        rfcore_ble_check_msg(mp_bluetooth_hci_uart_msg_cb, NULL);
+    }
+
+    if (hci_uart_rx_buf_cur < hci_uart_rx_buf_len) {
+        return hci_uart_rx_buf_data[hci_uart_rx_buf_cur++];
+    } else {
+        return -1;
+    }
 }
 
 #else
@@ -151,6 +183,16 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     mp_bluetooth_hci_controller_wakeup();
     uart_tx_strn(&mp_bluetooth_hci_uart_obj, (void *)buf, len);
     return 0;
+}
+
+// This function expects the controller to be in the wake state via a previous call
+// to mp_bluetooth_hci_controller_woken.
+int mp_bluetooth_hci_uart_readchar(void) {
+    if (uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
+        return uart_rx_char(&mp_bluetooth_hci_uart_obj);
+    } else {
+        return -1;
+    }
 }
 
 #endif // defined(STM32WB)
