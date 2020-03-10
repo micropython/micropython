@@ -28,8 +28,8 @@ class Bootloader:
         self.buf1 = bytearray(1)
         try:
             self.i2c.writeto(addr, b"")
-        except OSError:
-            raise Exception("no I2C mboot device found")
+        except OSError as e:
+            raise Exception("no I2C mboot device found") from e
 
     def wait_response(self):
         start = time.ticks_ms()

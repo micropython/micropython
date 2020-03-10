@@ -149,9 +149,9 @@ def get_timestamp(path, default=None):
     try:
         stat = os.stat(path)
         return stat.st_mtime
-    except OSError:
+    except OSError as e:
         if default is None:
-            raise FreezeError("cannot stat {}".format(path))
+            raise FreezeError("cannot stat {}".format(path)) from e
         return default
 
 

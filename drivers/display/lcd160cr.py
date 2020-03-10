@@ -228,8 +228,8 @@ class LCD160CR:
     def set_uart_baudrate(self, baudrate):
         try:
             baudrate = _uart_baud_table[baudrate]
-        except KeyError:
-            raise ValueError("invalid baudrate")
+        except KeyError as e:
+            raise ValueError("invalid baudrate") from e
         self._fcmd2("<BBB", 0x18, baudrate)
 
     def set_startup_deco(self, value):
