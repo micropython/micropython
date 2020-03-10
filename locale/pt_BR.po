@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-03 20:13-0600\n"
+"POT-Creation-Date: 2020-03-09 08:19-0500\n"
 "PO-Revision-Date: 2018-10-02 21:14-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2078,6 +2078,26 @@ msgstr "argumentos extras de palavras-chave passados"
 msgid "extra positional arguments given"
 msgstr "argumentos extra posicionais passados"
 
+#: py/parse.c
+msgid "f-string expression part cannot include a '#'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string expression part cannot include a backslash"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: empty expression not allowed"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: expecting '}'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: single '}' is not allowed"
+msgstr ""
+
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
@@ -2389,6 +2409,10 @@ msgstr ""
 
 #: py/objint.c
 msgid "long int not supported in this build"
+msgstr ""
+
+#: py/parse.c
+msgid "malformed f-string"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c
@@ -2717,6 +2741,10 @@ msgstr ""
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "estouro de fila"
+
+#: py/parse.c
+msgid "raw f-strings are not implemented"
+msgstr ""
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
