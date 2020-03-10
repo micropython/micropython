@@ -40,6 +40,8 @@ endif
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
 USB_MSC_EP_NUM_OUT = 1
 
+MICROPY_PY_ULAB = 0
+
 endif # samd21
 
 # Put samd51-only choices here.
