@@ -72,6 +72,8 @@ STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     }
 }
 STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
+    // Turn off the interrupts to the CPU.
+    self->pwm->INTENCLR = PWM_INTENSET_SEQSTARTED0_Msk | PWM_INTENSET_SEQSTARTED1_Msk;
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (active_audio[i] == self) {
             active_audio[i] = NULL;
@@ -149,6 +151,14 @@ STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
 }
 
 void audiopwmout_background() {
+    // Check the NVIC first because it is part of the CPU and fast to read.
+    if (!NVIC_GetPendingIRQ(PWM0_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM1_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM2_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM3_IRQn)) {
+        return;
+    }
+    // Check our objects because the PWM could be active for some other reason.
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (!active_audio[i]) continue;
         audiopwmout_background_obj(active_audio[i]);
@@ -260,6 +270,9 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->pwm->EVENTS_SEQEND[0] = 0;
     self->pwm->EVENTS_SEQEND[1] = 0;
     self->pwm->EVENTS_STOPPED = 0;
+    // Enable the SEQSTARTED interrupts so that they wake the CPU and keep it awake until serviced.
+    // We don't enable them in the NVIC because we don't actually want an interrupt routine to run.
+    self->pwm->INTENSET = PWM_INTENSET_SEQSTARTED0_Msk | PWM_INTENSET_SEQSTARTED1_Msk;
     self->pwm->TASKS_SEQSTART[0] = 1;
     self->playing = true;
     self->paused = false;
