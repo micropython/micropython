@@ -47,6 +47,10 @@ void displayio_background(void) {
         }
         if (displays[i].display.base.type == &displayio_display_type) {
             displayio_display_background(&displays[i].display);
+#if CIRCUITPY_FRAMEBUFFERIO
+        } else if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
+            framebufferio_framebufferdisplay_background(&displays[i].framebuffer_display);
+#endif
         } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
             displayio_epaperdisplay_background(&displays[i].epaper_display);
         }
@@ -67,6 +71,10 @@ void common_hal_displayio_release_displays(void) {
             release_display(&displays[i].display);
         } else if (display_type == &displayio_epaperdisplay_type) {
             release_epaperdisplay(&displays[i].epaper_display);
+#if CIRCUITPY_FRAMEBUFFERIO
+        } else if (display_type == &framebufferio_framebufferdisplay_type) {
+            release_framebufferdisplay(&displays[i].framebuffer_display);
+#endif
         }
         displays[i].display.base.type = &mp_type_NoneType;
     }
@@ -141,6 +149,11 @@ void reset_displays(void) {
                     }
                 }
             }
+#if CIRCUITPY_PROTOMATTER
+        } else if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
+            protomatter_protomatter_obj_t * pm = &displays[i].protomatter;
+            common_hal_protomatter_protomatter_reconstruct(pm, NULL);
+#endif
         } else {
             // Not an active display bus.
             continue;
@@ -155,12 +168,24 @@ void reset_displays(void) {
         } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
             displayio_epaperdisplay_obj_t* display = &displays[i].epaper_display;
             common_hal_displayio_epaperdisplay_show(display, NULL);
+#if CIRCUITPY_FRAMEBUFFERIO
+        } else if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
+            framebufferio_framebufferdisplay_obj_t* display = &displays[i].framebuffer_display;
+            display->auto_refresh = true;
+            common_hal_framebufferio_framebufferdisplay_show(display, NULL);
+#endif
         }
     }
 }
 
 void displayio_gc_collect(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+#if CIRCUITPY_PROTOMATTER
+        if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
+            protomatter_protomatter_collect_ptrs(&displays[i].protomatter);
+        }
+#endif
+
         if (displays[i].display.base.type == NULL) {
             continue;
         }
@@ -169,6 +194,10 @@ void displayio_gc_collect(void) {
         // but this is more precise, and is the only field that needs marking.
         if (displays[i].display.base.type == &displayio_display_type) {
             displayio_display_collect_ptrs(&displays[i].display);
+#if CIRCUITPY_FRAMEBUFFERIO
+        } else if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
+            framebufferio_framebufferdisplay_collect_ptrs(&displays[i].framebuffer_display);
+#endif
         } else if (displays[i].epaper_display.base.type == &displayio_epaperdisplay_type) {
             displayio_epaperdisplay_collect_ptrs(&displays[i].epaper_display);
         }
@@ -309,7 +338,7 @@ void displayio_area_transform_within(bool mirror_x, bool mirror_y, bool transpos
     }
 }
 
-primary_display_t *allocate_display() {
+primary_display_t *allocate_display(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t display_type = displays[i].display.base.type;
         if (display_type == NULL || display_type == &mp_type_NoneType) {
@@ -317,14 +346,14 @@ primary_display_t *allocate_display() {
         }
     }
     return NULL;
-
-primary_display_t *allocate_display_or_raise() {
-    primary_display_t *result = allocate_display();
-    if (!result) {
-        mp_raise_RuntimeError(translate("Too many displays"));
-    }
 }
 
+primary_display_t *allocate_display_or_raise(void) {
+    primary_display_t *result = allocate_display();
+    if (result) {
+        return result;
+    }
+    mp_raise_RuntimeError(translate("Too many displays"));
 }
 primary_display_t *allocate_display_bus(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
 
-#define TC_HANDLER_NO_INTERRUPT 0x0
-#define TC_HANDLER_PULSEOUT 0x1
-#define TC_HANDLER_PEW 0x2
-#define TC_HANDLER_FREQUENCYIN 0x3
-#define TC_HANDLER_PROTOMATTER 0x4
+#include <stdint.h>
 
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
-void shared_timer_handler(bool is_tc, uint8_t index);
+#include "py/obj.h"
+#include "py/runtime.h"
 
-// implementation of these functions is in PWMOut.c
-void timer_never_reset(int index, bool is_tc);
-void timer_reset_ok(int index, bool is_tc);
+#include "shared-bindings/_protomatter/Protomatter.h"
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+//| :mod:`_protomatter` --- Low-level routines for bitbanged LED matrices
+//| =====================================================================
+//|
+//| .. module:: _protomatter
+//|   :synopsis: Low-level routines for bitbanged LED matrices
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Protomatter
+
+STATIC const mp_rom_map_elem_t protomatter_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__protomatter) },
+    { MP_ROM_QSTR(MP_QSTR_Protomatter), MP_ROM_PTR(&protomatter_Protomatter_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(protomatter_module_globals, protomatter_module_globals_table);
+
+const mp_obj_module_t protomatter_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&protomatter_module_globals,
+};

@@ -240,3 +240,15 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
 
     return pin_number_is_free(pin->number);
 }
+
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
+    return pin->number;
+}
+
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+    return claim_pin(pin);
+}
+
+void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
+    reset_pin_number(pin_no);
+}

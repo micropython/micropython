@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
 
-#define TC_HANDLER_NO_INTERRUPT 0x0
-#define TC_HANDLER_PULSEOUT 0x1
-#define TC_HANDLER_PEW 0x2
-#define TC_HANDLER_FREQUENCYIN 0x3
-#define TC_HANDLER_PROTOMATTER 0x4
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
 
-void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
-void shared_timer_handler(bool is_tc, uint8_t index);
+void *common_hal_protomatter_timer_allocate(void);
+void common_hal_protomatter_timer_enable(void*);
+void common_hal_protomatter_timer_disable(void*);
+void common_hal_protomatter_timer_free(void*);
 
-// implementation of these functions is in PWMOut.c
-void timer_never_reset(int index, bool is_tc);
-void timer_reset_ok(int index, bool is_tc);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H
+#endif
