@@ -145,8 +145,8 @@ soft_reset:
     vfs_init();
     #endif
 
-    #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("main.py");
+    #if MICROPY_MODULE_FROZEN || MICROPY_VFS
+    pyexec_file_if_exists("main.py");
     #endif
 
     for (;;) {
