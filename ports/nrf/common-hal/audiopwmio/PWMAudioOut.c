@@ -88,7 +88,6 @@ void audiopwmout_reset() {
 }
 
 STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
-    self->pwm->EVENTS_SEQSTARTED[1-buf] = 0;
     uint16_t *dev_buffer = self->buffers[buf];
     uint8_t *buffer;
     uint32_t buffer_length;
@@ -145,8 +144,15 @@ STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
         if (stopped)
             self->pwm->TASKS_STOP = 1;
     } else if (!self->paused && !self->single_buffer) {
-        if (self->pwm->EVENTS_SEQSTARTED[0]) fill_buffers(self, 1);
-        if (self->pwm->EVENTS_SEQSTARTED[1]) fill_buffers(self, 0);
+        if (self->pwm->EVENTS_SEQSTARTED[0]) {
+            fill_buffers(self, 1);
+            self->pwm->EVENTS_SEQSTARTED[0] = 0;
+        }
+        if (self->pwm->EVENTS_SEQSTARTED[1]) {
+            fill_buffers(self, 0);
+            self->pwm->EVENTS_SEQSTARTED[1] = 0;
+        }
+        NVIC_ClearPendingIRQ(self->pwm_irq);
     }
 }
 
@@ -168,7 +174,8 @@ void audiopwmout_background() {
 // Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
-    self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL);
+    self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL,
+                                &self->pwm_irq);
     if (!self->pwm) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }

@@ -322,6 +322,7 @@ bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
 void i2s_background(void) {
     if (NVIC_GetPendingIRQ(I2S_IRQn) && NRF_I2S->EVENTS_TXPTRUPD) {
         NRF_I2S->EVENTS_TXPTRUPD = 0;
+        NVIC_ClearPendingIRQ(I2S_IRQn);
         if (instance) {
             i2s_buffer_fill(instance);
         } else {
