@@ -115,11 +115,9 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
         int8_t rssi = gap_event_advertising_report_get_rssi(packet);
         uint8_t length = gap_event_advertising_report_get_data_length(packet);
         const uint8_t *data = gap_event_advertising_report_get_data(packet);
-        bool connectable = adv_event_type == 0 || adv_event_type == 1;
-        if (adv_event_type <= 2) {
-            mp_bluetooth_gap_on_scan_result(address_type, address, connectable, rssi, data, length);
-        } else if (adv_event_type == 4) {
-            // TODO: Scan response.
+        // Emit an event for all advertising types except SCAN_RSP.
+        if (adv_event_type < 4) {
+            mp_bluetooth_gap_on_scan_result(address_type, address, adv_event_type, rssi, data, length);
         }
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_EVENT_printf("  --> hci disconnect complete\n");

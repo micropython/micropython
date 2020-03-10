@@ -248,7 +248,7 @@ bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_han
 void mp_bluetooth_gap_on_scan_complete(void);
 
 // Notify modbluetooth of a scan result.
-void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, bool connectable, const int8_t rssi, const uint8_t *data, size_t data_len);
+void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len);
 
 // Notify modbluetooth that a service was found (either by discover-all, or discover-by-uuid).
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid);

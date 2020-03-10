@@ -93,7 +93,7 @@ Event Handling
                 conn_handle, attr_handle = data
             elif event == _IRQ_SCAN_RESULT:
                 # A single scan result.
-                addr_type, addr, connectable, rssi, adv_data = data
+                addr_type, addr, adv_type, rssi, adv_data = data
             elif event == _IRQ_SCAN_COMPLETE:
                 # Scan duration finished or manually stopped.
                 pass
@@ -185,7 +185,15 @@ Observer Role (Scanner)
     interval and window are 1.28 seconds and 11.25 milliseconds respectively
     (background scanning).
 
-    For each scan result, the ``_IRQ_SCAN_RESULT`` event will be raised.
+    For each scan result the ``_IRQ_SCAN_RESULT`` event will be raised, with event
+    data ``(addr_type, addr, adv_type, rssi, adv_data)``.  ``adv_type`` values correspond
+    to the Bluetooth Specification:
+
+        * 0x00 - ADV_IND - connectable and scannable undirected advertising
+        * 0x01 - ADV_DIRECT_IND - connectable directed advertising
+        * 0x02 - ADV_SCAN_IND - scannable undirected advertising
+        * 0x03 - ADV_NONCONN_IND - non-connectable undirected advertising
+        * 0x04 - SCAN_RSP - scan response
 
     When scanning is stopped (either due to the duration finishing or when
     explicitly stopped), the ``_IRQ_SCAN_COMPLETE`` event will be raised.

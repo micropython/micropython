@@ -634,16 +634,9 @@ STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
         return 0;
     }
 
-    if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND || event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_NONCONN_IND) {
-        bool connectable = event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_ADV_IND;
-        uint8_t addr[6];
-        reverse_addr_byte_order(addr, event->disc.addr.val);
-        mp_bluetooth_gap_on_scan_result(event->disc.addr.type, addr, connectable, event->disc.rssi, event->disc.data, event->disc.length_data);
-    } else if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP) {
-        // TODO
-    } else if (event->disc.event_type == BLE_HCI_ADV_RPT_EVTYPE_SCAN_IND) {
-        // TODO
-    }
+    uint8_t addr[6];
+    reverse_addr_byte_order(addr, event->disc.addr.val);
+    mp_bluetooth_gap_on_scan_result(event->disc.addr.type, addr, event->disc.event_type, event->disc.rssi, event->disc.data, event->disc.length_data);
 
     return 0;
 }
