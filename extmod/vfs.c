@@ -524,4 +524,25 @@ mp_obj_t mp_vfs_statvfs(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj, mp_vfs_statvfs);
 
+// This is a C-level helper function for ports to use if needed.
+int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point) {
+    nlr_buf_t nlr;
+    mp_int_t ret = -MP_EIO;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t args[] = { bdev, mount_point };
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
+        mp_vfs_chdir(mount_point);
+        ret = 0; // success
+        nlr_pop();
+    } else {
+        mp_obj_base_t *exc = nlr.ret_val;
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
+            mp_obj_t v = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+            mp_obj_get_int_maybe(v, &ret); // get errno value
+            ret = -ret;
+        }
+    }
+    return ret;
+}
+
 #endif // MICROPY_VFS

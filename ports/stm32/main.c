@@ -161,26 +161,6 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 #if MICROPY_HW_ENABLE_STORAGE
-STATIC int vfs_mount_and_chdir(mp_obj_t bdev, mp_obj_t mount_point) {
-    nlr_buf_t nlr;
-    mp_int_t ret = -MP_EIO;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[] = { bdev, mount_point };
-        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
-        mp_vfs_chdir(mount_point);
-        ret = 0; // success
-        nlr_pop();
-    } else {
-        mp_obj_base_t *exc = nlr.ret_val;
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
-            mp_obj_t v = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
-            mp_obj_get_int_maybe(v, &ret); // get errno value
-            ret = -ret;
-        }
-    }
-    return ret;
-}
-
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     if (reset_mode == 3) {
@@ -230,14 +210,14 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
-    int ret = vfs_mount_and_chdir(bdev, mount_point);
+    int ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
 
     if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj) && reset_mode != 3) {
         // No filesystem, bdev is still the default (so didn't detect a possibly corrupt littlefs),
         // and didn't already create a filesystem, so try to create a fresh one now.
         ret = factory_reset_create_filesystem();
         if (ret == 0) {
-            ret = vfs_mount_and_chdir(bdev, mount_point);
+            ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
         }
     }
 
