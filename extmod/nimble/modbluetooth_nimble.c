@@ -339,7 +339,14 @@ bool mp_bluetooth_is_active(void) {
 
 void mp_bluetooth_get_device_addr(uint8_t *addr) {
     #if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
-    ble_hs_id_copy_addr(BLE_ADDR_RANDOM, addr, NULL);
+    uint8_t addr_le[6];
+    int rc = ble_hs_id_copy_addr(BLE_ADDR_RANDOM, addr_le, NULL);
+    if (rc != 0) {
+        // Even with MICROPY_PY_BLUETOOTH_RANDOM_ADDR enabled the public address may
+        // be used instead, in which case there is no random address.
+        ble_hs_id_copy_addr(BLE_ADDR_PUBLIC, addr_le, NULL);
+    }
+    reverse_addr_byte_order(addr, addr_le);
     #else
     mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
     #endif
