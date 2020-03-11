@@ -105,13 +105,12 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    assert_pin(args[ARG_rx].u_obj, true);
-    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(args[ARG_rx].u_obj);
-    assert_pin_free(rx);
+    const mcu_pin_obj_t* rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
+    const mcu_pin_obj_t* tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
 
-    assert_pin(args[ARG_tx].u_obj, true);
-    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(args[ARG_tx].u_obj);
-    assert_pin_free(tx);
+    if ( (tx == NULL) && (rx == NULL) ) {
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+    }
 
     uint8_t bits = args[ARG_bits].u_int;
     if (bits < 7 || bits > 9) {
@@ -133,12 +132,11 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    const mcu_pin_obj_t* rts = MP_OBJ_TO_PTR(args[ARG_rts].u_obj);
+    const mcu_pin_obj_t* rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
+    const mcu_pin_obj_t* cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
+    const mcu_pin_obj_t* rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
 
-    const mcu_pin_obj_t* cts = MP_OBJ_TO_PTR(args[ARG_cts].u_obj);
-
-    const mcu_pin_obj_t* rs485_dir = args[ARG_rs485_dir].u_obj;
-    bool rs485_invert = args[ARG_rs485_invert].u_bool;
+    const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
                                     args[ARG_baudrate].u_int, bits, parity, stop, timeout,

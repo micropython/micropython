@@ -45,11 +45,11 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     }
     // TODO: add ADC traits to structure?
 
-    // Note that ADC2 is always bundled pin-to-pin with ADC1 if it exists, and used only 
-    // for dual conversion. For this basic application it is never used. 
+    // Note that ADC2 is always bundled pin-to-pin with ADC1 if it exists, and used only
+    // for dual conversion. For this basic application it is never used.
     LL_GPIO_SetPinMode(pin_port(pin->port), (uint32_t)pin_mask(pin->number), LL_GPIO_MODE_ANALOG);
     if (pin->adc_unit & 0x01) {
-        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1); 
+        LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1);
     } else if (pin->adc_unit == 0x04) {
         #ifdef LL_APB2_GRP1_PERIPH_ADC3
         LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC3);
@@ -62,7 +62,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
 }
 
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
@@ -70,7 +70,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
         return;
     }
     reset_pin_number(self->pin->port,self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
@@ -116,10 +116,10 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
-    HAL_ADC_PollForConversion(&AdcHandle,1); 
+    HAL_ADC_PollForConversion(&AdcHandle,1);
     uint16_t value = (uint16_t)HAL_ADC_GetValue(&AdcHandle);
     HAL_ADC_Stop(&AdcHandle);
-    
+
     // // Shift the value to be 16 bit.
     return value << 4;
 }

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-03 20:13-0600\n"
+"POT-Creation-Date: 2020-03-09 08:19-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -2093,6 +2093,26 @@ msgstr "éwài de guānjiàn cí cānshù"
 msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
+#: py/parse.c
+msgid "f-string expression part cannot include a '#'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string expression part cannot include a backslash"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: empty expression not allowed"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: expecting '}'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: single '}' is not allowed"
+msgstr ""
+
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
@@ -2406,6 +2426,10 @@ msgstr "fùzhí qián yǐnyòng de júbù biànliàng"
 #: py/objint.c
 msgid "long int not supported in this build"
 msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
+
+#: py/parse.c
+msgid "malformed f-string"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
@@ -2734,6 +2758,10 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "duìliè yìchū"
+
+#: py/parse.c
+msgid "raw f-strings are not implemented"
+msgstr ""
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"

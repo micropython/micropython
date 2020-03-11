@@ -65,7 +65,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
 
-    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
+    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
 
@@ -73,8 +73,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
     }
 
-    bool have_tx = tx != mp_const_none;
-    bool have_rx = rx != mp_const_none;
+    bool have_tx = tx != NULL;
+    bool have_rx = rx != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -109,7 +109,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 #endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
-            if (rx == mp_const_none) {
+            if (rx == NULL) {
                 sercom = potential_sercom;
                 break;
             }

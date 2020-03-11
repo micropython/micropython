@@ -100,14 +100,14 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = self->sda->altfn_index; 
+    GPIO_InitStruct.Alternate = self->sda->altfn_index;
     HAL_GPIO_Init(pin_port(sda->port), &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = pin_mask(scl->number);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = self->scl->altfn_index; 
+    GPIO_InitStruct.Alternate = self->scl->altfn_index;
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
     //Note: due to I2C soft reboot issue, do not relocate clock init.
@@ -144,7 +144,7 @@ void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
-    return self->sda->pin == mp_const_none;
+    return self->sda == NULL;
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
@@ -158,8 +158,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
     reset_pin_number(self->sda->pin->port,self->sda->pin->number);
     reset_pin_number(self->scl->pin->port,self->scl->pin->number);
-    self->sda = mp_const_none;
-    self->scl = mp_const_none;
+    self->sda = NULL;
+    self->scl = NULL;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
@@ -169,7 +169,7 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
     bool grabbed_lock = false;
 
-    //Critical section code that may be required at some point. 
+    //Critical section code that may be required at some point.
     // uint32_t store_primask = __get_PRIMASK();
     // __disable_irq();
     // __DMB();
@@ -195,19 +195,19 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
                                    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr << 1), 
+    HAL_StatusTypeDef result = HAL_I2C_Master_Transmit(&(self->handle), (uint16_t)(addr << 1),
                                                         (uint8_t *)data, (uint16_t)len, 500);
     return result == HAL_OK ? 0 : MP_EIO;
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500) 
+    return HAL_I2C_Master_Receive(&(self->handle), (uint16_t)(addr<<1), data, (uint16_t)len, 500)
                                     == HAL_OK ? 0 : MP_EIO;
 }
 
 STATIC void i2c_clock_enable(uint8_t mask) {
-    //Note: hard reset required due to soft reboot issue. 
+    //Note: hard reset required due to soft reboot issue.
     #ifdef I2C1
     if (mask & (1 << 0)) {
         __HAL_RCC_I2C1_CLK_ENABLE();

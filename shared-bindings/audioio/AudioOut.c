@@ -104,16 +104,8 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t left_channel_obj = args[ARG_left_channel].u_obj;
-    assert_pin(left_channel_obj, false);
-    const mcu_pin_obj_t *left_channel_pin = MP_OBJ_TO_PTR(left_channel_obj);
-
-    mp_obj_t right_channel_obj = args[ARG_right_channel].u_obj;
-    const mcu_pin_obj_t *right_channel_pin = NULL;
-    if (right_channel_obj != mp_const_none) {
-        assert_pin(right_channel_obj, false);
-        right_channel_pin = MP_OBJ_TO_PTR(right_channel_obj);
-    }
+    const mcu_pin_obj_t *left_channel_pin = validate_obj_is_free_pin(args[ARG_left_channel].u_obj);
+    const mcu_pin_obj_t *right_channel_pin = validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj);
 
     // create AudioOut object from the given pin
     audioio_audioout_obj_t *self = m_new_obj(audioio_audioout_obj_t);

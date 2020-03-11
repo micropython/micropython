@@ -104,15 +104,8 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t clock_pin_obj = args[ARG_clock_pin].u_obj;
-    assert_pin(clock_pin_obj, false);
-    const mcu_pin_obj_t *clock_pin = MP_OBJ_TO_PTR(clock_pin_obj);
-    assert_pin_free(clock_pin);
-
-    mp_obj_t data_pin_obj = args[ARG_data_pin].u_obj;
-    assert_pin(data_pin_obj, false);
-    const mcu_pin_obj_t *data_pin = MP_OBJ_TO_PTR(data_pin_obj);
-    assert_pin_free(data_pin);
+    const mcu_pin_obj_t *clock_pin = validate_obj_is_free_pin(args[ARG_clock_pin].u_obj);
+    const mcu_pin_obj_t *data_pin = validate_obj_is_free_pin(args[ARG_data_pin].u_obj);
 
     // create PDMIn object from the given pin
     audiobusio_pdmin_obj_t *self = m_new_obj(audiobusio_pdmin_obj_t);

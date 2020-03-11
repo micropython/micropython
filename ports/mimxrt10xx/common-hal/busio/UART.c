@@ -80,8 +80,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // TODO: Allow none rx or tx
 
-    bool have_tx = tx != mp_const_none;
-    bool have_rx = rx != mp_const_none;
+    bool have_tx = tx != NULL;
+    bool have_rx = rx != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -116,8 +116,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     // Filter for sane settings for RS485
-    if (rs485_dir != mp_const_none) {
-      if ((rts != mp_const_none) || (cts != mp_const_none)) {
+    if (rs485_dir != NULL) {
+      if ((rts != NULL) || (cts != NULL)) {
         mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
       }
       // For IMXRT the RTS pin is used for RS485 direction
@@ -133,7 +133,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const uint32_t rts_count = sizeof(mcu_uart_rts_list) / sizeof(mcu_periph_obj_t);
     const uint32_t cts_count = sizeof(mcu_uart_cts_list) / sizeof(mcu_periph_obj_t);
 
-    if (rts != mp_const_none) {
+    if (rts != NULL) {
       for (uint32_t i=0; i < rts_count; ++i) {
         if (mcu_uart_rts_list[i].bank_idx == self->rx_pin->bank_idx) {
           if (mcu_uart_rts_list[i].pin == rts) {
@@ -146,7 +146,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Selected RTS pin not valid"));
     }
 
-    if (cts != mp_const_none) {
+    if (cts != NULL) {
       for (uint32_t i=0; i < cts_count; ++i) {
         if (mcu_uart_cts_list[i].bank_idx == self->rx_pin->bank_idx) {
           if (mcu_uart_cts_list[i].pin == cts) {
@@ -158,7 +158,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
       if (self->cts_pin == NULL)
         mp_raise_ValueError(translate("Selected CTS pin not valid"));
     }
-    
+
     self->uart = mcu_uart_banks[self->tx_pin->bank_idx - 1];
 
     config_periph_pin(self->rx_pin);
@@ -166,7 +166,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (self->rts_pin)
       config_periph_pin(self->rts_pin);
     if (self->cts_pin)
-      config_periph_pin(self->cts_pin);    
+      config_periph_pin(self->cts_pin);
 
     lpuart_config_t config = { 0 };
     LPUART_GetDefaultConfig(&config);
@@ -187,7 +187,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Before we init, setup RS485 direction pin
     // ..unfortunately this isn't done by the driver library
     uint32_t modir = (self->uart->MODIR) & ~(LPUART_MODIR_TXRTSPOL_MASK | LPUART_MODIR_TXRTSE_MASK);
-    if (rs485_dir != mp_const_none) {
+    if (rs485_dir != NULL) {
       modir |= LPUART_MODIR_TXRTSE_MASK;
       if (rs485_invert)
         modir |= LPUART_MODIR_TXRTSPOL_MASK;

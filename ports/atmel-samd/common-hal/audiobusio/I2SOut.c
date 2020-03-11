@@ -89,6 +89,7 @@ void i2sout_reset(void) {
     #endif
 }
 
+// Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
         const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select,
         const mcu_pin_obj_t* data, bool left_justified) {
@@ -182,9 +183,6 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     #ifdef SAMD21
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
     #endif
-    assert_pin_free(bit_clock);
-    assert_pin_free(word_select);
-    assert_pin_free(data);
 
     self->bit_clock = bit_clock;
     self->word_select = word_select;
@@ -204,7 +202,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
-    return self->bit_clock == mp_const_none;
+    return self->bit_clock == NULL;
 }
 
 void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
@@ -213,11 +211,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     }
 
     reset_pin_number(self->bit_clock->number);
-    self->bit_clock = mp_const_none;
+    self->bit_clock = NULL;
     reset_pin_number(self->word_select->number);
-    self->word_select = mp_const_none;
+    self->word_select = NULL;
     reset_pin_number(self->data->number);
-    self->data = mp_const_none;
+    self->data = NULL;
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,

@@ -105,17 +105,9 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t bit_clock_obj = args[ARG_bit_clock].u_obj;
-    assert_pin(bit_clock_obj, false);
-    const mcu_pin_obj_t *bit_clock = MP_OBJ_TO_PTR(bit_clock_obj);
-
-    mp_obj_t word_select_obj = args[ARG_word_select].u_obj;
-    assert_pin(word_select_obj, false);
-    const mcu_pin_obj_t *word_select = MP_OBJ_TO_PTR(word_select_obj);
-
-    mp_obj_t data_obj = args[ARG_data].u_obj;
-    assert_pin(data_obj, false);
-    const mcu_pin_obj_t *data = MP_OBJ_TO_PTR(data_obj);
+    const mcu_pin_obj_t *bit_clock = validate_obj_is_free_pin(args[ARG_bit_clock].u_obj);
+    const mcu_pin_obj_t *word_select = validate_obj_is_free_pin(args[ARG_word_select].u_obj);
+    const mcu_pin_obj_t *data = validate_obj_is_free_pin(args[ARG_data].u_obj);
 
     audiobusio_i2sout_obj_t *self = m_new_obj_with_finaliser(audiobusio_i2sout_obj_t);
     self->base.type = &audiobusio_i2sout_type;

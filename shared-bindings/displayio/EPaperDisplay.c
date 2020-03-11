@@ -129,13 +129,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     mp_get_buffer_raise(args[ARG_stop_sequence].u_obj, &stop_bufinfo, MP_BUFFER_READ);
 
 
-    mp_obj_t busy_pin_obj = args[ARG_busy_pin].u_obj;
-    assert_pin(busy_pin_obj, true);
-    const mcu_pin_obj_t* busy_pin = NULL;
-    if (busy_pin_obj != NULL && busy_pin_obj != mp_const_none) {
-        busy_pin = MP_OBJ_TO_PTR(busy_pin_obj);
-        assert_pin_free(busy_pin);
-    }
+    const mcu_pin_obj_t* busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj);
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
