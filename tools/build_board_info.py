@@ -12,7 +12,7 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4", "cxd56", "mimxrt10xx"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm", "cxd56", "mimxrt10xx"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -29,7 +29,7 @@ DOWNLOAD_BASE_URL = "https://downloads.circuitpython.org/bin"
 extension_by_port = {
     "nrf": UF2,
     "atmel-samd": UF2,
-    "stm32f4": BIN,
+    "stm": BIN,
     "cxd56": SPK,
     "mimxrt10xx": HEX_UF2,
 }
