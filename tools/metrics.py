@@ -78,7 +78,7 @@ def syscmd(*args):
             a2.append(a)
         elif a:
             a2.extend(a)
-    subprocess.run(a2)
+    subprocess.check_call(a2)
 
 
 def parse_port_list(args):
