@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-09 08:19-0500\n"
+"POT-Creation-Date: 2020-03-11 17:52-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -712,6 +712,7 @@ msgstr "Impossibile allocare buffer RX"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fallita allocazione del buffer RX di %d byte"
@@ -1182,6 +1183,10 @@ msgstr "Permesso negato"
 msgid "Pin does not have ADC capabilities"
 msgstr "Il pin non ha capacità di ADC"
 
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+msgid "Pin number already reserved by EXTI"
+msgstr ""
+
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1202,10 +1207,6 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not yet supported"
 msgstr ""
 
 #: ports/stm32f4/common-hal/pulseio/PulseOut.c
@@ -2254,7 +2255,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "indice fuori intervallo"
 
@@ -2752,6 +2754,7 @@ msgstr "pixel_shader deve essere displayio.Palette o displayio.ColorConverter"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop sun un PulseIn vuoto"
 
@@ -2986,6 +2989,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx e rx non possono essere entrambi None"
 

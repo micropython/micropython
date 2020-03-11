@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-09 08:19-0500\n"
+"POT-Creation-Date: 2020-03-11 17:52-0400\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -715,6 +715,7 @@ msgstr "Echec de l'allocation du tampon RX"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
@@ -1187,6 +1188,10 @@ msgstr "Permission refusée"
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche ne peut être utilisée pour l'ADC"
 
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+msgid "Pin number already reserved by EXTI"
+msgstr ""
+
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1207,10 +1212,6 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
-
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not yet supported"
-msgstr ""
 
 #: ports/stm32f4/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
@@ -2277,7 +2278,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index hors gamme"
 
@@ -2777,6 +2779,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
@@ -3012,6 +3015,7 @@ msgstr "tuple ou liste requis en partie droite"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx et rx ne peuvent être 'None' tous les deux"
 
