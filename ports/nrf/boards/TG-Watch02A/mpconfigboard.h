@@ -28,13 +28,13 @@
 #include "nrfx/hal/nrf_gpio.h"
 
 
-#define MICROPY_HW_BOARD_NAME       "TG-Techie's TG-Watch02A Rev:00"
+#define MICROPY_HW_BOARD_NAME       "TG-Techie's TG-Watch02A"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 //#define FLASH_SIZE                  (0x100000)
 //#define FLASH_PAGE_SIZE             (4096)
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
+//#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
 
 #define MICROPY_HW_LED_STATUS       (&pin_P0_07)
 
