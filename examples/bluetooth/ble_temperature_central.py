@@ -27,6 +27,11 @@ _IRQ_GATTC_NOTIFY = const(1 << 13)
 _IRQ_GATTC_INDICATE = const(1 << 14)
 _IRQ_ALL = const(0xFFFF)
 
+_ADV_IND = const(0x00)
+_ADV_DIRECT_IND = const(0x01)
+_ADV_SCAN_IND = const(0x02)
+_ADV_NONCONN_IND = const(0x03)
+
 # org.bluetooth.service.environmental_sensing
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
@@ -76,8 +81,10 @@ class BLETemperatureCentral:
 
     def _irq(self, event, data):
         if event == _IRQ_SCAN_RESULT:
-            addr_type, addr, connectable, rssi, adv_data = data
-            if connectable and _ENV_SENSE_UUID in decode_services(adv_data):
+            addr_type, addr, adv_type, rssi, adv_data = data
+            if adv_type in (_ADV_IND, _ADV_DIRECT_IND,) and _ENV_SENSE_UUID in decode_services(
+                adv_data
+            ):
                 # Found a potential device, remember it and stop scanning.
                 self._addr_type = addr_type
                 self._addr = bytes(
