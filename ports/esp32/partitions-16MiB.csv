@@ -1,5 +1,9 @@
-# Name,   Type, SubType, Offset,  Size, Flags
+# This partition table is for boards with the large ESP32-WRover based modules. THe generic ESP32's came
+# with 4MB, the large one has 16MB. The extra space has been given to the vfs partition. The file system has now
+# 14MB to use.  
+#
 # Note: if you change the phy_init or app partition offset, make sure to change the offset in Kconfig.projbuild
+# Name,   Type, SubType, Offset,  Size, Flags
 nvs,      data, nvs,     0x9000,  0x6000,
 phy_init, data, phy,     0xf000,  0x1000,
 factory,  app,  factory, 0x10000, 0x180000,
