@@ -170,6 +170,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
     // extmod modules
 
+    #if MICROPY_PY_UASYNCIO
+    { MP_ROM_QSTR(MP_QSTR__uasyncio), MP_ROM_PTR(&mp_module_uasyncio) },
+    #endif
     #if MICROPY_PY_UERRNO
     { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
     #endif
