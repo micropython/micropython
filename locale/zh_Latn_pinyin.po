@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-09 08:19-0500\n"
+"POT-Creation-Date: 2020-03-11 17:52-0400\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -709,6 +709,7 @@ msgstr "Fēnpèi RX huǎnchōng shībài"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
@@ -1172,6 +1173,10 @@ msgstr "Quánxiàn bèi jùjué"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin méiyǒu ADC nénglì"
 
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+msgid "Pin number already reserved by EXTI"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
@@ -1191,10 +1196,6 @@ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzà
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
-
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not yet supported"
-msgstr "Shàng bù zhīchí PulseIn"
 
 #: ports/stm32f4/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
@@ -2244,7 +2245,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
 
@@ -2732,6 +2734,7 @@ msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "cóng kōng de PulseIn dànchū dànchū"
 
@@ -2964,6 +2967,7 @@ msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx hé rx bùnéng dōu shì wú"
 
@@ -3324,6 +3328,9 @@ msgstr "líng bù"
 
 #~ msgid "Pixel beyond bounds of buffer"
 #~ msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
+
+#~ msgid "PulseIn not yet supported"
+#~ msgstr "Shàng bù zhīchí PulseIn"
 
 #~ msgid "PulseOut not yet supported"
 #~ msgstr "Shàng bù zhīchí PulseOut"
