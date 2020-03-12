@@ -12,6 +12,8 @@ import uerrno as errno
 import ujson as json
 import uzlib
 import upip_utarfile as tarfile
+import ussl
+import usocket
 
 gc.collect()
 
@@ -115,9 +117,6 @@ def expandhome(s):
     return s
 
 
-import ussl
-import usocket
-
 warn_ussl = True
 
 
@@ -151,17 +150,17 @@ def url_open(url):
 
         # MicroPython rawsocket module supports file interface directly
         s.write("GET /%s HTTP/1.0\r\nHost: %s:%s\r\n\r\n" % (urlpath, host, port))
-        l = s.readline()
-        protover, status, msg = l.split(None, 2)
+        line = s.readline()
+        protover, status, msg = line.split(None, 2)
         if status != b"200":
             if status == b"404" or status == b"301":
                 raise NotFoundError("Package not found")
             raise ValueError(status)
         while 1:
-            l = s.readline()
-            if not l:
+            line = s.readline()
+            if not line:
                 raise ValueError("Unexpected EOF in HTTP headers")
-            if l == b"\r\n":
+            if line == b"\r\n":
                 break
     except Exception as e:
         s.close()
@@ -171,10 +170,12 @@ def url_open(url):
 
 
 def get_pkg_metadata(name):
+    global warn_ussl
     for url in index_urls:
         try:
             f = url_open("%s/%s/json" % (url, name))
         except NotFoundError:
+            warn_ussl = True
             continue
         try:
             return json.load(f)
@@ -197,11 +198,10 @@ def install_pkg(pkg_spec, install_path):
     packages = data["releases"][latest_ver]
     del data
     gc.collect()
-    
-    packages = [ pkg for pkg in packages if pkg.get('packagetype','sdist') == 'sdist' ]
+
+    packages = [pkg for pkg in packages if pkg.get("packagetype", "sdist") == "sdist"]
     package_url = packages[0]["url"]
     print("Installing %s %s from %s" % (pkg_spec, latest_ver, package_url))
-    package_fname = op_basename(package_url)
     f1 = url_open(package_url)
     try:
         f2 = uzlib.DecompIO(f1, gzdict_sz)
@@ -249,7 +249,9 @@ def install(to_install, install_path=None):
                 to_install.extend(deps)
     except Exception as e:
         print(
-            "Error installing '{}': {}, packages may be partially installed".format(pkg_spec, e),
+            "Error installing '{}': {}, packages may be partially installed".format(
+                pkg_spec, e
+            ),
             file=sys.stderr,
         )
         fail_reason = e
@@ -323,12 +325,12 @@ def main():
             i += 1
             with open(list_file) as f:
                 while True:
-                    l = f.readline()
-                    if not l:
+                    line = f.readline()
+                    if not line:
                         break
-                    if l[0] == "#":
+                    if line[0] == "#":
                         continue
-                    to_install.append(l.rstrip())
+                    to_install.append(line.rstrip())
         elif opt == "-i":
             index_urls = [sys.argv[i]]
             i += 1
