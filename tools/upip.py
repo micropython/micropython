@@ -249,10 +249,8 @@ def install(to_install, install_path=None):
                 to_install.extend(deps)
     except Exception as e:
         print(
-            "Error installing '{}': {}, packages may be partially installed".format(
-                pkg_spec, e
-            ),
-            file=sys.stderr,
+            "Error installing '{}': {}, packages may be partially installed".format(pkg_spec, e),
+            file=sys.stderr
         )
         fail_reason = e
 
