@@ -260,7 +260,7 @@ STATIC bool init_sdcard_fs(void) {
                 // subsequent partitions are numbered by their index in the partition table
                 if (part_num == 2) {
                     vfs->str = "/sd2";
-                } else if (part_num == 2) {
+                } else if (part_num == 3) {
                     vfs->str = "/sd3";
                 } else {
                     vfs->str = "/sd4";
