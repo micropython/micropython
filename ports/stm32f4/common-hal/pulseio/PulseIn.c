@@ -43,6 +43,9 @@ static pulseio_pulsein_obj_t* _objs[STM32_GPIO_PORT_SIZE];
 static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num);
 
 static void pulsein_handler(uint8_t num) {
+    // Interrupt register must be cleared manually
+    EXTI->PR = 1 << num;
+
     // Grab the current time first.
     uint32_t current_us;
     uint64_t current_ms;
@@ -260,70 +263,41 @@ static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num) {
 
 void EXTI0_IRQHandler(void)
 {
-    EXTI->PR = 1 << 0;
     pulsein_handler(0);
 }
 void EXTI1_IRQHandler(void)
 {
-    EXTI->PR = 1 << 1;
     pulsein_handler(1);
 }
 void EXTI2_IRQHandler(void)
 {
-    EXTI->PR = 1 << 2;
     pulsein_handler(2);
 }
 void EXTI3_IRQHandler(void)
 {
-    EXTI->PR = 1 << 3;
     pulsein_handler(3);
 }
 void EXTI4_IRQHandler(void)
 {
-    EXTI->PR = 1 << 4;
     pulsein_handler(4);
 }
+
 void EXTI9_5_IRQHandler(void)
 {
     uint32_t pending = EXTI->PR;
-    if(pending & (1 << 5)) {
-        EXTI->PR = 1 << 5;
-        pulsein_handler(5);
-    } else if (pending & (1 << 6)) {
-        EXTI->PR = 1 << 6;
-        pulsein_handler(6);
-    } else if (pending & (1 << 7)) {
-        EXTI->PR = 1 << 7;
-        pulsein_handler(7);
-    } else if (pending & (1 << 8)) {
-        EXTI->PR = 1 << 8;
-        pulsein_handler(8);
-    } else if (pending & (1 << 9)) {
-        EXTI->PR = 1 << 9;
-        pulsein_handler(9);
+    for (uint i = 5; i <= 9; i++) {
+        if(pending & (1 << i)) {
+            pulsein_handler(i);
+        }
     }
 }
 
 void EXTI15_10_IRQHandler(void)
 {
     uint32_t pending = EXTI->PR;
-    if(pending & (1 << 10)) {
-        EXTI->PR = 1 << 10;
-        pulsein_handler(10);
-    } else if (pending & (1 << 11)) {
-        EXTI->PR = 1 << 11;
-        pulsein_handler(11);
-    } else if (pending & (1 << 12)) {
-        EXTI->PR = 1 << 12;
-        pulsein_handler(12);
-    } else if (pending & (1 << 13)) {
-        EXTI->PR = 1 << 13;
-        pulsein_handler(13);
-    } else if (pending & (1 << 14)) {
-        EXTI->PR = 1 << 14;
-        pulsein_handler(14);
-    } else if (pending & (1 << 15)) {
-        EXTI->PR = 1 << 15;
-        pulsein_handler(15);
+    for (uint i = 10; i <= 15; i++) {
+        if(pending & (1 << i)) {
+            pulsein_handler(i);
+        }
     }
 }
