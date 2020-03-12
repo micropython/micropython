@@ -149,6 +149,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
+    //Remove pulsein slot from shared array
     HAL_NVIC_DisableIRQ(self->irq);
     _objs[self->pin->number] = NULL;
     reset_pin_number(self->pin->port, self->pin->number);
