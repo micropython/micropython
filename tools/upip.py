@@ -21,7 +21,7 @@ index_urls = ["https://micropython.org/pi", "https://pypi.org/pypi"]
 install_path = None
 cleanup_files = []
 gzdict_sz = 16 + 15
-
+fail_reason = None
 file_buf = bytearray(512)
 
 
@@ -84,7 +84,7 @@ def install_tar(f, prefix):
         try:
             fname = fname[fname.index("/") + 1 :]
         except ValueError:
-            fname = ""
+            pass
 
         save = True
         for p in ("setup.", "PKG-INFO", "README"):
@@ -128,8 +128,11 @@ def url_open(url):
         print(url)
 
     proto, _, host, urlpath = url.split("/", 3)
+    host, port = (host.split(":", 1) + [443 if proto == "https:" else 80])[0:2]
     try:
-        ai = usocket.getaddrinfo(host, 443, 0, usocket.SOCK_STREAM)
+        ai = usocket.getaddrinfo(host, int(port), 0, usocket.SOCK_STREAM)
+        if not ai:
+            raise OSError(errno.EINVAL)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
     # print("Address infos:", ai)
@@ -147,7 +150,7 @@ def url_open(url):
                 warn_ussl = False
 
         # MicroPython rawsocket module supports file interface directly
-        s.write("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (urlpath, host))
+        s.write("GET /%s HTTP/1.0\r\nHost: %s:%s\r\n\r\n" % (urlpath, host, port))
         l = s.readline()
         protover, status, msg = l.split(None, 2)
         if status != b"200":
@@ -194,7 +197,8 @@ def install_pkg(pkg_spec, install_path):
     packages = data["releases"][latest_ver]
     del data
     gc.collect()
-    assert len(packages) == 1
+    
+    packages = [ pkg for pkg in packages if pkg.get('packagetype','sdist') == 'sdist' ]
     package_url = packages[0]["url"]
     print("Installing %s %s from %s" % (pkg_spec, latest_ver, package_url))
     package_fname = op_basename(package_url)
@@ -213,7 +217,8 @@ def install_pkg(pkg_spec, install_path):
 
 def install(to_install, install_path=None):
     # Calculate gzip dictionary size to use
-    global gzdict_sz
+    global gzdict_sz, fail_reason
+    fail_reason = None
     sz = gc.mem_free() + gc.mem_alloc()
     if sz <= 65536:
         gzdict_sz = 16 + 12
@@ -247,6 +252,7 @@ def install(to_install, install_path=None):
             "Error installing '{}': {}, packages may be partially installed".format(pkg_spec, e),
             file=sys.stderr,
         )
+        fail_reason = e
 
 
 def get_install_path():
