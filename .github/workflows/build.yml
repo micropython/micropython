@@ -122,6 +122,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "TG-Watch02A"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -228,7 +229,6 @@ jobs:
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
-        - "TG-Watch02A"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
