@@ -42,8 +42,6 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
-
 static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
     uint32_t sense_setting;
     if (!first_edge) {
@@ -61,9 +59,9 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 
 void pulsein_interrupt_handler(uint8_t channel) {
     // Grab the current time first.
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
+    uint32_t current_us = 0;
+    uint64_t current_ms = 0;
+    // current_tick(&current_ms, &current_us);
 
     // current_tick gives us the remaining us until the next tick but we want the number since the
     // last ms.

@@ -194,7 +194,6 @@ SRC_ASF := \
 	hpl/gclk/hpl_gclk.c \
 	hpl/nvmctrl/hpl_nvmctrl.c \
 	hpl/pm/hpl_pm.c \
-	hpl/rtc/hpl_rtc.c \
 	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
 	hal/utils/src/utils_list.c \
@@ -258,7 +257,6 @@ SRC_C = \
 	peripherals/samd/timers.c \
 	reset.c \
 	supervisor/shared/memory.c \
-	tick.c \
 	timer_handler.c \
 
 

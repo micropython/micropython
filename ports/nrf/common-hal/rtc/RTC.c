@@ -33,9 +33,6 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 
-#include "nrfx_rtc.h"
-#include "nrf_clock.h"
-
 // This is the time in seconds since 2000 that the RTC was started.
 static uint32_t rtc_offset = 0;
 

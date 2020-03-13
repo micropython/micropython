@@ -70,10 +70,10 @@
 #include "samd/dma.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "reset.h"
-#include "tick.h"
 
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/shared/tick.h"
 
 #include "tusb.h"
 
@@ -131,6 +131,38 @@ static void save_usb_clock_calibration(void) {
     }
 }
 #endif
+
+static void rtc_init(void) {
+#ifdef SAMD21
+    _gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
+#endif
+#ifdef SAMD51
+    hri_mclk_set_APBAMASK_RTC_bit(MCLK);
+#endif
+
+    RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_ENABLE |
+                     RTC_MODE0_CTRLA_MODE_COUNT32 |
+                     RTC_MODE0_CTRLA_PRESCALER_DIV2 |
+                     RTC_MODE0_CTRLA_COUNTSYNC;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_OVF;
+
+    // Set all peripheral interrupt priorities to the lowest priority by default.
+    for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
+        NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
+    }
+    // Bump up the rtc interrupt so nothing else interferes with timekeeping.
+    NVIC_SetPriority(RTC_IRQn, 0);
+    #ifdef SAMD21
+    NVIC_SetPriority(USB_IRQn, 1);
+    #endif
+
+    #ifdef SAMD51
+    NVIC_SetPriority(USB_0_IRQn, 1);
+    NVIC_SetPriority(USB_1_IRQn, 1);
+    NVIC_SetPriority(USB_2_IRQn, 1);
+    NVIC_SetPriority(USB_3_IRQn, 1);
+    #endif
+}
 
 safe_mode_t port_init(void) {
 #if defined(SAMD21)
@@ -220,12 +252,7 @@ safe_mode_t port_init(void) {
     clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
 #endif
 
-    // Configure millisecond timer initialization.
-    tick_init();
-
-#if CIRCUITPY_RTC
     rtc_init();
-#endif
 
     init_shared_dma();
 
@@ -274,9 +301,6 @@ void reset_port(void) {
 #if CIRCUITPY_ANALOGIO
     analogin_reset();
     analogout_reset();
-#endif
-#if CIRCUITPY_RTC
-    rtc_reset();
 #endif
 
     reset_gclks();
@@ -350,6 +374,70 @@ void port_set_saved_word(uint32_t value) {
 
 uint32_t port_get_saved_word(void) {
     return *safe_word;
+}
+
+// TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
+// is enabled.
+static volatile uint64_t overflowed_ticks = 0;
+
+void RTC_Handler(void) {
+    uint32_t intflag = RTC->MODE0.INTFLAG.reg;
+    if (intflag & RTC_MODE0_INTFLAG_OVF) {
+        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_OVF;
+        // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
+        // tick.
+        overflowed_ticks += (1L<< (32 - 4));
+
+    } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
+        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
+        // Do things common to all ports when the tick occurs
+        supervisor_tick();
+    } else if (intflag & RTC_MODE0_INTFLAG_CMP0) {
+        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
+        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+    }
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    uint32_t current_ticks = RTC->MODE0.COUNT.reg;
+    if (subticks != NULL) {
+        *subticks = (current_ticks % 16) * 2;
+    }
+
+    return overflowed_ticks + current_ticks / 16;
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    // PER2 will generate an interrupt every 32 ticks of the source 32.768 clock.
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTFLAG_PER2;
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTFLAG_PER2;
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    uint32_t current_ticks = RTC->MODE0.COUNT.reg;
+    if (ticks > 1 << 28) {
+        // We'll interrupt sooner with an overflow.
+        return;
+    }
+    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+}
+
+void port_sleep_until_interrupt(void) {
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    if (__get_FPSCR()  & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
+        (void) __get_FPSCR();
+    }
+    // Call wait for interrupt ourselves if the SD isn't enabled.
+    __WFI();
 }
 
 /**

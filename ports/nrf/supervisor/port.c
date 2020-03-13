@@ -78,7 +78,9 @@ static volatile uint64_t overflowed_ticks = 0;
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
-        overflowed_ticks += (1L<<24);
+        // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
+        // tick.
+        overflowed_ticks += (1L<< (24 - 5));
     } else if (int_type == NRFX_RTC_INT_TICK && nrfx_rtc_counter_get(&rtc_instance) % 32 == 0) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();

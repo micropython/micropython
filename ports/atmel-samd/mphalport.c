@@ -49,21 +49,6 @@
 
 extern uint32_t common_hal_mcu_processor_get_frequency(void);
 
-void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = supervisor_ticks_ms64();
-    uint64_t duration = 0;
-    while (duration < delay) {
-        RUN_BACKGROUND_TASKS;
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-            break;
-        }
-        duration = (supervisor_ticks_ms64() - start_tick);
-        // TODO(tannewt): Go to sleep for a little while while we wait.
-    }
-}
-
 // Use mp_hal_delay_us() for timing of less than 1ms.
 // Do a simple timing loop to wait for a certain number of microseconds.
 // Can be used when interrupts are disabled, which makes tick_delay() unreliable.

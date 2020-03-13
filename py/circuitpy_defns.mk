@@ -282,8 +282,7 @@ SRC_COMMON_HAL_ALL = \
 	rtc/RTC.c \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
-	supervisor/__init__.c \
-	time/__init__.c
+	supervisor/__init__.c
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
@@ -358,13 +357,14 @@ SRC_SHARED_MODULE_ALL = \
 	network/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	time/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
 	_pew/PewPew.c \
-        _eve/__init__.c
+    _eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
