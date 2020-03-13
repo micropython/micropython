@@ -92,7 +92,7 @@ class SDCard:
 
         # get the number of sectors
         # CMD9: response R2 (R1 byte + 16-byte block read)
-        if self.cmd(9, 0, 0, 0, False) != 0:
+        if self.cmd(9, 0, 0, 0xAF, False) != 0:
             raise OSError("no response from SD card")
         csd = bytearray(16)
         self.readinto(csd)
@@ -107,7 +107,7 @@ class SDCard:
         # print('sectors', self.sectors)
 
         # CMD16: set block length to 512 bytes
-        if self.cmd(16, 512, 0) != 0:
+        if self.cmd(16, 512, 0x81) != 0:
             raise OSError("can't set 512 block size")
 
         # set to high data rate now that it's initialised
@@ -115,8 +115,8 @@ class SDCard:
 
     def init_card_v1(self):
         for i in range(_CMD_TIMEOUT):
-            self.cmd(55, 0, 0)
-            if self.cmd(41, 0, 0) == 0:
+            self.cmd(55, 0, 0x65)
+            if self.cmd(41, 0, 0x77) == 0:
                 self.cdv = 512
                 # print("[SDCard] v1 card")
                 return
@@ -125,10 +125,10 @@ class SDCard:
     def init_card_v2(self):
         for i in range(_CMD_TIMEOUT):
             time.sleep_ms(50)
-            self.cmd(58, 0, 0, 4)
-            self.cmd(55, 0, 0)
-            if self.cmd(41, 0x40000000, 0) == 0:
-                self.cmd(58, 0, 0, 4)
+            self.cmd(58, 0, 0xFD, 4)
+            self.cmd(55, 0, 0x65)
+            if self.cmd(41, 0x40000000, 0x71) == 0:
+                self.cmd(58, 0, 0xFD, 4)
                 self.cdv = 1
                 # print("[SDCard] v2 card")
                 return
@@ -231,7 +231,7 @@ class SDCard:
         assert nblocks and not len(buf) % 512, "Buffer length is invalid"
         if nblocks == 1:
             # CMD17: set read address for single block
-            if self.cmd(17, block_num * self.cdv, 0, release=False) != 0:
+            if self.cmd(17, block_num * self.cdv, 0x3B, release=False) != 0:
                 # release the card
                 self.cs(1)
                 raise OSError(5)  # EIO
@@ -239,7 +239,7 @@ class SDCard:
             self.readinto(buf)
         else:
             # CMD18: set read address for multiple blocks
-            if self.cmd(18, block_num * self.cdv, 0, release=False) != 0:
+            if self.cmd(18, block_num * self.cdv, 0x57, release=False) != 0:
                 # release the card
                 self.cs(1)
                 raise OSError(5)  # EIO
@@ -258,14 +258,14 @@ class SDCard:
         assert nblocks and not err, "Buffer length is invalid"
         if nblocks == 1:
             # CMD24: set write address for single block
-            if self.cmd(24, block_num * self.cdv, 0) != 0:
+            if self.cmd(24, block_num * self.cdv, 0x6F) != 0:
                 raise OSError(5)  # EIO
 
             # send the data
             self.write(_TOKEN_DATA, buf)
         else:
             # CMD25: set write address for first block
-            if self.cmd(25, block_num * self.cdv, 0) != 0:
+            if self.cmd(25, block_num * self.cdv, 0x03) != 0:
                 raise OSError(5)  # EIO
             # send the data
             offset = 0
