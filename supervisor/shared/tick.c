@@ -125,7 +125,9 @@ extern void supervisor_enable_tick(void) {
 }
 
 extern void supervisor_disable_tick(void) {
-    tick_enable_count--;
+    if (tick_enable_count > 0) {
+        tick_enable_count--;
+    }
     if (tick_enable_count == 0) {
         port_disable_tick();
     }

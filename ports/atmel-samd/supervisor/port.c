@@ -140,6 +140,9 @@ static void rtc_init(void) {
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
 #endif
 
+    RTC->MODE0.CTRLA.bit.SWRST = true;
+    while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {}
+
     RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_ENABLE |
                      RTC_MODE0_CTRLA_MODE_COUNT32 |
                      RTC_MODE0_CTRLA_PRESCALER_DIV2 |
@@ -162,6 +165,8 @@ static void rtc_init(void) {
     NVIC_SetPriority(USB_2_IRQn, 1);
     NVIC_SetPriority(USB_3_IRQn, 1);
     #endif
+    NVIC_ClearPendingIRQ(RTC_IRQn);
+    NVIC_EnableIRQ(RTC_IRQn);
 }
 
 safe_mode_t port_init(void) {
@@ -411,12 +416,12 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
     // PER2 will generate an interrupt every 32 ticks of the source 32.768 clock.
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTFLAG_PER2;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
 }
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTFLAG_PER2;
+    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
@@ -427,6 +432,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         return;
     }
     RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
 }
 
