@@ -26,12 +26,13 @@
 
 #include <string.h>
 
+#include "modzephyr.h"
 #include "py/runtime.h"
 
 #include <zephyr.h>
 #include <drivers/sensor.h>
 
-#if MICROPY_PY_ZSENSOR
+#ifdef CONFIG_SENSOR
 
 typedef struct _mp_obj_sensor_t {
     mp_obj_base_t base;
@@ -102,20 +103,6 @@ STATIC const mp_rom_map_elem_t sensor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_micros), MP_ROM_PTR(&sensor_get_micros_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_millis), MP_ROM_PTR(&sensor_get_millis_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_int), MP_ROM_PTR(&sensor_get_int_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
-
-STATIC const mp_obj_type_t sensor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Sensor,
-    .make_new = sensor_make_new,
-    .locals_dict = (void *)&sensor_locals_dict,
-};
-
-STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zsensor) },
-    { MP_ROM_QSTR(MP_QSTR_Sensor), MP_ROM_PTR(&sensor_type) },
 
 #define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(SENSOR_CHAN_##name) }
     C(ACCEL_X),
@@ -136,11 +123,13 @@ STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
 #undef C
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_zsensor_globals, mp_module_zsensor_globals_table);
+STATIC MP_DEFINE_CONST_DICT(sensor_locals_dict, sensor_locals_dict_table);
 
-const mp_obj_module_t mp_module_zsensor = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_zsensor_globals,
+const mp_obj_type_t zephyr_sensor_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Sensor,
+    .make_new = sensor_make_new,
+    .locals_dict = (void *)&sensor_locals_dict,
 };
 
-#endif //MICROPY_PY_UHASHLIB
+#endif // CONFIG_SENSOR

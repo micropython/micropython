@@ -46,11 +46,11 @@ SRC_C = main.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
-	modzsensor.c \
 	modmachine.c \
 	machine_i2c.c \
 	machine_pin.c \
 	uart_core.c \
+	zephyr_sensor.c \
 	zephyr_storage.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/stdout_helpers.c \

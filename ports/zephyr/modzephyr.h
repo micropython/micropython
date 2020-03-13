@@ -37,4 +37,8 @@ extern const mp_obj_type_t zephyr_disk_access_type;
 extern const mp_obj_type_t zephyr_flash_area_type;
 #endif
 
+#ifdef CONFIG_SENSOR
+extern const mp_obj_type_t zephyr_sensor_type;
+#endif
+
 #endif // MICROPY_INCLUDED_ZEPHYR_MODZEPHYR_H
