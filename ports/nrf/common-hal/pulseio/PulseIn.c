@@ -88,14 +88,7 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
             self->first_edge = false;
         }
     }else {
-        // Wrapped around a number of times.
-        uint32_t total_diff = 0xffff;
-        // Wrapped around once so
-        if (self->last_overflow == current_overflow - 1) {
-            total_diff = current_count + (0xffffffff - self->last_count);
-        } else if (self->last_overflow == current_overflow) {
-            total_diff = current_count - self->last_count;
-        }
+        uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
 
         // Cap duration at 16 bits.
         uint16_t duration = 0xffff;
