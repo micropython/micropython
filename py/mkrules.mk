@@ -99,7 +99,7 @@ $(HEADER_BUILD):
 
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MPY_CROSS)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
 
 ifneq ($(FROZEN_DIR),)
@@ -125,7 +125,7 @@ FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | 
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 # to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
+$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py | $(MPY_CROSS)
 	@$(ECHO) "MPY $<"
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(MPY_CROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
@@ -135,6 +135,10 @@ $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generate
 	@$(ECHO) "GEN $@"
 	$(Q)$(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 endif
+
+# to build the mpy-cross tool
+$(MPY_CROSS):
+	$(MAKE) -C $(dir $@)
 
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
