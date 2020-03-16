@@ -232,6 +232,7 @@ jobs:
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
+        - "uartlogger2"
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
