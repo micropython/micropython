@@ -38,17 +38,17 @@ extern const mcu_pin_obj_t pin_PC13;
 extern const mcu_pin_obj_t pin_PC14;
 //pg 51
 extern const mcu_pin_obj_t pin_PC15;
-extern const mcu_pin_obj_t pin_PF00;  // 144 only 
-extern const mcu_pin_obj_t pin_PF01;  // 144 only 
-extern const mcu_pin_obj_t pin_PF02;  // 144 only 
-extern const mcu_pin_obj_t pin_PF03;  // 144 only 
-extern const mcu_pin_obj_t pin_PF04;  // 144 only 
-extern const mcu_pin_obj_t pin_PF05;  // 144 only 
-extern const mcu_pin_obj_t pin_PF06;  // 144 only 
-extern const mcu_pin_obj_t pin_PF07;  // 144 only 
-extern const mcu_pin_obj_t pin_PF08;  // 144 only 
-extern const mcu_pin_obj_t pin_PF09;  // 144 only 
-extern const mcu_pin_obj_t pin_PF10; // 144 only 
+extern const mcu_pin_obj_t pin_PF00;  // 144 only
+extern const mcu_pin_obj_t pin_PF01;  // 144 only
+extern const mcu_pin_obj_t pin_PF02;  // 144 only
+extern const mcu_pin_obj_t pin_PF03;  // 144 only
+extern const mcu_pin_obj_t pin_PF04;  // 144 only
+extern const mcu_pin_obj_t pin_PF05;  // 144 only
+extern const mcu_pin_obj_t pin_PF06;  // 144 only
+extern const mcu_pin_obj_t pin_PF07;  // 144 only
+extern const mcu_pin_obj_t pin_PF08;  // 144 only
+extern const mcu_pin_obj_t pin_PF09;  // 144 only
+extern const mcu_pin_obj_t pin_PF10; // 144 only
 //pg 52
 extern const mcu_pin_obj_t pin_PC00;
 extern const mcu_pin_obj_t pin_PC01;
@@ -69,13 +69,13 @@ extern const mcu_pin_obj_t pin_PC05;
 extern const mcu_pin_obj_t pin_PB00;
 extern const mcu_pin_obj_t pin_PB01;
 extern const mcu_pin_obj_t pin_PB02;
-extern const mcu_pin_obj_t pin_PF11; // 144 only 
-extern const mcu_pin_obj_t pin_PF12; // 144 only 
-extern const mcu_pin_obj_t pin_PF13; // 144 only 
-extern const mcu_pin_obj_t pin_PF14; // 144 only 
-extern const mcu_pin_obj_t pin_PF15; // 144 only 
-extern const mcu_pin_obj_t pin_PG00;  // 144 only 
-extern const mcu_pin_obj_t pin_PG01;  // 144 only 
+extern const mcu_pin_obj_t pin_PF11; // 144 only
+extern const mcu_pin_obj_t pin_PF12; // 144 only
+extern const mcu_pin_obj_t pin_PF13; // 144 only
+extern const mcu_pin_obj_t pin_PF14; // 144 only
+extern const mcu_pin_obj_t pin_PF15; // 144 only
+extern const mcu_pin_obj_t pin_PG00;  // 144 only
+extern const mcu_pin_obj_t pin_PG01;  // 144 only
 //pg 55
 extern const mcu_pin_obj_t pin_PE07;
 extern const mcu_pin_obj_t pin_PE08;
