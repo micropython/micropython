@@ -308,6 +308,7 @@ typedef struct _lwip_socket_obj_t {
     #define STATE_CONNECTING 2
     #define STATE_CONNECTED 3
     #define STATE_PEER_CLOSED 4
+    #define STATE_ACTIVE_UDP 5
     // Negative value is lwIP error
     int8_t state;
 } lwip_socket_obj_t;
@@ -812,9 +813,13 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     lwip_socket_obj_t *socket = m_new_obj_with_finaliser(lwip_socket_obj_t);
     socket->base.type = &lwip_socket_type;
+    socket->timeout = -1;
+    socket->recv_offset = 0;
     socket->domain = MOD_NETWORK_AF_INET;
     socket->type = MOD_NETWORK_SOCK_STREAM;
     socket->callback = MP_OBJ_NULL;
+    socket->state = STATE_NEW;
+
     if (n_args >= 1) {
         socket->domain = mp_obj_get_int(args[0]);
         if (n_args >= 2) {
@@ -856,6 +861,7 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
+            socket->state = STATE_ACTIVE_UDP;
             // Register our receive callback now. Since UDP sockets don't require binding or connection
             // before use, there's no other good time to do it.
             udp_recv(socket->pcb.udp, _lwip_udp_incoming, (void *)socket);
@@ -871,9 +877,6 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
         #endif
     }
 
-    socket->timeout = -1;
-    socket->state = STATE_NEW;
-    socket->recv_offset = 0;
     return MP_OBJ_FROM_PTR(socket);
 }
 
