@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-//Micropython setup
+#define BOARD_THUNDERPACK_STM32F412
 #define MICROPY_HW_BOARD_NAME       "THUNDERPACK"
 #define MICROPY_HW_MCU_NAME         "STM32F412xGU"
 
@@ -32,6 +32,12 @@
 
 #define BOARD_OSC_DIV (24)
 #define BOARD_NO_VBUS_SENSE (1)
+
+#define CP_RGB_STATUS_LED
+#define CP_RGB_STATUS_R       (&pin_PA00)
+#define CP_RGB_STATUS_G       (&pin_PA01)
+#define CP_RGB_STATUS_B       (&pin_PA02)
+#define MICROPY_HW_LED_STATUS (&pin_PA03)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB07)

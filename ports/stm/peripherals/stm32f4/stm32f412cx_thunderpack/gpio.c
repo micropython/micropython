@@ -182,61 +182,52 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void stm32f4_peripherals_gpio_init(void) {
-	//Enable all GPIO for now
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	// __HAL_RCC_GPIOE_CLK_ENABLE();
-	// __HAL_RCC_GPIOC_CLK_ENABLE();
-	// __HAL_RCC_GPIOF_CLK_ENABLE();
-	// __HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	// __HAL_RCC_GPIOG_CLK_ENABLE();
-	// __HAL_RCC_GPIOD_CLK_ENABLE();
+    //Enable all GPIO for now
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
 
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_RESET);
-	//HAL_GPIO_WritePin(USB_OTGFS_PPWR_EN_GPIO_Port, USB_OTGFS_PPWR_EN_Pin, GPIO_PIN_SET);
+    //Configure LED pins
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_RESET);
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	//Configure LED pins
-	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    //Status LED chain
+    stm32f4_peripherals_status_led(0,1);
+    stm32f4_peripherals_status_led(1,0);
+    stm32f4_peripherals_status_led(2,0);
+    stm32f4_peripherals_status_led(3,0);
 
-	//Status LED chain
-	stm32f4_peripherals_status_led(0,1);
-	stm32f4_peripherals_status_led(1,1);
-	stm32f4_peripherals_status_led(2,1);
-	stm32f4_peripherals_status_led(3,1);
-
-	//Never reset pins
-	// never_reset_pin_number(2,13); //PC13 anti tamp
-	// never_reset_pin_number(2,14); //PC14 OSC32_IN
-	// never_reset_pin_number(2,15); //PC15 OSC32_OUT
-	never_reset_pin_number(0,13); //PA13 SWDIO
-	never_reset_pin_number(0,14); //PA14 SWCLK
-	//never_reset_pin_number(0,15); //PA15 JTDI
-	//never_reset_pin_number(1,3); //PB3 JTDO
-	//never_reset_pin_number(1,4); //PB4 JTRST
-
-	// Port H is not included in GPIO port array
-	// never_reset_pin_number(5,0); //PH0 JTDO
-	// never_reset_pin_number(5,1); //PH1 JTRST
+    //Never reset pins
+    never_reset_pin_number(2,13); //PC13 anti tamp
+    never_reset_pin_number(2,14); //PC14 OSC32_IN
+    never_reset_pin_number(2,15); //PC15 OSC32_OUT
+    never_reset_pin_number(0,13); //PA13 SWDIO
+    never_reset_pin_number(0,14); //PA14 SWCLK
 }
 
 void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
-	switch(led)
-	{
-		case 0: 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, state);
-				break;
-		case 1: 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, state);
-				break;
-		case 2: 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, state);
-				break;
-		case 3: 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, state);
-				break;
-		default: break;
-	}
+    switch(led)
+    {
+        case 0:
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, state);
+          break;
+        case 1:
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, state);
+          break;
+        case 2:
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, state);
+          break;
+        case 3:
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, state);
+          break;
+        default: break;
+    }
 }
 
 
