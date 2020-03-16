@@ -64,6 +64,13 @@ static inline mp_pairheap_t *mp_pairheap_new(mp_pairheap_lt_t lt) {
     return NULL;
 }
 
+// Initialise a single pairing-heap node so it is ready to push on to a heap.
+static inline void mp_pairheap_init_node(mp_pairheap_lt_t lt, mp_pairheap_t *node) {
+    (void)lt;
+    node->child = NULL;
+    node->next = NULL;
+}
+
 // Test if the heap is empty.
 static inline bool mp_pairheap_is_empty(mp_pairheap_lt_t lt, mp_pairheap_t *heap) {
     (void)lt;
