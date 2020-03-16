@@ -215,16 +215,16 @@ void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
     switch(led)
     {
         case 0:
-          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, state);
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, state);
           break;
         case 1:
-          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_1, state);
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, state);
           break;
         case 2:
-          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, state);
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, state);
           break;
         case 3:
-          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, state);
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, state);
           break;
         default: break;
     }
