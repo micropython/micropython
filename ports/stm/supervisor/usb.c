@@ -59,13 +59,13 @@ STATIC void init_usb_vbus_sense(void) {
 }
 
 void init_usb_hardware(void) {
-    //TODO: if future chips overload this with options, move to peripherals management.
+    //TODO: if future chips overload this with options, move to peripherals management. 
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     /**USB_OTG_FS GPIO Configuration
     PA10     ------> USB_OTG_FS_ID
     PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP
+    PA12     ------> USB_OTG_FS_DP 
     */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -105,7 +105,7 @@ void init_usb_hardware(void) {
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
 #endif
-
+    
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();

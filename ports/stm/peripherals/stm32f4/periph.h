@@ -33,9 +33,9 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/pins.h"
 
-// I2C
+// I2C 
 // TODO: these objects should be condensed into a single 'periph_pin' unless we
-// find a compelling reason to store more unique data in them.
+// find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t i2c_index:4; // Index of the I2C unit (1 to 3)
@@ -44,8 +44,8 @@ typedef struct {
 } mcu_i2c_sda_obj_t;
 
 typedef struct {
-    uint8_t i2c_index:4;
-    uint8_t altfn_index:4;
+    uint8_t i2c_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_i2c_scl_obj_t;
 
@@ -64,9 +64,9 @@ typedef struct {
     .pin = scl_pin, \
 }
 
-// SPI
+// SPI 
 // TODO: these objects should be condensed into a single 'periph_pin' unless we
-// find a compelling reason to store more unique data in them.
+// find a compelling reason to store more unique data in them. 
 
 typedef struct {
     uint8_t spi_index:4; //Up to 6 SPI units
@@ -75,20 +75,20 @@ typedef struct {
 } mcu_spi_sck_obj_t;
 
 typedef struct {
-    uint8_t spi_index:4;
-    uint8_t altfn_index:4;
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_spi_mosi_obj_t;
 
 typedef struct {
-    uint8_t spi_index:4;
-    uint8_t altfn_index:4;
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_spi_miso_obj_t;
 
 typedef struct {
-    uint8_t spi_index:4;
-    uint8_t altfn_index:4;
+    uint8_t spi_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_spi_nss_obj_t;
 
@@ -101,17 +101,17 @@ typedef struct {
 
 // UART
 // TODO: these objects should be condensed into a single 'periph_pin' unless we
-// find a compelling reason to store more unique data in them.
+// find a compelling reason to store more unique data in them. 
 
 typedef struct {
-    uint8_t uart_index:4;
-    uint8_t altfn_index:4;
+    uint8_t uart_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_uart_tx_obj_t;
 
 typedef struct {
-    uint8_t uart_index:4;
-    uint8_t altfn_index:4;
+    uint8_t uart_index:4; 
+    uint8_t altfn_index:4; 
     const mcu_pin_obj_t * pin;
 } mcu_uart_rx_obj_t;
 
@@ -124,8 +124,8 @@ typedef struct {
 
 //Timers
 typedef struct {
-    uint8_t tim_index:4;
-    uint8_t altfn_index:4;
+    uint8_t tim_index:4; 
+    uint8_t altfn_index:4; 
     uint8_t channel_index:4;
     const mcu_pin_obj_t * pin;
 } mcu_tim_pin_obj_t;
