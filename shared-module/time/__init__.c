@@ -26,6 +26,7 @@
 
 #include "py/mphal.h"
 #include "supervisor/port.h"
+#include "supervisor/shared/tick.h"
 
 uint64_t common_hal_time_monotonic(void) {
     return supervisor_ticks_ms64();

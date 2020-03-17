@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h> // for cxd56_clock.h
+#include <cxd56_clock.h>
 #include <sys/boardctl.h>
 
 // For NAN: remove when not needed.
@@ -31,7 +33,7 @@
 #include "py/mphal.h"
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return mp_hal_ticks_cpu();
+    return cxd56_get_cpu_baseclk();
 }
 
 float common_hal_mcu_processor_get_temperature(void) {
