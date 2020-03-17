@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-11 17:52-0400\n"
+"POT-Creation-Date: 2020-03-16 20:59-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -485,10 +485,6 @@ msgstr "Pas de transfert sans broches MOSI et MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
-msgstr ""
-
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
 msgstr "Impossible d'écrire sans broche MOSI."
@@ -547,34 +543,6 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "L'UART n'a pu être initialisé"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not initialize channel"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not initialize timer"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not re-init channel"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not re-init timer"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not restart PWM"
-msgstr ""
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Could not start PWM"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "Could not start interrupt, RX busy"
-msgstr ""
-
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
 msgstr ""
@@ -595,14 +563,6 @@ msgstr "Impossible d'allouer le 2e tampon"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
-msgstr ""
-
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
-msgid "DAC Channel Init Error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
-msgid "DAC Device Init Error"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -715,7 +675,6 @@ msgstr "Echec de l'allocation du tampon RX"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Echec de l'allocation de %d octets du tampon RX"
@@ -749,10 +708,6 @@ msgstr "Le fichier existe"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "La fréquence capturée est au delà des capacités. Capture en pause."
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr ""
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -767,21 +722,9 @@ msgstr ""
 msgid "Group full"
 msgstr "Groupe plein"
 
-#: ports/stm32f4/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/SPI.c
-msgid "Hardware busy, try alternative pins"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "Hardware in use, try alternative pins"
-msgstr ""
-
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "opération d'E/S sur un fichier fermé"
-
-#: ports/stm32f4/common-hal/busio/I2C.c
-msgid "I2C Init Error"
-msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
@@ -811,29 +754,17 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "Internal define error"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
-
-#: ports/stm32f4/common-hal/analogio/AnalogIn.c
-msgid "Invalid ADC Unit value"
-msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, fuzzy
 msgid "Invalid BMP file"
 msgstr "Fichier BMP invalide"
 
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
-msgid "Invalid DAC pin supplied"
-msgstr ""
-
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr ""
 
@@ -843,12 +774,11 @@ msgstr ""
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm32f4/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr ""
 
@@ -860,7 +790,7 @@ msgstr "Argument invalide"
 msgid "Invalid bits per value"
 msgstr "Bits par valeur invalides"
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 #, fuzzy
 msgid "Invalid buffer size"
 msgstr "Longueur de tampon invalide"
@@ -889,10 +819,6 @@ msgstr "Fichier invalide"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
 msgstr "Taille de bloc de formatage invalide"
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Invalid frequency supplied"
-msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
@@ -929,10 +855,6 @@ msgstr "Broche invalide pour le canal droit"
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "Invalid pins for PWMOut"
-msgstr ""
-
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid polarity"
 msgstr "Polarité invalide"
@@ -961,10 +883,6 @@ msgstr "Nombre de voix invalide"
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
 msgstr "Fichier WAVE invalide"
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "Invalid word/bit length"
-msgstr ""
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -1011,16 +929,8 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI Pin"
-msgstr ""
-
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
 #: py/parse.c
@@ -1036,7 +946,6 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Pas de DAC sur la puce"
 
@@ -1045,23 +954,13 @@ msgstr "Pas de DAC sur la puce"
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
 
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "No MISO Pin"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "No MOSI Pin"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Pas de broche RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Pas de broche TX"
 
@@ -1089,10 +988,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
-
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
-msgid "No more timers available on this pin."
-msgstr ""
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1172,7 +1067,6 @@ msgstr ""
 "à la construction."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm32f4/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr ""
 
@@ -1184,13 +1078,8 @@ msgstr "Permission refusée"
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
-#: ports/stm32f4/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche ne peut être utilisée pour l'ADC"
-
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
-msgid "Pin number already reserved by EXTI"
-msgstr ""
 
 #: py/builtinhelp.c
 #, fuzzy
@@ -1213,18 +1102,6 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 msgid "Pull not used when direction is output."
 msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 
-#: ports/stm32f4/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not supported on this chip"
-msgstr ""
-
-#: ports/stm32f4/common-hal/os/__init__.c
-msgid "RNG DeInit Error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/os/__init__.c
-msgid "RNG Init Error"
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr ""
@@ -1239,12 +1116,8 @@ msgid "RTC is not supported on this board"
 msgstr "RTC non supportée sur cette carte"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr ""
-
-#: ports/stm32f4/common-hal/os/__init__.c
-msgid "Random number generation error"
 msgstr ""
 
 #: shared-bindings/pulseio/PulseIn.c
@@ -1283,14 +1156,6 @@ msgstr "Mode sans-échec! Le code sauvegardé n'est pas éxecuté.\n"
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
-
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "SPI Init Error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/SPI.c
-msgid "SPI Re-initialization error"
-msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
@@ -1339,14 +1204,6 @@ msgstr "La pile doit être au moins de 256"
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "Supply at least one UART pin"
-msgstr ""
-
-#: ports/stm32f4/common-hal/microcontroller/Processor.c
-msgid "Temperature read timed out"
-msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1421,26 +1278,6 @@ msgstr "Trace (appels les plus récents en dernier):\n"
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
 msgstr "Argument de type tuple ou struct_time nécessaire"
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "UART Buffer allocation error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "UART De-init error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "UART Init Error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "UART Re-init error"
-msgstr ""
-
-#: ports/stm32f4/common-hal/busio/UART.c
-msgid "UART write error"
-msgstr ""
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1564,10 +1401,6 @@ msgid "Viper functions don't currently support more than 4 arguments"
 msgstr ""
 "les fonctions de Viper ne supportent pas plus de 4 arguments actuellement"
 
-#: ports/stm32f4/common-hal/microcontroller/Processor.c
-msgid "Voltage read timed out"
-msgstr ""
-
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION: le nom de fichier de votre code a deux extensions\n"
@@ -1632,6 +1465,10 @@ msgstr "adresse hors limites"
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "addresses is empty"
 msgstr "adresses vides"
+
+#: extmod/ulab/code/vectorise.c
+msgid "arctan2 is implemented for scalars and ndarrays only"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2065,10 +1902,6 @@ msgstr "vide"
 msgid "empty heap"
 msgstr "tas vide"
 
-#: extmod/ulab/code/ndarray.c
-msgid "empty index range"
-msgstr ""
-
 #: py/objstr.c
 msgid "empty separator"
 msgstr "séparateur vide"
@@ -2160,6 +1993,10 @@ msgstr "le system de fichier doit fournir une méthode 'mount'"
 msgid "first argument must be an iterable"
 msgstr ""
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be an ndarray"
+msgstr ""
+
 #: py/objtype.c
 msgid "first argument to super() must be type"
 msgstr "le premier argument de super() doit être un type"
@@ -2208,6 +2045,10 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
+
+#: extmod/ulab/code/linalg.c
+msgid "function is defined for ndarrays only"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -2278,8 +2119,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index hors gamme"
 
@@ -2479,6 +2319,10 @@ msgstr "erreur de domaine math"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix dimensions do not match"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "matrix is not positive definite"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -2713,7 +2557,7 @@ msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 msgid "only square matrices can be inverted"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
@@ -2779,7 +2623,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "'pop' d'une entrée PulseIn vide"
 
