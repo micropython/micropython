@@ -55,10 +55,11 @@ void stm32f4_peripherals_clocks_init(void) {
     HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
     /* Select PLLSAI output as USB clock source */
-    PeriphClkInitStruct.PLLI2S.PLLI2SM = 12;
-    PeriphClkInitStruct.PLLI2S.PLLI2SQ = 3;
-    PeriphClkInitStruct.PLLI2S.PLLI2SN = 72;
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN = 72;
+    PeriphClkInitStruct.PLLI2S.PLLI2SM = 12;
+    PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+    PeriphClkInitStruct.PLLI2S.PLLI2SQ = 3;
     PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLI2SQ;
     PeriphClkInitStruct.PLLI2SSelection = RCC_PLLI2SCLKSOURCE_PLLSRC;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
