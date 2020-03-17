@@ -598,21 +598,20 @@ STATIC mp_uint_t lwip_raw_udp_send(lwip_socket_obj_t *socket, const byte *buf, m
 STATIC mp_uint_t lwip_raw_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
 
     if (socket->incoming.pbuf == NULL) {
-        if (socket->timeout != -1) {
-            for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                mp_hal_delay_ms(100);
-                if (socket->incoming.pbuf != NULL) {
-                    break;
-                }
-            }
-            if (socket->incoming.pbuf == NULL) {
+        if (socket->timeout == 0) {
+            // Non-blocking socket.
+            *_errno = MP_EAGAIN;
+            return -1;
+        }
+
+        // Wait for data to arrive on UDP socket.
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (socket->incoming.pbuf == NULL) {
+            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return -1;
             }
-        } else {
-            while (socket->incoming.pbuf == NULL) {
-                poll_sockets();
-            }
+            poll_sockets();
         }
     }
 
