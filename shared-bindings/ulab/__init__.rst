@@ -383,7 +383,7 @@ much more efficient than expressing the same operation as a Python loop.
 
    Perform a Fast Fourier Transform from the time domain into the frequency domain
 
-    See also ~ulab.extras.spectrogram, which computes the magnitude of the fft,
+    See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
     rather than separately returning its real and imaginary parts.
 
 .. method:: ifft(r, c=None)
