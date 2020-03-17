@@ -858,6 +858,7 @@ typedef struct {
     mp_uint_t stop;
     mp_int_t step;
 } mp_bound_slice_t;
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
 
 // Compute the new length of a sequence and ensure an exception is thrown on overflow.
 size_t mp_seq_multiply_len(size_t item_sz, size_t len);

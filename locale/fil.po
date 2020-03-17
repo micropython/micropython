@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-11 17:52-0400\n"
+"POT-Creation-Date: 2020-03-17 16:39-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -480,7 +480,7 @@ msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
@@ -542,31 +542,31 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
 msgstr ""
 
@@ -592,11 +592,11 @@ msgstr "Hindi ma-iallocate ang second buffer"
 msgid "Crash into the HardFault_Handler."
 msgstr ""
 
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+#: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+#: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
 msgstr ""
 
@@ -712,7 +712,7 @@ msgstr "Nabigong ilaan ang RX buffer"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
@@ -746,7 +746,7 @@ msgstr "Mayroong file"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 
@@ -764,11 +764,11 @@ msgstr ""
 msgid "Group full"
 msgstr "Puno ang group"
 
-#: ports/stm32f4/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr ""
 
@@ -776,7 +776,7 @@ msgstr ""
 msgid "I/O operation on closed file"
 msgstr "I/O operasyon sa saradong file"
 
-#: ports/stm32f4/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr ""
 
@@ -808,7 +808,7 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr ""
 
@@ -817,7 +817,7 @@ msgstr ""
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
 
-#: ports/stm32f4/common-hal/analogio/AnalogIn.c
+#: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr ""
 
@@ -825,11 +825,11 @@ msgstr ""
 msgid "Invalid BMP file"
 msgstr "Mali ang BMP file"
 
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+#: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm32f4/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr ""
 
@@ -839,12 +839,11 @@ msgstr ""
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm32f4/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr ""
 
@@ -856,7 +855,7 @@ msgstr "Maling argumento"
 msgid "Invalid bits per value"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid buffer size"
 msgstr "Mali ang buffer size"
 
@@ -884,7 +883,7 @@ msgstr "Mali ang file"
 msgid "Invalid format chunk size"
 msgstr "Mali ang format ng chunk size"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr ""
 
@@ -923,7 +922,7 @@ msgstr "Mali ang pin para sa kanang channel"
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr ""
 
@@ -955,7 +954,7 @@ msgstr "Maling bilang ng voice"
 msgid "Invalid wave file"
 msgstr "May hindi tama sa wave file"
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr ""
 
@@ -1004,7 +1003,7 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
 
@@ -1012,7 +1011,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
@@ -1029,7 +1028,7 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/stm32f4/common-hal/analogio/AnalogOut.c
+#: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Walang DAC sa chip"
 
@@ -1038,23 +1037,23 @@ msgstr "Walang DAC sa chip"
 msgid "No DMA channel found"
 msgstr "Walang DMA channel na mahanap"
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -1083,7 +1082,7 @@ msgstr ""
 msgid "No hardware support on pin"
 msgstr "Walang support sa hardware ang pin"
 
-#: ports/stm32f4/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr ""
 
@@ -1158,7 +1157,7 @@ msgstr ""
 "PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm32f4/common-hal/displayio/ParallelBus.c
+#: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr ""
 
@@ -1170,11 +1169,11 @@ msgstr "Walang pahintulot"
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
-#: ports/stm32f4/common-hal/analogio/AnalogIn.c
+#: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Ang pin ay walang kakayahan sa ADC"
 
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr ""
 
@@ -1200,15 +1199,15 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 
-#: ports/stm32f4/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
 msgstr ""
 
-#: ports/stm32f4/common-hal/os/__init__.c
+#: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/os/__init__.c
+#: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
 msgstr ""
 
@@ -1226,11 +1225,11 @@ msgid "RTC is not supported on this board"
 msgstr "Hindi supportado ang RTC sa board na ito"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm32f4/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
-#: ports/stm32f4/common-hal/os/__init__.c
+#: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
 msgstr ""
 
@@ -1271,11 +1270,11 @@ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
 msgstr ""
 
@@ -1326,11 +1325,11 @@ msgstr "Ang laki ng stack ay dapat na hindi bababa sa 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream kulang ng readinto() o write() method."
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr ""
 
-#: ports/stm32f4/common-hal/microcontroller/Processor.c
+#: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
 
@@ -1407,23 +1406,23 @@ msgstr "Traceback (pinakahuling huling tawag): \n"
 msgid "Tuple or struct_time argument required"
 msgstr "Tuple o struct_time argument kailangan"
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART Buffer allocation error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART Init Error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr ""
 
-#: ports/stm32f4/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr ""
 
@@ -1546,7 +1545,7 @@ msgstr ""
 "Ang mga function ng Viper ay kasalukuyang hindi sumusuporta sa higit sa 4 na "
 "argumento"
 
-#: ports/stm32f4/common-hal/microcontroller/Processor.c
+#: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
 msgstr ""
 
@@ -1615,6 +1614,10 @@ msgstr "wala sa sakop ang address"
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "addresses is empty"
 msgstr "walang laman ang address"
+
+#: extmod/ulab/code/vectorise.c
+msgid "arctan2 is implemented for scalars and ndarrays only"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2040,10 +2043,6 @@ msgstr "walang laman"
 msgid "empty heap"
 msgstr "walang laman ang heap"
 
-#: extmod/ulab/code/ndarray.c
-msgid "empty index range"
-msgstr ""
-
 #: py/objstr.c
 msgid "empty separator"
 msgstr "walang laman na separator"
@@ -2135,6 +2134,10 @@ msgstr "ang filesystem dapat mag bigay ng mount method"
 msgid "first argument must be an iterable"
 msgstr ""
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be an ndarray"
+msgstr ""
+
 #: py/objtype.c
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
@@ -2183,6 +2186,10 @@ msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
+
+#: extmod/ulab/code/linalg.c
+msgid "function is defined for ndarrays only"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -2255,7 +2262,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -2455,6 +2462,10 @@ msgstr "may pagkakamali sa math domain"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix dimensions do not match"
+msgstr ""
+
+#: extmod/ulab/code/linalg.c
+msgid "matrix is not positive definite"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -2686,7 +2697,7 @@ msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 msgid "only square matrices can be inverted"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
@@ -2747,7 +2758,7 @@ msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm32f4/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
