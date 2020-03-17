@@ -173,6 +173,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     int num_digits = 0;
     const FPTYPE *pos_pow = g_pos_pow;
     const FPTYPE *neg_pow = g_neg_pow;
+    FPTYPE foriginal = f;
 
     if (fp_iszero(f)) {
         e = 0;
@@ -337,7 +338,24 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     }
 
     // Print the digits of the mantissa
-    for (int i = 0; i < num_digits; ++i, --dec) {
+    int i = 0;
+    if ((fmt == 'f') && (dec >= 0)) { // handle with the integer part separately to avoid rounding errors
+        f = foriginal;
+        int32_t d = (int32_t)f;
+        f -= (FPTYPE)d;
+        f *= FPCONST(10.0);
+        s += dec;
+        while (i <= dec) {
+            *s-- = '0' + (d%10);
+            d /= 10;
+            i++;
+        }
+        s += i+1;
+        if (prec > 0)
+            *s++ = '.';
+        dec = -1;
+    }
+    for (; i < num_digits; ++i, --dec) {
         int32_t d = (int32_t)f;
         if (d < 0) {
             *s++ = '0';
