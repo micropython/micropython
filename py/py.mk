@@ -108,6 +108,7 @@ endif
 ifeq ($(CIRCUITPY_ULAB),1)
 SRC_MOD += $(addprefix extmod/ulab/code/, \
 create.c \
+extras.c \
 fft.c \
 filter.c \
 linalg.c \
