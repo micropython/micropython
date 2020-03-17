@@ -29,8 +29,12 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "stm32f4xx_hal.h"
+//TODO: rework this module to use HAL only
+#ifdef STM32H743xx
+#include "stm32h7xx_ll_gpio.h"
+#else
 #include "stm32f4xx_ll_gpio.h"
+#endif
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {

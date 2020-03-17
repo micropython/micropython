@@ -25,13 +25,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SPI_H
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/periph.h"
+#include "peripherals/periph.h"
 
 #include "py/obj.h"
 
@@ -39,10 +38,10 @@ typedef struct {
     mp_obj_base_t base;
     SPI_HandleTypeDef handle;
     bool has_lock;
-    const mcu_spi_sck_obj_t *sck;
-    const mcu_spi_mosi_obj_t *mosi;
-    const mcu_spi_miso_obj_t *miso;
-    const mcu_spi_nss_obj_t *nss;
+    const mcu_periph_obj_t *sck;
+    const mcu_periph_obj_t *mosi;
+    const mcu_periph_obj_t *miso;
+    const mcu_periph_obj_t *nss;
     uint32_t baudrate;
     uint16_t prescaler;
     uint8_t polarity;
@@ -52,4 +51,4 @@ typedef struct {
 
 void spi_reset(void);
 
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_SPI_H
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SPI_H

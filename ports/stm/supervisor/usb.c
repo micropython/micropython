@@ -30,7 +30,6 @@
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
-#include "stm32f4xx_hal.h"
 
 #include "py/mpconfig.h"
 
@@ -74,7 +73,11 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    #if defined(STM32H7)
+    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+    #else
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 11);
     never_reset_pin_number(0, 12);
@@ -91,7 +94,11 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    #if defined(STM32H7)
+    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+    #else
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 10);
 
@@ -103,10 +110,16 @@ void init_usb_hardware(void) {
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
 #endif
-    
+
+
+#if defined(STM32H7)
+    HAL_PWREx_EnableUSBVoltageDetector();
+    __HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
+#else
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
+#endif
 
     init_usb_vbus_sense();
 }

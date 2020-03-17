@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef STM32F4_MPCONFIGPORT_H__
-#define STM32F4_MPCONFIGPORT_H__
+#ifndef STM32_MPCONFIGPORT_H__
+#define STM32_MPCONFIGPORT_H__
 
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
@@ -39,7 +39,10 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-//Board flags:
+// The STM32 HAL file is included virtually everywhere:
+#include STM32_HAL_H
+
+// Board flags:
 #ifndef BOARD_OVERWRITE_SWD
 #define BOARD_OVERWRITE_SWD (0)
 #endif

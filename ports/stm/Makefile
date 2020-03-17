@@ -22,7 +22,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-# DEBUG = 1
 
 # Select the board to build for.
 ifeq ($(BOARD),)
@@ -58,21 +57,23 @@ include $(TOP)/py/circuitpy_defns.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
-#######################################
-# CFLAGS
-#######################################
+MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+MCU_VARIANT_LOWER = $(shell echo $(MCU_VARIANT) | tr '[:upper:]' '[:lower:]')
+
+HAL_DIR=st_driver/STM32$(MCU_SERIES)xx_HAL_Driver
 
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
-INC += -I./st_driver/STM32F4xx_HAL_Driver/Inc
-INC += -I./st_driver/STM32F4xx_HAL_Driver/Inc/Legacy
-INC += -I./st_driver/CMSIS/Device/ST/STM32F4xx/Include
+INC += -I./$(HAL_DIR)/Inc
+INC += -I./$(HAL_DIR)/Inc/Legacy
+INC += -I./st_driver/CMSIS/Device/ST/STM32$(MCU_SERIES)xx/Include
 INC += -I./st_driver/CMSIS/Include
 INC += -I./boards
 INC += -I./boards/$(BOARD)
 INC += -I./peripherals
+INC += -I./packages
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
@@ -87,11 +88,11 @@ else
 	CFLAGS += -Os -DNDEBUG
 	CFLAGS += -ggdb
 	# TODO: Test with -flto
-	### CFLAGS += -flto
+	# CFLAGS += -flto
 endif
 
-
-C_DEFS = -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(CMSIS_MCU)
+# MCU Series is defined by the HAL package and doesn't need to be specified here
+C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
@@ -102,17 +103,24 @@ CFLAGS += -Wno-undef
 # STM32 might do casts that increase alignment requirements.
 CFLAGS += -Wno-cast-align
 
-CFLAGS += \
-	-mthumb \
-	-mabi=aapcs-linux \
-	-mfloat-abi=hard \
-	-mcpu=cortex-m4 \
-	-mfpu=fpv4-sp-d16
+CFLAGS += -mthumb -mabi=aapcs-linux
 
-# TODO: check this
-CFLAGS += -D__START=main
+# Arm core selection
+MCU_FLAGS_F4 = -mtune=cortex-m4 -mcpu=cortex-m4
+MCU_FLAGS_F7 = -mtune=cortex-m7 -mcpu=cortex-m7
+MCU_FLAGS_H7 = -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS += $(MCU_FLAGS_$(MCU_SERIES))
 
-#need both command and valid file to use uf2 bootloader
+CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
+
+# Floating point settings
+ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
+CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard
+else
+CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+endif
+
+# Need both command and valid file to use uf2 bootloader
 ifndef LD_FILE
     ifneq ($(and $(UF2_BOOTLOADER),$(LD_BOOT)),)
         LD_FILE = $(LD_BOOT)
@@ -131,7 +139,7 @@ endif
 LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
-LDFLAGS += -mthumb -mcpu=cortex-m4
+LDFLAGS += -mthumb $(MCU_FLAGS_$(MCU_SERIES))
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
@@ -139,55 +147,52 @@ LIBS += -lm
 endif
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32$(MCU_SERIES) -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
 
+SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
+	hal_adc.c \
+	hal_adc_ex.c \
+	hal_dac.c \
+	hal_dac_ex.c \
+	hal_i2c.c \
+	hal_i2c_ex.c \
+	hal_qspi.c \
+	hal_rng.c \
+	hal_rtc.c \
+	hal_rtc_ex.c \
+	hal_spi.c \
+	hal_tim.c \
+	hal_tim_ex.c \
+	hal_uart.c \
+	hal_usart.c \
+	hal_rcc.c \
+	hal_rcc_ex.c \
+	hal_flash.c \
+	hal_flash_ex.c \
+	hal_gpio.c \
+	hal_dma_ex.c \
+	hal_dma.c \
+	hal_pwr.c \
+	hal_pwr_ex.c \
+	hal_cortex.c \
+	hal.c \
+	hal_exti.c \
+	hal_sd.c \
+	ll_gpio.c \
+	ll_adc.c \
+	ll_i2c.c \
+	ll_dma.c \
+	ll_sdmmc.c \
+	ll_usart.c \
+	ll_rcc.c \
+	ll_utils.c \
+	ll_exti.c \
+	)
+#removed:
+# hal_flash_ramfunc.c \
+# ll_fsmc.c \
 
-######################################
-# source
-######################################
-
-SRC_STM32 = \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
-	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
-	system_stm32f4xx.c
-
+SRC_STM32 += system_stm32$(MCU_SERIES_LOWER)xx.c
 
 SRC_C += \
 	background.c \
@@ -196,10 +201,11 @@ SRC_C += \
 	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
-	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
-	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
-	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
-	peripherals/stm32f4/$(MCU_SUB_VARIANT)/periph.c \
+	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/pins.c \
+	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/clocks.c \
+	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/gpio.c \
+	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/periph.c \
+	packages/$(MCU_PACKAGE).c\
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -219,7 +225,7 @@ endif
 
 SRC_S = \
 	supervisor/cpu.s \
-	boards/startup_$(MCU_SUB_VARIANT).s
+	boards/startup_$(MCU_VARIANT_LOWER).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

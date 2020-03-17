@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32F4_TICK_H
-#define MICROPY_INCLUDED_STM32F4_TICK_H
+#ifndef MICROPY_INCLUDED_STM32_TICK_H
+#define MICROPY_INCLUDED_STM32_TICK_H
 
 #include "py/mpconfig.h"
 
@@ -41,4 +41,4 @@ void current_tick(uint64_t* ms, uint32_t* us_until_ms);
 // ticks_ms to increment.
 void wait_until(uint64_t ms, uint32_t us_until_ms);
 
-#endif  // MICROPY_INCLUDED_STM32F4_TICK_H
+#endif  // MICROPY_INCLUDED_STM32_TICK_H

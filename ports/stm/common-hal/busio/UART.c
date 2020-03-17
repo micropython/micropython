@@ -36,7 +36,6 @@
 #include "supervisor/shared/translate.h"
 
 #include "tick.h"
-#include "stm32f4xx_hal.h"
 
 #define ALL_UARTS 0xFFFF
 
@@ -49,11 +48,11 @@ STATIC void uart_clock_disable(uint16_t mask);
 STATIC void uart_assign_irq(busio_uart_obj_t* self, USART_TypeDef* USARTx);
 
 STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eval,
-                                            int uart_index, bool uart_taken) {
+                                            int periph_index, bool uart_taken) {
     if (pin_eval) {
         //assign a root pointer pointer for IRQ
-        MP_STATE_PORT(cpy_uart_obj_all)[uart_index] = self;
-        return mcu_uart_banks[uart_index];
+        MP_STATE_PORT(cpy_uart_obj_all)[periph_index] = self;
+        return mcu_uart_banks[periph_index];
     } else {
         if (uart_taken) {
             mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
@@ -84,7 +83,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t tx_len = MP_ARRAY_SIZE(mcu_uart_tx_list);
     uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
     bool uart_taken = false;
-    uint8_t uart_index = 0; //origin 0 corrected
+    uint8_t periph_index = 0; //origin 0 corrected
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert == true)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
@@ -98,9 +97,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 //rx
                 for (uint j = 0; j < rx_len; j++) {
                     if (mcu_uart_rx_list[j].pin == rx
-                        && mcu_uart_rx_list[j].uart_index == mcu_uart_tx_list[i].uart_index) {
+                        && mcu_uart_rx_list[j].periph_index == mcu_uart_tx_list[i].periph_index) {
                         //keep looking if the UART is taken, edge case
-                        if (reserved_uart[mcu_uart_tx_list[i].uart_index - 1]) {
+                        if (reserved_uart[mcu_uart_tx_list[i].periph_index - 1]) {
                             uart_taken = true;
                             continue;
                         }
@@ -112,15 +111,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
             }
         }
-        uart_index = self->tx->uart_index - 1;
+        periph_index = self->tx->periph_index - 1;
         USARTx = assign_uart_or_throw(self, (self->tx != NULL && self->rx != NULL),
-            uart_index, uart_taken);
+            periph_index, uart_taken);
     } else if (tx == NULL) {
         //If there is no tx, run only rx
         for (uint i = 0; i < rx_len; i++) {
             if (mcu_uart_rx_list[i].pin == rx) {
                 //keep looking if the UART is taken, edge case
-                if (reserved_uart[mcu_uart_rx_list[i].uart_index - 1]) {
+                if (reserved_uart[mcu_uart_rx_list[i].periph_index - 1]) {
                     uart_taken = true;
                     continue;
                 }
@@ -129,15 +128,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 break;
             }
         }
-        uart_index = self->rx->uart_index - 1;
+        periph_index = self->rx->periph_index - 1;
         USARTx = assign_uart_or_throw(self, (self->rx != NULL),
-            uart_index, uart_taken);
+            periph_index, uart_taken);
     } else if (rx == NULL) {
         //If there is no rx, run only tx
         for (uint i = 0; i < tx_len; i++) {
             if (mcu_uart_tx_list[i].pin == tx) {
                 //keep looking if the UART is taken, edge case
-                if (reserved_uart[mcu_uart_tx_list[i].uart_index - 1]) {
+                if (reserved_uart[mcu_uart_tx_list[i].periph_index - 1]) {
                     uart_taken = true;
                     continue;
                 }
@@ -146,9 +145,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 break;
             }
         }
-        uart_index = self->tx->uart_index - 1;
+        periph_index = self->tx->periph_index - 1;
         USARTx = assign_uart_or_throw(self, (self->tx != NULL),
-            uart_index, uart_taken);
+            periph_index, uart_taken);
     } else {
         //both pins cannot be empty
         mp_raise_ValueError(translate("Supply at least one UART pin"));
@@ -185,8 +184,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     //reserve uart and enable the peripheral
-    reserved_uart[uart_index] = true;
-    uart_clock_enable(1 << (uart_index));
+    reserved_uart[periph_index] = true;
+    uart_clock_enable(1 << (periph_index));
     uart_assign_irq(self, USARTx);
 
     self->handle.Instance = USARTx;

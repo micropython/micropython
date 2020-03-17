@@ -31,25 +31,29 @@
 #include "tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/busio/I2C.h"
-#include "common-hal/busio/SPI.h"
-#include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PWMOut.h"
-#include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PulseIn.h"
 
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+#if defined(STM32F4)
+    #include "common-hal/busio/I2C.h"
+    #include "common-hal/busio/SPI.h"
+    #include "common-hal/busio/UART.h"
+    #include "common-hal/pulseio/PWMOut.h"
+    #include "common-hal/pulseio/PulseOut.h"
+    #include "common-hal/pulseio/PulseIn.h"
+#endif
 
-#include "stm32f4xx_hal.h"
+#include "clocks.h"
+#include "gpio.h"
 
 safe_mode_t port_init(void) {
     HAL_Init();
     __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
+    
+    #if defined(STM32F4)
+        __HAL_RCC_PWR_CLK_ENABLE();
+    #endif
 
-    stm32f4_peripherals_clocks_init();
-    stm32f4_peripherals_gpio_init();
+    stm32_peripherals_clocks_init();
+    stm32_peripherals_gpio_init();
 
     tick_init();
 
@@ -58,12 +62,15 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
     reset_all_pins();
-    i2c_reset();
-    spi_reset();
-    uart_reset();
-    pwmout_reset();
-    pulseout_reset();
-    pulsein_reset();
+
+    #if defined(STM32F4)
+        i2c_reset();
+        spi_reset();
+        uart_reset();
+        pwmout_reset();
+        pulseout_reset();
+        pulsein_reset();
+    #endif
 }
 
 void reset_to_bootloader(void) {

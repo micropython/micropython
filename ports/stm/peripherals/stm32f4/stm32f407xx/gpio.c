@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
+#include "peripherals/gpio.h"
 #include "common-hal/microcontroller/Pin.h"
 
 void stm32f4_peripherals_gpio_init(void) {

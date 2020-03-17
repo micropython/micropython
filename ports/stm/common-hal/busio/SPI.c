@@ -29,7 +29,6 @@
 #include "shared-bindings/busio/SPI.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "stm32f4xx_hal.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "boards/board.h"
@@ -120,10 +119,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         //MISO
                         for (uint k = 0; k < miso_len; k++) {
                             if ((mcu_spi_miso_list[k].pin == miso) //everything needs the same index
-                                && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)
-                                && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[k].spi_index)) {
+                                && (mcu_spi_sck_list[i].periph_index == mcu_spi_mosi_list[j].periph_index)
+                                && (mcu_spi_sck_list[i].periph_index == mcu_spi_miso_list[k].periph_index)) {
                                 //keep looking if the SPI is taken, edge case
-                                if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
+                                if (reserved_spi[mcu_spi_sck_list[i].periph_index - 1]) {
                                     spi_taken = true;
                                     continue;
                                 }
@@ -140,9 +139,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             } else if (miso != NULL) {
                 for (uint j = 0; j < miso_len; j++) {
                     if ((mcu_spi_miso_list[j].pin == miso) //only SCK and MISO need the same index
-                        && (mcu_spi_sck_list[i].spi_index == mcu_spi_miso_list[j].spi_index)) {
+                        && (mcu_spi_sck_list[i].periph_index == mcu_spi_miso_list[j].periph_index)) {
                         //keep looking if the SPI is taken, edge case
-                        if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
+                        if (reserved_spi[mcu_spi_sck_list[i].periph_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
@@ -157,9 +156,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             } else if (mosi != NULL) {
                 for (uint j = 0; j < mosi_len; j++) {
                     if ((mcu_spi_mosi_list[j].pin == mosi) //only SCK and MOSI need the same index
-                        && (mcu_spi_sck_list[i].spi_index == mcu_spi_mosi_list[j].spi_index)) {
+                        && (mcu_spi_sck_list[i].periph_index == mcu_spi_mosi_list[j].periph_index)) {
                         //keep looking if the SPI is taken, edge case
-                        if (reserved_spi[mcu_spi_sck_list[i].spi_index - 1]) {
+                        if (reserved_spi[mcu_spi_sck_list[i].periph_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
@@ -181,7 +180,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if ( (self->sck != NULL && self->mosi != NULL && self->miso != NULL) ||
         (self->sck != NULL && self->mosi != NULL && miso == NULL) ||
         (self->sck != NULL && self->miso != NULL && mosi == NULL)) {
-        SPIx = mcu_spi_banks[self->sck->spi_index - 1];
+        SPIx = mcu_spi_banks[self->sck->periph_index - 1];
     } else {
         if (spi_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -217,8 +216,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         HAL_GPIO_Init(pin_port(miso->port), &GPIO_InitStruct);
     }
 
-    spi_clock_enable(1 << (self->sck->spi_index - 1));
-    reserved_spi[self->sck->spi_index - 1] = true;
+    spi_clock_enable(1 << (self->sck->periph_index - 1));
+    reserved_spi[self->sck->periph_index - 1] = true;
 
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
@@ -276,9 +275,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
-    spi_clock_disable(1<<(self->sck->spi_index - 1));
-    reserved_spi[self->sck->spi_index - 1] = false;
-    never_reset_spi[self->sck->spi_index - 1] = false;
+    spi_clock_disable(1<<(self->sck->periph_index - 1));
+    reserved_spi[self->sck->periph_index - 1] = false;
+    never_reset_spi[self->sck->periph_index - 1] = false;
 
     reset_pin_number(self->sck->pin->port,self->sck->pin->number);
     if (self->mosi != NULL) {

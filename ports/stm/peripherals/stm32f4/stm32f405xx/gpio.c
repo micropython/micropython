@@ -24,11 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
+#include "peripherals/gpio.h"
 #include "common-hal/microcontroller/Pin.h"
 
-void stm32f4_peripherals_gpio_init(void) {
+void stm32_peripherals_gpio_init(void) {
     //Enable all GPIO for now
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();

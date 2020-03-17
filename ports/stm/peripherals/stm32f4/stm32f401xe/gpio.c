@@ -24,11 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
+#include "gpio.h"
 #include "common-hal/microcontroller/Pin.h"
 
-void stm32f4_peripherals_gpio_init(void) {
+void stm32_peripherals_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -43,9 +42,4 @@ void stm32f4_peripherals_gpio_init(void) {
     never_reset_pin_number(0,13); //PA13 SWDIO
     never_reset_pin_number(0,14); //PA14 SWCLK
 }
-
-//LEDs are inverted on F411 DISCO
-void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
-}
-
 

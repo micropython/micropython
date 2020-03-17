@@ -12,7 +12,7 @@ USB_SERIAL_NUMBER_LENGTH = 24
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 
-#Reduced feature set for early port
+# Reduced feature set for early port
 CIRCUITPY_MINIMAL_BUILD = 1
 
 # The ifndef's allow overriding in mpconfigboard.mk.
@@ -73,5 +73,18 @@ CFLAGS += -DMICROPY_CPYTHON_COMPAT=1
 
 MICROPY_PY_ULAB = 1
 
-#ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-#endif
+ifeq ($(MCU_SERIES), H7)
+	CIRCUITPY_BOARD = 1
+	CIRCUITPY_DIGITALIO = 1
+	CIRCUITPY_ANALOGIO = 0
+	CIRCUITPY_MICROCONTROLLER = 1
+	CIRCUITPY_BUSIO = 0
+	CIRCUITPY_PULSEIO = 0
+	CIRCUITPY_OS = 0
+	CIRCUITPY_STORAGE = 0
+	CIRCUITPY_RANDOM = 0
+	CIRCUITPY_USB_HID = 0
+	CIRCUITPY_USB_MIDI = 0
+	CIRCUITPY_NEOPIXEL_WRITE = 0
+	CIRCUITPY_DISPLAYIO = 0
+endif

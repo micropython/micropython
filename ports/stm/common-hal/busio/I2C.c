@@ -29,7 +29,6 @@
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "stm32f4xx_hal.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
@@ -69,9 +68,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (mcu_i2c_sda_list[i].pin == sda) {
             for (uint j = 0; j < scl_len; j++) {
                 if ((mcu_i2c_scl_list[j].pin == scl)
-                    && (mcu_i2c_scl_list[j].i2c_index == mcu_i2c_sda_list[i].i2c_index)) {
+                    && (mcu_i2c_scl_list[j].periph_index == mcu_i2c_sda_list[i].periph_index)) {
                     //keep looking if the I2C is taken, could be another SCL that works
-                    if (reserved_i2c[mcu_i2c_scl_list[i].i2c_index - 1]) {
+                    if (reserved_i2c[mcu_i2c_scl_list[i].periph_index - 1]) {
                         i2c_taken = true;
                         continue;
                     }
@@ -85,7 +84,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     //handle typedef selection, errors
     if (self->sda != NULL && self->scl != NULL ) {
-        I2Cx = mcu_i2c_banks[self->sda->i2c_index - 1];
+        I2Cx = mcu_i2c_banks[self->sda->periph_index - 1];
     } else {
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -111,8 +110,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
     //Note: due to I2C soft reboot issue, do not relocate clock init.
-    i2c_clock_enable(1 << (self->sda->i2c_index - 1));
-    reserved_i2c[self->sda->i2c_index - 1] = true;
+    i2c_clock_enable(1 << (self->sda->periph_index - 1));
+    reserved_i2c[self->sda->periph_index - 1] = true;
 
     self->handle.Instance = I2Cx;
     self->handle.Init.ClockSpeed = 100000;
@@ -152,9 +151,9 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_clock_disable(1 << (self->sda->i2c_index - 1));
-    reserved_i2c[self->sda->i2c_index - 1] = false;
-    never_reset_i2c[self->sda->i2c_index - 1] = false;
+    i2c_clock_disable(1 << (self->sda->periph_index - 1));
+    reserved_i2c[self->sda->periph_index - 1] = false;
+    never_reset_i2c[self->sda->periph_index - 1] = false;
 
     reset_pin_number(self->sda->pin->port,self->sda->pin->number);
     reset_pin_number(self->scl->pin->port,self->scl->pin->number);
