@@ -32,6 +32,7 @@
 
 // ASF 4
 #include "atmel_start_pins.h"
+#include "peripheral_clk_config.h"
 #include "hal/include/hal_delay.h"
 #include "hal/include/hal_flash.h"
 #include "hal/include/hal_gpio.h"
@@ -134,12 +135,16 @@ static void save_usb_clock_calibration(void) {
 
 static void rtc_init(void) {
 #ifdef SAMD21
-    _gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
+    _gclk_enable_channel(RTC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK2_Val);
+    RTC->MODE0.CTRL.bit.SWRST = true;
+    while (RTC->MODE0.CTRL.bit.SWRST != 0) {}
+
+    RTC->MODE0.CTRL.reg = RTC_MODE0_CTRL_ENABLE |
+                     RTC_MODE0_CTRL_MODE_COUNT32 |
+                     RTC_MODE0_CTRL_PRESCALER_DIV2;
 #endif
 #ifdef SAMD51
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
-#endif
-
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {}
 
@@ -147,6 +152,8 @@ static void rtc_init(void) {
                      RTC_MODE0_CTRLA_MODE_COUNT32 |
                      RTC_MODE0_CTRLA_PRESCALER_DIV2 |
                      RTC_MODE0_CTRLA_COUNTSYNC;
+#endif
+
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_OVF;
 
     // Set all peripheral interrupt priorities to the lowest priority by default.
@@ -384,6 +391,7 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
+static volatile bool _ticks_enabled = false;
 
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
@@ -392,20 +400,44 @@ void RTC_Handler(void) {
         // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
         // tick.
         overflowed_ticks += (1L<< (32 - 4));
-
+    #ifdef SAMD51
     } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
         // Do things common to all ports when the tick occurs
         supervisor_tick();
+    #endif
     } else if (intflag & RTC_MODE0_INTFLAG_CMP0) {
-        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
+        // Clear the interrupt because we may have hit a sleep and _ticks_enabled
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+        #ifdef SAMD21
+        if (_ticks_enabled) {
+            // Do things common to all ports when the tick occurs.
+            supervisor_tick();
+            // Check _ticks_enabled again because a tick handler may have turned it off.
+            if (_ticks_enabled) {
+                port_interrupt_after_ticks(1);
+            }
+        }
+        #endif
+        #ifdef SAMD51
+        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
+        #endif
     }
 }
 
-uint64_t port_get_raw_ticks(uint8_t* subticks) {
+static uint32_t _get_count(void) {
+    #ifdef SAMD51
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
-    uint32_t current_ticks = RTC->MODE0.COUNT.reg;
+    #endif
+    #ifdef SAMD21
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+
+    return RTC->MODE0.COUNT.reg;
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    uint32_t current_ticks = _get_count();
     if (subticks != NULL) {
         *subticks = (current_ticks % 16) * 2;
     }
@@ -415,18 +447,29 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
+    #ifdef SAMD51
     // PER2 will generate an interrupt every 32 ticks of the source 32.768 clock.
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
+    #endif
+    #ifdef SAMD21
+    _ticks_enabled = true;
+    port_interrupt_after_ticks(1);
+    #endif
 }
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
+    #ifdef SAMD51
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
+    #endif
+    #ifdef SAMD21
+    _ticks_enabled = false;
+    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
+    #endif
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
-    uint32_t current_ticks = RTC->MODE0.COUNT.reg;
+    uint32_t current_ticks = _get_count();
     if (ticks > 1 << 28) {
         // We'll interrupt sooner with an overflow.
         return;
@@ -437,11 +480,13 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
+    #ifdef SAMD51
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
         (void) __get_FPSCR();
     }
+    #endif
     // Call wait for interrupt ourselves if the SD isn't enabled.
     __WFI();
 }

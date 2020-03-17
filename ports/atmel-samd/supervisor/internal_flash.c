@@ -41,6 +41,7 @@
 #endif
 #include "hal/include/hal_flash.h"
 
+#include "supervisor/flash.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 static struct flash_descriptor supervisor_flash_desc;
@@ -73,7 +74,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return INTERNAL_FLASH_PART1_NUM_BLOCKS;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
 }
 
 void supervisor_flash_release_cache(void) {
