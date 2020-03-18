@@ -30,7 +30,6 @@ endif
 SRC_C = \
 	lib/utils/printf.c \
 	ports/unix/main.c \
-	ports/unix/file.c \
 	ports/unix/input.c \
 	ports/unix/modos.c \
 	ports/unix/modmachine.c \

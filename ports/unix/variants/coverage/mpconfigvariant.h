@@ -61,10 +61,6 @@
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
 
-// TODO these should be generic, not bound to fatfs
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
-
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open mp_vfs_open

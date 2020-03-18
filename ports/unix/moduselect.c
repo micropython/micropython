@@ -40,7 +40,6 @@
 #include "py/objtuple.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
-#include "fdfile.h"
 
 #define DEBUG 0
 

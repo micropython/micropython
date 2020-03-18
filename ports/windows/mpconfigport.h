@@ -62,6 +62,7 @@
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
@@ -132,6 +133,9 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
 #define MICROPY_KBD_EXCEPTION       (1)
+
+#define mp_type_fileio mp_type_vfs_posix_fileio
+#define mp_type_textio mp_type_vfs_posix_textio
 
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()

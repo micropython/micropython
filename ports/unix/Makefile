@@ -160,7 +160,6 @@ SRC_C = \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduos_vfs.c \
