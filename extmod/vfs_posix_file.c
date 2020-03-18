@@ -157,7 +157,9 @@ STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t 
         return size;
     }
     #endif
+    MP_THREAD_GIL_EXIT();
     mp_int_t r = write(o->fd, buf, size);
+    MP_THREAD_GIL_ENTER();
     while (r == -1 && errno == EINTR) {
         if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
             mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
@@ -184,6 +186,13 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             int ret = fsync(o->fd);
             MP_THREAD_GIL_ENTER();
             if (ret == -1) {
+                if (errno == EINVAL
+                    && (o->fd == STDIN_FILENO || o->fd == STDOUT_FILENO || o->fd == STDERR_FILENO)) {
+                    // fsync(stdin/stdout/stderr) may fail with EINVAL, but don't propagate that
+                    // error out.  Because data is not buffered by us, and stdin/out/err.flush()
+                    // should just be a no-op.
+                    return 0;
+                }
                 *errcode = errno;
                 return MP_STREAM_ERROR;
             }
@@ -208,6 +217,8 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
             o->fd = -1;
             #endif
             return 0;
+        case MP_STREAM_GET_FILENO:
+            return o->fd;
         default:
             *errcode = EINVAL;
             return MP_STREAM_ERROR;
