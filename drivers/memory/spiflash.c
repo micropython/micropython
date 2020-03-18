@@ -31,6 +31,10 @@
 #include "py/mphal.h"
 #include "drivers/memory/spiflash.h"
 
+#ifndef MICROPY_HW_QSPIFLASH_TYPE
+#define MICROPY_HW_QSPIFLASH_TYPE MP_SPI_FLASH_UNKONW
+#endif
+
 #define QSPI_QE_MASK (0x02)
 #define USE_WR_DELAY (1)
 
@@ -155,7 +159,10 @@ STATIC int mp_spiflash_wait_wip0(mp_spiflash_t *self) {
 }
 
 static inline void mp_spiflash_deepsleep_internal(mp_spiflash_t *self, int value) {
+    #if MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx
+    #else
     mp_spiflash_write_cmd(self, value ? 0xb9 : 0xab); // sleep/wake
+    #endif
 }
 
 void mp_spiflash_init(mp_spiflash_t *self) {
@@ -171,7 +178,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
 
     mp_spiflash_acquire_bus(self);
 
-    // Ensure SPI flash is out of sleep mode
+    // Ensure SPI flash is out of sleep mode(N25Qxx不支持)
     mp_spiflash_deepsleep_internal(self, 0);
 
     #if defined(CHECK_DEVID)
@@ -183,9 +190,14 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     #endif
 
     if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        
         // Set QE bit
+        // 读取状态寄存器, N25Qxx, W25Qxx, MT25Qxx, MX25Lxx 基本一致
+        // 0x35 - 读状态寄存器， 只有W25Qxx系列支持
         uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
             | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
+
+        // 打开寄存器写允许位 & 开启QSPI支持(2#寄存器S9) & 等待执行完成
         if (!(data & (QSPI_QE_MASK << 8))) {
             data |= QSPI_QE_MASK << 8;
             mp_spiflash_write_cmd(self, CMD_WREN);

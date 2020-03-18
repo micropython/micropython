@@ -31,6 +31,11 @@
 
 #define MP_SPIFLASH_ERASE_BLOCK_SIZE (4096) // must be a power of 2
 
+#define MP_SPI_FLASH_UNKONW   0
+#define MP_SPI_FLASH_N25Qxx   1
+#define MP_SPI_FLASH_W25Qxx   2
+#define MP_SPI_FLASH_MT25Qxx  3
+
 enum {
     MP_SPIFLASH_BUS_SPI,
     MP_SPIFLASH_BUS_QSPI,
