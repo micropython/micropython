@@ -235,6 +235,7 @@ jobs:
         - "uchip"
         - "ugame10"
         - "winterbloom_sol"
+        - "winterbloom_big_honking_button"
         - "xinabox_cc03"
         - "xinabox_cs11"
 
