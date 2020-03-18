@@ -294,7 +294,7 @@ STATIC mp_obj_t mp_math_factorial_inner(mp_uint_t start, mp_uint_t end) {
 STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     mp_int_t max = mp_obj_get_int(x_obj);
     if (max < 0) {
-        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+        mp_raise_ValueError("negative factorial");
     } else if (max == 0) {
         return MP_OBJ_NEW_SMALL_INT(1);
     }
@@ -308,7 +308,7 @@ STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
 STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     mp_int_t max = mp_obj_get_int(x_obj);
     if (max < 0) {
-        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+        mp_raise_ValueError("negative factorial");
     } else if (max <= 1) {
         return MP_OBJ_NEW_SMALL_INT(1);
     }

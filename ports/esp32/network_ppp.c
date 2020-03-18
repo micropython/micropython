@@ -191,7 +191,7 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
         case PPPAUTHTYPE_CHAP:
             break;
         default:
-            mp_raise_msg(&mp_type_ValueError, "invalid auth");
+            mp_raise_ValueError("invalid auth");
     }
 
     if (parsed_args[ARG_authmode].u_int != PPPAUTHTYPE_NONE) {

@@ -387,7 +387,7 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
             return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
         default:
             #if !MICROPY_PY_BUILTINS_POW3
-            mp_raise_msg(&mp_type_NotImplementedError, "3-arg pow() not supported");
+            mp_raise_NotImplementedError("3-arg pow() not supported");
             #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
             return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
             #else
