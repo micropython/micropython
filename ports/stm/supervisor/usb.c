@@ -41,7 +41,12 @@ STATIC void init_usb_vbus_sense(void) {
 #if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
+        // Deactivate VBUS Sensing B
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+
+        // B-peripheral session valid override enable
+        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
     #else
         USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
