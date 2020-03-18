@@ -98,6 +98,9 @@ extern const dma_descr_t dma_I2C_4_RX;
 
 #endif
 
+#ifdef SPIDMA_MODES
+void dma_init_wMode(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data, uint32_t mode);
+#endif
 void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);

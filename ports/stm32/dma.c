@@ -889,7 +889,15 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Parent = data;
 }
 
+#ifdef SPIDMA_MODES
 void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
+    dma_init_wMode(dma, dma_descr, dir, data, DMA_NORMAL);
+}
+
+void dma_init_wMode(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data, uint32_t mode) {
+#else
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data) {
+#endif
     // Some drivers allocate the DMA_HandleTypeDef from the stack
     // (i.e. dac, i2c, spi) and for those cases we need to clear the
     // structure so we don't get random values from the stack)
@@ -899,6 +907,10 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
         dma_id_t dma_id = dma_descr->id;
 
         dma_init_handle(dma, dma_descr, dir, data);
+
+#ifdef SPIDMA_MODES
+        dma->Init.Mode = mode;
+#endif
         // set global pointer for IRQ handler
         dma_handle[dma_id] = dma;
 

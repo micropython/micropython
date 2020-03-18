@@ -58,7 +58,9 @@ typedef struct __SPI_DMAHandleTypeDef
 } SPI_DMAHandleTypeDef;
 #endif
 
+#ifdef SPIDMA_MODES
 typedef SPI_DMAHandleTypeDef  machine_hard_spi_dmamode_t;
+#endif
  
 typedef struct _spi_t {
     SPI_HandleTypeDef *spi;

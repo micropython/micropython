@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 #include "py/gc.h"
+#include "dma.h"
 
 
 // Possible DMA configurations for SPI busses:
@@ -77,7 +78,7 @@ SPI_DMAHandleTypeDef SPIDMAMODEHandle1 = {.mode = SPI_CFG_MODE_NORMAL, .callback
 SPI_DMAHandleTypeDef SPIDMAMODEHandle2 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-SPI_DMAHandleTypeDef SPIDMAMODEHandle3 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL}, .callbackabort=NULL;
+SPI_DMAHandleTypeDef SPIDMAMODEHandle3 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
 SPI_DMAHandleTypeDef SPIDMAMODEHandle4 = {.mode = SPI_CFG_MODE_NORMAL, .callback=NULL, .callbackhalf=NULL, .callbackerror=NULL, .callbackabort=NULL};
@@ -1060,18 +1061,20 @@ void spi_transfer_circular(const spi_t *self, size_t len, const uint8_t *src, ui
             DMA_HandleTypeDef * tx_dma = &self->dma_modes->tx_dma;
             DMA_HandleTypeDef * rx_dma = &self->dma_modes->rx_dma;
 
-            tx_dma->Init.Mode = DMA_CIRCULAR;
-            rx_dma->Init.Mode = DMA_CIRCULAR;
+            // tx_dma_descr->Init.Mode = DMA_CIRCULAR;
+            // rx_dma_descr->Init.Mode = DMA_CIRCULAR;
             
             // printf("\ntx mode = %d\n", (int) tx_dma->Init.Mode);
             // printf("\nrx mode = %d\n", (int) rx_dma->Init.Mode);
 
-
-            // mode is tx_dma->Init.Mode;
             
-            dma_init(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
+            dma_init_wMode(tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi, DMA_CIRCULAR);
+            
+            // printf("\ntx mode = %d\n", (int) tx_dma->Init.Mode);
+            // printf("\nrx mode = %d\n", (int) rx_dma->Init.Mode);
+
             self->spi->hdmatx = tx_dma;
-            dma_init(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
+            dma_init_wMode(rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi, DMA_CIRCULAR);
             self->spi->hdmarx = rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
@@ -1235,6 +1238,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
     SPI_TypeDef *Instance = hspi->Instance;
     int spi_id = get_spi_id_from_Instance(Instance);
+
     if (spi_id >= 0)
     {
         const spi_t * _spi = &spi_obj[spi_id-1];
