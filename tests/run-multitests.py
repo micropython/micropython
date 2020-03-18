@@ -303,6 +303,10 @@ def run_test_on_instances(test_file, num_instances, instances):
 
 
 def run_tests(test_files, instances_truth, instances_test):
+    skipped_tests = []
+    passed_tests = []
+    failed_tests = []
+
     for test_file, num_instances in test_files:
         instances_str = "|".join(str(instances_test[i]) for i in range(num_instances))
         print("{} on {}: ".format(test_file, instances_str), end="")
@@ -335,10 +339,13 @@ def run_tests(test_files, instances_truth, instances_test):
         # Print result of test
         if skip:
             print("skip")
+            skipped_tests.append(test_file)
         elif output_test == output_truth:
             print("pass")
+            passed_tests.append(test_file)
         else:
             print("FAIL")
+            failed_tests.append(test_file)
             if not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
@@ -347,6 +354,16 @@ def run_tests(test_files, instances_truth, instances_test):
 
         if cmd_args.show_output:
             print()
+
+    print("{} tests performed".format(len(skipped_tests) + len(passed_tests) + len(failed_tests)))
+    print("{} tests passed".format(len(passed_tests)))
+
+    if skipped_tests:
+        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
+    if failed_tests:
+        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
+
+    return not failed_tests
 
 
 def main():
@@ -384,12 +401,15 @@ def main():
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
     try:
-        run_tests(test_files, instances_truth, instances_test)
+        all_pass = run_tests(test_files, instances_truth, instances_test)
     finally:
         for i in instances_truth:
             i.close()
         for i in instances_test:
             i.close()
+
+    if not all_pass:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
