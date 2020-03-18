@@ -234,8 +234,8 @@ jobs:
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
-        - "winterbloom_sol"
         - "winterbloom_big_honking_button"
+        - "winterbloom_sol"
         - "xinabox_cc03"
         - "xinabox_cs11"
 
