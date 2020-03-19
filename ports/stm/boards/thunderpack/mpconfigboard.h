@@ -23,21 +23,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#define BOARD_THUNDERPACK_STM32F412
 #define MICROPY_HW_BOARD_NAME       "THUNDERPACK"
-#define MICROPY_HW_MCU_NAME         "STM32F412xGU"
+#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                  (0x100000)
+#define FLASH_SIZE                  (0x80000)
 #define FLASH_PAGE_SIZE             (0x4000)
+#define BOARD_FLASH_SIZE            (FLASH_SIZE - 0x2000 - 0xC000)
 
-#define BOARD_OSC_DIV (24)
-#define BOARD_NO_VBUS_SENSE (1)
+#define BOARD_OSC_DIV               (24)
+#define BOARD_OVERWRITE_SWD         (1)
+#define BOARD_NO_VBUS_SENSE         (1)
 
-#define CP_RGB_STATUS_LED
-#define CP_RGB_STATUS_R       (&pin_PA00)
-#define CP_RGB_STATUS_G       (&pin_PA01)
-#define CP_RGB_STATUS_B       (&pin_PA02)
-#define MICROPY_HW_LED_STATUS (&pin_PA03)
+// Status LEDs
+#define MICROPY_HW_LED_TX      (&pin_PA00)
+#define MICROPY_HW_LED_RX      (&pin_PB01)
+#define MICROPY_HW_LED_STATUS  (&pin_PA02)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB06)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB07)
