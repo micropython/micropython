@@ -61,19 +61,20 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_obj_t *self, size_t n_ar
     uint mode = args[ARG_mode].u_int;
 
     // get pull mode
-    uint pull = GPIO_PUD_NORMAL;
+    uint pull = 0;
     if (args[ARG_pull].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[ARG_pull].u_obj);
     }
 
-    int ret = gpio_pin_configure(self->port, self->pin, mode | pull);
-    if (ret) {
-        mp_raise_ValueError("invalid pin");
+    // get initial value
+    uint init = 0;
+    if (args[ARG_value].u_obj != MP_OBJ_NULL) {
+        init = mp_obj_is_true(args[ARG_value].u_obj) ? GPIO_OUTPUT_INIT_HIGH : GPIO_OUTPUT_INIT_LOW;
     }
 
-    // get initial value
-    if (args[ARG_value].u_obj != MP_OBJ_NULL) {
-        (void)gpio_pin_write(self->port, self->pin, mp_obj_is_true(args[ARG_value].u_obj));
+    int ret = gpio_pin_configure(self->port, self->pin, mode | pull | init);
+    if (ret) {
+        mp_raise_ValueError("invalid pin");
     }
 
     return mp_const_none;
@@ -116,11 +117,10 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
-        u32_t pin_val;
-        (void)gpio_pin_read(self->port, self->pin, &pin_val);
+        int pin_val = gpio_pin_get_raw(self->port, self->pin);
         return MP_OBJ_NEW_SMALL_INT(pin_val);
     } else {
-        (void)gpio_pin_write(self->port, self->pin, mp_obj_is_true(args[0]));
+        (void)gpio_pin_set_raw(self->port, self->pin, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -139,14 +139,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 
 STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
-    (void)gpio_pin_write(self->port, self->pin, 0);
+    (void)gpio_pin_set_raw(self->port, self->pin, 0);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
 
 STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
-    (void)gpio_pin_write(self->port, self->pin, 1);
+    (void)gpio_pin_set_raw(self->port, self->pin, 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
@@ -157,13 +157,10 @@ STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
     switch (request) {
         case MP_PIN_READ: {
-            u32_t pin_val;
-            gpio_pin_read(self->port, self->pin, &pin_val);
-            return pin_val;
+            return gpio_pin_get_raw(self->port, self->pin);
         }
         case MP_PIN_WRITE: {
-            gpio_pin_write(self->port, self->pin, arg);
-            return 0;
+            return gpio_pin_set_raw(self->port, self->pin, arg);
         }
     }
     return -1;
@@ -177,10 +174,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_DIR_IN) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_DIR_OUT) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PUD_PULL_UP) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PUD_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
