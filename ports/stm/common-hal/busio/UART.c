@@ -443,11 +443,9 @@ STATIC void uart_clock_enable(uint16_t mask) {
     #endif
     #ifdef USART3
     if (mask & (1 << 2)) {
-        #ifndef STM32F412Cx
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_ENABLE();
-        #endif
     }
     #endif
     #ifdef UART4
@@ -518,11 +516,9 @@ STATIC void uart_clock_disable(uint16_t mask) {
     #endif
     #ifdef USART3
     if (mask & (1 << 2)) {
-        #ifndef STM32F412Cx
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE();
-        #endif
     }
     #endif
     #ifdef UART4

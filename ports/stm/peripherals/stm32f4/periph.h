@@ -154,13 +154,6 @@ typedef struct {
 #include "stm32f411xe/periph.h"
 #endif
 
-#ifdef BOARD_THUNDERPACK_STM32F412
-#define HAS_DAC 0
-#define HAS_TRNG 1
-#define HAS_BASIC_TIM 1
-#include "stm32f412cx_thunderpack/periph.h"
-#endif
-
 #ifdef STM32F412Zx
 #define HAS_DAC 0
 #define HAS_TRNG 1

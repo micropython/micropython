@@ -1,6 +1,6 @@
 USB_VID = 0x239A
 USB_PID = 0x806A
-USB_PRODUCT = "Thunderpack powered by ST"
+USB_PRODUCT = "Thunderpack STM32F411"
 USB_MANUFACTURER = "Jeremy Gillick"
 USB_DEVICES = "CDC,MSC"
 
