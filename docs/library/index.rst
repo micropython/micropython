@@ -79,6 +79,7 @@ it will fallback to loading the built-in ``ujson`` module.
    math.rst
    sys.rst
    uarray.rst
+   uasyncio.rst
    ubinascii.rst
    ucollections.rst
    uerrno.rst
