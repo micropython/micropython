@@ -176,9 +176,9 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
         #endif
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f':
-            return mp_obj_new_float(((float *)p)[index]);
+            return mp_obj_new_float((mp_float_t)((float *)p)[index]);
         case 'd':
-            return mp_obj_new_float(((double *)p)[index]);
+            return mp_obj_new_float((mp_float_t)((double *)p)[index]);
         #endif
         // Extension to CPython: array of objects
         case 'O':
@@ -244,12 +244,12 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
         union { uint32_t i;
                 float f;
         } fpu = {val};
-        return mp_obj_new_float(fpu.f);
+        return mp_obj_new_float((mp_float_t)fpu.f);
     } else if (val_type == 'd') {
         union { uint64_t i;
                 double f;
         } fpu = {val};
-        return mp_obj_new_float(fpu.f);
+        return mp_obj_new_float((mp_float_t)fpu.f);
     #endif
     } else if (is_signed(val_type)) {
         if ((long long)MP_SMALL_INT_MIN <= val && val <= (long long)MP_SMALL_INT_MAX) {

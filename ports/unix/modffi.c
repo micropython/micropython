@@ -167,11 +167,11 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
             union { ffi_arg ffi;
                     float flt;
             } val_union = { .ffi = val };
-            return mp_obj_new_float(val_union.flt);
+            return mp_obj_new_float((mp_float_t)val_union.flt);
         }
         case 'd': {
             double *p = (double *)&val;
-            return mp_obj_new_float(*p);
+            return mp_obj_new_float((mp_float_t)*p);
         }
         #endif
         case 'O':

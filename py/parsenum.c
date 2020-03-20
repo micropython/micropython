@@ -218,7 +218,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         if (str + 2 < top && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'f') {
             // inf
             str += 3;
-            dec_val = INFINITY;
+            dec_val = (mp_float_t)INFINITY;
             if (str + 4 < top && (str[0] | 0x20) == 'i' && (str[1] | 0x20) == 'n' && (str[2] | 0x20) == 'i' && (str[3] | 0x20) == 't' && (str[4] | 0x20) == 'y') {
                 // infinity
                 str += 5;
