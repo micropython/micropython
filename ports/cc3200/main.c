@@ -100,9 +100,9 @@ int main (void) {
 }
 
 // We need this when configSUPPORT_STATIC_ALLOCATION is enabled
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
+void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
     StackType_t **ppxIdleTaskStackBuffer,
-    uint32_t *pulIdleTaskStackSize ) {
+    uint32_t *pulIdleTaskStackSize) {
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
