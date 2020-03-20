@@ -41,6 +41,7 @@ PATHS = [
     "lib/utils/*.[ch]",
     "mpy-cross/*.[ch]",
     "ports/*/*.[ch]",
+    "ports/windows/msvc/**/*.[ch]",
     "py/*.[ch]",
     # Python
     "drivers/**/*.py",
