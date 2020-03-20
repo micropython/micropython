@@ -33,6 +33,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#ifdef _MSC_VER
+#include <direct.h> // For mkdir
+#endif
 #include "py/mpconfig.h"
 
 #include "py/runtime.h"
