@@ -969,7 +969,7 @@ void dma_invalidate_channel(const dma_descr_t *dma_descr) {
     if (dma_descr != NULL) {
         dma_id_t dma_id = dma_descr->id;
         // Only compare the sub-instance, not the direction bit (MSB)
-        if ((dma_last_sub_instance[dma_id] & 0x7f) == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance) ) {
+        if ((dma_last_sub_instance[dma_id] & 0x7f) == DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance)) {
             dma_last_sub_instance[dma_id] = DMA_INVALID_CHANNEL;
         }
     }

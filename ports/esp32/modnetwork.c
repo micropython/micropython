@@ -98,7 +98,7 @@ NORETURN void _esp_exceptions(esp_err_t e) {
         case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
             mp_raise_OSError(MP_ENOMEM);
         default:
-            mp_raise_msg_varg( &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e);
+            mp_raise_msg_varg(&mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e);
     }
 }
 
@@ -250,8 +250,8 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     if (!initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
-        ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
-        ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+        ESP_EXCEPTIONS(esp_wifi_init(&cfg));
+        ESP_EXCEPTIONS(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
         initialized = 1;
     }
@@ -273,7 +273,7 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");
         tcpip_adapter_init();
         ESP_LOGD("modnetwork", "Initializing Event Loop");
-        ESP_EXCEPTIONS( esp_event_loop_init(event_handler, NULL) );
+        ESP_EXCEPTIONS(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
         initialized = 1;
     }
@@ -353,12 +353,12 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             wifi_sta_config.sta.bssid_set = 1;
             memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
         }
-        ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
+        ESP_EXCEPTIONS(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
-    ESP_EXCEPTIONS( esp_wifi_connect() );
+    ESP_EXCEPTIONS(esp_wifi_connect());
     MP_THREAD_GIL_ENTER();
     wifi_sta_connect_requested = true;
 
@@ -368,7 +368,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
-    ESP_EXCEPTIONS( esp_wifi_disconnect() );
+    ESP_EXCEPTIONS(esp_wifi_disconnect());
     return mp_const_none;
 }
 
@@ -452,9 +452,9 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     MP_THREAD_GIL_ENTER();
     if (status == 0) {
         uint16_t count = 0;
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_num(&count) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_records(&count, wifi_ap_records) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
             uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));

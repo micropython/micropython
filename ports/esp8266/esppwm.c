@@ -108,7 +108,7 @@ pwm_insert_sort(struct pwm_single_param pwm[], uint8 n) {
 STATIC volatile uint8 critical = 0;
 
 #define LOCK_PWM(c)  do {                       \
-        while ( (c) == 1);                            \
+        while ((c) == 1);                            \
         (c) = 1;                                    \
 } while (0)
 

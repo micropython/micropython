@@ -247,7 +247,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
 /// \function have_cdc()
 /// Return True if USB is connected as a serial device, False otherwise.
-STATIC mp_obj_t pyb_have_cdc(void ) {
+STATIC mp_obj_t pyb_have_cdc(void) {
     return mp_obj_new_bool(usb_vcp_is_connected());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
