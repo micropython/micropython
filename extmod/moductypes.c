@@ -360,9 +360,9 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
             return mp_obj_new_int_from_ll(((int64_t *)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
         case FLOAT32:
-            return mp_obj_new_float(((float *)p)[index]);
+            return mp_obj_new_float((mp_float_t)((float *)p)[index]);
         case FLOAT64:
-            return mp_obj_new_float(((double *)p)[index]);
+            return mp_obj_new_float((mp_float_t)((double *)p)[index]);
         #endif
         default:
             assert(0);
