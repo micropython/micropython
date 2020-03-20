@@ -172,6 +172,8 @@ SRC_STM32 = \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
+	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 	st_driver/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
@@ -193,7 +195,6 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
-	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \

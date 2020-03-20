@@ -35,7 +35,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
 #include "stm32f4xx_hal.h"
 
 #define ALL_UARTS 0xFFFF

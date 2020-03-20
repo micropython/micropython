@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
-#include "tick.h"
 
 #include "stm32f4xx_hal.h"
 
@@ -47,9 +46,8 @@ static void pulsein_handler(uint8_t num) {
     EXTI->PR = 1 << num;
 
     // Grab the current time first.
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
+    uint32_t current_us = 0;
+    uint64_t current_ms = 0;
 
     // current_tick gives us the remaining us until the next tick but we want the number since the last ms.
     current_us = 1000 - current_us;
@@ -116,10 +114,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     // Allocate pulse buffer
     self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), 
+        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"),
                           maxlen * sizeof(uint16_t));
     }
-    
+
     // Set internal variables
     self->pin = pin;
     self->maxlen = maxlen;

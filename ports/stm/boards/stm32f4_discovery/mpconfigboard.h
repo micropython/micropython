@@ -33,3 +33,5 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)
+
+#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSE

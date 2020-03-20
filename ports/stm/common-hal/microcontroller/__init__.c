@@ -41,31 +41,9 @@
 
 #include "stm32f4xx_hal.h"
 
-//tested divisor value for busy loop in us delay
-#define LOOP_TICKS 12
-
-STATIC uint32_t get_us(void) {
-    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
-    uint32_t micros, sys_cycles;
-    do {
-        micros = supervisor_ticks_ms32();
-        sys_cycles = SysTick->VAL; //counts backwards
-    } while (micros != supervisor_ticks_ms32()); //try again if ticks_ms rolled over
-    return (micros * 1000) + (ticks_per_us * 1000 - sys_cycles) / ticks_per_us;
-}
-
 void common_hal_mcu_delay_us(uint32_t delay) {
     if (__get_PRIMASK() == 0x00000000) {
-        //by default use ticks_ms
-        uint32_t start = get_us();
-        while (get_us()-start < delay) {
-            __asm__ __volatile__("nop");
-        }
     } else {
-        //when SysTick is disabled, approximate with busy loop
-        const uint32_t ucount = HAL_RCC_GetSysClockFreq() / 1000000 * delay / LOOP_TICKS;
-        for (uint32_t count = 0; ++count <= ucount;) {
-        }
     }
 }
 
@@ -171,7 +149,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PB10), MP_ROM_PTR(&pin_PB10) },
 #if MCU_PACKAGE == 144 || defined STM32F405xx
   { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
-#endif  
+#endif
   { MP_ROM_QSTR(MP_QSTR_PB12), MP_ROM_PTR(&pin_PB12) },
   { MP_ROM_QSTR(MP_QSTR_PB13), MP_ROM_PTR(&pin_PB13) },
   { MP_ROM_QSTR(MP_QSTR_PB14), MP_ROM_PTR(&pin_PB14) },

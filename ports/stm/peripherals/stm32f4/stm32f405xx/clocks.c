@@ -28,7 +28,7 @@
 #include "py/mpconfig.h"
 
 void stm32f4_peripherals_clocks_init(void) {
-    //TODO: All parameters must be moved to board level, due to relationship with HSE Osc. 
+    //TODO: All parameters must be moved to board level, due to relationship with HSE Osc.
 
     //System clock init
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -58,7 +58,9 @@ void stm32f4_peripherals_clocks_init(void) {
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    // APB1 must always be on so that we can talk to the RTC for timing.
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    // TODO: Only turn on APB2 when it is needed to save power.
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 }

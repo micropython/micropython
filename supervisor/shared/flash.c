@@ -111,7 +111,7 @@ mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
     return supervisor_flash_read_blocks(dest, block_num - PART1_START_BLOCK, num_blocks);
 }
 
-volatile bool filesystem_dirty;
+volatile bool filesystem_dirty = false;
 
 mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
@@ -137,7 +137,9 @@ void supervisor_flash_flush(void) {
     supervisor_external_flash_flush();
     #endif
     // Turn off ticks now that our filesystem has been flushed.
-    supervisor_disable_tick();
+    if (filesystem_dirty) {
+        supervisor_disable_tick();
+    }
     filesystem_dirty = false;
 }
 

@@ -64,7 +64,7 @@ static const flash_layout_t flash_layout[] = {
 
 static uint8_t sector_copy[0x4000] __attribute__((aligned(4)));
 
-//Return the sector of a given flash address. 
+//Return the sector of a given flash address.
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
@@ -100,7 +100,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
 }
 
 static int32_t convert_block_to_flash_addr(uint32_t block) {

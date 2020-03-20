@@ -118,18 +118,22 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 
 volatile size_t tick_enable_count = 0;
 extern void supervisor_enable_tick(void) {
+    common_hal_mcu_disable_interrupts();
     if (tick_enable_count == 0) {
         port_enable_tick();
     }
     tick_enable_count++;
+    common_hal_mcu_enable_interrupts();
 }
 
 extern void supervisor_disable_tick(void) {
+    common_hal_mcu_disable_interrupts();
     if (tick_enable_count > 0) {
         tick_enable_count--;
     }
     if (tick_enable_count == 0) {
         port_disable_tick();
     }
+    common_hal_mcu_enable_interrupts();
 }
 
