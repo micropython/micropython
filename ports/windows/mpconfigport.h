@@ -171,15 +171,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-#if MICROPY_PY_OS_DUPTERM
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-void mp_hal_dupterm_tx_strn(const char *str, size_t len);
-#else
-#include <unistd.h>
-#define MP_PLAT_PRINT_STRN(str, len) do { int ret = write(1, str, len); (void)ret; } while (0)
-#define mp_hal_dupterm_tx_strn(s, l)
-#endif
-
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
