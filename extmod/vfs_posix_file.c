@@ -32,6 +32,7 @@
 #if MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
 
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #define fsync _commit
