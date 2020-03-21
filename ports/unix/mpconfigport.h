@@ -286,17 +286,6 @@ void mp_unix_mark_exec(void);
 #define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
 #endif
 
-#if MICROPY_PY_OS_DUPTERM
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-#else
-#define MP_PLAT_PRINT_STRN(str, len) do { \
-        MP_THREAD_GIL_EXIT(); \
-        ssize_t ret = write(1, str, len); \
-        MP_THREAD_GIL_ENTER(); \
-        (void)ret; \
-} while (0)
-#endif
-
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
