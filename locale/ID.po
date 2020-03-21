@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-17 16:39-0500\n"
+"POT-Creation-Date: 2020-03-20 17:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,6 +133,10 @@ msgstr ""
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' integer 0x%x tidak cukup didalam mask 0x%x"
+
+#: py/runtime.c
+msgid "'%s' object cannot assign attribute '%q'"
+msgstr ""
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"

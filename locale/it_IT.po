@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-17 16:39-0500\n"
+"POT-Creation-Date: 2020-03-20 17:57-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -134,6 +134,10 @@ msgstr "intero '%s' non è nell'intervallo %d..%d"
 #, fuzzy, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "intero '%s' non è nell'intervallo %d..%d"
+
+#: py/runtime.c
+msgid "'%s' object cannot assign attribute '%q'"
+msgstr ""
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"

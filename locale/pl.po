@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-17 16:39-0500\n"
+"POT-Creation-Date: 2020-03-20 17:57-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -133,6 +133,10 @@ msgstr "'%s' liczba %d poza zakresem %d..%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' liczba 0x%x nie pasuje do maski 0x%x"
+
+#: py/runtime.c
+msgid "'%s' object cannot assign attribute '%q'"
+msgstr ""
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"

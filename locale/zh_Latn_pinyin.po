@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-17 16:39-0500\n"
+"POT-Creation-Date: 2020-03-20 17:57-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -139,6 +139,10 @@ msgstr "'%s' zhěngshù %d bùzài fànwéi nèi %d.%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
+
+#: py/runtime.c
+msgid "'%s' object cannot assign attribute '%q'"
+msgstr ""
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"
