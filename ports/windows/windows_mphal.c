@@ -222,7 +222,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_THREAD_GIL_EXIT();
-    write(1, str, len);
+    write(STDOUT_FILENO, str, len);
     MP_THREAD_GIL_ENTER();
 }
 
