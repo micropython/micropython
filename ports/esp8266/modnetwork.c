@@ -286,6 +286,11 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             netutils_format_ipv4_addr((uint8_t *)&dns_addr, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
+    } else if (args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
+        // use DHCP to configure the IP addresses
+        require_if(args[0], STATION_IF);
+        wifi_station_dhcpc_start();
+        return mp_const_none;
     } else {
         // set
         mp_obj_t *items;
