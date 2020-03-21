@@ -199,8 +199,8 @@ int mp_hal_stdin_rx_chr(void) {
     INPUT_RECORD rec;
     for (;;) {
         MP_THREAD_GIL_EXIT();
-        status = ReadConsoleInput(std_in, &rec, 1, &num_read)
-            MP_THREAD_GIL_ENTER();
+        status = ReadConsoleInput(std_in, &rec, 1, &num_read);
+        MP_THREAD_GIL_ENTER();
         if (!status || !num_read) {
             return CHAR_CTRL_C; // EOF, ctrl-D
         }
