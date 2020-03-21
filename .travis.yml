@@ -212,6 +212,8 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix
         # OSX has poor time resolution and the following tests do not have the correct output
         - (cd tests && ./run-tests --exclude 'uasyncio_(basic|heaplock|lock|wait_task)')
+        # check for additional compiler errors/warnings
+        - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
       after_failure:
         - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
