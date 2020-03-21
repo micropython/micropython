@@ -167,7 +167,7 @@ main_term:;
 
     MP_THREAD_GIL_EXIT();
     unsigned char c;
-    int ret = read(0, &c, 1);
+    int ret = read(STDIN_FILENO, &c, 1);
     MP_THREAD_GIL_ENTER();
     if (ret == 0) {
         c = 4; // EOF, ctrl-D
@@ -179,7 +179,7 @@ main_term:;
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_THREAD_GIL_EXIT();
-    int ret = write(1, str, len);
+    int ret = write(STDOUT_FILENO, str, len);
     MP_THREAD_GIL_ENTER();
     mp_uos_dupterm_tx_strn(str, len);
     (void)ret; // to suppress compiler warning
