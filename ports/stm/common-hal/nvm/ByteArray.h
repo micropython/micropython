@@ -32,7 +32,9 @@
 // STM flash is saved in sectors (not pages), at a minimum size of 16k.
 // To limit the RAM usage during writing, we want to set a smaller
 // maximum value.
-#define NVM_BYTEARRAY_BUFFER 512
+#ifndef NVM_BYTEARRAY_BUFFER_LEN
+#define NVM_BYTEARRAY_BUFFER_LEN 512
+#endif
 
 typedef struct {
     mp_obj_base_t base;

@@ -26,11 +26,18 @@
 #define MICROPY_HW_BOARD_NAME       "THUNDERPACK"
 #define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                         (0x80000)
-#define FLASH_PAGE_SIZE                    (0x4000)
+// Non-volatile memory config
 #define CIRCUITPY_INTERNAL_NVM_SIZE        (0x4000)
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR  (0x0800C000)
 #define CIRCUITPY_INTERNAL_NVM_SECTOR      FLASH_SECTOR_3
+
+// Putting the entire flash sector in the NVM byte array buffer
+// would take up too much RAM. This limits how much of the sector we use.
+#define NVM_BYTEARRAY_BUFFER_LEN           512
+
+// Flash config
+#define FLASH_SIZE                         (0x80000)
+#define FLASH_PAGE_SIZE                    (0x4000)
 #define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
 
 #define BOARD_OSC_DIV               (24)
