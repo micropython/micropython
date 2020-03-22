@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#define MICROPY_HW_BOARD_NAME       "THUNDERPACK"
-#define MICROPY_HW_MCU_NAME         "STM32F411CE"
 
-#define FLASH_SIZE                         (0x80000)
-#define FLASH_PAGE_SIZE                    (0x4000)
-#define CIRCUITPY_INTERNAL_NVM_SIZE        (0x4000)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR  (0x0800C000)
-#define CIRCUITPY_INTERNAL_NVM_SECTOR      FLASH_SECTOR_3
-#define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_NVM_BYTEARRAY_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_NVM_BYTEARRAY_H
 
-#define BOARD_OSC_DIV               (24)
-#define BOARD_OVERWRITE_SWD         (1)
-#define BOARD_NO_VBUS_SENSE         (1)
+#include "py/obj.h"
 
-// Status LEDs
-#define MICROPY_HW_LED_STATUS  (&pin_PA02)
+// STM flash is saved in sectors (not pages), at a minimum size of 16k.
+// To limit the RAM usage during writing, we want to set a smaller
+// maximum value.
+#define NVM_BYTEARRAY_BUFFER 512
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t* start_address;
+    uint32_t len;
+} nvm_bytearray_obj_t;
+
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_NVM_BYTEARRAY_H
