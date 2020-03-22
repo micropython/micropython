@@ -229,6 +229,7 @@ jobs:
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
+        - "thunderpack"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
