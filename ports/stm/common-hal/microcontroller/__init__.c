@@ -116,7 +116,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
     },
-    .len = NVM_BYTEARRAY_BUFFER_LEN,
+    .len = NVM_BYTEARRAY_BUFFER_SIZE,
     .start_address = (uint8_t*) (CIRCUITPY_INTERNAL_NVM_START_ADDR)
 };
 #endif
