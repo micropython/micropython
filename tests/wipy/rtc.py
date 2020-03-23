@@ -1,14 +1,14 @@
-'''
+"""
 RTC test for the CC3200 based boards.
-'''
+"""
 
 from machine import RTC
 import os
 import time
 
 mch = os.uname().machine
-if not 'LaunchPad' in mch and not 'WiPy' in mch:
-    raise Exception('Board not supported!')
+if not "LaunchPad" in mch and not "WiPy" in mch:
+    raise Exception("Board not supported!")
 
 rtc = RTC()
 print(rtc)
@@ -41,9 +41,11 @@ print(rtc.now()[4])
 rtc.init((2015, 9, 19))
 print(rtc.now()[3])
 
+
 def set_and_print(datetime):
     rtc.init(datetime)
     print(rtc.now()[:6])
+
 
 # make sure that setting works correctly
 set_and_print((2000, 1, 1, 0, 0, 0, 0, None))
@@ -66,7 +68,7 @@ rtc.alarm(0, 5000)
 rtc.alarm(time=2000)
 time.sleep_ms(1000)
 left = rtc.alarm_left()
-print(abs(left-1000) <= 10)
+print(abs(left - 1000) <= 10)
 time.sleep_ms(1000)
 print(rtc.alarm_left() == 0)
 time.sleep_ms(100)
@@ -75,13 +77,13 @@ print(rtc.alarm_left(0) == 0)
 rtc.alarm(time=1000, repeat=True)
 time.sleep_ms(1500)
 left = rtc.alarm_left()
-print(abs(left-500) <= 15)
+print(abs(left - 500) <= 15)
 
 rtc.init((2015, 8, 29, 9, 0, 0, 0, None))
 rtc.alarm(time=(2015, 8, 29, 9, 0, 45))
 time.sleep_ms(1000)
 left = rtc.alarm_left()
-print(abs(left-44000) <= 90)
+print(abs(left - 44000) <= 90)
 rtc.alarm_cancel()
 rtc.deinit()
 
@@ -89,29 +91,29 @@ rtc.deinit()
 try:
     rtc.alarm(5000)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc.alarm_left(1)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc.alarm_cancel(1)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc.alarm(5000)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc = RTC(200000000)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     rtc = RTC((2015, 8, 29, 9, 0, 0, 0, None))
 except:
-    print('Exception')
+    print("Exception")

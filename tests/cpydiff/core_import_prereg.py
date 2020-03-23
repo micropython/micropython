@@ -12,6 +12,7 @@ except NameError as e:
     print(e)
 try:
     from modules import foo
-    print('Should not get here')
+
+    print("Should not get here")
 except NameError as e:
     print(e)

@@ -8,8 +8,11 @@ workaround: Call using ``super()`` instead::
         def __init__(self):
             super().__init__()
 """
+
+
 class A(Exception):
     def __init__(self):
         Exception.__init__(self)
+
 
 a = A()

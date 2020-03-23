@@ -14,14 +14,19 @@ print(α, αβγ, bβ, βb)
 def α(β, γ):
     δ = β + γ
     print(β, γ, δ)
+
+
 α(1, 2)
 
 # class, method identifiers
 class φ:
     def __init__(self):
         pass
+
     def δ(self, ϵ):
         print(ϵ)
+
+
 zζzζz = φ()
 if hasattr(zζzζz, "δ"):
     zζzζz.δ(ϵ=123)

@@ -11,7 +11,7 @@ except ImportError:
 try:
     ss = ssl.wrap_socket(io.BytesIO())
 except OSError as er:
-    print('wrap_socket:', repr(er))
+    print("wrap_socket:", repr(er))
 
 # create in server mode (can use this object for further tests)
 socket = io.BytesIO()
@@ -22,25 +22,25 @@ print(repr(ss)[:12])
 
 # setblocking() propagates call to the underlying stream object, and
 # io.BytesIO doesn't have setblocking() (in CPython too).
-#try:
+# try:
 #    ss.setblocking(False)
-#except NotImplementedError:
+# except NotImplementedError:
 #    print('setblocking: NotImplementedError')
-#ss.setblocking(True)
+# ss.setblocking(True)
 
 # write
-print(ss.write(b'aaaa'))
+print(ss.write(b"aaaa"))
 
 # read (underlying socket has no data)
 print(ss.read(8))
 
 # read (underlying socket has data, but it's bad data)
-socket.write(b'aaaaaaaaaaaaaaaa')
+socket.write(b"aaaaaaaaaaaaaaaa")
 socket.seek(0)
 try:
     ss.read(8)
 except OSError as er:
-    print('read:', repr(er))
+    print("read:", repr(er))
 
 # close
 ss.close()
@@ -51,10 +51,10 @@ ss.close()
 try:
     ss.read(10)
 except OSError as er:
-    print('read:', repr(er))
+    print("read:", repr(er))
 
 # write on closed socket
 try:
-    ss.write(b'aaaa')
+    ss.write(b"aaaa")
 except OSError as er:
-    print('write:', repr(er))
+    print("write:", repr(er))
