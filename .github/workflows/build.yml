@@ -16,6 +16,16 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -29,11 +39,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-    - name: CircuitPython version
-      run: git describe --dirty --always --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -103,11 +108,16 @@ jobs:
         gcc --version
         python3 --version
         msgfmt --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --always --tags
+      run: git describe --dirty --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v1.0.0
@@ -260,9 +270,14 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build
