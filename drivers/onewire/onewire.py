@@ -46,7 +46,7 @@ class OneWire:
 
     def select_rom(self, rom):
         self.reset()
-        self.writebyte(MATCH_ROM)
+        self.writebyte(self.MATCH_ROM)
         self.write(rom)
 
     def scan(self):
@@ -64,7 +64,7 @@ class OneWire:
     def _search_rom(self, l_rom, diff):
         if not self.reset():
             return None, 0
-        self.writebyte(SEARCH_ROM)
+        self.writebyte(self.SEARCH_ROM)
         if not l_rom:
             l_rom = bytearray(8)
         rom = bytearray(8)
