@@ -10,10 +10,10 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A6), MP_ROM_PTR(&pin_PA06) },
     { MP_ROM_QSTR(MP_QSTR_A7), MP_ROM_PTR(&pin_PA07) },
     { MP_ROM_QSTR(MP_QSTR_A8), MP_ROM_PTR(&pin_PA08) },
-    { MP_ROM_QSTR(MP_QSTR_A9), MP_ROM_PTR(&pin_PA09) },  //USB (shouldn't be used)
-    { MP_ROM_QSTR(MP_QSTR_A10), MP_ROM_PTR(&pin_PA10) }, //USB (shouldn't be used)
-    { MP_ROM_QSTR(MP_QSTR_A11), MP_ROM_PTR(&pin_PA11) }, //USB (shouldn't be used)
-    { MP_ROM_QSTR(MP_QSTR_A12), MP_ROM_PTR(&pin_PA12) }, //USB (shouldn't be used)
+    { MP_ROM_QSTR(MP_QSTR_A9), MP_ROM_PTR(&pin_PA09) }, 
+    { MP_ROM_QSTR(MP_QSTR_A10), MP_ROM_PTR(&pin_PA10) },
+    { MP_ROM_QSTR(MP_QSTR_A11), MP_ROM_PTR(&pin_PA11) },
+    { MP_ROM_QSTR(MP_QSTR_A12), MP_ROM_PTR(&pin_PA12) },
     { MP_ROM_QSTR(MP_QSTR_A13), MP_ROM_PTR(&pin_PA13) },
     { MP_ROM_QSTR(MP_QSTR_A14), MP_ROM_PTR(&pin_PA14) },
 
