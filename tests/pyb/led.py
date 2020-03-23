@@ -1,14 +1,14 @@
 import os, pyb
 
 machine = os.uname().machine
-if 'PYBv1.' in machine or 'PYBLITEv1.' in machine:
+if "PYBv1." in machine or "PYBLITEv1." in machine:
     leds = [pyb.LED(i) for i in range(1, 5)]
     pwm_leds = leds[2:]
-elif 'PYBD' in machine:
+elif "PYBD" in machine:
     leds = [pyb.LED(i) for i in range(1, 4)]
     pwm_leds = []
 else:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 # test printing

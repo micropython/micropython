@@ -4,6 +4,7 @@
 INF = 1e30
 EPS = 1e-6
 
+
 class Vec:
     def __init__(self, x, y, z):
         self.x, self.y, self.z = x, y, z
@@ -30,11 +31,14 @@ class Vec:
     def dot(self, rhs):
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
 
+
 RGB = Vec
+
 
 class Ray:
     def __init__(self, p, d):
         self.p, self.d = p, d
+
 
 class View:
     def __init__(self, width, height, depth, pos, xdir, ydir, zdir):
@@ -49,11 +53,13 @@ class View:
     def calc_dir(self, dx, dy):
         return (self.xdir * dx + self.ydir * dy + self.zdir * self.depth).normalise()
 
+
 class Light:
     def __init__(self, pos, colour, casts_shadows):
         self.pos = pos
         self.colour = colour
         self.casts_shadows = casts_shadows
+
 
 class Surface:
     def __init__(self, diffuse, specular, spec_idx, reflect, transp, colour):
@@ -75,6 +81,7 @@ class Surface:
     @staticmethod
     def transparent(colour):
         return Surface(0.2, 0.9, 32, 0.0, 0.8, colour * 0.3)
+
 
 class Sphere:
     def __init__(self, surface, centre, radius):
@@ -99,6 +106,7 @@ class Sphere:
     def surface_at(self, v):
         return self.surface, (v - self.centre).normalise()
 
+
 class Plane:
     def __init__(self, surface, centre, normal):
         self.surface = surface
@@ -116,11 +124,13 @@ class Plane:
     def surface_at(self, p):
         return self.surface, self.normal
 
+
 class Scene:
     def __init__(self, ambient, light, objs):
         self.ambient = ambient
         self.light = light
         self.objs = objs
+
 
 def trace_scene(canvas, view, scene, max_depth):
     for v in range(canvas.height):
@@ -130,6 +140,7 @@ def trace_scene(canvas, view, scene, max_depth):
             ray = Ray(view.pos, view.calc_dir(x, y))
             c = trace_ray(scene, ray, max_depth)
             canvas.put_pix(u, v, c)
+
 
 def trace_ray(scene, ray, depth):
     # Find closest intersecting object
@@ -181,6 +192,7 @@ def trace_ray(scene, ray, depth):
 
     return col
 
+
 def trace_to_light(scene, ray, light_dist):
     col = scene.light.colour
     for obj in scene.objs:
@@ -188,6 +200,7 @@ def trace_to_light(scene, ray, light_dist):
         if t < light_dist:
             col *= obj.surface.transp
     return col
+
 
 class Canvas:
     def __init__(self, width, height):
@@ -202,9 +215,10 @@ class Canvas:
         self.data[off + 2] = min(255, max(0, int(255 * c.z)))
 
     def write_ppm(self, filename):
-        with open(filename, 'wb') as f:
-            f.write(bytes('P6 %d %d 255\n' % (self.width, self.height), 'ascii'))
+        with open(filename, "wb") as f:
+            f.write(bytes("P6 %d %d 255\n" % (self.width, self.height), "ascii"))
             f.write(self.data)
+
 
 def main(w, h, d):
     canvas = Canvas(w, h)
@@ -221,13 +235,14 @@ def main(w, h, d):
             Sphere(Surface.shiny(RGB(1, 1, 1)), Vec(-5, -4, 3), 4),
             Sphere(Surface.dull(RGB(0, 0, 1)), Vec(4, -5, 0), 4),
             Sphere(Surface.transparent(RGB(0.2, 0.2, 0.2)), Vec(6, -1, 8), 4),
-        ]
+        ],
     )
     trace_scene(canvas, view, scene, d)
     return canvas
 
+
 # For testing
-#main(256, 256, 4).write_ppm('rt.ppm')
+# main(256, 256, 4).write_ppm('rt.ppm')
 
 ###########################################################################
 # Benchmark interface
@@ -237,6 +252,7 @@ bm_params = {
     (1000, 100): (18, 18, 3),
     (5000, 100): (40, 40, 3),
 }
+
 
 def bm_setup(params):
     return lambda: main(*params), lambda: (params[0] * params[1] * params[2], None)

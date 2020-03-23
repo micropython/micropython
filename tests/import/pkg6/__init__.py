@@ -1,2 +1,3 @@
 from .x import *
-print('init')
+
+print("init")

@@ -7,13 +7,14 @@ def test_func():
 
     test_sub_func()
 
+
 # closure
 def test_closure(msg):
-
     def make_closure():
         print(msg)
 
     return make_closure
+
 
 # exception
 def test_exception():
@@ -22,41 +23,49 @@ def test_exception():
 
     except Exception:
         pass
-    
+
     finally:
         pass
+
 
 # listcomp
 def test_listcomp():
     print("test_listcomp", [x for x in range(3)])
+
 
 # lambda
 def test_lambda():
     func_obj_1 = lambda a, b: a + b
     print(func_obj_1(10, 20))
 
+
 # import
 def test_import():
     from sys_settrace_subdir import trace_importme
+
     trace_importme.dummy()
     trace_importme.saysomething()
 
+
 # class
-class TLClass():
+class TLClass:
     def method():
         pass
+
     pass
+
 
 def test_class():
     class TestClass:
         __anynum = -9
+
         def method(self):
             print("test_class_method")
             self.__anynum += 1
-        
+
         def prprty_getter(self):
             return self.__anynum
-        
+
         def prprty_setter(self, what):
             self.__anynum = what
 
@@ -78,5 +87,6 @@ def run_tests():
     test_lambda()
     test_class()
     test_import()
+
 
 print("And it's done!")

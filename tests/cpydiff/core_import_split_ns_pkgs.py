@@ -5,6 +5,7 @@ cause: MicroPython's import system is highly optimized for simplicity, minimal m
 workaround: Don't install modules belonging to the same namespace package in different directories. For MicroPython, it's recommended to have at most 3-component module search paths: for your current application, per-user (writable), system-wide (non-writable).
 """
 import sys
+
 sys.path.append(sys.path[1] + "/modules")
 sys.path.append(sys.path[1] + "/modules2")
 

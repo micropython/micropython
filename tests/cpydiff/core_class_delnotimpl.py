@@ -6,9 +6,11 @@ workaround: Unknown
 """
 import gc
 
-class Foo():
+
+class Foo:
     def __del__(self):
-        print('__del__')
+        print("__del__")
+
 
 f = Foo()
 del f

@@ -2,8 +2,10 @@
 # its namespace stick and namespace of current module not coming back.
 import import1b
 
+
 def func1():
-    print('func1')
+    print("func1")
+
 
 def func2():
     try:
@@ -11,5 +13,6 @@ def func2():
     except ValueError:
         pass
     func1()
+
 
 func2()
