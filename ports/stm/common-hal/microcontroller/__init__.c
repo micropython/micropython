@@ -42,9 +42,12 @@
 #include "stm32f4xx_hal.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-    if (__get_PRIMASK() == 0x00000000) {
-    } else {
-    }
+    uint32_t ticks_per_us = HAL_RCC_GetSysClockFreq()/1000000;
+    delay *= ticks_per_us;
+    SysTick->LOAD = delay;
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+    while ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) == 0) {}
+    SysTick->CTRL = 0;
 }
 
 volatile uint32_t nesting_count = 0;
