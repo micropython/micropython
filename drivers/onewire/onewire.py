@@ -1,7 +1,6 @@
 # 1-Wire driver for MicroPython
 # MIT license; Copyright (c) 2016 Damien P. George
 
-from micropython import const
 import _onewire as _ow
 
 
@@ -10,9 +9,9 @@ class OneWireError(Exception):
 
 
 class OneWire:
-    SEARCH_ROM = const(0xF0)
-    MATCH_ROM = const(0x55)
-    SKIP_ROM = const(0xCC)
+    SEARCH_ROM = 0xF0
+    MATCH_ROM = 0x55
+    SKIP_ROM = 0xCC
 
     def __init__(self, pin):
         self.pin = pin
