@@ -45,6 +45,12 @@
 
 static RTC_HandleTypeDef _hrtc;
 
+#if BOARD_RTC_CLOCK == RCC_RTCCLKSOURCE_LSE
+#define RTC_CLOCK_FREQUENCY LSE_VALUE
+#else
+#define RTC_CLOCK_FREQUENCY LSI_VALUE
+#endif
+
 safe_mode_t port_init(void) {
     HAL_Init();
     __HAL_RCC_SYSCFG_CLK_ENABLE();
@@ -54,22 +60,25 @@ safe_mode_t port_init(void) {
     stm32f4_peripherals_gpio_init();
 
     HAL_PWR_EnableBkUpAccess();
+    #if BOARD_RTC_CLOCK == RCC_RTCCLKSOURCE_LSE
     __HAL_RCC_LSE_CONFIG(RCC_LSE_ON);
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {}
+    #else
+    __HAL_RCC_LSI_ENABLE();
+    #endif
 
     __HAL_RCC_RTC_CONFIG(BOARD_RTC_CLOCK);
     __HAL_RCC_RTC_ENABLE();
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-    // Divide async as little as possible so that we have 32768 count in subseconds.
+    // Divide async as little as possible so that we have RTC_CLOCK_FREQUENCY count in subseconds.
+    // This ensures our timing > 1 second is correct. We fudge < 1 second because there will only be
+    // 1000 subticks with a 32.000k crystal.
     _hrtc.Init.AsynchPrediv = 0x0;
-    _hrtc.Init.SynchPrediv = 0x7fff; // 32768 ticks per second
+    _hrtc.Init.SynchPrediv = RTC_CLOCK_FREQUENCY - 1;
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
 
-    HAL_StatusTypeDef result = HAL_RTC_Init(&_hrtc);
-    if (result != HAL_OK) {
-        asm("bkpt");
-    }
+    HAL_RTC_Init(&_hrtc);
 
     return NO_SAFE_MODE;
 }
@@ -138,7 +147,7 @@ volatile uint32_t cached_date = 0;
 volatile uint32_t seconds_to_minute = 0;
 volatile uint32_t cached_hours_minutes = 0;
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t subseconds = 0x8000 - (uint32_t)(RTC->SSR);
+    uint32_t subseconds = RTC_CLOCK_FREQUENCY - (uint32_t)(RTC->SSR);
     uint32_t time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
     uint32_t date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
     if (date != cached_date) {
@@ -182,10 +191,7 @@ void RTC_Alarm_IRQHandler(void) {
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
-    HAL_StatusTypeDef result = HAL_RTCEx_SetWakeUpTimer_IT(&_hrtc, 32768 / 1024 / 2, RTC_WAKEUPCLOCK_RTCCLK_DIV2);
-    if (result != HAL_OK) {
-        asm("bkpt");
-    }
+    HAL_RTCEx_SetWakeUpTimer_IT(&_hrtc, RTC_CLOCK_FREQUENCY / 1024 / 2, RTC_WAKEUPCLOCK_RTCCLK_DIV2);
     HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 1, 0U);
     HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 }
@@ -193,9 +199,6 @@ extern volatile uint32_t autoreload_delay_ms;
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    if (autoreload_delay_ms > 1) {
-        asm("bkpt");
-    }
     HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
     HAL_RTCEx_DeactivateWakeUpTimer(&_hrtc);
 }
@@ -215,8 +218,15 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     } else {
         alarm.AlarmMask = RTC_ALARMMASK_NONE;
     }
+    // Fudge subseconds if we're running a 32k crystal.
+    #if RTC_CLOCK_FREQUENCY == 32000
+    if (raw_ticks % 1024 > 1000) {
+        raw_ticks -= 24;
+    }
+    #endif
 
-    alarm.AlarmTime.SubSeconds = 32768 - ((raw_ticks % 1024) * 32);
+    alarm.AlarmTime.SubSeconds = RTC_CLOCK_FREQUENCY -
+                                 ((raw_ticks % (1024)) * 32);
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_NONE;

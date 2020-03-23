@@ -33,6 +33,8 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)
+#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSE
+#define LSE_VALUE       ((uint32_t)32000U)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB15)

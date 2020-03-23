@@ -39,18 +39,32 @@
 
 static pulseio_pulsein_obj_t* _objs[STM32_GPIO_PORT_SIZE];
 
+STATIC TIM_HandleTypeDef t6_handle;
+static uint32_t overflow_count = 0;
+STATIC uint8_t refcount = 0;
+
 static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num);
 
+void TIM6_IRQHandler(void)
+{
+    // Detect TIM Update event
+    if (__HAL_TIM_GET_FLAG(&t6_handle, TIM_FLAG_UPDATE) != RESET)
+    {
+        if (__HAL_TIM_GET_IT_SOURCE(&t6_handle, TIM_IT_UPDATE) != RESET)
+        {
+            __HAL_TIM_CLEAR_IT(&t6_handle, TIM_IT_UPDATE);
+            overflow_count++;
+        }
+    }
+}
+
 static void pulsein_handler(uint8_t num) {
+    // Grab the current time first.
+    uint32_t current_overflow = overflow_count;
+    uint32_t current_count = TIM6->CNT;
+
     // Interrupt register must be cleared manually
     EXTI->PR = 1 << num;
-
-    // Grab the current time first.
-    uint32_t current_us = 0;
-    uint64_t current_ms = 0;
-
-    // current_tick gives us the remaining us until the next tick but we want the number since the last ms.
-    current_us = 1000 - current_us;
 
     pulseio_pulsein_obj_t* self = _objs[num];
     if ( !self ) return;
@@ -62,18 +76,8 @@ static void pulsein_handler(uint8_t num) {
             self->first_edge = false;
         }
     } else {
-        uint32_t ms_diff = current_ms - self->last_ms;
-        uint16_t us_diff = current_us - self->last_us;
-        uint32_t total_diff = us_diff;
-
-        if (self->last_us > current_us) {
-            total_diff = 1000 + current_us - self->last_us;
-            if (ms_diff > 1) {
-                total_diff += (ms_diff - 1) * 1000;
-            }
-        } else {
-            total_diff += ms_diff * 1000;
-        }
+        uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
+        // Cap duration at 16 bits.
         uint16_t duration = 0xffff;
         if (total_diff < duration) {
             duration = total_diff;
@@ -88,8 +92,8 @@ static void pulsein_handler(uint8_t num) {
         }
     }
 
-    self->last_ms = current_ms;
-    self->last_us = current_us;
+    self->last_count = current_count;
+    self->last_overflow = current_overflow;
 }
 
 void pulsein_reset(void) {
@@ -100,6 +104,9 @@ void pulsein_reset(void) {
         }
     }
     memset(_objs, 0, sizeof(_objs));
+
+    __HAL_RCC_TIM6_CLK_DISABLE();
+    refcount = 0;
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
@@ -126,8 +133,26 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     self->len = 0;
     self->first_edge = true;
     self->paused = false;
-    self->last_us = 0;
-    self->last_ms = 0;
+    self->last_count = 0;
+    self->last_overflow = 0;
+
+    if (HAL_TIM_Base_GetState(&t6_handle) == HAL_TIM_STATE_RESET) {
+    // Set the new period
+        t6_handle.Instance = TIM6;
+        t6_handle.Init.Prescaler = 168; // HCLK is 168 mhz so divide down to 1mhz
+        t6_handle.Init.Period = 0xffff;
+        HAL_TIM_Base_Init(&t6_handle);
+
+        // TIM6 has limited HAL support, set registers manually
+        t6_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
+        t6_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
+        t6_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
+        __HAL_TIM_ENABLE_IT(&t6_handle, TIM_IT_UPDATE);
+
+        overflow_count = 0;
+    }
+    // Add to active PulseIns
+    refcount++;
 
     // EXTI pins can also be read as an input
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -155,6 +180,13 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     _objs[self->pin->number] = NULL;
     reset_pin_number(self->pin->port, self->pin->number);
     self->pin = NULL;
+
+    refcount--;
+    if (refcount == 0) {
+        #if HAS_BASIC_TIM
+        __HAL_RCC_TIM6_CLK_DISABLE();
+        #endif
+    }
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
@@ -189,8 +221,8 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t tri
 
     self->first_edge = true;
     self->paused = false;
-    self->last_ms = 0;
-    self->last_us = 0;
+    self->last_count = 0;
+    self->last_overflow = 0;
 
     HAL_NVIC_EnableIRQ(self->irq);
 }
