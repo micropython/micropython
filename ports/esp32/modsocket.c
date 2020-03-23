@@ -676,6 +676,9 @@ STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_
 STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     socket_obj_t *socket = self_in;
     if (request == MP_STREAM_POLL) {
+        if (socket->fd == -1) {
+            return MP_STREAM_POLL_NVAL;
+        }
 
         fd_set rfds;
         FD_ZERO(&rfds);
