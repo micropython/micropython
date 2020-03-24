@@ -41,7 +41,12 @@ STATIC void init_usb_vbus_sense(void) {
 #if (BOARD_NO_VBUS_SENSE)
     // Disable VBUS sensing
     #ifdef USB_OTG_GCCFG_VBDEN
+        // Deactivate VBUS Sensing B
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBDEN;
+
+        // B-peripheral session valid override enable
+        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+        USB_OTG_FS->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
     #else
         USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_NOVBUSSENS;
         USB_OTG_FS->GCCFG &= ~USB_OTG_GCCFG_VBUSBSEN;
@@ -80,11 +85,13 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 12);
 
     /* Configure VBUS Pin */
+#if  !(BOARD_NO_VBUS_SENSE)
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 9);
+#endif
 
     /* This for ID line debug */
     GPIO_InitStruct.Pin = GPIO_PIN_10;
