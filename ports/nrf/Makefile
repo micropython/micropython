@@ -151,6 +151,7 @@ SRC_LIB += $(addprefix lib/,\
         libm/asinfacosf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/roundf.c \
 	)
 
 endif

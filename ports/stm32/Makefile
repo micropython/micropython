@@ -214,6 +214,7 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	kf_tan.c \
 	log1pf.c \
 	nearbyintf.c \
+	roundf.c \
 	sf_cos.c \
 	sf_erf.c \
 	sf_frexp.c \
