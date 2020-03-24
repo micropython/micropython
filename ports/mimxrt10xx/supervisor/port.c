@@ -341,6 +341,52 @@ uint32_t port_get_saved_word(void) {
     return SNVS->LPGPR[1];
 }
 
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    uint64_t ticks = 0;
+    uint64_t next_ticks = 1;
+    while (ticks != next_ticks) {
+        ticks = next_ticks;
+        next_ticks = ((uint64_t) SNVS->HPRTCMR) << 32 | SNVS->HPRTCLR;
+    }
+    if (subticks != NULL) {
+        *subticks = ticks % 32;
+    }
+    return ticks / 32;
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    uint32_t hpcr = SNVS->HPCR;
+    hpcr &= ~SNVS_HPCR_PI_FREQ_MASK;
+    SNVS->HPCR = hpcr | SNVS_HPCR_PI_FREQ(5) | SNVS_HPCR_PI_EN_MASK;
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    SNVS->HPCR &= ~SNVS_HPCR_PI_EN_MASK;
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    uint8_t subticks;
+    uint64_t current_ticks = port_get_raw_ticks(&subticks);
+    current_ticks += ticks;
+    SNVS->HPTALR = current_ticks << 5 | subticks;
+    SNVS->HPTAMR = current_ticks >> (32 - 5);
+    SNVS->HPCR |= SNVS_HPCR_HPTA_EN_MASK;
+}
+
+void port_sleep_until_interrupt(void) {
+    // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
+
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    if (__get_FPSCR()  & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
+        (void) __get_FPSCR();
+    }
+    // Call wait for interrupt ourselves if the SD isn't enabled.
+    __WFI();
+}
+
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
