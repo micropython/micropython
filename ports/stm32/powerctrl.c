@@ -97,8 +97,7 @@ void powerctrl_check_enter_bootloader(void) {
 int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai) {
     uint32_t flash_latency;
 
-    #if defined(STM32F7)
-
+#if defined(STM32F7) || defined(STM32F469xx)
     if (need_pllsai) {
         // Configure PLLSAI at 48MHz for those peripherals that need this freq
         // (calculation assumes it can get an integral value of PLLSAIN)
@@ -116,9 +115,15 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
                 return -MP_ETIMEDOUT;
             }
         }
+        #if defined(STM32F7)
         RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
+        #else
+        RCC->DCKCFGR |= RCC_DCKCFGR_CK48MSEL;
+        #endif
     }
+#endif
 
+#if defined(STM32F7)
     // If possible, scale down the internal voltage regulator to save power
     uint32_t volt_scale;
     if (sysclk_mhz <= 151) {
@@ -151,11 +156,11 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
         flash_latency = FLASH_LATENCY_7;
     }
 
-    #elif defined(MICROPY_HW_FLASH_LATENCY)
+#elif defined(MICROPY_HW_FLASH_LATENCY)
     flash_latency = MICROPY_HW_FLASH_LATENCY;
-    #else
+#else
     flash_latency = FLASH_LATENCY_5;
-    #endif
+#endif
 
     rcc_init->SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     if (HAL_RCC_ClockConfig(rcc_init, flash_latency) != HAL_OK) {

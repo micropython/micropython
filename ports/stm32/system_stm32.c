@@ -343,8 +343,9 @@ void SystemClock_Config(void)
     }
 #endif
 
-#if defined(STM32F7)
-  /* Activate the OverDrive to reach the 200 MHz Frequency */
+#if defined(STM32F7) || defined(STM32F469xx)
+  /* F7: Activate the OverDrive to reach the 200 MHz Frequency */
+  /* F469: Activate the OverDrive to reach the 180 MHz Frequency */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     __fatal_error("HAL_PWREx_EnableOverDrive");

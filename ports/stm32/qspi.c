@@ -101,7 +101,11 @@ void qspi_init(void) {
 
     QUADSPI->CR =
         (MICROPY_HW_QSPI_PRESCALER - 1) << QUADSPI_CR_PRESCALER_Pos
+        #if MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx
+        | 0 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
+        #else
         | 3 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
+        #endif
         #if defined(QUADSPI_CR_FSEL_Pos)
         | 0 << QUADSPI_CR_FSEL_Pos // FLASH 1 selected
         #endif
@@ -130,9 +134,13 @@ void qspi_memory_map(void) {
         | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
         | 3 << QUADSPI_CCR_FMODE_Pos // memory-mapped mode
         | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
+    #if MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx
+        | 10 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+    #else
         | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+    #endif
         | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-        | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+        | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate bytes
         | QSPI_ADSIZE << QUADSPI_CCR_ADSIZE_Pos
         | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
         | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
@@ -308,9 +316,13 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
         | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
         | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
         | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
+    #if MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx
+        | 10 << QUADSPI_CCR_DCYC_Pos // 10 dummy cycles
+    #else
         | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+    #endif
         | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-        | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+        | 0 << QUADSPI_CCR_ABMODE_Pos // no alternate byte
         | adsize << QUADSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
         | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
         | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line

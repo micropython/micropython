@@ -70,6 +70,11 @@ STATIC void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
 STATIC void mp_spiflash_release_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        // 配置dummy cycles 为 10
+        #if (MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx) && 0
+            c->bus.u_qspi.proto->write_cmd_data(self, CMD_WREN, 0, 0);
+            c->bus.u_qspi.proto->write_cmd_data(self, 0x81, 1, 10<<4);
+        #endif
         c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
     }
 }
@@ -190,20 +195,28 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     #endif
 
     if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        
-        // Set QE bit
-        // 读取状态寄存器, N25Qxx, W25Qxx, MT25Qxx, MX25Lxx 基本一致
-        // 0x35 - 读状态寄存器， 只有W25Qxx系列支持
-        uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
-            | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
-
-        // 打开寄存器写允许位 & 开启QSPI支持(2#寄存器S9) & 等待执行完成
-        if (!(data & (QSPI_QE_MASK << 8))) {
-            data |= QSPI_QE_MASK << 8;
-            mp_spiflash_write_cmd(self, CMD_WREN);
-            mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
+        #if MICROPY_HW_QSPIFLASH_TYPE == MP_SPI_FLASH_N25Qxx
+            // 配置dummy cycles 为 10
+            uint8_t vol_reg = (mp_spiflash_read_cmd(self, 0x85, 1) & 0xff);
+            MODIFY_REG(vol_reg, 0xf0, (10 << 4));
+            mp_spiflash_write_cmd(self, CMD_WREN); // write enable
+            mp_spiflash_write_cmd_data(self, 0x81, 1, vol_reg);
             mp_spiflash_wait_wip0(self);
-        }
+        #else
+            // Set QE bit
+            // 读取状态寄存器, N25Qxx, W25Qxx, MT25Qxx, MX25Lxx 基本一致
+            // 0x35 - 读状态寄存器， 只有W25Qxx系列支持
+            uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
+                | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
+
+            // 打开寄存器写允许位 & 开启QSPI支持(2#寄存器S9) & 等待执行完成
+            if (!(data & (QSPI_QE_MASK << 8))) {
+                data |= QSPI_QE_MASK << 8;
+               mp_spiflash_write_cmd(self, CMD_WREN);               // write enable
+                mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
+                mp_spiflash_wait_wip0(self);
+            }
+        #endif
     }
 
     mp_spiflash_release_bus(self);
