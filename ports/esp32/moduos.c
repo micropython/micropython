@@ -62,7 +62,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 STATIC mp_obj_t os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
@@ -137,5 +137,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t uos_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

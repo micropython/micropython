@@ -52,13 +52,13 @@ SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # The git hash of the currently supported ESP IDF version.
-# These correspond to v3.3.1 and v4.0-beta1.
+# These correspond to v3.3.1 and v4.0.
 ESPIDF_SUPHASH_V3 := 143d26aa49df524e10fb8e41a71d12e731b9b71d
-ESPIDF_SUPHASH_V4 := 310beae373446ceb9a4ad9b36b5428d7fdf2705f
+ESPIDF_SUPHASH_V4 := 463a9d8b7f9af8205222b80707f9bdbba7c530e1
 
 define print_supported_git_hash
 $(info Supported git hash (v3.3): $(ESPIDF_SUPHASH_V3))
-$(info Supported git hash (v4.0-beta1) (experimental): $(ESPIDF_SUPHASH_V4))
+$(info Supported git hash (v4.0) (experimental): $(ESPIDF_SUPHASH_V4))
 endef
 
 # paths to ESP IDF and its components
@@ -118,7 +118,12 @@ endif
 MICROPY_PY_BLUETOOTH ?= 1
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SDKCONFIG += boards/sdkconfig.ble
-MICROPY_BLUETOOTH_NIMBLE = 1
+
+# Use NimBLE on ESP32.
+MICROPY_BLUETOOTH_NIMBLE ?= 1
+# Use Nimble bindings, but ESP32 IDF provides the Nimble library.
+MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY = 1
+include $(TOP)/extmod/nimble/nimble.mk
 endif
 
 # include sdkconfig to get needed configuration values
@@ -147,8 +152,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
-INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_ringbuf/include
@@ -240,13 +243,12 @@ INC_ESPCOMP += -I$(ESPCOMP)/nimble/esp-hci/include
 endif
 endif
 
+INC_NEWLIB += -I$(ESPCOMP)/newlib/platform_include
+INC_NEWLIB += -I$(ESPCOMP)/newlib/include
+
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
-endif
 endif
 
 # these flags are common to C and C++ compilation
@@ -257,7 +259,7 @@ CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfie
 	-DESP_PLATFORM
 
 CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
-CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
+CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_NEWLIB)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -I$(BOARD_DIR)
@@ -353,9 +355,8 @@ SRC_C = \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
-EXTMOD_SRC_C = $(addprefix extmod/,\
+EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
-	modbluetooth_nimble.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -458,7 +459,7 @@ $(BUILD)/$(ESPCOMP)/freertos/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
-$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
+$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) $(INC_NEWLIB) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
 ESPIDF_FREERTOS_O = \
 	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/freertos/*.c)) \
 	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/freertos/*.S)) \

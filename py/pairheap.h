@@ -50,7 +50,7 @@ typedef struct _mp_pairheap_t {
 } mp_pairheap_t;
 
 // This is the function for the less-than operation on nodes/elements.
-typedef int (*mp_pairheap_lt_t)(mp_pairheap_t*, mp_pairheap_t*);
+typedef int (*mp_pairheap_lt_t)(mp_pairheap_t *, mp_pairheap_t *);
 
 // Core functions.
 mp_pairheap_t *mp_pairheap_meld(mp_pairheap_lt_t lt, mp_pairheap_t *heap1, mp_pairheap_t *heap2);

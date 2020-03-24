@@ -23,7 +23,7 @@ long long int strtoll(const char *nptr, char **endptr, int base) {
         val = val * base + v;
     }
 
-    *endptr = (char*)nptr;
+    *endptr = (char *)nptr;
 
     return val;
 }

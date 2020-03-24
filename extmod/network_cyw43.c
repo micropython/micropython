@@ -71,7 +71,7 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         netif->ip_addr.addr >> 8 & 0xff,
         netif->ip_addr.addr >> 16 & 0xff,
         netif->ip_addr.addr >> 24
-    );
+        );
 }
 
 STATIC mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -135,7 +135,7 @@ STATIC int network_cyw43_scan_cb(void *env, const cyw43_ev_scan_result_t *res) {
     mp_obj_get_array(list, &len, &items);
     for (size_t i = 0; i < len; ++i) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(items[i]);
-        if (memcmp(res->bssid, ((mp_obj_str_t*)MP_OBJ_TO_PTR(t->items[1]))->data, sizeof(res->bssid)) == 0) {
+        if (memcmp(res->bssid, ((mp_obj_str_t *)MP_OBJ_TO_PTR(t->items[1]))->data, sizeof(res->bssid)) == 0) {
             if (res->rssi > MP_OBJ_SMALL_INT_VALUE(t->items[3])) {
                 t->items[3] = MP_OBJ_NEW_SMALL_INT(res->rssi);
             }
@@ -289,7 +289,7 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
                 mp_obj_t tuple[1] = {
                     mp_obj_new_bytes(&macs[i * 6], 6),
                 };
-                ((mp_obj_list_t*)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
+                ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
             }
             return list;
         }
@@ -334,12 +334,12 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 if (self->itf == CYW43_ITF_STA) {
                     uint8_t buf[36];
                     cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_SSID, 36, buf, self->itf);
-                    return mp_obj_new_str((const char*)buf + 4, nw_get_le32(buf));
+                    return mp_obj_new_str((const char *)buf + 4, nw_get_le32(buf));
                 } else {
                     size_t len;
                     const uint8_t *buf;
                     cyw43_wifi_ap_get_ssid(self->cyw, &len, &buf);
-                    return mp_obj_new_str((const char*)buf, len);
+                    return mp_obj_new_str((const char *)buf, len);
                 }
             }
             case MP_QSTR_mac: {
@@ -379,7 +379,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_essid: {
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
-                        cyw43_wifi_ap_set_ssid(self->cyw, len, (const uint8_t*)str);
+                        cyw43_wifi_ap_set_ssid(self->cyw, len, (const uint8_t *)str);
                         break;
                     }
                     case MP_QSTR_monitor: {
@@ -400,7 +400,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_password: {
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
-                        cyw43_wifi_ap_set_password(self->cyw, len, (const uint8_t*)str);
+                        cyw43_wifi_ap_set_password(self->cyw, len, (const uint8_t *)str);
                         break;
                     }
                     case MP_QSTR_pm: {
@@ -454,7 +454,7 @@ const mp_obj_type_t mp_network_cyw43_type = {
     .name = MP_QSTR_CYW43,
     .print = network_cyw43_print,
     .make_new = network_cyw43_make_new,
-    .locals_dict = (mp_obj_dict_t*)&network_cyw43_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&network_cyw43_locals_dict,
 };
 
 #endif // MICROPY_PY_NETWORK_CYW43

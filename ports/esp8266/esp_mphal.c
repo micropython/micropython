@@ -74,7 +74,7 @@ int mp_hal_stdin_rx_chr(void) {
         #if 0
         // Idles CPU but need more testing before enabling
         if (!ets_loop_iter()) {
-            asm("waiti 0");
+            asm ("waiti 0");
         }
         #else
         mp_hal_delay_us(1);
@@ -144,7 +144,7 @@ void mp_hal_delay_ms(uint32_t delay) {
 
 void ets_event_poll(void) {
     ets_loop_iter();
-    mp_handle_pending();
+    mp_handle_pending(true);
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
@@ -189,7 +189,7 @@ void mp_hal_signal_dupterm_input(void) {
 void *ets_get_esf_buf_ctlblk(void) {
     // Get literal ptr before start of esf_rx_buf_alloc func
     extern void *esf_rx_buf_alloc();
-    return ((void**)esf_rx_buf_alloc)[-1];
+    return ((void **)esf_rx_buf_alloc)[-1];
 }
 
 // Get number of esf_buf free buffers of given type, as encoded by index
@@ -198,10 +198,10 @@ void *ets_get_esf_buf_ctlblk(void) {
 // 1 - tx buffer, 5 - management frame tx buffer; 8 - rx buffer
 int ets_esf_free_bufs(int idx) {
     uint32_t *p = ets_get_esf_buf_ctlblk();
-    uint32_t *b = (uint32_t*)p[idx];
+    uint32_t *b = (uint32_t *)p[idx];
     int cnt = 0;
     while (b) {
-        b = (uint32_t*)b[0x20 / 4];
+        b = (uint32_t *)b[0x20 / 4];
         cnt++;
     }
     return cnt;

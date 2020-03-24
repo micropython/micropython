@@ -37,14 +37,15 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
+#include "ets_alt_task.h"
 #include "modmachine.h"
 
 #define GET_TRIGGER(phys_port) \
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
 #define SET_TRIGGER(phys_port, trig) \
     (GPIO_REG_WRITE(GPIO_PIN_ADDR(phys_port), \
-        (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
-        | GPIO_PIN_INT_TYPE_SET(trig))) \
+    (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
+    | GPIO_PIN_INT_TYPE_SET(trig))) \
 
 #define GPIO_MODE_INPUT (0)
 #define GPIO_MODE_OUTPUT (1)
@@ -103,23 +104,26 @@ void pin_init0(void) {
 }
 
 void pin_intr_handler(uint32_t status) {
-    mp_sched_lock();
-    gc_lock();
     status &= 0xffff;
     for (int p = 0; status; ++p, status >>= 1) {
         if (status & 1) {
             mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
             if (handler != MP_OBJ_NULL) {
                 if (pin_irq_is_hard[p]) {
+                    int orig_ets_loop_iter_disable = ets_loop_iter_disable;
+                    ets_loop_iter_disable = 1;
+                    mp_sched_lock();
+                    gc_lock();
                     mp_call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                    gc_unlock();
+                    mp_sched_unlock();
+                    ets_loop_iter_disable = orig_ets_loop_iter_disable;
                 } else {
                     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
                 }
             }
         }
     }
-    gc_unlock();
-    mp_sched_unlock();
 }
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
@@ -315,7 +319,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     int wanted_pin = mp_obj_get_int(args[0]);
     pyb_pin_obj_t *pin = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(pyb_pin_obj)) {
-        pin = (pyb_pin_obj_t*)&pyb_pin_obj[wanted_pin];
+        pin = (pyb_pin_obj_t *)&pyb_pin_obj[wanted_pin];
     }
     if (pin == NULL || pin->base.type == NULL) {
         mp_raise_ValueError("invalid pin");
@@ -458,7 +462,7 @@ const mp_obj_type_t pyb_pin_type = {
     .make_new = mp_pin_make_new,
     .call = pyb_pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_pin_locals_dict,
 };
 
 /******************************************************************************/
@@ -514,5 +518,5 @@ STATIC const mp_obj_type_t pin_irq_type = {
     { &mp_type_type },
     .name = MP_QSTR_IRQ,
     .call = pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&pin_irq_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_irq_locals_dict,
 };

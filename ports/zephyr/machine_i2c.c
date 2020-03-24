@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include <zephyr.h>
-#include <i2c.h>
+#include <drivers/i2c.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -97,7 +97,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     struct i2c_msg msg;
     int ret;
 
-    msg.buf = (u8_t*)buf;
+    msg.buf = (u8_t *)buf;
     msg.len = len;
     msg.flags = 0;
 
@@ -133,5 +133,5 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };

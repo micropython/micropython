@@ -96,19 +96,13 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 }
 
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
-#if MICROPY_PY_SYS
+    #if MICROPY_PY_SYS
     // extract the list of paths
     size_t path_num;
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 
-    if (path_num == 0) {
-#endif
-        // mp_sys_path is empty, so just use the given file name
-        vstr_add_strn(dest, file_str, file_len);
-        return stat_dir_or_file(dest);
-#if MICROPY_PY_SYS
-    } else {
+    if (path_num != 0) {
         // go through each path looking for a directory or file
         for (size_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
@@ -128,7 +122,11 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // could not find a directory or file
         return MP_IMPORT_STAT_NO_EXIST;
     }
-#endif
+    #endif
+
+    // mp_sys_path is empty, so just use the given file name
+    vstr_add_strn(dest, file_str, file_len);
+    return stat_dir_or_file(dest);
 }
 
 #if MICROPY_MODULE_FROZEN_STR || MICROPY_ENABLE_COMPILER
@@ -145,7 +143,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char* source_name) {
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *source_name) {
     (void)source_name;
 
     #if MICROPY_PY___FILE__
@@ -246,14 +244,14 @@ STATIC void chop_component(const char *start, const char **end) {
 }
 
 mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
-#if DEBUG_PRINT
+    #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
     for (size_t i = 0; i < n_args; i++) {
         DEBUG_printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
         DEBUG_printf("\n");
     }
-#endif
+    #endif
 
     mp_obj_t module_name = args[0];
     mp_obj_t fromtuple = mp_const_none;
@@ -292,12 +290,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         mp_map_elem_t *elem = mp_map_lookup(globals_map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
         bool is_pkg = (elem != NULL);
 
-#if DEBUG_PRINT
+        #if DEBUG_PRINT
         DEBUG_printf("Current module/package: ");
         mp_obj_print(this_name_q, PRINT_REPR);
         DEBUG_printf(", is_package: %d", is_pkg);
         DEBUG_printf("\n");
-#endif
+        #endif
 
         size_t this_name_l;
         const char *this_name = mp_obj_str_get_data(this_name_q, &this_name_l);
@@ -401,8 +399,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_raise_msg(&mp_type_ImportError, "module not found");
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "no module named '%q'", mod_name));
+                        mp_raise_msg_varg(&mp_type_ImportError, "no module named '%q'", mod_name);
                     }
                 }
             } else {
@@ -505,8 +502,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_msg(&mp_type_ImportError, "module not found");
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-            "no module named '%q'", module_name_qstr));
+        mp_raise_msg_varg(&mp_type_ImportError, "no module named '%q'", module_name_qstr);
     }
 }
 

@@ -33,6 +33,7 @@ import subprocess
 ###########################################################################
 # Public functions to be used in the manifest
 
+
 def include(manifest):
     """Include another manifest.
 
@@ -54,6 +55,7 @@ def include(manifest):
             os.chdir(os.path.dirname(manifest))
             exec(f.read())
             os.chdir(prev_cwd)
+
 
 def freeze(path, script=None, opt=0):
     """Freeze the input, automatically determining its type.  A .py script
@@ -84,6 +86,7 @@ def freeze(path, script=None, opt=0):
 
     freeze_internal(KIND_AUTO, path, script, opt)
 
+
 def freeze_as_str(path):
     """Freeze the given `path` and all .py scripts within it as a string,
     which will be compiled upon import.
@@ -91,12 +94,14 @@ def freeze_as_str(path):
 
     freeze_internal(KIND_AS_STR, path, None, 0)
 
+
 def freeze_as_mpy(path, script=None, opt=0):
     """Freeze the input (see above) by first compiling the .py scripts to
     .mpy files, then freezing the resulting .mpy files.
     """
 
     freeze_internal(KIND_AS_MPY, path, script, opt)
+
 
 def freeze_mpy(path, script=None, opt=0):
     """Freeze the input (see above), which must be .mpy files that are
@@ -118,8 +123,10 @@ VARS = {}
 
 manifest_list = []
 
+
 class FreezeError(Exception):
     pass
+
 
 def system(cmd):
     try:
@@ -128,13 +135,15 @@ def system(cmd):
     except subprocess.CalledProcessError as er:
         return -1, er.output
 
+
 def convert_path(path):
     # Perform variable substituion.
     for name, value in VARS.items():
-        path = path.replace('$({})'.format(name), value)
+        path = path.replace("$({})".format(name), value)
     # Convert to absolute path (so that future operations don't rely on
     # still being chdir'ed).
     return os.path.abspath(path)
+
 
 def get_timestamp(path, default=None):
     try:
@@ -142,8 +151,9 @@ def get_timestamp(path, default=None):
         return stat.st_mtime
     except OSError:
         if default is None:
-            raise FreezeError('cannot stat {}'.format(path))
+            raise FreezeError("cannot stat {}".format(path))
         return default
+
 
 def get_timestamp_newest(path):
     ts_newest = 0
@@ -152,82 +162,93 @@ def get_timestamp_newest(path):
             ts_newest = max(ts_newest, get_timestamp(os.path.join(dirpath, f)))
     return ts_newest
 
+
 def mkdir(path):
-    cur_path = ''
-    for p in path.split('/')[:-1]:
-        cur_path += p + '/'
+    cur_path = ""
+    for p in path.split("/")[:-1]:
+        cur_path += p + "/"
         try:
             os.mkdir(cur_path)
         except OSError as er:
-            if er.args[0] == 17: # file exists
+            if er.args[0] == 17:  # file exists
                 pass
             else:
                 raise er
+
 
 def freeze_internal(kind, path, script, opt):
     path = convert_path(path)
     if script is None and kind == KIND_AS_STR:
         if any(f[0] == KIND_AS_STR for f in manifest_list):
-            raise FreezeError('can only freeze one str directory')
+            raise FreezeError("can only freeze one str directory")
         manifest_list.append((KIND_AS_STR, path, script, opt))
     elif script is None:
         for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
             for f in filenames:
-                freeze_internal(kind, path, (dirpath + '/' + f)[len(path) + 1:], opt)
+                freeze_internal(kind, path, (dirpath + "/" + f)[len(path) + 1 :], opt)
     elif not isinstance(script, str):
         for s in script:
             freeze_internal(kind, path, s, opt)
     else:
-        extension_kind = {KIND_AS_MPY: '.py', KIND_MPY: '.mpy'}
+        extension_kind = {KIND_AS_MPY: ".py", KIND_MPY: ".mpy"}
         if kind == KIND_AUTO:
             for k, ext in extension_kind.items():
                 if script.endswith(ext):
                     kind = k
                     break
             else:
-                print('warn: unsupported file type, skipped freeze: {}'.format(script))
+                print("warn: unsupported file type, skipped freeze: {}".format(script))
                 return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
-            raise FreezeError('expecting a {} file, got {}'.format(wanted_extension, script))
+            raise FreezeError("expecting a {} file, got {}".format(wanted_extension, script))
         manifest_list.append((kind, path, script, opt))
+
 
 def main():
     # Parse arguments
     import argparse
-    cmd_parser = argparse.ArgumentParser(description='A tool to generate frozen content in MicroPython firmware images.')
-    cmd_parser.add_argument('-o', '--output', help='output path')
-    cmd_parser.add_argument('-b', '--build-dir', help='output path')
-    cmd_parser.add_argument('-f', '--mpy-cross-flags', default='', help='flags to pass to mpy-cross')
-    cmd_parser.add_argument('-v', '--var', action='append', help='variables to substitute')
-    cmd_parser.add_argument('files', nargs='+', help='input manifest list')
+
+    cmd_parser = argparse.ArgumentParser(
+        description="A tool to generate frozen content in MicroPython firmware images."
+    )
+    cmd_parser.add_argument("-o", "--output", help="output path")
+    cmd_parser.add_argument("-b", "--build-dir", help="output path")
+    cmd_parser.add_argument(
+        "-f", "--mpy-cross-flags", default="", help="flags to pass to mpy-cross"
+    )
+    cmd_parser.add_argument("-v", "--var", action="append", help="variables to substitute")
+    cmd_parser.add_argument("files", nargs="+", help="input manifest list")
     args = cmd_parser.parse_args()
 
     # Extract variables for substitution.
     for var in args.var:
-        name, value = var.split('=', 1)
+        name, value = var.split("=", 1)
         if os.path.exists(value):
             value = os.path.abspath(value)
         VARS[name] = value
 
-    if 'MPY_DIR' not in VARS or 'PORT_DIR' not in VARS:
-        print('MPY_DIR and PORT_DIR variables must be specified')
+    if "MPY_DIR" not in VARS or "PORT_DIR" not in VARS:
+        print("MPY_DIR and PORT_DIR variables must be specified")
         sys.exit(1)
 
     # Get paths to tools
-    MAKE_FROZEN = VARS['MPY_DIR'] + '/tools/make-frozen.py'
-    MPY_CROSS = VARS['MPY_DIR'] + '/mpy-cross/mpy-cross'
-    MPY_TOOL = VARS['MPY_DIR'] + '/tools/mpy-tool.py'
+    MAKE_FROZEN = VARS["MPY_DIR"] + "/tools/make-frozen.py"
+    MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/mpy-cross"
+    if sys.platform == "win32":
+        MPY_CROSS += ".exe"
+    MPY_CROSS = os.getenv("MICROPY_MPYCROSS", MPY_CROSS)
+    MPY_TOOL = VARS["MPY_DIR"] + "/tools/mpy-tool.py"
 
     # Ensure mpy-cross is built
     if not os.path.exists(MPY_CROSS):
-        print('mpy-cross not found at {}, please build it first'.format(MPY_CROSS))
+        print("mpy-cross not found at {}, please build it first".format(MPY_CROSS))
         sys.exit(1)
 
     # Include top-level inputs, to generate the manifest
     for input_manifest in args.files:
         try:
-            if input_manifest.endswith('.py'):
+            if input_manifest.endswith(".py"):
                 include(input_manifest)
             else:
                 exec(input_manifest)
@@ -244,22 +265,26 @@ def main():
             str_paths.append(path)
             ts_outfile = get_timestamp_newest(path)
         elif kind == KIND_AS_MPY:
-            infile = '{}/{}'.format(path, script)
-            outfile = '{}/frozen_mpy/{}.mpy'.format(args.build_dir, script[:-3])
+            infile = "{}/{}".format(path, script)
+            outfile = "{}/frozen_mpy/{}.mpy".format(args.build_dir, script[:-3])
             ts_infile = get_timestamp(infile)
             ts_outfile = get_timestamp(outfile, 0)
             if ts_infile >= ts_outfile:
-                print('MPY', script)
+                print("MPY", script)
                 mkdir(outfile)
-                res, out = system([MPY_CROSS] + args.mpy_cross_flags.split() + ['-o', outfile, '-s', script, '-O{}'.format(opt), infile])
+                res, out = system(
+                    [MPY_CROSS]
+                    + args.mpy_cross_flags.split()
+                    + ["-o", outfile, "-s", script, "-O{}".format(opt), infile]
+                )
                 if res != 0:
-                    print('error compiling {}: {}'.format(infile, out))
+                    print("error compiling {}: {}".format(infile, out))
                     raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
         else:
             assert kind == KIND_MPY
-            infile = '{}/{}'.format(path, script)
+            infile = "{}/{}".format(path, script)
             mpy_files.append(infile)
             ts_outfile = get_timestamp(infile)
         ts_newest = max(ts_newest, ts_outfile)
@@ -272,23 +297,45 @@ def main():
     # Freeze paths as strings
     res, output_str = system([sys.executable, MAKE_FROZEN] + str_paths)
     if res != 0:
-        print('error freezing strings {}: {}'.format(str_paths, output_str))
+        print("error freezing strings {}: {}".format(str_paths, output_str))
         sys.exit(1)
 
     # Freeze .mpy files
-    res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
-    if res != 0:
-        print('error freezing mpy {}: {}'.format(mpy_files, output_mpy))
-        sys.exit(1)
+    if mpy_files:
+        res, output_mpy = system(
+            [
+                sys.executable,
+                MPY_TOOL,
+                "-f",
+                "-q",
+                args.build_dir + "/genhdr/qstrdefs.preprocessed.h",
+            ]
+            + mpy_files
+        )
+        if res != 0:
+            print("error freezing mpy {}:".format(mpy_files))
+            print(str(output_mpy, "utf8"))
+            sys.exit(1)
+    else:
+        output_mpy = (
+            b'#include "py/emitglue.h"\n'
+            b"extern const qstr_pool_t mp_qstr_const_pool;\n"
+            b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
+            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
+            b"};\n"
+            b'const char mp_frozen_mpy_names[1] = {"\\0"};\n'
+            b"const mp_raw_code_t *const mp_frozen_mpy_content[0] = {};\n"
+        )
 
     # Generate output
-    print('GEN', args.output)
+    print("GEN", args.output)
     mkdir(args.output)
-    with open(args.output, 'wb') as f:
-        f.write(b'//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n')
+    with open(args.output, "wb") as f:
+        f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n")
         f.write(output_str)
-        f.write(b'//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n')
+        f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n")
         f.write(output_mpy)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

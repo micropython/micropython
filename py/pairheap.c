@@ -31,9 +31,9 @@
 //   - LSB set: the node is the last of the children and points to its parent node
 //   - other: the node is a child and not the last child
 // The macros below help manage this pointer.
-#define NEXT_MAKE_RIGHTMOST_PARENT(parent) ((void*)((uintptr_t)(parent) | 1))
+#define NEXT_MAKE_RIGHTMOST_PARENT(parent) ((void *)((uintptr_t)(parent) | 1))
 #define NEXT_IS_RIGHTMOST_PARENT(next) ((uintptr_t)(next) & 1)
-#define NEXT_GET_RIGHTMOST_PARENT(next) ((void*)((uintptr_t)(next) & ~1))
+#define NEXT_GET_RIGHTMOST_PARENT(next) ((void *)((uintptr_t)(next) & ~1))
 
 // O(1), stable
 mp_pairheap_t *mp_pairheap_meld(mp_pairheap_lt_t lt, mp_pairheap_t *heap1, mp_pairheap_t *heap2) {

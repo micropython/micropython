@@ -180,5 +180,5 @@ __attribute__((naked)) void PendSV_Handler(void) {
         #endif
         "pendsv_object_ptr: .word pendsv_object\n"
         "nlr_jump_ptr: .word nlr_jump\n"
-    );
+        );
 }

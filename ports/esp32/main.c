@@ -58,6 +58,10 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 
+#if MICROPY_BLUETOOTH_NIMBLE
+#include "extmod/modbluetooth.h"
+#endif
+
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
@@ -79,7 +83,7 @@ void mp_task(void *pvParameter) {
     #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
-    void *mp_task_heap = (void*)0x3f800000;
+    void *mp_task_heap = (void *)0x3f800000;
     switch (esp_spiram_get_chip_size()) {
         case ESP_SPIRAM_SIZE_16MBITS:
             mp_task_heap_size = 2 * 1024 * 1024;
@@ -135,6 +139,10 @@ soft_reset:
             }
         }
     }
+
+    #if MICROPY_BLUETOOTH_NIMBLE
+    mp_bluetooth_deinit();
+    #endif
 
     machine_timer_deinit_all();
 

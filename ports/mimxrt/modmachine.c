@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +24,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_DRIVERS_CYW43_CYWBT_H
-#define MICROPY_INCLUDED_DRIVERS_CYW43_CYWBT_H
 
-extern uint8_t bt_hci_cmd_buf[4 + 256];
-extern pyb_uart_obj_t bt_hci_uart_obj;
+#include "py/runtime.h"
+#include "extmod/machine_mem.h"
 
-int cywbt_init(void);
-int cywbt_activate(void);
+#include CPU_HEADER_H
 
-#endif // MICROPY_INCLUDED_DRIVERS_CYW43_CYWBT_H
+STATIC mp_obj_t machine_reset(void) {
+    NVIC_SystemReset();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_freq(void) {
+    return MP_OBJ_NEW_SMALL_INT(0);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+
+STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
+
+const mp_obj_module_t mp_module_machine = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
+};

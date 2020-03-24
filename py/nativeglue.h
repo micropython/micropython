@@ -91,7 +91,7 @@ typedef struct _mp_fun_table_t {
     mp_const_obj_t const_true;
     mp_uint_t (*native_from_obj)(mp_obj_t obj, mp_uint_t type);
     mp_obj_t (*native_to_obj)(mp_uint_t val, mp_uint_t type);
-    mp_obj_dict_t *(*swap_globals)(mp_obj_dict_t *new_globals);
+    mp_obj_dict_t *(*swap_globals)(mp_obj_dict_t * new_globals);
     mp_obj_t (*load_name)(qstr qst);
     mp_obj_t (*load_global)(qstr qst);
     mp_obj_t (*load_build_class)(void);
@@ -147,8 +147,8 @@ typedef struct _mp_fun_table_t {
     #endif
     void (*raise_msg)(const mp_obj_type_t *exc_type, const char *msg);
     const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
-    mp_obj_t (*obj_new_str)(const char* data, size_t len);
-    mp_obj_t (*obj_new_bytes)(const byte* data, size_t len);
+    mp_obj_t (*obj_new_str)(const char *data, size_t len);
+    mp_obj_t (*obj_new_bytes)(const byte *data, size_t len);
     mp_obj_t (*obj_new_bytearray_by_ref)(size_t n, void *items);
     mp_obj_t (*obj_new_float_from_f)(float f);
     mp_obj_t (*obj_new_float_from_d)(double d);

@@ -28,14 +28,11 @@
 #include "py/mphal.h"
 #include "pin_static_af.h"
 #include "nimble/ble.h"
-#include "hal/hal_uart.h"
-#include "hci_uart.h"
+#include "extmod/nimble/hal/hal_uart.h"
+#include "extmod/modbluetooth_hci.h"
+#include "extmod/nimble/nimble/nimble_hci_uart.h"
 
-#if MICROPY_BLUETOOTH_NIMBLE
-
-/******************************************************************************/
-// Bindings Uart to Nimble
-uint8_t bt_hci_cmd_buf[4 + 256];
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
 static hal_uart_tx_cb_t hal_uart_tx_cb;
 static void *hal_uart_tx_arg;
@@ -51,9 +48,9 @@ int hal_uart_init_cbs(uint32_t port, hal_uart_tx_cb_t tx_cb, void *tx_arg, hal_u
 }
 
 int hal_uart_config(uint32_t port, uint32_t baudrate, uint32_t bits, uint32_t stop, uint32_t parity, uint32_t flow) {
-    nimble_hci_uart_configure(port);
-    nimble_hci_uart_set_baudrate(baudrate);
-    return nimble_hci_uart_activate();
+    mp_bluetooth_hci_uart_init(port);
+    mp_bluetooth_hci_uart_set_baudrate(baudrate);
+    return mp_bluetooth_hci_uart_activate();
 }
 
 void hal_uart_start_tx(uint32_t port) {
@@ -63,7 +60,7 @@ void hal_uart_start_tx(uint32_t port) {
         if (data == -1) {
             break;
         }
-        bt_hci_cmd_buf[len++] = data;
+        mp_bluetooth_hci_cmd_buf[len++] = data;
     }
 
     #if 0
@@ -74,15 +71,15 @@ void hal_uart_start_tx(uint32_t port) {
     printf("\n");
     #endif
 
-    nimble_hci_uart_tx_strn((void*)bt_hci_cmd_buf, len);
+    mp_bluetooth_nimble_hci_uart_tx_strn((void*)mp_bluetooth_hci_cmd_buf, len);
 }
 
 int hal_uart_close(uint32_t port) {
     return 0; // success
 }
 
-void nimble_uart_process(void) {
-    nimble_hci_uart_rx(hal_uart_rx_cb, hal_uart_rx_arg);
+void mp_bluetooth_nimble_hci_uart_process(void) {
+    mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb, hal_uart_rx_arg);
 }
 
-#endif // MICROPY_BLUETOOTH_NIMBLE
+#endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

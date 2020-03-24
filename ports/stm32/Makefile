@@ -458,14 +458,30 @@ CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+SRC_C += modbluetooth_hci.c
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Cannot enable both NimBLE and BTstack at the same time)
+endif
+endif
+
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += nimble.c
-SRC_C += nimble_hci_uart.c
-EXTMOD_SRC_C += extmod/modbluetooth_nimble.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+include $(TOP)/extmod/btstack/btstack.mk
+SRC_C += btstack.c
+endif
+
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
 DRIVERS_SRC_C += drivers/cyw43/cywbt.c
 endif
+
 endif
 
 OBJ =
@@ -649,7 +665,7 @@ CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c $(if $(filter $(MCU_SERIES),f7),--relax-pll48,) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
+	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(MCU_SERIES) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to

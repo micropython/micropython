@@ -105,7 +105,9 @@ void potato_uart_init(void) {
 char potato_uart_read(void) {
     uint64_t val;
 
-    while (potato_uart_rx_empty());
+    while (potato_uart_rx_empty()) {
+        ;
+    }
     val = potato_uart_reg_read(POTATO_CONSOLE_RX);
 
     return (char)(val & 0x000000ff);
@@ -116,6 +118,8 @@ void potato_uart_write(char c) {
 
     val = c;
 
-    while (potato_uart_tx_full());
+    while (potato_uart_tx_full()) {
+        ;
+    }
     potato_uart_reg_write(POTATO_CONSOLE_TX, val);
 }

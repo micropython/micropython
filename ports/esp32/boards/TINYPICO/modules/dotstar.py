@@ -63,8 +63,7 @@ class DotStar:
         dotstar[0] = (128, 0, 0) # Red
     """
 
-    def __init__(self, spi, n, *, brightness=1.0, auto_write=True,
-                 pixel_order=BGR):
+    def __init__(self, spi, n, *, brightness=1.0, auto_write=True, pixel_order=BGR):
         self._spi = spi
         self._n = n
         # Supply one extra clock cycle for each two pixels in the strip.
@@ -79,10 +78,10 @@ class DotStar:
             self._buf[i] = 0x00
         # Mark the beginnings of each pixel.
         for i in range(START_HEADER_SIZE, self.end_header_index, 4):
-            self._buf[i] = 0xff
+            self._buf[i] = 0xFF
         # 0xff bytes at the end.
         for i in range(self.end_header_index, len(self._buf)):
-            self._buf[i] = 0xff
+            self._buf[i] = 0xFF
         self._brightness = 1.0
         # Set auto_write to False temporarily so brightness setter does _not_
         # call show() while in __init__.
@@ -129,7 +128,7 @@ class DotStar:
         offset = index * 4 + START_HEADER_SIZE
         rgb = value
         if isinstance(value, int):
-            rgb = (value >> 16, (value >> 8) & 0xff, value & 0xff)
+            rgb = (value >> 16, (value >> 8) & 0xFF, value & 0xFF)
 
         if len(rgb) == 4:
             brightness = value[3]
@@ -171,15 +170,15 @@ class DotStar:
             out = []
             for in_i in range(*index.indices(self._n)):
                 out.append(
-                    tuple(self._buf[in_i * 4 + (3 - i) + START_HEADER_SIZE] for i in range(3)))
+                    tuple(self._buf[in_i * 4 + (3 - i) + START_HEADER_SIZE] for i in range(3))
+                )
             return out
         if index < 0:
             index += len(self)
         if index >= self._n or index < 0:
             raise IndexError
         offset = index * 4
-        return tuple(self._buf[offset + (3 - i) + START_HEADER_SIZE]
-                     for i in range(3))
+        return tuple(self._buf[offset + (3 - i) + START_HEADER_SIZE] for i in range(3))
 
     def __len__(self):
         return self._n
@@ -222,7 +221,7 @@ class DotStar:
                 buf[i] = self._buf[i] if i % 4 == 0 else int(self._buf[i] * self._brightness)
             # Four 0xff bytes at the end.
             for i in range(self.end_header_index, len(buf)):
-                buf[i] = 0xff
+                buf[i] = 0xFF
 
         if self._spi:
             self._spi.write(buf)

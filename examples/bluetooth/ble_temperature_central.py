@@ -9,32 +9,45 @@ import micropython
 from ble_advertising import decode_services, decode_name
 
 from micropython import const
-_IRQ_CENTRAL_CONNECT                 = const(1 << 0)
-_IRQ_CENTRAL_DISCONNECT              = const(1 << 1)
-_IRQ_GATTS_WRITE                     = const(1 << 2)
-_IRQ_GATTS_READ_REQUEST              = const(1 << 3)
-_IRQ_SCAN_RESULT                     = const(1 << 4)
-_IRQ_SCAN_COMPLETE                   = const(1 << 5)
-_IRQ_PERIPHERAL_CONNECT              = const(1 << 6)
-_IRQ_PERIPHERAL_DISCONNECT           = const(1 << 7)
-_IRQ_GATTC_SERVICE_RESULT            = const(1 << 8)
-_IRQ_GATTC_CHARACTERISTIC_RESULT     = const(1 << 9)
-_IRQ_GATTC_DESCRIPTOR_RESULT         = const(1 << 10)
-_IRQ_GATTC_READ_RESULT               = const(1 << 11)
-_IRQ_GATTC_WRITE_STATUS              = const(1 << 12)
-_IRQ_GATTC_NOTIFY                    = const(1 << 13)
-_IRQ_GATTC_INDICATE                  = const(1 << 14)
-_IRQ_ALL                             = const(0xffff)
+
+_IRQ_CENTRAL_CONNECT = const(1 << 0)
+_IRQ_CENTRAL_DISCONNECT = const(1 << 1)
+_IRQ_GATTS_WRITE = const(1 << 2)
+_IRQ_GATTS_READ_REQUEST = const(1 << 3)
+_IRQ_SCAN_RESULT = const(1 << 4)
+_IRQ_SCAN_COMPLETE = const(1 << 5)
+_IRQ_PERIPHERAL_CONNECT = const(1 << 6)
+_IRQ_PERIPHERAL_DISCONNECT = const(1 << 7)
+_IRQ_GATTC_SERVICE_RESULT = const(1 << 8)
+_IRQ_GATTC_CHARACTERISTIC_RESULT = const(1 << 9)
+_IRQ_GATTC_DESCRIPTOR_RESULT = const(1 << 10)
+_IRQ_GATTC_READ_RESULT = const(1 << 11)
+_IRQ_GATTC_WRITE_STATUS = const(1 << 12)
+_IRQ_GATTC_NOTIFY = const(1 << 13)
+_IRQ_GATTC_INDICATE = const(1 << 14)
+_IRQ_ALL = const(0xFFFF)
+
+_ADV_IND = const(0x00)
+_ADV_DIRECT_IND = const(0x01)
+_ADV_SCAN_IND = const(0x02)
+_ADV_NONCONN_IND = const(0x03)
 
 # org.bluetooth.service.environmental_sensing
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
 _TEMP_UUID = bluetooth.UUID(0x2A6E)
-_TEMP_CHAR = (_TEMP_UUID, bluetooth.FLAG_READ|bluetooth.FLAG_NOTIFY,)
-_ENV_SENSE_SERVICE = (_ENV_SENSE_UUID, (_TEMP_CHAR,),)
+_TEMP_CHAR = (
+    _TEMP_UUID,
+    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,
+)
+_ENV_SENSE_SERVICE = (
+    _ENV_SENSE_UUID,
+    (_TEMP_CHAR,),
+)
 
 # org.bluetooth.characteristic.gap.appearance.xml
 _ADV_APPEARANCE_GENERIC_THERMOMETER = const(768)
+
 
 class BLETemperatureCentral:
     def __init__(self, ble):
@@ -68,12 +81,16 @@ class BLETemperatureCentral:
 
     def _irq(self, event, data):
         if event == _IRQ_SCAN_RESULT:
-            addr_type, addr, connectable, rssi, adv_data = data
-            if connectable and _ENV_SENSE_UUID in decode_services(adv_data):
+            addr_type, addr, adv_type, rssi, adv_data = data
+            if adv_type in (_ADV_IND, _ADV_DIRECT_IND,) and _ENV_SENSE_UUID in decode_services(
+                adv_data
+            ):
                 # Found a potential device, remember it and stop scanning.
                 self._addr_type = addr_type
-                self._addr = bytes(addr) # Note: The addr buffer is owned by modbluetooth, need to copy it.
-                self._name = decode_name(adv_data) or '?'
+                self._addr = bytes(
+                    addr
+                )  # Note: addr buffer is owned by caller so need to copy it.
+                self._name = decode_name(adv_data) or "?"
                 self._ble.gap_scan(None)
 
         elif event == _IRQ_SCAN_COMPLETE:
@@ -104,7 +121,9 @@ class BLETemperatureCentral:
             # Connected device returned a service.
             conn_handle, start_handle, end_handle, uuid = data
             if conn_handle == self._conn_handle and uuid == _ENV_SENSE_UUID:
-                self._ble.gattc_discover_characteristics(self._conn_handle, start_handle, end_handle)
+                self._ble.gattc_discover_characteristics(
+                    self._conn_handle, start_handle, end_handle
+                )
 
         elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
             # Connected device returned a characteristic.
@@ -131,7 +150,6 @@ class BLETemperatureCentral:
                 self._update_value(notify_data)
                 if self._notify_callback:
                     self._notify_callback(self._value)
-
 
     # Returns true if we've successfully connected and discovered characteristics.
     def is_connected(self):
@@ -174,7 +192,7 @@ class BLETemperatureCentral:
 
     def _update_value(self, data):
         # Data is sint16 in degrees Celsius with a resolution of 0.01 degrees Celsius.
-        self._value = struct.unpack('<h', data)[0] / 100
+        self._value = struct.unpack("<h", data)[0] / 100
         return self._value
 
     def value(self):
@@ -189,12 +207,12 @@ def demo():
 
     def on_scan(addr_type, addr, name):
         if addr_type is not None:
-            print('Found sensor:', addr_type, addr, name)
+            print("Found sensor:", addr_type, addr, name)
             central.connect()
         else:
             nonlocal not_found
             not_found = True
-            print('No sensor found.')
+            print("No sensor found.")
 
     central.scan(callback=on_scan)
 
@@ -204,7 +222,7 @@ def demo():
         if not_found:
             return
 
-    print('Connected')
+    print("Connected")
 
     # Explicitly issue reads, using "print" as the callback.
     while central.is_connected():
@@ -216,7 +234,8 @@ def demo():
     #     print(central.value())
     #     time.sleep_ms(2000)
 
-    print('Disconnected')
+    print("Disconnected")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     demo()

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Jim Mussared
+ * Copyright (c) 2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_NIMBLE_H
-#define MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_NIMBLE_H
+#ifndef MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
+#define MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H
 
-#define MP_BLUETOOTH_NIMBLE_MAX_SERVICES (8)
+#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
-typedef struct _mp_bluetooth_nimble_root_pointers_t {
+#include "extmod/modbluetooth.h"
+
+#include "lib/btstack/src/btstack.h"
+
+typedef struct _mp_bluetooth_btstack_root_pointers_t {
+    // This stores both the advertising data and the scan response data, concatenated together.
+    uint8_t *adv_data;
+    // Total length of both.
+    size_t adv_data_alloc;
+
     // Characteristic (and descriptor) value storage.
-    mp_map_t *gatts_db;
+    mp_gatts_db_t gatts_db;
 
-    // Pending service definitions.
-    size_t n_services;
-    struct ble_gatt_svc_def *services[MP_BLUETOOTH_NIMBLE_MAX_SERVICES];
-} mp_bluetooth_nimble_root_pointers_t;
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    // Registration for notify/indicate events.
+    gatt_client_notification_t notification;
+    #endif
+} mp_bluetooth_btstack_root_pointers_t;
 
 enum {
-    MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF,
-    MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING,
-    MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE,
+    MP_BLUETOOTH_BTSTACK_STATE_OFF,
+    MP_BLUETOOTH_BTSTACK_STATE_STARTING,
+    MP_BLUETOOTH_BTSTACK_STATE_ACTIVE,
 };
 
-extern volatile int mp_bluetooth_nimble_ble_state;
+extern volatile int mp_bluetooth_btstack_state;
 
-void mp_bluetooth_nimble_port_preinit(void);
-void mp_bluetooth_nimble_port_postinit(void);
-void mp_bluetooth_nimble_port_deinit(void);
-void mp_bluetooth_nimble_port_start(void);
+void mp_bluetooth_btstack_port_init(void);
+void mp_bluetooth_btstack_port_deinit(void);
+void mp_bluetooth_btstack_port_start(void);
 
-#endif // MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_NIMBLE_H
+#endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
+
+#endif // MICROPY_INCLUDED_EXTMOD_BTSTACK_MODBLUETOOTH_BTSTACK_H

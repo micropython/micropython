@@ -18,9 +18,28 @@ stages:
   - name: test
 
 # define the jobs for the stages
-# order of the jobs has longest running first to optimise total time
+# approx order of the jobs has longest running first to optimise total time
 jobs:
   include:
+    # check code formatting
+    - stage: test
+      os: linux
+      arch: arm64
+      dist: bionic
+      env: NAME="code formatting"
+      install:
+        - sudo apt-get install python3-pip
+        - sudo pip3 install black
+        - black --version
+      script:
+        - git clone https://github.com/uncrustify/uncrustify.git $HOME/uncrustify
+        - git -C $HOME/uncrustify checkout uncrustify-0.70.1
+        - mkdir -p $HOME/uncrustify/build
+        - (cd $HOME/uncrustify/build && cmake ..)
+        - make -C $HOME/uncrustify/build
+        - PATH=$HOME/uncrustify/build:$PATH tools/codeformat.py
+        - git diff --exit-code
+
     # stm32 port
     - stage: test
       env: NAME="stm32 port build"
@@ -34,10 +53,11 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/stm32 submodules
+        - git submodule update --init lib/btstack
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
         - make ${MAKEOPTS} -C ports/stm32 BOARD=B_L072Z_LRWAN1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
@@ -75,13 +95,8 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
         # run the main test suite
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests -d thread)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --emit native)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy -d basics float micropython)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy --emit native -d basics float micropython)
-        # test when input script comes from stdin
-        - cat tests/basics/0prelim.py | ports/unix/micropython-coverage | grep -q 'abc'
+        - make -C ports/unix VARIANT=coverage test_full
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-multitests.py multi_net/*.py)
         # test building native mpy modules
         - make -C examples/natmod/features1 ARCH=x64
         - make -C examples/natmod/features2 ARCH=x64
@@ -113,15 +128,9 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 submodules
         - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 deplibs
-        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 coverage
+        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage
         # run the main test suite
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests -d thread)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --emit native)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy --mpy-cross-flags='-mcache-lookup-bc -march=x86' -d basics float micropython)
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests --via-mpy --emit native --mpy-cross-flags='-mcache-lookup-bc -march=x86' -d basics float micropython)
-        # test when input script comes from stdin
-        - cat tests/basics/0prelim.py | ports/unix/micropython-coverage | grep -q 'abc'
+        - make -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage test_full
         # test building native mpy modules
         - make -C examples/natmod/features1 ARCH=x86
         - make -C examples/natmod/features2 ARCH=x86
@@ -158,7 +167,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-nanbox ./run-tests)
+        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox test_full
 
     # unix stackless
     - stage: test
@@ -186,8 +195,24 @@ jobs:
     - stage: test
       env: NAME="minimal unix port build and tests"
       script:
-        - make ${MAKEOPTS} -C ports/unix minimal
+        - make ${MAKEOPTS} -C ports/unix VARIANT=minimal
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+
+    # unix port on OSX
+    - stage: test
+      os: osx
+      osx_image: xcode11.3
+      env:
+        - NAME="unix port build with clang on OSX"
+        - PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig
+      install:
+        - brew install pkgconfig
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/unix submodules
+        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix
+        - make ${MAKEOPTS} -C ports/unix test
 
     # windows port via mingw
     - stage: test

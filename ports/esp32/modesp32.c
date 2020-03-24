@@ -74,7 +74,7 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
         gpio_num_t pin_id = machine_pin_get_id(args[ARG_pin].u_obj);
         if (pin_id != machine_rtc_config.ext0_pin) {
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_msg(&mp_type_ValueError, "invalid pin");
+                mp_raise_ValueError("invalid pin");
             }
             machine_rtc_config.ext0_pin = pin_id;
         }
@@ -109,7 +109,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
             gpio_num_t pin_id = machine_pin_get_id(elem[i]);
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_msg(&mp_type_ValueError, "invalid pin");
+                mp_raise_ValueError("invalid pin");
                 break;
             }
             ext1_pins |= (1ll << pin_id);
@@ -166,5 +166,5 @@ STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
 
 const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&esp32_module_globals,
+    .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };

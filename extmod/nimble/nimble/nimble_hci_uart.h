@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Ayke van Laethem
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,5 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
+#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
 
-uint32_t machine_rng_generate_random_word(void);
+// Extensions to extmod/modbluetooth_hci.h specific to NimBLE.
+
+#include "extmod/nimble/hal/hal_uart.h"
+
+// Helpers called from ports.
+void mp_bluetooth_nimble_hci_uart_process(void);
+
+// Must be provided by the port.
+void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
+void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len);
+
+#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H

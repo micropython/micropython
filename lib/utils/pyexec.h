@@ -29,8 +29,8 @@
 #include "py/obj.h"
 
 typedef enum {
-    PYEXEC_MODE_RAW_REPL,
     PYEXEC_MODE_FRIENDLY_REPL,
+    PYEXEC_MODE_RAW_REPL,
 } pyexec_mode_kind_t;
 
 extern pyexec_mode_kind_t pyexec_mode_kind;

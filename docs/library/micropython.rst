@@ -82,16 +82,25 @@ Functions
 
 .. function:: heap_lock()
 .. function:: heap_unlock()
+.. function:: heap_locked()
 
    Lock or unlock the heap.  When locked no memory allocation can occur and a
    `MemoryError` will be raised if any heap allocation is attempted.
+   `heap_locked()` returns a true value if the heap is currently locked.
 
    These functions can be nested, ie `heap_lock()` can be called multiple times
    in a row and the lock-depth will increase, and then `heap_unlock()` must be
    called the same number of times to make the heap available again.
 
+   Both `heap_unlock()` and `heap_locked()` return the current lock depth
+   (after unlocking for the former) as a non-negative integer, with 0 meaning
+   the heap is not locked.
+
    If the REPL becomes active with the heap locked then it will be forcefully
    unlocked.
+
+   Note: `heap_locked()` is not enabled on most ports by default,
+   requires `MICROPY_PY_MICROPYTHON_HEAP_LOCKED`.
 
 .. function:: kbd_intr(chr)
 

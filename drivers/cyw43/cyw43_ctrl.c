@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "py/mphal.h"
@@ -455,7 +456,9 @@ void cyw43_wifi_set_up(cyw43_t *self, int itf, bool up) {
             } else {
                 country = MAKE_COUNTRY(pyb_country_code[0], pyb_country_code[1], 0);
             }
-            cyw43_wifi_on(self, country);
+            if (cyw43_wifi_on(self, country) != 0) {
+                return;
+            }
             cyw43_wifi_pm(self, 10 << 20 | 1 << 16 | 1 << 12 | 20 << 4 | 2);
         }
         if (itf == CYW43_ITF_AP) {

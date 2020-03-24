@@ -49,7 +49,7 @@
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_int_get_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+        mp_raise_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align);
     }
     #if MICROPY_PLAT_DEV_MEM
     {
@@ -95,7 +95,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

@@ -188,7 +188,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             if (cr3 & USART_CR3_RTSE) {
                 mp_print_str(print, "RTS");
                 if (cr3 & USART_CR3_CTSE) {
-                   mp_print_str(print, "|");
+                    mp_print_str(print, "|");
                 }
             }
             if (cr3 & USART_CR3_CTSE) {
@@ -235,7 +235,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     // static UARTs are used for internal purposes and shouldn't be reconfigured
     if (self->is_static) {
@@ -272,8 +272,12 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // stop bits
     uint32_t stop;
     switch (args.stop.u_int) {
-        case 1: stop = UART_STOPBITS_1; break;
-        default: stop = UART_STOPBITS_2; break;
+        case 1:
+            stop = UART_STOPBITS_1;
+            break;
+        default:
+            stop = UART_STOPBITS_2;
+            break;
     }
 
     // flow control
@@ -281,7 +285,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
 
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id));
+        mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id);
     }
 
     // set timeout
@@ -323,7 +327,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         baudrate_diff = baudrate - actual_baudrate;
     }
     if (20 * baudrate_diff > actual_baudrate) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate));
+        mp_raise_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate);
     }
 
     return mp_const_none;
@@ -394,12 +398,12 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
             uart_id = PYB_UART_10;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port));
+            mp_raise_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port);
         }
     } else {
         uart_id = mp_obj_get_int(args[0]);
         if (!uart_exists(uart_id)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id));
+            mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id);
         }
     }
 
@@ -520,7 +524,7 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         mp_uint_t not_supported = trigger & ~mp_irq_allowed;
         if (trigger != 0 && not_supported) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported));
+            mp_raise_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported);
         }
 
         // Reconfigure user IRQs
@@ -596,7 +600,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     for (;;) {
         int data = uart_rx_char(self);
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
+            *(uint16_t *)buf = data;
             buf += 2;
         } else {
             *buf++ = data;
@@ -669,5 +673,5 @@ const mp_obj_type_t pyb_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };

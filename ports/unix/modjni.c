@@ -179,7 +179,7 @@ STATIC const mp_obj_type_t jclass_type = {
     .print = jclass_print,
     .attr = jclass_attr,
     .call = jclass_call,
-    .locals_dict = (mp_obj_dict_t*)&jclass_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&jclass_locals_dict,
 };
 
 STATIC mp_obj_t new_jclass(jclass jc) {
@@ -288,7 +288,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     }
 
 
-return MP_OBJ_NULL;
+    return MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -364,10 +364,10 @@ STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 #define IMATCH(s, static) ((!strncmp(s, static, sizeof(static) - 1)) && (s += sizeof(static) - 1))
 
 #define CHECK_TYPE(java_type_name) \
-                if (strncmp(arg_type, java_type_name, sizeof(java_type_name) - 1) != 0) { \
-                    return false; \
-                } \
-                arg_type += sizeof(java_type_name) - 1;
+    if (strncmp(arg_type, java_type_name, sizeof(java_type_name) - 1) != 0) { \
+        return false; \
+    } \
+    arg_type += sizeof(java_type_name) - 1;
 
 STATIC const char *strprev(const char *s, char c) {
     while (*s != c) {
@@ -481,7 +481,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             ret_type = strprev(ret_type, ' ') + 1;
 
             int name_len = strlen(name);
-            if (strncmp(name, meth_name, name_len/*arg_types - meth_name - 1*/) || meth_name[name_len] != '('/*(*/) {
+            if (strncmp(name, meth_name, name_len /*arg_types - meth_name - 1*/) || meth_name[name_len] != '(' /*(*/) {
                 goto next_method;
             }
         }
@@ -541,7 +541,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             }
         }
 
-next_method:
+    next_method:
         JJ(ReleaseStringUTFChars, name_o, decl);
         JJ(DeleteLocalRef, name_o);
         JJ(DeleteLocalRef, meth);
@@ -601,9 +601,9 @@ STATIC void create_jvm(void) {
     if (!libjvm) {
         mp_raise_msg(&mp_type_OSError, "unable to load libjvm.so, use LD_LIBRARY_PATH");
     }
-    int (*_JNI_CreateJavaVM)(void*, void**, void*) = dlsym(libjvm, "JNI_CreateJavaVM");
+    int (*_JNI_CreateJavaVM)(void *, void **, void *) = dlsym(libjvm, "JNI_CreateJavaVM");
 
-    int st = _JNI_CreateJavaVM(&jvm, (void**)&env, &args);
+    int st = _JNI_CreateJavaVM(&jvm, (void **)&env, &args);
     if (st < 0 || !env) {
         mp_raise_msg(&mp_type_OSError, "unable to create JVM");
     }
@@ -614,26 +614,26 @@ STATIC void create_jvm(void) {
 
     jclass Object_class = JJ(FindClass, "java/lang/Object");
     Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
-                                     "()Ljava/lang/String;");
+        "()Ljava/lang/String;");
 
     Class_getName_mid = (*env)->GetMethodID(env, Class_class, "getName",
-                                     "()Ljava/lang/String;");
+        "()Ljava/lang/String;");
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
-                                     "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
+        "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",
-                                     "()[Ljava/lang/reflect/Method;");
+        "()[Ljava/lang/reflect/Method;");
     Class_getConstructors_mid = (*env)->GetMethodID(env, Class_class, "getConstructors",
-                                     "()[Ljava/lang/reflect/Constructor;");
+        "()[Ljava/lang/reflect/Constructor;");
     Method_getName_mid = (*env)->GetMethodID(env, method_class, "getName",
-                                     "()Ljava/lang/String;");
+        "()Ljava/lang/String;");
 
     List_class = JJ(FindClass, "java/util/List");
     List_get_mid = JJ(GetMethodID, List_class, "get",
-                                     "(I)Ljava/lang/Object;");
+        "(I)Ljava/lang/Object;");
     List_set_mid = JJ(GetMethodID, List_class, "set",
-                                     "(ILjava/lang/Object;)Ljava/lang/Object;");
+        "(ILjava/lang/Object;)Ljava/lang/Object;");
     List_size_mid = JJ(GetMethodID, List_class, "size",
-                                     "()I");
+        "()I");
     IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 
@@ -715,5 +715,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
 
 const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_jni_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };

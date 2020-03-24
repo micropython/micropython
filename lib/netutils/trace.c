@@ -44,10 +44,14 @@ static void dump_hex_bytes(const mp_print_t *print, size_t len, const uint8_t *b
 static const char *ethertype_str(uint16_t type) {
     // A value between 0x0000 - 0x05dc (inclusive) indicates a length, not type
     switch (type) {
-        case 0x0800: return "IPv4";
-        case 0x0806: return "ARP";
-        case 0x86dd: return "IPv6";
-        default: return NULL;
+        case 0x0800:
+            return "IPv4";
+        case 0x0806:
+            return "ARP";
+        case 0x86dd:
+            return "IPv6";
+        default:
+            return NULL;
     }
 }
 
@@ -113,14 +117,30 @@ void netutils_ethernet_trace(const mp_print_t *print, size_t len, const uint8_t 
                     buf += n;
                     mp_printf(print, " opts:");
                     switch (buf[6]) {
-                        case 1: mp_printf(print, " DISCOVER"); break;
-                        case 2: mp_printf(print, " OFFER"); break;
-                        case 3: mp_printf(print, " REQUEST"); break;
-                        case 4: mp_printf(print, " DECLINE"); break;
-                        case 5: mp_printf(print, " ACK"); break;
-                        case 6: mp_printf(print, " NACK"); break;
-                        case 7: mp_printf(print, " RELEASE"); break;
-                        case 8: mp_printf(print, " INFORM"); break;
+                        case 1:
+                            mp_printf(print, " DISCOVER");
+                            break;
+                        case 2:
+                            mp_printf(print, " OFFER");
+                            break;
+                        case 3:
+                            mp_printf(print, " REQUEST");
+                            break;
+                        case 4:
+                            mp_printf(print, " DECLINE");
+                            break;
+                        case 5:
+                            mp_printf(print, " ACK");
+                            break;
+                        case 6:
+                            mp_printf(print, " NACK");
+                            break;
+                        case 7:
+                            mp_printf(print, " RELEASE");
+                            break;
+                        case 8:
+                            mp_printf(print, " INFORM");
+                            break;
                     }
                 }
             } else {

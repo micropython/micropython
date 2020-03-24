@@ -477,7 +477,7 @@ void pyb_sleep_suspend_exit (void) {
     MAP_IntPendSet(INT_PRCM);
 
     // force an exception to go back to the point where suspend mode was entered
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 
 STATIC void PRCMInterruptHandler (void) {

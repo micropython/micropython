@@ -60,7 +60,7 @@ typedef struct _ppp_if_obj_t {
 const mp_obj_type_t ppp_if_type;
 
 static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
-    ppp_if_obj_t* self = ctx;
+    ppp_if_obj_t *self = ctx;
     struct netif *pppif = ppp_netif(self->pcb);
 
     switch (err_code) {
@@ -101,14 +101,14 @@ static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 }
 
 static void pppos_client_task(void *self_in) {
-    ppp_if_obj_t *self = (ppp_if_obj_t*)self_in;
+    ppp_if_obj_t *self = (ppp_if_obj_t *)self_in;
     uint8_t buf[256];
 
     while (ulTaskNotifyTake(pdTRUE, 0) == 0) {
         int err;
         int len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
         if (len > 0) {
-            pppos_input_tcpip(self->pcb, (u8_t*)buf, len);
+            pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         }
     }
 
@@ -191,12 +191,12 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
         case PPPAUTHTYPE_CHAP:
             break;
         default:
-            mp_raise_msg(&mp_type_ValueError, "invalid auth");
+            mp_raise_ValueError("invalid auth");
     }
 
     if (parsed_args[ARG_authmode].u_int != PPPAUTHTYPE_NONE) {
-        const char* username_str = mp_obj_str_get_str(parsed_args[ARG_username].u_obj);
-        const char* password_str = mp_obj_str_get_str(parsed_args[ARG_password].u_obj);
+        const char *username_str = mp_obj_str_get_str(parsed_args[ARG_username].u_obj);
+        const char *password_str = mp_obj_str_get_str(parsed_args[ARG_password].u_obj);
         pppapi_set_auth(self->pcb, parsed_args[ARG_authmode].u_int, username_str, password_str);
     }
     if (pppapi_set_default(self->pcb) != ESP_OK) {
@@ -209,7 +209,7 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
         mp_raise_msg(&mp_type_OSError, "connect failed");
     }
 
-    if (xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t*)&self->client_task_handle, MP_TASK_COREID) != pdPASS) {
+    if (xTaskCreatePinnedToCore(pppos_client_task, "ppp", 2048, self, 1, (TaskHandle_t *)&self->client_task_handle, MP_TASK_COREID) != pdPASS) {
         mp_raise_msg(&mp_type_RuntimeError, "failed to create worker task");
     }
 
@@ -218,7 +218,7 @@ STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw
 MP_DEFINE_CONST_FUN_OBJ_KW(ppp_connect_obj, 1, ppp_connect_py);
 
 STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {
-    ppp_if_obj_t* self = MP_OBJ_TO_PTR(self_in);
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t args[] = {self, mp_const_false};
     ppp_active(2, args);
     return mp_const_none;
@@ -234,10 +234,10 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
             dns = dns_getserver(0);
             struct netif *pppif = ppp_netif(self->pcb);
             mp_obj_t tuple[4] = {
-                netutils_format_ipv4_addr((uint8_t*)&pppif->ip_addr, NETUTILS_BIG),
-                netutils_format_ipv4_addr((uint8_t*)&pppif->gw, NETUTILS_BIG),
-                netutils_format_ipv4_addr((uint8_t*)&pppif->netmask, NETUTILS_BIG),
-                netutils_format_ipv4_addr((uint8_t*)&dns, NETUTILS_BIG),
+                netutils_format_ipv4_addr((uint8_t *)&pppif->ip_addr, NETUTILS_BIG),
+                netutils_format_ipv4_addr((uint8_t *)&pppif->gw, NETUTILS_BIG),
+                netutils_format_ipv4_addr((uint8_t *)&pppif->netmask, NETUTILS_BIG),
+                netutils_format_ipv4_addr((uint8_t *)&dns, NETUTILS_BIG),
             };
             return mp_obj_new_tuple(4, tuple);
         } else {
@@ -247,7 +247,7 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[3], (uint8_t*)&dns.u_addr.ip4, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns.u_addr.ip4, NETUTILS_BIG);
         dns_setserver(0, &dns);
         return mp_const_none;
     }
@@ -281,7 +281,7 @@ STATIC MP_DEFINE_CONST_DICT(ppp_if_locals_dict, ppp_if_locals_dict_table);
 const mp_obj_type_t ppp_if_type = {
     { &mp_type_type },
     .name = MP_QSTR_PPP,
-    .locals_dict = (mp_obj_dict_t*)&ppp_if_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&ppp_if_locals_dict,
 };
 
 #endif // !MICROPY_ESP_IDF_4

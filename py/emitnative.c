@@ -135,7 +135,7 @@
 
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
-    } while (0)
+} while (0)
 
 typedef enum {
     STACK_VALUE,
@@ -163,15 +163,25 @@ typedef enum {
 
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
     switch (vtype) {
-        case VTYPE_PYOBJ: return MP_QSTR_object;
-        case VTYPE_BOOL: return MP_QSTR_bool;
-        case VTYPE_INT: return MP_QSTR_int;
-        case VTYPE_UINT: return MP_QSTR_uint;
-        case VTYPE_PTR: return MP_QSTR_ptr;
-        case VTYPE_PTR8: return MP_QSTR_ptr8;
-        case VTYPE_PTR16: return MP_QSTR_ptr16;
-        case VTYPE_PTR32: return MP_QSTR_ptr32;
-        case VTYPE_PTR_NONE: default: return MP_QSTR_None;
+        case VTYPE_PYOBJ:
+            return MP_QSTR_object;
+        case VTYPE_BOOL:
+            return MP_QSTR_bool;
+        case VTYPE_INT:
+            return MP_QSTR_int;
+        case VTYPE_UINT:
+            return MP_QSTR_uint;
+        case VTYPE_PTR:
+            return MP_QSTR_ptr;
+        case VTYPE_PTR8:
+            return MP_QSTR_ptr8;
+        case VTYPE_PTR16:
+            return MP_QSTR_ptr16;
+        case VTYPE_PTR32:
+            return MP_QSTR_ptr32;
+        case VTYPE_PTR_NONE:
+        default:
+            return MP_QSTR_None;
     }
 }
 
@@ -244,7 +254,7 @@ STATIC void emit_native_global_exc_entry(emit_t *emit);
 STATIC void emit_native_global_exc_exit(emit_t *emit);
 STATIC void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj);
 
-emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels) {
+emit_t *EXPORT_FUN(new)(mp_obj_t * error_slot, uint *label_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
     emit->error_slot = error_slot;
     emit->label_slot = label_slot;
@@ -257,7 +267,7 @@ emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_nu
     return emit;
 }
 
-void EXPORT_FUN(free)(emit_t *emit) {
+void EXPORT_FUN(free)(emit_t * emit) {
     mp_asm_base_deinit(&emit->as->base, false);
     m_del_obj(ASM_T, emit->as);
     m_del(exc_stack_entry_t, emit->exc_stack, emit->exc_stack_alloc);
@@ -733,14 +743,14 @@ STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("  adjust_stack; stack_size=%d+%d; stack now:", emit->stack_size - stack_size_delta, stack_size_delta);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         DEBUG_printf(" (v=%d k=%d %d)", si->vtype, si->kind, si->data.u_reg);
     }
     DEBUG_printf("\n");
-#endif
+    #endif
 }
 
 STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
@@ -1132,8 +1142,8 @@ STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
 
     bool is_finally = false;
     if (emit->exc_stack_size > 0) {
-       exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
-       is_finally = e->is_finally && e->label == l;
+        exc_stack_entry_t *e = &emit->exc_stack[emit->exc_stack_size - 1];
+        is_finally = e->is_finally && e->label == l;
     }
 
     if (is_finally) {
@@ -2318,15 +2328,19 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         int reg_rhs = REG_ARG_3;
         emit_pre_pop_reg_flexible(emit, &vtype_rhs, &reg_rhs, REG_RET, REG_ARG_2);
         emit_pre_pop_reg(emit, &vtype_lhs, REG_ARG_2);
+
         #if !(N_X64 || N_X86)
-        if (op == MP_BINARY_OP_LSHIFT) {
-            ASM_LSL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+        if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_RSHIFT) {
+            if (op == MP_BINARY_OP_LSHIFT) {
+                ASM_LSL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            } else {
+                ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+            }
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else if (op == MP_BINARY_OP_RSHIFT) {
-            ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
-        } else
+            return;
+        }
         #endif
+
         if (op == MP_BINARY_OP_OR) {
             ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
@@ -2419,7 +2433,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
             }
             #else
-                #error not implemented
+            #error not implemented
             #endif
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {

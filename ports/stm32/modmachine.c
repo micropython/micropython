@@ -124,10 +124,10 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-            #if !defined(STM32F0)
-            || state & RCC_SR_BORRSTF
-            #endif
-            ) {
+                   #if !defined(STM32F0)
+                   || state & RCC_SR_BORRSTF
+                   #endif
+                   ) {
             reset_cause = PYB_RESET_POWER_ON;
         } else if (state & RCC_SR_PINRSTF) {
             reset_cause = PYB_RESET_HARD;
@@ -150,7 +150,7 @@ void machine_deinit(void) {
 STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
-        byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
+        byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
         printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
@@ -159,15 +159,15 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     {
         #if defined(STM32F0)
         printf("S=%u\nH=%u\nP1=%u\n",
-               (unsigned int)HAL_RCC_GetSysClockFreq(),
-               (unsigned int)HAL_RCC_GetHCLKFreq(),
-               (unsigned int)HAL_RCC_GetPCLK1Freq());
+            (unsigned int)HAL_RCC_GetSysClockFreq(),
+            (unsigned int)HAL_RCC_GetHCLKFreq(),
+            (unsigned int)HAL_RCC_GetPCLK1Freq());
         #else
         printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
-               (unsigned int)HAL_RCC_GetSysClockFreq(),
-               (unsigned int)HAL_RCC_GetHCLKFreq(),
-               (unsigned int)HAL_RCC_GetPCLK1Freq(),
-               (unsigned int)HAL_RCC_GetPCLK2Freq());
+            (unsigned int)HAL_RCC_GetSysClockFreq(),
+            (unsigned int)HAL_RCC_GetHCLKFreq(),
+            (unsigned int)HAL_RCC_GetPCLK1Freq(),
+            (unsigned int)HAL_RCC_GetPCLK2Freq());
         #endif
     }
 
@@ -235,7 +235,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
 STATIC mp_obj_t machine_unique_id(void) {
-    byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
+    byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
     return mp_obj_new_bytes(id, 12);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
@@ -249,7 +249,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_soft_reset(void) {
     pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
@@ -274,7 +274,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
         // With a string/bytes given, pass its data to the custom bootloader
         size_t len;
         const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void*)*((volatile uint32_t*)0x08000000);
+        void *mboot_region = (void *)*((volatile uint32_t *)0x08000000);
         memmove(mboot_region, data, len);
         powerctrl_enter_bootloader(0x70ad0080, 0x08000000);
     }
@@ -286,7 +286,9 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     powerctrl_enter_bootloader(0, 0x00000000);
     #endif
 
-    while (1);
+    while (1) {
+        ;
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
@@ -295,12 +297,12 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
         mp_obj_t tuple[] = {
-           mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
-           mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
-           mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-           #if !defined(STM32F0)
-           mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
-           #endif
+            mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
+            mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
+            mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+            #if !defined(STM32F0)
+            mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
+            #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
@@ -310,6 +312,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
         mp_int_t ahb = sysclk;
+        #if defined (STM32H7)
+        if (ahb > 200000000) {
+            ahb /= 2;
+        }
+        #endif
         mp_int_t apb1 = ahb / 4;
         mp_int_t apb2 = ahb / 2;
         if (n_args > 1) {
@@ -367,17 +374,17 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
-#if MICROPY_HW_ENABLE_RNG
+    #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&pyb_rng_get_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&pyb_wfi_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
-#if 0
+    #if 0
     { MP_ROM_QSTR(MP_QSTR_wake_reason),         MP_ROM_PTR(&machine_wake_reason_obj) },
-#endif
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&pyb_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&pyb_enable_irq_obj) },
@@ -393,14 +400,14 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
-#if MICROPY_PY_MACHINE_I2C
+    #if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
-#if 0
+    #if 0
     { MP_ROM_QSTR(MP_QSTR_HeartBeat),           MP_ROM_PTR(&pyb_heartbeat_type) },
     { MP_ROM_QSTR(MP_QSTR_SD),                  MP_ROM_PTR(&pyb_sd_type) },
 
@@ -408,23 +415,23 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IDLE),                MP_ROM_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_ROM_QSTR(MP_QSTR_SLEEP),               MP_ROM_INT(PYB_PWR_MODE_LPDS) },
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP),           MP_ROM_INT(PYB_PWR_MODE_HIBERNATE) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) },
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) },
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) },
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) },
-#if 0
+    #if 0
     { MP_ROM_QSTR(MP_QSTR_WLAN_WAKE),           MP_ROM_INT(PYB_SLP_WAKED_BY_WLAN) },
     { MP_ROM_QSTR(MP_QSTR_PIN_WAKE),            MP_ROM_INT(PYB_SLP_WAKED_BY_GPIO) },
     { MP_ROM_QSTR(MP_QSTR_RTC_WAKE),            MP_ROM_INT(PYB_SLP_WAKED_BY_RTC) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
 const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 

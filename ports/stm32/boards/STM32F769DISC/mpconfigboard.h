@@ -102,6 +102,8 @@ extern struct _spi_bdev_t spi_bdev;
 
 // USB config (CN15 - USB OTG HS with external PHY)
 #define MICROPY_HW_USB_HS (1)
+#define MICROPY_HW_USB_HS_ULPI_NXT  (pin_H4)
+#define MICROPY_HW_USB_HS_ULPI_DIR  (pin_I11)
 
 // Ethernet via RMII
 #define MICROPY_HW_ETH_MDC          (pin_C1)

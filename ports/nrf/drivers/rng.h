@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2018 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,5 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
-#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
 
-#include "extmod/nimble/hal/hal_uart.h"
-
-// To be implemented by the port.
-
-int nimble_hci_uart_configure(uint32_t port);
-
-// This will default to MICROPY_HW_BLE_UART_BAUDRATE, but can be updated later.
-int nimble_hci_uart_set_baudrate(uint32_t baudrate);
-
-int nimble_hci_uart_activate(void);
-
-void nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
-void nimble_hci_uart_tx_strn(const char *str, uint len);
-
-#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_HCI_UART_H
+uint32_t rng_generate_random_word(void);

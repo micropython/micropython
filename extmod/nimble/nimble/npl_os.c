@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
+#include "nimble/nimble_hci_uart.h"
 
 #define DEBUG_OS_printf(...) //printf(__VA_ARGS__)
 #define DEBUG_MALLOC_printf(...) //printf(__VA_ARGS__)
@@ -234,8 +235,11 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
     if (sem->count == 0) {
         uint32_t t0 = mp_hal_ticks_ms();
         while (sem->count == 0 && mp_hal_ticks_ms() - t0 < timeout) {
-            extern void nimble_uart_process(void);
-            nimble_uart_process();
+            // This function may be called at thread-level, so execute
+            // mp_bluetooth_nimble_hci_uart_process at raised priority.
+            MICROPY_PY_BLUETOOTH_ENTER
+            mp_bluetooth_nimble_hci_uart_process();
+            MICROPY_PY_BLUETOOTH_EXIT
             if (sem->count != 0) {
                 break;
             }

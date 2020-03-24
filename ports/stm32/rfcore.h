@@ -32,6 +32,6 @@ void rfcore_init(void);
 
 void rfcore_ble_init(void);
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src);
-void rfcore_ble_check_msg(int (*cb)(void*, uint8_t), void *env);
+void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env);
 
 #endif // MICROPY_INCLUDED_STM32_RFCORE_H

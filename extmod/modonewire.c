@@ -126,7 +126,7 @@ STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     uint8_t crc = 0;
     for (size_t i = 0; i < bufinfo.len; ++i) {
-        uint8_t byte = ((uint8_t*)bufinfo.buf)[i];
+        uint8_t byte = ((uint8_t *)bufinfo.buf)[i];
         for (int b = 0; b < 8; ++b) {
             uint8_t fb_bit = (crc ^ byte) & 0x01;
             if (fb_bit == 0x01) {
@@ -158,5 +158,5 @@ STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table
 
 const mp_obj_module_t mp_module_onewire = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&onewire_module_globals,
+    .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };

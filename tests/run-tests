@@ -384,8 +384,6 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
         elif args.target == 'nrf':
             skip_tests.add('basics/memoryview1.py')         # no item assignment for memoryview
-            skip_tests.add('extmod/ticks_diff.py')          # unimplemented: utime.ticks_diff
-            skip_tests.add('extmod/time_ms_us.py')          # unimplemented: utime.ticks_ms
             skip_tests.add('extmod/urandom_basic.py')       # unimplemented: urandom.seed
             skip_tests.add('micropython/opt_level.py')      # no support for line numbers
             skip_tests.add('misc/non_compliant.py')         # no item assignment for bytearray
@@ -437,7 +435,7 @@ def run_tests(pyb, tests, args, base_path="."):
 
         test_basename = test_file.replace('..', '_').replace('./', '').replace('/', '_')
         test_name = os.path.splitext(os.path.basename(test_file))[0]
-        is_native = test_name.startswith("native_") or test_name.startswith("viper_")
+        is_native = test_name.startswith("native_") or test_name.startswith("viper_") or args.emit == "native"
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
