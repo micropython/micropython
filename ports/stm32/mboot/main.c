@@ -441,10 +441,7 @@ MP_WEAK void led_init(void) {
     led0_cur_state = LED0_STATE_OFF;
 }
 
-MP_WEAK void led_state(int led, int val) {
-    if (led == 1) {
-        led = LED0;
-    }
+MP_WEAK void led_state(uint32_t led, int val) {
     if (val) {
         MICROPY_HW_LED_ON(led);
     } else {
