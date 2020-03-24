@@ -43,7 +43,6 @@
 #include "common-hal/rtc/RTC.h"
 
 #include "reset.h"
-#include "tick.h"
 
 #include "tusb.h"
 
@@ -246,9 +245,6 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 safe_mode_t port_init(void) {
     clocks_init();
 
-    // Configure millisecond timer initialization.
-    tick_init();
-
 #if CIRCUITPY_RTC
     rtc_init();
 #endif
@@ -430,4 +426,3 @@ __attribute__((used)) void HardFault_Handler(void)
         asm("nop;");
     }
 }
-
