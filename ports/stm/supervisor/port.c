@@ -72,8 +72,7 @@ safe_mode_t port_init(void) {
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
     // Divide async as little as possible so that we have RTC_CLOCK_FREQUENCY count in subseconds.
-    // This ensures our timing > 1 second is correct. We fudge < 1 second because there will only be
-    // 1000 subticks with a 32.000k crystal.
+    // This ensures our timing > 1 second is correct.
     _hrtc.Init.AsynchPrediv = 0x0;
     _hrtc.Init.SynchPrediv = RTC_CLOCK_FREQUENCY - 1;
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
@@ -218,12 +217,6 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     } else {
         alarm.AlarmMask = RTC_ALARMMASK_NONE;
     }
-    // Fudge subseconds if we're running a 32k crystal.
-    #if RTC_CLOCK_FREQUENCY == 32000
-    if (raw_ticks % 1024 > 1000) {
-        raw_ticks -= 24;
-    }
-    #endif
 
     alarm.AlarmTime.SubSeconds = RTC_CLOCK_FREQUENCY -
                                  ((raw_ticks % (1024)) * 32);
