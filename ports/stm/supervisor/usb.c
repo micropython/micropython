@@ -85,7 +85,7 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 12);
 
     /* Configure VBUS Pin */
-#if (BOARD_NO_VBUS_SENSE == 0)
+#if  !(BOARD_NO_VBUS_SENSE)
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
