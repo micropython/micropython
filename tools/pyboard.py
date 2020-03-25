@@ -558,11 +558,14 @@ def main():
     cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
     cmd_parser.add_argument(
         "--device",
-        default="/dev/ttyACM0",
+        default=os.environ.get("PYBOARD_DEVICE", "/dev/ttyACM0"),
         help="the serial device or the IP address of the pyboard",
     )
     cmd_parser.add_argument(
-        "-b", "--baudrate", default=115200, help="the baud rate of the serial device"
+        "-b",
+        "--baudrate",
+        default=os.environ.get("PYBOARD_BAUDRATE", "115200"),
+        help="the baud rate of the serial device",
     )
     cmd_parser.add_argument("-u", "--user", default="micro", help="the telnet login username")
     cmd_parser.add_argument("-p", "--password", default="python", help="the telnet login password")
