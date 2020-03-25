@@ -8,7 +8,7 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    +----------------------------------------------------------------------------------------------------------+---------------+
    | **Extensions to the syntax:**                                                                            | **Status**    |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            |               |
+   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            | Partial       |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ | a new matrix multiplication operator            | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+

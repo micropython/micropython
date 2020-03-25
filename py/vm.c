@@ -949,7 +949,7 @@ unwind_jump:;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     // We have following stack layout here:
-                    // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
+                    // fun arg0 arg1 ... kw0 val0 kw1 val1 ... bitmap <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
                     #if MICROPY_STACKLESS
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
@@ -1034,7 +1034,7 @@ unwind_jump:;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     // We have following stack layout here:
-                    // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq <- TOS
+                    // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... bitmap <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 2;
                     #if MICROPY_STACKLESS
                     if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {

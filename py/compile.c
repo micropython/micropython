@@ -37,6 +37,7 @@
 #include "py/asmbase.h"
 #include "py/nativeglue.h"
 #include "py/persistentcode.h"
+#include "py/smallint.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -2397,17 +2398,30 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     int n_positional = n_positional_extra;
     uint n_keyword = 0;
     uint star_flags = 0;
-    mp_parse_node_struct_t *star_args_node = NULL;
+    mp_uint_t star_args = 0;
     for (size_t i = 0; i < n_args; i++) {
         if (MP_PARSE_NODE_IS_STRUCT(args[i])) {
             mp_parse_node_struct_t *pns_arg = (mp_parse_node_struct_t *)args[i];
             if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_star) {
-                if (star_flags & MP_EMIT_STAR_FLAG_SINGLE) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("can't have multiple *x"));
+                if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("* arg after **"));
+                    return;
+                }
+                #if MICROPY_DYNAMIC_COMPILER
+                if (i > mp_dynamic_compiler.small_int_bits)
+                #else
+                if (i > MP_SMALL_INT_BITS)
+                #endif
+                {
+                    // If there are not enough bits in a small int to fit the flag, then we consider
+                    // it a syntax error. It should be unlikely to have this many args in practice.
+                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("too many args"));
                     return;
                 }
                 star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
-                star_args_node = pns_arg;
+                star_args |= 1 << i;
+                compile_node(comp, pns_arg->nodes[0]);
+                n_positional++;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
                 // double-star args are stored as kw arg with key of None
@@ -2438,12 +2452,12 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             }
         } else {
         normal_argument:
-            if (star_flags) {
-                compile_syntax_error(comp, args[i], MP_ERROR_TEXT("non-keyword arg after */**"));
+            if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
+                compile_syntax_error(comp, args[i], MP_ERROR_TEXT("positional arg after **"));
                 return;
             }
             if (n_keyword > 0) {
-                compile_syntax_error(comp, args[i], MP_ERROR_TEXT("non-keyword arg after keyword arg"));
+                compile_syntax_error(comp, args[i], MP_ERROR_TEXT("positional arg after keyword arg"));
                 return;
             }
             compile_node(comp, args[i]);
@@ -2451,14 +2465,9 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         }
     }
 
-    // compile the star/double-star arguments if we had them
-    // if we had one but not the other then we load "null" as a place holder
     if (star_flags != 0) {
-        if (star_args_node == NULL) {
-            EMIT(load_null);
-        } else {
-            compile_node(comp, star_args_node->nodes[0]);
-        }
+        // one extra object that contains the star_args map
+        EMIT_ARG(load_const_small_int, star_args);
     }
 
     // emit the function/method call
