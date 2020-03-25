@@ -701,9 +701,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     }
     uint n_args = n_args_n_kw & 0xff;
     uint n_kw = (n_args_n_kw >> 8) & 0xff;
-    mp_obj_t pos_seq = args[n_args + 2 * n_kw]; // may be MP_OBJ_NULL
+    mp_uint_t star_args = mp_obj_get_int_truncated(args[n_args + 2 * n_kw]);
 
-    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p)\n", fun, self, n_args, n_kw, args, pos_seq);
+    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, map=%u)\n", fun, self, n_args, n_kw, args, star_args);
 
     // We need to create the following array of objects:
     //     args[0 .. n_args]  unpacked(pos_seq)  args[n_args .. n_args + 2 * n_kw]  unpacked(kw_dict)
@@ -713,6 +713,20 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     mp_obj_t *args2;
     uint args2_alloc;
     uint args2_len = 0;
+
+    // Try to get a hint for unpacked * args length
+    uint list_len = 0;
+
+    if (star_args != 0) {
+        for (uint i = 0; i < n_args; i++) {
+            if (star_args & (1 << i)) {
+                mp_obj_t len = mp_obj_len_maybe(args[i]);
+                if (len != MP_OBJ_NULL) {
+                    list_len += mp_obj_get_int(len);
+                }
+            }
+        }
+    }
 
     // Try to get a hint for the size of the kw_dict
     uint kw_dict_len = 0;
@@ -727,8 +741,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
 
     // Extract the pos_seq sequence to the new args array.
     // Note that it can be arbitrary iterator.
-    if (pos_seq == MP_OBJ_NULL) {
-        // no sequence
+    if (star_args == 0) {
+        // no star args to unpack
 
         // allocate memory for the new array of args
         args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len);
@@ -742,33 +756,11 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // copy the fixed pos args
         mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
         args2_len += n_args;
-
-    } else if (mp_obj_is_type(pos_seq, &mp_type_tuple) || mp_obj_is_type(pos_seq, &mp_type_list)) {
-        // optimise the case of a tuple and list
-
-        // get the items
-        size_t len;
-        mp_obj_t *items;
-        mp_obj_get_array(pos_seq, &len, &items);
-
-        // allocate memory for the new array of args
-        args2_alloc = 1 + n_args + len + 2 * (n_kw + kw_dict_len);
-        args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
-
-        // copy the self
-        if (self != MP_OBJ_NULL) {
-            args2[args2_len++] = self;
-        }
-
-        // copy the fixed and variable position args
-        mp_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
-        args2_len += n_args + len;
-
     } else {
-        // generic iterator
+        // at least one star arg to unpack
 
         // allocate memory for the new array of args
-        args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len) + 3;
+        args2_alloc = 1 + n_args + list_len + 2 * (n_kw + kw_dict_len);
         args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
 
         // copy the self
@@ -776,25 +768,56 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             args2[args2_len++] = self;
         }
 
-        // copy the fixed position args
-        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
-        args2_len += n_args;
+        for (uint i = 0; i < n_args; i++) {
+            mp_obj_t arg = args[i];
+            if (star_args & (1 << i)) {
+                // star arg
+                if (mp_obj_is_type(arg, &mp_type_tuple) || mp_obj_is_type(arg, &mp_type_list)) {
+                    // optimise the case of a tuple and list
 
-        // extract the variable position args from the iterator
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t iterable = mp_getiter(pos_seq, &iter_buf);
-        mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (args2_len >= args2_alloc) {
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), args2_alloc * 2 * sizeof(mp_obj_t));
-                args2_alloc *= 2;
+                    // get the items
+                    size_t len;
+                    mp_obj_t *items;
+                    mp_obj_get_array(arg, &len, &items);
+
+                    // copy the items
+                    assert(args2_len + len <= args2_alloc);
+                    mp_seq_copy(args2 + args2_len, items, len, mp_obj_t);
+                    args2_len += len;
+                } else {
+                    // generic iterator
+
+                    // extract the variable position args from the iterator
+                    mp_obj_iter_buf_t iter_buf;
+                    mp_obj_t iterable = mp_getiter(arg, &iter_buf);
+                    mp_obj_t item;
+                    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+                        if (args2_len >= args2_alloc) {
+                            args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
+                                args2_alloc * 2 * sizeof(mp_obj_t));
+                            args2_alloc *= 2;
+                        }
+                        args2[args2_len++] = item;
+                    }
+                }
+            } else {
+                // normal argument
+                assert(args2_len < args2_alloc);
+                args2[args2_len++] = arg;
             }
-            args2[args2_len++] = item;
         }
     }
 
     // The size of the args2 array now is the number of positional args.
     uint pos_args_len = args2_len;
+
+    // ensure there is still enough room for kw args
+    if (args2_len + 2 * (n_kw + kw_dict_len) > args2_alloc) {
+        uint new_alloc = args2_len + 2 * (n_kw + kw_dict_len);
+        args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
+            new_alloc * sizeof(mp_obj_t));
+        args2_alloc = new_alloc;
+    }
 
     // Copy the kw args.
     for (uint i = 0; i < n_kw; i++) {
