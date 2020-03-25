@@ -42,19 +42,19 @@ static inline uint32_t generate_hw_random(void) {
     uint32_t retval = 0;
     uint8_t * p_retval = (uint8_t *)&retval;
 
-    nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
-    nrf_rng_task_trigger(NRF_RNG_TASK_START);
+    nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
+    nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_START);
 
     for (uint16_t i = 0; i < 4; i++) {
-        while (!nrf_rng_event_get(NRF_RNG_EVENT_VALRDY)) {
+        while (!nrf_rng_event_check(NRF_RNG, NRF_RNG_EVENT_VALRDY)) {
             ;
         }
 
-        nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
-        p_retval[i] = nrf_rng_random_value_get();
+        nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
+        p_retval[i] = nrf_rng_random_value_get(NRF_RNG);
     }
 
-    nrf_rng_task_trigger(NRF_RNG_TASK_STOP);
+    nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_STOP);
 
     return retval;
 }

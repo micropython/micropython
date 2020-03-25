@@ -290,7 +290,7 @@ STATIC void machine_hard_pwm_init(mp_obj_t self_in, mp_arg_val_t *args) {
     config.load_mode      = NRF_PWM_LOAD_INDIVIDUAL;
     config.step_mode      = NRF_PWM_STEP_AUTO;
 
-    nrfx_pwm_init(self->p_pwm, &config, NULL);
+    nrfx_pwm_init(self->p_pwm, &config, NULL, NULL);
 
     uint16_t pulse_width = ((self->p_config->period * self->p_config->duty) / 100);
 

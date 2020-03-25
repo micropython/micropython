@@ -175,8 +175,8 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Start the low-frequency clock (if it hasn't been started already)
-    if (!nrf_clock_lf_is_running()) {
-        nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTART);
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
     }
 
     // Make sure it's uninitialized.

@@ -212,6 +212,7 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_uart.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
+	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
 	nrfx_spi.c \
@@ -263,7 +264,6 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	class/cdc/cdc_device.c \
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
-	portable/nordic/nrf5x/hal_nrf5x.c \
 	)
 endif
 

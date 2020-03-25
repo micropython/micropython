@@ -31,7 +31,7 @@
 #include "microbitimage.h"
 #include "softpwm.h"
 #include "ticker.h"
-#include "nrf_temp.h"
+#include "modules/machine/temp.h"
 
 extern uint32_t ticks;
 
@@ -96,11 +96,11 @@ STATIC mp_obj_t microbit_panic(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_panic_obj, 0, 1, microbit_panic);
 
 STATIC mp_obj_t microbit_temperature(void) {
-    int temp = nrf_temp_read();
+    int temp = temp_read();
 #if MICROPY_PY_BUILTINS_FLOAT
-    return mp_obj_new_float(temp / 4);
+    return mp_obj_new_float((mp_float_t)temp / MICROPY_FLOAT_CONST(100.0));
 #else
-    return mp_obj_new_int(temp / 4);
+    return mp_obj_new_int(temp / 100);
 #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_temperature_obj, microbit_temperature);
