@@ -262,7 +262,7 @@ class Loop:
 
     @classmethod
     def default_exception_handler(cls, context):
-        exc_handler(cls, context)
+        _exc_handler(cls, context)
 
     @classmethod
     def call_exception_handler(cls, context):
