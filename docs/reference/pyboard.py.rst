@@ -59,6 +59,17 @@ with the device.::
     $ pyboard.py --device /dev/ttyACM0 -c 'print(1+1)'
     2
 
+If you are often interacting with the same device, you can set the environment
+variable ``PYBOARD_DEVICE`` as an alternative to using the ``--device``
+command line option.  For example, the following is equivalent to the previous
+example::
+
+    $ export PYBOARD_DEVICE=/dev/ttyACM0
+    $ pyboard.py -c 'print(1+1)'
+
+Similarly, the ``PYBOARD_BAUDRATE`` environment variable can be used
+to set the default for the `--baudrate` option.
+
 Running a script on the device
 ------------------------------
 
