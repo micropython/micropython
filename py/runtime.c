@@ -702,9 +702,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     uint n_args = n_args_n_kw & 0xff;
     uint n_kw = (n_args_n_kw >> 8) & 0xff;
     mp_obj_t pos_seq = args[n_args + 2 * n_kw]; // may be MP_OBJ_NULL
-    mp_obj_t kw_dict = args[n_args + 2 * n_kw + 1]; // may be MP_OBJ_NULL
 
-    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p, dict=%p)\n", fun, self, n_args, n_kw, args, pos_seq, kw_dict);
+    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p)\n", fun, self, n_args, n_kw, args, pos_seq);
 
     // We need to create the following array of objects:
     //     args[0 .. n_args]  unpacked(pos_seq)  args[n_args .. n_args + 2 * n_kw]  unpacked(kw_dict)
@@ -717,8 +716,13 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
 
     // Try to get a hint for the size of the kw_dict
     uint kw_dict_len = 0;
-    if (kw_dict != MP_OBJ_NULL && mp_obj_is_type(kw_dict, &mp_type_dict)) {
-        kw_dict_len = mp_obj_dict_len(kw_dict);
+
+    for (uint i = 0; i < n_kw; i++) {
+        mp_obj_t key = args[n_args + i * 2];
+        mp_obj_t value = args[n_args + i * 2 + 1];
+        if (key == MP_OBJ_NULL && value != MP_OBJ_NULL && mp_obj_is_type(value, &mp_type_dict)) {
+            kw_dict_len += mp_obj_dict_len(value);
+        }
     }
 
     // Extract the pos_seq sequence to the new args array.
@@ -792,64 +796,72 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     // The size of the args2 array now is the number of positional args.
     uint pos_args_len = args2_len;
 
-    // Copy the fixed kw args.
-    mp_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
-    args2_len += 2 * n_kw;
-
-    // Extract (key,value) pairs from kw_dict dictionary and append to args2.
-    // Note that it can be arbitrary iterator.
-    if (kw_dict == MP_OBJ_NULL) {
-        // pass
-    } else if (mp_obj_is_type(kw_dict, &mp_type_dict)) {
-        // dictionary
-        mp_map_t *map = mp_obj_dict_get_map(kw_dict);
-        assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (size_t i = 0; i < map->alloc; i++) {
-            if (mp_map_slot_is_filled(map, i)) {
-                // the key must be a qstr, so intern it if it's a string
-                mp_obj_t key = map->table[i].key;
-                if (!mp_obj_is_qstr(key)) {
-                    key = mp_obj_str_intern_checked(key);
+    // Copy the kw args.
+    for (uint i = 0; i < n_kw; i++) {
+        mp_obj_t kw_key = args[n_args + i * 2];
+        mp_obj_t kw_value = args[n_args + i * 2 + 1];
+        if (kw_key == MP_OBJ_NULL) {
+            // double-star args
+            if (kw_value == MP_OBJ_NULL) {
+                // pass
+            } else if (mp_obj_is_type(kw_value, &mp_type_dict)) {
+                // dictionary
+                mp_map_t *map = mp_obj_dict_get_map(kw_value);
+                // should have enough, since kw_dict_len is in this case hinted correctly above
+                assert(args2_len + 2 * map->used <= args2_alloc);
+                for (size_t j = 0; j < map->alloc; j++) {
+                    if (mp_map_slot_is_filled(map, j)) {
+                        // the key must be a qstr, so intern it if it's a string
+                        mp_obj_t key = map->table[j].key;
+                        if (!mp_obj_is_qstr(key)) {
+                            key = mp_obj_str_intern_checked(key);
+                        }
+                        args2[args2_len++] = key;
+                        args2[args2_len++] = map->table[j].value;
+                    }
                 }
-                args2[args2_len++] = key;
-                args2[args2_len++] = map->table[i].value;
-            }
-        }
-    } else {
-        // generic mapping:
-        // - call keys() to get an iterable of all keys in the mapping
-        // - call __getitem__ for each key to get the corresponding value
+            } else {
+                // generic mapping:
+                // - call keys() to get an iterable of all keys in the mapping
+                // - call __getitem__ for each key to get the corresponding value
 
-        // get the keys iterable
-        mp_obj_t dest[3];
-        mp_load_method(kw_dict, MP_QSTR_keys, dest);
-        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
+                // get the keys iterable
+                mp_obj_t dest[3];
+                mp_load_method(kw_value, MP_QSTR_keys, dest);
+                mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
 
-        mp_obj_t key;
-        while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            // expand size of args array if needed
-            if (args2_len + 1 >= args2_alloc) {
-                uint new_alloc = args2_alloc * 2;
-                if (new_alloc < 4) {
-                    new_alloc = 4;
+                mp_obj_t key;
+                while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+                    // expand size of args array if needed
+                    if (args2_len + 1 >= args2_alloc) {
+                        uint new_alloc = args2_alloc * 2;
+                        if (new_alloc < 4) {
+                            new_alloc = 4;
+                        }
+                        args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
+                        args2_alloc = new_alloc;
+                    }
+
+                    // the key must be a qstr, so intern it if it's a string
+                    if (!mp_obj_is_qstr(key)) {
+                        key = mp_obj_str_intern_checked(key);
+                    }
+
+                    // get the value corresponding to the key
+                    mp_load_method(kw_value, MP_QSTR___getitem__, dest);
+                    dest[2] = key;
+                    mp_obj_t value = mp_call_method_n_kw(1, 0, dest);
+
+                    // store the key/value pair in the argument array
+                    args2[args2_len++] = key;
+                    args2[args2_len++] = value;
                 }
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
-                args2_alloc = new_alloc;
             }
-
-            // the key must be a qstr, so intern it if it's a string
-            if (!mp_obj_is_qstr(key)) {
-                key = mp_obj_str_intern_checked(key);
-            }
-
-            // get the value corresponding to the key
-            mp_load_method(kw_dict, MP_QSTR___getitem__, dest);
-            dest[2] = key;
-            mp_obj_t value = mp_call_method_n_kw(1, 0, dest);
-
-            // store the key/value pair in the argument array
-            args2[args2_len++] = key;
-            args2[args2_len++] = value;
+        } else {
+            // normal kwarg
+            assert(args2_len + 2 <= args2_alloc);
+            args2[args2_len++] = kw_key;
+            args2[args2_len++] = kw_value;
         }
     }
 
