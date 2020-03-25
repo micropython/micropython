@@ -557,6 +557,7 @@ def main():
 
     cmd_parser = argparse.ArgumentParser(description="Run scripts on the pyboard.")
     cmd_parser.add_argument(
+        "-d",
         "--device",
         default=os.environ.get("PYBOARD_DEVICE", "/dev/ttyACM0"),
         help="the serial device or the IP address of the pyboard",

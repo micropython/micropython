@@ -24,8 +24,8 @@ Running ``pyboard.py --help`` gives the following output:
 
 .. code-block:: text
 
-    usage: pyboard [-h] [--device DEVICE] [-b BAUDRATE] [-u USER]
-                   [-p PASSWORD] [-c COMMAND] [-w WAIT] [--follow] [-f]
+    usage: pyboard [-h] [-d DEVICE] [-b BAUDRATE] [-u USER] [-p PASSWORD]
+                   [-c COMMAND] [-w WAIT] [--follow | --no-follow] [-f]
                    [files [files ...]]
 
     Run scripts on the pyboard.
@@ -35,8 +35,8 @@ Running ``pyboard.py --help`` gives the following output:
 
     optional arguments:
       -h, --help            show this help message and exit
-      --device DEVICE       the serial device or the IP address of the
-                            pyboard
+      -d DEVICE, --device DEVICE
+                            the serial device or the IP address of the pyboard
       -b BAUDRATE, --baudrate BAUDRATE
                             the baud rate of the serial device
       -u USER, --user USER  the telnet login username
