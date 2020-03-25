@@ -23,6 +23,24 @@ class TimeoutError(Exception):
     pass
 
 
+_exc_message = 'Task exception was never retrieved'
+
+_context = {"message":   _exc_message,
+            "exception": None,
+            "future":    None}
+
+
+def _exc_handler(loop, context):
+    print(context["message"])
+    print("future:", context["future"], "coro=", context["future"].coro)
+    # missing traceback
+    sys.print_exception(context["exception"])
+
+
+# set default exception handler
+exc_handler = _exc_handler
+
+
 ################################################################################
 # Sleep functions
 
@@ -199,8 +217,9 @@ def run_until_complete(main_task=None):
                 t.waiting = None  # Free waiting queue head
             # Print out exception for detached tasks
             if not waiting and not isinstance(er, excs_stop):
-                print("task raised exception:", t.coro)
-                sys.print_exception(er)
+                _context["exception"] = er
+                _context["future"] = t
+                Loop.call_exception_handler(_context)
             # Indicate task is done
             t.coro = None
 
@@ -215,20 +234,41 @@ def run(coro):
 
 
 class Loop:
-    def create_task(self, coro):
+    @staticmethod
+    def create_task(coro):
         return create_task(coro)
 
-    def run_forever(self):
+    @staticmethod
+    def run_forever():
         run_until_complete()
         # TODO should keep running until .stop() is called, even if there're no tasks left
 
-    def run_until_complete(self, aw):
+    @staticmethod
+    def run_until_complete(aw):
         return run_until_complete(_promote_to_task(aw))
 
-    def close(self):
+    @staticmethod
+    def close():
         pass
+
+    @staticmethod
+    def set_exception_handler(handler):
+        global exc_handler
+        exc_handler = handler
+
+    @staticmethod
+    def get_exception_handler():
+        return exc_handler
+
+    @classmethod
+    def default_exception_handler(cls, context):
+        exc_handler(cls, context)
+
+    @classmethod
+    def call_exception_handler(cls, context):
+        exc_handler(cls, context)
 
 
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
 def get_event_loop(runq_len=0, waitq_len=0):
-    return Loop()
+    return Loop
