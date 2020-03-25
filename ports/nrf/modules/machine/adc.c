@@ -71,22 +71,10 @@ STATIC const machine_adc_obj_t machine_adc_obj[] = {
 #endif
 };
 
-#if defined(NRF52_SERIES)
-STATIC void saadc_event_handler(nrfx_saadc_evt_t const * p_event) {
-    (void)p_event;
-}
-#endif
-
 void adc_init0(void) {
 #if defined(NRF52_SERIES)
-    const nrfx_saadc_config_t config = {
-        .resolution         = NRF_SAADC_RESOLUTION_8BIT,
-        .oversample         = NRF_SAADC_OVERSAMPLE_DISABLED,
-        .interrupt_priority = 6,
-        .low_power_mode     = false
-    };
-
-    nrfx_saadc_init(&config, saadc_event_handler);
+    const uint8_t interrupt_priority = 6;
+    nrfx_saadc_init(interrupt_priority);
 #endif
 }
 
@@ -138,19 +126,22 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     const machine_adc_obj_t *self = &machine_adc_obj[adc_id];
 
 #if defined(NRF52_SERIES)
-    const nrf_saadc_channel_config_t config = {
-        .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
-        .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
-        .gain       = NRF_SAADC_GAIN1_4,
-        .reference  = NRF_SAADC_REFERENCE_VDD4,
-        .acq_time   = NRF_SAADC_ACQTIME_3US,
-        .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
-        .burst      = NRF_SAADC_BURST_DISABLED,
-        .pin_p      = 1 + self->id, // pin_p=0 is AIN0, pin_p=8 is AIN7
-        .pin_n      = NRF_SAADC_INPUT_DISABLED
+    const nrfx_saadc_channel_t config = {                                                           \
+        .channel_config =
+        {
+            .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
+            .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
+            .gain       = NRF_SAADC_GAIN1_4,
+            .reference  = NRF_SAADC_REFERENCE_VDD4,
+            .acq_time   = NRF_SAADC_ACQTIME_3US,
+            .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
+            .burst      = NRF_SAADC_BURST_DISABLED,
+        },
+        .pin_p          = (nrf_saadc_input_t)(1 + self->id), // pin_p=0 is AIN0, pin_p=8 is AIN7
+        .pin_n          = NRF_SAADC_INPUT_DISABLED,
+        .channel_index  = self->id,
     };
-
-    nrfx_saadc_channel_init(self->id, &config);
+    nrfx_saadc_channels_config(&config, 1);
 #endif
 
     return MP_OBJ_FROM_PTR(self);
@@ -173,7 +164,9 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
 #else // NRF52
     nrf_saadc_value_t value = 0;
 
-    nrfx_saadc_sample_convert(adc_obj->id, &value);
+    nrfx_saadc_simple_mode_set((1 << adc_obj->id), NRF_SAADC_RESOLUTION_8BIT, NRF_SAADC_INPUT_DISABLED, NULL);
+    nrfx_saadc_buffer_set(&value, 1);
+    nrfx_saadc_mode_trigger();
 #endif
     return value;
 }
@@ -261,20 +254,26 @@ mp_obj_t machine_adc_battery_level(void) {
 #else // NRF52
     nrf_saadc_value_t value = 0;
 
-    const nrf_saadc_channel_config_t config = {
-        .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
-        .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
-        .gain       = NRF_SAADC_GAIN1_6,
-        .reference  = NRF_SAADC_REFERENCE_INTERNAL,
-        .acq_time   = NRF_SAADC_ACQTIME_3US,
-        .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
-        .burst      = NRF_SAADC_BURST_DISABLED,
-        .pin_p      = NRF_SAADC_INPUT_VDD,
-        .pin_n      = NRF_SAADC_INPUT_DISABLED
+    const nrfx_saadc_channel_t config = {                                                           \
+        .channel_config =
+        {
+            .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
+            .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
+            .gain       = NRF_SAADC_GAIN1_6,
+            .reference  = NRF_SAADC_REFERENCE_INTERNAL,
+            .acq_time   = NRF_SAADC_ACQTIME_3US,
+            .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
+            .burst      = NRF_SAADC_BURST_DISABLED,
+        },
+        .pin_p          = NRF_SAADC_INPUT_VDD,
+        .pin_n          = NRF_SAADC_INPUT_DISABLED,
+        .channel_index  = 0,
     };
+    nrfx_saadc_channels_config(&config, 1);
 
-    nrfx_saadc_channel_init(0, &config);
-    nrfx_saadc_sample_convert(0, &value);
+    nrfx_saadc_simple_mode_set((1 << 0), NRF_SAADC_RESOLUTION_8BIT, NRF_SAADC_INPUT_DISABLED, NULL);
+    nrfx_saadc_buffer_set(&value, 1);
+    nrfx_saadc_mode_trigger();
 #endif
 
     uint16_t batt_lvl_in_milli_volts = BATTERY_MILLIVOLT(value) + DIODE_VOLT_DROP_MILLIVOLT;

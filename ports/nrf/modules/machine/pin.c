@@ -114,7 +114,7 @@ void pin_init0(void) {
     }
     // Initialize GPIOTE if not done yet.
     if (!nrfx_gpiote_is_init()) {
-        nrfx_gpiote_init();
+        nrfx_gpiote_init(NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
     }
 
     #if PIN_DEBUG
