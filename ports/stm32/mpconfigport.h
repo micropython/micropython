@@ -272,7 +272,7 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 
 #if MICROPY_BLUETOOTH_BTSTACK
 struct _mp_bluetooth_btstack_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK void **bluetooth_nimble_memory; struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
 #else
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK
 #endif
