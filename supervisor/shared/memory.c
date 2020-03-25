@@ -82,6 +82,15 @@ void free_memory(supervisor_allocation* allocation) {
     allocation->ptr = NULL;
 }
 
+supervisor_allocation* allocation_from_ptr(void *ptr) {
+    for (size_t index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
+        if (allocations[index].ptr == ptr) {
+            return &allocations[index];
+        }
+    }
+    return NULL;
+}
+
 supervisor_allocation* allocate_remaining_memory(void) {
     if (low_address == high_address) {
         return NULL;
