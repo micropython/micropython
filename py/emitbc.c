@@ -752,7 +752,9 @@ void mp_emit_bc_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_ov
 
 STATIC void emit_bc_call_function_method_helper(emit_t *emit, int stack_adj, mp_uint_t bytecode_base, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
     if (star_flags) {
-        stack_adj -= (int)n_positional + 2 * (int)n_keyword + 2;
+        // each positional arg is one object, each kwarg is two objects, the key
+        // and the value and one extra object for the star args bitmap.
+        stack_adj -= (int)n_positional + 2 * (int)n_keyword + 1;
         emit_write_bytecode_byte_uint(emit, stack_adj, bytecode_base + 1, (n_keyword << 8) | n_positional); // TODO make it 2 separate uints?
     } else {
         stack_adj -= (int)n_positional + 2 * (int)n_keyword;

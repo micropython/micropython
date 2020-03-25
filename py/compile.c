@@ -2397,7 +2397,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     int n_positional = n_positional_extra;
     uint n_keyword = 0;
     uint star_flags = 0;
-    mp_parse_node_struct_t *star_args_node = NULL, *dblstar_args_node = NULL;
+    mp_parse_node_struct_t *star_args_node = NULL;
     for (size_t i = 0; i < n_args; i++) {
         if (MP_PARSE_NODE_IS_STRUCT(args[i])) {
             mp_parse_node_struct_t *pns_arg = (mp_parse_node_struct_t *)args[i];
@@ -2409,12 +2409,11 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                 star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
                 star_args_node = pns_arg;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
-                if (star_flags & MP_EMIT_STAR_FLAG_DOUBLE) {
-                    compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("can't have multiple **x"));
-                    return;
-                }
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
-                dblstar_args_node = pns_arg;
+                // double-star args are stored as kw arg with key of None
+                EMIT(load_null);
+                compile_node(comp, pns_arg->nodes[0]);
+                n_keyword++;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
                 #if MICROPY_PY_ASSIGN_EXPR
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_argument_3)) {
@@ -2429,7 +2428,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                     }
                     EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
                     compile_node(comp, pns_arg->nodes[1]);
-                    n_keyword += 1;
+                    n_keyword++;
                 } else {
                     compile_comprehension(comp, pns_arg, SCOPE_GEN_EXPR);
                     n_positional++;
@@ -2459,11 +2458,6 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             EMIT(load_null);
         } else {
             compile_node(comp, star_args_node->nodes[0]);
-        }
-        if (dblstar_args_node == NULL) {
-            EMIT(load_null);
-        } else {
-            compile_node(comp, dblstar_args_node->nodes[0]);
         }
     }
 
