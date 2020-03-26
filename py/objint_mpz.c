@@ -348,7 +348,7 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         mp_raise_TypeError("pow() with 3 arguments requires integers");
     } else {
         mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
-        mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
+        mp_obj_int_t *res_p = (mp_obj_int_t *)MP_OBJ_TO_PTR(result);
 
         mpz_t l_temp, r_temp, m_temp;
         mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);

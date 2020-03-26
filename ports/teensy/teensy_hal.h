@@ -110,7 +110,7 @@ typedef struct {
 #define GPIO_AF6_I2C1   6
 #define GPIO_AF7_FTM1   7
 
-__attribute__(( always_inline )) static inline void __WFI(void) {
+__attribute__((always_inline)) static inline void __WFI(void) {
     __asm volatile ("wfi");
 }
 

@@ -230,7 +230,7 @@ STATIC void machine_hw_spi_init_internal(
 }
 
 STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
     if (self->state == MACHINE_HW_SPI_STATE_INIT) {
         self->state = MACHINE_HW_SPI_STATE_DEINIT;
         machine_hw_spi_deinit_internal(self);
@@ -301,7 +301,7 @@ STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *) self_in;
+    machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
 
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
@@ -401,5 +401,5 @@ const mp_obj_type_t machine_hw_spi_type = {
     .print = machine_hw_spi_print,
     .make_new = machine_hw_spi_make_new,
     .protocol = &machine_hw_spi_p,
-    .locals_dict = (mp_obj_dict_t *) &mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

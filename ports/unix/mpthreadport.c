@@ -85,7 +85,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
         #endif
-        #if defined (__APPLE__)
+        #if defined(__APPLE__)
         sem_post(thread_signal_done_p);
         #else
         sem_post(&thread_signal_done);

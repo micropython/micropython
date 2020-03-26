@@ -242,7 +242,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
 bool usbd_cdc_rx_buffer_full(usbd_cdc_itf_t *cdc) {
     int get = cdc->rx_buf_get, put = cdc->rx_buf_put;
-    int remaining = (get - put) + (-((int) (get <= put)) & USBD_CDC_RX_DATA_SIZE);
+    int remaining = (get - put) + (-((int)(get <= put)) & USBD_CDC_RX_DATA_SIZE);
     return remaining < CDC_DATA_MAX_PACKET_SIZE + 1;
 }
 

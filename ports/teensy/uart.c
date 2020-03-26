@@ -75,7 +75,7 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             UARTx = USART1;
             GPIO_AF_UARTx = GPIO_AF7_USART1;
 
-            #if defined (PYBV4) || defined(PYBV10)
+            #if defined(PYBV4) || defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
             #else

@@ -312,7 +312,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
         mp_int_t ahb = sysclk;
-        #if defined (STM32H7)
+        #if defined(STM32H7)
         if (ahb > 200000000) {
             ahb /= 2;
         }

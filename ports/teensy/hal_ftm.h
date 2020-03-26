@@ -82,7 +82,7 @@ typedef struct {
     ((INSTANCE) == FTM1) || \
     ((INSTANCE) == FTM2))
 
-#define IS_FTM_PRESCALERSHIFT(PRESCALERSHIFT) (((PRESCALERSHIFT) &~7) == 0)
+#define IS_FTM_PRESCALERSHIFT(PRESCALERSHIFT) (((PRESCALERSHIFT)&~7) == 0)
 
 #define FTM_COUNTERMODE_UP      (0)
 #define FTM_COUNTERMODE_CENTER  (FTM_SC_CPWMS)
@@ -110,7 +110,7 @@ typedef struct {
 #define IS_FTM_OC_MODE(mode)        ((mode) == FTM_OCMODE_TIMING || \
     (mode) == FTM_OCMODE_ACTIVE || \
     (mode) == FTM_OCMODE_INACTIVE || \
-    (mode) == FTM_OCMODE_TOGGLE )
+    (mode) == FTM_OCMODE_TOGGLE)
 
 #define IS_FTM_PWM_MODE(mode)       ((mode) == FTM_OCMODE_PWM1 || \
     (mode) == FTM_OCMODE_PWM2)

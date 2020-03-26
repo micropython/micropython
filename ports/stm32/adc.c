@@ -217,7 +217,7 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
     #else
     #error Unsupported processor
         #endif
-        if (((HAL_GetTick() - tickstart ) > timeout)) {
+        if (((HAL_GetTick() - tickstart) > timeout)) {
             break; // timeout
         }
     }
@@ -313,7 +313,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    #if defined (STM32H7)
+    #if defined(STM32H7)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
         channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);

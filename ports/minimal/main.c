@@ -209,10 +209,10 @@ typedef struct {
     volatile uint32_t CR1;
 } periph_uart_t;
 
-#define USART1 ((periph_uart_t *) 0x40011000)
-#define GPIOA  ((periph_gpio_t *) 0x40020000)
-#define GPIOB  ((periph_gpio_t *) 0x40020400)
-#define RCC    ((periph_rcc_t *)  0x40023800)
+#define USART1 ((periph_uart_t *)0x40011000)
+#define GPIOA  ((periph_gpio_t *)0x40020000)
+#define GPIOB  ((periph_gpio_t *)0x40020400)
+#define RCC    ((periph_rcc_t *)0x40023800)
 
 // simple GPIO interface
 #define GPIO_MODE_IN (0)
