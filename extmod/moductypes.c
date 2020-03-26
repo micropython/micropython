@@ -362,7 +362,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
         case FLOAT32:
             return mp_obj_new_float(((float *)p)[index]);
         case FLOAT64:
-            return mp_obj_new_float(((double *)p)[index]);
+            return mp_obj_new_float((mp_float_t) ((double *)p)[index]);
         #endif
         default:
             assert(0);
@@ -375,7 +375,7 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
     if (val_type == FLOAT32 || val_type == FLOAT64) {
         mp_float_t v = mp_obj_get_float(val);
         if (val_type == FLOAT32) {
-            ((float *)p)[index] = v;
+            ((float *)p)[index] = (float) v;
         } else {
             ((double *)p)[index] = v;
         }

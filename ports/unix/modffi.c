@@ -378,7 +378,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         #if MICROPY_PY_BUILTINS_FLOAT
         } else if (*argtype == 'f') {
             float *p = (float *)&values[i];
-            *p = mp_obj_get_float(a);
+            *p = (float) mp_obj_get_float(a);
         } else if (*argtype == 'd') {
             double *p = (double *)&values[i];
             *p = mp_obj_get_float(a);

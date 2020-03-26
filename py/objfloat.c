@@ -52,8 +52,8 @@ typedef struct _mp_obj_float_t {
     mp_float_t value;
 } mp_obj_float_t;
 
-const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, M_E};
-const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
+const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t) M_E};
+const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t) M_PI};
 
 #endif
 
@@ -208,24 +208,25 @@ STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     mp_float_t div = (*x - mod) / *y;
 
     // Python specs require that mod has same sign as second operand
-    if (mod == 0.0) {
-        mod = MICROPY_FLOAT_C_FUN(copysign)(0.0, *y);
+    const mp_float_t zero = MICROPY_FLOAT_CONST(0.0);
+    if (mod == zero) {
+        mod = MICROPY_FLOAT_C_FUN(copysign)(zero, *y);
     } else {
-        if ((mod < 0.0) != (*y < 0.0)) {
+        if ((mod < zero) != (*y < zero)) {
             mod += *y;
-            div -= 1.0;
+            div -= MICROPY_FLOAT_CONST(1.0);
         }
     }
 
     mp_float_t floordiv;
-    if (div == 0.0) {
+    if (div == zero) {
         // if division is zero, take the correct sign of zero
-        floordiv = MICROPY_FLOAT_C_FUN(copysign)(0.0, *x / *y);
+        floordiv = MICROPY_FLOAT_C_FUN(copysign)(zero, *x / *y);
     } else {
         // Python specs require that x == (x//y)*y + (x%y)
         floordiv = MICROPY_FLOAT_C_FUN(floor)(div);
-        if (div - floordiv > 0.5) {
-            floordiv += 1.0;
+        if (div - floordiv > MICROPY_FLOAT_CONST(0.5)) {
+            floordiv += MICROPY_FLOAT_CONST(1.0);
         }
     }
 
