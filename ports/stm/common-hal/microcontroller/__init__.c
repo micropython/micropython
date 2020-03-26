@@ -32,6 +32,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Processor.h"
 
+#include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -106,3 +107,15 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
         .type = &mcu_processor_type,
     },
 };
+
+#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+// The singleton nvm.ByteArray object.
+const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+    .len = NVM_BYTEARRAY_BUFFER_SIZE,
+    .start_address = (uint8_t*) (CIRCUITPY_INTERNAL_NVM_START_ADDR)
+};
+#endif
+

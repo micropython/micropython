@@ -115,7 +115,7 @@ void rgb_led_status_init() {
         shared_module_bitbangio_spi_construct(&status_apa102,
                                               MICROPY_HW_APA102_SCK,
                                               MICROPY_HW_APA102_MOSI,
-                                              mp_const_none);
+                                              NULL);
         #else
         if (!common_hal_busio_spi_deinited(&status_apa102)) {
             // This may call us recursively if common_hal_reset_pin() is called,
@@ -125,7 +125,7 @@ void rgb_led_status_init() {
         common_hal_busio_spi_construct(&status_apa102,
                                       MICROPY_HW_APA102_SCK,
                                       MICROPY_HW_APA102_MOSI,
-                                      mp_const_none);
+                                      NULL);
         common_hal_busio_spi_never_reset(&status_apa102);
         #endif
         // Pretend we aren't using the pins. bitbangio.SPI will

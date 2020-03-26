@@ -122,6 +122,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "8086_commander"
         - "TG-Watch02A"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -229,11 +230,14 @@ jobs:
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
+        - "thunderpack"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
+        - "uartlogger2"
         - "uchip"
         - "ugame10"
+        - "winterbloom_big_honking_button"
         - "winterbloom_sol"
         - "xinabox_cc03"
         - "xinabox_cs11"

@@ -581,7 +581,7 @@ extern const struct _mp_obj_module_t ustack_module;
 #define JSON_MODULE
 #endif
 
-#if defined(MICROPY_PY_ULAB) && MICROPY_PY_ULAB
+#if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
 #define ULAB_MODULE \
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
