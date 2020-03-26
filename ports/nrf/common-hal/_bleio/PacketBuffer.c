@@ -148,6 +148,7 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
             // A client wrote to this server characteristic.
 
             ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
+
             // Event handle must match the handle for my characteristic.
             if (evt_write->handle == self->characteristic->handle) {
                 if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
@@ -261,8 +262,7 @@ int common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uin
     sd_nvic_critical_region_enter(&is_nested_critical_region);
 
     if (packet_length > len) {
-        // TODO: raise an exception.
-        packet_length = len;
+        return len - packet_length;
     }
 
     ringbuf_get_n(&self->ringbuf, data, packet_length);
