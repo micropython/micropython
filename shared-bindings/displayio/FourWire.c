@@ -46,8 +46,7 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000, polarity=0,
-//|                     phase=0)
+//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000, polarity=0, phase=0)
 //|
 //|   Create a FourWire object associated with the given pins.
 //|
