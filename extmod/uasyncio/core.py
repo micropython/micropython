@@ -30,7 +30,7 @@ _context = {"message":   _exc_message,
             "future":    None}
 
 
-def _exc_handler(loop, context):
+def _default_exc_handler(loop, context):
     print(context["message"])
     print("future:", context["future"], "coro=", context["future"].coro)
     # missing traceback
@@ -38,7 +38,7 @@ def _exc_handler(loop, context):
 
 
 # set default exception handler
-exc_handler = _exc_handler
+_exc_handler = _default_exc_handler
 
 
 ################################################################################
@@ -253,20 +253,20 @@ class Loop:
 
     @staticmethod
     def set_exception_handler(handler):
-        global exc_handler
-        exc_handler = handler
+        global _exc_handler
+        _exc_handler = handler
 
     @staticmethod
     def get_exception_handler():
-        return exc_handler
+        return _exc_handler
 
     @classmethod
     def default_exception_handler(cls, context):
-        _exc_handler(cls, context)
+        _default_exc_handler(cls, context)
 
     @classmethod
     def call_exception_handler(cls, context):
-        exc_handler(cls, context)
+        _exc_handler(cls, context)
 
 
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
