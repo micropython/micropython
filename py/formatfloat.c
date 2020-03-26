@@ -24,13 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+
+#include "py/mpconfig.h"
+
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+
 #include "py/formatfloat.h"
 
 /***********************************************************************

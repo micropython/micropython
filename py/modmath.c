@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include <math.h>
+
 #include "py/builtin.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
-
-#include <math.h>
 
 // M_PI is not part of the math.h standard and may not be defined
 // And by defining our own we can ensure it uses the correct const format.

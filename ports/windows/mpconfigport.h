@@ -162,6 +162,20 @@ typedef unsigned int mp_uint_t; // must be pointer size
 
 typedef long suseconds_t;
 
+// Something wrong in mingw's math.h leading to signbit et al. being defined
+// to versions taking float instead of double so fix this here.
+// Does mean this file must always come after #include <math.h>
+#if defined( __MINGW32__ ) && (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE)
+#undef signbit
+#undef isnan
+#undef isinf
+#undef fpclassify
+#define signbit __signbit
+#define isnan __isnan
+#define isinf(x) (__fpclassify(x) == FP_INFINITE)
+#define fpclassify __fpclassify
+#endif
+
 // Just assume Windows is little-endian - mingw32 gcc doesn't
 // define standard endianness macros.
 #define MP_ENDIANNESS_LITTLE (1)
