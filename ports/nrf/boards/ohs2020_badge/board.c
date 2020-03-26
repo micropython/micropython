@@ -81,14 +81,15 @@ void board_init(void) {
         0x37, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
-        NULL,  // backlight pin
+        &pin_P0_02, // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        false); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {
