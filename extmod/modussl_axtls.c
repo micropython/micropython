@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 
@@ -53,6 +54,56 @@ struct ssl_args {
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
+
+// Table of errors
+struct ssl_errs {
+    int16_t errnum;
+    const char *errstr;
+};
+STATIC const struct ssl_errs ssl_error_tab[] = {
+    { SSL_NOT_OK, "NOT_OK" },
+    { SSL_ERROR_DEAD, "DEAD" },
+    { SSL_CLOSE_NOTIFY, "CLOSE_NOTIFY" },
+    { SSL_EAGAIN, "EAGAIN" },
+    { SSL_ERROR_CONN_LOST, "CONN_LOST" },
+    { SSL_ERROR_RECORD_OVERFLOW, "RECORD_OVERFLOW" },
+    { SSL_ERROR_SOCK_SETUP_FAILURE, "SOCK_SETUP_FAILURE" },
+    { SSL_ERROR_INVALID_HANDSHAKE, "INVALID_HANDSHAKE" },
+    { SSL_ERROR_INVALID_PROT_MSG, "INVALID_PROT_MSG" },
+    { SSL_ERROR_INVALID_HMAC, "INVALID_HMAC" },
+    { SSL_ERROR_INVALID_VERSION, "INVALID_VERSION" },
+    { SSL_ERROR_UNSUPPORTED_EXTENSION, "UNSUPPORTED_EXTENSION" },
+    { SSL_ERROR_INVALID_SESSION, "INVALID_SESSION" },
+    { SSL_ERROR_NO_CIPHER, "NO_CIPHER" },
+    { SSL_ERROR_INVALID_CERT_HASH_ALG, "INVALID_CERT_HASH_ALG" },
+    { SSL_ERROR_BAD_CERTIFICATE, "BAD_CERTIFICATE" },
+    { SSL_ERROR_INVALID_KEY, "INVALID_KEY" },
+    { SSL_ERROR_FINISHED_INVALID, "FINISHED_INVALID" },
+    { SSL_ERROR_NO_CERT_DEFINED, "NO_CERT_DEFINED" },
+    { SSL_ERROR_NO_CLIENT_RENOG, "NO_CLIENT_RENOG" },
+    { SSL_ERROR_NOT_SUPPORTED, "NOT_SUPPORTED" },
+};
+
+STATIC NORETURN void ussl_raise_error(int err) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(ssl_error_tab); i++) {
+        if (ssl_error_tab[i].errnum == err) {
+            // construct string object
+            mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+            if (o_str == NULL) {
+                break;
+            }
+            o_str->base.type = &mp_type_str;
+            o_str->data = (const byte *)ssl_error_tab[i].errstr;
+            o_str->len = strlen((char *)o_str->data);
+            o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+            // raise
+            mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
+            nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+        }
+    }
+    mp_raise_OSError(err);
+}
+
 
 STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args) {
     #if MICROPY_PY_USSL_FINALISER
@@ -107,9 +158,7 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
             int res = ssl_handshake_status(o->ssl_sock);
 
             if (res != SSL_OK) {
-                printf("ssl_handshake_status: %d\n", res);
-                ssl_display_error(res);
-                mp_raise_OSError(MP_EIO);
+                ussl_raise_error(res);
             }
         }
 

@@ -9,7 +9,7 @@ except ImportError:
 
 # create in client mode
 try:
-    ss = ssl.wrap_socket(io.BytesIO())
+    ss = ssl.wrap_socket(io.BytesIO(), server_hostname="test.example.com")
 except OSError as er:
     print("wrap_socket:", repr(er))
 
