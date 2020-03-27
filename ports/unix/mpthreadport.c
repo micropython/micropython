@@ -221,7 +221,11 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     // this value seems to be about right for both 32-bit and 64-bit builds
-    *stack_size -= 8192;
+    if (*stack_size >= 2 * 8192) {
+        *stack_size -= 8192;
+    } else {
+        *stack_size /= 2;
+    }
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));
