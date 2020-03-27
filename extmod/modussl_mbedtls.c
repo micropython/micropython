@@ -43,6 +43,7 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
+#include "mbedtls/error.h"
 
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;
@@ -74,6 +75,13 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
+STATIC NORETURN void mbedtls_raise_error(int err) {
+    char error_buf[80];
+    mbedtls_strerror(err, error_buf, sizeof(error_buf));
+    //printf("mbedtls error -0x%x : %s\n", -err, error_buf);
+    mp_raise_msg_varg(&mp_type_OSError, "MBEDTLS -0x%x: %s", -err, error_buf);
+}
+
 // _mbedtls_ssl_send is called my mbedtls to send bytes onto the underlying socket
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
@@ -86,7 +94,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        return -err;
+        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
     } else {
         return out_sz;
     }
@@ -223,7 +231,7 @@ cleanup:
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
         mp_raise_ValueError("invalid cert");
     } else {
-        mp_raise_OSError(MP_EIO);
+        mbedtls_raise_error(ret);
     }
 }
 
