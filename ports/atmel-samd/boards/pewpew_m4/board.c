@@ -139,7 +139,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         false, // auto_refresh
-        20); // native_frames_per_second
+        20, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

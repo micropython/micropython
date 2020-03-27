@@ -55,6 +55,7 @@ typedef struct {
     bool data_as_commands;
     bool auto_brightness;
     bool updating_backlight;
+    bool backlight_on_high;
 } displayio_display_obj_t;
 
 void displayio_display_background(displayio_display_obj_t* self);
