@@ -564,7 +564,7 @@ directory with the MicroPython output and the expectations, respectively.
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
 the last matching regex is used:
-  run-tests -i async - exclude all, then include tests containg "async" anywhere
+  run-tests -i async - exclude all, then include tests containing "async" anywhere
   run-tests -e '/big.+int' - include all, then exclude by regex
   run-tests -e async -i async_foo - include all, exclude async, yet still include async_foo
 ''')
@@ -584,7 +584,28 @@ the last matching regex is used:
     cmd_parser.add_argument('--mpy-cross-flags', default='-mcache-lookup-bc', help='flags to pass to mpy-cross')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
+    cmd_parser.add_argument('--print-failures', action='store_true', help='print the diff of expected vs. actual output for failed tests and exit')
+    cmd_parser.add_argument('--clean-failures', action='store_true', help='delete the .exp and .out files from failed tests and exit')
     args = cmd_parser.parse_args()
+
+    if args.print_failures:
+        os.chdir(os.path.abspath(os.path.dirname(__file__)))
+
+        for exp in glob("*.exp"):
+            testbase = os.path.basename(exp)[:-4]
+            print()
+            print("FAILURE {0}".format(testbase))
+            os.system("diff -u {0}.exp {0}.out".format(testbase))
+
+        sys.exit(0)
+
+    if args.clean_failures:
+        os.chdir(os.path.abspath(os.path.dirname(__file__)))
+
+        for f in glob("*.exp") + glob("*.out"):
+            os.remove(f)
+
+        sys.exit(0)
 
     LOCAL_TARGETS = ('unix', 'qemu-arm',)
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')

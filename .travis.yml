@@ -110,7 +110,7 @@ jobs:
         # run coveralls coverage analysis (try to, even if some builds/tests failed)
         - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
       after_failure:
-        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+        - tests/run-tests --print-failures
 
     # unix coverage 32-bit
     - stage: test
@@ -142,7 +142,7 @@ jobs:
         - MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
         - (cd tests && ./run-natmodtests.py --arch x86 extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py)
       after_failure:
-        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+        - tests/run-tests --print-failures
 
     # standard unix port
     - stage: test
@@ -154,6 +154,8 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix
         - make ${MAKEOPTS} -C ports/unix test
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
+      after_failure:
+        - tests/run-tests --print-failures
 
     # unix nanbox (and using Python 2 to check it can run the build scripts)
     - stage: test
@@ -166,6 +168,8 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox test_full
+      after_failure:
+        - tests/run-tests --print-failures
 
     # unix stackless
     - stage: test
@@ -177,6 +181,8 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
         - make ${MAKEOPTS} -C ports/unix CC=clang test
+      after_failure:
+        - tests/run-tests --print-failures
 
     # unix with sys.settrace
     - stage: test
@@ -187,7 +193,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix clean
         - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
       after_failure:
-        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+        - tests/run-tests --print-failures
 
     # minimal unix port with tests
     - stage: test
@@ -195,6 +201,8 @@ jobs:
       script:
         - make ${MAKEOPTS} -C ports/unix VARIANT=minimal
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+      after_failure:
+        - tests/run-tests --print-failures
 
     # unix port on OSX
     - stage: test
@@ -215,7 +223,7 @@ jobs:
         # check for additional compiler errors/warnings
         - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
       after_failure:
-        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+        - tests/run-tests --print-failures
 
     # windows port via mingw
     - stage: test
