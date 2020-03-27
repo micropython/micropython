@@ -61,7 +61,7 @@ uint8_t display_init_sequence[] = {
 	0x3a, 1, 0x05, // COLMOD - 16bit color
 	0xe0, 0x10, 0x02, 0x1c, 0x07, 0x12,
 				0x37, 0x32, 0x29, 0x2d,
-				0x29, 0x25, 0x2B, 0x39, 
+				0x29, 0x25, 0x2B, 0x39,
 				0x00, 0x01, 0x03, 0x10, // _GMCTRP1 Gamma
 	0xe1, 0x10, 0x03, 0x1d, 0x07, 0x06,
 				0x2E, 0x2C, 0x29, 0x2D,
@@ -80,7 +80,9 @@ void board_init(void) {
         &pin_PA08, // Command or data
         &pin_PB12, // Chip select
         &pin_PB10, // Reset
-        24000000);
+        24000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
