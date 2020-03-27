@@ -34,6 +34,7 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/objstr.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
@@ -43,6 +44,7 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
+#include "mbedtls/error.h"
 
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;
@@ -74,6 +76,42 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
+STATIC NORETURN void mbedtls_raise_error(int err) {
+    #if defined(MBEDTLS_ERROR_C)
+    // Including mbedtls_strerror takes about 16KB on the esp32 due to all the strings.
+    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
+    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
+    // "small" negative integer error codes come from underlying stream/sockets, not mbedtls
+    if (err < 0 && err > -256) {
+        mp_raise_OSError(-err);
+    }
+
+    // Try to allocate memory for the message
+    #define ERR_STR_MAX 100  // mbedtls_strerror truncates if it doesn't fit
+    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+    byte *o_str_buf = m_new_maybe(byte, ERR_STR_MAX);
+    if (o_str == NULL || o_str_buf == NULL) {
+        mp_raise_OSError(err);
+    }
+
+    // print the error message into the allocated buffer
+    mbedtls_strerror(err, (char *)o_str_buf, ERR_STR_MAX);
+    size_t len = strnlen((char *)o_str_buf, ERR_STR_MAX);
+
+    // Put the exception object together
+    o_str->base.type = &mp_type_str;
+    o_str->data = o_str_buf;
+    o_str->len = len;
+    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    // raise
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
+    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+    #else
+    // mbedtls is compiled without error strings so we simply return the err number
+    mp_raise_OSError(err); // typ. err is negative
+    #endif
+}
+
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
@@ -85,7 +123,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        return -err;
+        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
     } else {
         return out_sz;
     }
@@ -197,7 +235,6 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     if (args->do_handshake.u_bool) {
         while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-                printf("mbedtls_ssl_handshake error: -%x\n", -ret);
                 goto cleanup;
             }
         }
@@ -221,7 +258,7 @@ cleanup:
     } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
     } else {
-        mp_raise_OSError(MP_EIO);
+        mbedtls_raise_error(ret);
     }
 }
 

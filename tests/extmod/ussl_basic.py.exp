@@ -1,5 +1,4 @@
-ssl_handshake_status: -256
-wrap_socket: OSError(5,)
+wrap_socket: OSError(-256, 'CONN_LOST')
 <_SSLSocket 
 4
 b''
