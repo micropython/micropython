@@ -207,7 +207,6 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     if (args->do_handshake.u_bool) {
         while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-                printf("mbedtls_ssl_handshake error: -%x\n", -ret);
                 goto cleanup;
             }
         }

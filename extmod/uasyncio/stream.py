@@ -3,6 +3,10 @@
 
 from . import core
 
+try:
+    import ssl as modssl # module is used in function that has an ssl parameter
+except:
+    ssl_class = None
 
 class Stream:
     def __init__(self, s, e={}):
@@ -54,7 +58,7 @@ class Stream:
 
 
 # Create a TCP stream connection to a remote host
-async def open_connection(host, port):
+async def open_connection(host, port, ssl=None, server_hostname=None):
     from uerrno import EINPROGRESS
     import usocket as socket
 
@@ -68,6 +72,22 @@ async def open_connection(host, port):
         if er.args[0] != EINPROGRESS:
             raise er
     yield core._io_queue.queue_write(s)
+    # wrap with SSL, if requested
+    if ssl:
+        if not modssl:
+            raise ValueError("SSL not supported")
+        if ssl is True:
+            ssl = {} # spec says to use ssl.create_default_context() but we don't have that
+        elif isinstance(ssl, dict):
+            # non-standard: accept dict with KW args suitable to call ssl.wrap_socket()
+            if server_hostname:
+                # spec: server_hostname sets or overrides the hostname that the target server’s
+                # certificate will be matched against.
+                ssl["server_hostname"] = server_hostname
+        else:
+            # spec says we should handle ssl.SSLContext object here, but ain't got that
+            raise ValueError("invalid ssl param")
+        s = modssl.wrap_socket(s, **ssl)
     return ss, ss
 
 
