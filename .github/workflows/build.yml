@@ -131,7 +131,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
-        - "bdmicro_vina-m0"
+        - "bdmicro_vina_m0"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
