@@ -36,8 +36,6 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "stm32f4xx_hal.h"
-
 typedef struct {
     uint32_t base_address;
     uint32_t sector_size;
@@ -62,7 +60,11 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-static uint8_t sector_copy[0x4000] __attribute__((aligned(4)));
+#define NO_CACHE        0xffffffff
+#define MAX_CACHE       0x4000
+
+static uint8_t  _flash_cache[0x4000] __attribute__((aligned(4)));
+static uint32_t _cache_flash_addr = NO_CACHE;
 
 //Return the sector of a given flash address. 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
@@ -101,6 +103,56 @@ uint32_t supervisor_flash_get_block_count(void) {
 }
 
 void supervisor_flash_flush(void) {
+    if (_cache_flash_addr == NO_CACHE) return;
+
+    // Skip if data is the same
+    if (memcmp(_flash_cache, (void *)_flash_page_addr, FLASH_PAGE_SIZE) != 0) {
+        // unlock flash
+        HAL_FLASH_Unlock();
+
+        // set up for erase
+        FLASH_EraseInitTypeDef EraseInitStruct;
+        EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
+        EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+        // get the sector information
+        uint32_t sector_size;
+        uint32_t sector_start_addr;
+        EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
+        EraseInitStruct.NbSectors = 1;
+        if (sector_size>0x4000) return false;
+
+        // erase the sector
+        uint32_t SectorError = 0;
+        if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
+            // error occurred during sector erase
+            HAL_FLASH_Lock(); // lock the flash
+            mp_printf(&mp_plat_print, "FLASH SECTOR ERASE ERROR");
+            return false;
+        }
+
+        __HAL_FLASH_DATA_CACHE_DISABLE();
+        __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+
+        __HAL_FLASH_DATA_CACHE_RESET();
+        __HAL_FLASH_INSTRUCTION_CACHE_RESET();
+
+        __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+        __HAL_FLASH_DATA_CACHE_ENABLE();
+
+        // reprogram the sector
+        for (uint32_t i = 0; i < sector_size; i++) {
+            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, sector_start_addr, (uint64_t)_flash_cache[i]) != HAL_OK) {
+                // error occurred during flash write
+                HAL_FLASH_Lock(); // lock the flash
+                mp_printf(&mp_plat_print, "FLASH WRITE ERROR");
+                return false;
+            }
+            sector_start_addr += 1;
+        }
+
+        // lock the flash
+        HAL_FLASH_Lock();
+    }
 }
 
 static int32_t convert_block_to_flash_addr(uint32_t block) {
@@ -189,13 +241,56 @@ bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     return true;
 }
 
-mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+// mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
 
-    for (size_t i = 0; i < num_blocks; i++) {
-        if (!supervisor_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
-            return 1; // error
+//     for (size_t i = 0; i < num_blocks; i++) {
+//         if (!supervisor_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
+//             return 1; // error
+//         }
+//     }
+//     return 0; // success
+// }
+
+mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    while (num_blocks) {
+        int32_t dest = convert_block_to_flash_addr(block);
+        if (dest == -1) {
+            // bad block number
+            mp_printf(&mp_plat_print, "BAD FLASH BLOCK ERROR");
+            return false;
         }
+
+        // unlock flash
+        HAL_FLASH_Unlock();
+
+        flash_get_sector_info(dest, &sector_start_addr, &sector_size);
+
+        // Fail for any sector outside the 16k ones for now
+        if (sector_size > 0x4000) return false;
+
+        // Find how many blocks are left in the sector
+        uint32_t count = (sector_size - (dest - sector_start_addr))/FILESYSTEM_BLOCK_SIZE;
+        count = MIN(num_blocks, count); `
+
+        if (_cache_flash_addr != sector_start_addr) {
+            // Write out anything in cache before overwriting it.
+            supervisor_flash_flush();
+
+            _cache_flash_addr = sector_start_addr;
+
+            // Copy the current contents of the entire page into the cache.
+            memcpy(_flash_cache, (void *)sector_start_addr, sector_size);
+        }
+
+        // Overwrite part or all of the sector cache with the src data.
+        memcpy(_flash_cache + (dest-sector_start_addr), src, count * FILESYSTEM_BLOCK_SIZE);
+
+        // adjust for next run
+        block_num  += count;
+        src        += count * FILESYSTEM_BLOCK_SIZE;
+        num_blocks -= count;
     }
+
     return 0; // success
 }
 
