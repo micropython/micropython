@@ -75,7 +75,7 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
       after_failure:
-        - grep "FAIL" ports/qemu-arm/build/console.out
+        - grep --text "FAIL" ports/qemu-arm/build/console.out
 
     # unix coverage
     - stage: test
