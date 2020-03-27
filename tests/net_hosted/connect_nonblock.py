@@ -16,7 +16,10 @@ def do_connect(peer_addr, tls):
     # wrap with ssl/tls if desired
     if tls:
         try:
-            s = ssl.wrap_socket(s, do_handshake_on_connect=False)
+            if sys.implementation.name == 'micropython':
+                s = ssl.wrap_socket(s)
+            else:
+                s = ssl.wrap_socket(s, do_handshake_on_connect=False)
             print("wrap: True")
         except Exception as e:
             print("wrap:", e)
