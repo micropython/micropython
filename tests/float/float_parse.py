@@ -34,3 +34,8 @@ print(float('1e-18446744073709551621'))
 # check small decimals are as close to their true value as possible
 for n in range(1, 10):
     print(float('0.%u' % n) == n / 10)
+
+# Issue #5831 - make sure trailing 0 does not cause rounding with 32-bit float
+# 14187745 has exact 32-bit representation but 141877450 does not
+print(int(float("14187745.")))
+print(int(float("14187745.0")))

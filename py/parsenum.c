@@ -265,6 +265,11 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                 }
             } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
                 in = PARSE_DEC_IN_FRAC;
+                // check for case of single '0' after decimal to avoid rounding error
+                if (str + 1 == top && *str == '0') {
+                    str++;
+                    break;
+                }
             } else if (in != PARSE_DEC_IN_EXP && ((dig | 0x20) == 'e')) {
                 in = PARSE_DEC_IN_EXP;
                 if (str < top) {
@@ -309,7 +314,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         // of slightly erroneous values.
         if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
             dec_val /= MICROPY_FLOAT_C_FUN(pow)(10, -exp_val);
-        } else {
+        } else if (exp_val != 0) {
             dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
         }
     }
