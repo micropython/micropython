@@ -33,12 +33,12 @@
 #include STM32_HAL_H
 #include "pins.h"
 
-// PERIPH
+// Comm Peripherals
 
 typedef struct {
-    uint8_t periph_index:4; // Index of the I2C unit (1 to 3)
-    uint8_t altfn_index:4; //Index of the altfn for this pin (0 to 15)
-    const mcu_pin_obj_t * pin;
+    uint8_t periph_index:4;     // Index of the peripheral instance
+    uint8_t altfn_index:4;      // Index of the altfn for this pin (0 to 15)
+    const mcu_pin_obj_t * pin;  // Pin Object
 } mcu_periph_obj_t;
 
 #define PERIPH(index, alt, p_pin)       \
@@ -48,7 +48,8 @@ typedef struct {
     .pin = p_pin, \
 }
 
-//Timers
+// Timer Peripheral
+
 typedef struct {
     uint8_t tim_index:4; 
     uint8_t altfn_index:4; 

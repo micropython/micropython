@@ -187,10 +187,7 @@ SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	ll_rcc.c \
 	ll_utils.c \
 	ll_exti.c \
-	)
-#removed:
-# hal_flash_ramfunc.c \
-# ll_fsmc.c \
+)
 
 SRC_STM32 += system_stm32$(MCU_SERIES_LOWER)xx.c
 

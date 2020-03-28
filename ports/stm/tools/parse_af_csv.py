@@ -26,6 +26,10 @@ import csv
 import sys
 
 # Use: parse_af_csf.py Filename.csv -pins-only
+# Designed for use with .csv files from Micropython, or in identical format
+# created via Datasheet peripheral tables with a Sheets program.
+# 
+# See examples/stm32f405.csv for example formatting. 
 
 # Most peripherals (SPI, I2C) output 3 values:
 # peripheral index, alt function, pin string
@@ -130,8 +134,4 @@ with open(sys.argv[1]) as csv_file:
         for line in outlist:
             print("extern const mcu_pin_obj_t pin_" + line[0] + ";")
 
-
-
-
     print(f'Processed {line_count} lines.')
-
