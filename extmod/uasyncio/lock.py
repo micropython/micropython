@@ -19,7 +19,7 @@ class Lock:
 
     def release(self):
         if self.state != 1:
-            raise RuntimeError
+            raise RuntimeError("Lock not acquired")
         if self.waiting.peek():
             # Task(s) waiting on lock, schedule next Task
             self.state = self.waiting.pop_head()
