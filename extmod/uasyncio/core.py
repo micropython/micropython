@@ -29,16 +29,8 @@ _context = {"message":   _exc_message,
             "exception": None,
             "future":    None}
 
-
-def _default_exc_handler(loop, context):
-    print(context["message"])
-    print("future:", context["future"], "coro=", context["future"].coro)
-    # missing traceback
-    sys.print_exception(context["exception"])
-
-
-# set default exception handler
-_exc_handler = _default_exc_handler
+# stores the user exception handler
+_exc_handler = None
 
 
 ################################################################################
@@ -219,7 +211,7 @@ def run_until_complete(main_task=None):
             if not waiting and not isinstance(er, excs_stop):
                 _context["exception"] = er
                 _context["future"] = t
-                Loop.call_exception_handler(_context)
+                Loop().call_exception_handler(_context)
             # Indicate task is done
             t.coro = None
 
@@ -234,41 +226,39 @@ def run(coro):
 
 
 class Loop:
-    @staticmethod
-    def create_task(coro):
+    def create_task(self, coro):
         return create_task(coro)
 
-    @staticmethod
-    def run_forever():
+    def run_forever(self):
         run_until_complete()
         # TODO should keep running until .stop() is called, even if there're no tasks left
 
-    @staticmethod
-    def run_until_complete(aw):
+    def run_until_complete(self, aw):
         return run_until_complete(_promote_to_task(aw))
 
-    @staticmethod
-    def close():
+    def close(self):
         pass
 
-    @staticmethod
-    def set_exception_handler(handler):
+    def set_exception_handler(self, handler):
         global _exc_handler
         _exc_handler = handler
 
-    @staticmethod
-    def get_exception_handler():
-        return _exc_handler
+    def get_exception_handler(self):
+        return _exc_handler if _exc_handler is not None else self.default_exception_handler
 
-    @classmethod
-    def default_exception_handler(cls, context):
-        _default_exc_handler(cls, context)
+    def default_exception_handler(self, context):
+        print(context["message"])
+        print("future:", context["future"], "coro=", context["future"].coro)
+        # missing traceback
+        sys.print_exception(context["exception"])
 
-    @classmethod
-    def call_exception_handler(cls, context):
-        _exc_handler(cls, context)
+    def call_exception_handler(self, context):
+        if _exc_handler is None:
+            self.default_exception_handler(context)
+        else:
+            _exc_handler(self, context)
 
 
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
 def get_event_loop(runq_len=0, waitq_len=0):
-    return Loop
+    return Loop()
