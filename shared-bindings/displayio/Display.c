@@ -152,17 +152,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
 
-    displayio_display_obj_t *self = NULL;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL ||
-            displays[i].display.base.type == &mp_type_NoneType) {
-            self = &displays[i].display;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many displays"));
-    }
+    primary_display_t *disp = allocate_display_or_raise();
+    displayio_display_obj_t *self = &disp->display;;
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         self,

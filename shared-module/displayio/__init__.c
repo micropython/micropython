@@ -308,3 +308,21 @@ void displayio_area_transform_within(bool mirror_x, bool mirror_y, bool transpos
         transformed->x1 = whole->x1 + (y1 - whole->y1);
     }
 }
+
+primary_display_t *allocate_display() {
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        mp_const_obj_t display_type = displays[i].display.base.type;
+        if (display_type == NULL || display_type == &mp_type_NoneType) {
+            return &displays[i];
+        }
+    }
+    return NULL;
+
+primary_display_t *allocate_display_or_raise() {
+    primary_display_t *result = allocate_display();
+    if (!result) {
+        mp_raise_RuntimeError(translate("Too many displays"));
+    }
+}
+
+}
