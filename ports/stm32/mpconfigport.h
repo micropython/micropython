@@ -134,22 +134,46 @@
 #endif
 
 // extended modules
+#ifndef MICROPY_PY_UASYNCIO
 #define MICROPY_PY_UASYNCIO         (1)
+#endif
+#ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES          (1)
+#endif
+#ifndef MICROPY_PY_UZLIB
 #define MICROPY_PY_UZLIB            (1)
+#endif
+#ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON            (1)
+#endif
+#ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE              (1)
+#endif
+#ifndef MICROPY_PY_URE_SUB
 #define MICROPY_PY_URE_SUB          (1)
+#endif
+#ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ           (1)
+#endif
+#ifndef MICROPY_PY_UHASHLIB
 #define MICROPY_PY_UHASHLIB         (1)
+#endif
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
+#ifndef MICROPY_PY_UBINASCII
 #define MICROPY_PY_UBINASCII        (1)
+#endif
+#ifndef MICROPY_PY_URANDOM
 #define MICROPY_PY_URANDOM          (1)
+#endif
+#ifndef MICROPY_PY_URANDOM_EXTRA_FUNCS
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#endif
 #define MICROPY_PY_USELECT          (1)
+#ifndef MICROPY_PY_UTIMEQ
 #define MICROPY_PY_UTIMEQ           (1)
+#endif
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
