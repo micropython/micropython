@@ -47,6 +47,9 @@
 #define MP_THREAD_GC_SIGNAL (SIGUSR1)
 #endif
 
+// This value seems to be about right for both 32-bit and 64-bit builds.
+#define THREAD_STACK_OVERFLOW_MARGIN (8192)
+
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
     pthread_t id;           // system id of thread
@@ -193,6 +196,11 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
         *stack_size = PTHREAD_STACK_MIN;
     }
 
+    // ensure there is enough stack to include a stack-overflow margin
+    if (*stack_size < 2 * THREAD_STACK_OVERFLOW_MARGIN) {
+        *stack_size = 2 * THREAD_STACK_OVERFLOW_MARGIN;
+    }
+
     // set thread attributes
     pthread_attr_t attr;
     int ret = pthread_attr_init(&attr);
@@ -220,12 +228,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     }
 
     // adjust stack_size to provide room to recover from hitting the limit
-    // this value seems to be about right for both 32-bit and 64-bit builds
-    if (*stack_size >= 2 * 8192) {
-        *stack_size -= 8192;
-    } else {
-        *stack_size /= 2;
-    }
+    *stack_size -= THREAD_STACK_OVERFLOW_MARGIN;
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));
