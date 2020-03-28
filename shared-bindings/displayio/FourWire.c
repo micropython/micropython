@@ -46,7 +46,7 @@
 //| Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //| It doesn't handle display initialization.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000)
+//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000, polarity=0, phase=0)
 //|
 //|   Create a FourWire object associated with the given pins.
 //|
@@ -60,15 +60,20 @@
 //|   :param microcontroller.Pin chip_select: Chip select pin
 //|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
 //|   :param int baudrate: Maximum baudrate in Hz for the display on the bus
+//|   :param int polarity: the base state of the clock line (0 or 1)
+//|   :param int phase: the edge of the clock that data is captured. First (0)
+//|       or second (1). Rising or falling depends on clock polarity.
 //|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate };
+    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 24000000} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -91,8 +96,17 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
         mp_raise_RuntimeError(translate("Too many display busses"));
     }
 
+    uint8_t polarity = args[ARG_polarity].u_int;
+    if (polarity != 0 && polarity != 1) {
+        mp_raise_ValueError(translate("Invalid polarity"));
+    }
+    uint8_t phase = args[ARG_phase].u_int;
+    if (phase != 0 && phase != 1) {
+        mp_raise_ValueError(translate("Invalid phase"));
+    }
+
     common_hal_displayio_fourwire_construct(self,
-        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int);
+        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int, polarity, phase);
     return self;
 }
 

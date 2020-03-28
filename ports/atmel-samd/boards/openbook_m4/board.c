@@ -65,7 +65,9 @@ void board_init(void) {
         &pin_PB05, // EPD_DC Command or data
         &pin_PB07, // EPD_CS Chip select
         &pin_PA00, // EPD_RST Reset
-        1000000);
+        1000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
