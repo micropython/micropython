@@ -46,7 +46,7 @@ class SSD1306(framebuf.FrameBuffer):
             SET_MUX_RATIO, self.height - 1,
             SET_COM_OUT_DIR | 0x08, # scan from COM[N] to COM0
             SET_DISP_OFFSET, 0x00,
-            SET_COM_PIN_CFG, 0x02 if self.height == 32 else 0x12,
+            SET_COM_PIN_CFG, 0x02 if (self.height == 32 and self.width == 128) else 0x12,
             # timing and driving scheme
             SET_DISP_CLK_DIV, 0x80,
             SET_PRECHARGE, 0x22 if self.external_vcc else 0xf1,
