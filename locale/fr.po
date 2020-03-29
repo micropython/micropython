@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-20 17:57-0500\n"
-"PO-Revision-Date: 2020-03-29 16:58+0000\n"
+"PO-Revision-Date: 2020-03-29 17:02+0000\n"
 "Last-Translator: Weblate Admin <jepler@unpythonic.net>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
@@ -85,7 +85,7 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c
 msgid "%q must be >= 1"
-msgstr "%d doit être >=1"
+msgstr "%q doit être >=1"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
