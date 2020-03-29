@@ -249,7 +249,6 @@ class Loop:
     def default_exception_handler(self, context):
         print(context["message"])
         print("future:", context["future"], "coro=", context["future"].coro)
-        # missing traceback
         sys.print_exception(context["exception"])
 
     def call_exception_handler(self, context):
