@@ -33,6 +33,9 @@
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "esp_heap_caps.h"
+#include "multi_heap.h"
+#include "../heap_private.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -145,6 +148,28 @@ STATIC mp_obj_t esp32_hall_sensor(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
+STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
+    mp_int_t cap = mp_obj_get_int(cap_in);
+    multi_heap_info_t info;
+    heap_t *heap;
+    mp_obj_t heap_list = mp_obj_new_list(0, 0);
+    SLIST_FOREACH(heap, &registered_heaps, next) {
+        if (heap_caps_match(heap, cap)) {
+            multi_heap_get_info(heap->heap, &info);
+            mp_obj_t data[] = {
+                MP_OBJ_NEW_SMALL_INT(heap->end - heap->start), // total heap size
+                MP_OBJ_NEW_SMALL_INT(info.total_free_bytes),   // total free bytes
+                MP_OBJ_NEW_SMALL_INT(info.largest_free_block), // largest free contiguous
+                MP_OBJ_NEW_SMALL_INT(info.minimum_free_bytes), // minimum free seen
+            };
+            mp_obj_t this_heap = mp_obj_new_tuple(4, data);
+            mp_obj_list_append(heap_list, this_heap);
+        }
+    }
+    return heap_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -153,6 +178,7 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
@@ -160,6 +186,9 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_FALSE },
     { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_TRUE },
+
+    { MP_ROM_QSTR(MP_QSTR_HEAP_DATA), MP_ROM_INT(MALLOC_CAP_8BIT) },
+    { MP_ROM_QSTR(MP_QSTR_HEAP_EXEC), MP_ROM_INT(MALLOC_CAP_EXEC) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
