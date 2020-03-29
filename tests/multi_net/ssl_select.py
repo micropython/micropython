@@ -1,5 +1,10 @@
-# Simple test creating an SSL connection and transferring some data
-# This test won't run under CPython because it requires key/cert
+# Test creating an SSL connection and transferring some data, and specifically
+# using select to "poll" for reading while reading chunks that are smaller than
+# the SSL record transmitted to make sure that the poll ioctl handles the case
+# where the ssl layer has some bytes buffered internally and the underlying
+# raw socket is not readable.
+# This test won't run under CPython because it doesn't fix the bug this test tests:
+# https://docs.python.org/3/library/ssl.html#notes-on-non-blocking-sockets
 
 try:
     import usocket as socket, ussl as ssl, ubinascii as binascii, uselect as select
@@ -53,7 +58,6 @@ key = key[key.index("M") : key.rstrip().rindex("\n") + 1]
 cert = binascii.a2b_base64(cert)
 key = binascii.a2b_base64(key)
 
-
 # Server
 def instance0():
     multitest.globals(IP=multitest.get_network_ip())
@@ -74,6 +78,26 @@ def instance0():
         s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert)
     print(s2.read(16))
     s2.write(b"server to client")
+    # test larger client->server record being read in small chunks
+    total = 0
+    fileno = s2
+    if hasattr(s2, "fileno"):
+        fileno = s2.fileno()
+    while True:
+        if hasattr(ssl, "SSLContext"):
+            # select doesn't actually work right in CPython! so skip it
+            sel = [[1]]
+        else:
+            sel = select.select([fileno], [], [])
+        if len(sel[0]) == 1:
+            buf = s2.read(20)
+            print("got", len(buf))
+            total += len(buf)
+            if total == 200:
+                break
+    print("got", total)
+    s2.write(b"server to client 2")
+    print("DONE", len(buf))
     s.close()
 
 
@@ -85,4 +109,6 @@ def instance1():
     s = ssl.wrap_socket(s)
     s.write(b"client to server")
     print(s.read(16))
+    s.write(bytes(200))
+    print(s.read(18))
     s.close()

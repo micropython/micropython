@@ -13,15 +13,24 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ussl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, do_handshake=True) 
+.. function:: ussl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, server_hostname=None, do_handshake=True)
+
    Takes a `stream` *sock* (usually usocket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
-   an SSL context. Returned object has the usual `stream` interface methods like
+   an SSL context. The returned object has the usual `stream` interface methods like
    ``read()``, ``write()``, etc.
    A server-side SSL socket should be created from a normal socket returned from
    :meth:`~usocket.socket.accept()` on a non-SSL listening server socket.
 
-   - *do_handshake* determines whether the handshake is done as part of the ``wrap_socket``
+   Parameters:
+
+   - ``server_side``: creates a server connection if True, else client connection. A
+     server connection requires a ``keyfile`` and a ``certfile``.
+   - ``cert_reqs``: specifies the level of certificate checking to be performed.
+   - ``ca_certs``: root certificates to use for certificate checking.
+   - ``server_hostname``: specifies the hostname of the server for verification purposes
+     as well for SNI (Server Name Identification).
+   - ``do_handshake``: determines whether the handshake is done as part of the ``wrap_socket``
      or whether it is deferred to be done as part of the initial reads or writes
      (there is no ``do_handshake`` method as in CPython).
      For blocking sockets doing the handshake immediately is standard. For non-blocking
@@ -58,3 +67,11 @@ Constants
           ussl.CERT_REQUIRED
 
     Supported values for *cert_reqs* parameter.
+
+    - CERT_NONE: in client mode accept just about any cert, in server mode do not
+      request a cert from the client.
+    - CERT_OPTIONAL: in client mode behaves the same as CERT_REQUIRED and in server
+      mode requests an optional cert from the client for authentication.
+    - CERT_REQUIRED: in client mode validates the server's cert and
+      in server mode requires the client to send a cert for authentication. Note that
+      ussl does not actually support client authentication.
