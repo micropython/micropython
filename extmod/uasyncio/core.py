@@ -29,9 +29,6 @@ _context = {"message":   _exc_message,
             "exception": None,
             "future":    None}
 
-# stores the user exception handler
-_exc_handler = None
-
 
 ################################################################################
 # Sleep functions
@@ -211,7 +208,7 @@ def run_until_complete(main_task=None):
             if not waiting and not isinstance(er, excs_stop):
                 _context["exception"] = er
                 _context["future"] = t
-                Loop().call_exception_handler(_context)
+                Loop.call_exception_handler(_context)
             # Indicate task is done
             t.coro = None
 
@@ -239,23 +236,21 @@ class Loop:
     def close(self):
         pass
 
-    def set_exception_handler(self, handler):
-        global _exc_handler
-        _exc_handler = handler
+    def set_exception_handler(handler):
+        Loop._exc_handler = handler
 
-    def get_exception_handler(self):
-        return _exc_handler if _exc_handler is not None else self.default_exception_handler
+    def get_exception_handler():
+        return Loop._exc_handler
 
-    def default_exception_handler(self, context):
+    def default_exception_handler(loop, context):
         print(context["message"])
         print("future:", context["future"], "coro=", context["future"].coro)
         sys.print_exception(context["exception"])
 
-    def call_exception_handler(self, context):
-        if _exc_handler is None:
-            self.default_exception_handler(context)
-        else:
-            _exc_handler(self, context)
+    def call_exception_handler(context):
+        Loop._exc_handler(Loop, context)
+
+    _exc_handler = default_exception_handler
 
 
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
