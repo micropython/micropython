@@ -214,16 +214,32 @@ def run(coro):
 # Event loop wrapper
 
 
+async def _stopper():
+    pass
+
+
+_stop_task = None
+
+
 class Loop:
     def create_task(coro):
         return create_task(coro)
 
     def run_forever():
-        run_until_complete()
+        global _stop_task
+        _stop_task = Task(_stopper(), globals())
+        run_until_complete(_stop_task)
         # TODO should keep running until .stop() is called, even if there're no tasks left
 
     def run_until_complete(aw):
         return run_until_complete(_promote_to_task(aw))
+
+    def stop():
+        global _stop_task
+        if _stop_task is not None:
+            _task_queue.push_head(_stop_task)
+            # If stop() is called again, do nothing
+            _stop_task = None
 
     def close():
         pass

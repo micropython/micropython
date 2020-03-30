@@ -251,12 +251,16 @@ Event Loop
 
 .. method:: Loop.run_forever()
 
-    Run the event loop forever.
+    Run the event loop until `stop()` is called.
 
 .. method:: Loop.run_until_complete(awaitable)
 
     Run the given *awaitable* until it completes.  If *awaitable* is not a task
     then it will be promoted to one.
+
+.. method:: Loop.stop()
+
+    Stop the event loop.
 
 .. method:: Loop.close()
 
