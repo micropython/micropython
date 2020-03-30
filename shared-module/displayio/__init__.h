@@ -56,5 +56,7 @@ void displayio_gc_collect(void);
 
 primary_display_t *allocate_display(void);
 primary_display_t *allocate_display_or_raise(void);
+primary_display_t *allocate_display_bus(void);
+primary_display_t *allocate_display_bus_or_raise(void);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
