@@ -215,20 +215,20 @@ def run(coro):
 
 
 class Loop:
-    def create_task(self, coro):
+    def create_task(coro):
         return create_task(coro)
 
-    def run_forever(self):
+    def run_forever():
         run_until_complete()
         # TODO should keep running until .stop() is called, even if there're no tasks left
 
-    def run_until_complete(self, aw):
+    def run_until_complete(aw):
         return run_until_complete(_promote_to_task(aw))
 
-    def close(self):
+    def close():
         pass
 
 
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
 def get_event_loop(runq_len=0, waitq_len=0):
-    return Loop()
+    return Loop
