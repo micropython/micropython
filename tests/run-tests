@@ -21,6 +21,9 @@ else:
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
+# For diff'ing test output
+DIFF = os.getenv('MICROPY_DIFF', 'diff -u')
+
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
@@ -595,7 +598,7 @@ the last matching regex is used:
             testbase = os.path.basename(exp)[:-4]
             print()
             print("FAILURE {0}".format(testbase))
-            os.system("diff -u {0}.exp {0}.out".format(testbase))
+            os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
 
         sys.exit(0)
 
