@@ -86,7 +86,7 @@ endif
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: check this
-CFLAGS += -D__START=main
+CFLAGS += -D__START=main -DFOMU
 
 LD_FILE := boards/$(BOARD)/$(BOARD)-spi.ld
 

@@ -26,45 +26,8 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
 
-        /* These functions must be in RAM for USB to respond in time. */
-        *(.text.timer0_ev_pending_write)
-        *(.text.mp_parse)
-        *(.text.parse_compile_execute)
-        *(.text.cmp_lfn)
-        *(.text.qstr_find_strn)
-        *(.text.dcd_edpt_xfer)
-        *(.text.pop_rule)
-        *(.text.ff_wtoupper)
-        *(.text.dir_find)
-        *(.text.push_rule)
-        *(.text.csr_writel)
-        *(.text.csr_readl)
-        *(.text.autoreload_tick)
-        *(.text.filesystem_tick)
-
-        /* These two functions are called twice as often as any other function */
-        *(.text.mp_map_lookup)
-        *(.text.mp_execute_bytecode) /* Note: this function is 7kb */
-
-        /* These functions are hot, and placing them in ram greatly
-         * improves performance
-         */
-        *(.text.mp_decode_uint_value)
-        *(.text.tud_cdc_n_write_flush)
-        *(.text.mp_load_method_maybe)
-        *(.text.mp_convert_member_lookup)
-        *(.text.irq_getmask)
-        *(.text.irq_setmask)
-        *(.text.tu_edpt_dir)
-        *(.text.tu_fifo_empty)
-        *(.text.irq_pending)
-        *(.text.tud_task)
-        *(.text.usb_background)
-        *(.text._osal_q_lock)
-        *(.text.osal_queue_receive)
-        *(.text.mp_obj_get_type)
-        *(.text.usbd_edpt_busy)
-
+	*(.itcm.*)         /* Instruction Tightly Coupled Memory */
+	*(.dtcm_data.*)    /* Data Tightly Coupled Memory */
         *(.ramtext)        /* .text* sections (code) */
         *(.ramtext*)       /* .text* sections (code) */
         *(.data)           /* .data sections */
@@ -100,6 +63,7 @@ SECTIONS
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
         *(.bss)
         *(.bss*)
+	*(.dtcm_bss.*)     /* Data Tightly Coupled Memory */
         *(.sbss)
         *(.sbss*)
         *(COMMON)
