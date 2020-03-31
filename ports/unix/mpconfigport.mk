@@ -41,4 +41,4 @@ MICROPY_PY_JNI = 0
 # as submodules (currently affects only libffi).
 MICROPY_STANDALONE = 0
 
-MICROPY_PY_ULAB = 1
+CIRCUITPY_ULAB = 1

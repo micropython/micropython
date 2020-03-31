@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 # Written by Antonio Galea - 2010/11/18
+# Updated for DFU 1.1 by Sean Cross - 2020/03/31
 # Distributed under Gnu LGPL 3.0
 # see http://www.gnu.org/licenses/lgpl-3.0.txt
 
@@ -23,30 +24,7 @@ def parse(file,dump_images=False):
   print ('File: "%s"' % file)
   data = open(file,'rb').read()
   crc = compute_crc(data[:-4])
-  prefix, data = consume('<5sBIB',data,'signature version size targets')
-  print ('%(signature)s v%(version)d, image size: %(size)d, targets: %(targets)d' % prefix)
-  for t in range(prefix['targets']):
-    tprefix, data  = consume('<6sBI255s2I',data,'signature altsetting named name size elements')
-    tprefix['num'] = t
-    if tprefix['named']:
-      tprefix['name'] = cstring(tprefix['name'])
-    else:
-      tprefix['name'] = ''
-    print ('%(signature)s %(num)d, alt setting: %(altsetting)s, name: "%(name)s", size: %(size)d, elements: %(elements)d' % tprefix)
-    tsize = tprefix['size']
-    target, data = data[:tsize], data[tsize:]
-    for e in range(tprefix['elements']):
-      eprefix, target = consume('<2I',target,'address size')
-      eprefix['num'] = e
-      print ('  %(num)d, address: 0x%(address)08x, size: %(size)d' % eprefix)
-      esize = eprefix['size']
-      image, target = target[:esize], target[esize:]
-      if dump_images:
-        out = '%s.target%d.image%d.bin' % (file,t,e)
-        open(out,'wb').write(image)
-        print ('    DUMPED IMAGE TO "%s"' % out)
-    if len(target):
-      print ("target %d: PARSE ERROR" % t)
+  data = data[len(data)-16:]
   suffix = named(struct.unpack('<4H3sBI',data[:16]),'device product vendor dfu ufd len crc')
   print ('usb: %(vendor)04x:%(product)04x, device: 0x%(device)04x, dfu: 0x%(dfu)04x, %(ufd)s, %(len)d, 0x%(crc)08x' % suffix)
   if crc != suffix['crc']:
@@ -55,53 +33,49 @@ def parse(file,dump_images=False):
   if data:
     print ("PARSE ERROR")
 
-def build(file,targets,device=DEFAULT_DEVICE):
-  data = b''
-  for t,target in enumerate(targets):
-    tdata = b''
-    for image in target:
-      tdata += struct.pack('<2I',image['address'],len(image['data']))+image['data']
-    tdata = struct.pack('<6sBI255s2I',b'Target',0,1, b'ST...',len(tdata),len(target)) + tdata
-    data += tdata
-  data  = struct.pack('<5sBIB',b'DfuSe',1,len(data)+11,len(targets)) + data
+def build(file,data,device=DEFAULT_DEVICE):
+  # Parse the VID and PID from the `device` argument
   v,d=map(lambda x: int(x,0) & 0xFFFF, device.split(':',1))
-  data += struct.pack('<4H3sB',0,d,v,0x011a,b'UFD',16)
+
+  # Generate the DFU suffix, consisting of these fields:
+  #  Field name     | Length  |  Description
+  # ================+=========+================================
+  #  bcdDevice      |    2    | The release number of this firmware (0xffff - don't care)
+  #  idProduct      |    2    | PID of this device
+  #  idVendor       |    2    | VID of this device
+  #  bcdDFU         |    2    | Version of this DFU spec (0x01 0x00)
+  #  ucDfuSignature |    3    | The characters 'DFU', printed in reverse order
+  #  bLength        |    1    | The length of this suffix (16 bytes)
+  #  dwCRC          |    4    | A CRC32 of the data, including this suffix
+  data += struct.pack('<4H3sB',0xffff,d,v,0x0100,b'UFD',16)
   crc   = compute_crc(data)
+  # Append the CRC32 of the entire block
   data += struct.pack('<I',crc)
   open(file,'wb').write(data)
 
 if __name__=="__main__":
   usage = """
 %prog [-d|--dump] infile.dfu
-%prog {-b|--build} address:file.bin [-b address:file.bin ...] [{-D|--device}=vendor:device] outfile.dfu"""
+%prog {-b|--build} file.bin [{-D|--device}=vendor:device] outfile.dfu"""
   parser = OptionParser(usage=usage)
-  parser.add_option("-b", "--build", action="append", dest="binfiles",
-    help="build a DFU file from given BINFILES", metavar="BINFILES")
+  parser.add_option("-b", "--build", action="store", dest="binfile",
+    help="build a DFU file from given BINFILE", metavar="BINFILE")
   parser.add_option("-D", "--device", action="store", dest="device",
     help="build for DEVICE, defaults to %s" % DEFAULT_DEVICE, metavar="DEVICE")
   parser.add_option("-d", "--dump", action="store_true", dest="dump_images",
     default=False, help="dump contained images to current directory")
   (options, args) = parser.parse_args()
 
-  if options.binfiles and len(args)==1:
-    target = []
-    for arg in options.binfiles:
-      try:
-        address,binfile = arg.split(':',1)
-      except ValueError:
-        print ("Address:file couple '%s' invalid." % arg)
-        sys.exit(1)
-      try:
-        address = int(address,0) & 0xFFFFFFFF
-      except ValueError:
-        print ("Address %s invalid." % address)
-        sys.exit(1)
-      if not os.path.isfile(binfile):
-        print ("Unreadable file '%s'." % binfile)
-        sys.exit(1)
-      target.append({ 'address': address, 'data': open(binfile,'rb').read() })
+  if options.binfile and len(args)==1:
+    binfile = options.binfile
+    if not os.path.isfile(binfile):
+      print ("Unreadable file '%s'." % binfile)
+      sys.exit(1)
+    target = open(binfile,'rb').read()
     outfile = args[0]
     device = DEFAULT_DEVICE
+    # If a device is specified, parse the pair into a VID:PID pair
+    # in order to validate them.
     if options.device:
       device=options.device
     try:
@@ -109,7 +83,7 @@ if __name__=="__main__":
     except:
       print ("Invalid device '%s'." % device)
       sys.exit(1)
-    build(outfile,[target],device)
+    build(outfile,target,device)
   elif len(args)==1:
     infile = args[0]
     if not os.path.isfile(infile):

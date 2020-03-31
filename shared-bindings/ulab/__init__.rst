@@ -33,9 +33,13 @@ ulab.array -- 1- and 2- dimensional array
   :param sequence values: Sequence giving the initial content of the array.
   :param dtype: The type of array values, ``int8``, ``uint8``, ``int16``, ``uint16``, or ``float``
 
-  The `values` sequence can either be a sequence of numbers (in which case a
-  1-dimensional array is created), or a sequence where each subsequence has
-  the same length (in which case a 2-dimensional array is created).
+  The `values` sequence can either be another ~ulab.array, sequence of numbers
+  (in which case a 1-dimensional array is created), or a sequence where each
+  subsequence has the same length (in which case a 2-dimensional array is
+  created).
+
+  Passing a ~ulab.array and a different dtype can be used to convert an array
+  from one dtype to another.
 
   In many cases, it is more convenient to create an array from a function
   like `zeros` or `linspace`.
@@ -209,9 +213,20 @@ much more efficient than expressing the same operation as a Python loop.
 
    Computes the inverse hyperbolic sine function
 
+.. method:: around(a, \*, decimals)
+
+   Returns a new float array in which each element is rounded to
+   ``decimals`` places.
+
 .. method:: atan
 
-   Computes the inverse tangent function
+   Computes the inverse tangent function; the return values are in the
+   range [-pi/2,pi/2].
+
+.. method:: atan2(y,x)
+
+   Computes the inverse tangent function of y/x; the return values are in
+   the range [-pi, pi].
 
 .. method:: atanh
 
@@ -290,6 +305,14 @@ much more efficient than expressing the same operation as a Python loop.
 
 .. module:: ulab.linalg
 
+.. method:: cholesky(A)
+
+   :param ~ulab.array A: a positive definite, symmetric square matrix
+   :return ~ulab.array L: a square root matrix in the lower triangular form
+   :raises ValueError: If the input does not fulfill the necessary conditions
+
+   The returned matrix satisfies the equation m=LL*
+
 .. method:: det
 
    :param: m, a square matrix
@@ -360,6 +383,9 @@ much more efficient than expressing the same operation as a Python loop.
 
    Perform a Fast Fourier Transform from the time domain into the frequency domain
 
+    See also ~ulab.extras.spectrum, which computes the magnitude of the fft,
+    rather than separately returning its real and imaginary parts.
+
 .. method:: ifft(r, c=None)
 
    :param ulab.array r: A 1-dimension array of values whose size is a power of 2
@@ -367,12 +393,6 @@ much more efficient than expressing the same operation as a Python loop.
    :return tuple (r, c): The real and complex parts of the inverse FFT
 
    Perform an Inverse Fast Fourier Transform from the frequeny domain into the time domain
-
-.. method:: spectrum(r):
-
-   :param ulab.array r: A 1-dimension array of values whose size is a power of 2
-
-   Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
 
 :mod:`ulab.numerical` --- Numerical and Statistical functions
 =============================================================
@@ -448,3 +468,14 @@ operate over the flattened array (None), rows (0), or columns (1).
 .. method:: polyval(p, x)
 
    Evaluate the polynomial p at the points x.  x must be an array.
+
+:mod:`ulab.extras` --- Additional functions not in numpy
+========================================================
+
+.. method:: spectrum(r):
+
+   :param ulab.array r: A 1-dimension array of values whose size is a power of 2
+
+   Computes the spectrum of the input signal.  This is the absolute value of the (complex-valued) fft of the signal.
+
+   This function is similar to scipy's ``scipy.signal.spectrogram``.

@@ -122,6 +122,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "8086_commander"
         - "TG-Watch02A"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -130,6 +131,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
+        - "bdmicro_vina_m0"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -229,11 +231,14 @@ jobs:
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
+        - "thunderpack"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
+        - "uartlogger2"
         - "uchip"
         - "ugame10"
+        - "winterbloom_big_honking_button"
         - "winterbloom_sol"
         - "xinabox_cc03"
         - "xinabox_cs11"
@@ -253,6 +258,52 @@ jobs:
       run: |
         gcc --version
         arm-none-eabi-gcc --version
+        python3 --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: build
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+  build-riscv:
+    runs-on: ubuntu-16.04
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+        - "fomu"
+
+    steps:
+    - name: Set up Python 3.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.5
+    - name: Install deps
+      run: |
+        sudo apt-get install -y gettext
+        pip install requests sh click setuptools awscli
+        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+        sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+    - name: Versions
+      run: |
+        gcc --version
+        riscv64-unknown-elf-gcc --version
         python3 --version
     - uses: actions/checkout@v1
       with:

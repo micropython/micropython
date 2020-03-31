@@ -431,7 +431,7 @@ $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	)
-ifeq ($(MICROPY_PY_ULAB),1)
+ifeq ($(CIRCUITPY_ULAB),1)
 SRC_LIBM += \
 $(addprefix lib/,\
 	libm/acoshf.c \
