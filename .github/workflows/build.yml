@@ -167,7 +167,6 @@ jobs:
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
-        - "fomu"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
@@ -255,12 +254,55 @@ jobs:
         pip install requests sh click setuptools awscli
         wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+    - name: Versions
+      run: |
+        gcc --version
+        arm-none-eabi-gcc --version
+        python3 --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: build
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+  build-riscv:
+    runs-on: ubuntu-16.04
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+        - "fomu"
+
+    steps:
+    - name: Set up Python 3.5
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.5
+    - name: Install deps
+      run: |
+        sudo apt-get install -y gettext
+        pip install requests sh click setuptools awscli
         wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
         sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
       run: |
         gcc --version
-        arm-none-eabi-gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
     - uses: actions/checkout@v1
