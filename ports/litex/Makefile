@@ -190,7 +190,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	$(PYTHON3) $(TOP)/tools/dfu-suffix.py -b $^ -D 0x1209:0x5bf0 "$(BUILD)/firmware.dfu"
+	$(PYTHON3) $(TOP)/tools/dfu.py -b $^ -D 0x1209:0x5bf0 "$(BUILD)/firmware.dfu"
 
 include $(TOP)/py/mkrules.mk
 
