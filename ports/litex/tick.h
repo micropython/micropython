@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_LITEX_TICK_H
+#define MICROPY_INCLUDED_LITEX_TICK_H
 
-// These macros are used to place code and data into different linking sections.
+#include "py/mpconfig.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#include <stdint.h>
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+extern volatile uint64_t ticks_ms;
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+extern struct timer_descriptor ms_timer;
+
+void tick_init(void);
+
+void tick_delay(uint32_t us);
+
+void current_tick(uint64_t* ms, uint32_t* us_until_ms);
+// Do not call this with interrupts disabled because it may be waiting for
+// ticks_ms to increment.
+void wait_until(uint64_t ms, uint32_t us_until_ms);
+
+#endif  // MICROPY_INCLUDED_LITEX_TICK_H

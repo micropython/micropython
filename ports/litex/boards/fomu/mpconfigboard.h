@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,14 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+//Micropython setup
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#define MICROPY_HW_BOARD_NAME       "Fomu"
+#define MICROPY_HW_MCU_NAME         "VexRiscv"
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x1000)
+#define FLASH_PARTITION_OFFSET_BYTES (1024*1024)
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#define AUTORESET_DELAY_MS 500
+#define BOARD_FLASH_SIZE            (FLASH_SIZE)

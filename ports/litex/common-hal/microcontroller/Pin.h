@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,36 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#ifndef MICROPY_INCLUDED_FOMU_COMMON_HAL_MICROCONTROLLER_PIN_H
+#define MICROPY_INCLUDED_FOMU_COMMON_HAL_MICROCONTROLLER_PIN_H
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#include "py/mphal.h"
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t number;
+} mcu_pin_obj_t;
+
+#define PIN(p_number)       \
+{ \
+    { &mcu_pin_type }, \
+    .number = p_number \
+}
+
+extern const mcu_pin_obj_t pin_TOUCH1;
+extern const mcu_pin_obj_t pin_TOUCH2;
+extern const mcu_pin_obj_t pin_TOUCH3;
+extern const mcu_pin_obj_t pin_TOUCH4;
+
+void reset_all_pins(void);
+// reset_pin_number takes the pin number instead of the pointer so that objects don't
+// need to store a full pointer.
+void reset_pin_number(uint8_t pin_port, uint8_t pin_number);
+void claim_pin(const mcu_pin_obj_t* pin);
+bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number);
+void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
+// GPIO_TypeDef * pin_port(uint8_t pin_port);
+uint16_t pin_mask(uint8_t pin_number);
+
+#endif // MICROPY_INCLUDED_FOMU_COMMON_HAL_MICROCONTROLLER_PIN_H

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,61 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#include <stdint.h>
+#include "supervisor/port.h"
+#include "boards/board.h"
+#include "tick.h"
+#include "irq.h"
+#include "csr.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+safe_mode_t port_init(void) {
+    irq_setmask(0);
+    irq_setie(1);
+    tick_init();
+    board_init();
+    return NO_SAFE_MODE;
+}
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+extern uint32_t _ebss;
+extern uint32_t _heap_start;
+extern uint32_t _estack;
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+void reset_port(void) {
+    // reset_all_pins();
+    // i2c_reset();
+    // spi_reset();
+    // uart_reset();
+    // pwmout_reset();
+}
+
+void reset_to_bootloader(void) {
+    reboot_ctrl_write(0xac);
+}
+
+void reset_cpu(void) {
+}
+
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
+}
+
+uint32_t *port_stack_get_limit(void) {
+    return &_ebss;
+}
+
+uint32_t *port_stack_get_top(void) {
+    return &_estack;
+}
+
+// Place the word to save just after our BSS section that gets blanked.
+void port_set_saved_word(uint32_t value) {
+    _ebss = value;
+}
+
+uint32_t port_get_saved_word(void) {
+    return _ebss;
+}

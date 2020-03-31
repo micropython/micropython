@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2015 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,19 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#ifndef __FOMU_HAL
+#define __FOMU_HAL
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#include <stdbool.h>
+#include <stdint.h>
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
+#include "lib/utils/interrupt_char.h"
+#include "py/mpconfig.h"
+#include "supervisor/shared/tick.h"
+
+#define mp_hal_ticks_ms()       ((mp_uint_t) supervisor_ticks_ms32())
+//#define mp_hal_delay_us(us)     NRFX_DELAY_US((uint32_t) (us))
+
+bool mp_hal_stdin_any(void);
+
 #endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H

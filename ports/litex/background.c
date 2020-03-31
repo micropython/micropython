@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,37 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#include "py/runtime.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/usb.h"
+#include "supervisor/shared/stack.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
 #endif
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+static bool running_background_tasks = false;
+
+void background_tasks_reset(void) {
+    running_background_tasks = false;
+}
+
+void run_background_tasks(void) {
+    // Don't call ourselves recursively.
+    if (running_background_tasks) {
+        return;
+    }
+    running_background_tasks = true;
+    filesystem_background();
+
+    #if USB_AVAILABLE
+    usb_background();
+    #endif
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_background();
+    #endif
+    running_background_tasks = false;
+
+    assert_heap_ok();
+}

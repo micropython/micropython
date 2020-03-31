@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,16 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#ifndef MICROPY_INCLUDED_LITEX_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#define MICROPY_INCLUDED_LITEX_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#define COMMON_HAL_MCU_PROCESSOR_UID_LENGTH 15
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+#include "py/obj.h"
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+typedef struct {
+    mp_obj_base_t base;
+    // Stores no state currently.
+} mcu_processor_obj_t;
+
+#endif // MICROPY_INCLUDED_LITEX_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,32 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#include "shared-bindings/microcontroller/Pin.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#include "py/mphal.h"
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+STATIC uint8_t claimed_pins[1];
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+// Mark pin as free and return it to a quiescent state.
+void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
+    if (pin_port == 0x0F) {
+        return;
+    }
+
+    // Clear claimed bit.
+    claimed_pins[pin_port] &= ~(1<<pin_number);
+}
+
+
+void claim_pin(const mcu_pin_obj_t* pin) {
+    // Set bit in claimed_pins bitmask.
+    claimed_pins[0] |= 1<<pin->number;
+}
+
+bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
+    return !(claimed_pins[pin_port] & 1<<pin_number);
+}
+
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    return pin_number_is_free(0, pin->number);
+}

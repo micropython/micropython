@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +25,19 @@
  * THE SOFTWARE.
  */
 
-// These macros are used to place code and data into different linking sections.
+#ifndef FPGA_MPCONFIGPORT_H__
+#define FPGA_MPCONFIGPORT_H__
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_LINKER_H
-#define MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#define MICROPY_PY_UJSON                    (0)
+#define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
+#define MICROPY_NLR_THUMB                   (0)
 
-#if defined(IMXRT10XX) || defined(FOMU)
-#define PLACE_IN_DTCM_DATA(name) name __attribute__((section(".dtcm_data." #name )))
-#define PLACE_IN_DTCM_BSS(name) name __attribute__((section(".dtcm_bss." #name )))
-#define PLACE_IN_ITCM(name) __attribute__((section(".itcm." #name ))) name
-#else
-#define PLACE_IN_DTCM_DATA(name) name
-#define PLACE_IN_DTCM_BSS(name) name
-#define PLACE_IN_ITCM(name) name
-#endif
+#include "py/circuitpy_mpconfig.h"
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_LINKER_H
+#define MICROPY_PORT_ROOT_POINTERS \
+	CIRCUITPY_COMMON_ROOT_POINTERS
+#define MICROPY_NLR_SETJMP                  (1)
+#define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
+
+
+#endif  // __INCLUDED_FPGA_MPCONFIGPORT_H
