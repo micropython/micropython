@@ -133,6 +133,11 @@ ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
+ifeq ($(MICROPY_PY_DYNLOAD),1)
+CFLAGS_MOD += -DMICROPY_MODULE_LOADDYNLIB=1
+LDFLAGS_MOD += -ldl -rdynamic
+SRC_MOD += loaddynlib.c
+endif
 
 # If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
@@ -298,9 +303,9 @@ test: $(PROG) $(TOP)/tests/run-tests
 
 test_full: $(PROG) $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+	cd $(TOP)/tests && MICROPYPATH=:../$(DIRNAME)/$(BUILD) MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --keep-path
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests -d thread
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --emit native
+	cd $(TOP)/tests && MICROPYPATH=:../$(DIRNAME)/$(BUILD) MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --emit native --keep-path
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
 	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'

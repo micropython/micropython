@@ -59,6 +59,15 @@ import cppexample
 
 print(cppexample.cppfunc(1, 2))
 
+# test import of module from .so file
+import dynmod
+
+print(dynmod.__name__)
+print(dynmod.add_one(3))
+number = dynmod.number(1)
+number.add(dynmod.number(2))
+print(number)
+
 # test basic import of frozen scripts
 import frzstr1
 

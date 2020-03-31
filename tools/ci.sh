@@ -288,6 +288,10 @@ function ci_native_mpy_modules_32bit_build {
     ci_native_mpy_modules_build x86
 }
 
+function ci_unix_example_build {
+    make ${MAKEOPTS} -C examples/unix "$@"
+}
+
 function ci_unix_minimal_build {
     make ${MAKEOPTS} -C ports/unix VARIANT=minimal
 }
@@ -318,6 +322,7 @@ function ci_unix_coverage_setup {
 
 function ci_unix_coverage_build {
     ci_unix_build_helper VARIANT=coverage
+    ci_unix_example_build VARIANT=coverage
 }
 
 function ci_unix_coverage_run_tests {
@@ -342,6 +347,7 @@ function ci_unix_32bit_setup {
 
 function ci_unix_coverage_32bit_build {
     ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
+    ci_unix_example_build VARIANT=coverage MICROPY_FORCE_32BIT=1
 }
 
 function ci_unix_coverage_32bit_run_tests {

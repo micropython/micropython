@@ -48,6 +48,21 @@
 
 #define PATH_SEP_CHAR '/'
 
+#if MICROPY_MODULE_LOADDYNLIB
+// match CPython's native module naming
+#ifdef _WIN32
+#ifdef _DEBUG
+#define PYD_EXT "_d.pyd"
+#else
+#define PYD_EXT ".pyd"
+#endif
+#else
+#define PYD_EXT ".so"
+#endif
+
+extern mp_obj_module_t *mp_load_dynlib(const char *mod_name,vstr_t *name);
+#endif
+
 bool mp_obj_is_package(mp_obj_t module) {
     mp_obj_t dest[2];
     mp_load_method_maybe(module, MP_QSTR___path__, dest);
@@ -77,6 +92,18 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
     stat = mp_import_stat_any(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
+    }
+    #endif
+
+    #if MICROPY_MODULE_LOADDYNLIB
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    vstr_cut_tail_bytes(path, 1);
+    #endif
+    vstr_cut_tail_bytes(path, 3);
+    vstr_add_str(path, PYD_EXT);
+    stat = mp_import_stat(vstr_null_terminated_str(path));
+    if (stat == MP_IMPORT_STAT_FILE) {
+        return MP_IMPORT_STAT_PYD;
     }
     #endif
 
@@ -402,7 +429,19 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("no module named '%q'"), mod_name);
                     #endif
                 }
-            } else {
+            }
+            #if MICROPY_MODULE_LOADDYNLIB
+            else if (stat == MP_IMPORT_STAT_PYD) {
+                // found the file, so try to load it and get the module
+                mp_obj_module_t *module_ptr = mp_load_dynlib(mod_str + last, &path);
+                if (module_ptr == NULL) {
+                    mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("dynamic module load failed for '%q'"), mod_name);
+                }
+                mp_obj_dict_store(MP_OBJ_FROM_PTR(module_ptr->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(mod_name));
+                module_obj = MP_OBJ_FROM_PTR(module_ptr);
+            }
+            #endif
+            else {
                 // found the file, so get the module
                 module_obj = mp_module_get(mod_name);
             }

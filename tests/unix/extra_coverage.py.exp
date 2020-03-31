@@ -147,6 +147,9 @@ None
 cpp None
 5
 (3, 'hellocpp')
+dynmod
+4
+number(3)
 frzstr1
 frzstr1.py
 frzmpy1
