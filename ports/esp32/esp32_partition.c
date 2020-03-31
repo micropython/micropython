@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
+#include "mphalport.h"
 #include "modesp32.h"
 #include "esp_ota_ops.h"
 
@@ -46,12 +47,6 @@ typedef struct _esp32_partition_obj_t {
     mp_obj_base_t base;
     const esp_partition_t *part;
 } esp32_partition_obj_t;
-
-static inline void check_esp_err(esp_err_t e) {
-    if (e != ESP_OK) {
-        mp_raise_OSError(-e);
-    }
-}
 
 STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part) {
     if (part == NULL) {
@@ -203,7 +198,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_ioctl_obj, esp32_partition_ioct
 
 STATIC mp_obj_t esp32_partition_set_boot(mp_obj_t self_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    esp_ota_set_boot_partition(self->part);
+    check_esp_err(esp_ota_set_boot_partition(self->part));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_set_boot_obj, esp32_partition_set_boot);

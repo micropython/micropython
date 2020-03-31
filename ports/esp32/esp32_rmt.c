@@ -56,17 +56,6 @@ typedef struct _esp32_rmt_obj_t {
     rmt_item32_t *items;
 } esp32_rmt_obj_t;
 
-// Defined in machine_time.c; simply added the error message
-// Fixme: Should use this updated error hadline more widely in the ESP32 port.
-//        At least update the method in machine_time.c.
-STATIC esp_err_t check_esp_err(esp_err_t code) {
-    if (code) {
-        mp_raise_msg(&mp_type_OSError, (mp_rom_error_text_t)esp_err_to_name(code));
-    }
-
-    return code;
-}
-
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },

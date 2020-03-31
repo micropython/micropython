@@ -71,24 +71,6 @@ typedef struct _sdcard_obj_t {
 
 #define _SECTOR_SIZE(self) (self->card.csd.sector_size)
 
-STATIC esp_err_t check_esp_err(esp_err_t code) {
-    switch (code) {
-        case ESP_OK:
-            return ESP_OK;
-        case ESP_ERR_NO_MEM:
-            code = MP_ENOMEM;
-            break;
-        case ESP_ERR_TIMEOUT:
-            code = MP_ETIMEDOUT;
-            break;
-        case ESP_ERR_NOT_SUPPORTED:
-            code = MP_EOPNOTSUPP;
-            break;
-    }
-
-    mp_raise_OSError(code);
-}
-
 STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
     if (mp_obj_is_small_int(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
