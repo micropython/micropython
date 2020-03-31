@@ -281,7 +281,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_type(freq_in, &mp_type_float)) {
-        float freq = mp_obj_get_float(freq_in);
+        float freq = mp_obj_get_float_to_f(freq_in);
         if (freq <= 0) {
             goto bad_freq;
         }
