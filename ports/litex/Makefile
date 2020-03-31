@@ -171,7 +171,7 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(S
 SRC_QSTR_PREPROCESSOR +=
 
 
-all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.dfu
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
@@ -188,9 +188,9 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex $^ $@
 #   $(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
 
-$(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA00001 -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON3) $(TOP)/tools/dfu-suffix.py -b $^ -D 0x1209:0x5bf0 "$(BUILD)/firmware.dfu"
 
 include $(TOP)/py/mkrules.mk
 
