@@ -20,6 +20,8 @@ BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
 HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
+DFU = ('dfu',)
+BIN_DFU = ('bin', 'dfu')
 
 # Example:
 # https://downloads.circuitpython.org/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
@@ -32,7 +34,7 @@ extension_by_port = {
     "stm": BIN,
     "cxd56": SPK,
     "mimxrt10xx": HEX_UF2,
-    "litex": BIN,
+    "litex": DFU,
 }
 
 # Per board overrides
