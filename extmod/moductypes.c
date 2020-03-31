@@ -362,7 +362,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
         case FLOAT32:
             return mp_obj_new_float_from_f(((float *)p)[index]);
         case FLOAT64:
-            return mp_obj_new_float(((double *)p)[index]);
+            return mp_obj_new_float_from_d(((double *)p)[index]);
         #endif
         default:
             assert(0);
