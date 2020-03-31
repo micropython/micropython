@@ -61,7 +61,10 @@ void TIM6_IRQHandler(void)
 static void pulsein_handler(uint8_t num) {
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
-    uint32_t current_count = TIM6->CNT;
+    uint32_t current_count = 0;
+    #if HAS_BASIC_TIM
+    current_count = TIM6->CNT;
+    #endif
 
     // Interrupt register must be cleared manually
     EXTI->PR = 1 << num;
@@ -105,12 +108,17 @@ void pulsein_reset(void) {
     }
     memset(_objs, 0, sizeof(_objs));
 
+    #if HAS_BASIC_TIM
     __HAL_RCC_TIM6_CLK_DISABLE();
     refcount = 0;
+    #endif
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
                                              uint16_t maxlen, bool idle_state) {
+#if !(HAS_BASIC_TIM)
+    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
+#else
     // STM32 has one shared EXTI for each pin number, 0-15
     uint8_t p_num = pin->number;
     if(_objs[p_num]) {
@@ -153,6 +161,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     }
     // Add to active PulseIns
     refcount++;
+#endif
 
     // EXTI pins can also be read as an input
     GPIO_InitTypeDef GPIO_InitStruct = {0};
