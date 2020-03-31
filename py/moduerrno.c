@@ -47,6 +47,7 @@
     X(ENODEV) \
     X(EISDIR) \
     X(EINVAL) \
+    X(EOTHER) \
     X(EOPNOTSUPP) \
     X(EADDRINUSE) \
     X(ECONNABORTED) \

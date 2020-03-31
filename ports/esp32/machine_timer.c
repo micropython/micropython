@@ -64,14 +64,6 @@ const mp_obj_type_t machine_timer_type;
 
 STATIC void machine_timer_disable(machine_timer_obj_t *self);
 
-STATIC esp_err_t check_esp_err(esp_err_t code) {
-    if (code) {
-        mp_raise_OSError(code);
-    }
-
-    return code;
-}
-
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
     machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);

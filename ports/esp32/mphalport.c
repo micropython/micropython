@@ -39,6 +39,7 @@
 #endif
 
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/stream.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
@@ -175,5 +176,34 @@ void mp_hal_wake_main_task_from_isr(void) {
     vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
     if (xHigherPriorityTaskWoken == pdTRUE) {
         portYIELD_FROM_ISR();
+    }
+}
+
+// check_esp_err checks the std esp-idf error code and raises an OSError in
+// an exception if it's not ESP_OK.
+void check_esp_err(esp_err_t code) {
+    if (code != ESP_OK) {
+        // map esp-idf error code to posix error code
+        uint32_t pcode = MP_EOTHER;
+        switch (code) {
+            case ESP_ERR_NO_MEM:
+                pcode = MP_ENOMEM;
+                break;
+            case ESP_ERR_TIMEOUT:
+                pcode = MP_ETIMEDOUT;
+                break;
+            case ESP_ERR_NOT_SUPPORTED:
+                pcode = MP_EOPNOTSUPP;
+                break;
+        }
+        // construct string object
+        mp_obj_str_t *o_str = m_new_obj(mp_obj_str_t);
+        o_str->base.type = &mp_type_str;
+        o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
+        o_str->len = strlen((char *)o_str->data);
+        o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        // raise
+        mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
+        nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
     }
 }

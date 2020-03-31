@@ -94,4 +94,8 @@ static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
 }
 
+// check_esp_err checks the std esp-idf error code and raises an OSError in
+// an exception if it's not ESP_OK.
+void check_esp_err(esp_err_t code);
+
 #endif // INCLUDED_MPHALPORT_H
