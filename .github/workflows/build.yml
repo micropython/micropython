@@ -167,6 +167,7 @@ jobs:
         - "feather_nrf52840_express"
         - "feather_radiofruit_zigbee"
         - "feather_stm32f405_express"
+        - "fomu"
         - "gemma_m0"
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
@@ -254,10 +255,13 @@ jobs:
         pip install requests sh click setuptools awscli
         wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+        sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
       run: |
         gcc --version
         arm-none-eabi-gcc --version
+        riscv64-unknown-elf-gcc --version
         python3 --version
     - uses: actions/checkout@v1
       with:
