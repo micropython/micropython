@@ -72,7 +72,7 @@ $ cd ports/esp32
 $ python3 -m venv build-venv
 $ source build-venv/bin/activate
 $ pip install --upgrade pip
-$ pip install path/to/esp-idf/requirements.txt
+$ pip install -r path/to/esp-idf/requirements.txt
 ```
 
 To re-enter this virtual environment in future sessions, you only need to
