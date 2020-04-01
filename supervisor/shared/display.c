@@ -29,11 +29,14 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include "shared-module/displayio/__init__.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/TileGrid.h"
 #include "supervisor/memory.h"
+
+#if CIRCUITPY_PROTOMATTER
+#include "shared-module/displayio/__init__.h"
+#endif
 
 extern size_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;

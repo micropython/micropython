@@ -21,6 +21,7 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
+#if CIRCUITPY_PROTOMATTER
 STATIC bool any_display_uses_this_protomatter(protomatter_protomatter_obj_t* pm) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
@@ -32,6 +33,7 @@ STATIC bool any_display_uses_this_protomatter(protomatter_protomatter_obj_t* pm)
     }
     return false;
 }
+#endif
 
 // Check for recursive calls to displayio_background.
 bool displayio_background_in_progress = false;
