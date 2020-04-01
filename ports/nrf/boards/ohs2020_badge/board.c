@@ -59,7 +59,9 @@ void board_init(void) {
         &pin_P0_08, // TFT_DC Command or data
         &pin_P0_14, // TFT_CS Chip select
         &pin_P0_13, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
