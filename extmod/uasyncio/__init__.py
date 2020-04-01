@@ -12,6 +12,8 @@ _attrs = {
     "Lock": "lock",
     "open_connection": "stream",
     "start_server": "stream",
+    "StreamReader": "stream",
+    "StreamWriter": "stream",
 }
 
 # Lazy loader, effectively does:

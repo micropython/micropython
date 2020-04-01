@@ -53,6 +53,11 @@ class Stream:
         self.out_buf = b""
 
 
+# Stream can be used for both reading and writing to save code size
+StreamReader = Stream
+StreamWriter = Stream
+
+
 # Create a TCP stream connection to a remote host
 async def open_connection(host, port):
     from uerrno import EINPROGRESS

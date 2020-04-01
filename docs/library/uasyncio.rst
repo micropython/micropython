@@ -177,7 +177,8 @@ TCP stream connections
 .. class:: Stream()
     
     This represents a TCP stream connection.  To minimise code this class implements
-    both a reader and a writer.
+    both a reader and a writer, and both ``StreamReader`` and ``StreamWriter`` alias to
+    this class.
 
 .. method:: Stream.get_extra_info(v)
 
