@@ -44,6 +44,8 @@
 #define BOARD_OVERWRITE_SWD         (1)
 #define BOARD_NO_VBUS_SENSE         (1)
 
+#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSI
+
 // Status LEDs
 #define MICROPY_HW_LED_STATUS  (&pin_PA02)
 
