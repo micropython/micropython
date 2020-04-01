@@ -266,3 +266,22 @@ Event Loop
 .. method:: Loop.close()
 
     Close the event loop.
+
+.. method:: Loop.set_exception_handler(handler)
+
+    Set the exception handler to call when a Task raises an exception that is not
+    caught.  The *handler* should accept two arguments: ``(loop, context)``.
+
+.. method:: Loop.get_exception_handler()
+
+    Get the current exception handler.  Returns the handler, or ``None`` if no
+    custom handler is set.
+
+.. method:: Loop.default_exception_handler(context)
+
+    The default exception handler that is called.
+
+.. method:: Loop.call_exception_handler(context)
+
+    Call the current exception handler.  The argument *context* is passed through and
+    is a dictionary containing keys: ``'message'``, ``'exception'``, ``'future'``.
