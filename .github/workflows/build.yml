@@ -16,10 +16,10 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         sudo apt-get install -y eatmydata
@@ -42,7 +42,7 @@ jobs:
         make -C ports/unix -j2
         make -C ports/unix coverage -j2
     - name: Test all
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
       working-directory: tests
     - name: Print failure info
       run: |
@@ -54,10 +54,10 @@ jobs:
       working-directory: tests
       if: failure()
     - name: Native Tests
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
     - name: Docs
       run: sphinx-build -E -W -b html . _build/html
@@ -244,10 +244,10 @@ jobs:
         - "xinabox_cs11"
 
     steps:
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -290,10 +290,10 @@ jobs:
         - "fomu"
 
     steps:
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         sudo apt-get install -y gettext

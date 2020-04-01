@@ -12,10 +12,10 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         pip install requests sh click 
