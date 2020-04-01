@@ -188,6 +188,7 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
         - "particle_argon"

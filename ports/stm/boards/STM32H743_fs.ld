@@ -54,9 +54,6 @@ ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 _estack = 0x20020000;    /* end of RAM */
-/* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
@@ -65,13 +62,19 @@ MEMORY
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 128K    /* sector 0, 128K */
     FLASH_FS (r)    : ORIGIN = 0x08020000, LENGTH = 128K    /* sector 1, 128K */
     FLASH_TEXT (rx) : ORIGIN = 0x08040000, LENGTH = 1792K   /* sectors 6*128 + 8*128 */
-    DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
+    DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
     RAM (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K    /* AXI SRAM */
+    SRAM_D2 (xrw)   : ORIGIN = 0x30000000, LENGTH = 288K    /* AHB1 SRAM */
+    SRAM_D3 (xrw)   : ORIGIN = 0x30040000, LENGTH = 64K     /* AHB2 SRAM */
+    ITCM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
+
+/* brainless copy paste for stack code. Results in ambiguous hard crash */
+/* _ld_default_stack_size = 20K; */
 
 /* Define tho top end of the stack.  The stack is full descending so begins just
    above last byte of RAM.  Note that EABI requires the stack to be 8-byte
@@ -157,6 +160,51 @@ SECTIONS
         . = . + _minimum_stack_size;
         . = ALIGN(4);
     } >RAM
+
+    /* itcm stuff doesn't work, results in arcane hard crashes
+    .itcm :
+    {
+        . = ALIGN(4);
+
+        *(.itcm.*)
+
+        . = ALIGN(4);
+    } > ITCM AT> FLASH_TEXT
+    _ld_itcm_destination = ADDR(.itcm);
+    _ld_itcm_flash_copy = LOADADDR(.itcm);
+    _ld_itcm_size = SIZEOF(.itcm);
+
+    .dtcm_data :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_data.*)
+
+        . = ALIGN(4);
+    } > DTCM AT> FLASH_TEXT
+    _ld_dtcm_data_destination = ADDR(.dtcm_data);
+    _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
+    _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    .dtcm_bss :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_bss.*)
+
+        . = ALIGN(4);
+    } > DTCM AT> DTCM
+    _ld_dtcm_bss_start = ADDR(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
+
+    .stack :
+    {
+        . = ALIGN(8);
+        _ld_stack_bottom = .;
+        . += _ld_default_stack_size;
+    } > DTCM
+    _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
+    */
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

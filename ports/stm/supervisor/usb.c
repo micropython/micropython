@@ -80,8 +80,10 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     #if defined(STM32H7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #else
+    #elif defined(STM32F4)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #else
+    #error Unsupported processor
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 11);
@@ -103,8 +105,10 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     #if defined(STM32H7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #else
+    #elif defined(STM32F4)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #else
+    #error Unsupported processor
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 10);

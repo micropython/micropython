@@ -26,10 +26,9 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "STM32H743_DISCO"
+#define MICROPY_HW_BOARD_NAME       "NUCLEO STM32H743"
 #define MICROPY_HW_MCU_NAME         "STM32H743"
 
-// #define FLASH_SIZE                  (0x200000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)

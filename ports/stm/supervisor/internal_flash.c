@@ -181,25 +181,6 @@ void supervisor_flash_flush(void) {
             reset_into_safe_mode(FLASH_WRITE_FAIL);
         }
 
-        // __HAL_FLASH_DATA_CACHE_DISABLE();
-        // __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
-
-        // __HAL_FLASH_DATA_CACHE_RESET();
-        // __HAL_FLASH_INSTRUCTION_CACHE_RESET();
-
-        // __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
-        // __HAL_FLASH_DATA_CACHE_ENABLE();
-
-        // // reprogram the sector
-        // for (uint32_t i = 0; i < sector_size; i++) {
-        //     if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, sector_start_addr, (uint64_t)_flash_cache[i]) != HAL_OK) {
-        //         // error occurred during flash write
-        //         HAL_FLASH_Lock(); // lock the flash
-        //         mp_printf(&mp_plat_print, "FLASH WRITE ERROR");
-        //     }
-        //     sector_start_addr += 1;
-        // }
-
         uint32_t * cache_addr = (uint32_t*)_flash_cache;
 
         #if defined(STM32H7)

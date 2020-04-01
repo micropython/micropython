@@ -78,7 +78,6 @@ INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
 
-
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 	CFLAGS += -ggdb
@@ -106,9 +105,9 @@ CFLAGS += -Wno-cast-align
 CFLAGS += -mthumb -mabi=aapcs-linux
 
 # Arm core selection
-MCU_FLAGS_F4 = -mtune=cortex-m4 -mcpu=cortex-m4
-MCU_FLAGS_F7 = -mtune=cortex-m7 -mcpu=cortex-m7
-MCU_FLAGS_H7 = -mtune=cortex-m7 -mcpu=cortex-m7
+MCU_FLAGS_F4 = -mcpu=cortex-m4
+MCU_FLAGS_F7 = -mcpu=cortex-m7
+MCU_FLAGS_H7 = -mcpu=cortex-m7
 CFLAGS += $(MCU_FLAGS_$(MCU_SERIES))
 
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
