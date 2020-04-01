@@ -40,26 +40,6 @@
     void hal_dcd_isr(uint8_t rhport);
 #endif
 
-/*------------------------------------------------------------------*/
-/* delay
- *------------------------------------------------------------------*/
-void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = supervisor_ticks_ms64();
-    uint64_t duration = 0;
-    while (duration < delay) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-            break;
-        }
-        duration = (supervisor_ticks_ms64() - start_tick);
-        // TODO(tannewt): Go to sleep for a little while while we wait.
-    }
-}
-
 extern void SysTick_Handler(void);
 
 __attribute__((section(".ramtext")))
