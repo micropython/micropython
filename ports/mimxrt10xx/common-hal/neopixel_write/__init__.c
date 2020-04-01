@@ -28,6 +28,7 @@
 #include "shared-bindings/neopixel_write/__init__.h"
 
 #include "common-hal/microcontroller/Pin.h"
+#include "supervisor/linker.h"
 #include "supervisor/port.h"
 
 uint64_t next_start_raw_ticks = 0;
