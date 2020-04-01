@@ -29,4 +29,4 @@ for f_name, f, test_vals in functions:
     print(f_name)
     for val in test_vals:
         ret = f(val)
-        print("complex(%.5g, %.5g)" % (ret.real, ret.imag))
+        print("complex(%.4g, %.4g)" % (ret.real, ret.imag))
