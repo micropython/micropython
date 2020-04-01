@@ -403,6 +403,11 @@ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 msgid "Buffer too large and unable to allocate"
 msgstr "huǎn chōng qū tài dà ， wú fǎ fēn pèi"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+#, c-format
+msgid "Buffer too short by %d bytes"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format

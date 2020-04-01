@@ -79,7 +79,9 @@ void board_init(void) {
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
         &pin_PA27, // Reset
-        12000000);
+        12000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
