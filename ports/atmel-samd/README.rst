@@ -1,17 +1,8 @@
-SAMD21x18
-=========
+SAMD21 and SAMD51
+==================
 
-This port brings MicroPython to SAMD21x18 based development boards under the name
-CircuitPython. Supported boards include:
-
--  Adafruit CircuitPlayground Express
--  Adafruit Feather M0 Basic
--  Adafruit Feather M0 Express
--  Adafruit Metro M0 Express
--  Adafruit M0 Bluefruit LE
--  Arduino Zero
--  Arduino MKR Zero
--  Arduino Nano 33 IoT
+This port supports many development boards that utilize SAMD21 and SAMD51 chips. See
+https://circuitpython.org/downloads for all supported boards.
 
 
 Pinout
@@ -138,7 +129,7 @@ utilities.  They can be installed as follows:
 
   .. code-block:: shell
 
-      sudo pacman -S arm-none-eabi-gcc arm-none-eabi-newlib 
+      sudo pacman -S arm-none-eabi-gcc arm-none-eabi-newlib
 
 For other systems, the `GNU Arm Embedded Toolchain <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads>`_
 may be available in binary form.
