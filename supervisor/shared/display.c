@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "shared-module/displayio/__init__.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/TileGrid.h"
@@ -112,6 +113,14 @@ void supervisor_display_move_memory(void) {
         grid->inline_tiles = false;
     }
     MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
+    #if CIRCUITPY_PROTOMATTER
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
+            protomatter_protomatter_obj_t * pm = &displays[i].protomatter;
+                common_hal_protomatter_protomatter_reconstruct(pm, NULL);
+        }
+    }
+    #endif
     #endif
 }
 

@@ -21,6 +21,18 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
+STATIC bool any_display_uses_this_protomatter(protomatter_protomatter_obj_t* pm) {
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
+            framebufferio_framebufferdisplay_obj_t* display = &displays[i].framebuffer_display;
+            if (display->framebuffer == pm) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Check for recursive calls to displayio_background.
 bool displayio_background_in_progress = false;
 
@@ -152,7 +164,9 @@ void reset_displays(void) {
 #if CIRCUITPY_PROTOMATTER
         } else if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
             protomatter_protomatter_obj_t * pm = &displays[i].protomatter;
-            common_hal_protomatter_protomatter_reconstruct(pm, NULL);
+            if(!any_display_uses_this_protomatter(pm)) {
+                common_hal_protomatter_protomatter_deinit(pm);
+            }
 #endif
         } else {
             // Not an active display bus.

@@ -6,7 +6,7 @@
 #include "supervisor/memory.h"
 
 #define _PM_ALLOCATOR _PM_allocator_impl
-#define _PM_FREE _PM_free_impl
+#define _PM_FREE(x) (_PM_free_impl((x)), (x)=NULL, (void)0)
 
 static inline void *_PM_allocator_impl(size_t sz) {
     supervisor_allocation *allocation = allocate_memory(align32_size(sz), true);    
@@ -22,8 +22,6 @@ static inline void _PM_free_impl(void *ptr_in) {
     
     if (allocation) {
         free_memory(allocation);
-    } else {
-        m_free(ptr_in);
     }
 }
 

@@ -78,6 +78,11 @@ void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
     } else {
+        _PM_FREE(self->bufinfo.buf);
+        _PM_FREE(self->core.rgbPins);
+        _PM_FREE(self->core.addr);
+        _PM_FREE(self->core.screenData);
+
         self->framebuffer = NULL;
         self->bufinfo.buf = _PM_allocator_impl(self->bufsize);
         self->bufinfo.len = self->bufsize;
@@ -156,6 +161,7 @@ void common_hal_protomatter_protomatter_deinit(protomatter_protomatter_obj_t* se
     if (self->core.rgbPins) {
         _PM_free(&self->core);
     }
+    memset(&self->core, 0, sizeof(self->core));
 
     self->base.type = NULL;
 }
