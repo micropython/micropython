@@ -48,6 +48,16 @@ $ git checkout <Current supported ESP-IDF commit hash>
 $ git submodule update --init --recursive
 ```
 
+If you need to update your IDF version (i.e. because the build is complaining):
+```bash
+$ cd $ESPIDF
+$ git fetch origin
+$ git checkout <Current supported ESP-IDF commit hash>
+$ git submodule update --init --recursive
+```
+
+Note: If you want to override the supported version, you can set `ESPIDF_SUPHASH_V4` (or `ESPIDF_SUPHASH_V3`) in your `makefile`/`GNUmakefile` (see below).
+
 Note: The ESP IDF v4.x support is currently experimental. It does not
 currently support PPP or wired Ethernet.
 

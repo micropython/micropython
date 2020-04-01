@@ -53,8 +53,8 @@ SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # The git hash of the currently supported ESP IDF version.
 # These correspond to v3.3.1 and v4.0.
-ESPIDF_SUPHASH_V3 := 143d26aa49df524e10fb8e41a71d12e731b9b71d
-ESPIDF_SUPHASH_V4 := a3f3c7bdc3e81d88eba076c31cd92bca9fadd02c
+ESPIDF_SUPHASH_V3 ?= 143d26aa49df524e10fb8e41a71d12e731b9b71d
+ESPIDF_SUPHASH_V4 ?= a3f3c7bdc3e81d88eba076c31cd92bca9fadd02c
 
 define print_supported_git_hash
 $(info Supported git hash (v3.3): $(ESPIDF_SUPHASH_V3))
@@ -95,12 +95,14 @@ $(info Please see README.md for more information)
 $(error Incorrect pyparsing version)
 endif
 else
-$(info ** WARNING **)
+$(info ** ERROR **)
 $(info The git hash of ESP IDF does not match the supported version)
 $(info The build may complete and the firmware may work but it is not guaranteed)
 $(info ESP IDF path:       $(ESPIDF))
 $(info Current git hash:   $(ESPIDF_CURHASH))
 dummy := $(call print_supported_git_hash)
+$(info To update the IDF version (or bypass this check), see ports/esp32/README.md)
+$(error Unsupported IDF version)
 endif
 
 # pretty format of ESP IDF version, used internally by the IDF
