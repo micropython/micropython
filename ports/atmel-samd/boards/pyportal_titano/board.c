@@ -101,7 +101,7 @@ void board_init(void) {
         0, // rotation
         16, // Color depth
         false, // grayscale
-        false, // pixels_i|n_byte_share_row (unused for depths > 8)
+        false, // pixels_in_byte_share_row (unused for depths > 8)
         1, // bytes per cell. Only valid for depths < 8
         false, // reverse_pixels_in_byte. Only valid for depths < 8
         true, // reverse_pixels_in_word
