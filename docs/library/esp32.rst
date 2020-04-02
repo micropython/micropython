@@ -42,7 +42,7 @@ Flash partitions
 ----------------
 
 This class gives access to the partitions in the device's flash memory and includes
-methods to enable over-the-air (OTA) updates..
+methods to enable over-the-air (OTA) updates.
 
 .. class:: Partition(id)
 
