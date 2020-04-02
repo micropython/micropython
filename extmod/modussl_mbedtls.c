@@ -133,6 +133,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     }
 }
 
+// _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
@@ -171,7 +172,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
-    // Debug level (0-4)
+    // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
     mbedtls_debug_set_threshold(0);
     #endif
 
@@ -308,6 +309,22 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     return MP_STREAM_ERROR;
 }
 
+STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
+    size_t len = mp_obj_get_int(len_in);
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+
+    int errcode;
+    int ret = socket_read(self_in, vstr.buf, len, &errcode);
+    if (ret == MP_STREAM_ERROR) {
+        mp_raise_OSError(errcode);
+    }
+
+    vstr.len = ret;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
+
 STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
@@ -326,6 +343,19 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     *errcode = ret;
     return MP_STREAM_ERROR;
 }
+
+STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    int errcode;
+    int r = socket_write(self_in, bufinfo.buf, bufinfo.len, &errcode);
+    if (r == MP_STREAM_ERROR) {
+        mp_raise_OSError(errcode);
+    }
+    return mp_obj_new_int(r);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
@@ -356,7 +386,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     #if MICROPY_PY_USSL_FINALISER

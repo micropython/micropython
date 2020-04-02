@@ -167,10 +167,16 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
 
         if (args->do_handshake.u_bool) {
-            int res = ssl_handshake_status(o->ssl_sock);
+            int r = ssl_handshake_status(o->ssl_sock);
 
-            if (res != SSL_OK) {
-                ussl_raise_error(res);
+            if (r != SSL_OK) {
+                ssl_display_error(r);
+                if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) { // EOF
+                    r = MP_ENOTCONN;
+                } else if (r == SSL_EAGAIN) {
+                    r = MP_EAGAIN;
+                }
+                ussl_raise_error(r);
             }
         }
 
@@ -234,6 +240,22 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int 
     return size;
 }
 
+STATIC mp_obj_t ussl_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
+    size_t len = mp_obj_get_int(len_in);
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+
+    int errcode;
+    mp_uint_t ret = ussl_socket_read(self_in, vstr.buf, len, &errcode);
+    if (ret == MP_STREAM_ERROR) {
+        mp_raise_OSError(errcode);
+    }
+
+    vstr.len = ret;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ussl_socket_recv_obj, ussl_socket_recv);
+
 STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
@@ -242,13 +264,42 @@ STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t siz
         return MP_STREAM_ERROR;
     }
 
-    mp_int_t r = ssl_write(o->ssl_sock, buf, size);
+    mp_int_t r;
+eagain:
+    r = ssl_write(o->ssl_sock, buf, size);
+    if (r == SSL_OK) {
+        // see comment in read method
+        if (o->blocking) {
+            goto eagain;
+        } else {
+            r = SSL_EAGAIN;
+        }
+    }
     if (r < 0) {
+        if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) {
+            return 0; // EOF
+        }
+        if (r == SSL_EAGAIN) {
+            r = MP_EAGAIN;
+        }
         *errcode = r;
         return MP_STREAM_ERROR;
     }
     return r;
 }
+
+STATIC mp_obj_t ussl_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    int errcode;
+    mp_uint_t r = ussl_socket_write(self_in, bufinfo.buf, bufinfo.len, &errcode);
+    if (r == MP_STREAM_ERROR) {
+        mp_raise_OSError(errcode);
+    }
+    return mp_obj_new_int(r);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ussl_socket_send_obj, ussl_socket_send);
 
 STATIC mp_uint_t ussl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
@@ -277,7 +328,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&ussl_socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&ussl_socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ussl_socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     #if MICROPY_PY_USSL_FINALISER
