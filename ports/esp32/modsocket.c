@@ -667,12 +667,10 @@ STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_
         int r = lwip_write(sock->fd, buf, size);
         MP_THREAD_GIL_ENTER();
         if (r > 0) {
-            printf("socket_stream_write wrote %d\n", r);
             return r;
         }
         // lwip returns MP_EINPROGRESS when trying to write right after a non-blocking connect
         if (r < 0 && errno != MP_EWOULDBLOCK && errno != MP_EINPROGRESS) {
-            printf("socket_stream_write error %d\n", errno);
             *errcode = errno;
             return MP_STREAM_ERROR;
         }

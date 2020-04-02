@@ -241,7 +241,7 @@ STATIC mp_uint_t ussl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int 
 }
 
 STATIC mp_obj_t ussl_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    size_t len = mp_obj_get_int(len_in);
+    size_t len = mp_obj_int_get_uint_checked(len_in);
     vstr_t vstr;
     vstr_init_len(&vstr, len);
 
@@ -267,8 +267,8 @@ STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t siz
     mp_int_t r;
 eagain:
     r = ssl_write(o->ssl_sock, buf, size);
-    if (r == SSL_OK) {
-        // see comment in read method
+    if (r == 0) {
+        // see comment in ussl_socket_read above
         if (o->blocking) {
             goto eagain;
         } else {
