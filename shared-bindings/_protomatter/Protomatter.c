@@ -80,7 +80,7 @@ STATIC void claim_pins_nr(mp_obj_t seq) {
 //|
 //|   Create a Protomatter object with the given attributes.  The height of
 //|   the display is determined by the number of rgb and address pins:
-//|   len(rgb_pins)/3 * 2 ** len(address_pins).  With 6 RGB pins and 4
+//|   len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
 //|   address lines, the display will be 32 pixels tall.
 //|
 //|   Up to 30 RGB pins and 8 address pins are supported.
