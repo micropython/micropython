@@ -167,10 +167,16 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
         o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
 
         if (args->do_handshake.u_bool) {
-            int res = ssl_handshake_status(o->ssl_sock);
+            int r = ssl_handshake_status(o->ssl_sock);
 
-            if (res != SSL_OK) {
-                ussl_raise_error(res);
+            if (r != SSL_OK) {
+                ssl_display_error(r);
+                if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) { // EOF
+                    r = MP_ENOTCONN;
+                } else if (r == SSL_EAGAIN) {
+                    r = MP_EAGAIN;
+                }
+                ussl_raise_error(r);
             }
         }
 
@@ -242,8 +248,24 @@ STATIC mp_uint_t ussl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t siz
         return MP_STREAM_ERROR;
     }
 
-    mp_int_t r = ssl_write(o->ssl_sock, buf, size);
+    mp_int_t r;
+eagain:
+    r = ssl_write(o->ssl_sock, buf, size);
+    if (r == 0) {
+        // see comment in ussl_socket_read above
+        if (o->blocking) {
+            goto eagain;
+        } else {
+            r = SSL_EAGAIN;
+        }
+    }
     if (r < 0) {
+        if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) {
+            return 0; // EOF
+        }
+        if (r == SSL_EAGAIN) {
+            r = MP_EAGAIN;
+        }
         *errcode = r;
         return MP_STREAM_ERROR;
     }

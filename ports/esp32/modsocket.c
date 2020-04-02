@@ -565,7 +565,8 @@ int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
         MP_THREAD_GIL_EXIT();
         int r = lwip_write(sock->fd, data + sentlen, datalen - sentlen);
         MP_THREAD_GIL_ENTER();
-        if (r < 0 && errno != EWOULDBLOCK) {
+        // lwip returns EINPROGRESS when trying to send right after a non-blocking connect
+        if (r < 0 && errno != EWOULDBLOCK && errno != EINPROGRESS) {
             mp_raise_OSError(errno);
         }
         if (r > 0) {
@@ -574,7 +575,7 @@ int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {
         check_for_exceptions();
     }
     if (sentlen == 0) {
-        mp_raise_OSError(MP_ETIMEDOUT);
+        mp_raise_OSError(sock->retries == 0 ? MP_EWOULDBLOCK : MP_ETIMEDOUT);
     }
     return sentlen;
 }
@@ -657,7 +658,8 @@ STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_
         if (r > 0) {
             return r;
         }
-        if (r < 0 && errno != EWOULDBLOCK) {
+        // lwip returns MP_EINPROGRESS when trying to write right after a non-blocking connect
+        if (r < 0 && errno != EWOULDBLOCK && errno != EINPROGRESS) {
             *errcode = errno;
             return MP_STREAM_ERROR;
         }
