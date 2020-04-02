@@ -96,11 +96,8 @@ C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
-# STM32 apparently also uses undefined preprocessor variables quite casually,
-# so we can't do warning checks for these.
-CFLAGS += -Wno-undef
-# STM32 might do casts that increase alignment requirements.
-CFLAGS += -Wno-cast-align
+# STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
+CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align
 
 CFLAGS += -mthumb -mabi=aapcs-linux
 

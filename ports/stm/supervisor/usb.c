@@ -80,7 +80,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     #if defined(STM32H7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif defined(STM32F4)
+    #elif defined(STM32F4) || defined(STM32F7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     #else
     #error Unsupported processor
@@ -105,7 +105,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     #if defined(STM32H7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif defined(STM32F4)
+    #elif defined(STM32F4) || defined(STM32F7)
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     #else
     #error Unsupported processor
@@ -128,7 +128,6 @@ void init_usb_hardware(void) {
     __HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
 #else
     /* Peripheral clock enable */
-    __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 #endif
 

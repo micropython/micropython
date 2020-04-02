@@ -49,27 +49,47 @@ typedef struct {
 
 #if defined(STM32F4)
 
-STATIC const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x04000, 4 },
-    { 0x08010000, 0x10000, 1 },
-    { 0x08020000, 0x20000, 3 },
-    #if defined(FLASH_SECTOR_8)
-    { 0x08080000, 0x20000, 4 },
-    #endif
-    #if defined(FLASH_SECTOR_12)
-    { 0x08100000, 0x04000, 4 },
-    { 0x08110000, 0x10000, 1 },
-    { 0x08120000, 0x20000, 7 },
-    #endif
-};
-STATIC uint8_t  _flash_cache[0x4000] __attribute__((aligned(4)));
+    STATIC const flash_layout_t flash_layout[] = {
+        { 0x08000000, 0x04000, 4 },
+        { 0x08010000, 0x10000, 1 },
+        { 0x08020000, 0x20000, 3 },
+        #if defined(FLASH_SECTOR_8)
+        { 0x08080000, 0x20000, 4 },
+        #endif
+        #if defined(FLASH_SECTOR_12)
+        { 0x08100000, 0x04000, 4 },
+        { 0x08110000, 0x10000, 1 },
+        { 0x08120000, 0x20000, 7 },
+        #endif
+    };
+    STATIC uint8_t  _flash_cache[0x4000] __attribute__((aligned(4)));
 
+#elif defined(STM32F7)
+
+    // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
+    // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
+    #define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
+    #if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+    static const flash_layout_t flash_layout[] = {
+        { 0x08000000, 0x04000, 4 },
+        { 0x08010000, 0x10000, 1 },
+        { 0x08020000, 0x20000, 3 },
+    };
+    STATIC uint8_t  _flash_cache[0x4000] __attribute__((aligned(4)));
+    #else
+    static const flash_layout_t flash_layout[] = {
+        { 0x08000000, 0x08000, 4 },
+        { 0x08020000, 0x20000, 1 },
+        { 0x08040000, 0x40000, 3 },
+    };
+    STATIC uint8_t  _flash_cache[0x8000] __attribute__((aligned(4)));
+    #endif
 #elif defined(STM32H7)
 
-STATIC const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 16 },
-};
-STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
+    STATIC const flash_layout_t flash_layout[] = {
+        { 0x08000000, 0x20000, 16 },
+    };
+    STATIC uint8_t  _flash_cache[0x20000] __attribute__((aligned(4)));
 
 #else
     #error Unsupported processor

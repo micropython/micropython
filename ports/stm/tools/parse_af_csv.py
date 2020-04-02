@@ -102,7 +102,7 @@ with open(sys.argv[1]) as csv_file:
         for i in range(len(todo)):
             ins = (todo[i][0]).lower() + '_' + (todo[i][1]).lower() + '_'
             #      const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4] = {
-            print("const mcu_" + ins +  "obj_t mcu_" + ins + "list[" + str(len(outlist[i])) + "] = {")
+            print("const mcu_periph_obj_t mcu_" + ins + "list[" + str(len(outlist[i])) + "] = {")
             for row in outlist[i]:
                 print("    PERIPH(" + row[0] + ", " + str(row[1]) + ", &pin_" + row[2] + "),")
             print("};")

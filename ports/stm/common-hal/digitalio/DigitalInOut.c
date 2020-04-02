@@ -32,6 +32,8 @@
 //TODO: rework this module to use HAL only
 #ifdef STM32H743xx
 #include "stm32h7xx_ll_gpio.h"
+#elif STM32F767xx
+#include "stm32f7xx_ll_gpio.h"
 #else
 #include "stm32f4xx_ll_gpio.h"
 #endif
