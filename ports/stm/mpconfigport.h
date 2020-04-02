@@ -28,14 +28,19 @@
 #ifndef STM32_MPCONFIGPORT_H__
 #define STM32_MPCONFIGPORT_H__
 
+#include <stdint.h>
+
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
 #define MICROPY_PY_UJSON                         (1)
 
+extern uint8_t _ld_default_stack_size;
+
 // 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
+// #define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
+#define CIRCUITPY_DEFAULT_STACK_SIZE            ((uint32_t) &_ld_default_stack_size)
 
 #include "py/circuitpy_mpconfig.h"
 

@@ -1,32 +1,19 @@
-/*
-    GNU linker script for STM32F411 via Micropython
+/* Memory layout for cases with itcm and dtcm
+
+    FLASH_ISR   .isr_vector
+    FLASH_TEXT  .text
+    FLASH_TEXT  .data
+    FLASH_FS    // ignored for fs use
+
+    RAM         .data
+    RAM         .bss
+    RAM         .heap
+
+    ITCM        .itcm
+    DTCM        .dtcm_data
+    DTCM        .dtcm_bss
+    DTCM        .stack
 */
-
-/* Specify the memory areas */
-MEMORY
-{
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* entire flash */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
-    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 32K /* sectors 1,2 are 16K */
-    FLASH_NVM (rwx) : ORIGIN = 0x0800C000, LENGTH = 16K /* sector 3 is 16K */
-    FLASH_TEXT (rx) : ORIGIN = 0x08010000, LENGTH = 448K /* sector 4 is 64K, sectors 5,6,7 are 128K */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
-}
-
-/* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 2K;
-_minimum_heap_size = 16K;
-
-/* Define the top end of the stack.  The stack is full descending so begins just
-   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
-   aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
-
-/* RAM extents for the garbage collector */
-_ram_start = ORIGIN(RAM);
-_ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = 0x2001c000; /* tunable */
 
 ENTRY(Reset_Handler)
 
@@ -45,14 +32,6 @@ SECTIONS
 
         . = ALIGN(4);
     } >FLASH_ISR
-
-    /* Non-volitile memory */
-    .nvm_data :
-    {
-        . = ALIGN(4);
-        KEEP(*(.nvm_data))
-        . = ALIGN(4);
-    } >FLASH_NVM
 
     /* The program code and other data goes into FLASH */
     .text :
@@ -83,6 +62,9 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM AT> FLASH_TEXT
+    _ld_d1_ram_data_destination = ADDR(.data);
+    _ld_d1_ram_data_flash_copy = LOADADDR(.data);
+    _ld_d1_ram_data_size = SIZEOF(.data);
 
     /* Uninitialized data section */
     .bss :
@@ -95,6 +77,10 @@ SECTIONS
         . = ALIGN(4);
         _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
     } >RAM
+    _ld_d1_ram_bss_start = ADDR(.bss);
+    _ld_d1_ram_bss_size = SIZEOF(.bss);
+    _ld_heap_start = _ld_d1_ram_bss_start + _ld_d1_ram_bss_size;
+    _ld_heap_end = ORIGIN(RAM) + LENGTH(RAM);
 
     /* this is to define the start of the heap, and make sure we have a minimum size */
     .heap :
@@ -104,15 +90,50 @@ SECTIONS
         . = ALIGN(4);
     } >RAM
 
-    /* this just checks there is enough RAM for the stack */
-    .stack :
+    /* itcm stuff */
+    .itcm :
     {
         . = ALIGN(4);
-        . = . + _minimum_stack_size;
+
+        *(.itcm.*)
+
         . = ALIGN(4);
-    } >RAM
+    } > ITCM AT> FLASH_TEXT
+    _ld_itcm_destination = ADDR(.itcm);
+    _ld_itcm_flash_copy = LOADADDR(.itcm);
+    _ld_itcm_size = SIZEOF(.itcm);
+
+    .dtcm_data :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_data.*)
+
+        . = ALIGN(4);
+    } > DTCM AT> FLASH_TEXT
+    _ld_dtcm_data_destination = ADDR(.dtcm_data);
+    _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
+    _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    .dtcm_bss :
+    {
+        . = ALIGN(4);
+
+        *(.dtcm_bss.*)
+
+        . = ALIGN(4);
+    } > DTCM AT> DTCM
+    _ld_dtcm_bss_start = ADDR(.dtcm_bss);
+    _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
+
+    .stack :
+    {
+        . = ALIGN(8);
+        _ld_stack_bottom = .;
+        . += _ld_default_stack_size;
+    } > DTCM
+    _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
+    
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-

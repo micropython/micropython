@@ -93,7 +93,8 @@ endif
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 
-CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Werror -Wall -std=gnu11 $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
+# Removed -nostdlib since it conflicts with stm32 startup files
 
 # Undo some warnings.
 # STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
@@ -107,6 +108,7 @@ MCU_FLAGS_F7 = -mcpu=cortex-m7
 MCU_FLAGS_H7 = -mcpu=cortex-m7
 CFLAGS += $(MCU_FLAGS_$(MCU_SERIES))
 
+# Select HAL file for distribution via mpconfigport
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 
 # Floating point settings
@@ -132,7 +134,7 @@ ifndef BOOTLOADER_OFFSET
 	BOOTLOADER_OFFSET := 0x8000000
 endif
 
-LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-T,$(LD_COMMON) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 LDFLAGS += -mthumb $(MCU_FLAGS_$(MCU_SERIES))
@@ -143,7 +145,13 @@ LIBS += -lm
 endif
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32$(MCU_SERIES) -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
+CFLAGS += \
+	-DCFG_TUSB_MCU=OPT_MCU_STM32$(MCU_SERIES) \
+	-DCFG_TUD_CDC_RX_BUFSIZE=1024 \
+	-DCFG_TUD_CDC_TX_BUFSIZE=1024 \
+	-DCFG_TUD_MSC_BUFSIZE=4096 \
+	-DCFG_TUD_MIDI_RX_BUFSIZE=128 \
+	-DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	hal_adc.c \
@@ -218,7 +226,7 @@ endif
 
 SRC_S = \
 	supervisor/cpu.s \
-	boards/startup_$(MCU_VARIANT_LOWER).s
+	st_driver/CMSIS/Device/ST/STM32$(MCU_SERIES)xx/Source/Templates/gcc/startup_$(MCU_VARIANT_LOWER).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -241,6 +249,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
+#OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 

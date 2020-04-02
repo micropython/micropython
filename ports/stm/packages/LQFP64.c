@@ -35,7 +35,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PB01), MP_ROM_PTR(&pin_PB01) },
   { MP_ROM_QSTR(MP_QSTR_PB02), MP_ROM_PTR(&pin_PB02) },
   { MP_ROM_QSTR(MP_QSTR_PB10), MP_ROM_PTR(&pin_PB10) },
-#if MCU_LINE == FOUNDATION || MCU_LINE == ADVANCED
+#if defined(STM32F405xx) || defined(STM32F412Zx) || defined(STM32F407xx) || defined(STM32F767xx)
   { MP_ROM_QSTR(MP_QSTR_PB11), MP_ROM_PTR(&pin_PB11) },
 #endif //or VCAP1 -----------------------------------*/
   // VCAP1 or VSS -----------------------------------*/

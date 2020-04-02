@@ -12,5 +12,6 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F411xE
 MCU_PACKAGE = UFQFPN48
 
-LD_FILE = boards/STM32F411VETx_FLASH.ld
+LD_COMMON = boards/common_default.ld 
+LD_FILE = boards/STM32F411_fs.ld
 

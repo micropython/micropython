@@ -10,5 +10,6 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F407xx
 MCU_PACKAGE = LQFP100_f4
 
+LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F407_fs.ld
 

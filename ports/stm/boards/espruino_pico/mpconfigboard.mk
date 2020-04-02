@@ -10,5 +10,6 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F401xE
 MCU_PACKAGE = UFQFPN48
 
+LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F401xd_fs.ld # use for internal flash
 
