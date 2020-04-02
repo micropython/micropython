@@ -149,10 +149,10 @@ STATIC mp_obj_t esp32_hall_sensor(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
 STATIC mp_obj_t esp32_espidf_heap_info(void) {
-#if 0
+    #if 0
     heap_caps_print_heap_info(MALLOC_CAP_8BIT);
     return mp_obj_new_int(0);
-#else
+    #else
     multi_heap_info_t info;
     heap_t *heap;
     mp_obj_t heap_list = mp_obj_new_list(0, 0);
@@ -170,7 +170,7 @@ STATIC mp_obj_t esp32_espidf_heap_info(void) {
         }
     }
     return heap_list;
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_espidf_heap_info_obj, esp32_espidf_heap_info);
 
