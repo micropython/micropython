@@ -65,7 +65,8 @@ Functions
 Flash partitions
 ----------------
 
-This class gives access to the partitions in the device's flash memory.
+This class gives access to the partitions in the device's flash memory and includes
+methods to enable over-the-air (OTA) updates.
 
 .. class:: Partition(id)
 
@@ -75,7 +76,8 @@ This class gives access to the partitions in the device's flash memory.
 .. classmethod:: Partition.find(type=TYPE_APP, subtype=0xff, label=None)
 
     Find a partition specified by *type*, *subtype* and *label*.  Returns a
-    (possibly empty) list of Partition objects.
+    (possibly empty) list of Partition objects. Note: ``subtype=0xff`` matches any subtype
+    and ``label=None`` matches any label.
 
 .. method:: Partition.info()
 
@@ -98,6 +100,19 @@ This class gives access to the partitions in the device's flash memory.
 .. method:: Partition.get_next_update()
 
     Gets the next update partition after this one, and returns a new Partition object.
+    Typical usage is ``Partition(Partition.RUNNING).get_next_update()``
+    which returns the next partition to update given the current running one.
+
+.. classmethod:: Partition.mark_app_valid_cancel_rollback()
+
+    Signals that the current boot is considered successful.
+    Calling ``mark_app_valid_cancel_rollback`` is required on the first boot of a new
+    partition to avoid an automatic rollback at the next boot.
+    This uses the ESP-IDF "app rollback" feature with "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
+    and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
+    feature enabled.
+    It is OK to call ``mark_app_valid_cancel_rollback`` on every boot and it is not
+    necessary when booting firmare that was loaded using esptool.
 
 Constants
 ~~~~~~~~~
@@ -105,12 +120,16 @@ Constants
 .. data:: Partition.BOOT
           Partition.RUNNING
 
-    Used in the `Partition` constructor to fetch various partitions.
+    Used in the `Partition` constructor to fetch various partitions: ``BOOT`` is the
+    partition that will be booted at the next reset and ``RUNNING`` is the currently
+    running partition.
 
 .. data:: Partition.TYPE_APP
           Partition.TYPE_DATA
 
-    Used in `Partition.find` to specify the partition type.
+    Used in `Partition.find` to specify the partition type: ``APP`` is for bootable
+    firmware partitions (typically labelled ``factory``, ``ota_0``, ``ota_1``), and
+    ``DATA`` is for other partitions, e.g. ``nvs``, ``otadata``, ``phy_init``, ``vfs``.
 
 .. data:: HEAP_DATA
           HEAP_EXEC
