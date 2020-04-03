@@ -342,4 +342,9 @@ void mp_unix_mark_exec(void);
 #include <stdio.h>
 #endif
 
+#if MICROPY_PY_THREAD
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0)
+#define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
+#endif
+
 #endif // MICROPY_UNIX_MINIMAL
