@@ -48,7 +48,7 @@
 static uint8_t refcount = 0;
 static uint8_t pulsein_tc_index = 0xff;
 
-static uint32_t overflow_count = 0;
+volatile static uint32_t overflow_count = 0;
 
 void pulsein_timer_interrupt_handler(uint8_t index) {
     if (index != pulsein_tc_index) return;
@@ -91,7 +91,13 @@ void pulsein_interrupt_handler(uint8_t channel) {
         self->first_edge = false;
         pulsein_set_config(self, false);
     } else {
+        // Sometimes we beat the overflow interrupt so just fudge overflow in
+        // that case.
+        if (current_count < self->last_count && current_overflow == self->last_overflow) {
+            current_overflow += 1;
+        }
         uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
+        // The SAMD21 clock is 48mhz. We prescale it to 3mhz so // 3 here.
         #ifdef SAMD21
         total_diff /= 3;
         #endif
@@ -133,8 +139,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->start = 0;
     self->len = 0;
     self->first_edge = true;
-    self->last_overflow = 0;
-    self->last_count = 0;
     self->errored_too_fast = false;
 
     if (refcount == 0) {
@@ -178,11 +182,20 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         #endif
 
         tc_set_enable(tc, true);
+
+        // Clear our interrupt in case it was set earlier
+        tc->COUNT16.INTFLAG.reg = TC_INTFLAG_OVF;
+        tc->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
+        tc_enable_interrupts(pulsein_tc_index);
         tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
+
+        //mp_printf(&mp_plat_print, "timer started\n");
 
         overflow_count = 0;
     }
     refcount++;
+    self->last_overflow = overflow_count;
+    self->last_count = 0;
 
     set_eic_channel_data(pin->extint_channel, (void*) self);
 
