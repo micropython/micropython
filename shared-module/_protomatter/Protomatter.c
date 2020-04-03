@@ -180,3 +180,15 @@ void protomatter_protomatter_collect_ptrs(protomatter_protomatter_obj_t* self) {
     gc_collect_ptr(self->core.screenData);
 }
 
+void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t* self, bool paused) {
+    if (paused && !self->paused) {
+        _PM_stop(&self->core);
+    } else if (!paused && self->paused) {
+        _PM_resume(&self->core);
+    }
+    self->paused = paused;
+}
+
+bool common_hal_protomatter_protomatter_get_paused(protomatter_protomatter_obj_t* self) {
+    return self->paused;
+}

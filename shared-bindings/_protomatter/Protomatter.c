@@ -193,7 +193,7 @@ static void check_for_deinit(protomatter_protomatter_obj_t *self) {
 STATIC mp_obj_t protomatter_protomatter_get_paused(mp_obj_t self_in) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    return mp_obj_new_bool(self->paused);
+    return mp_obj_new_bool(common_hal_protomatter_protomatter_get_paused(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_paused_obj, protomatter_protomatter_get_paused);
 
@@ -201,12 +201,7 @@ STATIC mp_obj_t protomatter_protomatter_set_paused(mp_obj_t self_in, mp_obj_t va
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
     bool paused = mp_obj_is_true(value_in);
-    if (paused && !self->paused) {
-        _PM_stop(&self->core);
-    } else if (!paused && self->paused) {
-        _PM_resume(&self->core);
-    }
-    self->paused = paused;
+    common_hal_protomatter_protomatter_set_paused(self, paused);
 
     return mp_const_none;
 }
@@ -262,7 +257,7 @@ STATIC void protomatter_protomatter_deinit_void(mp_obj_t self_in) {
 }
 
 STATIC void protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_float_t value) {
-    protomatter_protomatter_set_paused(self_in, mp_obj_new_bool(value <= 0));
+    common_hal_protomatter_protomatter_set_paused(self_in, value <= 0);
 }
 
 STATIC const framebuffer_p_t protomatter_protomatter_proto = {
