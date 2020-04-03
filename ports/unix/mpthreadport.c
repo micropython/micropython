@@ -60,7 +60,9 @@ typedef struct _thread_t {
 
 STATIC pthread_key_t tls_key;
 
-// the mutex controls access to the linked list
+// The mutex is used for any code in this port that needs to be thread safe.
+// Specifically for thread management, access to the linked list is one example.
+// But also, e.g. scheduler state.
 STATIC pthread_mutex_t thread_mutex = PTHREAD_MUTEX_INITIALIZER;
 STATIC thread_t *thread;
 
@@ -72,6 +74,14 @@ STATIC sem_t *thread_signal_done_p;
 #else
 STATIC sem_t thread_signal_done;
 #endif
+
+void mp_thread_unix_begin_atomic_section(void) {
+    pthread_mutex_lock(&thread_mutex);
+}
+
+void mp_thread_unix_end_atomic_section(void) {
+    pthread_mutex_unlock(&thread_mutex);
+}
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
@@ -123,14 +133,14 @@ void mp_thread_init(void) {
 }
 
 void mp_thread_deinit(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     while (thread->next != NULL) {
         thread_t *th = thread;
         thread = thread->next;
         pthread_cancel(th->id);
         free(th);
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
     #if defined(__APPLE__)
     sem_close(thread_signal_done_p);
     sem_unlink(thread_signal_done_name);
@@ -146,7 +156,7 @@ void mp_thread_deinit(void) {
 // the global root pointers (in mp_state_ctx) while another thread is doing a
 // garbage collection and tracing these pointers.
 void mp_thread_gc_others(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     for (thread_t *th = thread; th != NULL; th = th->next) {
         gc_collect_root(&th->arg, 1);
         if (th->id == pthread_self()) {
@@ -162,7 +172,7 @@ void mp_thread_gc_others(void) {
         sem_wait(&thread_signal_done);
         #endif
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
 mp_state_thread_t *mp_thread_get_state(void) {
@@ -175,14 +185,14 @@ void mp_thread_set_state(mp_state_thread_t *state) {
 
 void mp_thread_start(void) {
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
             th->ready = 1;
             break;
         }
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
 void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
@@ -217,13 +227,13 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
         goto er;
     }
 
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
 
     // create thread
     pthread_t id;
     ret = pthread_create(&id, &attr, entry, arg);
     if (ret != 0) {
-        pthread_mutex_unlock(&thread_mutex);
+        mp_thread_unix_end_atomic_section();
         goto er;
     }
 
@@ -238,7 +248,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     th->next = thread;
     thread = th;
 
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 
     return;
 
@@ -247,7 +257,7 @@ er:
 }
 
 void mp_thread_finish(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     thread_t *prev = NULL;
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
@@ -261,7 +271,7 @@ void mp_thread_finish(void) {
         }
         prev = th;
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
