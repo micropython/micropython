@@ -110,7 +110,6 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         }
         // Sleep until an interrupt happens.
         port_sleep_until_interrupt();
-        // asm("bkpt");
         duration = (port_get_raw_ticks(NULL) - start_tick);
         port_interrupt_after_ticks(duration);
     }
