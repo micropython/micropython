@@ -54,20 +54,12 @@
 //|
 //|   :param framebuffer: The framebuffer that the display is connected to
 //|   :type framebuffer: any core object implementing the framebuffer protocol
-//|   :param callback: Function or bound method to call when the framebuffer has been updated.  The callback receives one argument, the framebuffer object.
 //|   :param int width: Width in pixels
 //|   :param int height: Height in pixels
-//|   :param int colstart: The index if the first visible column
-//|   :param int rowstart: The index if the first visible row
 //|   :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
 //|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
 //|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
-//|   :param bool grayscale: True if the display only shows a single color.
-//|   :param bool pixels_in_byte_share_row: True when pixels are less than a byte and a byte includes pixels from the same row of the display. When False, pixels share a column.
 //|   :param int bytes_per_cell: Number of bytes per addressable memory location when color_depth < 8. When greater than one, bytes share a row or column according to pixels_in_byte_share_row.
-//|   :param bool reverse_pixels_in_byte: Reverses the pixel order within each byte when color_depth < 8. Does not apply across multiple bytes even if there is more than one byte per cell (bytes_per_cell.)
-//|   :param bool reverse_pixels_in_byte: Reverses the pixel order within each byte when color_depth < 8. Does not apply across multiple bytes even if there is more than one byte per cell (bytes_per_cell.)
-//|   :param bool reverse_bytes_in_word: Reverses the order of bytes within a word when color_depth == 16
 //|   :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|   :param bool brightness: Initial display brightness. This value is ignored if auto_brightness is True.
 //|   :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
@@ -75,20 +67,14 @@
 //|   :param int native_frames_per_second: Number of display refreshes per second
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_framebuffer, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word, ARG_backlight_pin, ARG_brightness, ARG_auto_brightness, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
+    enum { ARG_framebuffer, ARG_width, ARG_height, ARG_rotation, ARG_color_depth, ARG_bytes_per_cell, ARG_backlight_pin, ARG_brightness, ARG_auto_brightness, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_framebuffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
-        { MP_QSTR_colstart, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_rowstart, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
-        { MP_QSTR_grayscale, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
-        { MP_QSTR_pixels_in_byte_share_row, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_bytes_per_cell, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
-        { MP_QSTR_reverse_pixels_in_byte, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
-        { MP_QSTR_reverse_bytes_in_word, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
@@ -117,12 +103,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         self,
         framebuffer,
         args[ARG_width].u_int, args[ARG_height].u_int,
-        args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
-        args[ARG_color_depth].u_int, args[ARG_grayscale].u_bool,
-        args[ARG_pixels_in_byte_share_row].u_bool,
-        args[ARG_bytes_per_cell].u_bool,
-        args[ARG_reverse_pixels_in_byte].u_bool,
-        args[ARG_reverse_bytes_in_word].u_bool,
+        rotation,
+        args[ARG_color_depth].u_int,
+        args[ARG_bytes_per_cell].u_int,
         MP_OBJ_TO_PTR(backlight_pin),
         brightness,
         args[ARG_auto_brightness].u_bool,

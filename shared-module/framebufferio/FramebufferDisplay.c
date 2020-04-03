@@ -42,9 +42,9 @@
 #include "tick.h"
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
-        mp_obj_t framebuffer, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
-        uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
-        uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word,
+        mp_obj_t framebuffer, uint16_t width, uint16_t height,
+        uint16_t rotation, uint16_t color_depth,
+        uint8_t bytes_per_cell,
         const mcu_pin_obj_t* backlight_pin, mp_float_t brightness, bool auto_brightness,
         bool auto_refresh, uint16_t native_frames_per_second) {
     // Turn off auto-refresh as we init.
@@ -55,8 +55,8 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
 
-    displayio_display_core_construct(&self->core, NULL, width, height, ram_width, ram_height, colstart, rowstart, rotation,
-        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte, reverse_bytes_in_word);
+    displayio_display_core_construct(&self->core, NULL, width, height, ram_width, ram_height, 0, 0, rotation,
+        color_depth, false, false, bytes_per_cell, false, false);
 
     self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
