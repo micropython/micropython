@@ -152,7 +152,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
 
         nrfx_timer_init(timer, &timer_config, &timer_overflow_event_handler);
         // Interrupt on overflow so we can track when it rolls over.
-        nrfx_timer_compare(timer, 0, 0, true);
+        nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, 0, true);
+        nrfx_timer_resume(timer);
     }
     refcount++;
 
