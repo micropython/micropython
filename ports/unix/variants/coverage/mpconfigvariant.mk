@@ -1,6 +1,7 @@
 PROG ?= micropython-coverage
 
-COPT = -O0
+# Disable optimisations and enable assert() on coverage builds.
+DEBUG ?= 1
 
 CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
