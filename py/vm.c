@@ -1366,18 +1366,23 @@ pending_exception_check:
                 #if MICROPY_ENABLE_SCHEDULER
                 // This is an inlined variant of mp_handle_pending
                 if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    MARK_EXC_IP_SELECTIVE();
                     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                    if (obj != MP_OBJ_NULL) {
-                        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                        if (!mp_sched_num_pending()) {
-                            MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                    // Re-check state is still pending now that we're in the atomic section.
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+                        MARK_EXC_IP_SELECTIVE();
+                        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                        if (obj != MP_OBJ_NULL) {
+                            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                            if (!mp_sched_num_pending()) {
+                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                            }
+                            MICROPY_END_ATOMIC_SECTION(atomic_state);
+                            RAISE(obj);
                         }
+                        mp_handle_pending_tail(atomic_state);
+                    } else {
                         MICROPY_END_ATOMIC_SECTION(atomic_state);
-                        RAISE(obj);
                     }
-                    mp_handle_pending_tail(atomic_state);
                 }
                 #else
                 // This is an inlined variant of mp_handle_pending
