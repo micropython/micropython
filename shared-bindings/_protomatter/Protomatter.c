@@ -214,7 +214,7 @@ const mp_obj_property_t protomatter_protomatter_paused_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: write(buf)
+//|   .. method:: swapbuffers()
 //|
 //|     Transmits the color data in the buffer to the pixels so that they are shown.
 //|
