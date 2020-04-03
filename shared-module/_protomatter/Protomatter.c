@@ -163,7 +163,14 @@ void common_hal_protomatter_protomatter_deinit(protomatter_protomatter_obj_t* se
     }
     memset(&self->core, 0, sizeof(self->core));
 
+    // If it was supervisor-allocated, it is supervisor-freed and the pointer
+    // is zeroed, otherwise the pointer is just zeroed
+    _PM_FREE(self->bufinfo.buf);
     self->base.type = NULL;
+
+    // If a framebuffer was passed in to the constructor, NULL the reference
+    // here so that it will become GC'able
+    self->framebuffer = NULL;
 }
 
 void protomatter_protomatter_collect_ptrs(protomatter_protomatter_obj_t* self) {
