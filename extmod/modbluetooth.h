@@ -108,6 +108,9 @@
 #define MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS           (1 << 12)
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                 (1 << 13)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE               (1 << 14)
+#define MP_BLUETOOTH_IRQ_GATTC_SERVICES_COMPLETE         (1 << 15)
+#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTICS_COMPLETE  (1 << 16)
+#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTORS_COMPLETE      (1 << 17)
 #define MP_BLUETOOTH_IRQ_ALL                          (0x3fffffff)
 
 /*
@@ -130,6 +133,9 @@ _IRQ_GATTC_READ_RESULT               = const(1 << 11)
 _IRQ_GATTC_WRITE_STATUS              = const(1 << 12)
 _IRQ_GATTC_NOTIFY                    = const(1 << 13)
 _IRQ_GATTC_INDICATE                  = const(1 << 14)
+_IRQ_GATTC_SERVICES_COMPLETE         = const(1 << 15)
+_IRQ_GATTC_CHARACTERISTICS_COMPLETE  = const(1 << 16)
+_IRQ_GATTC_DESCRIPTORS_COMPLETE      = const(1 << 17)
 _IRQ_ALL                             = const(0xffff)
 */
 
@@ -251,6 +257,9 @@ void mp_bluetooth_gap_on_scan_complete(void);
 
 // Notify modbluetooth of a scan result.
 void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len);
+
+// Notify modbluetooth that service, characteristic or descriptor discovery has finished.
+void mp_bluetooth_gattc_on_discover_complete(uint32_t event, uint16_t conn_handle, uint16_t status);
 
 // Notify modbluetooth that a service was found (either by discover-all, or discover-by-uuid).
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid);

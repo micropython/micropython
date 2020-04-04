@@ -127,6 +127,15 @@ Event Handling
             elif event == _IRQ_GATTC_INDICATE:
                 # A peripheral has sent an indicate request.
                 conn_handle, value_handle, notify_data = data
+            elif event == _IRQ_GATTC_SERVICES_COMPLETE:
+                # GATTC services discover operation completed.
+                conn_handle, status = data
+            elif event == _IRQ_GATTC_CHARACTERISTICS_COMPLETE:
+                # GATTC characteristics discover operation completed.
+                conn_handle, status = data
+            elif event == _IRQ_GATTC_DESCRIPTORS_COMPLETE:
+                # GATTC descriptors discover operation completed.
+                conn_handle, status = data
 
 The event codes are::
 
@@ -146,6 +155,9 @@ The event codes are::
     _IRQ_GATTC_WRITE_STATUS              = const(1 << 12)
     _IRQ_GATTC_NOTIFY                    = const(1 << 13)
     _IRQ_GATTC_INDICATE                  = const(1 << 14)
+    _IRQ_GATTC_SERVICES_COMPLETE         = const(1 << 15)
+    _IRQ_GATTC_CHARACTERISTICS_COMPLETE  = const(1 << 16)
+    _IRQ_GATTC_DESCRIPTORS_COMPLETE      = const(1 << 17)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your

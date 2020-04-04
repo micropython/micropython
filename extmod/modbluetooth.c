@@ -872,6 +872,9 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT) {
             // conn_handle, start_handle, end_handle, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, &o->irq_data_uuid, NULL);
+        } else if (event == MP_BLUETOOTH_IRQ_GATTC_SERVICES_COMPLETE || event == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTICS_COMPLETE || event == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTORS_COMPLETE) {
+            // conn_handle, status
+            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT) {
             // conn_handle, def_handle, value_handle, properties, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 1, NULL, 0, &o->irq_data_uuid, NULL);
@@ -996,6 +999,16 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
         for (size_t i = 0; i < data_len; ++i) {
             ringbuf_put(&o->ringbuf, data[i]);
         }
+    }
+    schedule_ringbuf(atomic_state);
+}
+
+void mp_bluetooth_gattc_on_discover_complete(uint32_t event, uint16_t conn_handle, uint16_t status) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2, event)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, status);
     }
     schedule_ringbuf(atomic_state);
 }
