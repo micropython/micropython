@@ -306,6 +306,7 @@ void reset_port(void) {
 #endif
     eic_reset();
 #if CIRCUITPY_PULSEIO
+    pulsein_reset();
     pulseout_reset();
     pwmout_reset();
 #endif

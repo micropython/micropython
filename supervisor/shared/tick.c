@@ -79,39 +79,36 @@ uint32_t supervisor_ticks_ms32() {
 extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    uint8_t subticks;
-    uint64_t now = port_get_raw_ticks(&subticks);
-
-    if (now == background_ticks && (subticks & 0x3) != 0) {
-        return;
-    }
-    background_ticks = now;
-
+    // TODO: Add a global that can be set by anyone to indicate we should run background tasks. That
+    // way we can short circuit the background tasks early. We used to do it based on time but it
+    // breaks cases where we wake up for a short period and then sleep. If we skipped the last
+    // background task or more before sleeping we may end up starving a task like USB.
     run_background_tasks();
-}
-
-void supervisor_fake_tick() {
-    uint32_t now = port_get_raw_ticks(NULL);
-    background_ticks = (now - 1);
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = port_get_raw_ticks(NULL);
     // Adjust the delay to ticks vs ms.
     delay = delay * 1024 / 1000;
-    uint64_t duration = 0;
-    port_interrupt_after_ticks(delay);
-    while (duration < delay) {
+    uint64_t end_tick = start_tick + delay;
+    int64_t remaining = delay;
+    while (remaining > 0) {
         RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
         if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
            MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
             break;
         }
+        remaining = end_tick - port_get_raw_ticks(NULL);
+        // We break a bit early so we don't risk setting the alarm before the time when we call
+        // sleep.
+        if (remaining < 1) {
+            break;
+        }
+        port_interrupt_after_ticks(remaining);
         // Sleep until an interrupt happens.
         port_sleep_until_interrupt();
-        duration = (port_get_raw_ticks(NULL) - start_tick);
-        port_interrupt_after_ticks(duration);
+        remaining = end_tick - port_get_raw_ticks(NULL);
     }
 }
 

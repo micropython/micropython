@@ -79,6 +79,11 @@ void pulsein_interrupt_handler(uint8_t channel) {
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
     Tc* tc = tc_insts[pulsein_tc_index];
+    #ifdef SAMD51
+    tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
+    while (tc->COUNT16.SYNCBUSY.bit.COUNT == 1 ||
+           tc->COUNT16.CTRLBSET.bit.CMD == TC_CTRLBSET_CMD_READSYNC_Val) {}
+    #endif
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
@@ -117,6 +122,12 @@ void pulsein_interrupt_handler(uint8_t channel) {
     }
     self->last_overflow = current_overflow;
     self->last_count = current_count;
+}
+
+void pulsein_reset() {
+    refcount = 0;
+    pulsein_tc_index = 0xff;
+    overflow_count = 0;
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
@@ -188,8 +199,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         tc->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
         tc_enable_interrupts(pulsein_tc_index);
         tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
-
-        //mp_printf(&mp_plat_print, "timer started\n");
 
         overflow_count = 0;
     }
