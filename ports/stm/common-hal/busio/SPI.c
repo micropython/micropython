@@ -40,6 +40,7 @@
 
 //arrays use 0 based numbering: SPI1 is stored at index 0
 #define MAX_SPI 6
+
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
 
@@ -48,14 +49,24 @@ STATIC void spi_clock_enable(uint8_t mask);
 STATIC void spi_clock_disable(uint8_t mask);
 
 STATIC uint32_t get_busclock(SPI_TypeDef * instance) {
-    //SPI2 and 3 are on PCLK1, if they exist.
-    #ifdef SPI2
-        if (instance == SPI2) return HAL_RCC_GetPCLK1Freq();
+    #if (CPY_STM32H7)
+        if (instance == SPI1 || instance == SPI2 || instance == SPI3) {
+            return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123);
+        } else if (instance == SPI4 || instance == SPI5) {
+            return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45);
+        } else {
+            return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
+        }
+    #elif (CPY_STM32F4 || CPY_STM32F7)
+        //SPI2 and 3 are on PCLK1, if they exist.
+        #ifdef SPI2
+            if (instance == SPI2) return HAL_RCC_GetPCLK1Freq();
+        #endif
+        #ifdef SPI3
+            if (instance == SPI3) return HAL_RCC_GetPCLK1Freq();
+        #endif
+        return HAL_RCC_GetPCLK2Freq();
     #endif
-    #ifdef SPI3
-        if (instance == SPI3) return HAL_RCC_GetPCLK1Freq();
-    #endif
-    return HAL_RCC_GetPCLK2Freq();
 }
 
 STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t * prescaler, uint32_t busclock) {
@@ -107,6 +118,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
     bool spi_taken = false;
+    bool search_done = false;
 
     //SCK is not optional. MOSI and MISO are
     for (uint i = 0; i < sck_len; i++) {
@@ -130,10 +142,19 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 self->sck = &mcu_spi_sck_list[i];
                                 self->mosi = &mcu_spi_mosi_list[j];
                                 self->miso = &mcu_spi_miso_list[k];
+
+                                // Multi-level break to pick lowest peripheral
+                                search_done = true;
                                 break;
                             }
                         }
+                        if (search_done) {
+                            break;
+                        }
                     }
+                }
+                if (search_done) {
+                    break;
                 }
             // if just MISO, reduce search
             } else if (miso != NULL) {
@@ -149,8 +170,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         self->sck = &mcu_spi_sck_list[i];
                         self->mosi = NULL;
                         self->miso = &mcu_spi_miso_list[j];
+
+                        // Multi-level break to pick lowest peripheral
+                        search_done = true;
                         break;
                     }
+                }
+                if (search_done) {
+                    break;
                 }
             // if just MOSI, reduce search
             } else if (mosi != NULL) {
@@ -166,8 +193,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         self->sck = &mcu_spi_sck_list[i];
                         self->mosi = &mcu_spi_mosi_list[j];
                         self->miso = NULL;
+
+                        // Multi-level break to pick lowest peripheral
+                        search_done = true;
                         break;
                     }
+                }
+                if (search_done) {
+                    break;
                 }
             } else {
                 //throw an error immediately
@@ -222,7 +255,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
     // Direction change only required for RX-only, see RefMan RM0090:884
-    self->handle.Init.Direction = (self->mosi == NULL) ? SPI_CR1_RXONLY : SPI_DIRECTION_2LINES;
+    self->handle.Init.Direction = (self->mosi == NULL) ? SPI_DIRECTION_2LINES_RXONLY : SPI_DIRECTION_2LINES;
     self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;

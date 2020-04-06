@@ -29,7 +29,6 @@
 
 void stm32_peripherals_gpio_init(void) {
 
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOF_CLK_ENABLE();

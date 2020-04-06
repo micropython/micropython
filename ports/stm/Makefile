@@ -25,11 +25,11 @@
 
 # Select the board to build for.
 ifeq ($(BOARD),)
-	$(error You must provide a BOARD parameter)
+$(error You must provide a BOARD parameter)
 else
-	ifeq ($(wildcard boards/$(BOARD)/.),)
-		$(error Invalid BOARD specified)
-	endif
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
 endif
 
 # If the build directory is not given, make it reflect the board name.
@@ -193,7 +193,13 @@ SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	ll_exti.c \
 )
 
-SRC_STM32 += system_stm32$(MCU_SERIES_LOWER)xx.c
+# Need this to avoid UART linker problems. TODO: rewrite to use registered callbacks.
+# Does not exist for F4 and lower
+ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
+	SRC_STM32 += $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_hal_uart_ex.c
+endif
+
+SRC_STM32 += boards/system_stm32$(MCU_SERIES_LOWER)xx.c
 
 SRC_C += \
 	background.c \

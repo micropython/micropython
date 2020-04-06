@@ -31,11 +31,11 @@
 #include "tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
+#include "common-hal/busio/UART.h"
 
 #if defined(STM32F4)
-    #include "common-hal/busio/I2C.h"
-    #include "common-hal/busio/SPI.h"
-    #include "common-hal/busio/UART.h"
     #include "common-hal/pulseio/PWMOut.h"
     #include "common-hal/pulseio/PulseOut.h"
     #include "common-hal/pulseio/PulseIn.h"
@@ -187,12 +187,13 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
     reset_all_pins();
+    i2c_reset();
+    spi_reset();
+    uart_reset();
 
     // TODO: it'd be nice if this was more automatic
     #if defined(STM32F4)
-        i2c_reset();
-        spi_reset();
-        uart_reset();
+
         pwmout_reset();
         pulseout_reset();
         pulsein_reset();
