@@ -93,6 +93,7 @@ else:
     fp2int_test(1.999999879 * 2.0 ** 126.0, "large pos", False)
 
 fp2int_test(float("inf"), "inf test", True)
+fp2int_test(float("-inf"), "inf test", True)
 fp2int_test(float("nan"), "NaN test", True)
 
 # test numbers < 1 (this used to fail; see issue #1044)
