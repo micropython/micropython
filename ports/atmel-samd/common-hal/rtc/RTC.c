@@ -39,6 +39,7 @@
 #include "supervisor/shared/translate.h"
 
 // This is the time in seconds since 2000 that the RTC was started.
+// TODO: Change the offset to ticks so that it can be a subsecond adjustment.
 static uint32_t rtc_offset = 0;
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {

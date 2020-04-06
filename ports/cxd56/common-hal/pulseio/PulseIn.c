@@ -54,7 +54,7 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
     // Grab the current time first.
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    uint32_t current_us = tv.tv_sec * 1000000 + tv.tv_usec;
+    uint64_t current_us = ((uint64_t) tv.tv_sec) * 1000000 + tv.tv_usec;
 
     pulseio_pulsein_obj_t *self = pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0];
 

@@ -71,6 +71,9 @@ inline bool autoreload_is_enabled() {
 }
 
 void autoreload_start() {
+    // Enable ticks if we haven't been tracking an autoreload delay. We check
+    // our current state so that we only turn ticks on once. Multiple starts
+    // can occur before we reload and then turn ticks off.
     if (autoreload_delay_ms == 0) {
         supervisor_enable_tick();
     }
