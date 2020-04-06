@@ -24,7 +24,7 @@ jobs:
       run: |
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<3" sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
     - name: Versions
       run: |
         gcc --version
