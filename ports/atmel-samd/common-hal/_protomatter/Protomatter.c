@@ -64,6 +64,7 @@ void common_hal_protomatter_timer_disable(void* ptr) {
         return;
     }
     set_timer_handler(true, timer_index, TC_HANDLER_NO_INTERRUPT);
+    tc_set_enable(ptr, false);
 }
 
 void common_hal_protomatter_timer_free(void* ptr) {
