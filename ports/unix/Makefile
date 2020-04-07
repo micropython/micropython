@@ -132,17 +132,24 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
+# If the variant enables it and we have libusb, enable BTStack support for USB adaptors.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+ifeq ($(HAVE_LIBUSB),1)
+
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
 
 MICROPY_BLUETOOTH_BTSTACK ?= 1
 MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
-endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 include $(TOP)/extmod/btstack/btstack.mk
+endif
+
+endif
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
