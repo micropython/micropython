@@ -58,6 +58,15 @@ instance{}()
 multitest.flush()
 """
 
+# The btstack implementation on Unix generates some spurious output that we
+# can't control.
+IGNORE_OUTPUT_MATCHES = (
+    "libusb: error ",  # It tries to open devices that it doesn't have access to (libusb prints unconditionally).
+    "hci_transport_h2_libusb.c",  # Same issue. We enable LOG_ERROR in btstack.
+    "USB Path: ",  # Hardcoded in btstack's libusb transport.
+    "hci_number_completed_packet",  # Warning from btstack.
+)
+
 
 class PyInstance:
     def __init__(self):
@@ -239,7 +248,7 @@ def run_test_on_instances(test_file, num_instances, instances):
                 time.sleep(0.1)
                 continue
             last_read_time = time.time()
-            if out is not None:
+            if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                 trace_instance_output(idx, out)
                 if out.startswith("SET "):
                     injected_globals += out[4:] + "\n"
