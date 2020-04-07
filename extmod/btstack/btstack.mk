@@ -32,7 +32,7 @@ SRC_BTSTACK += \
 	$(addprefix lib/btstack/src/classic/, $(SRC_CLASSIC_FILES))
 endif
 
-SRC_LIB += $(SRC_BTSTACK)
+LIB_SRC_C += $(SRC_BTSTACK)
 
 #$(BUILD)/lib/btstack/src/classic/btstack_link_key_db_static.o: CFLAGS += -Wno-error=pointer-arith
 
@@ -42,7 +42,5 @@ $(BUILD)/lib/btstack/src/classic/btstack_sbc_decoder_bluedroid.o: CFLAGS += -Wno
 $(BUILD)/lib/btstack/src/classic/btstack_link_key_db_tlv.o: CFLAGS += -Wno-error=format=
 $(BUILD)/lib/btstack/src/classic/goep_client.o: CFLAGS += -Wno-error=format=
 $(BUILD)/lib/btstack/src/ble/le_device_db_tlv.o: CFLAGS += -Wno-error=format=
-
-
 
 endif

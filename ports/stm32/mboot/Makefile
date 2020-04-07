@@ -82,7 +82,7 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-SRC_LIB = \
+LIB_SRC_C = \
 	lib/libc/string0.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/ffunicode.c \
@@ -127,7 +127,7 @@ SRC_USBDEV = $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	)
 
 OBJ =
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
