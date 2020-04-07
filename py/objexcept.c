@@ -303,9 +303,6 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
   MP_DEFINE_EXCEPTION(OSError, Exception)
-#if MICROPY_PY_BUILTINS_TIMEOUTERROR
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-#endif
     /*
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
@@ -319,6 +316,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(PermissionError, OSError)
     MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
+    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
     MP_DEFINE_EXCEPTION(FileExistsError, OSError)
     MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
     MP_DEFINE_EXCEPTION(ReferenceError, Exception)
