@@ -613,17 +613,16 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC void gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
-    MICROPY_PY_BLUETOOTH_ENTER
     size_t len = OS_MBUF_PKTLEN(om);
-    len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len);
+    mp_uint_t atomic_state;
+    len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len, &atomic_state);
     while (len > 0 && om != NULL) {
         size_t n = MIN(om->om_len, len);
         mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t *), n);
         len -= n;
         om = SLIST_NEXT(om, om_next);
     }
-    mp_bluetooth_gattc_on_data_available_end();
-    MICROPY_PY_BLUETOOTH_EXIT
+    mp_bluetooth_gattc_on_data_available_end(atomic_state);
 }
 
 STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {

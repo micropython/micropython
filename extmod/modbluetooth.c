@@ -918,11 +918,15 @@ STATIC bool enqueue_irq(mp_obj_bluetooth_ble_t *o, size_t len, uint16_t event) {
     return true;
 }
 
-STATIC void schedule_ringbuf(void) {
+// Must hold the atomic section before calling this (MICROPY_PY_BLUETOOTH_ENTER).
+STATIC void schedule_ringbuf(mp_uint_t atomic_state) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (!o->irq_scheduled) {
         o->irq_scheduled = true;
+        MICROPY_PY_BLUETOOTH_EXIT
         mp_sched_schedule(MP_OBJ_FROM_PTR(&bluetooth_ble_invoke_irq_obj), mp_const_none);
+    } else {
+        MICROPY_PY_BLUETOOTH_EXIT
     }
 }
 
@@ -936,8 +940,7 @@ void mp_bluetooth_gap_on_connected_disconnected(uint16_t event, uint16_t conn_ha
             ringbuf_put(&o->ringbuf, addr[i]);
         }
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle) {
@@ -947,8 +950,7 @@ void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -957,8 +959,7 @@ void mp_bluetooth_gap_on_scan_complete(void) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (enqueue_irq(o, 0, MP_BLUETOOTH_IRQ_SCAN_COMPLETE)) {
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len) {
@@ -979,8 +980,7 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
             ringbuf_put(&o->ringbuf, data[i]);
         }
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid) {
@@ -992,8 +992,7 @@ void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t
         ringbuf_put16(&o->ringbuf, end_handle);
         ringbuf_put_uuid(&o->ringbuf, service_uuid);
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t def_handle, uint16_t value_handle, uint8_t properties, mp_obj_bluetooth_uuid_t *characteristic_uuid) {
@@ -1006,8 +1005,7 @@ void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t 
         ringbuf_put(&o->ringbuf, properties);
         ringbuf_put_uuid(&o->ringbuf, characteristic_uuid);
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t handle, mp_obj_bluetooth_uuid_t *descriptor_uuid) {
@@ -1018,11 +1016,12 @@ void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t hand
         ringbuf_put16(&o->ringbuf, handle);
         ringbuf_put_uuid(&o->ringbuf, descriptor_uuid);
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
-size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len) {
+size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    *atomic_state_out = atomic_state;
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     data_len = MIN(o->irq_data_data_alloc, data_len);
     if (enqueue_irq(o, 2 + 2 + 1 + data_len, event)) {
@@ -1042,8 +1041,8 @@ void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data
     }
 }
 
-void mp_bluetooth_gattc_on_data_available_end(void) {
-    schedule_ringbuf();
+void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state) {
+    schedule_ringbuf(atomic_state);
 }
 
 void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status) {
@@ -1054,8 +1053,7 @@ void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_han
         ringbuf_put16(&o->ringbuf, value_handle);
         ringbuf_put16(&o->ringbuf, status);
     }
-    schedule_ringbuf();
-    MICROPY_PY_BLUETOOTH_EXIT
+    schedule_ringbuf(atomic_state);
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
