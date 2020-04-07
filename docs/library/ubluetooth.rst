@@ -48,6 +48,8 @@ Configuration
     - ``'mac'``: Returns the device MAC address. If a device has a fixed address
       (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
       address will be generated when the BLE interface is made active.
+      Note: on some ports, accessing this value requires that the interface is
+      active (so that the MAC address can be queried from the controller).
 
     - ``'rxbuf'``: Get/set the size in bytes of the internal buffer used to store
       incoming events.  This buffer is global to the entire BLE driver and so

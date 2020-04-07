@@ -41,4 +41,7 @@
 // BTstack HAL configuration
 #define HAVE_EMBEDDED_TIME_MS
 
+// Some USB dongles take longer to respond to HCI reset (e.g. BCM20702A).
+#define HCI_RESET_RESEND_TIMEOUT_MS 1000
+
 #endif // MICROPY_INCLUDED_EXTMOD_BTSTACK_BTSTACK_CONFIG_H

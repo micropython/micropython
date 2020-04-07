@@ -2,6 +2,8 @@
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
+
 BTSTACK_EXTMOD_DIR = extmod/btstack
 
 EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
@@ -24,9 +26,17 @@ INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
 	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
-	lib/btstack/platform/embedded/btstack_run_loop_embedded.c \
+	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
-ifeq ($MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC,1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+SRC_BTSTACK += \
+	lib/btstack/platform/libusb/hci_transport_h2_libusb.c
+
+CFLAGS  += $(shell pkg-config libusb-1.0 --cflags)
+LDFLAGS += $(shell pkg-config libusb-1.0 --libs)
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC),1)
 include $(BTSTACK_DIR)/src/classic/Makefile.inc
 SRC_BTSTACK += \
 	$(addprefix lib/btstack/src/classic/, $(SRC_CLASSIC_FILES))
