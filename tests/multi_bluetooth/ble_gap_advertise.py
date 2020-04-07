@@ -42,7 +42,7 @@ def instance1():
                     adv_data = bytes(data[4])
                 else:
                     if adv_data != data[4]:
-                        adv_data = "MISMATCH"
+                        adv_data = b"MISMATCH"
         elif ev == _IRQ_SCAN_COMPLETE:
             finished = True
 
