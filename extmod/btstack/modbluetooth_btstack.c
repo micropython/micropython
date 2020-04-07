@@ -37,6 +37,10 @@
 
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
 
+// How long to wait for a controller to init/deinit.
+// Some controllers can take up to 5-6 seconds in normal operation.
+STATIC const uint32_t BTSTACK_INIT_DEINIT_TIMEOUT_MS = 15000;
+
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
 STATIC btstack_packet_callback_registration_t hci_event_callback_registration;
@@ -93,7 +97,15 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
             mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, addr_type, addr);
         }
     } else if (event_type == BTSTACK_EVENT_STATE) {
-        DEBUG_EVENT_printf("  --> btstack event state 0x%02x\n", btstack_event_state_get_state(packet));
+        uint8_t state = btstack_event_state_get_state(packet);
+        DEBUG_EVENT_printf("  --> btstack event state 0x%02x\n", state);
+        if (state == HCI_STATE_WORKING) {
+            // Signal that initialisation has completed.
+            mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
+        } else if (state == HCI_STATE_OFF) {
+            // Signal that de-initialisation has completed.
+            mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+        }
     } else if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT) {
         DEBUG_EVENT_printf("  --> hci transport packet set\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
@@ -208,8 +220,27 @@ STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint
 }
 #endif
 
+STATIC btstack_timer_source_t btstack_init_deinit_timeout;
+
+STATIC void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
+    (void)ds;
+
+    // Stop waiting for initialisation.
+    // This signals both the loops in mp_bluetooth_init and mp_bluetooth_deinit,
+    // as well as ports that run a polling loop.
+    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
+}
+
 int mp_bluetooth_init(void) {
     DEBUG_EVENT_printf("mp_bluetooth_init\n");
+
+    if (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        return 0;
+    }
+
+    // Clean up if necessary.
+    mp_bluetooth_deinit();
+
     btstack_memory_init();
 
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = m_new0(mp_bluetooth_btstack_root_pointers_t, 1);
@@ -233,13 +264,33 @@ int mp_bluetooth_init(void) {
     gatt_client_init();
     #endif
 
-    mp_bluetooth_btstack_port_start();
-    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
-
     // Register for HCI events.
-    memset(&hci_event_callback_registration, 0, sizeof(btstack_packet_callback_registration_t));
     hci_event_callback_registration.callback = &btstack_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
+
+    // Set a timeout for HCI initialisation.
+    btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
+    btstack_run_loop_set_timer_handler(&btstack_init_deinit_timeout, btstack_init_deinit_timeout_handler);
+    btstack_run_loop_add_timer(&btstack_init_deinit_timeout);
+
+    // Either the HCI event will set state to ACTIVE, or the timeout will set it to TIMEOUT.
+    mp_bluetooth_btstack_port_start();
+    while (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_STARTING) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    btstack_run_loop_remove_timer(&btstack_init_deinit_timeout);
+
+    // Check for timeout.
+    if (mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        // Required to stop the polling loop.
+        mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+        // Attempt a shutdown (may not do anything).
+        mp_bluetooth_btstack_port_deinit();
+
+        // Clean up.
+        MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
+        return MP_ETIMEDOUT;
+    }
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Enable GATT_EVENT_NOTIFICATION/GATT_EVENT_INDICATION for all connections and handles.
@@ -252,18 +303,32 @@ int mp_bluetooth_init(void) {
 void mp_bluetooth_deinit(void) {
     DEBUG_EVENT_printf("mp_bluetooth_deinit\n");
 
+    // Nothing to do if not initialised.
     if (!MP_STATE_PORT(bluetooth_btstack_root_pointers)) {
         return;
     }
+
+    mp_bluetooth_gap_advertise_stop();
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Remove our registration for notify/indicate.
     gatt_client_stop_listening_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification);
     #endif
 
-    mp_bluetooth_btstack_port_deinit();
-    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+    // Set a timer that will forcibly set the state to TIMEOUT, which will stop the loop below.
+    btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
+    btstack_run_loop_add_timer(&btstack_init_deinit_timeout);
 
+    // This should result in a clean shutdown, which will set the state to OFF.
+    // On Unix this is blocking (it joins on the poll thread), on other ports the loop below will wait unil
+    // either timeout or clean shutdown.
+    mp_bluetooth_btstack_port_deinit();
+    while (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    btstack_run_loop_remove_timer(&btstack_init_deinit_timeout);
+
+    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 }
 
