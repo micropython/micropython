@@ -403,6 +403,10 @@ def main():
     for i in cmd_args.instance:
         if i.startswith("exec:"):
             instances_test.append(PyInstanceSubProcess([i[len("exec:") :]]))
+        elif i == "micropython":
+            instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
+        elif i == "cpython":
+            instances_test.append(PyInstanceSubProcess([CPYTHON3]))
         elif i.startswith("pyb:"):
             instances_test.append(PyInstancePyboard(i[len("pyb:") :]))
         else:
