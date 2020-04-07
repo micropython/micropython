@@ -2,6 +2,7 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_PROTOMATTER_ALLOCATOR_H
 
 #include <stdbool.h>
+#include "py/gc.h"
 #include "py/misc.h"
 #include "supervisor/memory.h"
 
@@ -9,11 +10,11 @@
 #define _PM_FREE(x) (_PM_free_impl((x)), (x)=NULL, (void)0)
 
 static inline void *_PM_allocator_impl(size_t sz) {
-    supervisor_allocation *allocation = allocate_memory(align32_size(sz), true);    
-    if (allocation) {
-        return allocation->ptr;
-    } else {
+    if (gc_alloc_possible()) {
         return m_malloc(sz + sizeof(void*), true);
+    } else {
+        supervisor_allocation *allocation = allocate_memory(align32_size(sz), true);    
+        return allocation ? allocation->ptr : NULL;
     }
 }
 
