@@ -349,4 +349,9 @@ void mp_unix_mark_exec(void);
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
+#define MICROPY_EVENT_POLL_HOOK mp_hal_delay_us(500);
+
+#include <sched.h>
+#define MICROPY_UNIX_MACHINE_IDLE sched_yield();
+
 #endif // MICROPY_UNIX_MINIMAL
