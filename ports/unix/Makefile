@@ -132,6 +132,19 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+include $(TOP)/extmod/btstack/btstack.mk
+endif
+
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
@@ -176,10 +189,11 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
+	btstack_usb.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C = $(addprefix lib/,\
+LIB_SRC_C += $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
 	)
@@ -187,9 +201,10 @@ LIB_SRC_C = $(addprefix lib/,\
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
