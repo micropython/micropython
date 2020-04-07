@@ -752,7 +752,7 @@ soft_reset_exit:
     #endif
 
     printf("MPY: soft reboot\n");
-    #if MICROPY_BLUETOOTH_NIMBLE
+    #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
     #endif
     #if MICROPY_PY_NETWORK
