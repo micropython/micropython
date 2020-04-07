@@ -328,7 +328,7 @@ uint32_t *port_heap_get_top(void) {
     return &_ld_heap_end;
 }
 
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word into the low power section of the SNVS.
 void port_set_saved_word(uint32_t value) {
     SNVS->LPGPR[1] = value;
 }
@@ -366,8 +366,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     uint8_t subticks;
     uint64_t current_ticks = port_get_raw_ticks(&subticks);
     current_ticks += ticks;
-    SNVS->HPTALR = current_ticks << 5 | subticks;
+    SNVS->HPCR &= ~SNVS_HPCR_HPTA_EN_MASK;
+    // Wait for the alarm to be disabled.
+    while ((SNVS->HPCR & SNVS_HPCR_HPTA_EN_MASK) != 0) {}
     SNVS->HPTAMR = current_ticks >> (32 - 5);
+    SNVS->HPTALR = current_ticks << 5 | subticks;
     SNVS->HPCR |= SNVS_HPCR_HPTA_EN_MASK;
 }
 
@@ -379,8 +382,10 @@ void port_sleep_until_interrupt(void) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
         (void) __get_FPSCR();
     }
-    // Call wait for interrupt ourselves if the SD isn't enabled.
+    NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
+    CLOCK_SetMode(kCLOCK_ModeWait);
     __WFI();
+    CLOCK_SetMode(kCLOCK_ModeRun);
 }
 
 /**
