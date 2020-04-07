@@ -618,8 +618,9 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     mp_obj_t arg0;
     if (rule_id == RULE_expr
         || rule_id == RULE_xor_expr
-        || rule_id == RULE_and_expr) {
-        // folding for binary ops: | ^ &
+        || rule_id == RULE_and_expr
+        || rule_id == RULE_power) {
+        // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -629,13 +630,19 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             op = MP_BINARY_OP_OR;
         } else if (rule_id == RULE_xor_expr) {
             op = MP_BINARY_OP_XOR;
-        } else {
+        } else if (rule_id == RULE_and_expr) {
             op = MP_BINARY_OP_AND;
+        } else {
+            op = MP_BINARY_OP_POWER;
         }
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
             mp_obj_t arg1;
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+                return false;
+            }
+            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
+                // ** can't have negative rhs
                 return false;
             }
             arg0 = mp_binary_op(op, arg0, arg1);
