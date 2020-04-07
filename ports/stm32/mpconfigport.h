@@ -402,9 +402,9 @@ static inline mp_uint_t disable_irq(void) {
 #endif
 
 // The LwIP interface must run at a raised IRQ priority
-#define MICROPY_PY_LWIP_ENTER   uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_REENTER irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(irq_state);
+#define MICROPY_PY_LWIP_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_LWIP_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(atomic_state);
 
 // Bluetooth calls must run at a raised IRQ priority
 #define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_LWIP_ENTER
