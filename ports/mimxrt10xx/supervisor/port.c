@@ -53,6 +53,7 @@
 #include "shared-module/gamepadshift/__init__.h"
 #endif
 #include "shared-module/_pew/PewPew.h"
+#include "supervisor/shared/tick.h"
 
 #include "clocks.h"
 
@@ -243,6 +244,8 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 }
 
 safe_mode_t port_init(void) {
+    CLOCK_SetMode(kCLOCK_ModeRun);
+
     clocks_init();
 
 #if CIRCUITPY_RTC
@@ -350,8 +353,19 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
     return ticks / 32;
 }
 
+void SNVS_HP_WRAPPER_IRQHandler(void) {
+    if ((SNVS->HPSR & SNVS_HPSR_PI_MASK) != 0) {
+        supervisor_tick();
+        SNVS->HPSR = SNVS_HPSR_PI_MASK;
+    }
+    if ((SNVS->HPSR & SNVS_HPSR_HPTA_MASK) != 0) {
+        SNVS->HPSR = SNVS_HPSR_HPTA_MASK;
+    }
+}
+
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
+    NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
     uint32_t hpcr = SNVS->HPCR;
     hpcr &= ~SNVS_HPCR_PI_FREQ_MASK;
     SNVS->HPCR = hpcr | SNVS_HPCR_PI_FREQ(5) | SNVS_HPCR_PI_EN_MASK;
@@ -360,6 +374,7 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     SNVS->HPCR &= ~SNVS_HPCR_PI_EN_MASK;
+    NVIC_DisableIRQ(SNVS_HP_WRAPPER_IRQn);
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
