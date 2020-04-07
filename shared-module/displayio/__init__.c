@@ -102,6 +102,10 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_i2cdisplay_deinit(&displays[i].i2cdisplay_bus);
         } else if (bus_type == &displayio_parallelbus_type) {
             common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
+#if CIRCUITPY_FRAMEBUFFERIO
+        } else if (bus_type == &protomatter_Protomatter_type) {
+            common_hal_protomatter_protomatter_deinit(&displays[i].protomatter);
+#endif
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
