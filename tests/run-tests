@@ -226,7 +226,7 @@ def run_feature_check(pyb, args, base_path, test_file):
     return run_micropython(pyb, args, base_path("feature_check", test_file), is_special=True)
 
 
-def run_tests(pyb, tests, args):
+def run_tests(pyb, tests, args, result_dir):
     test_count = 0
     testcase_count = 0
     passed_count = 0
@@ -521,8 +521,8 @@ def run_tests(pyb, tests, args):
 
         testcase_count += len(output_expected.splitlines())
 
-        filename_expected = base_path(test_basename + ".exp")
-        filename_mupy = base_path(test_basename + ".out")
+        filename_expected = os.path.join(result_dir, test_basename + ".exp")
+        filename_mupy = os.path.join(result_dir, test_basename + ".out")
 
         if output_expected == output_mupy:
             print("pass ", test_file)
@@ -582,7 +582,7 @@ builtin tests suitable for the target platform are ran.
 When running tests, run-tests compares the MicroPython output of the test with the output
 produced by running the test through CPython unless a <test>.exp file is found, in which
 case it is used as comparison.
-If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the current
+If a test fails, run-tests produces a pair of <test>.out and <test>.exp files in the result
 directory with the MicroPython output and the expectations, respectively.
 ''',
         epilog='''\
@@ -599,6 +599,7 @@ the last matching regex is used:
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
+    cmd_parser.add_argument('-r', '--result-dir', default=base_path('results'), help='directory for test results')
     cmd_parser.add_argument('-e', '--exclude', action=append_filter, metavar='REGEX', dest='filters', help='exclude test by regex on path/name.py')
     cmd_parser.add_argument('-i', '--include', action=append_filter, metavar='REGEX', dest='filters', help='include test by regex on path/name.py')
     cmd_parser.add_argument('--write-exp', action='store_true', help='use CPython to generate .exp files to run tests w/o CPython')
@@ -614,7 +615,7 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     if args.print_failures:
-        for exp in glob(base_path("*.exp")):
+        for exp in glob(os.path.join(args.result_dir, "*.exp")):
             testbase = exp[:-4]
             print()
             print("FAILURE {0}".format(testbase))
@@ -623,7 +624,7 @@ the last matching regex is used:
         sys.exit(0)
 
     if args.clean_failures:
-        for f in glob(base_path("*.exp")) + glob(base_path("*.out")):
+        for f in glob(os.path.join(args.result_dir, "*.exp")) + glob(os.path.join(args.result_dir, "*.out")):
             os.remove(f)
 
         sys.exit(0)
@@ -674,7 +675,8 @@ the last matching regex is used:
         os.environ['MICROPYPATH'] = os.pathsep + base_path('../extmod')
 
     try:
-        res = run_tests(pyb, tests, args)
+        os.makedirs(args.result_dir, exist_ok=True)
+        res = run_tests(pyb, tests, args, args.result_dir)
     finally:
         if pyb:
             pyb.close()
