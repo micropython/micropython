@@ -79,6 +79,8 @@ safe_mode_t port_init(void) {
 
     HAL_RTC_Init(&_hrtc);
 
+    HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
     return NO_SAFE_MODE;
 }
 
@@ -182,10 +184,12 @@ void RTC_WKUP_IRQHandler(void) {
     __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&_hrtc, RTC_FLAG_WUTF);
     __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
 }
-
+volatile bool alarmed_already = false;
 void RTC_Alarm_IRQHandler(void) {
-    RTC->ISR = ~RTC_FLAG_ALRAF;
+    __HAL_RTC_ALARM_CLEAR_FLAG(&_hrtc, RTC_FLAG_ALRAF);
+    __HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
     HAL_RTC_DeactivateAlarm(&_hrtc, RTC_ALARM_A);
+    alarmed_already = true;
 }
 
 // Enable 1/1024 second tick.
@@ -227,6 +231,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     alarm.Alarm = RTC_ALARM_A;
 
     HAL_RTC_SetAlarm_IT(&_hrtc, &alarm, RTC_FORMAT_BIN);
+    alarmed_already = false;
 }
 
 void port_sleep_until_interrupt(void) {
@@ -234,6 +239,9 @@ void port_sleep_until_interrupt(void) {
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
         (void) __get_FPSCR();
+    }
+    if (alarmed_already) {
+        return;
     }
     __WFI();
 }

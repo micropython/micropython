@@ -178,9 +178,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     //handle typedef selection, errors
-    if ( (self->sck != NULL && self->mosi != NULL && self->miso != NULL) ||
-        (self->sck != NULL && self->mosi != NULL && miso == NULL) ||
-        (self->sck != NULL && self->miso != NULL && mosi == NULL)) {
+    if (self->sck != NULL && (self->mosi != NULL || self->miso != NULL)) {
         SPIx = mcu_spi_banks[self->sck->spi_index - 1];
     } else {
         if (spi_taken) {

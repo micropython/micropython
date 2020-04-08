@@ -117,7 +117,7 @@ void pulsein_reset(void) {
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
                                              uint16_t maxlen, bool idle_state) {
 #if !(HAS_BASIC_TIM)
-    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
+    mp_raise_NotImplementedError(translate("PulseIn not supported on this chip"));
 #else
     // STM32 has one shared EXTI for each pin number, 0-15
     uint8_t p_num = pin->number;
