@@ -67,6 +67,9 @@ Additional functions
     that *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
 
+    If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
+    this should be trapped by the caller.
+
     Returns the return value of *awaitable*.
 
     This is a coroutine.
