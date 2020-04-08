@@ -177,7 +177,7 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT;
     #endif
 
-    #ifdef IS_MRAM
+    #ifdef EXTERNAL_FLASH_QSPI_SINGLE
     QSPI->INSTRFRAME.reg = mode |
                            QSPI_INSTRFRAME_ADDRLEN_24BITS |
                            QSPI_INSTRFRAME_TFRTYPE_READMEMORY |

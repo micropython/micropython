@@ -53,7 +53,7 @@ include $(TOP)/supervisor/supervisor.mk
 # Include make rules and variables common across CircuitPython builds.
 include $(TOP)/py/circuitpy_defns.mk
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE = ~/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
