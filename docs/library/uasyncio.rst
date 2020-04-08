@@ -70,6 +70,9 @@ Additional functions
     Returns the return value of *awaitable*.
 
     This is a coroutine.
+    
+    If a timeout occurs, it cancels the task and raises asyncio.TimeoutError:
+    this should be trapped by the caller.
 
 .. function:: gather(\*awaitables, return_exceptions=False)
 
