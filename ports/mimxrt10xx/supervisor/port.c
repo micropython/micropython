@@ -252,6 +252,10 @@ safe_mode_t port_init(void) {
     rtc_init();
 #endif
 
+    // Always enable the SNVS interrupt. The GPC won't wake us up unless at least one interrupt is
+    // enabled. It won't occur very often so it'll be low overhead.
+    NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
+
     // Reset everything into a known state before board_init.
     reset_port();
 
@@ -365,7 +369,6 @@ void SNVS_HP_WRAPPER_IRQHandler(void) {
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
-    NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
     uint32_t hpcr = SNVS->HPCR;
     hpcr &= ~SNVS_HPCR_PI_FREQ_MASK;
     SNVS->HPCR = hpcr | SNVS_HPCR_PI_FREQ(5) | SNVS_HPCR_PI_EN_MASK;
@@ -374,7 +377,6 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     SNVS->HPCR &= ~SNVS_HPCR_PI_EN_MASK;
-    NVIC_DisableIRQ(SNVS_HP_WRAPPER_IRQn);
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
