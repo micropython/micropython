@@ -5,21 +5,29 @@ import subprocess
 import sys
 import platform
 import argparse
+import inspect
 import re
 from glob import glob
+
+# See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
+# are guaranteed to always work, this one should though.
+BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
+
+def base_path(*p):
+    return os.path.abspath(os.path.join(BASEPATH, *p)).replace('\\', '/')
 
 # Tests require at least CPython 3.3. If your default python3 executable
 # is of lower version, you can point MICROPY_CPYTHON3 environment var
 # to the correct executable.
 if os.name == 'nt':
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3.exe')
-    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../ports/windows/micropython.exe')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', base_path('../ports/windows/micropython.exe'))
 else:
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
-    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../ports/unix/micropython')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', base_path('../ports/unix/micropython'))
 
 # mpy-cross is only needed if --via-mpy command-line arg is passed
-MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
+MPYCROSS = os.getenv('MICROPY_MPYCROSS', base_path('../mpy-cross/mpy-cross'))
 
 # For diff'ing test output
 DIFF = os.getenv('MICROPY_DIFF', 'diff -u')
@@ -61,7 +69,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     had_crash = False
     if pyb is None:
         # run on PC
-        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
+        if test_file.startswith(('cmdline/', base_path('feature_check/'))) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -215,10 +223,10 @@ def run_feature_check(pyb, args, base_path, test_file):
     if pyb is not None and test_file.startswith("repl_"):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
-    return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
+    return run_micropython(pyb, args, base_path("feature_check", test_file), is_special=True)
 
 
-def run_tests(pyb, tests, args, base_path="."):
+def run_tests(pyb, tests, args):
     test_count = 0
     testcase_count = 0
     passed_count = 0
@@ -244,6 +252,10 @@ def run_tests(pyb, tests, args, base_path="."):
     # If we're asked to --list-tests, we can't assume that there's a
     # connection to target, so we can't run feature checks usefully.
     if not (args.list_tests or args.write_exp):
+        # Even if we run completely different tests in a different directory,
+        # we need to access feature_checks from the same directory as the
+        # run-tests script itself so use base_path.
+
         # Check if micropython.native is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'native_check.py')
         if output == b'CRASH':
@@ -307,7 +319,7 @@ def run_tests(pyb, tests, args, base_path="."):
             upy_float_precision = int(upy_float_precision)
         has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
         has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
-        cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
+        cpy_byteorder = subprocess.check_output([CPYTHON3, base_path('feature_check/byteorder.py')])
         skip_endian = (upy_byteorder != cpy_byteorder)
 
     # These tests don't test slice explicitly but rather use it to perform the test
@@ -509,8 +521,8 @@ def run_tests(pyb, tests, args, base_path="."):
 
         testcase_count += len(output_expected.splitlines())
 
-        filename_expected = test_basename + ".exp"
-        filename_mupy = test_basename + ".out"
+        filename_expected = base_path(test_basename + ".exp")
+        filename_mupy = base_path(test_basename + ".out")
 
         if output_expected == output_mupy:
             print("pass ", test_file)
@@ -563,6 +575,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='''Run and manage tests for MicroPython.
 
+Tests are discovered by scanning test directories for .py files or using the
+specified test files. If test files nor directories are specified, the script
+expects to be ran in the tests directory (where this file is located) and the
+builtin tests suitable for the target platform are ran.
 When running tests, run-tests compares the MicroPython output of the test with the output
 produced by running the test through CPython unless a <test>.exp file is found, in which
 case it is used as comparison.
@@ -598,10 +614,8 @@ the last matching regex is used:
     args = cmd_parser.parse_args()
 
     if args.print_failures:
-        os.chdir(os.path.abspath(os.path.dirname(__file__)))
-
-        for exp in glob("*.exp"):
-            testbase = os.path.basename(exp)[:-4]
+        for exp in glob(base_path("*.exp")):
+            testbase = exp[:-4]
             print()
             print("FAILURE {0}".format(testbase))
             os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
@@ -609,9 +623,7 @@ the last matching regex is used:
         sys.exit(0)
 
     if args.clean_failures:
-        os.chdir(os.path.abspath(os.path.dirname(__file__)))
-
-        for f in glob("*.exp") + glob("*.out"):
+        for f in glob(base_path("*.exp")) + glob(base_path("*.out")):
             os.remove(f)
 
         sys.exit(0)
@@ -622,7 +634,7 @@ the last matching regex is used:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
-        sys.path.append('../tools')
+        sys.path.append(base_path('../tools'))
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -659,14 +671,10 @@ the last matching regex is used:
 
     if not args.keep_path:
         # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ['MICROPYPATH'] = os.pathsep + '../extmod'
+        os.environ['MICROPYPATH'] = os.pathsep + base_path('../extmod')
 
-    # Even if we run completely different tests in a different directory,
-    # we need to access feature_check's from the same directory as the
-    # run-tests script itself.
-    base_path = os.path.dirname(sys.argv[0]) or "."
     try:
-        res = run_tests(pyb, tests, args, base_path)
+        res = run_tests(pyb, tests, args)
     finally:
         if pyb:
             pyb.close()
