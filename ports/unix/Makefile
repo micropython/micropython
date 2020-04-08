@@ -258,7 +258,8 @@ PREFIX = /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 
 install: $(PROG)
-	install -D $(PROG) $(BINDIR)/$(PROG)
+	install -d $(BINDIR)
+	install $(PROG) $(BINDIR)/$(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)
