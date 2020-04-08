@@ -55,6 +55,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
+NM = $(CROSS_COMPILE)nm
 
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py

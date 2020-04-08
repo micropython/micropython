@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!-- Modified version for MicroPython from https://github.com/evmar/bloat -->
+<title>binary size</title>
+<script src=bloat.json></script>
+<link rel=stylesheet href=webtreemap.css>
+<style>
+body {
+  font-family: sans-serif;
+  font-size: 0.8em;
+  margin: 2ex 4ex;
+}
+
+tt, pre {
+  font-family: WebKitWorkaround, monospace;
+}
+
+h1, h2 {
+  font-weight: normal;
+}
+h2 {
+  margin-top: 4ex;
+}
+
+#map {
+  width: 1400px;
+  height: 1000px;
+
+  position: relative;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+
+#legend {
+  width: 800px;
+  padding-top: 10px;
+}
+</style>
+
+<h1>binary size</h1>
+
+<p>Click on a box to zoom in.  Click on the outermost box to zoom out.</p>
+
+<div id='map'></div>
+<div id='legend'>
+<div class='webtreemap-symbol-bss'>bss</div>
+<div class='webtreemap-symbol-bss webtreemap-aggregate'>bss aggregate</div>
+<div class='webtreemap-symbol-data'>data</div>
+<div class='webtreemap-symbol-data webtreemap-aggregate'>data aggregate</div>
+<div class='webtreemap-symbol-read-only_data'>read-only data</div>
+<div class='webtreemap-symbol-read-only_data webtreemap-aggregate'>read-only data aggregate</div>
+<div class='webtreemap-symbol-code'>code</div>
+<div class='webtreemap-symbol-code webtreemap-aggregate'>code aggregate</div>
+<div class='webtreemap-symbol-weak_symbol'>weak symbol</div>
+<div class='webtreemap-symbol-weak_symbol webtreemap-aggregate'>weak symbol aggregate</div>
+</div>
+
+<script src='webtreemap.js'></script>
+
+<script>
+var map = document.getElementById('map');
+appendTreemap(map, kTree);
+</script>
