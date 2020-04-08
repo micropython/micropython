@@ -131,5 +131,6 @@ void port_disable_tick(void) {
 void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
+// TODO: Add sleep support if the SoC supports sleep.
 void port_sleep_until_interrupt(void) {
 }

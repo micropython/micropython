@@ -488,7 +488,6 @@ void port_sleep_until_interrupt(void) {
         (void) __get_FPSCR();
     }
     #endif
-    // Call wait for interrupt ourselves if the SD isn't enabled.
     __WFI();
 }
 

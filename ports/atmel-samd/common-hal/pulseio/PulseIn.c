@@ -102,7 +102,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
             current_overflow += 1;
         }
         uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
-        // The SAMD21 clock is 48mhz. We prescale it to 3mhz so // 3 here.
+        // The SAMD21 clock is 48MHz. We prescale it to 3MHz so // 3 here.
         #ifdef SAMD21
         total_diff /= 3;
         #endif
@@ -170,11 +170,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
         set_timer_handler(true, index, TC_HANDLER_PULSEIN);
         #ifdef SAMD21
-        // We use GCLK0 for SAMD21 which is 48mhz. We prescale it to 3mhz.
+        // We use GCLK0 for SAMD21 which is 48MHz. We prescale it to 3MHz.
         turn_on_clocks(true, index, 0);
         #endif
         #ifdef SAMD51
-        // We use GCLK5 for SAMD51 because it runs at 2mhz and we can use it for a 1mhz clock,
+        // We use GCLK5 for SAMD51 because it runs at 2MHz and we can use it for a 1MHz clock,
         // 1us per tick.
         turn_on_clocks(true, index, 5);
         #endif
