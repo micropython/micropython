@@ -426,6 +426,23 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Everspin MRAM
+#define MR2xH40 {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0xef, /*no JDEC*/ \
+    .memory_type = 0x40, /*no JDEC*/ \
+    .capacity = 0x14, /*no JDEC*/ \
+    .max_clock_speed_mhz = 40, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \
+    .supports_fast_read = false, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
 // Settings for the Macronix MX25L1606 2MiB SPI flash.
 // Datasheet:
 #define MX25L1606  {\

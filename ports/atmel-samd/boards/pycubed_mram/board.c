@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
 
-#define CMD_READ_JEDEC_ID 0x9f
-#define CMD_READ_DATA 0x03
-#define CMD_FAST_READ_DATA 0x0B
-#define CMD_SECTOR_ERASE 0x20
-// #define CMD_SECTOR_ERASE CMD_READ_JEDEC_ID
-#define CMD_DISABLE_WRITE 0x04
-#define CMD_ENABLE_WRITE 0x06
-#define CMD_PAGE_PROGRAM 0x02
-// #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
-#define CMD_READ_STATUS 0x05
-#define CMD_READ_STATUS2 0x35
-#define CMD_WRITE_STATUS_BYTE1 0x01
-#define CMD_WRITE_STATUS_BYTE2 0x31
-#define CMD_DUAL_READ 0x3b
-#define CMD_QUAD_READ 0x6b
-#define CMD_ENABLE_RESET 0x66
-#define CMD_RESET 0x99
-#define CMD_WAKE 0xab
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
+#include <string.h>
+
+#include "boards/board.h"
+#include "py/mpconfig.h"
+#include "shared-bindings/nvm/ByteArray.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "hal/include/hal_gpio.h"
+#include "shared-bindings/pulseio/PWMOut.h"
+
+nvm_bytearray_obj_t bootcnt = {
+    .base = {
+        .type = &nvm_bytearray_type
+            },
+    .len = ( uint32_t) 8192,
+    .start_address = (uint8_t*) (0x00080000 - 8192)
+    };
+
+
+void board_init(void) {
+    pulseio_pwmout_obj_t pwm;
+    common_hal_pulseio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
+    common_hal_pulseio_pwmout_never_reset(&pwm);
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+    uint8_t value_out = 0;
+    common_hal_nvm_bytearray_get_bytes(&bootcnt,0,1,&value_out);
+    ++value_out;
+    common_hal_nvm_bytearray_set_bytes(&bootcnt,0,&value_out,1);
+}
