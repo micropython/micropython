@@ -66,6 +66,9 @@ Additional functions
     Wait for the *awaitable* to complete, but cancel it if it takes longer
     that *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
+    
+    Tasks may intercept the timeout (for example to perform cleanup
+    operations) by means of a try-finally block.
 
     Returns the return value of *awaitable*.
 
@@ -93,8 +96,8 @@ class Task
 
 .. method:: Task.cancel()
 
-    Cancel the task by injecting a ``CancelledError`` into it.  The task may
-    or may not ignore this exception.
+    Cancel the task. Tasks may intercept cancellation (for example to perform
+    cleanup operations) by means of a try-finally block.
 
 class Event
 -----------
