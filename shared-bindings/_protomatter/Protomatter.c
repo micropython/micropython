@@ -54,7 +54,7 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
 STATIC void validate_pins(qstr what, uint8_t* pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
     mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
     if (len > max_pins) {
-        mp_raise_ValueError_varg(translate("At most %d %q may be specified"), max_pins, what);
+        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
     }
     *count_out = len;
     for (mp_int_t i=0; i<len; i++) {
