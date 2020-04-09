@@ -225,6 +225,7 @@
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t profiler_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t mp_module_ubinascii;
@@ -239,8 +240,14 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
+#if MICROPY_ENABLE_PROFILER
+#define PROFILER_BUILTIN_MODULE             { MP_ROM_QSTR(MP_QSTR_profiler), MP_ROM_PTR(&profiler_module) },
+#else
+#define PROFILER_BUILTIN_MODULE
+#endif
+
 #if MICROPY_PY_STM
-#define STM_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+#define STM_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
 #else
 #define STM_BUILTIN_MODULE
 #endif
@@ -264,6 +271,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
+    PROFILER_BUILTIN_MODULE \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
     STM_BUILTIN_MODULE \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
@@ -331,6 +339,8 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
+    \
+    uint8_t *profiling_buffer;
     \
     MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \

@@ -131,11 +131,15 @@ LDFLAGS += --gc-sections
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -DPENDSV_DEBUG
+CFLAGS += -DPENDSV_DEBUG
 COPT = -O0
 else
 COPT += -Os -DNDEBUG
 endif
+
+# Always enable symbols -- They're occasionally useful, and don't make it into the
+# final .bin/.hex/.dfu so the extra size doesn't matter.
+CFLAGS += -g
 
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
@@ -320,7 +324,7 @@ SRC_C = \
 	adc.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
-SRC_O = \
+SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
 
@@ -340,6 +344,18 @@ SRC_O += \
 	resethandler.o \
 	lib/utils/gchelper_m3.o
 endif
+endif
+
+ifeq ($(MICROPY_ENABLE_PROFILER),1)
+SRC_C += \
+	profiler.c \
+
+SRC_O += \
+	profiler_mcount.o \
+
+$(BUILD)/py/%.o: CFLAGS += -pg
+
+CFLAGS += -DMICROPY_ENABLE_PROFILER
 endif
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
