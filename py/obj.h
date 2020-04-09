@@ -820,6 +820,39 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+static inline float mp_obj_get_float_to_f(mp_obj_t o) {
+    return mp_obj_get_float(o);
+}
+
+static inline double mp_obj_get_float_to_d(mp_obj_t o) {
+    return (double)mp_obj_get_float(o);
+}
+
+static inline mp_obj_t mp_obj_new_float_from_f(float o) {
+    return mp_obj_new_float(o);
+}
+
+static inline mp_obj_t mp_obj_new_float_from_d(double o) {
+    return mp_obj_new_float((mp_float_t)o);
+}
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+static inline float mp_obj_get_float_to_f(mp_obj_t o) {
+    return (float)mp_obj_get_float(o);
+}
+
+static inline double mp_obj_get_float_to_d(mp_obj_t o) {
+    return mp_obj_get_float(o);
+}
+
+static inline mp_obj_t mp_obj_new_float_from_f(float o) {
+    return mp_obj_new_float((mp_float_t)o);
+}
+
+static inline mp_obj_t mp_obj_new_float_from_d(double o) {
+    return mp_obj_new_float(o);
+}
+#endif
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 mp_int_t mp_float_hash(mp_float_t val);
 #else

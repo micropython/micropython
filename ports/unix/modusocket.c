@@ -378,8 +378,8 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     if (timeout_in != mp_const_none) {
         #if MICROPY_PY_BUILTINS_FLOAT
         mp_float_t val = mp_obj_get_float(timeout_in);
-        double ipart;
-        tv.tv_usec = round(modf(val, &ipart) * 1000000);
+        mp_float_t ipart;
+        tv.tv_usec = MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
         tv.tv_sec = ipart;
         #else
         tv.tv_sec = mp_obj_get_int(timeout_in);
