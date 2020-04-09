@@ -22,7 +22,8 @@ jobs:
         python-version: 3.5
     - name: Install deps
       run: |
-        sudo apt-get install -y gettext librsvg2-bin
+        sudo apt-get install -y eatmydata
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
         pip install requests sh click setuptools cpp-coveralls Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
     - name: Versions
       run: |
@@ -66,6 +67,54 @@ jobs:
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
 
+    - name: Build mpy-cross.static-raspbian
+      run: make -C mpy-cross -j2 -f Makefile.static-raspbian
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-raspbian
+        path: mpy-cross/mpy-cross.static-raspbian
+
+    - name: Build mpy-cross.static
+      run: make -C mpy-cross -j2 -f Makefile.static
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-amd64-linux
+        path: mpy-cross/mpy-cross.static
+
+    - name: Build mpy-cross.static-mingw
+      run: make -C mpy-cross -j2 -f Makefile.static-mingw
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross.static-x64-windows
+        path: mpy-cross/mpy-cross.static.exe
+
+  mpy-cross-mac:
+    runs-on: macos-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Install deps
+      run: |
+        brew link --force gettext
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+        msgfmt --version
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: CircuitPython version
+      run: git describe --dirty --always --tags
+    - name: Build mpy-cross
+      run: make -C mpy-cross -j2
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: mpy-cross-macos-catalina
+        path: mpy-cross/mpy-cross
+
   build-arm:
     runs-on: ubuntu-16.04
     needs: test
@@ -73,14 +122,18 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "TG-Watch02A"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
+        - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
+        - "circuitbrains_basic_m0"
+        - "circuitbrains_deluxe_m4"
         - "circuitplayground_bluefruit"
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
@@ -95,6 +148,9 @@ jobs:
         - "electronut_labs_blip"
         - "electronut_labs_papyr"
         - "escornabot_makech"
+        - "espruino_pico"
+        - "espruino_wifi"
+        - "feather_bluefruit_sense"
         - "feather_m0_adalogger"
         - "feather_m0_basic"
         - "feather_m0_express"
@@ -103,6 +159,7 @@ jobs:
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
         - "feather_m4_express"
+        - "feather_m7_1011"
         - "feather_mimxrt1011"
         - "feather_mimxrt1062"
         - "feather_nrf52840_express"
@@ -113,12 +170,15 @@ jobs:
         - "hallowing_m0_express"
         - "hallowing_m4_express"
         - "imxrt1010_evk"
+        - "imxrt1020_evk"
+        - "imxrt1060_evk"
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
         - "itsybitsy_nrf52840_express"
         - "kicksat-sprite"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
+        - "meowbit_v121"
         - "meowmeow"
         - "metro_m0_express"
         - "metro_m4_airlift_lite"
@@ -126,6 +186,8 @@ jobs:
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"
+        - "ndgarage_ndbit6"
+        - "nfc_copy_cat"
         - "ohs2020_badge"
         - "openbook_m4"
         - "particle_argon"
@@ -140,6 +202,7 @@ jobs:
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
+        - "pycubed"
         - "pygamer"
         - "pygamer_advance"
         - "pyportal"
@@ -158,17 +221,21 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "sparkfun_samd51_thing_plus"
         - "spresense"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
+        - "stm32f4_discovery"
         - "stringcar_m0_express"
+        - "teensy40"
         - "teknikio_bluebird"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
         - "uchip"
         - "ugame10"
+        - "winterbloom_big_honking_button"
         - "winterbloom_sol"
         - "xinabox_cc03"
         - "xinabox_cs11"
@@ -209,13 +276,3 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-    - name: Install upload deps
-      run: |
-        pip install uritemplate
-    - name: Upload to Release
-      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
-      working-directory: tools
-      env:
-        UPLOAD_URL: ${{ github.event.release.upload_url }}
-        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.BLINKA_GITHUB_ACCESS_TOKEN }}
-      if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested')
