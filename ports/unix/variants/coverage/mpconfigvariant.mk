@@ -5,7 +5,7 @@ DEBUG ?= 1
 
 CFLAGS += \
 	-fprofile-arcs -ftest-coverage \
-	-Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
+	-Wformat -Wmissing-declarations -Wmissing-prototypes \
 	-Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	-DMICROPY_UNIX_COVERAGE
 

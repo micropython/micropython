@@ -19,7 +19,7 @@ ifdef EMSCRIPTEN
     CPP += -isystem $(EMSCRIPTEN)/system/include/libc -cxx-isystem $(EMSCRIPTEN)/system/include/libcxx
 endif
 
-CFLAGS = -m32 -Wall -Werror $(INC) -std=c99 $(COPT)
+CFLAGS = -m32 -Wall -Werror -Wdouble-promotion -Wfloat-conversion $(INC) -std=c99 $(COPT)
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 
 CFLAGS += -O0 -DNDEBUG

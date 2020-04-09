@@ -176,9 +176,9 @@ jobs:
       after_failure:
         - tests/run-tests --print-failures
 
-    # unix nanbox (and using Python 2 to check it can run the build scripts)
+    # unix nanbox/float (and using Python 2 to check it can run the build scripts)
     - stage: test
-      env: NAME="unix nanbox port build and tests"
+      env: NAME="unix nanbox/float port build and tests"
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
@@ -186,19 +186,25 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox
-        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox test_full
+        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox test_full || travis_terminate 1
+        - make ${MAKEOPTS} -C ports/unix clean
+        - make ${MAKEOPTS} -C ports/unix CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
+        - make ${MAKEOPTS} -C ports/unix test
       after_failure:
         - tests/run-tests --print-failures
 
-    # unix stackless
+    # unix stackless/float with clang
     - stage: test
-      env: NAME="unix stackless port build and tests with clang"
+      env: NAME="unix stackless/float port build and tests with clang"
       install:
         - sudo apt-get install clang
       script:
         - make ${MAKEOPTS} -C mpy-cross CC=clang
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+        - make ${MAKEOPTS} -C ports/unix CC=clang test || travis_terminate 1
+        - make ${MAKEOPTS} -C ports/unix clean
+        - make ${MAKEOPTS} -C ports/unix CC=clang CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
         - make ${MAKEOPTS} -C ports/unix CC=clang test
       after_failure:
         - tests/run-tests --print-failures
