@@ -113,7 +113,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
         # run the main test suite
         - make -C ports/unix VARIANT=coverage test_full
-        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-multitests.py multi_net/*.py)
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-multitests.py multi_net/*.py) || travis_terminate 1
         # test building native mpy modules
         - make -C examples/natmod/features1 ARCH=x64
         - make -C examples/natmod/features2 ARCH=x64
@@ -147,7 +147,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 deplibs
         - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage
         # run the main test suite
-        - make -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage test_full
+        - make -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage test_full || travis_terminate 1
         # test building native mpy modules
         - make -C examples/natmod/features1 ARCH=x86
         - make -C examples/natmod/features2 ARCH=x86
@@ -208,7 +208,7 @@ jobs:
       env: NAME="unix port with sys.settrace build and tests"
       script:
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test
+        - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test || travis_terminate 1
         - make ${MAKEOPTS} -C ports/unix clean
         - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1 -DMICROPY_PY_SYS_SETTRACE=1" test
       after_failure:
