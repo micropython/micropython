@@ -132,13 +132,6 @@ class IOQueue:
 ################################################################################
 # Main run loop
 
-# TaskQueue of Task instances
-_task_queue = TaskQueue()
-
-# Task queue and poller for stream IO
-_io_queue = IOQueue()
-
-
 # Ensure the awaitable is a task
 def _promote_to_task(aw):
     return aw if isinstance(aw, Task) else create_task(aw)
@@ -269,3 +262,16 @@ class Loop:
 # The runq_len and waitq_len arguments are for legacy uasyncio compatibility
 def get_event_loop(runq_len=0, waitq_len=0):
     return Loop
+
+
+def new_event_loop():
+    global _task_queue, _io_queue
+    # TaskQueue of Task instances
+    _task_queue = TaskQueue()
+    # Task queue and poller for stream IO
+    _io_queue = IOQueue()
+    return Loop
+
+
+# Initialise default event loop
+new_event_loop()

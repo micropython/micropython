@@ -244,6 +244,13 @@ Event Loop
 
     Return the event loop used to schedule and run tasks.  See `Loop`.
 
+.. function:: new_event_loop()
+
+    Reset the event loop and return it.
+
+    Note: since MicroPython only has a single event loop this function just
+    resets the loop's state, it does not create a new one.
+
 .. class:: Loop()
 
     This represents the object which schedules and runs tasks.  It cannot be
