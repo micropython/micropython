@@ -57,8 +57,8 @@ STATIC void pyb_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC void pyb_pwm_init_helper(pyb_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_duty, MP_ARG_INT, {.u_int = -1} },
+        {MP_QSTR_freq, MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_duty, MP_ARG_INT, {.u_int = -1}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -153,16 +153,16 @@ STATIC mp_obj_t pyb_pwm_duty(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pwm_duty_obj, 1, 2, pyb_pwm_duty);
 
 STATIC const mp_rom_map_elem_t pyb_pwm_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_pwm_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_pwm_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&pyb_pwm_freq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&pyb_pwm_duty_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_pwm_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_pwm_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&pyb_pwm_freq_obj)},
+    {MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&pyb_pwm_duty_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pwm_locals_dict, pyb_pwm_locals_dict_table);
 
 const mp_obj_type_t pyb_pwm_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_PWM,
     .print = pyb_pwm_print,
     .make_new = pyb_pwm_make_new,

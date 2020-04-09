@@ -51,7 +51,7 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 }
 
 STATIC const mp_obj_type_t range_it_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
     .iternext = range_it_iternext,
@@ -211,7 +211,7 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 #endif
 
 const mp_obj_type_t mp_type_range = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_range,
     .print = range_print,
     .make_new = range_make_new,

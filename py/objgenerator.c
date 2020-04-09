@@ -72,7 +72,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
     .unary_op = mp_generic_unary_op,
@@ -125,7 +125,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 const mp_obj_type_t mp_type_native_gen_wrap = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_generator,
     .call = native_gen_wrap_call,
     .unary_op = mp_generic_unary_op,
@@ -330,18 +330,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_pend_throw_obj, gen_instance_pend_
 #endif
 
 STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj)},
+    {MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj)},
     #if MICROPY_PY_GENERATOR_PEND_THROW
-    { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
+    {MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
 const mp_obj_type_t mp_type_gen_instance = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
     .unary_op = mp_generic_unary_op,

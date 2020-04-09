@@ -52,19 +52,19 @@ STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 
 STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb)},
 
-    { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&pyb_millis_obj) },
-    { MP_ROM_QSTR(MP_QSTR_elapsed_millis), MP_ROM_PTR(&pyb_elapsed_millis_obj) },
-    { MP_ROM_QSTR(MP_QSTR_delay), MP_ROM_PTR(&pyb_delay_obj) },
+    {MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&pyb_millis_obj)},
+    {MP_ROM_QSTR(MP_QSTR_elapsed_millis), MP_ROM_PTR(&pyb_elapsed_millis_obj)},
+    {MP_ROM_QSTR(MP_QSTR_delay), MP_ROM_PTR(&pyb_delay_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
-    { MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type) },
+    {MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type)},
+    {MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
 
 const mp_obj_module_t pyb_module = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&pyb_module_globals,
 };

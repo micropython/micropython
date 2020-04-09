@@ -344,26 +344,26 @@ STATIC mp_obj_t ucryptolib_aes_decrypt(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ucryptolib_aes_decrypt_obj, 2, 3, ucryptolib_aes_decrypt);
 
 STATIC const mp_rom_map_elem_t ucryptolib_aes_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_encrypt), MP_ROM_PTR(&ucryptolib_aes_encrypt_obj) },
-    { MP_ROM_QSTR(MP_QSTR_decrypt), MP_ROM_PTR(&ucryptolib_aes_decrypt_obj) },
+    {MP_ROM_QSTR(MP_QSTR_encrypt), MP_ROM_PTR(&ucryptolib_aes_encrypt_obj)},
+    {MP_ROM_QSTR(MP_QSTR_decrypt), MP_ROM_PTR(&ucryptolib_aes_decrypt_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(ucryptolib_aes_locals_dict, ucryptolib_aes_locals_dict_table);
 
 STATIC const mp_obj_type_t ucryptolib_aes_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_aes,
     .make_new = ucryptolib_aes_make_new,
     .locals_dict = (void *)&ucryptolib_aes_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
-    { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib)},
+    {MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type)},
     #if MICROPY_PY_UCRYPTOLIB_CONSTS
-    { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC) },
+    {MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB)},
+    {MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC)},
     #if MICROPY_PY_UCRYPTOLIB_CTR
-    { MP_ROM_QSTR(MP_QSTR_MODE_CTR), MP_ROM_INT(UCRYPTOLIB_MODE_CTR) },
+    {MP_ROM_QSTR(MP_QSTR_MODE_CTR), MP_ROM_INT(UCRYPTOLIB_MODE_CTR)},
     #endif
     #endif
 };
@@ -371,7 +371,7 @@ STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_ucryptolib_globals, mp_module_ucryptolib_globals_table);
 
 const mp_obj_module_t mp_module_ucryptolib = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
 

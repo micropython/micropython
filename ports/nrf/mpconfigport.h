@@ -216,13 +216,13 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
 
 #if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
+#define UBLUEPY_MODULE                      {MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy)},
 #else
 #define UBLUEPY_MODULE
 #endif
 
 #if MICROPY_PY_MUSIC
-#define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
+#define MUSIC_MODULE                        {MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module)},
 #else
 #define MUSIC_MODULE
 #endif
@@ -238,17 +238,17 @@ extern const struct _mp_obj_module_t music_module;
 
 #if MICROPY_PY_BLE
 extern const struct _mp_obj_module_t ble_module;
-#define BLE_MODULE                        { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module) },
+#define BLE_MODULE                        {MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module)},
 #else
 #define BLE_MODULE
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
+    {MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime)}, \
+    {MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime)}, \
+    {MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos)}, \
     BLE_MODULE \
     MUSIC_MODULE \
     UBLUEPY_MODULE \
@@ -258,10 +258,10 @@ extern const struct _mp_obj_module_t ble_module;
 #else
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
+    {MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime)}, \
+    {MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos)}, \
     MUSIC_MODULE \
     MICROPY_BOARD_BUILTINS \
 
@@ -270,13 +270,13 @@ extern const struct _mp_obj_module_t ble_module;
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) }, \
+    {MP_ROM_QSTR(MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj)}, \
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj)}, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
+    {MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module)}, \
     BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM

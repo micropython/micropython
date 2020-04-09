@@ -98,14 +98,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(object___delattr___obj, object___delattr__);
 
 STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj) },
+    {MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj)},
     #endif
     #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR___new__), MP_ROM_PTR(&object___new___obj) },
+    {MP_ROM_QSTR(MP_QSTR___new__), MP_ROM_PTR(&object___new___obj)},
     #endif
     #if MICROPY_PY_DELATTR_SETATTR
-    { MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj) },
-    { MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj) },
+    {MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj)},
+    {MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj)},
     #endif
 };
 
@@ -113,7 +113,7 @@ STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
 #endif
 
 const mp_obj_type_t mp_type_object = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_object,
     .make_new = object_make_new,
     #if MICROPY_CPYTHON_COMPAT

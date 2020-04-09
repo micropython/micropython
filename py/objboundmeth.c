@@ -96,7 +96,7 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 #endif
 
 STATIC const mp_obj_type_t mp_type_bound_meth = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_bound_method,
     #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = bound_meth_print,

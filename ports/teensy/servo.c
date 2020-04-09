@@ -169,15 +169,15 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(servo_obj_angle_obj, 1, 2, servo_obj_
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(servo_obj_usecs_obj, 1, 2, servo_obj_usecs);
 
 static const mp_method_t servo_methods[] = {
-    { "attach", &servo_obj_attach_obj },
-    { "detach", &servo_obj_detach_obj },
-    { "pin", &servo_obj_pin_obj },
-    { "min_usecs", &servo_obj_min_usecs_obj },
-    { "max_usecs", &servo_obj_max_usecs_obj },
-    { "attached", &servo_obj_attached_obj },
-    { "angle", &servo_obj_angle_obj },
-    { "usecs", &servo_obj_usecs_obj },
-    { NULL, NULL },
+    {"attach", &servo_obj_attach_obj},
+    {"detach", &servo_obj_detach_obj},
+    {"pin", &servo_obj_pin_obj},
+    {"min_usecs", &servo_obj_min_usecs_obj},
+    {"max_usecs", &servo_obj_max_usecs_obj},
+    {"attached", &servo_obj_attached_obj},
+    {"angle", &servo_obj_angle_obj},
+    {"usecs", &servo_obj_usecs_obj},
+    {NULL, NULL},
 };
 
 /*
@@ -187,7 +187,7 @@ static const mp_method_t servo_methods[] = {
  */
 
 static const mp_obj_type_t servo_obj_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Servo,
     .print = servo_obj_print,
     .methods = servo_methods,

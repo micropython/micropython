@@ -54,11 +54,11 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -128,7 +128,7 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
 };
 
 STATIC const mp_obj_type_t machine_hard_i2c_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,

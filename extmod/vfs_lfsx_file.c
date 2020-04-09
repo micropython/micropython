@@ -185,18 +185,18 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
 }
 
 STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&MP_VFS_LFSx(file___exit___obj)) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj)},
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj)},
+    {MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj)},
+    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj)},
+    {MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&MP_VFS_LFSx(file___exit___obj))},
 };
 STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
 
@@ -208,7 +208,7 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
 };
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_FileIO,
     .print = MP_VFS_LFSx(file_print),
     .getiter = mp_identity_getiter,
@@ -226,7 +226,7 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
 };
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_TextIOWrapper,
     .print = MP_VFS_LFSx(file_print),
     .getiter = mp_identity_getiter,

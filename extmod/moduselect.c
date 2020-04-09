@@ -332,16 +332,16 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
-    { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
-    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
+    {MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj)},
+    {MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj)},
+    {MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj)},
+    {MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_poll = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_poll,
     .getiter = mp_identity_getiter,
     .iternext = poll_iternext,
@@ -360,19 +360,19 @@ STATIC mp_obj_t select_poll(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
 STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
-    { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
-    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
-    { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(MP_STREAM_POLL_RD) },
-    { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(MP_STREAM_POLL_WR) },
-    { MP_ROM_QSTR(MP_QSTR_POLLERR), MP_ROM_INT(MP_STREAM_POLL_ERR) },
-    { MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_ROM_INT(MP_STREAM_POLL_HUP) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect)},
+    {MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj)},
+    {MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj)},
+    {MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(MP_STREAM_POLL_RD)},
+    {MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(MP_STREAM_POLL_WR)},
+    {MP_ROM_QSTR(MP_QSTR_POLLERR), MP_ROM_INT(MP_STREAM_POLL_ERR)},
+    {MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_ROM_INT(MP_STREAM_POLL_HUP)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);
 
 const mp_obj_module_t mp_module_uselect = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 

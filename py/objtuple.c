@@ -214,14 +214,14 @@ STATIC mp_obj_t tuple_index(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
 STATIC const mp_rom_map_elem_t tuple_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&tuple_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&tuple_index_obj) },
+    {MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&tuple_count_obj)},
+    {MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&tuple_index_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
 const mp_obj_type_t mp_type_tuple = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_tuple,
     .print = mp_obj_tuple_print,
     .make_new = mp_obj_tuple_make_new,

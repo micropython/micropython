@@ -150,13 +150,13 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             return MP_OBJ_NEW_SMALL_INT(mpz_hash(&o->mpz));
         case MP_UNARY_OP_POSITIVE:
             return o_in;
-        case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz();
-                                     mpz_neg_inpl(&o2->mpz, &o->mpz);
-                                     return MP_OBJ_FROM_PTR(o2);
+        case MP_UNARY_OP_NEGATIVE: {mp_obj_int_t *o2 = mp_obj_int_new_mpz();
+                                    mpz_neg_inpl(&o2->mpz, &o->mpz);
+                                    return MP_OBJ_FROM_PTR(o2);
         }
-        case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz();
-                                   mpz_not_inpl(&o2->mpz, &o->mpz);
-                                   return MP_OBJ_FROM_PTR(o2);
+        case MP_UNARY_OP_INVERT: {mp_obj_int_t *o2 = mp_obj_int_new_mpz();
+                                  mpz_not_inpl(&o2->mpz, &o->mpz);
+                                  return MP_OBJ_FROM_PTR(o2);
         }
         case MP_UNARY_OP_ABS: {
             mp_obj_int_t *self = MP_OBJ_TO_PTR(o_in);

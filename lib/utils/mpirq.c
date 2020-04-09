@@ -36,9 +36,9 @@
  ******************************************************************************/
 
 const mp_arg_t mp_irq_init_args[] = {
-    { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-    { MP_QSTR_trigger, MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    {MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+    {MP_QSTR_trigger, MP_ARG_INT, {.u_int = 0}},
+    {MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false}},
 };
 
 /******************************************************************************
@@ -111,13 +111,13 @@ STATIC mp_obj_t mp_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 }
 
 STATIC const mp_rom_map_elem_t mp_irq_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_flags),               MP_ROM_PTR(&mp_irq_flags_obj) },
-    { MP_ROM_QSTR(MP_QSTR_trigger),             MP_ROM_PTR(&mp_irq_trigger_obj) },
+    {MP_ROM_QSTR(MP_QSTR_flags),               MP_ROM_PTR(&mp_irq_flags_obj)},
+    {MP_ROM_QSTR(MP_QSTR_trigger),             MP_ROM_PTR(&mp_irq_trigger_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(mp_irq_locals_dict, mp_irq_locals_dict_table);
 
 const mp_obj_type_t mp_irq_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_irq,
     .call = mp_irq_call,
     .locals_dict = (mp_obj_dict_t *)&mp_irq_locals_dict,

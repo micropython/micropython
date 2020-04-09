@@ -123,8 +123,8 @@ STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_duty, MP_ARG_INT, {.u_int = -1} },
+        {MP_QSTR_freq, MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_duty, MP_ARG_INT, {.u_int = -1}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
@@ -278,17 +278,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_pwm_duty_obj,
     1, 2, esp32_pwm_duty);
 
 STATIC const mp_rom_map_elem_t esp32_pwm_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp32_pwm_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_pwm_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&esp32_pwm_freq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&esp32_pwm_duty_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp32_pwm_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_pwm_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&esp32_pwm_freq_obj)},
+    {MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&esp32_pwm_duty_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_pwm_locals_dict,
     esp32_pwm_locals_dict_table);
 
 const mp_obj_type_t machine_pwm_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_PWM,
     .print = esp32_pwm_print,
     .make_new = esp32_pwm_make_new,

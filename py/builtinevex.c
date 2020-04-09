@@ -39,7 +39,7 @@ typedef struct _mp_obj_code_t {
 } mp_obj_code_t;
 
 STATIC const mp_obj_type_t mp_type_code = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_code,
 };
 

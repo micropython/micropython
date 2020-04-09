@@ -472,10 +472,10 @@ STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 // method connect(ssid, key=None, *, security=WPA2, bssid=None)
 STATIC mp_obj_t cc3k_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WLAN_SEC_WPA2} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WLAN_SEC_WPA2}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     // parse args
@@ -569,24 +569,24 @@ STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_patch_program_obj, cc3k_patch_program);
 
 STATIC const mp_rom_map_elem_t cc3k_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&cc3k_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&cc3k_disconnect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&cc3k_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&cc3k_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_patch_version), MP_ROM_PTR(&cc3k_patch_version_obj) },
-    { MP_ROM_QSTR(MP_QSTR_patch_program), MP_ROM_PTR(&cc3k_patch_program_obj) },
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&cc3k_connect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&cc3k_disconnect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&cc3k_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&cc3k_ifconfig_obj)},
+    {MP_ROM_QSTR(MP_QSTR_patch_version), MP_ROM_PTR(&cc3k_patch_version_obj)},
+    {MP_ROM_QSTR(MP_QSTR_patch_program), MP_ROM_PTR(&cc3k_patch_program_obj)},
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(WLAN_SEC_WEP) },
-    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(WLAN_SEC_WPA) },
-    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(WLAN_SEC_WPA2) },
+    {MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(WLAN_SEC_WEP)},
+    {MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(WLAN_SEC_WPA)},
+    {MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(WLAN_SEC_WPA2)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_locals_dict, cc3k_locals_dict_table);
 
 const mod_network_nic_type_t mod_network_nic_type_cc3k = {
     .base = {
-        { &mp_type_type },
+        {&mp_type_type},
         .name = MP_QSTR_CC3K,
         .make_new = cc3k_make_new,
         .locals_dict = (mp_obj_dict_t *)&cc3k_locals_dict,

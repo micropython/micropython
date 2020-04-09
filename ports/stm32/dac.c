@@ -228,8 +228,8 @@ STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        {MP_QSTR_bits, MP_ARG_INT, {.u_int = 8}},
+        {MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
     };
 
     // parse args
@@ -427,9 +427,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 // Can still do 1-liner: dac.write_trig(buf, trig=Timer(6, freq=100), loop=True)
 mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL} },
+        {MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL}},
     };
 
     // parse args
@@ -479,24 +479,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_write_timed_obj, 1, pyb_dac_write_time
 
 STATIC const mp_rom_map_elem_t pyb_dac_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_dac_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_dac_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_dac_write_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_dac_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_dac_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_dac_write_obj)},
     #if defined(TIM6)
-    { MP_ROM_QSTR(MP_QSTR_noise), MP_ROM_PTR(&pyb_dac_noise_obj) },
-    { MP_ROM_QSTR(MP_QSTR_triangle), MP_ROM_PTR(&pyb_dac_triangle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&pyb_dac_write_timed_obj) },
+    {MP_ROM_QSTR(MP_QSTR_noise), MP_ROM_PTR(&pyb_dac_noise_obj)},
+    {MP_ROM_QSTR(MP_QSTR_triangle), MP_ROM_PTR(&pyb_dac_triangle_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&pyb_dac_write_timed_obj)},
     #endif
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(DMA_NORMAL) },
-    { MP_ROM_QSTR(MP_QSTR_CIRCULAR), MP_ROM_INT(DMA_CIRCULAR) },
+    {MP_ROM_QSTR(MP_QSTR_NORMAL), MP_ROM_INT(DMA_NORMAL)},
+    {MP_ROM_QSTR(MP_QSTR_CIRCULAR), MP_ROM_INT(DMA_CIRCULAR)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_dac_locals_dict, pyb_dac_locals_dict_table);
 
 const mp_obj_type_t pyb_dac_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_DAC,
     .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,

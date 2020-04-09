@@ -229,9 +229,9 @@ void gpio_init(periph_gpio_t *gpio, int pin, int mode, int pull, int alt) {
     gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
 }
 #define gpio_get(gpio, pin) ((gpio->IDR >> (pin)) & 1)
-#define gpio_set(gpio, pin, value) do { gpio->ODR = (gpio->ODR & ~(1 << (pin))) | (value << pin); } while (0)
-#define gpio_low(gpio, pin) do { gpio->BSRRH = (1 << (pin)); } while (0)
-#define gpio_high(gpio, pin) do { gpio->BSRRL = (1 << (pin)); } while (0)
+#define gpio_set(gpio, pin, value) do {gpio->ODR = (gpio->ODR & ~(1 << (pin))) | (value << pin);} while (0)
+#define gpio_low(gpio, pin) do {gpio->BSRRH = (1 << (pin));} while (0)
+#define gpio_high(gpio, pin) do {gpio->BSRRL = (1 << (pin));} while (0)
 
 void stm32_init(void) {
     // basic MCU config

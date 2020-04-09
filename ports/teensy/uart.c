@@ -250,10 +250,10 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 ///   - `stop` is the number of stop bits, 1 or 2.
 ///   - `parity` is the parity, `None`, 0 (even) or 1 (odd).
 STATIC const mp_arg_t pyb_uart_init_args[] = {
-    { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
-    { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
-    { MP_QSTR_stop,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
-    { MP_QSTR_parity,   MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    {MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600}},
+    {MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8}},
+    {MP_QSTR_stop,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1}},
+    {MP_QSTR_parity,   MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none}},
 };
 #define PYB_UART_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_uart_init_args)
 
@@ -385,8 +385,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 ///
 /// Return value: `None`.
 STATIC const mp_arg_t pyb_uart_send_args[] = {
-    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    {MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+    {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000}},
 };
 #define PYB_UART_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_uart_send_args)
 
@@ -432,8 +432,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_send_obj, 1, pyb_uart_send);
 /// otherwise the same buffer that was passed in to `recv`.
 #if 0
 STATIC const mp_arg_t pyb_uart_recv_args[] = {
-    { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    {MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+    {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000}},
 };
 #define PYB_UART_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_uart_recv_args)
 #endif
@@ -475,17 +475,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_recv_obj, 1, pyb_uart_recv);
 
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_uart_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_uart_recv_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_uart_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj)},
+    {MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_uart_send_obj)},
+    {MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_uart_recv_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
 const mp_obj_type_t pyb_uart_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,

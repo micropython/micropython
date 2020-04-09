@@ -113,23 +113,23 @@ STATIC mp_obj_t mp_cmath_sin(mp_obj_t z_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
 
 STATIC const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cmath) },
-    { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
-    { MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi },
-    { MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&mp_cmath_phase_obj) },
-    { MP_ROM_QSTR(MP_QSTR_polar), MP_ROM_PTR(&mp_cmath_polar_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&mp_cmath_rect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_exp), MP_ROM_PTR(&mp_cmath_exp_obj) },
-    { MP_ROM_QSTR(MP_QSTR_log), MP_ROM_PTR(&mp_cmath_log_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cmath)},
+    {MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e},
+    {MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi},
+    {MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&mp_cmath_phase_obj)},
+    {MP_ROM_QSTR(MP_QSTR_polar), MP_ROM_PTR(&mp_cmath_polar_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&mp_cmath_rect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_exp), MP_ROM_PTR(&mp_cmath_exp_obj)},
+    {MP_ROM_QSTR(MP_QSTR_log), MP_ROM_PTR(&mp_cmath_log_obj)},
     #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-    { MP_ROM_QSTR(MP_QSTR_log10), MP_ROM_PTR(&mp_cmath_log10_obj) },
+    {MP_ROM_QSTR(MP_QSTR_log10), MP_ROM_PTR(&mp_cmath_log10_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_sqrt), MP_ROM_PTR(&mp_cmath_sqrt_obj) },
+    {MP_ROM_QSTR(MP_QSTR_sqrt), MP_ROM_PTR(&mp_cmath_sqrt_obj)},
     //{ MP_ROM_QSTR(MP_QSTR_acos), MP_ROM_PTR(&mp_cmath_acos_obj) },
     //{ MP_ROM_QSTR(MP_QSTR_asin), MP_ROM_PTR(&mp_cmath_asin_obj) },
     //{ MP_ROM_QSTR(MP_QSTR_atan), MP_ROM_PTR(&mp_cmath_atan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_cos), MP_ROM_PTR(&mp_cmath_cos_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sin), MP_ROM_PTR(&mp_cmath_sin_obj) },
+    {MP_ROM_QSTR(MP_QSTR_cos), MP_ROM_PTR(&mp_cmath_cos_obj)},
+    {MP_ROM_QSTR(MP_QSTR_sin), MP_ROM_PTR(&mp_cmath_sin_obj)},
     //{ MP_ROM_QSTR(MP_QSTR_tan), MP_ROM_PTR(&mp_cmath_tan_obj) },
     //{ MP_ROM_QSTR(MP_QSTR_acosh), MP_ROM_PTR(&mp_cmath_acosh_obj) },
     //{ MP_ROM_QSTR(MP_QSTR_asinh), MP_ROM_PTR(&mp_cmath_asinh_obj) },
@@ -145,7 +145,7 @@ STATIC const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_cmath_globals, mp_module_cmath_globals_table);
 
 const mp_obj_module_t mp_module_cmath = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_cmath_globals,
 };
 

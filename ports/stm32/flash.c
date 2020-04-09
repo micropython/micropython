@@ -37,22 +37,22 @@ typedef struct {
 #if defined(STM32F0)
 
 static const flash_layout_t flash_layout[] = {
-    { FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE },
+    {FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE},
 };
 
 #elif defined(STM32F4)
 
 static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x04000, 4 },
-    { 0x08010000, 0x10000, 1 },
-    { 0x08020000, 0x20000, 3 },
+    {0x08000000, 0x04000, 4},
+    {0x08010000, 0x10000, 1},
+    {0x08020000, 0x20000, 3},
     #if defined(FLASH_SECTOR_8)
-    { 0x08080000, 0x20000, 4 },
+    {0x08080000, 0x20000, 4},
     #endif
     #if defined(FLASH_SECTOR_12)
-    { 0x08100000, 0x04000, 4 },
-    { 0x08110000, 0x10000, 1 },
-    { 0x08120000, 0x20000, 7 },
+    {0x08100000, 0x04000, 4},
+    {0x08110000, 0x10000, 1},
+    {0x08120000, 0x20000, 7},
     #endif
 };
 
@@ -64,28 +64,28 @@ static const flash_layout_t flash_layout[] = {
 
 #if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
 static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x04000, 4 },
-    { 0x08010000, 0x10000, 1 },
-    { 0x08020000, 0x20000, 3 },
+    {0x08000000, 0x04000, 4},
+    {0x08010000, 0x10000, 1},
+    {0x08020000, 0x20000, 3},
 };
 #else
 static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x08000, 4 },
-    { 0x08020000, 0x20000, 1 },
-    { 0x08040000, 0x40000, 3 },
+    {0x08000000, 0x08000, 4},
+    {0x08020000, 0x20000, 1},
+    {0x08040000, 0x40000, 3},
 };
 #endif
 
 #elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
 
 static const flash_layout_t flash_layout[] = {
-    { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
+    {(uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512},
 };
 
 #elif defined(STM32H7)
 
 static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 16 },
+    {0x08000000, 0x20000, 16},
 };
 
 #else

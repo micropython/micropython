@@ -355,20 +355,20 @@ typedef struct _cc_name_t { byte cc;
                             byte name[2];
 } cc_name_t;
 STATIC const cc_name_t cc_name_table[] = {
-    { ASM_THUMB_CC_EQ, "eq" },
-    { ASM_THUMB_CC_NE, "ne" },
-    { ASM_THUMB_CC_CS, "cs" },
-    { ASM_THUMB_CC_CC, "cc" },
-    { ASM_THUMB_CC_MI, "mi" },
-    { ASM_THUMB_CC_PL, "pl" },
-    { ASM_THUMB_CC_VS, "vs" },
-    { ASM_THUMB_CC_VC, "vc" },
-    { ASM_THUMB_CC_HI, "hi" },
-    { ASM_THUMB_CC_LS, "ls" },
-    { ASM_THUMB_CC_GE, "ge" },
-    { ASM_THUMB_CC_LT, "lt" },
-    { ASM_THUMB_CC_GT, "gt" },
-    { ASM_THUMB_CC_LE, "le" },
+    {ASM_THUMB_CC_EQ, "eq"},
+    {ASM_THUMB_CC_NE, "ne"},
+    {ASM_THUMB_CC_CS, "cs"},
+    {ASM_THUMB_CC_CC, "cc"},
+    {ASM_THUMB_CC_MI, "mi"},
+    {ASM_THUMB_CC_PL, "pl"},
+    {ASM_THUMB_CC_VS, "vs"},
+    {ASM_THUMB_CC_VC, "vc"},
+    {ASM_THUMB_CC_HI, "hi"},
+    {ASM_THUMB_CC_LS, "ls"},
+    {ASM_THUMB_CC_GE, "ge"},
+    {ASM_THUMB_CC_LT, "lt"},
+    {ASM_THUMB_CC_GT, "gt"},
+    {ASM_THUMB_CC_LE, "le"},
 };
 
 typedef struct _format_4_op_t { byte op;
@@ -376,21 +376,21 @@ typedef struct _format_4_op_t { byte op;
 } format_4_op_t;
 #define X(x) (((x) >> 4) & 0xff) // only need 1 byte to distinguish these ops
 STATIC const format_4_op_t format_4_op_table[] = {
-    { X(ASM_THUMB_FORMAT_4_EOR), "eor" },
-    { X(ASM_THUMB_FORMAT_4_LSL), "lsl" },
-    { X(ASM_THUMB_FORMAT_4_LSR), "lsr" },
-    { X(ASM_THUMB_FORMAT_4_ASR), "asr" },
-    { X(ASM_THUMB_FORMAT_4_ADC), "adc" },
-    { X(ASM_THUMB_FORMAT_4_SBC), "sbc" },
-    { X(ASM_THUMB_FORMAT_4_ROR), "ror" },
-    { X(ASM_THUMB_FORMAT_4_TST), "tst" },
-    { X(ASM_THUMB_FORMAT_4_NEG), "neg" },
-    { X(ASM_THUMB_FORMAT_4_CMP), "cmp" },
-    { X(ASM_THUMB_FORMAT_4_CMN), "cmn" },
-    { X(ASM_THUMB_FORMAT_4_ORR), "orr" },
-    { X(ASM_THUMB_FORMAT_4_MUL), "mul" },
-    { X(ASM_THUMB_FORMAT_4_BIC), "bic" },
-    { X(ASM_THUMB_FORMAT_4_MVN), "mvn" },
+    {X(ASM_THUMB_FORMAT_4_EOR), "eor"},
+    {X(ASM_THUMB_FORMAT_4_LSL), "lsl"},
+    {X(ASM_THUMB_FORMAT_4_LSR), "lsr"},
+    {X(ASM_THUMB_FORMAT_4_ASR), "asr"},
+    {X(ASM_THUMB_FORMAT_4_ADC), "adc"},
+    {X(ASM_THUMB_FORMAT_4_SBC), "sbc"},
+    {X(ASM_THUMB_FORMAT_4_ROR), "ror"},
+    {X(ASM_THUMB_FORMAT_4_TST), "tst"},
+    {X(ASM_THUMB_FORMAT_4_NEG), "neg"},
+    {X(ASM_THUMB_FORMAT_4_CMP), "cmp"},
+    {X(ASM_THUMB_FORMAT_4_CMN), "cmn"},
+    {X(ASM_THUMB_FORMAT_4_ORR), "orr"},
+    {X(ASM_THUMB_FORMAT_4_MUL), "mul"},
+    {X(ASM_THUMB_FORMAT_4_BIC), "bic"},
+    {X(ASM_THUMB_FORMAT_4_MVN), "mvn"},
 };
 #undef X
 
@@ -400,12 +400,12 @@ typedef struct _format_9_10_op_t { uint16_t op;
 } format_9_10_op_t;
 #define X(x) (x)
 STATIC const format_9_10_op_t format_9_10_op_table[] = {
-    { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), MP_QSTR_ldr },
-    { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), MP_QSTR_ldrb },
-    { X(ASM_THUMB_FORMAT_10_LDRH), MP_QSTR_ldrh },
-    { X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), MP_QSTR_str },
-    { X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), MP_QSTR_strb },
-    { X(ASM_THUMB_FORMAT_10_STRH), MP_QSTR_strh },
+    {X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), MP_QSTR_ldr},
+    {X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), MP_QSTR_ldrb},
+    {X(ASM_THUMB_FORMAT_10_LDRH), MP_QSTR_ldrh},
+    {X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), MP_QSTR_str},
+    {X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), MP_QSTR_strb},
+    {X(ASM_THUMB_FORMAT_10_STRH), MP_QSTR_strh},
 };
 #undef X
 
@@ -415,10 +415,10 @@ typedef struct _format_vfp_op_t { byte op;
                                   char name[3];
 } format_vfp_op_t;
 STATIC const format_vfp_op_t format_vfp_op_table[] = {
-    { 0x30, "add" },
-    { 0x34, "sub" },
-    { 0x20, "mul" },
-    { 0x80, "div" },
+    {0x30, "add"},
+    {0x34, "sub"},
+    {0x20, "mul"},
+    {0x80, "div"},
 };
 #endif
 

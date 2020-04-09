@@ -104,17 +104,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_o
 
 STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     #if MICROPY_PY_SYS_STDIO_BUFFER
-    { MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj) },
+    {MP_ROM_QSTR(MP_QSTR_buffer), MP_ROM_PTR(&stdio_buffer_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stdio_obj___exit___obj) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj)},
+    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj)},
+    {MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj)},
+    {MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stdio_obj___exit___obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
@@ -127,7 +127,7 @@ STATIC const mp_stream_p_t stdio_obj_stream_p = {
 };
 
 STATIC const mp_obj_type_t stdio_obj_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,
@@ -162,7 +162,7 @@ STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
 };
 
 STATIC const mp_obj_type_t stdio_buffer_obj_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_FileIO,
     .print = stdio_obj_print,
     .getiter = mp_identity_getiter,
@@ -171,5 +171,5 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .locals_dict = (mp_obj_dict_t *)&stdio_locals_dict,
 };
 
-STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused
+STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0};     // fd unused
 #endif

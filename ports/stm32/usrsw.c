@@ -128,14 +128,14 @@ mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
 
 STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_switch_callback_obj) },
+    {MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj)},
+    {MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_switch_callback_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
 
 const mp_obj_type_t pyb_switch_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Switch,
     .print = pyb_switch_print,
     .make_new = pyb_switch_make_new,

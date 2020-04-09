@@ -166,7 +166,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
         case 'f': {
             union { ffi_arg ffi;
                     float flt;
-            } val_union = { .ffi = val };
+            } val_union = {.ffi = val};
             return mp_obj_new_float((mp_float_t)val_union.flt);
         }
         case 'd': {
@@ -338,16 +338,16 @@ STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 }
 
 STATIC const mp_rom_map_elem_t ffimod_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_func), MP_ROM_PTR(&ffimod_func_obj) },
-    { MP_ROM_QSTR(MP_QSTR_var), MP_ROM_PTR(&ffimod_var_obj) },
-    { MP_ROM_QSTR(MP_QSTR_addr), MP_ROM_PTR(&ffimod_addr_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&ffimod_close_obj) },
+    {MP_ROM_QSTR(MP_QSTR_func), MP_ROM_PTR(&ffimod_func_obj)},
+    {MP_ROM_QSTR(MP_QSTR_var), MP_ROM_PTR(&ffimod_var_obj)},
+    {MP_ROM_QSTR(MP_QSTR_addr), MP_ROM_PTR(&ffimod_addr_obj)},
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&ffimod_close_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(ffimod_locals_dict, ffimod_locals_dict_table);
 
 STATIC const mp_obj_type_t ffimod_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_ffimod,
     .print = ffimod_print,
     .make_new = ffimod_make_new,
@@ -429,7 +429,7 @@ error:
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
     .call = ffifunc_call,
@@ -444,7 +444,7 @@ STATIC void fficallback_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 STATIC const mp_obj_type_t fficallback_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_fficallback,
     .print = fficallback_print,
 };
@@ -472,14 +472,14 @@ STATIC mp_obj_t ffivar_set(mp_obj_t self_in, mp_obj_t val_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(ffivar_set_obj, ffivar_set);
 
 STATIC const mp_rom_map_elem_t ffivar_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ffivar_get_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&ffivar_set_obj) },
+    {MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ffivar_get_obj)},
+    {MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&ffivar_set_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(ffivar_locals_dict, ffivar_locals_dict_table);
 
 STATIC const mp_obj_type_t ffivar_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_ffivar,
     .print = ffivar_print,
     .locals_dict = (mp_obj_dict_t *)&ffivar_locals_dict,
@@ -506,16 +506,16 @@ STATIC mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
 MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);
 
 STATIC const mp_rom_map_elem_t mp_module_ffi_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ffi) },
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_ffi_open_obj) },
-    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&mod_ffi_callback_obj) },
-    { MP_ROM_QSTR(MP_QSTR_func), MP_ROM_PTR(&mod_ffi_func_obj) },
-    { MP_ROM_QSTR(MP_QSTR_as_bytearray), MP_ROM_PTR(&mod_ffi_as_bytearray_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ffi)},
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_ffi_open_obj)},
+    {MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&mod_ffi_callback_obj)},
+    {MP_ROM_QSTR(MP_QSTR_func), MP_ROM_PTR(&mod_ffi_func_obj)},
+    {MP_ROM_QSTR(MP_QSTR_as_bytearray), MP_ROM_PTR(&mod_ffi_as_bytearray_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ffi_globals, mp_module_ffi_globals_table);
 
 const mp_obj_module_t mp_module_ffi = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_ffi_globals,
 };

@@ -58,7 +58,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t it_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
     .iternext = it_iternext,

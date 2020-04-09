@@ -128,16 +128,16 @@ STATIC mp_obj_t task_queue_remove(mp_obj_t self_in, mp_obj_t task_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(task_queue_remove_obj, task_queue_remove);
 
 STATIC const mp_rom_map_elem_t task_queue_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_peek), MP_ROM_PTR(&task_queue_peek_obj) },
-    { MP_ROM_QSTR(MP_QSTR_push_sorted), MP_ROM_PTR(&task_queue_push_sorted_obj) },
-    { MP_ROM_QSTR(MP_QSTR_push_head), MP_ROM_PTR(&task_queue_push_sorted_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pop_head), MP_ROM_PTR(&task_queue_pop_head_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj) },
+    {MP_ROM_QSTR(MP_QSTR_peek), MP_ROM_PTR(&task_queue_peek_obj)},
+    {MP_ROM_QSTR(MP_QSTR_push_sorted), MP_ROM_PTR(&task_queue_push_sorted_obj)},
+    {MP_ROM_QSTR(MP_QSTR_push_head), MP_ROM_PTR(&task_queue_push_sorted_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pop_head), MP_ROM_PTR(&task_queue_pop_head_obj)},
+    {MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(task_queue_locals_dict, task_queue_locals_dict_table);
 
 STATIC const mp_obj_type_t task_queue_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_TaskQueue,
     .make_new = task_queue_make_new,
     .locals_dict = (mp_obj_dict_t *)&task_queue_locals_dict,
@@ -259,7 +259,7 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
-        mp_obj_t args[2] = { self->waiting, cur_task };
+        mp_obj_t args[2] = {self->waiting, cur_task};
         task_queue_push_sorted(2, args);
         // Set calling task's data to this task that it waits on, to double-link it.
         ((mp_obj_task_t *)MP_OBJ_TO_PTR(cur_task))->data = self_in;
@@ -268,7 +268,7 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t task_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Task,
     .make_new = task_make_new,
     .attr = task_attr,
@@ -280,14 +280,14 @@ STATIC const mp_obj_type_t task_type = {
 // C-level uasyncio module
 
 STATIC const mp_rom_map_elem_t mp_module_uasyncio_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__uasyncio) },
-    { MP_ROM_QSTR(MP_QSTR_TaskQueue), MP_ROM_PTR(&task_queue_type) },
-    { MP_ROM_QSTR(MP_QSTR_Task), MP_ROM_PTR(&task_type) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__uasyncio)},
+    {MP_ROM_QSTR(MP_QSTR_TaskQueue), MP_ROM_PTR(&task_queue_type)},
+    {MP_ROM_QSTR(MP_QSTR_Task), MP_ROM_PTR(&task_type)},
 };
 STATIC MP_DEFINE_CONST_DICT(mp_module_uasyncio_globals, mp_module_uasyncio_globals_table);
 
 const mp_obj_module_t mp_module_uasyncio = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
 

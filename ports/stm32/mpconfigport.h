@@ -221,7 +221,7 @@
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj)},
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t machine_module;
@@ -240,43 +240,43 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_STM
-#define STM_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+#define STM_BUILTIN_MODULE               {MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module)},
 #else
 #define STM_BUILTIN_MODULE
 #endif
 
 #if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
 // usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
+#define SOCKET_BUILTIN_MODULE               {MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip)},
 #elif MICROPY_PY_USOCKET
 // usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
+#define SOCKET_BUILTIN_MODULE               {MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket)},
 #else
 // no usocket module
 #define SOCKET_BUILTIN_MODULE
 #endif
 
 #if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
+#define NETWORK_BUILTIN_MODULE              {MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network)},
 #else
 #define NETWORK_BUILTIN_MODULE
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    {MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module)}, \
     STM_BUILTIN_MODULE \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
+    {MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos)}, \
+    {MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime)}, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
-    { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
+    {MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire)}, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    {MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module)}, \
+    {MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module)}, \
     STM_BUILTIN_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM

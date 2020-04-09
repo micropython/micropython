@@ -66,13 +66,13 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
 }
 
 STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj) },
+    {MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
 
 const mp_obj_type_t pyb_switch_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Switch,
     .print = pyb_switch_print,
     .make_new = pyb_switch_make_new,

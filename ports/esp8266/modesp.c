@@ -352,45 +352,45 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_set_native_code_location_obj, esp_set_nativ
 #endif
 
 STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp)},
 
-    { MP_ROM_QSTR(MP_QSTR_osdebug), MP_ROM_PTR(&esp_osdebug_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_type), MP_ROM_PTR(&esp_sleep_type_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&esp_deepsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_id), MP_ROM_PTR(&esp_flash_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_read), MP_ROM_PTR(&esp_flash_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_write), MP_ROM_PTR(&esp_flash_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
+    {MP_ROM_QSTR(MP_QSTR_osdebug), MP_ROM_PTR(&esp_osdebug_obj)},
+    {MP_ROM_QSTR(MP_QSTR_sleep_type), MP_ROM_PTR(&esp_sleep_type_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&esp_deepsleep_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_id), MP_ROM_PTR(&esp_flash_id_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_read), MP_ROM_PTR(&esp_flash_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_write), MP_ROM_PTR(&esp_flash_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj)},
     #if MICROPY_ESP8266_NEOPIXEL
-    { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
+    {MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj)},
     #endif
     #if MICROPY_ESP8266_APA102
-    { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
+    {MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_freemem), MP_ROM_PTR(&esp_freemem_obj) },
-    { MP_ROM_QSTR(MP_QSTR_meminfo), MP_ROM_PTR(&esp_meminfo_obj) },
-    { MP_ROM_QSTR(MP_QSTR_check_fw), MP_ROM_PTR(&esp_check_fw_obj) },
-    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_info_obj) }, // TODO delete/rename/move elsewhere
-    { MP_ROM_QSTR(MP_QSTR_malloc), MP_ROM_PTR(&esp_malloc_obj) },
-    { MP_ROM_QSTR(MP_QSTR_free), MP_ROM_PTR(&esp_free_obj) },
-    { MP_ROM_QSTR(MP_QSTR_esf_free_bufs), MP_ROM_PTR(&esp_esf_free_bufs_obj) },
+    {MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_freemem), MP_ROM_PTR(&esp_freemem_obj)},
+    {MP_ROM_QSTR(MP_QSTR_meminfo), MP_ROM_PTR(&esp_meminfo_obj)},
+    {MP_ROM_QSTR(MP_QSTR_check_fw), MP_ROM_PTR(&esp_check_fw_obj)},
+    {MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_info_obj)},     // TODO delete/rename/move elsewhere
+    {MP_ROM_QSTR(MP_QSTR_malloc), MP_ROM_PTR(&esp_malloc_obj)},
+    {MP_ROM_QSTR(MP_QSTR_free), MP_ROM_PTR(&esp_free_obj)},
+    {MP_ROM_QSTR(MP_QSTR_esf_free_bufs), MP_ROM_PTR(&esp_esf_free_bufs_obj)},
     #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
-    { MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj) },
+    {MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj)},
     #endif
 
     #if MODESP_INCLUDE_CONSTANTS
-    { MP_ROM_QSTR(MP_QSTR_SLEEP_NONE), MP_ROM_INT(NONE_SLEEP_T) },
-    { MP_ROM_QSTR(MP_QSTR_SLEEP_LIGHT), MP_ROM_INT(LIGHT_SLEEP_T) },
-    { MP_ROM_QSTR(MP_QSTR_SLEEP_MODEM), MP_ROM_INT(MODEM_SLEEP_T) },
+    {MP_ROM_QSTR(MP_QSTR_SLEEP_NONE), MP_ROM_INT(NONE_SLEEP_T)},
+    {MP_ROM_QSTR(MP_QSTR_SLEEP_LIGHT), MP_ROM_INT(LIGHT_SLEEP_T)},
+    {MP_ROM_QSTR(MP_QSTR_SLEEP_MODEM), MP_ROM_INT(MODEM_SLEEP_T)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
 
 const mp_obj_module_t esp_module = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&esp_module_globals,
 };

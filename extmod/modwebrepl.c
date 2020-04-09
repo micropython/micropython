@@ -158,7 +158,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     self->cur_file = mp_builtin_open(2, open_args, (mp_map_t *)&mp_const_empty_map);
 
     #if 0
-    struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
+    struct mp_stream_seek_t seek = {.offset = self->hdr.offset, .whence = 0};
     int err;
     mp_uint_t res = file_stream->ioctl(self->cur_file, MP_STREAM_SEEK, (uintptr_t)&seek, &err);
     assert(res != MP_STREAM_ERROR);
@@ -330,10 +330,10 @@ STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password);
 
 STATIC const mp_rom_map_elem_t webrepl_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(webrepl_locals_dict, webrepl_locals_dict_table);
 
@@ -344,7 +344,7 @@ STATIC const mp_stream_p_t webrepl_stream_p = {
 };
 
 STATIC const mp_obj_type_t webrepl_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR__webrepl,
     .make_new = webrepl_make_new,
     .protocol = &webrepl_stream_p,
@@ -352,15 +352,15 @@ STATIC const mp_obj_type_t webrepl_type = {
 };
 
 STATIC const mp_rom_map_elem_t webrepl_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__webrepl) },
-    { MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&webrepl_type) },
-    { MP_ROM_QSTR(MP_QSTR_password), MP_ROM_PTR(&webrepl_set_password_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__webrepl)},
+    {MP_ROM_QSTR(MP_QSTR__webrepl), MP_ROM_PTR(&webrepl_type)},
+    {MP_ROM_QSTR(MP_QSTR_password), MP_ROM_PTR(&webrepl_set_password_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(webrepl_module_globals, webrepl_module_globals_table);
 
 const mp_obj_module_t mp_module_webrepl = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&webrepl_module_globals,
 };
 

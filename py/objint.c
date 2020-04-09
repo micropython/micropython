@@ -447,14 +447,14 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
 
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
-    { MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&int_to_bytes_obj) },
+    {MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj)},
+    {MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&int_to_bytes_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 
 const mp_obj_type_t mp_type_int = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_int,
     .print = mp_obj_int_print,
     .make_new = mp_obj_int_make_new,

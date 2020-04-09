@@ -69,9 +69,9 @@ STATIC esp_err_t check_esp_err(esp_err_t code) {
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
+        {MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8}},       // 100ns resolution
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -153,8 +153,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_clock_div_obj, esp32_rmt_clock_div);
 // completed or false if they are still transmitting (or timeout is reached).
 STATIC mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_self,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_self,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -176,9 +176,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
 
 STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_self,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_pulses, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_start,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        {MP_QSTR_self,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_pulses, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_start,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -218,18 +218,18 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_write_pulses_obj, 2, esp32_rmt_write_pulses);
 
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_freq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_clock_div), MP_ROM_PTR(&esp32_rmt_clock_div_obj) },
-    { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
-    { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_pulses), MP_ROM_PTR(&esp32_rmt_write_pulses_obj) },
+    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_freq_obj)},
+    {MP_ROM_QSTR(MP_QSTR_clock_div), MP_ROM_PTR(&esp32_rmt_clock_div_obj)},
+    {MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj)},
+    {MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write_pulses), MP_ROM_PTR(&esp32_rmt_write_pulses_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 
 const mp_obj_type_t esp32_rmt_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_RMT,
     .print = esp32_rmt_print,
     .make_new = esp32_rmt_make_new,

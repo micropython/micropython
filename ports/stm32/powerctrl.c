@@ -100,8 +100,8 @@ typedef struct _sysclk_scaling_table_entry_t {
 
 #if defined(STM32F7)
 STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
-    { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
-    { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
+    {151, PWR_REGULATOR_VOLTAGE_SCALE3},
+    {180, PWR_REGULATOR_VOLTAGE_SCALE2},
     // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
 };
 #elif defined(STM32H7)

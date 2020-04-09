@@ -94,13 +94,13 @@ STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(mdac_write_obj, mdac_write);
 
 STATIC const mp_rom_map_elem_t mdac_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mdac_write_obj) },
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mdac_write_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mdac_locals_dict, mdac_locals_dict_table);
 
 const mp_obj_type_t machine_dac_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_DAC,
     .print = mdac_print,
     .make_new = mdac_make_new,

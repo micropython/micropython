@@ -43,8 +43,8 @@ typedef struct _network_cyw43_obj_t {
     int itf;
 } network_cyw43_obj_t;
 
-STATIC const network_cyw43_obj_t network_cyw43_wl0 = { { &mp_network_cyw43_type }, &cyw43_state, 0 };
-STATIC const network_cyw43_obj_t network_cyw43_wl1 = { { &mp_network_cyw43_type }, &cyw43_state, 1 };
+STATIC const network_cyw43_obj_t network_cyw43_wl0 = {{&mp_network_cyw43_type}, &cyw43_state, 0};
+STATIC const network_cyw43_obj_t network_cyw43_wl1 = {{&mp_network_cyw43_type}, &cyw43_state, 1};
 
 STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -165,9 +165,9 @@ STATIC int network_cyw43_scan_cb(void *env, const cyw43_ev_scan_result_t *res) {
 STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_passive, ARG_essid, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_passive, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        {MP_QSTR_passive, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false}},
+        {MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
     };
 
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -212,11 +212,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_cyw43_scan_obj, 1, network_cyw43_scan)
 STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_essid, ARG_key, ARG_auth, ARG_bssid, ARG_channel };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_auth, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        {MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_auth, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
 
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -434,23 +434,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_cyw43_config_obj, 1, network_cyw43_con
 // class bindings
 
 STATIC const mp_rom_map_elem_t network_cyw43_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&network_cyw43_send_ethernet_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&network_cyw43_ioctl_obj) },
+    {MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&network_cyw43_send_ethernet_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&network_cyw43_ioctl_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&network_cyw43_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_cyw43_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_cyw43_scan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&network_cyw43_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&network_cyw43_disconnect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_cyw43_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_cyw43_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_cyw43_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_cyw43_config_obj) },
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&network_cyw43_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_cyw43_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_cyw43_scan_obj)},
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&network_cyw43_connect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&network_cyw43_disconnect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_cyw43_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_cyw43_ifconfig_obj)},
+    {MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_cyw43_status_obj)},
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_cyw43_config_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(network_cyw43_locals_dict, network_cyw43_locals_dict_table);
 
 const mp_obj_type_t mp_network_cyw43_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_CYW43,
     .print = network_cyw43_print,
     .make_new = network_cyw43_make_new,

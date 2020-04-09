@@ -138,14 +138,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha256_update_obj, uhashlib_sha256_upd
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha256_digest_obj, uhashlib_sha256_digest);
 
 STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha256_update_obj) },
-    { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha256_digest_obj) },
+    {MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha256_update_obj)},
+    {MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha256_digest_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha256_locals_dict, uhashlib_sha256_locals_dict_table);
 
 STATIC const mp_obj_type_t uhashlib_sha256_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_sha256,
     .make_new = uhashlib_sha256_make_new,
     .locals_dict = (void *)&uhashlib_sha256_locals_dict,
@@ -226,13 +226,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha1_update_obj, uhashlib_sha1_update)
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha1_digest_obj, uhashlib_sha1_digest);
 
 STATIC const mp_rom_map_elem_t uhashlib_sha1_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha1_update_obj) },
-    { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha1_digest_obj) },
+    {MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_sha1_update_obj)},
+    {MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_sha1_digest_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha1_locals_dict, uhashlib_sha1_locals_dict_table);
 
 STATIC const mp_obj_type_t uhashlib_sha1_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_sha1,
     .make_new = uhashlib_sha1_make_new,
     .locals_dict = (void *)&uhashlib_sha1_locals_dict,
@@ -313,13 +313,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_md5_update_obj, uhashlib_md5_update);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_md5_digest_obj, uhashlib_md5_digest);
 
 STATIC const mp_rom_map_elem_t uhashlib_md5_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_md5_update_obj) },
-    { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_md5_digest_obj) },
+    {MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&uhashlib_md5_update_obj)},
+    {MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&uhashlib_md5_digest_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_md5_locals_dict, uhashlib_md5_locals_dict_table);
 
 STATIC const mp_obj_type_t uhashlib_md5_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_md5,
     .make_new = uhashlib_md5_make_new,
     .locals_dict = (void *)&uhashlib_md5_locals_dict,
@@ -327,22 +327,22 @@ STATIC const mp_obj_type_t uhashlib_md5_type = {
 #endif // MICROPY_PY_UHASHLIB_MD5
 
 STATIC const mp_rom_map_elem_t mp_module_uhashlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib)},
     #if MICROPY_PY_UHASHLIB_SHA256
-    { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&uhashlib_sha256_type) },
+    {MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&uhashlib_sha256_type)},
     #endif
     #if MICROPY_PY_UHASHLIB_SHA1
-    { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&uhashlib_sha1_type) },
+    {MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&uhashlib_sha1_type)},
     #endif
     #if MICROPY_PY_UHASHLIB_MD5
-    { MP_ROM_QSTR(MP_QSTR_md5), MP_ROM_PTR(&uhashlib_md5_type) },
+    {MP_ROM_QSTR(MP_QSTR_md5), MP_ROM_PTR(&uhashlib_md5_type)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uhashlib_globals, mp_module_uhashlib_globals_table);
 
 const mp_obj_module_t mp_module_uhashlib = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_uhashlib_globals,
 };
 

@@ -532,10 +532,10 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
-    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+    {MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj)},
+    {MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj)},
     #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
+    {MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj)},
     #endif
 };
 
@@ -544,7 +544,7 @@ STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
 
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_array,
     .print = array_print,
     .make_new = array_make_new,
@@ -552,14 +552,14 @@ const mp_obj_type_t mp_type_array = {
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer_p = {.get_buffer = array_get_buffer},
     .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
 };
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
-    { &mp_type_type },
+    {&mp_type_type},
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_bytearray,
     .print = array_print,
@@ -568,14 +568,14 @@ const mp_obj_type_t mp_type_bytearray = {
     .unary_op = array_unary_op,
     .binary_op = array_binary_op,
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer_p = {.get_buffer = array_get_buffer},
     .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
 };
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 const mp_obj_type_t mp_type_memoryview = {
-    { &mp_type_type },
+    {&mp_type_type},
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
@@ -586,7 +586,7 @@ const mp_obj_type_t mp_type_memoryview = {
     .attr = memoryview_attr,
     #endif
     .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    .buffer_p = {.get_buffer = array_get_buffer},
 };
 #endif
 
@@ -635,7 +635,7 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t array_it_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
     .iternext = array_it_iternext,

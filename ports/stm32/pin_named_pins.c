@@ -32,13 +32,13 @@
 #include "pin.h"
 
 const mp_obj_type_t pin_cpu_pins_obj_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_cpu,
     .locals_dict = (mp_obj_dict_t *)&pin_cpu_pins_locals_dict,
 };
 
 const mp_obj_type_t pin_board_pins_obj_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_board,
     .locals_dict = (mp_obj_dict_t *)&pin_board_pins_locals_dict,
 };

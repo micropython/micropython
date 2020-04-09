@@ -86,15 +86,15 @@ STATIC mp_uint_t stest_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, in
 }
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_set_buf), MP_ROM_PTR(&stest_set_buf_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_error), MP_ROM_PTR(&stest_set_error_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read1), MP_ROM_PTR(&mp_stream_read1_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write1), MP_ROM_PTR(&mp_stream_write1_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
+    {MP_ROM_QSTR(MP_QSTR_set_buf), MP_ROM_PTR(&stest_set_buf_obj)},
+    {MP_ROM_QSTR(MP_QSTR_set_error), MP_ROM_PTR(&stest_set_error_obj)},
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_read1), MP_ROM_PTR(&mp_stream_read1_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write1), MP_ROM_PTR(&mp_stream_write1_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
@@ -106,7 +106,7 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 };
 
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
-    { &mp_type_type },
+    {&mp_type_type},
     .protocol = &fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
@@ -121,7 +121,7 @@ STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 }
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
@@ -133,7 +133,7 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 };
 
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
-    { &mp_type_type },
+    {&mp_type_type},
     .protocol = &textio_stream_p2,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
 };

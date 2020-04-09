@@ -77,15 +77,15 @@ mp_obj_t pyb_led_toggle(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_toggle_obj, pyb_led_toggle);
 
 STATIC const mp_rom_map_elem_t pyb_led_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&pyb_led_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&pyb_led_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&pyb_led_toggle_obj) },
+    {MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&pyb_led_on_obj)},
+    {MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&pyb_led_off_obj)},
+    {MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&pyb_led_toggle_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_led_locals_dict, pyb_led_locals_dict_table);
 
 const mp_obj_type_t pyb_led_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_LED,
     .print = pyb_led_print,
     .make_new = pyb_led_make_new,

@@ -42,7 +42,7 @@
 #if !MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #error MICROPY_MEM_STATS requires MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #endif
-#define UPDATE_PEAK() { if (MP_STATE_MEM(current_bytes_allocated) > MP_STATE_MEM(peak_bytes_allocated)) MP_STATE_MEM(peak_bytes_allocated) = MP_STATE_MEM(current_bytes_allocated); }
+#define UPDATE_PEAK() {if (MP_STATE_MEM(current_bytes_allocated) > MP_STATE_MEM(peak_bytes_allocated)) MP_STATE_MEM(peak_bytes_allocated) = MP_STATE_MEM(current_bytes_allocated);}
 #endif
 
 #if MICROPY_ENABLE_GC

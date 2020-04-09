@@ -201,8 +201,8 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_readonly, ARG_mkfs };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
-        { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE} },
+        {MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE}},
+        {MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_FALSE}},
     };
 
     // parse args
@@ -297,10 +297,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_mode, ARG_encoding };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
-        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        {MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)}},
+        {MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
     };
 
     // parse args
@@ -529,7 +529,7 @@ int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point) {
     nlr_buf_t nlr;
     mp_int_t ret = -MP_EIO;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[] = { bdev, mount_point };
+        mp_obj_t args[] = {bdev, mount_point};
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
         mp_vfs_chdir(mount_point);
         ret = 0; // success

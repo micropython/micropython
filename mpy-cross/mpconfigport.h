@@ -135,7 +135,7 @@ typedef long mp_off_t;
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 }
+#define MICROPY_PORT_CONSTANTS      {"dummy", 0}
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else

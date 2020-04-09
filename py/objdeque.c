@@ -147,17 +147,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(deque_clear_obj, deque_clear);
 #endif
 
 STATIC const mp_rom_map_elem_t deque_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&deque_append_obj) },
+    {MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&deque_append_obj)},
     #if 0
-    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&deque_clear_obj) },
+    {MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&deque_clear_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_popleft), MP_ROM_PTR(&deque_popleft_obj) },
+    {MP_ROM_QSTR(MP_QSTR_popleft), MP_ROM_PTR(&deque_popleft_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 
 const mp_obj_type_t mp_type_deque = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_deque,
     .make_new = deque_make_new,
     .unary_op = deque_unary_op,

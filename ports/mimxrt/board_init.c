@@ -43,7 +43,7 @@
 
 volatile uint32_t systick_ms = 0;
 
-const uint8_t dcd_data[] = { 0x00 };
+const uint8_t dcd_data[] = {0x00};
 
 void board_led_write(bool state);
 
@@ -62,7 +62,7 @@ void board_init(void) {
     IOMUXC_SetPinMux(MICROPY_HW_LED_PINMUX, 0U);
     IOMUXC_SetPinConfig(MICROPY_HW_LED_PINMUX, 0x10B0U);
 
-    gpio_pin_config_t led_config = { kGPIO_DigitalOutput, 0, kGPIO_NoIntmode };
+    gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
     GPIO_PinInit(MICROPY_HW_LED_PORT, MICROPY_HW_LED_PIN, &led_config);
     board_led_write(true);
 

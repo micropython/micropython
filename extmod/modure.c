@@ -146,21 +146,21 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_end_obj, 1, 2, match_end);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
+    {MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj)},
     #if MICROPY_PY_URE_MATCH_GROUPS
-    { MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj) },
+    {MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj)},
     #endif
     #if MICROPY_PY_URE_MATCH_SPAN_START_END
-    { MP_ROM_QSTR(MP_QSTR_span), MP_ROM_PTR(&match_span_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&match_start_obj) },
-    { MP_ROM_QSTR(MP_QSTR_end), MP_ROM_PTR(&match_end_obj) },
+    {MP_ROM_QSTR(MP_QSTR_span), MP_ROM_PTR(&match_span_obj)},
+    {MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&match_start_obj)},
+    {MP_ROM_QSTR(MP_QSTR_end), MP_ROM_PTR(&match_end_obj)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
 STATIC const mp_obj_type_t match_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_match,
     .print = match_print,
     .locals_dict = (void *)&match_locals_dict,
@@ -367,18 +367,18 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
-    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
-    { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
+    {MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj)},
+    {MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj)},
+    {MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj)},
     #if MICROPY_PY_URE_SUB
-    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
+    {MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 STATIC const mp_obj_type_t re_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_ure,
     .print = re_print,
     .locals_dict = (void *)&re_locals_dict,
@@ -443,22 +443,22 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
-    { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
-    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
-    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure)},
+    {MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj)},
+    {MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj)},
+    {MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj)},
     #if MICROPY_PY_URE_SUB
-    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
+    {MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj)},
     #endif
     #if MICROPY_PY_URE_DEBUG
-    { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
+    {MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
 
 const mp_obj_module_t mp_module_ure = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
 #endif

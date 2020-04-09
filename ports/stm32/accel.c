@@ -114,7 +114,7 @@ STATIC void accel_start(void) {
     }
 
     // set MMA to active mode
-    uint8_t data[2] = {ACCEL_REG_MODE, 1}; // active mode
+    uint8_t data[2] = {ACCEL_REG_MODE, 1};   // active mode
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
 
     // wait for MMA to become active
@@ -123,7 +123,7 @@ STATIC void accel_start(void) {
     #elif MICROPY_HW_HAS_KXTJ3
 
     // readout WHO_AM_I register to check KXTJ3 device presence
-    uint8_t data[2] = { ACCEL_REG_WHO_AM_I };
+    uint8_t data[2] = {ACCEL_REG_WHO_AM_I};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     if (data[0] != 0x35) {
@@ -178,7 +178,7 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 STATIC mp_obj_t read_axis(int axis) {
-    uint8_t data[1] = { axis };
+    uint8_t data[1] = {axis};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(data[0]));
@@ -209,7 +209,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 /// Get the tilt register.
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     #if MICROPY_HW_HAS_MMA7660
-    uint8_t data[1] = { ACCEL_REG_TILT };
+    uint8_t data[1] = {ACCEL_REG_TILT};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
@@ -254,7 +254,7 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
-    uint8_t data[1] = { mp_obj_get_int(reg) };
+    uint8_t data[1] = {mp_obj_get_int(reg)};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
@@ -262,7 +262,7 @@ STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
-    uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
+    uint8_t data[2] = {mp_obj_get_int(reg), mp_obj_get_int(val)};
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
     return mp_const_none;
 }
@@ -270,19 +270,19 @@ MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
 STATIC const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
     // TODO add init, deinit, and perhaps reset methods
-    { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&pyb_accel_x_obj) },
-    { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&pyb_accel_y_obj) },
-    { MP_ROM_QSTR(MP_QSTR_z), MP_ROM_PTR(&pyb_accel_z_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tilt), MP_ROM_PTR(&pyb_accel_tilt_obj) },
-    { MP_ROM_QSTR(MP_QSTR_filtered_xyz), MP_ROM_PTR(&pyb_accel_filtered_xyz_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&pyb_accel_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_accel_write_obj) },
+    {MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&pyb_accel_x_obj)},
+    {MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&pyb_accel_y_obj)},
+    {MP_ROM_QSTR(MP_QSTR_z), MP_ROM_PTR(&pyb_accel_z_obj)},
+    {MP_ROM_QSTR(MP_QSTR_tilt), MP_ROM_PTR(&pyb_accel_tilt_obj)},
+    {MP_ROM_QSTR(MP_QSTR_filtered_xyz), MP_ROM_PTR(&pyb_accel_filtered_xyz_obj)},
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&pyb_accel_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_accel_write_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
 
 const mp_obj_type_t pyb_accel_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Accel,
     .make_new = pyb_accel_make_new,
     .locals_dict = (mp_obj_dict_t *)&pyb_accel_locals_dict,

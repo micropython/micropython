@@ -143,7 +143,7 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 
 STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
+        {MP_QSTR_opt, MP_ARG_INT, {.u_int = 0}}
     };
 
     if (mp_obj_is_str(pos_args[0])) {
@@ -202,7 +202,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
-        mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
+        mp_obj_t args[] = {MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len)};
         bdev = pyb_flash_type.make_new(&pyb_flash_type, 0, 1, args);
     }
 

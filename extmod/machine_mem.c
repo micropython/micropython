@@ -102,7 +102,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
 }
 
 const mp_obj_type_t machine_mem_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_mem,
     .print = machine_mem_print,
     .subscr = machine_mem_subscr,

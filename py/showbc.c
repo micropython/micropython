@@ -41,8 +41,8 @@
             unum = (unum << 7) + (*ip & 0x7f); \
         } while ((*ip++ & 0x80) != 0); \
 }
-#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
-#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+#define DECODE_ULABEL do {unum = (ip[0] | (ip[1] << 8)); ip += 2;} while (0)
+#define DECODE_SLABEL do {unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2;} while (0)
 
 #if MICROPY_PERSISTENT_CODE
 

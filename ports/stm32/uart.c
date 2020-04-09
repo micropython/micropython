@@ -45,8 +45,8 @@
 #else
 #define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE)
 #endif
-#define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
-#define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
+#define UART_RXNE_IT_EN(uart) do {(uart)->CR1 |= USART_CR1_RXNEIE;} while (0)
+#define UART_RXNE_IT_DIS(uart) do {(uart)->CR1 &= ~USART_CR1_RXNEIE;} while (0)
 
 #define USART_CR1_IE_BASE (USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE | USART_CR1_RXNEIE | USART_CR1_IDLEIE)
 #define USART_CR2_IE_BASE (USART_CR2_LBDIE)

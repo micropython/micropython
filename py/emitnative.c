@@ -2402,7 +2402,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_THUMB_OP_ITE_GE,
                 ASM_THUMB_OP_ITE_EQ,
             };
-            static byte ret[6] = { 0, 1, 1, 0, 1, 0, };
+            static byte ret[6] = {0, 1, 1, 0, 1, 0, };
             asm_thumb_op16(emit->as, ops[op - MP_BINARY_OP_LESS]);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);

@@ -52,15 +52,15 @@ STATIC const struct {
     qstr name;
     uint32_t oc_mode;
 } channel_mode_info[] = {
-    { MP_QSTR_PWM,                FTM_OCMODE_PWM1 },
-    { MP_QSTR_PWM_INVERTED,       FTM_OCMODE_PWM2 },
-    { MP_QSTR_OC_TIMING,          FTM_OCMODE_TIMING },
-    { MP_QSTR_OC_ACTIVE,          FTM_OCMODE_ACTIVE },
-    { MP_QSTR_OC_INACTIVE,        FTM_OCMODE_INACTIVE },
-    { MP_QSTR_OC_TOGGLE,          FTM_OCMODE_TOGGLE },
+    {MP_QSTR_PWM,                FTM_OCMODE_PWM1},
+    {MP_QSTR_PWM_INVERTED,       FTM_OCMODE_PWM2},
+    {MP_QSTR_OC_TIMING,          FTM_OCMODE_TIMING},
+    {MP_QSTR_OC_ACTIVE,          FTM_OCMODE_ACTIVE},
+    {MP_QSTR_OC_INACTIVE,        FTM_OCMODE_INACTIVE},
+    {MP_QSTR_OC_TOGGLE,          FTM_OCMODE_TOGGLE},
 //    { MP_QSTR_OC_FORCED_ACTIVE,   FTM_OCMODE_FORCED_ACTIVE },
 //    { MP_QSTR_OC_FORCED_INACTIVE, FTM_OCMODE_FORCED_INACTIVE },
-    { MP_QSTR_IC,                 0 },
+    {MP_QSTR_IC,                 0},
 };
 
 struct _pyb_timer_obj_t;
@@ -232,11 +232,11 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///  You must either specify freq or both of period and prescaler.
 STATIC const mp_arg_t pyb_timer_init_args[] = {
-    { MP_QSTR_freq,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_prescaler,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_period,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-    { MP_QSTR_mode,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = FTM_COUNTERMODE_UP} },
-    { MP_QSTR_callback,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    {MP_QSTR_freq,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
+    {MP_QSTR_prescaler,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
+    {MP_QSTR_period,           MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
+    {MP_QSTR_mode,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = FTM_COUNTERMODE_UP}},
+    {MP_QSTR_callback,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
 };
 #define PYB_TIMER_INIT_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_init_args)
 
@@ -440,12 +440,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     ch0 = t0.channel(0, pyb.Timer.PWM, pin=pyb.Pin.board.D22, pulse_width=(t0.period() + 1) // 4)
 ///     ch1 = t0.channel(1, pyb.Timer.PWM, pin=pyb.Pin.board.D23, pulse_width=(t0.period() + 1) // 2)
 STATIC const mp_arg_t pyb_timer_channel_args[] = {
-    { MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+    {MP_QSTR_callback,            MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+    {MP_QSTR_pin,                 MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+    {MP_QSTR_pulse_width,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+    {MP_QSTR_pulse_width_percent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+    {MP_QSTR_compare,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+    {MP_QSTR_polarity,            MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
 };
 #define PYB_TIMER_CHANNEL_NUM_ARGS MP_ARRAY_SIZE(pyb_timer_channel_args)
 
@@ -719,35 +719,35 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_reg_obj, 1, 3, pyb_timer_re
 
 STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_timer_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_timer_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&pyb_timer_channel_obj) },
-    { MP_ROM_QSTR(MP_QSTR_counter), MP_ROM_PTR(&pyb_timer_counter_obj) },
-    { MP_ROM_QSTR(MP_QSTR_prescaler), MP_ROM_PTR(&pyb_timer_prescaler_obj) },
-    { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&pyb_timer_period_obj) },
-    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_callback_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_timer_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_timer_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&pyb_timer_channel_obj)},
+    {MP_ROM_QSTR(MP_QSTR_counter), MP_ROM_PTR(&pyb_timer_counter_obj)},
+    {MP_ROM_QSTR(MP_QSTR_prescaler), MP_ROM_PTR(&pyb_timer_prescaler_obj)},
+    {MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&pyb_timer_period_obj)},
+    {MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_callback_obj)},
     #if MICROPY_TIMER_REG
-    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_reg_obj) },
+    {MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_reg_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_UP),              MP_ROM_INT(FTM_COUNTERMODE_UP) },
-    { MP_ROM_QSTR(MP_QSTR_CENTER),          MP_ROM_INT(FTM_COUNTERMODE_CENTER) },
-    { MP_ROM_QSTR(MP_QSTR_PWM),             MP_ROM_INT(CHANNEL_MODE_PWM_NORMAL) },
-    { MP_ROM_QSTR(MP_QSTR_PWM_INVERTED),    MP_ROM_INT(CHANNEL_MODE_PWM_INVERTED) },
-    { MP_ROM_QSTR(MP_QSTR_OC_TIMING),       MP_ROM_INT(CHANNEL_MODE_OC_TIMING) },
-    { MP_ROM_QSTR(MP_QSTR_OC_ACTIVE),       MP_ROM_INT(CHANNEL_MODE_OC_ACTIVE) },
-    { MP_ROM_QSTR(MP_QSTR_OC_INACTIVE),     MP_ROM_INT(CHANNEL_MODE_OC_INACTIVE) },
-    { MP_ROM_QSTR(MP_QSTR_OC_TOGGLE),       MP_ROM_INT(CHANNEL_MODE_OC_TOGGLE) },
-    { MP_ROM_QSTR(MP_QSTR_IC),              MP_ROM_INT(CHANNEL_MODE_IC) },
-    { MP_ROM_QSTR(MP_QSTR_HIGH),            MP_ROM_INT(FTM_OCPOLARITY_HIGH) },
-    { MP_ROM_QSTR(MP_QSTR_LOW),             MP_ROM_INT(FTM_OCPOLARITY_LOW) },
-    { MP_ROM_QSTR(MP_QSTR_RISING),          MP_ROM_INT(FTM_ICPOLARITY_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_FALLING),         MP_ROM_INT(FTM_ICPOLARITY_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_BOTH),            MP_ROM_INT(FTM_ICPOLARITY_BOTH) },
+    {MP_ROM_QSTR(MP_QSTR_UP),              MP_ROM_INT(FTM_COUNTERMODE_UP)},
+    {MP_ROM_QSTR(MP_QSTR_CENTER),          MP_ROM_INT(FTM_COUNTERMODE_CENTER)},
+    {MP_ROM_QSTR(MP_QSTR_PWM),             MP_ROM_INT(CHANNEL_MODE_PWM_NORMAL)},
+    {MP_ROM_QSTR(MP_QSTR_PWM_INVERTED),    MP_ROM_INT(CHANNEL_MODE_PWM_INVERTED)},
+    {MP_ROM_QSTR(MP_QSTR_OC_TIMING),       MP_ROM_INT(CHANNEL_MODE_OC_TIMING)},
+    {MP_ROM_QSTR(MP_QSTR_OC_ACTIVE),       MP_ROM_INT(CHANNEL_MODE_OC_ACTIVE)},
+    {MP_ROM_QSTR(MP_QSTR_OC_INACTIVE),     MP_ROM_INT(CHANNEL_MODE_OC_INACTIVE)},
+    {MP_ROM_QSTR(MP_QSTR_OC_TOGGLE),       MP_ROM_INT(CHANNEL_MODE_OC_TOGGLE)},
+    {MP_ROM_QSTR(MP_QSTR_IC),              MP_ROM_INT(CHANNEL_MODE_IC)},
+    {MP_ROM_QSTR(MP_QSTR_HIGH),            MP_ROM_INT(FTM_OCPOLARITY_HIGH)},
+    {MP_ROM_QSTR(MP_QSTR_LOW),             MP_ROM_INT(FTM_OCPOLARITY_LOW)},
+    {MP_ROM_QSTR(MP_QSTR_RISING),          MP_ROM_INT(FTM_ICPOLARITY_RISING)},
+    {MP_ROM_QSTR(MP_QSTR_FALLING),         MP_ROM_INT(FTM_ICPOLARITY_FALLING)},
+    {MP_ROM_QSTR(MP_QSTR_BOTH),            MP_ROM_INT(FTM_ICPOLARITY_BOTH)},
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
 const mp_obj_type_t pyb_timer_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Timer,
     .print = pyb_timer_print,
     .make_new = pyb_timer_make_new,
@@ -878,19 +878,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_reg_obj, 1, 3, pyb_
 
 STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_channel_callback_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pulse_width), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pulse_width_percent), MP_ROM_PTR(&pyb_timer_channel_pulse_width_percent_obj) },
-    { MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
-    { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
+    {MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_channel_callback_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pulse_width), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pulse_width_percent), MP_ROM_PTR(&pyb_timer_channel_pulse_width_percent_obj)},
+    {MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj)},
+    {MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj)},
     #if MICROPY_TIMER_REG
-    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_channel_reg_obj) },
+    {MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_channel_reg_obj)},
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 
 STATIC const mp_obj_type_t pyb_timer_channel_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_TimerChannel,
     .print = pyb_timer_channel_print,
     .locals_dict = (mp_obj_t)&pyb_timer_channel_locals_dict,

@@ -99,19 +99,19 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_bits, MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_stop, MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE}},
+        {MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE}},
+        {MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE}},
+        {MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE}},
+        {MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -371,19 +371,19 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj)},
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERSE_TXD) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERSE_RXD) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RTS), MP_ROM_INT(UART_INVERSE_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_INVERSE_CTS) },
+    {MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERSE_TXD)},
+    {MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERSE_RXD)},
+    {MP_ROM_QSTR(MP_QSTR_INV_RTS), MP_ROM_INT(UART_INVERSE_RTS)},
+    {MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_INVERSE_CTS)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
@@ -456,7 +456,7 @@ STATIC const mp_stream_p_t uart_stream_p = {
 };
 
 const mp_obj_type_t machine_uart_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_UART,
     .print = machine_uart_print,
     .make_new = machine_uart_make_new,

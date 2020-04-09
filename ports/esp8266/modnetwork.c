@@ -111,9 +111,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     // parse args
@@ -485,20 +485,20 @@ unknown:
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
 STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    {MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj)},
+    {MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 const mp_obj_type_t wlan_if_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_WLAN,
     .locals_dict = (mp_obj_dict_t *)&wlan_if_locals_dict,
 };
@@ -514,36 +514,36 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network)},
+    {MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj)},
+    {MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj)},
 
     #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
+    {MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
+    {MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
 
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP)},
 
-    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(PHY_MODE_11B) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(PHY_MODE_11G) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(PHY_MODE_11N) },
+    {MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(PHY_MODE_11B)},
+    {MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(PHY_MODE_11G)},
+    {MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(PHY_MODE_11N)},
 
-    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(AUTH_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(AUTH_WEP) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
+    {MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(AUTH_OPEN)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(AUTH_WEP)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t network_module = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };

@@ -384,7 +384,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
     reg_wizchip_spi_cbfunc(wiz_spi_read, wiz_spi_write);
 
-    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}; // 2k buffer for each socket
+    uint8_t sn_size[16] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};   // 2k buffer for each socket
     ctlwizchip(CW_INIT_WIZCHIP, sn_size);
 
     // set some sensible default values; they are configurable using ifconfig method
@@ -393,7 +393,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
         .ip = {192, 168, 0, 18},
         .sn = {255, 255, 255, 0},
         .gw = {192, 168, 0, 1},
-        .dns = {8, 8, 8, 8}, // Google public DNS
+        .dns = {8, 8, 8, 8},   // Google public DNS
         .dhcp = NETINFO_STATIC,
     };
     ctlnetwork(CN_SET_NETINFO, (void *)&netinfo);
@@ -478,16 +478,16 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 
 STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj) },
+    {MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
 const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .base = {
-        { &mp_type_type },
+        {&mp_type_type},
         .name = MP_QSTR_WIZNET5K,
         .make_new = wiznet5k_make_new,
         .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,

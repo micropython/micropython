@@ -31,7 +31,7 @@
 
 // Helpers for sequence types
 
-#define SWAP(type, var1, var2) { type t = var2; var2 = var1; var1 = t; }
+#define SWAP(type, var1, var2) {type t = var2; var2 = var1; var1 = t;}
 
 // Implements backend of sequence * integer operation. Assumes elements are
 // memory-adjacent in sequence.

@@ -261,7 +261,7 @@ typedef struct _pyb_flash_obj_t {
 
 // This Flash object represents the entire available flash, with emulated partition table at start
 const pyb_flash_obj_t pyb_flash_obj = {
-    { &pyb_flash_type },
+    {&pyb_flash_type},
     -(FLASH_PART1_START_BLOCK * FLASH_BLOCK_SIZE), // to offset FLASH_PART1_START_BLOCK
     0, // actual size handled in ioctl, MP_BLOCKDEV_IOCTL_BLOCK_COUNT case
 };
@@ -279,8 +279,8 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // Parse arguments
     enum { ARG_start, ARG_len };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        {MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -434,15 +434,15 @@ STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_ioctl_obj, pyb_flash_ioctl);
 
 STATIC const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&pyb_flash_readblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&pyb_flash_writeblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&pyb_flash_ioctl_obj) },
+    {MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&pyb_flash_readblocks_obj)},
+    {MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&pyb_flash_writeblocks_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&pyb_flash_ioctl_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
 
 const mp_obj_type_t pyb_flash_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Flash,
     .print = pyb_flash_print,
     .make_new = pyb_flash_make_new,

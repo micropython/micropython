@@ -105,9 +105,9 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_phase, MP_ARG_INT, {.u_int = -1} },
+        {MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_phase, MP_ARG_INT, {.u_int = -1}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
@@ -175,7 +175,7 @@ STATIC const mp_machine_spi_p_t machine_hspi_p = {
 };
 
 const mp_obj_type_t machine_hspi_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_HSPI,
     .print = machine_hspi_print,
     .make_new = mp_machine_spi_make_new, // delegate to master constructor

@@ -54,7 +54,7 @@
 #endif
 
 const mp_obj_module_t mp_module___main__ = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&MP_STATE_VM(dict_main),
 };
 
@@ -992,7 +992,7 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 }
 
 STATIC const mp_obj_type_t mp_type_checked_fun = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_function,
     .call = checked_fun_call,
 };

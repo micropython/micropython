@@ -299,20 +299,20 @@ STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
-    { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&btree_put_obj) },
-    { MP_ROM_QSTR(MP_QSTR_seq), MP_ROM_PTR(&btree_seq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&btree_keys_obj) },
-    { MP_ROM_QSTR(MP_QSTR_values), MP_ROM_PTR(&btree_values_obj) },
-    { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&btree_items_obj) },
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj)},
+    {MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj)},
+    {MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&btree_put_obj)},
+    {MP_ROM_QSTR(MP_QSTR_seq), MP_ROM_PTR(&btree_seq_obj)},
+    {MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&btree_keys_obj)},
+    {MP_ROM_QSTR(MP_QSTR_values), MP_ROM_PTR(&btree_values_obj)},
+    {MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&btree_items_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 
 STATIC const mp_obj_type_t btree_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     // Save on qstr's, reuse same as for module
     .name = MP_QSTR_btree,
     .print = btree_print,
@@ -334,10 +334,10 @@ STATIC const FILEVTABLE btree_stream_fvtable = {
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_cachesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_pagesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_minkeypage, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_cachesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_pagesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_minkeypage, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
     };
 
     // Make sure we got a stream object
@@ -366,16 +366,16 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
 
 STATIC const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btree) },
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj) },
-    { MP_ROM_QSTR(MP_QSTR_INCL), MP_ROM_INT(FLAG_END_KEY_INCL) },
-    { MP_ROM_QSTR(MP_QSTR_DESC), MP_ROM_INT(FLAG_DESC) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btree)},
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj)},
+    {MP_ROM_QSTR(MP_QSTR_INCL), MP_ROM_INT(FLAG_END_KEY_INCL)},
+    {MP_ROM_QSTR(MP_QSTR_DESC), MP_ROM_INT(FLAG_DESC)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
 
 const mp_obj_module_t mp_module_btree = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_btree_globals,
 };
 #endif

@@ -108,7 +108,7 @@ static inline void esp_exceptions(esp_err_t e) {
     }
 }
 
-#define ESP_EXCEPTIONS(x) do { esp_exceptions(x); } while (0);
+#define ESP_EXCEPTIONS(x) do {esp_exceptions(x);} while (0);
 
 typedef struct _wlan_if_obj_t {
     mp_obj_base_t base;
@@ -322,9 +322,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     // parse args
@@ -445,7 +445,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
-    wifi_scan_config_t config = { 0 };
+    wifi_scan_config_t config = {0};
     // XXX how do we scan hidden APs (and if we can scan them, are they really hidden?)
     MP_THREAD_GIL_EXIT();
     esp_err_t status = esp_wifi_scan_start(&config, 1);
@@ -725,20 +725,20 @@ unknown:
 MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
 STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    {MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj)},
+    {MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 const mp_obj_type_t wlan_if_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_WLAN,
     .locals_dict = (mp_obj_t)&wlan_if_locals_dict,
 };
@@ -750,58 +750,58 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode)
 
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
-    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network)},
+    {MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj)},
+    {MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj)},
     #if !MICROPY_ESP_IDF_4
-    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
-    { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
+    {MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj)},
+    {MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
+    {MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj)},
 
     #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
-    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
+    {MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
+    {MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
-    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
-    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
+    {MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B)},
+    {MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G)},
+    {MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N)},
 
-    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
-    { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
+    {MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK)},
+    {MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX)},
 
-    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
-    { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
+    {MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720)},
+    {MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110)},
 
     // ETH Clock modes from ESP-IDF
     #if !MICROPY_ESP_IDF_4
-    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_IN), MP_ROM_INT(ETH_CLOCK_GPIO0_IN) },
+    {MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_IN), MP_ROM_INT(ETH_CLOCK_GPIO0_IN)},
     // Disabled at Aug 22nd 2018, reenabled Jan 28th 2019 in ESP-IDF
     // Because we use older SDK, it's currently disabled
     //{ MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_OUT), MP_ROM_INT(ETH_CLOCK_GPIO0_OUT) },
-    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO16_OUT), MP_ROM_INT(ETH_CLOCK_GPIO16_OUT) },
-    { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO17_OUT), MP_ROM_INT(ETH_CLOCK_GPIO17_OUT) },
+    {MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO16_OUT), MP_ROM_INT(ETH_CLOCK_GPIO16_OUT)},
+    {MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO17_OUT), MP_ROM_INT(ETH_CLOCK_GPIO17_OUT)},
     #endif
 
-    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STAT_GOT_IP)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STAT_IDLE)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STAT_CONNECTING)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STAT_GOT_IP)},
     // Errors from the ESP-IDF
-    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WIFI_REASON_NO_AP_FOUND)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WIFI_REASON_AUTH_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
-    { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(WIFI_REASON_NO_AP_FOUND)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(WIFI_REASON_AUTH_FAIL)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
+    {MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
 const mp_obj_module_t mp_module_network = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };

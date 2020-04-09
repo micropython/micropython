@@ -200,18 +200,18 @@ STATIC mp_obj_t utimeq_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC const mp_rom_map_elem_t utimeq_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_heappush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_heappop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_peektime), MP_ROM_PTR(&mod_utimeq_peektime_obj) },
+    {MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_heappush_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_heappop_obj)},
+    {MP_ROM_QSTR(MP_QSTR_peektime), MP_ROM_PTR(&mod_utimeq_peektime_obj)},
     #if DEBUG
-    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_utimeq_dump_obj) },
+    {MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_utimeq_dump_obj)},
     #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(utimeq_locals_dict, utimeq_locals_dict_table);
 
 STATIC const mp_obj_type_t utimeq_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
     .unary_op = utimeq_unary_op,
@@ -219,14 +219,14 @@ STATIC const mp_obj_type_t utimeq_type = {
 };
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utimeq) },
-    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&utimeq_type) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utimeq)},
+    {MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&utimeq_type)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_utimeq_globals, mp_module_utimeq_globals_table);
 
 const mp_obj_module_t mp_module_utimeq = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_utimeq_globals,
 };
 

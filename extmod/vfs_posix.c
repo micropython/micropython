@@ -350,19 +350,19 @@ STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_statvfs_obj, vfs_posix_statvfs);
 
 STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_posix_mount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&vfs_posix_umount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&vfs_posix_open_obj) },
+    {MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_posix_mount_obj)},
+    {MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&vfs_posix_umount_obj)},
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&vfs_posix_open_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&vfs_posix_chdir_obj) },
-    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&vfs_posix_getcwd_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&vfs_posix_ilistdir_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&vfs_posix_mkdir_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&vfs_posix_remove_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj) },
-    { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj) },
+    {MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&vfs_posix_chdir_obj)},
+    {MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&vfs_posix_getcwd_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&vfs_posix_ilistdir_obj)},
+    {MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&vfs_posix_mkdir_obj)},
+    {MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&vfs_posix_remove_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj)},
+    {MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj)},
+    {MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
@@ -371,7 +371,7 @@ STATIC const mp_vfs_proto_t vfs_posix_proto = {
 };
 
 const mp_obj_type_t mp_type_vfs_posix = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_VfsPosix,
     .make_new = vfs_posix_make_new,
     .protocol = &vfs_posix_proto,

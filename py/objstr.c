@@ -582,7 +582,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, mp_obj_str_split);
 STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_keepends };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_keepends, MP_ARG_BOOL, {.u_bool = false} },
+        {MP_QSTR_keepends, MP_ARG_BOOL, {.u_bool = false}},
     };
 
     // parse args
@@ -1938,50 +1938,50 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 
 STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
+    {MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj)},
     #if !MICROPY_PY_BUILTINS_STR_UNICODE
     // If we have separate unicode type, then here we have methods only
     // for bytes type, and it should not have encode() methods. Otherwise,
     // we have non-compliant-but-practical bytestring type, which shares
     // method table with bytes, so they both have encode() and decode()
     // methods (which should do type checking at runtime).
-    { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
+    {MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj)},
     #endif
     #endif
-    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
-    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&str_index_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&str_rindex_obj) },
-    { MP_ROM_QSTR(MP_QSTR_join), MP_ROM_PTR(&str_join_obj) },
-    { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&str_split_obj) },
+    {MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj)},
+    {MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&str_index_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&str_rindex_obj)},
+    {MP_ROM_QSTR(MP_QSTR_join), MP_ROM_PTR(&str_join_obj)},
+    {MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&str_split_obj)},
     #if MICROPY_PY_BUILTINS_STR_SPLITLINES
-    { MP_ROM_QSTR(MP_QSTR_splitlines), MP_ROM_PTR(&str_splitlines_obj) },
+    {MP_ROM_QSTR(MP_QSTR_splitlines), MP_ROM_PTR(&str_splitlines_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_rsplit), MP_ROM_PTR(&str_rsplit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_startswith), MP_ROM_PTR(&str_startswith_obj) },
-    { MP_ROM_QSTR(MP_QSTR_endswith), MP_ROM_PTR(&str_endswith_obj) },
-    { MP_ROM_QSTR(MP_QSTR_strip), MP_ROM_PTR(&str_strip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lstrip), MP_ROM_PTR(&str_lstrip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rstrip), MP_ROM_PTR(&str_rstrip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj) },
-    { MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj) },
+    {MP_ROM_QSTR(MP_QSTR_rsplit), MP_ROM_PTR(&str_rsplit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_startswith), MP_ROM_PTR(&str_startswith_obj)},
+    {MP_ROM_QSTR(MP_QSTR_endswith), MP_ROM_PTR(&str_endswith_obj)},
+    {MP_ROM_QSTR(MP_QSTR_strip), MP_ROM_PTR(&str_strip_obj)},
+    {MP_ROM_QSTR(MP_QSTR_lstrip), MP_ROM_PTR(&str_lstrip_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rstrip), MP_ROM_PTR(&str_rstrip_obj)},
+    {MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj)},
+    {MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj)},
     #if MICROPY_PY_BUILTINS_STR_COUNT
-    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
+    {MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj)},
     #endif
     #if MICROPY_PY_BUILTINS_STR_PARTITION
-    { MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj) },
+    {MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj)},
     #endif
     #if MICROPY_PY_BUILTINS_STR_CENTER
-    { MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj) },
+    {MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
-    { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isalpha), MP_ROM_PTR(&str_isalpha_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isdigit), MP_ROM_PTR(&str_isdigit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isupper), MP_ROM_PTR(&str_isupper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_islower), MP_ROM_PTR(&str_islower_obj) },
+    {MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj)},
+    {MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isalpha), MP_ROM_PTR(&str_isalpha_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isdigit), MP_ROM_PTR(&str_isdigit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isupper), MP_ROM_PTR(&str_isupper_obj)},
+    {MP_ROM_QSTR(MP_QSTR_islower), MP_ROM_PTR(&str_islower_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
@@ -1990,28 +1990,28 @@ STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 const mp_obj_type_t mp_type_str = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_str,
     .print = str_print,
     .make_new = mp_obj_str_make_new,
     .binary_op = mp_obj_str_binary_op,
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+    .buffer_p = {.get_buffer = mp_obj_str_get_buffer},
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
 };
 #endif
 
 // Reuses most of methods from str
 const mp_obj_type_t mp_type_bytes = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_bytes,
     .print = str_print,
     .make_new = bytes_make_new,
     .binary_op = mp_obj_str_binary_op,
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
-    .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
+    .buffer_p = {.get_buffer = mp_obj_str_get_buffer},
     .locals_dict = (mp_obj_dict_t *)&str8_locals_dict,
 };
 

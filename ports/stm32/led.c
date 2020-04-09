@@ -87,16 +87,16 @@ void led_init(void) {
 #define LED_PWM_ENABLED (1)
 
 #ifndef MICROPY_HW_LED1_PWM
-#define MICROPY_HW_LED1_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED1_PWM {NULL, 0, 0, 0}
 #endif
 #ifndef MICROPY_HW_LED2_PWM
-#define MICROPY_HW_LED2_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED2_PWM {NULL, 0, 0, 0}
 #endif
 #ifndef MICROPY_HW_LED3_PWM
-#define MICROPY_HW_LED3_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED3_PWM {NULL, 0, 0, 0}
 #endif
 #ifndef MICROPY_HW_LED4_PWM
-#define MICROPY_HW_LED4_PWM { NULL, 0, 0, 0 }
+#define MICROPY_HW_LED4_PWM {NULL, 0, 0, 0}
 #endif
 
 #define LED_PWM_TIM_PERIOD (10000) // TIM runs at 1MHz and fires every 10ms
@@ -355,16 +355,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
 
 STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&led_obj_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&led_obj_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&led_obj_toggle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_intensity), MP_ROM_PTR(&led_obj_intensity_obj) },
+    {MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&led_obj_on_obj)},
+    {MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&led_obj_off_obj)},
+    {MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&led_obj_toggle_obj)},
+    {MP_ROM_QSTR(MP_QSTR_intensity), MP_ROM_PTR(&led_obj_intensity_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
 const mp_obj_type_t pyb_led_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_LED,
     .print = led_obj_print,
     .make_new = led_obj_make_new,

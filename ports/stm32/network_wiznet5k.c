@@ -155,7 +155,7 @@ STATIC void wiznet5k_get_mac_address(wiznet5k_obj_t *self, uint8_t mac[6]) {
 }
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
-    uint8_t ip[4] = {1, 1, 1, 1}; // dummy
+    uint8_t ip[4] = {1, 1, 1, 1};   // dummy
     int ret = WIZCHIP_EXPORT(sendto)(0, (byte *)buf, len, ip, 11); // dummy port
     if (ret != len) {
         printf("wiznet5k_send_ethernet: fatal error %d\n", ret);
@@ -444,19 +444,19 @@ STATIC mp_obj_t send_ethernet_wrapper(mp_obj_t self_in, mp_obj_t buf_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(send_ethernet_obj, send_ethernet_wrapper);
 
 STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&wiznet5k_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&wiznet5k_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wiznet5k_config_obj) },
+    {MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&wiznet5k_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj)},
+    {MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&wiznet5k_status_obj)},
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wiznet5k_config_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&send_ethernet_obj) },
+    {MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&send_ethernet_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
 
 const mp_obj_type_t mod_network_nic_type_wiznet5k = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_WIZNET5K,
     .make_new = wiznet5k_make_new,
     .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,

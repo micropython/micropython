@@ -87,13 +87,13 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 #if MICROPY_PY_BUILTINS_SLICE_INDICES && !MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_indices), MP_ROM_PTR(&slice_indices_obj) },
+    {MP_ROM_QSTR(MP_QSTR_indices), MP_ROM_PTR(&slice_indices_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #endif
 
 const mp_obj_type_t mp_type_slice = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_slice,
     .print = slice_print,
     #if MICROPY_PY_BUILTINS_SLICE_ATTRS

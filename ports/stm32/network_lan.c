@@ -38,7 +38,7 @@ typedef struct _network_lan_obj_t {
     eth_t *eth;
 } network_lan_obj_t;
 
-STATIC const network_lan_obj_t network_lan_eth0 = { { &network_lan_type }, &eth_instance };
+STATIC const network_lan_obj_t network_lan_eth0 = {{&network_lan_type}, &eth_instance};
 
 STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -146,16 +146,16 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_lan_config_obj, 1, network_lan_config);
 
 STATIC const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_lan_active_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_lan_isconnected_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_lan_ifconfig_obj) },
-    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_lan_status_obj) },
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_lan_config_obj) },
+    {MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_lan_active_obj)},
+    {MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_lan_isconnected_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_lan_ifconfig_obj)},
+    {MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_lan_status_obj)},
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_lan_config_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(network_lan_locals_dict, network_lan_locals_dict_table);
 
 const mp_obj_type_t network_lan_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_LAN,
     .print = network_lan_print,
     .make_new = network_lan_make_new,

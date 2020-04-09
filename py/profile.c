@@ -173,7 +173,7 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 const mp_obj_type_t mp_type_code = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_code,
     .print = code_print,
     .unary_op = mp_generic_unary_op,
@@ -241,7 +241,7 @@ STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 const mp_obj_type_t mp_type_frame = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_frame,
     .print = frame_print,
     .unary_op = mp_generic_unary_op,
@@ -449,8 +449,8 @@ mp_obj_t mp_prof_instr_tick(mp_code_state_t *code_state, bool is_exception) {
             unum = (unum << 7) + (*ip & 0x7f); \
         } while ((*ip++ & 0x80) != 0); \
 }
-#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
-#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+#define DECODE_ULABEL do {unum = (ip[0] | (ip[1] << 8)); ip += 2;} while (0)
+#define DECODE_SLABEL do {unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2;} while (0)
 
 #define DECODE_QSTR \
     qst = ip[0] | ip[1] << 8; \

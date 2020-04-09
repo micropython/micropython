@@ -381,19 +381,19 @@ STATIC mp_obj_t MP_VFS_LFSx(umount)(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(umount_obj), MP_VFS_LFSx(umount));
 
 STATIC const mp_rom_map_elem_t MP_VFS_LFSx(locals_dict_table)[] = {
-    { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&MP_VFS_LFSx(mkfs_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&MP_VFS_LFSx(open_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&MP_VFS_LFSx(ilistdir_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&MP_VFS_LFSx(mkdir_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&MP_VFS_LFSx(rmdir_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&MP_VFS_LFSx(chdir_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&MP_VFS_LFSx(getcwd_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&MP_VFS_LFSx(remove_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&MP_VFS_LFSx(rename_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&MP_VFS_LFSx(stat_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&MP_VFS_LFSx(statvfs_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&MP_VFS_LFSx(mount_obj)) },
-    { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&MP_VFS_LFSx(umount_obj)) },
+    {MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&MP_VFS_LFSx(mkfs_obj))},
+    {MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&MP_VFS_LFSx(open_obj))},
+    {MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&MP_VFS_LFSx(ilistdir_obj))},
+    {MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&MP_VFS_LFSx(mkdir_obj))},
+    {MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&MP_VFS_LFSx(rmdir_obj))},
+    {MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&MP_VFS_LFSx(chdir_obj))},
+    {MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&MP_VFS_LFSx(getcwd_obj))},
+    {MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&MP_VFS_LFSx(remove_obj))},
+    {MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&MP_VFS_LFSx(rename_obj))},
+    {MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&MP_VFS_LFSx(stat_obj))},
+    {MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&MP_VFS_LFSx(statvfs_obj))},
+    {MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&MP_VFS_LFSx(mount_obj))},
+    {MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&MP_VFS_LFSx(umount_obj))},
 };
 STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_table));
 
@@ -416,7 +416,7 @@ STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
 };
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx = {
-    { &mp_type_type },
+    {&mp_type_type},
     #if LFS_BUILD_VERSION == 1
     .name = MP_QSTR_VfsLfs1,
     #else

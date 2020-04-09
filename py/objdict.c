@@ -98,7 +98,7 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
     #endif
     if (n_args > 0 || n_kw > 0) {
-        mp_obj_t args2[2] = {dict_out, args[0]}; // args[0] is always valid, even if it's not a positional arg
+        mp_obj_t args2[2] = {dict_out, args[0]};   // args[0] is always valid, even if it's not a positional arg
         mp_map_t kwargs;
         mp_map_init_fixed_table(&kwargs, n_kw, args + n_args);
         dict_update(n_args + 1, args2, &kwargs); // dict_update will check that n_args + 1 == 1 or 2
@@ -437,7 +437,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC const mp_obj_type_t dict_view_it_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_iterator,
     .getiter = mp_identity_getiter,
     .iternext = dict_view_it_iternext,
@@ -488,7 +488,7 @@ STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t
 }
 
 STATIC const mp_obj_type_t dict_view_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_dict_view,
     .print = dict_view_print,
     .binary_op = dict_view_binary_op,
@@ -541,28 +541,28 @@ STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 /* dict constructors & public C API                                           */
 
 STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&dict_clear_obj) },
-    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&dict_copy_obj) },
+    {MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&dict_clear_obj)},
+    {MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&dict_copy_obj)},
     #if MICROPY_PY_BUILTINS_DICT_FROMKEYS
-    { MP_ROM_QSTR(MP_QSTR_fromkeys), MP_ROM_PTR(&dict_fromkeys_obj) },
+    {MP_ROM_QSTR(MP_QSTR_fromkeys), MP_ROM_PTR(&dict_fromkeys_obj)},
     #endif
-    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&dict_get_obj) },
-    { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&dict_items_obj) },
-    { MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&dict_keys_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&dict_pop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_popitem), MP_ROM_PTR(&dict_popitem_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setdefault), MP_ROM_PTR(&dict_setdefault_obj) },
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&dict_update_obj) },
-    { MP_ROM_QSTR(MP_QSTR_values), MP_ROM_PTR(&dict_values_obj) },
-    { MP_ROM_QSTR(MP_QSTR___getitem__), MP_ROM_PTR(&mp_op_getitem_obj) },
-    { MP_ROM_QSTR(MP_QSTR___setitem__), MP_ROM_PTR(&mp_op_setitem_obj) },
-    { MP_ROM_QSTR(MP_QSTR___delitem__), MP_ROM_PTR(&mp_op_delitem_obj) },
+    {MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&dict_get_obj)},
+    {MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&dict_items_obj)},
+    {MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&dict_keys_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&dict_pop_obj)},
+    {MP_ROM_QSTR(MP_QSTR_popitem), MP_ROM_PTR(&dict_popitem_obj)},
+    {MP_ROM_QSTR(MP_QSTR_setdefault), MP_ROM_PTR(&dict_setdefault_obj)},
+    {MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&dict_update_obj)},
+    {MP_ROM_QSTR(MP_QSTR_values), MP_ROM_PTR(&dict_values_obj)},
+    {MP_ROM_QSTR(MP_QSTR___getitem__), MP_ROM_PTR(&mp_op_getitem_obj)},
+    {MP_ROM_QSTR(MP_QSTR___setitem__), MP_ROM_PTR(&mp_op_setitem_obj)},
+    {MP_ROM_QSTR(MP_QSTR___delitem__), MP_ROM_PTR(&mp_op_delitem_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
 
 const mp_obj_type_t mp_type_dict = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_dict,
     .print = dict_print,
     .make_new = dict_make_new,
@@ -575,7 +575,7 @@ const mp_obj_type_t mp_type_dict = {
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
 const mp_obj_type_t mp_type_ordereddict = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_OrderedDict,
     .print = dict_print,
     .make_new = dict_make_new,

@@ -249,9 +249,9 @@ STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = mp_const_none}},
-        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
     };
 
     // parse args
@@ -379,9 +379,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_on_obj, pyb_pin_on);
 STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_PIN_INTR_POSEDGE | GPIO_PIN_INTR_NEGEDGE} },
-        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+        {MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_PIN_INTR_POSEDGE | GPIO_PIN_INTR_NEGEDGE}},
+        {MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false}},
     };
     pyb_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -431,22 +431,22 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
 
 STATIC const mp_rom_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pyb_pin_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pyb_pin_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pyb_pin_off_obj) },
-    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pyb_pin_on_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pyb_pin_irq_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pyb_pin_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pyb_pin_value_obj)},
+    {MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pyb_pin_off_obj)},
+    {MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pyb_pin_on_obj)},
+    {MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pyb_pin_irq_obj)},
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
+    {MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT)},
+    {MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT)},
+    {MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN)},
+    {MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP)},
     //{ MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
 
     // IRQ triggers, can be or'd together
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
+    {MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE)},
+    {MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pin_locals_dict, pyb_pin_locals_dict_table);
@@ -456,7 +456,7 @@ STATIC const mp_pin_p_t pin_pin_p = {
 };
 
 const mp_obj_type_t pyb_pin_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Pin,
     .print = pyb_pin_print,
     .make_new = mp_pin_make_new,
@@ -509,13 +509,13 @@ STATIC mp_obj_t pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_irq_trigger_obj, 1, 2, pin_irq_trigger);
 
 STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_trigger),  MP_ROM_PTR(&pin_irq_trigger_obj) },
+    {MP_ROM_QSTR(MP_QSTR_trigger),  MP_ROM_PTR(&pin_irq_trigger_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
 
 STATIC const mp_obj_type_t pin_irq_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_IRQ,
     .call = pin_irq_call,
     .locals_dict = (mp_obj_dict_t *)&pin_irq_locals_dict,

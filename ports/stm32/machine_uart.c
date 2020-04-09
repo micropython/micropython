@@ -79,19 +79,19 @@ typedef struct _pyb_uart_irq_map_t {
 } pyb_uart_irq_map_t;
 
 STATIC const pyb_uart_irq_map_t mp_irq_map[] = {
-    { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
-    { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
-    { USART_CR1_TXEIE,  UART_FLAG_TXE},  // TX register empty
-    { USART_CR1_TCIE,   UART_FLAG_TC},   // TX complete
-    { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
+    {USART_CR1_IDLEIE, UART_FLAG_IDLE},    // RX idle
+    {USART_CR1_PEIE,   UART_FLAG_PE},      // parity error
+    {USART_CR1_TXEIE,  UART_FLAG_TXE},     // TX register empty
+    {USART_CR1_TCIE,   UART_FLAG_TC},      // TX complete
+    {USART_CR1_RXNEIE, UART_FLAG_RXNE},    // RX register not empty
     #if 0
     // For now only IRQs selected by CR1 are supported
     #if defined(STM32F4)
-    { USART_CR2_LBDIE,  UART_FLAG_LBD},  // LIN break detection
+    {USART_CR2_LBDIE,  UART_FLAG_LBD},     // LIN break detection
     #else
-    { USART_CR2_LBDIE,  UART_FLAG_LBDF}, // LIN break detection
+    {USART_CR2_LBDIE,  UART_FLAG_LBDF},    // LIN break detection
     #endif
-    { USART_CR3_CTSIE,  UART_FLAG_CTS},  // CTS
+    {USART_CR3_CTSIE,  UART_FLAG_CTS},     // CTS
     #endif
 };
 
@@ -219,15 +219,15 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 ///   - `read_buf_len` is the character length of the read buffer (0 to disable).
 STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} }, // legacy
+        {MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600}},
+        {MP_QSTR_bits, MP_ARG_INT, {.u_int = 8}},
+        {MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+        {MP_QSTR_stop, MP_ARG_INT, {.u_int = 1}},
+        {MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_HWCONTROL_NONE}},
+        {MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        {MP_QSTR_read_buf_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64}},       // legacy
     };
 
     // parse args
@@ -542,30 +542,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj) },
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_uart_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj)},
 
     /// \method read([nbytes])
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
     /// \method readline()
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
     /// \method readinto(buf[, nbytes])
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
     /// \method write(buf)
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj) },
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_uart_irq_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&pyb_uart_writechar_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&pyb_uart_sendbreak_obj) },
+    {MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&pyb_uart_writechar_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&pyb_uart_readchar_obj)},
+    {MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&pyb_uart_sendbreak_obj)},
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
+    {MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS)},
+    {MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS)},
 
     // IRQ flags
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) },
+    {MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
@@ -666,7 +666,7 @@ STATIC const mp_stream_p_t uart_stream_p = {
 };
 
 const mp_obj_type_t pyb_uart_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,

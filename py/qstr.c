@@ -53,11 +53,11 @@
 #if MICROPY_QSTR_BYTES_IN_HASH == 1
     #define Q_HASH_MASK (0xff)
     #define Q_GET_HASH(q) ((mp_uint_t)(q)[0])
-    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); } while (0)
+    #define Q_SET_HASH(q, hash) do {(q)[0] = (hash);} while (0)
 #elif MICROPY_QSTR_BYTES_IN_HASH == 2
     #define Q_HASH_MASK (0xffff)
     #define Q_GET_HASH(q) ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
-    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); (q)[1] = (hash) >> 8; } while (0)
+    #define Q_SET_HASH(q, hash) do {(q)[0] = (hash); (q)[1] = (hash) >> 8;} while (0)
 #else
     #error unimplemented qstr hash decoding
 #endif
@@ -65,10 +65,10 @@
 #define Q_GET_DATA(q)   ((q) + MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN)
 #if MICROPY_QSTR_BYTES_IN_LEN == 1
     #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH])
-    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); } while (0)
+    #define Q_SET_LENGTH(q, len) do {(q)[MICROPY_QSTR_BYTES_IN_HASH] = (len);} while (0)
 #elif MICROPY_QSTR_BYTES_IN_LEN == 2
     #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH] | ((q)[MICROPY_QSTR_BYTES_IN_HASH + 1] << 8))
-    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); (q)[MICROPY_QSTR_BYTES_IN_HASH + 1] = (len) >> 8; } while (0)
+    #define Q_SET_LENGTH(q, len) do {(q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); (q)[MICROPY_QSTR_BYTES_IN_HASH + 1] = (len) >> 8;} while (0)
 #else
     #error unimplemented qstr length decoding
 #endif

@@ -174,7 +174,7 @@ STATIC const mp_rom_map_elem_t jclass_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(jclass_locals_dict, jclass_locals_dict_table);
 
 STATIC const mp_obj_type_t jclass_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_jclass,
     .print = jclass_print,
     .attr = jclass_attr,
@@ -322,7 +322,7 @@ STATIC mp_obj_t subscr_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 }
 
 STATIC const mp_obj_type_t jobject_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_jobject,
     .print = jobject_print,
     .unary_op = jobject_unary_op,
@@ -570,7 +570,7 @@ STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 }
 
 STATIC const mp_obj_type_t jmethod_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_jmethod,
     .print = jmethod_print,
     .call = jmethod_call,
@@ -705,15 +705,15 @@ STATIC mp_obj_t mod_jni_env(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mod_jni_env_obj, mod_jni_env);
 
 STATIC const mp_rom_map_elem_t mp_module_jni_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jni) },
-    { MP_ROM_QSTR(MP_QSTR_cls), MP_ROM_PTR(&mod_jni_cls_obj) },
-    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mod_jni_array_obj) },
-    { MP_ROM_QSTR(MP_QSTR_env), MP_ROM_PTR(&mod_jni_env_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jni)},
+    {MP_ROM_QSTR(MP_QSTR_cls), MP_ROM_PTR(&mod_jni_cls_obj)},
+    {MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mod_jni_array_obj)},
+    {MP_ROM_QSTR(MP_QSTR_env), MP_ROM_PTR(&mod_jni_env_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
 
 const mp_obj_module_t mp_module_jni = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };

@@ -205,7 +205,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_raise_ValueError(msg)                (mp_raise_msg(&mp_type_ValueError, (msg)))
 
 static inline mp_obj_t mp_obj_new_exception_arg1_dyn(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    mp_obj_t args[1] = { arg };
+    mp_obj_t args[1] = {arg};
     return mp_call_function_n_kw(MP_OBJ_FROM_PTR(exc_type), 1, 0, &args[0]);
 }
 
@@ -216,7 +216,7 @@ static NORETURN inline void mp_raise_dyn(mp_obj_t o) {
 }
 
 static inline void mp_raise_OSError_dyn(int er) {
-    mp_obj_t args[1] = { MP_OBJ_NEW_SMALL_INT(er) };
+    mp_obj_t args[1] = {MP_OBJ_NEW_SMALL_INT(er)};
     nlr_raise(mp_call_function_n_kw(mp_load_global(MP_QSTR_OSError), 1, 0, &args[0]));
 }
 

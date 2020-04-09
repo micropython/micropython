@@ -97,11 +97,11 @@ STATIC void vfs_init(void) {
     int ret = 0;
 
     #ifdef CONFIG_DISK_ACCESS_SDHC
-    mp_obj_t args[] = { mp_obj_new_str(CONFIG_DISK_SDHC_VOLUME_NAME, strlen(CONFIG_DISK_SDHC_VOLUME_NAME)) };
+    mp_obj_t args[] = {mp_obj_new_str(CONFIG_DISK_SDHC_VOLUME_NAME, strlen(CONFIG_DISK_SDHC_VOLUME_NAME))};
     bdev = zephyr_disk_access_type.make_new(&zephyr_disk_access_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/sd";
     #elif defined(CONFIG_FLASH_MAP) && defined(DT_FLASH_AREA_STORAGE_ID)
-    mp_obj_t args[] = { MP_OBJ_NEW_SMALL_INT(DT_FLASH_AREA_STORAGE_ID), MP_OBJ_NEW_SMALL_INT(4096) };
+    mp_obj_t args[] = {MP_OBJ_NEW_SMALL_INT(DT_FLASH_AREA_STORAGE_ID), MP_OBJ_NEW_SMALL_INT(4096)};
     bdev = zephyr_flash_area_type.make_new(&zephyr_flash_area_type, ARRAY_SIZE(args), 0, args);
     mount_point_str = "/flash";
     #endif

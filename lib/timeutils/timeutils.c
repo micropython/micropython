@@ -40,7 +40,7 @@
 #define DAYS_PER_100Y (365 * 100 + 24)
 #define DAYS_PER_4Y   (365 * 4 + 1)
 
-STATIC const uint16_t days_since_jan1[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+STATIC const uint16_t days_since_jan1[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 bool timeutils_is_leap_year(mp_uint_t year) {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;

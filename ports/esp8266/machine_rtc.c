@@ -234,8 +234,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc
 STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_wake };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+        {MP_QSTR_wake, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -253,17 +253,17 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
 STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&pyb_rtc_memory_obj) },
-    { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&pyb_rtc_alarm_obj) },
-    { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&pyb_rtc_alarm_left_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_rtc_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0) },
+    {MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj)},
+    {MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&pyb_rtc_memory_obj)},
+    {MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&pyb_rtc_alarm_obj)},
+    {MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&pyb_rtc_alarm_left_obj)},
+    {MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_rtc_irq_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0)},
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
 const mp_obj_type_t pyb_rtc_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
     .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,

@@ -401,7 +401,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
 }
 
 void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
-    parse_hci_info_t parse = { cb, env, false };
+    parse_hci_info_t parse = {cb, env, false};
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
@@ -410,7 +410,7 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
         buf[0] = 0; // config offset
         buf[1] = 6; // config length
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, &buf[2]);
-        #define SWAP_UINT8(a, b) { uint8_t temp = a; a = b; b = temp; \
+        #define SWAP_UINT8(a, b) {uint8_t temp = a; a = b; b = temp; \
 }
         SWAP_UINT8(buf[2], buf[7]);
         SWAP_UINT8(buf[3], buf[6]);

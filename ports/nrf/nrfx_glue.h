@@ -31,7 +31,7 @@
 
 #define NRFX_STATIC_ASSERT(expression)
 
-#define NRFX_ASSERT(expression)  do { bool res = expression; (void)res; } while (0)
+#define NRFX_ASSERT(expression)  do {bool res = expression; (void)res;} while (0)
 #define NRFX_DELAY_US            mp_hal_delay_us
 
 #if BLUETOOTH_SD
@@ -133,8 +133,8 @@
 
 // Source:
 // https://devzone.nordicsemi.com/f/nordic-q-a/8572/disable-interrupts-and-enable-interrupts-if-they-where-enabled/31347#31347
-#define NRFX_CRITICAL_SECTION_ENTER() { int _old_primask = __get_PRIMASK(); __disable_irq();
-#define NRFX_CRITICAL_SECTION_EXIT() __set_PRIMASK(_old_primask); }
+#define NRFX_CRITICAL_SECTION_ENTER() {int _old_primask = __get_PRIMASK(); __disable_irq();
+#define NRFX_CRITICAL_SECTION_EXIT() __set_PRIMASK(_old_primask);}
 
 #endif // !BLUETOOTH_SD
 

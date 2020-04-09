@@ -124,12 +124,12 @@ STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);
 
 STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_termios) },
-    { MP_ROM_QSTR(MP_QSTR_tcgetattr), MP_ROM_PTR(&mod_termios_tcgetattr_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tcsetattr), MP_ROM_PTR(&mod_termios_tcsetattr_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setraw), MP_ROM_PTR(&mod_termios_setraw_obj) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_termios)},
+    {MP_ROM_QSTR(MP_QSTR_tcgetattr), MP_ROM_PTR(&mod_termios_tcgetattr_obj)},
+    {MP_ROM_QSTR(MP_QSTR_tcsetattr), MP_ROM_PTR(&mod_termios_tcsetattr_obj)},
+    {MP_ROM_QSTR(MP_QSTR_setraw), MP_ROM_PTR(&mod_termios_setraw_obj)},
 
-#define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(name) }
+#define C(name) {MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(name)}
     C(TCSANOW),
 
     C(B9600),
@@ -145,6 +145,6 @@ STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals_table);
 
 const mp_obj_module_t mp_module_termios = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_termios_globals,
 };

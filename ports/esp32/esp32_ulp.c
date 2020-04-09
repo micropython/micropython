@@ -82,19 +82,19 @@ STATIC mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_run_obj, esp32_ulp_run);
 
 STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj) },
-    { MP_ROM_QSTR(MP_QSTR_load_binary), MP_ROM_PTR(&esp32_ulp_load_binary_obj) },
-    { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_run_obj) },
+    {MP_ROM_QSTR(MP_QSTR_set_wakeup_period), MP_ROM_PTR(&esp32_ulp_set_wakeup_period_obj)},
+    {MP_ROM_QSTR(MP_QSTR_load_binary), MP_ROM_PTR(&esp32_ulp_load_binary_obj)},
+    {MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&esp32_ulp_run_obj)},
     #if !MICROPY_ESP_IDF_4
-    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ULP_COPROC_RESERVE_MEM) },
+    {MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ULP_COPROC_RESERVE_MEM)},
     #else
-    { MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32_ULP_COPROC_RESERVE_MEM) },
+    {MP_ROM_QSTR(MP_QSTR_RESERVE_MEM), MP_ROM_INT(CONFIG_ESP32_ULP_COPROC_RESERVE_MEM)},
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_ulp_locals_dict, esp32_ulp_locals_dict_table);
 
 const mp_obj_type_t esp32_ulp_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_ULP,
     .make_new = esp32_ulp_make_new,
     .locals_dict = (mp_obj_t)&esp32_ulp_locals_dict,

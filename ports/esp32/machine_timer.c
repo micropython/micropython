@@ -173,14 +173,14 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
         ARG_freq,
     };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-        { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        {MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1}},
+        {MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
+        {MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
+        {MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000}},
         #if MICROPY_PY_BUILTINS_FLOAT
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none}},
         #else
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
+        {MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff}},
         #endif
     };
 
@@ -234,17 +234,17 @@ STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 
 STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_timer_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
-    { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
+    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj)},
+    {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj)},
+    {MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_timer_value_obj)},
+    {MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false)},
+    {MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true)},
 };
 STATIC MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
 
 const mp_obj_type_t machine_timer_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,

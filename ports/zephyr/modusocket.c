@@ -63,8 +63,8 @@ STATIC const mp_obj_type_t socket_type;
 
 // Helper functions
 
-#define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
-#define RAISE_SOCK_ERRNO(x) { if ((int)(x) == -1) mp_raise_OSError(errno); }
+#define RAISE_ERRNO(x) {int _err = x; if (_err < 0) mp_raise_OSError(-_err);}
+#define RAISE_SOCK_ERRNO(x) {if ((int)(x) == -1) mp_raise_OSError(errno);}
 
 STATIC void socket_check_closed(socket_obj_t *socket) {
     if (socket->ctx == -1) {
@@ -322,21 +322,21 @@ STATIC mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int
 }
 
 STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
-    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
-    { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
-    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
+    {MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj)},
+    {MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj)},
+    {MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj)},
+    {MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj)},
+    {MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj)},
+    {MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj)},
+    {MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj)},
+    {MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj)},
+    {MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    {MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj)},
+    {MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
@@ -347,7 +347,7 @@ STATIC const mp_stream_p_t socket_stream_p = {
 };
 
 STATIC const mp_obj_type_t socket_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_socket,
     .print = socket_print,
     .make_new = socket_make_new,
@@ -441,27 +441,27 @@ STATIC mp_obj_t pkt_get_info(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pkt_get_info_obj, pkt_get_info);
 
 STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
+    {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket)},
     // objects
-    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
+    {MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type)},
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(AF_INET) },
-    { MP_ROM_QSTR(MP_QSTR_AF_INET6), MP_ROM_INT(AF_INET6) },
+    {MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(AF_INET)},
+    {MP_ROM_QSTR(MP_QSTR_AF_INET6), MP_ROM_INT(AF_INET6)},
 
-    { MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(SOCK_STREAM) },
-    { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCK_DGRAM) },
+    {MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(SOCK_STREAM)},
+    {MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCK_DGRAM)},
 
-    { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(1) },
-    { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(2) },
+    {MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(1)},
+    {MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(2)},
 
-    { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_getaddrinfo_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pkt_get_info), MP_ROM_PTR(&pkt_get_info_obj) },
+    {MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_getaddrinfo_obj)},
+    {MP_ROM_QSTR(MP_QSTR_pkt_get_info), MP_ROM_PTR(&pkt_get_info_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);
 
 const mp_obj_module_t mp_module_usocket = {
-    .base = { &mp_type_module },
+    .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 

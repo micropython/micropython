@@ -108,14 +108,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(mtp_read_obj, mtp_read);
 
 STATIC const mp_rom_map_elem_t mtp_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&mtp_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mtp_read_obj) },
+    {MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&mtp_config_obj)},
+    {MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mtp_read_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mtp_locals_dict, mtp_locals_dict_table);
 
 const mp_obj_type_t machine_touchpad_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_TouchPad,
     .make_new = mtp_make_new,
     .locals_dict = (mp_obj_t)&mtp_locals_dict,
