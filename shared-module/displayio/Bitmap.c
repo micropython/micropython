@@ -162,3 +162,35 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = 0;
 }
+
+void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
+
+    for (uint32_t x=0; x<self->width; x++) {
+        for (uint32_t y=0; y<self->height; y++) {
+            int32_t row_start = y * self->stride;
+            uint32_t bytes_per_value = self->bits_per_value / 8;
+            if (bytes_per_value < 1) {
+                uint32_t bit_position = (sizeof(size_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
+                uint32_t index = row_start + (x >> self->x_shift);
+                uint32_t word = self->data[index];
+                word &= ~(self->bitmask << bit_position);
+                word |= (value & self->bitmask) << bit_position;
+                self->data[index] = word;
+            } else {
+                size_t* row = self->data + row_start;
+                if (bytes_per_value == 1) {
+                    ((uint8_t*) row)[x] = value;
+                } else if (bytes_per_value == 2) {
+                    ((uint16_t*) row)[x] = value;
+                } else if (bytes_per_value == 4) {
+                    ((uint32_t*) row)[x] = value;
+                }
+            }
+        }
+    }
+
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = self->width;
+    self->dirty_area.y1 = 0;
+    self->dirty_area.y2 = self->height;
+}
