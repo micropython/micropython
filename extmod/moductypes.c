@@ -226,7 +226,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            mp_raise_TypeError(MP_ERROR_TEXT("Cannot unambiguously get sizeof scalar"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't unambiguously get sizeof scalar"));
         }
         syntax_error();
     }
@@ -557,7 +557,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     } else {
         // load / store
         if (!mp_obj_is_type(self->desc, &mp_type_tuple)) {
-            mp_raise_TypeError(MP_ERROR_TEXT("struct: cannot index"));
+            mp_raise_TypeError(MP_ERROR_TEXT("struct: can't index"));
         }
 
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);

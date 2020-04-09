@@ -173,7 +173,7 @@ STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
     if (tval != -1) {
         if (tval != timer_cfg.freq_hz) {
             if (!set_freq(tval)) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Bad frequency %d"), tval);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("bad frequency %d"), tval);
             }
         }
     }
@@ -247,7 +247,7 @@ STATIC mp_obj_t esp32_pwm_freq(size_t n_args, const mp_obj_t *args) {
     // set
     int tval = mp_obj_get_int(args[1]);
     if (!set_freq(tval)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Bad frequency %d"), tval);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("bad frequency %d"), tval);
     }
     return mp_const_none;
 }

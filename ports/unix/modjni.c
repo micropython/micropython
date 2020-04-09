@@ -531,7 +531,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
                     ret = new_jobject(res);
                 } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
-                    mp_raise_TypeError(MP_ERROR_TEXT("cannot handle return type"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("can't handle return type"));
                 }
 
                 JJ(ReleaseStringUTFChars, name_o, decl);

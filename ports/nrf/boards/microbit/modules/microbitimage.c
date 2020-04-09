@@ -351,7 +351,7 @@ mp_obj_t microbit_image_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in
     mp_int_t x = mp_obj_get_int(x_in);
     mp_int_t y = mp_obj_get_int(y_in);
     if (x < 0 || y < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("index cannot be negative"));
+        mp_raise_ValueError(MP_ERROR_TEXT("index can't be negative"));
     }
     if (x < imageWidth(self) && y < imageHeight(self)) {
         return MP_OBJ_NEW_SMALL_INT(imageGetPixelValue(self, x, y));
@@ -363,7 +363,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(microbit_image_get_pixel_obj, microbit_image_get_pixel
 /* Raise an exception if not mutable */
 static void check_mutability(microbit_image_obj_t *self) {
     if (self->base.five) {
-        mp_raise_TypeError(MP_ERROR_TEXT("image cannot be modified (try copying first)"));
+        mp_raise_TypeError(MP_ERROR_TEXT("image can't be modified (try copying first)"));
     }
 }
 
@@ -375,7 +375,7 @@ mp_obj_t microbit_image_set_pixel(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     if (x < 0 || y < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("index cannot be negative"));
+        mp_raise_ValueError(MP_ERROR_TEXT("index can't be negative"));
     }
     mp_int_t bright = mp_obj_get_int(args[3]);
     if (bright < 0 || bright > MAX_BRIGHTNESS)
@@ -416,7 +416,7 @@ mp_obj_t microbit_image_blit(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t w = mp_obj_get_int(args[4]);
     mp_int_t h = mp_obj_get_int(args[5]);
     if (w < 0 || h < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("size cannot be negative"));
+        mp_raise_ValueError(MP_ERROR_TEXT("size can't be negative"));
     }
     mp_int_t xdest;
     mp_int_t ydest;

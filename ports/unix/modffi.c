@@ -148,7 +148,7 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in) {
     }
     // TODO: Support actual libffi type objects
 
-    mp_raise_TypeError(MP_ERROR_TEXT("Unknown type"));
+    mp_raise_TypeError(MP_ERROR_TEXT("unknown type"));
 }
 
 STATIC mp_obj_t return_ffi_value(ffi_arg val, char type) {
@@ -218,7 +218,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -276,7 +276,7 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
@@ -425,7 +425,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 
 error:
-    mp_raise_TypeError(MP_ERROR_TEXT("Don't know how to pass object to native function"));
+    mp_raise_TypeError(MP_ERROR_TEXT("don't know how to pass object to native function"));
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {

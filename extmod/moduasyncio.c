@@ -173,7 +173,7 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
     // Can't cancel self (not supported yet).
     mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
     if (self_in == cur_task) {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("cannot cancel self"));
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("can't cancel self"));
     }
     // If Task waits on another task then forward the cancel to the one it's waiting on.
     while (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(self->data)), MP_OBJ_FROM_PTR(&task_type))) {

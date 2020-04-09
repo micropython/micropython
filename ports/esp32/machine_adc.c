@@ -81,7 +81,7 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     if (err == ESP_OK) {
         return MP_OBJ_FROM_PTR(self);
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
+    mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
 }
 
 STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -104,7 +104,7 @@ STATIC mp_obj_t madc_read(mp_obj_t self_in) {
     madc_obj_t *self = self_in;
     int val = adc1_get_raw(self->adc1_id);
     if (val == -1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
     }
     return MP_OBJ_NEW_SMALL_INT(val);
 }
@@ -117,7 +117,7 @@ STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in) {
     if (err == ESP_OK) {
         return mp_const_none;
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
+    mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(madc_atten_obj, madc_atten);
 
@@ -125,7 +125,7 @@ STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in) {
     adc_bits_width_t width = mp_obj_get_int(width_in);
     esp_err_t err = adc1_config_width(width);
     if (err != ESP_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
     }
     switch (width) {
         case ADC_WIDTH_9Bit:

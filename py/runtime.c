@@ -1392,7 +1392,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     if (dest[1] != MP_OBJ_NULL) {
         // Hopefully we can't import bound method from an object
     import_error:
-        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("cannot import name %q"), name);
+        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("can't import name %q"), name);
     }
 
     if (dest[0] != MP_OBJ_NULL) {
