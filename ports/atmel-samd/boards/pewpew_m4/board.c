@@ -107,7 +107,9 @@ void board_init(void) {
         &pin_PA16, // TFT_DC Command or data
         &pin_PA11, // TFT_CS Chip select
         &pin_PA17, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     uint32_t cfg0 = lookupCfg(CFG_DISPLAY_CFG0, 0x000000);
     uint32_t offX = (cfg0 >> 8) & 0xff;
@@ -139,7 +141,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         false, // auto_refresh
-        20); // native_frames_per_second
+        20, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

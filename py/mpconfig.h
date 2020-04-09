@@ -244,6 +244,14 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Number of atb indices to cache. Allocations of fewer blocks will be faster
+// because the search will be accelerated by the index cache. This only applies
+// to short lived allocations because we assume the long lived allocations are
+// contiguous.
+#ifndef MICROPY_ATB_INDICES
+#define MICROPY_ATB_INDICES (8)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
@@ -367,6 +375,11 @@
 // Costs about 80 bytes (Thumb2) and saves 2 bytes of bytecode for each use
 #ifndef MICROPY_COMP_RETURN_IF_EXPR
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
+#endif
+
+// Whether to include parsing of f-string literals
+#ifndef MICROPY_COMP_FSTRING_LITERAL
+#define MICROPY_COMP_FSTRING_LITERAL (1)
 #endif
 
 /*****************************************************************************/
@@ -1163,6 +1176,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
+#endif
+
+#ifndef CIRCUITPY_ULAB
+#define CIRCUITPY_ULAB (0)
 #endif
 
 #ifndef MICROPY_PY_URE

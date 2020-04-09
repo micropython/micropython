@@ -12,28 +12,38 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4", "cxd56", "mimxrt10xx"]
+SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm", "cxd56", "mimxrt10xx", "litex"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
 BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
+HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
+DFU = ('dfu',)
+BIN_DFU = ('bin', 'dfu')
+
+# Example:
+# https://downloads.circuitpython.org/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
+DOWNLOAD_BASE_URL = "https://downloads.circuitpython.org/bin"
 
 # Default extensions
 extension_by_port = {
     "nrf": UF2,
     "atmel-samd": UF2,
-    "stm32f4": BIN,
+    "stm": BIN,
     "cxd56": SPK,
-    "mimxrt10xx": UF2,
+    "mimxrt10xx": HEX_UF2,
+    "litex": DFU,
 }
 
 # Per board overrides
 extension_by_board = {
     # samd
-    "arduino_mkr1300": BIN,
-    "arduino_zero": BIN,
+    "arduino_mkr1300": BIN_UF2,
+    "arduino_mkrzero": BIN_UF2,
+    "arduino_nano_33_iot": BIN_UF2,
+    "arduino_zero": BIN_UF2,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN_UF2,
@@ -274,7 +284,14 @@ def generate_download_info():
                         files = []
                         new_version["files"][language] = files
                         for extension in board_info["extensions"]:
-                            files.append("https://github.com/adafruit/circuitpython/releases/download/{tag}/adafruit-circuitpython-{alias}-{language}-{tag}.{extension}".format(tag=new_tag, alias=alias, language=language, extension=extension))
+                            files.append(
+                                "{base_url}/{alias}/{language}/adafruit-circuitpython-{alias}-{language}-{tag}.{extension}"
+                                .format(
+                                    base_url=DOWNLOAD_BASE_URL,
+                                    tag=new_tag,
+                                    alias=alias,
+                                    language=language,
+                                    extension=extension))
                     current_info[alias]["downloads"] = alias_info["download_count"]
                     current_info[alias]["versions"].append(new_version)
 

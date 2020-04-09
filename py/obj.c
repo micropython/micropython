@@ -38,6 +38,7 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+#include "supervisor/linker.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 
@@ -128,7 +129,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_print_str(print, "\n");
 }
 
-bool mp_obj_is_true(mp_obj_t arg) {
+bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {

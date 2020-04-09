@@ -24,6 +24,7 @@
  */
 
 #include "fdlibm.h"
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 
 #define __ieee754_logf logf
 

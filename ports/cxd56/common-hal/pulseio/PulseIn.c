@@ -106,7 +106,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
 
     board_gpio_int(self->pin->number, true);
 }
-    
+
 void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
@@ -116,18 +116,18 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     board_gpio_intconfig(self->pin->number, 0, false, NULL);
 
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
- 
+
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
- 
+
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     board_gpio_int(self->pin->number, false);
     self->paused = true;
 }
- 
+
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t trigger_duration) {
     // Make sure we're paused.
     common_hal_pulseio_pulsein_pause(self);
@@ -147,14 +147,14 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self, uint16_t tri
     pulsein_set_config(self, true);
     board_gpio_int(self->pin->number, true);
 }
- 
+
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
     common_hal_mcu_disable_interrupts();
     self->start = 0;
     self->len = 0;
     common_hal_mcu_enable_interrupts();
 }
- 
+
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
         mp_raise_IndexError(translate("pop from an empty PulseIn"));
@@ -167,19 +167,19 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
 
     return value;
 }
- 
+
 uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t *self) {
     return self->maxlen;
 }
- 
+
 bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
     return self->paused;
 }
- 
+
 uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
     return self->len;
 }
- 
+
 uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index) {
     common_hal_mcu_disable_interrupts();
     if (index < 0) {
@@ -193,4 +193,3 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
     common_hal_mcu_enable_interrupts();
     return value;
 }
- 

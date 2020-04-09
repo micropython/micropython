@@ -115,6 +115,7 @@ void audioout_reset(void) {
     // TODO(tannewt): Turn off the DAC clocks to save power.
 }
 
+// Caller validates that pins are free.
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
     #ifdef SAMD51
@@ -135,7 +136,6 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     if (left_channel != &pin_PA02) {
         mp_raise_ValueError(translate("Invalid pin"));
     }
-    assert_pin_free(left_channel);
     claim_pin(left_channel);
     #endif
     #ifdef SAMD51
@@ -143,7 +143,6 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     if (left_channel != &pin_PA02 && left_channel != &pin_PA05) {
         mp_raise_ValueError(translate("Invalid pin for left channel"));
     }
-    assert_pin_free(left_channel);
     if (right_channel != NULL && right_channel != &pin_PA02 && right_channel != &pin_PA05) {
         mp_raise_ValueError(translate("Invalid pin for right channel"));
     }
@@ -304,7 +303,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
 }
 
 bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self) {
-    return self->left_channel == mp_const_none;
+    return self->left_channel == NULL;
 }
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
@@ -332,10 +331,10 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     tc_set_enable(tc_insts[self->tc_index], false);
 
     reset_pin_number(self->left_channel->number);
-    self->left_channel = mp_const_none;
+    self->left_channel = NULL;
     #ifdef SAMD51
     reset_pin_number(self->right_channel->number);
-    self->right_channel = mp_const_none;
+    self->right_channel = NULL;
     #endif
 }
 
@@ -397,15 +396,22 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
     if (self->right_channel == &pin_PA02) {
         right_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
     }
-    result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
-                                      false /* output unsigned */,
-                                      left_channel_reg,
-                                      left_channel_trigger);
-    if (right_channel_reg != 0 && result == AUDIO_DMA_OK) {
-        result = audio_dma_setup_playback(&self->right_dma, sample, loop, true, 1,
+    if(right_channel_reg == left_channel_reg + 2 && audiosample_bits_per_sample(sample) == 16) {
+        result = audio_dma_setup_playback(&self->left_dma, sample, loop, false, 0,
                                           false /* output unsigned */,
-                                          right_channel_reg,
-                                          right_channel_trigger);
+                                          left_channel_reg,
+                                          left_channel_trigger);
+    } else {
+        result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
+                                          false /* output unsigned */,
+                                          left_channel_reg,
+                                          left_channel_trigger);
+        if (right_channel_reg != 0 && result == AUDIO_DMA_OK) {
+            result = audio_dma_setup_playback(&self->right_dma, sample, loop, true, 1,
+                                              false /* output unsigned */,
+                                              right_channel_reg,
+                                              right_channel_trigger);
+        }
     }
     #endif
     if (result != AUDIO_DMA_OK) {

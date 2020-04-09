@@ -83,11 +83,52 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
 }
 
 bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+    // TODO: In theory, this also needs to handle unaligned data and
+    // non-multiple-of-4 length.  (in practice, I don't think the fat layer
+    // generates such writes)
     return nrfx_qspi_write(data, length, address) == NRFX_SUCCESS;
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
-    return nrfx_qspi_read(data, length, address) == NRFX_SUCCESS;
+    int misaligned = ((intptr_t)data) & 3;
+    // If the data is misaligned, we need to read 4 bytes
+    // into an aligned buffer, and then copy 1, 2, or 3 bytes from the aligned
+    // buffer to data.
+    if(misaligned) {
+        int sz = 4 - misaligned;
+        __attribute__((aligned(4))) uint8_t buf[4];
+
+        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+            return false;
+        }
+        memcpy(data, buf, sz);
+        data += sz;
+        address += sz;
+        length -= sz;
+    }
+
+    // nrfx_qspi_read works in 4 byte increments, though it doesn't
+    // signal an error if sz is not a multiple of 4.  Read (directly into data)
+    // all but the last 1, 2, or 3 bytes depending on the (remaining) length.
+    uint32_t sz = length & ~(uint32_t)3;
+    if(nrfx_qspi_read(data, sz, address) != NRFX_SUCCESS) {
+        return false;
+    }
+    data += sz;
+    address += sz;
+    length -= sz;
+
+    // Now, if we have any bytes left over, we must do a final read of 4
+    // bytes and copy 1, 2, or 3 bytes to data.
+    if(length) {
+        __attribute__((aligned(4))) uint8_t buf[4];
+        if(nrfx_qspi_read(buf, 4, address) != NRFX_SUCCESS) {
+            return false;
+        }
+        memcpy(data, buf, length);
+    }
+
+    return true;
 }
 
 void spi_flash_init(void) {

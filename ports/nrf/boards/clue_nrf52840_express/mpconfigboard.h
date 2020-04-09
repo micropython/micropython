@@ -50,7 +50,8 @@
 #define SPI_FLASH_CS_PIN &pin_P0_20
 #endif
 
-#define BOARD_HAS_CRYSTAL 1
+// No 32kHz crystal. THere's a 32MHz crystal in the nRF module.
+#define BOARD_HAS_32KHZ_XTAL (0)
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_25)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_24)

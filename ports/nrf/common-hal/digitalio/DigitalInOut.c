@@ -46,7 +46,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self) {
@@ -56,7 +56,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     nrf_gpio_cfg_default(self->pin->number);
 
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(

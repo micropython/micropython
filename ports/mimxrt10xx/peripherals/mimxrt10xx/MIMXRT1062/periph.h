@@ -36,6 +36,8 @@ extern const mcu_periph_obj_t mcu_spi_miso_list[8];
 
 extern const mcu_periph_obj_t mcu_uart_rx_list[18];
 extern const mcu_periph_obj_t mcu_uart_tx_list[18];
+extern const mcu_periph_obj_t mcu_uart_rts_list[9];
+extern const mcu_periph_obj_t mcu_uart_cts_list[9];
 
 extern const mcu_pwm_obj_t mcu_pwm_list[67];
 

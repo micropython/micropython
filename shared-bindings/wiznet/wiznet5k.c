@@ -78,10 +78,10 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     // TODO check type of ARG_spi?
-    assert_pin(args[ARG_cs].u_obj, false);
-    assert_pin(args[ARG_rst].u_obj, true); // may be NULL
+    const mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj);
+    const mcu_pin_obj_t *rst = validate_obj_is_free_pin_or_none(args[ARG_rst].u_obj);
 
-    mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, args[ARG_cs].u_obj, args[ARG_rst].u_obj);
+    mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, cs, rst);
     if (args[ARG_dhcp].u_bool) wiznet5k_start_dhcp();
     return ret;
 }

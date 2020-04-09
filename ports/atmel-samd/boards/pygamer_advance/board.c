@@ -31,6 +31,7 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "supervisor/shared/board.h"
 #include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
@@ -59,7 +60,9 @@ void board_init(void) {
         &pin_PA00, // TFT_DC Command or data
         &pin_PB15, // TFT_CS Chip select
         &pin_PB05, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -88,7 +91,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {
@@ -96,4 +100,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    board_reset_user_neopixels();
 }

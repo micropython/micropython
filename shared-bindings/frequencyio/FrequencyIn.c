@@ -87,9 +87,7 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    assert_pin(args[ARG_pin].u_obj, false);
-    mcu_pin_obj_t* pin = MP_OBJ_TO_PTR(args[ARG_pin].u_obj);
-    assert_pin_free(pin);
+    mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
     const uint16_t capture_period = args[ARG_capture_period].u_int;
 

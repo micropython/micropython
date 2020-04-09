@@ -63,16 +63,13 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // 1st argument is the pin
-    mp_obj_t pin_obj = args[0];
-    assert_pin(pin_obj, false);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
 
     analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
     self->base.type = &analogio_analogin_type;
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
-    assert_pin_free(pin);
     common_hal_analogio_analogin_construct(self, pin);
 
-    return (mp_obj_t) self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 //|   .. method:: deinit()
@@ -141,7 +138,7 @@ STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
 
     float reference_voltage = common_hal_analogio_analogin_get_reference_voltage(self);
     if (reference_voltage <= 0.0f) {
-        return mp_const_none; 
+        return mp_const_none;
     } else {
         return mp_obj_new_float(reference_voltage);
     }

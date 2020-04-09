@@ -32,8 +32,8 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #if QSPI_FLASH_FILESYSTEM
-#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 22)
-#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1,  0)
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1,  0)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 22)
 #define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(1,  2)
 #define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(1,  1)

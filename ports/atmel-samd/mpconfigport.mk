@@ -40,6 +40,8 @@ endif
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
 USB_MSC_EP_NUM_OUT = 1
 
+CIRCUITPY_ULAB = 0
+
 endif # samd21
 
 # Put samd51-only choices here.
@@ -60,6 +62,12 @@ endif
 
 ifndef CIRCUITPY_SAMD
 CIRCUITPY_SAMD = 1
+endif
+
+ifndef CIRCUITPY_ULAB
+ifneq ($(CIRCUITPY_SMALL_BUILD),1)
+CIRCUITPY_ULAB = 1
+endif
 endif
 
 endif # samd51

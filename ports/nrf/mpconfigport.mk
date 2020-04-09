@@ -69,4 +69,5 @@ NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
+CIRCUITPY_ULAB = 1
 endif

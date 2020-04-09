@@ -162,7 +162,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 self->do_bond_cccds = true;
                 self->do_bond_cccds_request_time = supervisor_ticks_ms64();
             }
-            break;
+            // Return false so other handlers get this event as well.
+            return false;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);

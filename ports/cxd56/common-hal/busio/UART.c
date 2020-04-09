@@ -53,10 +53,16 @@ STATIC busio_uart_dev_t busio_uart_dev[] = {
 };
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, uint32_t baudrate,
-    uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-    uint16_t receiver_buffer_size) {
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
     struct termios tio;
+
+    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
 
     if (bits != 8) {
         mp_raise_ValueError(translate("Could not initialize UART"));

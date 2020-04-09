@@ -105,6 +105,23 @@ $(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
+ifeq ($(CIRCUITPY_ULAB),1)
+SRC_MOD += $(addprefix extmod/ulab/code/, \
+create.c \
+extras.c \
+fft.c \
+filter.c \
+linalg.c \
+ndarray.c \
+numerical.c \
+poly.c \
+ulab.c \
+vectorise.c \
+	)
+CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
+$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-sign-compare -Wno-missing-prototypes -Wno-unused-parameter -Wno-missing-declarations -Wno-error -Wno-shadow -Wno-maybe-uninitialized -DCIRCUITPY
+endif
+
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate

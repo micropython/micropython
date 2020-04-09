@@ -31,6 +31,7 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "supervisor/shared/board.h"
 #include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
@@ -51,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0x00, // _MADCTL top to bottom refresh in vsync aligned order.
+    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -81,7 +82,9 @@ void board_init(void) {
         &pin_PB05, // TFT_DC Command or data
         &pin_PB12, // TFT_CS Chip select
         &pin_PA00, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -91,7 +94,7 @@ void board_init(void) {
         128, // Height
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // pixels in a byte share a row. Only valid for depths < 8
@@ -110,7 +113,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {
@@ -118,4 +122,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    board_reset_user_neopixels();
 }

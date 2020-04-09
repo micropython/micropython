@@ -112,17 +112,23 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         if (o->args == NULL || o->args->len == 0) {
             mp_print_str(print, "");
             return;
-        } else if (o->args->len == 1) {
+        }
+        if (MP_OBJ_IS_SMALL_INT(o->args->items[0]) &&
+            mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(o->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError)) &&
+            o->args->len <= 2) {
             // try to provide a nice OSError error message
-            if (MP_OBJ_IS_SMALL_INT(o->args->items[0]) &&
-                mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(o->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
-                char decompressed[50];
-                const char *msg = mp_common_errno_to_str(o->args->items[0], decompressed, sizeof(decompressed));
-                if (msg != NULL) {
-                    mp_printf(print, "[Errno " INT_FMT "] %s", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), msg);
-                    return;
+            char decompressed[50];
+            const char *msg = mp_common_errno_to_str(o->args->items[0], decompressed, sizeof(decompressed));
+            if (msg != NULL) {
+                mp_printf(print, "[Errno " INT_FMT "] %s", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), msg);
+                // if second arg exists, it is filename.
+                if (o->args->len == 2) {
+                    mp_printf(print, ": '%s'", mp_obj_str_get_str(o->args->items[1]));
                 }
+                return;
             }
+        }
+        if (o->args->len == 1) {
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }

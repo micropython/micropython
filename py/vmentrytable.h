@@ -29,7 +29,9 @@
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__
 
-static const void *const entry_table[256] = {
+#include "supervisor/linker.h"
+
+static const void *const PLACE_IN_DTCM_DATA(entry_table[256]) = {
     [0 ... 255] = &&entry_default,
     [MP_BC_LOAD_CONST_FALSE] = &&entry_MP_BC_LOAD_CONST_FALSE,
     [MP_BC_LOAD_CONST_NONE] = &&entry_MP_BC_LOAD_CONST_NONE,

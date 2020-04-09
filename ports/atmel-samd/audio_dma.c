@@ -203,13 +203,13 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
     if (output_signed != samples_signed) {
         output_spacing = 1;
         max_buffer_length /= dma->spacing;
-        dma->first_buffer = (uint8_t*) m_malloc(max_buffer_length, false);
+        dma->first_buffer = (uint8_t*) m_realloc(dma->first_buffer, max_buffer_length);
         if (dma->first_buffer == NULL) {
             return AUDIO_DMA_MEMORY_ERROR;
         }
         dma->first_buffer_free = true;
         if (!single_buffer) {
-            dma->second_buffer = (uint8_t*) m_malloc(max_buffer_length, false);
+            dma->second_buffer = (uint8_t*) m_realloc(dma->second_buffer, max_buffer_length);
             if (dma->second_buffer == NULL) {
                 return AUDIO_DMA_MEMORY_ERROR;
             }

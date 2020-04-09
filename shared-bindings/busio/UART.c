@@ -53,6 +53,10 @@
 //|
 //|   :param ~microcontroller.Pin tx: the pin to transmit with, or ``None`` if this ``UART`` is receive-only.
 //|   :param ~microcontroller.Pin rx: the pin to receive on, or ``None`` if this ``UART`` is transmit-only.
+//|   :param ~microcontroller.Pin rts: the pin for rts, or ``None`` if rts not in use.
+//|   :param ~microcontroller.Pin cts: the pin for cts, or ``None`` if cts not in use.
+//|   :param ~microcontroller.Pin rs485_dir: the pin for rs485 direction setting, or ``None`` if rs485 not in use.
+//|   :param bool rs485_invert: set to invert the sense of the rs485_dir pin.
 //|   :param int baudrate: the transmit and receive speed.
 //|   :param int bits:  the number of bits per byte, 7, 8 or 9.
 //|   :param Parity parity:  the parity used for error checking.
@@ -82,7 +86,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     // https://github.com/adafruit/circuitpython/issues/1056)
     busio_uart_obj_t *self = m_new_ll_obj(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
-    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size};
+    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
+           ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -92,17 +97,20 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         { MP_QSTR_stop, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
         { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rs485_dir, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+        { MP_QSTR_rs485_invert, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    assert_pin(args[ARG_rx].u_obj, true);
-    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(args[ARG_rx].u_obj);
-    assert_pin_free(rx);
+    const mcu_pin_obj_t* rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
+    const mcu_pin_obj_t* tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
 
-    assert_pin(args[ARG_tx].u_obj, true);
-    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(args[ARG_tx].u_obj);
-    assert_pin_free(tx);
+    if ( (tx == NULL) && (rx == NULL) ) {
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+    }
 
     uint8_t bits = args[ARG_bits].u_int;
     if (bits < 7 || bits > 9) {
@@ -124,7 +132,13 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);
 
-    common_hal_busio_uart_construct(self, tx, rx,
+    const mcu_pin_obj_t* rts = validate_obj_is_free_pin_or_none(args[ARG_rts].u_obj);
+    const mcu_pin_obj_t* cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj);
+    const mcu_pin_obj_t* rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
+
+    const bool rs485_invert = args[ARG_rs485_invert].u_bool;
+
+    common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
                                     args[ARG_baudrate].u_int, bits, parity, stop, timeout,
                                     args[ARG_receiver_buffer_size].u_int);
     return (mp_obj_t)self;

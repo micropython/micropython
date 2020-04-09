@@ -47,6 +47,7 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/neopixel_write/__init__.h"
 #include "tick.h"
 
 #include "shared-bindings/rtc/__init__.h"
@@ -92,9 +93,6 @@ safe_mode_t port_init(void) {
     rtc_init();
     #endif
 
-    // Will do usb_init() if chip supports USB.
-    board_init();
-
     return NO_SAFE_MODE;
 }
 
@@ -106,6 +104,7 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+    neopixel_write_reset();
 
 #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
@@ -144,6 +143,14 @@ void reset_to_bootloader(void) {
 
 void reset_cpu(void) {
     NVIC_SystemReset();
+}
+
+uint32_t *port_heap_get_bottom(void) {
+    return port_stack_get_limit();
+}
+
+uint32_t *port_heap_get_top(void) {
+    return port_stack_get_top();
 }
 
 uint32_t *port_stack_get_limit(void) {

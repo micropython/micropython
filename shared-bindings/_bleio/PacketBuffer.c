@@ -109,7 +109,12 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer_obj, &bufinfo, MP_BUFFER_WRITE);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len));
+    int size = common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len);
+    if (size < 0) {
+        mp_raise_ValueError_varg(translate("Buffer too short by %d bytes"), size * -1);
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
@@ -163,13 +168,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 
 //|   .. attribute:: packet_size
 //|
-//|     Maximum size of each packet in bytes. This is the minimum of the Characterstic length and
+//|     Maximum size of each packet in bytes. This is the minimum of the Characteristic length and
 //|     the negotiated Maximum Transfer Unit (MTU).
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_packet_size(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(common_hal_bleio_packet_buffer_get_packet_size(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_packet_buffer_get_packet_size(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_packet_size_obj, bleio_packet_buffer_get_packet_size);
 

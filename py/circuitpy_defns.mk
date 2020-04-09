@@ -157,6 +157,9 @@ endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
+ifeq ($(CIRCUITPY__EVE),1)
+SRC_PATTERNS += _eve/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -298,6 +301,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
+        _eve/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -359,7 +363,8 @@ SRC_SHARED_MODULE_ALL = \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
-	_pew/PewPew.c
+	_pew/PewPew.c \
+        _eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
@@ -426,6 +431,19 @@ $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	)
+ifeq ($(CIRCUITPY_ULAB),1)
+SRC_LIBM += \
+$(addprefix lib/,\
+	libm/acoshf.c \
+	libm/asinhf.c \
+	libm/atanhf.c \
+	libm/erf_lgamma.c \
+	libm/log1pf.c \
+	libm/sf_erf.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c \
+	)
+endif
 endif
 
 ifdef LD_TEMPLATE_FILE

@@ -25,11 +25,13 @@
  */
 
 #include "supervisor/shared/tick.h"
+
+#include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
 
-static volatile uint64_t ticks_ms;
-static volatile uint32_t background_ticks_ms32;
+static volatile uint64_t PLACE_IN_DTCM_BSS(ticks_ms);
+static volatile uint32_t PLACE_IN_DTCM_BSS(background_ticks_ms32);
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
@@ -77,7 +79,7 @@ uint32_t supervisor_ticks_ms32() {
 
 extern void run_background_tasks(void);
 
-void supervisor_run_background_tasks_if_tick() {
+void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
     uint32_t now32 = ticks_ms;
 
     if (now32 == background_ticks_ms32) {

@@ -62,15 +62,13 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
     // check arguments
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
-    assert_pin(args[0], false);
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
 
     analogio_analogout_obj_t *self = m_new_obj(analogio_analogout_obj_t);
     self->base.type = &analogio_analogout_type;
-    assert_pin_free(pin);
     common_hal_analogio_analogout_construct(self, pin);
 
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
 //|   .. method:: deinit()

@@ -53,8 +53,8 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinConfig(0, 0, 0, 0,
         periph->pin->cfg_reg,
         IOMUXC_SW_PAD_CTL_PAD_HYS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUS(0)
-            | IOMUXC_SW_PAD_CTL_PAD_PUE(0)
+            | IOMUXC_SW_PAD_CTL_PAD_PUS(1)
+            | IOMUXC_SW_PAD_CTL_PAD_PUE(1)
             | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
             | IOMUXC_SW_PAD_CTL_PAD_ODE(0)
             | IOMUXC_SW_PAD_CTL_PAD_SPEED(1)
@@ -72,14 +72,16 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-        uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-        uint16_t receiver_buffer_size) {
+        const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+        const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+        const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+        uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+        mp_float_t timeout, uint16_t receiver_buffer_size) {
 
     // TODO: Allow none rx or tx
 
-    bool have_tx = tx != mp_const_none;
-    bool have_rx = rx != mp_const_none;
+    bool have_tx = tx != NULL;
+    bool have_rx = rx != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -111,12 +113,60 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if(self->rx_pin == NULL || self->tx_pin == NULL) {
         mp_raise_RuntimeError(translate("Invalid UART pin selection"));
-    } else {
-        self->uart = mcu_uart_banks[self->tx_pin->bank_idx - 1];
     }
+
+    // Filter for sane settings for RS485
+    if (rs485_dir != NULL) {
+      if ((rts != NULL) || (cts != NULL)) {
+        mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
+      }
+      // For IMXRT the RTS pin is used for RS485 direction
+      rts = rs485_dir;
+    }
+    else {
+      if (rs485_invert) {
+        mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
+      }
+    }
+
+    // Now check for RTS/CTS (or overloaded RS485 direction) pin(s)
+    const uint32_t rts_count = sizeof(mcu_uart_rts_list) / sizeof(mcu_periph_obj_t);
+    const uint32_t cts_count = sizeof(mcu_uart_cts_list) / sizeof(mcu_periph_obj_t);
+
+    if (rts != NULL) {
+      for (uint32_t i=0; i < rts_count; ++i) {
+        if (mcu_uart_rts_list[i].bank_idx == self->rx_pin->bank_idx) {
+          if (mcu_uart_rts_list[i].pin == rts) {
+            self->rts_pin = &mcu_uart_rts_list[i];
+            break;
+          }
+        }
+      }
+      if (self->rts_pin == NULL)
+        mp_raise_ValueError(translate("Selected RTS pin not valid"));
+    }
+
+    if (cts != NULL) {
+      for (uint32_t i=0; i < cts_count; ++i) {
+        if (mcu_uart_cts_list[i].bank_idx == self->rx_pin->bank_idx) {
+          if (mcu_uart_cts_list[i].pin == cts) {
+            self->cts_pin = &mcu_uart_cts_list[i];
+            break;
+          }
+        }
+      }
+      if (self->cts_pin == NULL)
+        mp_raise_ValueError(translate("Selected CTS pin not valid"));
+    }
+
+    self->uart = mcu_uart_banks[self->tx_pin->bank_idx - 1];
 
     config_periph_pin(self->rx_pin);
     config_periph_pin(self->tx_pin);
+    if (self->rts_pin)
+      config_periph_pin(self->rts_pin);
+    if (self->cts_pin)
+      config_periph_pin(self->cts_pin);
 
     lpuart_config_t config = { 0 };
     LPUART_GetDefaultConfig(&config);
@@ -125,10 +175,27 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     config.baudRate_Bps = self->baudrate;
     config.enableTx = self->tx_pin != NULL;
     config.enableRx = self->rx_pin != NULL;
+    config.enableRxRTS = self->rts_pin != NULL;
+    config.enableTxCTS = self->cts_pin != NULL;
+    if (self->rts_pin != NULL)
+      claim_pin(self->rts_pin->pin);
+    if (self->cts_pin != NULL)
+      claim_pin(self->cts_pin->pin);
 
     LPUART_Init(self->uart, &config, UART_CLOCK_FREQ);
 
-    claim_pin(self->tx_pin->pin);
+    // Before we init, setup RS485 direction pin
+    // ..unfortunately this isn't done by the driver library
+    uint32_t modir = (self->uart->MODIR) & ~(LPUART_MODIR_TXRTSPOL_MASK | LPUART_MODIR_TXRTSE_MASK);
+    if (rs485_dir != NULL) {
+      modir |= LPUART_MODIR_TXRTSE_MASK;
+      if (rs485_invert)
+        modir |= LPUART_MODIR_TXRTSPOL_MASK;
+    }
+    self->uart->MODIR = modir;
+
+    if (self->tx_pin != NULL)
+      claim_pin(self->tx_pin->pin);
 
     if (self->rx_pin != NULL) {
         ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
@@ -203,7 +270,14 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         LPUART_TransferAbortReceive(self->uart, &self->handle);
     }
 
-    return len - self->handle.rxDataSize;
+    // No data left, we got it all
+    if (self->handle.rxData == NULL) {
+        return len;
+    }
+
+    // The only place we can reliably tell how many bytes have been received is from the current
+    // wp in the handle (because the abort nukes rxDataSize, and reading it before abort is a race.)
+    return self->handle.rxData - data;
 }
 
 // Write characters.

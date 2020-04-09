@@ -137,11 +137,17 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
 
     nrfx_twim_config_t config = NRFX_TWIM_DEFAULT_CONFIG(scl->number, sda->number);
 
-    // change freq. only if it's less than the default 400K
-    if (frequency < 100000) {
-        config.frequency = NRF_TWIM_FREQ_100K;
-    } else if (frequency < 250000) {
+#if defined(TWIM_FREQUENCY_FREQUENCY_K1000)
+    if (frequency >= 1000000) {
+        config.frequency = NRF_TWIM_FREQ_1000K;
+    } else
+#endif
+    if (frequency >= 400000) {
+      config.frequency = NRF_TWIM_FREQ_400K;
+    } else if (frequency >= 250000) {
       config.frequency = NRF_TWIM_FREQ_250K;
+    } else {
+        config.frequency = NRF_TWIM_FREQ_100K;
     }
 
     self->scl_pin_number = scl->number;
