@@ -168,7 +168,11 @@ def main(collected_path, fn):
 
     # Print the replacements.
     for uncomp, comp in error_strings.items():
-        print('MP_MATCH_COMPRESSED("{}", "\\{:03o}{}")'.format(uncomp, _COMPRESSED_MARKER, comp))
+        if uncomp == comp:
+            prefix = ""
+        else:
+            prefix = "\\{:03o}".format(_COMPRESSED_MARKER)
+        print('MP_MATCH_COMPRESSED("{}", "{}{}")'.format(uncomp, prefix, comp))
 
     # Used to calculate the "true" length of the (escaped) compressed strings.
     def unescape(s):
