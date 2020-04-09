@@ -164,11 +164,21 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+    // Update the dirty area.
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = self->width;
+    self->dirty_area.y1 = 0;
+    self->dirty_area.y2 = self->height;
 
+    // Update our data
+    int32_t row_start;
+    uint32_t bytes_per_value = self->bits_per_value / 8;
     for (uint32_t x=0; x<self->width; x++) {
         for (uint32_t y=0; y<self->height; y++) {
-            int32_t row_start = y * self->stride;
-            uint32_t bytes_per_value = self->bits_per_value / 8;
+            row_start = y * self->stride;
             if (bytes_per_value < 1) {
                 uint32_t bit_position = (sizeof(size_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
                 uint32_t index = row_start + (x >> self->x_shift);
@@ -188,9 +198,4 @@ void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) 
             }
         }
     }
-
-    self->dirty_area.x1 = 0;
-    self->dirty_area.x2 = self->width;
-    self->dirty_area.y1 = 0;
-    self->dirty_area.y2 = self->height;
 }

@@ -178,9 +178,9 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|   .. method:: fill()
+//|   .. method:: fill(value)
 //|
-//|      Fills the bitmap.
+//|      Fills the bitmap with the supplied palette index value.
 //|
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
