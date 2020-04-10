@@ -74,6 +74,65 @@ STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
     }
 }
 
+STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_t rgb_pin_count, bool allow_inefficient) {
+    uint32_t port = clock_pin / 32;
+    uint32_t bit_mask = 1 << (clock_pin % 32);
+
+    for (uint8_t i = 0; i < rgb_pin_count; i++) {
+        uint32_t pin_port = rgb_pins[i] / 32;
+
+        if (pin_port != port) {
+            mp_raise_ValueError_varg(
+                translate("rgb_pins[%d] is not on the same port as clock"), i);
+        }
+
+        uint32_t pin_mask = 1 << (rgb_pins[i] % 32);
+        if (pin_mask & bit_mask) {
+            mp_raise_ValueError_varg(
+                translate("rgb_pins[%d] duplicates another pin assignment"), i);
+        }
+
+        bit_mask |= pin_mask;
+    }
+
+    if (allow_inefficient) {
+        return;
+    }
+
+    uint8_t byte_mask = 0;
+    if (bit_mask & 0x000000FF) byte_mask |= 0b0001;
+    if (bit_mask & 0x0000FF00) byte_mask |= 0b0010;
+    if (bit_mask & 0x00FF0000) byte_mask |= 0b0100;
+    if (bit_mask & 0xFF000000) byte_mask |= 0b1000;
+
+    uint8_t bytes_per_element = 0xff;
+    uint8_t ideal_bytes_per_element = (rgb_pin_count + 7) / 8;
+
+    switch(byte_mask) {
+        case 0b0001:
+        case 0b0010:
+        case 0b0100:
+        case 0b1000:
+            bytes_per_element = 1;
+            break;
+
+        case 0b0011:
+        case 0b1100:
+            bytes_per_element = 2;
+            break;
+
+        default:
+            bytes_per_element = 4;
+            break;
+    }
+
+    if (bytes_per_element != ideal_bytes_per_element) {
+        mp_raise_ValueError_varg(
+            translate("Pinout uses %d bytes per element, which consumes more than the ideal %d bytes.  If this cannot be avoided, pass allow_inefficient=True to the constructor"),
+            bytes_per_element, ideal_bytes_per_element);
+    }
+}
+
 //| :class:`~_protomatter.Protomatter` displays an in-memory framebuffer to an LED matrix.
 //|
 //| .. class:: Protomatter(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, oe_pin, *, doublebuffer=True, framebuffer=None)
@@ -140,6 +199,8 @@ STATIC mp_obj_t protomatter_protomatter_make_new(const mp_obj_type_t *type, size
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
+
+    preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
     if (framebuffer == mp_const_none) {
