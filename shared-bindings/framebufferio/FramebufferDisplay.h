@@ -42,7 +42,6 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         mp_obj_t framebuffer, uint16_t width, uint16_t height,
         uint16_t rotation, uint16_t color_depth,
         uint8_t bytes_per_cell,
-        const mcu_pin_obj_t* backlight_pin, mp_float_t brightness, bool auto_brightness,
         bool auto_refresh, uint16_t native_frames_per_second);
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t* self,
@@ -59,7 +58,7 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_rotation(framebufferio_
 void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_framebufferdisplay_obj_t* self, int rotation);
 
 bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t* self);
-void common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t* self, bool auto_brightness);
+bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t* self, bool auto_brightness);
 
 bool common_hal_framebufferio_framebufferdisplay_get_dither(framebufferio_framebufferdisplay_obj_t* self);
 void common_hal_framebufferio_framebufferdisplay_set_dither(framebufferio_framebufferdisplay_obj_t* self, bool dither);

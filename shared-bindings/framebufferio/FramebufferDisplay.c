@@ -67,7 +67,7 @@
 //|   :param int native_frames_per_second: Number of display refreshes per second
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_framebuffer, ARG_width, ARG_height, ARG_rotation, ARG_color_depth, ARG_bytes_per_cell, ARG_backlight_pin, ARG_brightness, ARG_auto_brightness, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
+    enum { ARG_framebuffer, ARG_width, ARG_height, ARG_rotation, ARG_color_depth, ARG_bytes_per_cell, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_framebuffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
@@ -75,9 +75,6 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
         { MP_QSTR_bytes_per_cell, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
-        { MP_QSTR_backlight_pin, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_brightness, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(1)} },
-        { MP_QSTR_auto_brightness, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
     };
@@ -86,10 +83,6 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
-
-    const mcu_pin_obj_t* backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
-
-    mp_float_t brightness = mp_obj_get_float(args[ARG_brightness].u_obj);
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
@@ -106,9 +99,6 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         rotation,
         args[ARG_color_depth].u_int,
         args[ARG_bytes_per_cell].u_int,
-        MP_OBJ_TO_PTR(backlight_pin),
-        brightness,
-        args[ARG_auto_brightness].u_bool,
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int
         );
@@ -260,7 +250,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_auto_brightness_o
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_auto_brightness(mp_obj_t self_in, mp_obj_t auto_brightness) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
 
-    common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
+    bool ok = common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, mp_obj_is_true(auto_brightness));
+    if (!ok) {
+        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+    }
 
     return mp_const_none;
 }

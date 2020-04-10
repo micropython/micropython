@@ -317,8 +317,9 @@ STATIC void protomatter_protomatter_deinit_void(mp_obj_t self_in) {
     protomatter_protomatter_deinit(self_in);
 }
 
-STATIC void protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_float_t value) {
+STATIC bool protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_float_t value) {
     common_hal_protomatter_protomatter_set_paused(self_in, value <= 0);
+    return true;
 }
 
 STATIC const framebuffer_p_t protomatter_protomatter_proto = {

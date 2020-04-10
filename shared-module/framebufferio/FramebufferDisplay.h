@@ -40,22 +40,15 @@
 typedef struct {
     mp_obj_base_t base;
     displayio_display_core_t core;
-    union {
-        digitalio_digitalinout_obj_t backlight_inout;
-        pulseio_pwmout_obj_t backlight_pwm;
-    };
     mp_obj_t framebuffer;
     const struct _framebuffer_p_t *framebuffer_protocol;
     mp_buffer_info_t bufinfo;
     uint64_t last_backlight_refresh;
     uint64_t last_refresh_call;
-    mp_float_t current_brightness;
     uint16_t native_frames_per_second;
     uint16_t native_ms_per_frame;
     bool auto_refresh;
     bool first_manual_refresh;
-    bool auto_brightness;
-    bool updating_backlight;
 } framebufferio_framebufferdisplay_obj_t;
 
 void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self);
@@ -69,14 +62,20 @@ mp_obj_t common_hal_framebufferio_framebufferdisplay_get_framebuffer(framebuffer
 typedef void (*framebuffer_get_bufinfo_fun)(mp_obj_t, mp_buffer_info_t *bufinfo);
 typedef void (*framebuffer_swapbuffers_fun)(mp_obj_t);
 typedef void (*framebuffer_deinit_fun)(mp_obj_t);
-typedef void (*framebuffer_set_brightness_fun)(mp_obj_t, mp_float_t);
+typedef bool (*framebuffer_set_brightness_fun)(mp_obj_t, mp_float_t);
+typedef mp_float_t (*framebuffer_get_brightness_fun)(mp_obj_t);
+typedef bool (*framebuffer_set_auto_brightness_fun)(mp_obj_t, bool);
+typedef bool (*framebuffer_get_auto_brightness_fun)(mp_obj_t);
 
 typedef struct _framebuffer_p_t {
     MP_PROTOCOL_HEAD // MP_QSTR_protocol_framebuffer
     framebuffer_get_bufinfo_fun get_bufinfo;
     framebuffer_swapbuffers_fun swapbuffers;
     framebuffer_deinit_fun deinit;
+    framebuffer_get_brightness_fun get_brightness;
     framebuffer_set_brightness_fun set_brightness;
+    framebuffer_get_auto_brightness_fun get_auto_brightness;
+    framebuffer_set_auto_brightness_fun set_auto_brightness;
 } framebuffer_p_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_FRAMEBUFFERDISPLAY_H

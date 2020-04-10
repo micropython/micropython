@@ -45,7 +45,6 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         mp_obj_t framebuffer, uint16_t width, uint16_t height,
         uint16_t rotation, uint16_t color_depth,
         uint8_t bytes_per_cell,
-        const mcu_pin_obj_t* backlight_pin, mp_float_t brightness, bool auto_brightness,
         bool auto_refresh, uint16_t native_frames_per_second) {
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
@@ -58,32 +57,12 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     displayio_display_core_construct(&self->core, NULL, width, height, ram_width, ram_height, 0, 0, rotation,
         color_depth, false, false, bytes_per_cell, false, false);
 
-    self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;
 
     supervisor_start_terminal(width, height);
-
-    // Always set the backlight type in case we're reusing memory.
-    self->backlight_inout.base.type = &mp_type_NoneType;
-    if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
-        pwmout_result_t result = common_hal_pulseio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
-        if (result != PWMOUT_OK) {
-            self->backlight_inout.base.type = &digitalio_digitalinout_type;
-            common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
-            common_hal_never_reset_pin(backlight_pin);
-        } else {
-            self->backlight_pwm.base.type = &pulseio_pwmout_type;
-            common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
-        }
-    }
-    if (!self->auto_brightness && (self->framebuffer_protocol->set_brightness != NULL || self->backlight_inout.base.type != &mp_type_NoneType)) {
-        common_hal_framebufferio_framebufferdisplay_set_brightness(self, brightness);
-    } else {
-        self->current_brightness = -1.0;
-    }
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
@@ -104,33 +83,31 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_height(framebufferio_fr
 }
 
 bool common_hal_framebufferio_framebufferdisplay_get_auto_brightness(framebufferio_framebufferdisplay_obj_t* self) {
-    return self->auto_brightness;
+    if (self->framebuffer_protocol->get_auto_brightness) {
+        return self->framebuffer_protocol->get_auto_brightness(self->framebuffer);
+    }
+    return true;
 }
 
-void common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t* self, bool auto_brightness) {
-    self->auto_brightness = auto_brightness;
+bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebufferio_framebufferdisplay_obj_t* self, bool auto_brightness) {
+    if (self->framebuffer_protocol->set_auto_brightness) {
+        return self->framebuffer_protocol->set_auto_brightness(self->framebuffer, auto_brightness);
+    }
+    return false;
 }
 
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t* self) {
-    return self->current_brightness;
+    if (self->framebuffer_protocol->set_brightness) {
+        return self->framebuffer_protocol->get_brightness(self->framebuffer);
+    }
+    return -1;
 }
 
 bool common_hal_framebufferio_framebufferdisplay_set_brightness(framebufferio_framebufferdisplay_obj_t* self, mp_float_t brightness) {
-    self->updating_backlight = true;
     bool ok = false;
     if (self->framebuffer_protocol->set_brightness) {
         self->framebuffer_protocol->set_brightness(self->framebuffer, brightness);
         ok = true;
-    } else if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
-        common_hal_pulseio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t) (0xffff * brightness));
-        ok = true;
-    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
-        common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, brightness > 0.99);
-        ok = true;
-    }
-    self->updating_backlight = false;
-    if (ok) {
-        self->current_brightness = brightness;
     }
     return ok;
 }
@@ -295,17 +272,8 @@ void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_
 }
 
 STATIC void _update_backlight(framebufferio_framebufferdisplay_obj_t* self) {
-    if (!self->auto_brightness || self->updating_backlight) {
-        return;
-    }
-    if (supervisor_ticks_ms64() - self->last_backlight_refresh < 100) {
-        return;
-    }
     // TODO(tannewt): Fade the backlight based on it's existing value and a target value. The target
     // should account for ambient light when possible.
-    common_hal_framebufferio_framebufferdisplay_set_brightness(self, 1.0);
-
-    self->last_backlight_refresh = supervisor_ticks_ms64();
 }
 
 void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self) {
@@ -318,18 +286,11 @@ void framebufferio_framebufferdisplay_background(framebufferio_framebufferdispla
 
 void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
     release_display_core(&self->core);
-    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
-        common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
-        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
-    } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
-        common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
-    }
     self->framebuffer_protocol->deinit(self->framebuffer);
 }
 
 void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
     self->auto_refresh = true;
-    self->auto_brightness = true;
     common_hal_framebufferio_framebufferdisplay_show(self, NULL);
 }
 
