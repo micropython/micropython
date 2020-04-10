@@ -33,6 +33,11 @@ CFLAGS += -fpic -fno-common
 CFLAGS += -U _FORTIFY_SOURCE # prevent use of __*_chk libc functions
 #CFLAGS += -fdata-sections -ffunction-sections
 
+ifneq ($(PORT),)
+CFLAGS += -I$(MPY_DIR)/ports/$(PORT)
+CFLAGS += -DMICROPY_PORT_FUN_TABLE
+endif
+
 MPY_CROSS_FLAGS += -march=$(ARCH)
 
 SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))))
@@ -137,7 +142,7 @@ $(BUILD)/%.mpy: %.py
 # Build native .mpy from object files
 $(BUILD)/$(MOD).native.mpy: $(SRC_O)
 	$(ECHO) "LINK $<"
-	$(Q)$(MPY_LD) --arch $(ARCH) --qstrs $(CONFIG_H) -o $@ $^
+	$(Q)$(MPY_LD) --arch $(ARCH) --qstrs $(CONFIG_H) $(PORT_FUN) -o $@ $^
 
 # Build final .mpy from all intermediate .mpy files
 $(MOD).mpy: $(BUILD)/$(MOD).native.mpy $(SRC_MPY)

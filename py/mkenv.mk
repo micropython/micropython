@@ -6,8 +6,8 @@ endif
 # invoked) to the top of the tree. $(lastword $(MAKEFILE_LIST)) returns
 # the name of this makefile relative to where make was invoked.
 #
-# We assume that this file is in the py directory so we use $(dir ) twice
-# to get to the top of the tree.
+# Note that the construction of TOP fails if there is a space in the path to this makefile,
+# in that case define TOP explicitly in the parent makefile or environment.
 
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 TOP := $(patsubst %/py/mkenv.mk,%,$(THIS_MAKEFILE))

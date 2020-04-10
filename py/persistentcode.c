@@ -36,6 +36,10 @@
 #include "py/objstr.h"
 #include "py/mpthread.h"
 
+#if MICROPY_PORT_FUN_TABLE
+#include "portnativeglue.h"
+#endif
+
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/smallint.h"
@@ -189,6 +193,13 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
     #endif
 }
 
+#if MICROPY_PORT_FUN_TABLE
+// mp_port_fun_does_not_exist is used for mp_port_fun_table slots whose function doesn't exist
+NORETURN void mp_port_fun_does_not_exist(void) {
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("port fun unavailable"));
+}
+#endif
+
 void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
     // Relocate native code
     reloc_info_t *ri = ri_in;
@@ -225,6 +236,17 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
         } else if (op == 6) {
             // Destination is mp_fun_table itself
             dest = (uintptr_t)&mp_fun_table;
+        } else if (op == 126) {
+            #if MICROPY_PORT_FUN_TABLE
+            size_t index = read_uint(ri->reader, NULL);
+            if (index < mp_port_fun_table_sz) {
+                dest = ((uintptr_t *)&mp_port_fun_table)[index];
+            } else {
+                dest = (uintptr_t)&mp_port_fun_does_not_exist;
+            }
+            #else
+            mp_raise_ValueError(MP_ERROR_TEXT("no mp_port_fun_table"));
+            #endif
         } else {
             // Destination is an entry in mp_fun_table
             dest = ((uintptr_t *)&mp_fun_table)[op - 7];
