@@ -1,0 +1,24 @@
+version: 1
+workers:
+- name: gohci-u3
+  checks:
+  - cmd:
+    - /home/gohci/repo-info.sh
+  - cmd:
+    - /home/gohci/esp32-build.sh
+    - 4.0
+  - cmd:
+    - /home/gohci/esp32-full.sh
+    - 4.0
+  - cmd:
+    - /home/gohci/stm32-build.sh
+  - cmd:
+    - /home/gohci/stm32-full.sh
+  - cmd:
+    - /home/gohci/esp32-build.sh
+    - 3.3
+  - cmd:
+    - /home/gohci/esp32-full.sh
+    - 3.3
+  - cmd:
+    - /home/gohci/repo-save.sh
