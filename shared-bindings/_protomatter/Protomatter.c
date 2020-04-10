@@ -332,7 +332,7 @@ STATIC const framebuffer_p_t protomatter_protomatter_proto = {
 STATIC mp_int_t protomatter_protomatter_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     // a readonly framebuffer would be unusual but not impossible
-    if((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
+    if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
         return 1;
     }
     *bufinfo = self->bufinfo;
