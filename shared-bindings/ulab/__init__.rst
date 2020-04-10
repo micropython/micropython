@@ -126,7 +126,7 @@ Array type codes
 
    Type code for unsigned integers in the range 0 .. 255 inclusive, like the 'H' typecode of `array.array`
 
-.. attribute:: uint8
+.. attribute:: uint16
 
    Type code for unsigned integers in the range 0 .. 65535 inclusive, like the 'h' typecode of `array.array`
 
