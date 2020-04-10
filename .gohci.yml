@@ -1,0 +1,7 @@
+version: 1
+workers:
+- name: esp32
+- checks:
+  - cmd:
+    - echo
+    - hello
