@@ -309,10 +309,12 @@ STATIC void protomatter_protomatter_get_bufinfo(mp_obj_t self_in, mp_buffer_info
     *bufinfo = self->bufinfo;
 }
 
+// This version exists so that the return value of the function can be none, matching the protocol
 STATIC void protomatter_protomatter_swapbuffers_void(mp_obj_t self_in) {
     protomatter_protomatter_swapbuffers(self_in);
 }
 
+// This version exists so that the return value of the function can be none, matching the protocol
 STATIC void protomatter_protomatter_deinit_void(mp_obj_t self_in) {
     protomatter_protomatter_deinit(self_in);
 }
