@@ -227,9 +227,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(ppp_delete_obj, ppp_delete);
 
 STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
     ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    ip_addr_t dns;
     if (n_args == 1) {
         // get
+        const ip_addr_t *dns;
         if (self->pcb != NULL) {
             dns = dns_getserver(0);
             struct netif *pppif = ppp_netif(self->pcb);
@@ -237,7 +237,7 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
                 netutils_format_ipv4_addr((uint8_t *)&pppif->ip_addr, NETUTILS_BIG),
                 netutils_format_ipv4_addr((uint8_t *)&pppif->gw, NETUTILS_BIG),
                 netutils_format_ipv4_addr((uint8_t *)&pppif->netmask, NETUTILS_BIG),
-                netutils_format_ipv4_addr((uint8_t *)&dns, NETUTILS_BIG),
+                netutils_format_ipv4_addr((uint8_t *)dns, NETUTILS_BIG),
             };
             return mp_obj_new_tuple(4, tuple);
         } else {
@@ -245,6 +245,7 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
             return mp_obj_new_tuple(4, tuple);
         }
     } else {
+        ip_addr_t dns;
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns.u_addr.ip4, NETUTILS_BIG);
