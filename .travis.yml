@@ -238,8 +238,6 @@ jobs:
     - stage: test
       env: NAME="esp32 ESP-IDFv3 port build"
       install:
-        - sudo apt-get install python3-pip
-        - sudo pip3 install 'pyparsing<2.4'
         - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar zxf -
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
