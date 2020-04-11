@@ -68,7 +68,9 @@ Additional functions
     created from it.
 
     If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
-    this should be trapped by the caller.
+    this should be trapped by the caller.  The task receives
+    ``asyncio.CancelledError`` which may be ignored.  Cleanup code may be run by
+    trapping the exception or via ``try ... finally``.
 
     Returns the return value of *awaitable*.
 
@@ -96,8 +98,9 @@ class Task
 
 .. method:: Task.cancel()
 
-    Cancel the task by injecting a ``CancelledError`` into it.  The task may
-    or may not ignore this exception.
+    Cancel the task by injecting ``asyncio.CancelledError`` into it.  The task may
+    ignore this exception.  Cleanup code may be run by trapping it, or via
+    ``try ... finally``.
 
 class Event
 -----------
