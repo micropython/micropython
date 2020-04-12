@@ -135,3 +135,4 @@ typedef long mp_off_t;
 #endif
 
 #define NORETURN
+
