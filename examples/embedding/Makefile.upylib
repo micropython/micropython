@@ -173,6 +173,8 @@ else
 CROSS_COMPILE_HOST =
 endif
 
+CLEAN_EXTRA = $(LIBMICROPYTHON)
+
 deplibs: libffi axtls
 
 # install-exec-recursive & install-data-am targets are used to avoid building
