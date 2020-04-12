@@ -27,6 +27,7 @@
 // options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#define MICROPY_ENABLE_DYNRUNTIME   (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (0)
 #define MICROPY_STACK_CHECK         (0)
@@ -132,3 +133,6 @@ typedef long mp_off_t;
 #else
 #include <alloca.h>
 #endif
+
+// Define some macroses
+#define NORETURN

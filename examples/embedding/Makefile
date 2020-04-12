@@ -6,3 +6,8 @@ hello-embed: hello-embed.o -lmicropython
 
 -lmicropython:
 	$(MAKE) -f $(MPTOP)/examples/embedding/Makefile.upylib MPTOP=$(MPTOP)
+
+clean:
+	rm -rf build
+	rm -f libmicropython.o
+	rm -f hello-embed.o

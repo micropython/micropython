@@ -19,6 +19,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
+CWARN += -Wno-return-type -Wno-maybe-uninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
@@ -133,7 +134,6 @@ SRC_C = $(addprefix ports/unix/,\
 	gccollect.c \
 	unix_mphal.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduselect.c \
@@ -141,6 +141,10 @@ SRC_C = $(addprefix ports/unix/,\
 	coverage.c \
 	fatfs_port.c \
 	$(SRC_MOD) \
+	)
+
+SRC_C += $(addprefix extmod/,\
+	vfs_posix_file.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
