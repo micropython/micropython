@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2020 Philipp Ebensberger
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
-#define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_MIMXRT_LED_H
+#define MICROPY_INCLUDED_MIMXRT_LED_H
 
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
-#define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
+typedef enum {
+    MACHINE_BOARD_LED = 1,
+} machine_led_t;
 
-extern volatile uint32_t systick_ms;
+void led_init(void);
+void led_state(machine_led_t led, int state);
+void led_toggle(machine_led_t led);
+void led_debug(int value, int delay);
 
-void mp_hal_set_interrupt_char(int c);
+extern const mp_obj_type_t machine_led_type;
 
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
-}
-
-static inline mp_uint_t mp_hal_ticks_us(void) {
-    return systick_ms * 1000;
-}
-
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
-}
-
-#endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+#endif // MICROPY_INCLUDED_MIMXRT_LED_H

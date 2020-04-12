@@ -45,8 +45,6 @@ volatile uint32_t systick_ms = 0;
 
 const uint8_t dcd_data[] = { 0x00 };
 
-void board_led_write(bool state);
-
 void board_init(void) {
     // Init clock
     BOARD_BootClockRUN();
@@ -57,14 +55,6 @@ void board_init(void) {
 
     // 1ms tick timer
     SysTick_Config(SystemCoreClock / 1000);
-
-    // LED
-    IOMUXC_SetPinMux(MICROPY_HW_LED_PINMUX, 0U);
-    IOMUXC_SetPinConfig(MICROPY_HW_LED_PINMUX, 0x10B0U);
-
-    gpio_pin_config_t led_config = { kGPIO_DigitalOutput, 0, kGPIO_NoIntmode };
-    GPIO_PinInit(MICROPY_HW_LED_PORT, MICROPY_HW_LED_PIN, &led_config);
-    board_led_write(true);
 
     // ------------- USB0 ------------- //
 
@@ -93,10 +83,6 @@ void board_init(void) {
     // USB1
     //  CLOCK_EnableUsbhs1PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     //  CLOCK_EnableUsbhs1Clock(kCLOCK_Usb480M, 480000000U);
-}
-
-void board_led_write(bool state) {
-    GPIO_PinWrite(MICROPY_HW_LED_PORT, MICROPY_HW_LED_PIN, state ? LED_STATE_ON : (1 - LED_STATE_ON));
 }
 
 void SysTick_Handler(void) {

@@ -33,6 +33,7 @@
 #include "lib/utils/gchelper.h"
 #include "lib/utils/pyexec.h"
 #include "tusb.h"
+#include "led.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -41,6 +42,10 @@ void board_init(void);
 int main(void) {
     board_init();
     tusb_init();
+    led_init();
+
+    // Enable board LED after initialization
+    led_state(MACHINE_BOARD_LED, 1U);
 
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);

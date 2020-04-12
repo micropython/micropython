@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2020 Jim Mussared
+ * Copyright (c) 2020 Philipp Ebensberger
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
-#define MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
 
-#include <stdint.h>
+// NOTE: pins.h shall only be included in in pin.h
+// hence no include guards are needed since they will be provided by pin.h
 
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
-#define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
-
-extern volatile uint32_t systick_ms;
-
-void mp_hal_set_interrupt_char(int c);
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_ms;
-}
-
-static inline mp_uint_t mp_hal_ticks_us(void) {
-    return systick_ms * 1000;
-}
-
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
-}
-
-#endif // MICROPY_INCLUDED_MIMXRT_MPHALPORT_H
+extern pin_obj_t GPIO_11;
