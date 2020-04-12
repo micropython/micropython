@@ -64,13 +64,13 @@ Additional functions
 .. function:: wait_for(awaitable, timeout)
 
     Wait for the *awaitable* to complete, but cancel it if it takes longer
-    that *timeout* seconds.  If *awaitable* is not a task then a task will be
+    than *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
 
     If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
     this should be trapped by the caller.  The task receives
-    ``asyncio.CancelledError`` which may be ignored.  Cleanup code may be run by
-    trapping the exception or via ``try ... finally``.
+    ``asyncio.CancelledError`` which may be ignored or trapped using ``try...except``
+    or ``try...finally`` to run cleanup code.
 
     Returns the return value of *awaitable*.
 
