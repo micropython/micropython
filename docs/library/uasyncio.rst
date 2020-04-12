@@ -204,6 +204,12 @@ TCP stream connections
 
     This is a coroutine.
 
+.. method:: Stream.readexactly(n)
+
+    Read exactly *n* bytes and return them.
+
+    This is a coroutine.
+
 .. method:: Stream.readline()
 
     Read a line and return it.
