@@ -1,4 +1,6 @@
 MPTOP = ../..
+include $(MPTOP)/py/mkenv.mk
+
 CFLAGS = -std=c99 -I. -I$(MPTOP) -DNO_QSTR
 LDFLAGS = -L.
 
@@ -8,6 +10,9 @@ hello-embed: hello-embed.o -lmicropython
 	$(MAKE) -f $(MPTOP)/examples/embedding/Makefile.upylib MPTOP=$(MPTOP)
 
 clean:
-	rm -rf build
-	rm -f libmicropython.o
-	rm -f hello-embed.o
+	$(MAKE) -f $(MPTOP)/examples/embedding/Makefile.upylib MPTOP=$(MPTOP) clean
+	$(RM) -f libmicropython.a
+	$(RM) -f hello-embed.o
+	$(RM) -f hello-embed
+
+all: hello-embed

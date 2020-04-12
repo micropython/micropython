@@ -134,5 +134,4 @@ typedef long mp_off_t;
 #include <alloca.h>
 #endif
 
-// Define some macroses
 #define NORETURN
