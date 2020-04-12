@@ -30,6 +30,14 @@ class Stream:
         yield core._io_queue.queue_read(self.s)
         return self.s.read(n)
 
+    async def readexactly(self, n):
+        l = b""
+        while len(l) < n:
+            yield core._io_queue.queue_read(self.s)
+            l2 = self.s.read(n - len(l))
+            l += l2
+        return l
+
     async def readline(self):
         l = b""
         while True:
