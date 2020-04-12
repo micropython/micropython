@@ -3,6 +3,7 @@
 
 #define BOARD_FLASH_SIZE (2 * 1024 * 1024)
 
-#define MICROPY_HW_LED_PINMUX   IOMUXC_GPIO_B0_03_GPIO2_IO03 // D13
-#define MICROPY_HW_LED_PORT     GPIO2
-#define MICROPY_HW_LED_PIN      3
+// Teensy 4.0 has 1 board LED
+#define MICROPY_HW_LED1_PIN (GPIO_B0_03)
+#define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
