@@ -6,19 +6,23 @@ from . import core
 
 async def wait_for(aw, timeout):
     aw = core._promote_to_task(aw)
+    can = False
     if timeout is None:
         return await aw
 
     def cancel(aw, timeout):
         await core.sleep(timeout)
+        nonlocal can
+        can=True
         aw.cancel()
 
     cancel_task = core.create_task(cancel(aw, timeout))
     try:
         ret = await aw
     except core.CancelledError:
-        # Ignore CancelledError from aw, it's probably due to timeout
-        pass
+        if not can:
+            raise # Raise CancelledError if wait_for itself got cancelled
+        # Ignore CancelledError from aw because it is due to timeout
     finally:
         # Cancel the "cancel" task if it's still active (optimisation instead of cancel_task.cancel())
         if cancel_task.coro is not None:
