@@ -47,7 +47,7 @@ mp_uint_t mp_verbose_flag = 0;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
-STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
+STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
     (void)dummy;
