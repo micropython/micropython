@@ -259,25 +259,20 @@ typedef union _mp_float_union_t {
 
 /** ROM string compression *************/
 
+#if MICROPY_ROM_TEXT_COMPRESSION
+
 #ifdef NO_QSTR
 
-// QSTR extraction sets NO_QSTR.
+// Compression enabled but doing QSTR extraction.
 // So leave MP_COMPRESSED_ROM_TEXT in place for makeqstrdefs.py / makecompresseddata.py to find them.
-
-// However, dynamic native modules also set NO_QSTR, so provide a dummy implementation.
-#if MICROPY_ENABLE_DYNRUNTIME
-typedef const char *mp_rom_error_text_t;
-#define MP_COMPRESSED_ROM_TEXT(x) x
-#endif
 
 #else
 
-#if MICROPY_ROM_TEXT_COMPRESSION
+// Compression enabled and doing a regular build.
+// Map MP_COMPRESSED_ROM_TEXT to the compressed strings.
 
 // Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
 typedef struct {} *mp_rom_error_text_t;
-
-// Regular build -- map MP_COMPRESSED_ROM_TEXT to the compressed strings.
 
 #include <string.h>
 
@@ -297,15 +292,16 @@ inline __attribute__((always_inline)) const char *MP_COMPRESSED_ROM_TEXT(const c
     return msg;
 }
 
+#endif
+
 #else
 
 // Compression not enabled, just make it a no-op.
+
 typedef const char *mp_rom_error_text_t;
 #define MP_COMPRESSED_ROM_TEXT(x) x
 
 #endif // MICROPY_ROM_TEXT_COMPRESSION
-
-#endif // NO_QSTR
 
 // Might add more types of compressed text in the future.
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.

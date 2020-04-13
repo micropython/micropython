@@ -7,19 +7,18 @@ endif
 # Extra deps that need to happen before object compilation.
 OBJ_EXTRA_ORDER_DEPS =
 
+ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
+# If compression is enabled, trigger the build of compressed.data.h...
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
+# ...and enable the MP_COMPRESSED_ROM_TEXT macro (used by MP_ERROR_TEXT).
+CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
+endif
+
 # QSTR generation uses the same CFLAGS, with these modifications.
 # Note: := to force evalulation immediately.
 QSTR_GEN_CFLAGS := $(CFLAGS)
 QSTR_GEN_CFLAGS += -DNO_QSTR
 QSTR_GEN_CFLAGS += -I$(BUILD)/tmp
-
-ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
-# If compression is enabled, trigger the build of compressed.data.h...
-OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
-# ...and enable the MP_COMPRESSED_ROM_TEXT macro (used by MP_ERROR_TEXT).
-# Note, this doesn't get added to the QSTR_GEN_CFLAGS.
-CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
-endif
 
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source

@@ -38,8 +38,9 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
-// Extract the MP_MAX_UNCOMPRESSED_TEXT_LEN macro from "genhdr/compressed.data.h"
-#if MICROPY_ROM_TEXT_COMPRESSION
+#if MICROPY_ROM_TEXT_COMPRESSION && !defined(NO_QSTR)
+// Extract the MP_MAX_UNCOMPRESSED_TEXT_LEN macro from "genhdr/compressed.data.h".
+// Only need this if compression enabled and in a regular build (i.e. not during QSTR extraction).
 #define MP_MATCH_COMPRESSED(...) // Ignore
 #define MP_COMPRESSED_DATA(...) // Ignore
 #include "genhdr/compressed.data.h"
