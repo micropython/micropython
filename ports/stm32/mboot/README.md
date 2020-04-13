@@ -132,7 +132,8 @@ are located and what filename to program.  The elements to use are:
 
 `u32` means unsigned 32-bit little-endian integer.
 
-The firmware to load must be a gzip'd DfuSe file (.dfu.gz).
+The firmware to load must be a gzip'd DfuSe file (.dfu.gz) and stored within a
+FAT formatted partition.
 
 The provided fwupdate.py script contains helper functions to call into Mboot
 with the correct data, and also to update Mboot itself.
