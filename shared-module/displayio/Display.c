@@ -69,6 +69,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
+    self->backlight_on_high = backlight_on_high;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;

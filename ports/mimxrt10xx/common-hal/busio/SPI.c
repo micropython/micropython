@@ -210,6 +210,18 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+
+    LPSPI_Enable(self->spi, false);
+    uint32_t tcrPrescaleValue;
+    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    LPSPI_Enable(self->spi, true);
+
+    if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
+        (phase == common_hal_busio_spi_get_phase(self)) &&
+        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1) {
+        return true;
+    }
+
     lpspi_master_config_t config = { 0 };
     LPSPI_MasterGetDefaultConfig(&config);
 
@@ -220,11 +232,6 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
-
-    LPSPI_Enable(self->spi, false);
-    uint32_t tcrPrescaleValue;
-    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, config.baudRate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
-    LPSPI_Enable(self->spi, true);
 
     return true;
 }

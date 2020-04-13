@@ -17,9 +17,9 @@ try:
 except TypeError:
     print("TypeError")
 
-# overflow because rhs of >> is being converted to machine int
+# overflow because arg of bytearray is being converted to machine int
 try:
-    1 >> i
+    bytearray(i)
 except OverflowError:
     print('OverflowError')
 

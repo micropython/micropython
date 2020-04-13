@@ -26,8 +26,42 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
 
-	*(.itcm.*)         /* Instruction Tightly Coupled Memory */
-	*(.dtcm_data.*)    /* Data Tightly Coupled Memory */
+        *(.itcm.*)         /* Instruction Tightly Coupled Memory */
+        *(.dtcm_data.*)    /* Data Tightly Coupled Memory */
+
+        *(.text.cmp_lfn)
+        *(.text.qstr_find_strn)
+        *(.text.dcd_edpt_xfer)
+        *(.text.pop_rule)
+        *(.text.ff_wtoupper)
+        *(.text.dir_find)
+        *(.text.push_rule)
+        *(.text.csr_writel)
+        *(.text.csr_readl)
+        *(.text.timer0_ev_pending_write)
+        *(.text.autoreload_tick)
+        *(.text.filesystem_tick)
+        *(.text.usb_background)
+
+        *(.text.dcd_*)
+        *(.text.tud_control_*)
+        *(.text.tud_cdc_n_write_flush)
+        *(.text.tud_task)
+        *(.text.tu_edpt_dir)
+        *(.text.tu_fifo_empty)
+        *(.text.usbd_edpt_busy)
+        *(.text.irq_getmask)
+        *(.text.irq_setmask)
+        *(.text.irq_pending)
+        *(.text._osal_q_lock)
+        *(.text.osal_queue_receive)
+
+        *(.text.mp_obj_get_type)
+        *(.text.mp_parse)
+        *(.text.parse_compile_execute)
+        *(.text.mp_map_lookup)
+        *(.text.mp_execute_bytecode) /* Note: this function is 7kb */
+
         *(.ramtext)        /* .text* sections (code) */
         *(.ramtext*)       /* .text* sections (code) */
         *(.data)           /* .data sections */
@@ -63,7 +97,7 @@ SECTIONS
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
         *(.bss)
         *(.bss*)
-	*(.dtcm_bss.*)     /* Data Tightly Coupled Memory */
+        *(.dtcm_bss.*)     /* Data Tightly Coupled Memory */
         *(.sbss)
         *(.sbss*)
         *(COMMON)
