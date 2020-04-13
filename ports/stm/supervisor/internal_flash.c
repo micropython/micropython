@@ -234,7 +234,7 @@ void supervisor_flash_flush(void) {
     }
 }
 
-static int32_t convert_block_to_flash_addr(uint32_t block) {
+static uint32_t convert_block_to_flash_addr(uint32_t block) {
     if (0 <= block && block < INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS) {
         // a block in partition 1
         return INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
@@ -244,15 +244,30 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-    // Must write out anything in cache before trying to read.
-    supervisor_flash_flush();
-
     int32_t src = convert_block_to_flash_addr(block);
     if (src == -1) {
         // bad block number
         return false;
     }
-    memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
+
+    // Determine whether the read is contained within the sector
+    uint32_t sector_size;
+    uint32_t sector_start_addr;
+    flash_get_sector_info(src, &sector_start_addr, &sector_size);
+    // Count how many blocks are left in the sector
+    uint32_t count = (sector_size - (src - sector_start_addr))/FILESYSTEM_BLOCK_SIZE;
+    count = MIN(num_blocks, count);
+
+    if (count < num_blocks && _cache_flash_addr == sector_start_addr) {
+        // Read is contained in the cache, so just read cache
+        memcpy(dest, (_flash_cache + (src-sector_start_addr)), FILESYSTEM_BLOCK_SIZE*num_blocks);
+    } else { 
+        // The read spans multiple sectors or is in another sector
+        // Must write out anything in cache before trying to read.
+        supervisor_flash_flush();
+        memcpy(dest, (uint8_t*) src, FILESYSTEM_BLOCK_SIZE*num_blocks);
+    }
+
     return 0; // success
 }
 
@@ -271,7 +286,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
         uint32_t sector_start_addr;
         flash_get_sector_info(dest, &sector_start_addr, &sector_size);
 
-        // Fail for any sector outside the 16k ones for now
+        // Fail for any sector outside what's supported by the cache
         if (sector_size > sizeof(_flash_cache)) {
             reset_into_safe_mode(FLASH_WRITE_FAIL);
         }
