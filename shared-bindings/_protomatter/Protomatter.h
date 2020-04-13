@@ -54,5 +54,6 @@ void protomatter_protomatter_collect_ptrs(protomatter_protomatter_obj_t*);
 void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_t* self, mp_obj_t framebuffer);
 void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t* self, bool paused);
 bool common_hal_protomatter_protomatter_get_paused(protomatter_protomatter_obj_t* self);
+void common_hal_protomatter_protomatter_refresh(protomatter_protomatter_obj_t* self);
 
 #endif

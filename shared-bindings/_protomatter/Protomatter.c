@@ -135,7 +135,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
 //| :class:`~_protomatter.Protomatter` displays an in-memory framebuffer to an LED matrix.
 //|
-//| .. class:: Protomatter(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, oe_pin, *, doublebuffer=True, framebuffer=None)
+//| .. class:: Protomatter(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, *, doublebuffer=True, framebuffer=None)
 //|
 //|   Create a Protomatter object with the given attributes.  The height of
 //|   the display is determined by the number of rgb and address pins:
@@ -153,12 +153,17 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|   microcontroller board.  For instance, the Feather M4 Express works
 //|   together with the RGB Matrix Feather.
 //|
-//|   When specified as True, double buffering can reduce some flickering of
-//|   the matrix; however, this increases memory usage.
+//|   The framebuffer is in "RGB565" format.
 //|
-//|   The framebuffer is in "RGB565" format.  If a framebuffer is not
-//|   passed in, one is allocated and initialized to all black.  To update
-//|   the content, modify the framebuffer and call swapbuffers.
+//|   "RGB565" means that it is organized as a series of 16-bit numbers
+//|   where the highest 5 bits are interpreted as red, the next 6 as
+//|   green, and the final 5 as blue.  The object can be any buffer, but
+//|   `array.array` and `ulab.array` objects are most often useful.
+//|   To update the content, modify the framebuffer and call refresh.
+//|
+//|   If a framebuffer is not passed in, one is allocated and initialized
+//|   to all black.  In any case, the framebuffer can be retrieved
+//|   by passing the protomatter object to memoryview().
 //|
 //|   If doublebuffer is False, some memory is saved, but the display may
 //|   flicker during updates.
@@ -166,10 +171,13 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|   If a framebuffer is not passed in, one is allocated internally.  To
 //|   retrieve it, pass the protomatter object to memoryview().
 //|
+//|   A Protomatter framebuffer is often used in conjunction with a
+//|   `framebufferio.FramebufferDisplay`.
+//|
 
 STATIC mp_obj_t protomatter_protomatter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_bit_depth, ARG_rgb_list, ARG_addr_list,
-        ARG_clock_pin, ARG_latch_pin, ARG_oe_pin, ARG_doublebuffer, ARG_framebuffer };
+        ARG_clock_pin, ARG_latch_pin, ARG_output_enable_pin, ARG_doublebuffer, ARG_framebuffer };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED },
         { MP_QSTR_bit_depth, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -177,7 +185,7 @@ STATIC mp_obj_t protomatter_protomatter_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_addr_pins, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_clock_pin, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_latch_pin, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_oe_pin, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_output_enable_pin, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_doublebuffer, MP_ARG_BOOL, { .u_bool = true } },
         { MP_QSTR_framebuffer, MP_ARG_OBJ, { .u_obj = mp_const_none } },
     };
@@ -195,7 +203,7 @@ STATIC mp_obj_t protomatter_protomatter_make_new(const mp_obj_type_t *type, size
     uint8_t addr_pins[MP_ARRAY_SIZE(self->addr_pins)];
     uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj);
     uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj);
-    uint8_t oe_pin = validate_pin(args[ARG_oe_pin].u_obj);
+    uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
@@ -214,14 +222,14 @@ STATIC mp_obj_t protomatter_protomatter_make_new(const mp_obj_type_t *type, size
         args[ARG_bit_depth].u_int,
         rgb_count, rgb_pins,
         addr_count, addr_pins,
-        clock_pin, latch_pin, oe_pin,
+        clock_pin, latch_pin, output_enable_pin,
         args[ARG_doublebuffer].u_bool,
         framebuffer, NULL);
 
     claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
     claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
     claim_and_never_reset_pin(args[ARG_clock_pin].u_obj);
-    claim_and_never_reset_pin(args[ARG_oe_pin].u_obj);
+    claim_and_never_reset_pin(args[ARG_output_enable_pin].u_obj);
     claim_and_never_reset_pin(args[ARG_latch_pin].u_obj);
 
     return MP_OBJ_FROM_PTR(self);
@@ -247,79 +255,80 @@ static void check_for_deinit(protomatter_protomatter_obj_t *self) {
     }
 }
 
-//|   .. attribute:: paused
+//|   .. attribute:: brightness
 //|
-//|     When paused, the matrix is not driven and all its LEDs are unlit.
+//|     In the current implementation, 0.0 turns the display off entirely
+//|     and any other value up to 1.0 turns the display on fully.
 //|
-STATIC mp_obj_t protomatter_protomatter_get_paused(mp_obj_t self_in) {
+STATIC mp_obj_t protomatter_protomatter_get_brightness(mp_obj_t self_in) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    return mp_obj_new_bool(common_hal_protomatter_protomatter_get_paused(self));
+    return mp_obj_new_float(common_hal_protomatter_protomatter_get_paused(self)? 0.0f : 1.0f);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_paused_obj, protomatter_protomatter_get_paused);
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_brightness_obj, protomatter_protomatter_get_brightness);
 
-STATIC mp_obj_t protomatter_protomatter_set_paused(mp_obj_t self_in, mp_obj_t value_in)  {
+STATIC mp_obj_t protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_obj_t value_in)  {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    bool paused = mp_obj_is_true(value_in);
-    common_hal_protomatter_protomatter_set_paused(self, paused);
+    mp_float_t brightness = mp_obj_get_float(value_in);
+    if (brightness < 0.0f || brightness > 1.0f) {
+        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+    }
+    common_hal_protomatter_protomatter_set_paused(self_in, brightness <= 0);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(protomatter_protomatter_set_paused_obj, protomatter_protomatter_set_paused);
+MP_DEFINE_CONST_FUN_OBJ_2(protomatter_protomatter_set_brightness_obj, protomatter_protomatter_set_brightness);
 
-const mp_obj_property_t protomatter_protomatter_paused_obj = {
+const mp_obj_property_t protomatter_protomatter_brightness_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&protomatter_protomatter_get_paused_obj,
-              (mp_obj_t)&protomatter_protomatter_set_paused_obj,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_brightness_obj,
+              (mp_obj_t)&protomatter_protomatter_set_brightness_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: swapbuffers()
+//|   .. method:: refresh()
 //|
-//|     Transmits the color data in the buffer to the pixels so that they are shown.
+//|     Transmits the color data in the buffer to the pixels so that
+//|     they are shown.
 //|
-//|     The data in the buffer must be in "RGB565" format.  This means
-//|     that it is organized as a series of 16-bit numbers where the highest 5
-//|     bits are interpreted as red, the next 6 as green, and the final 5 as
-//|     blue.  The object can be any buffer, but `array.array` and `ulab.array`
-//|     objects are most often useful.
-//|
-STATIC mp_obj_t protomatter_protomatter_swapbuffers(mp_obj_t self_in) {
+STATIC mp_obj_t protomatter_protomatter_refresh(mp_obj_t self_in) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-
-    _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
-    _PM_swapbuffer_maybe(&self->core);
+    common_hal_protomatter_protomatter_refresh(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_swapbuffers_obj, protomatter_protomatter_swapbuffers);
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_refresh_obj, protomatter_protomatter_refresh);
 
 STATIC const mp_rom_map_elem_t protomatter_protomatter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&protomatter_protomatter_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&protomatter_protomatter_paused_obj) },
-    { MP_ROM_QSTR(MP_QSTR_swapbuffers), MP_ROM_PTR(&protomatter_protomatter_swapbuffers_obj) },
+    { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&protomatter_protomatter_brightness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&protomatter_protomatter_refresh_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(protomatter_protomatter_locals_dict, protomatter_protomatter_locals_dict_table);
 
 STATIC void protomatter_protomatter_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    
+
     *bufinfo = self->bufinfo;
 }
 
-// This version exists so that the return value of the function can be none, matching the protocol
-STATIC void protomatter_protomatter_swapbuffers_void(mp_obj_t self_in) {
-    protomatter_protomatter_swapbuffers(self_in);
+// These version exists so that the prototype matches the protocol,
+// avoiding a type cast that can hide errors
+STATIC void protomatter_protomatter_swapbuffers(mp_obj_t self_in) {
+    common_hal_protomatter_protomatter_refresh(self_in);
 }
 
-// This version exists so that the return value of the function can be none, matching the protocol
-STATIC void protomatter_protomatter_deinit_void(mp_obj_t self_in) {
-    protomatter_protomatter_deinit(self_in);
+STATIC void protomatter_protomatter_deinit_proto(mp_obj_t self_in) {
+    common_hal_protomatter_protomatter_deinit(self_in);
 }
 
-STATIC bool protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_float_t value) {
+STATIC float protomatter_protomatter_get_brightness_proto(mp_obj_t self_in) {
+    return common_hal_protomatter_protomatter_get_paused(self_in) ? 0.0f : 1.0f;
+}
+
+STATIC bool protomatter_protomatter_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
     common_hal_protomatter_protomatter_set_paused(self_in, value <= 0);
     return true;
 }
@@ -327,9 +336,10 @@ STATIC bool protomatter_protomatter_set_brightness(mp_obj_t self_in, mp_float_t 
 STATIC const framebuffer_p_t protomatter_protomatter_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = protomatter_protomatter_get_bufinfo,
-    .set_brightness = protomatter_protomatter_set_brightness,
-    .swapbuffers = protomatter_protomatter_swapbuffers_void,
-    .deinit = protomatter_protomatter_deinit_void,
+    .set_brightness = protomatter_protomatter_set_brightness_proto,
+    .get_brightness = protomatter_protomatter_get_brightness_proto,
+    .swapbuffers = protomatter_protomatter_swapbuffers,
+    .deinit = protomatter_protomatter_deinit_proto,
 };
 
 STATIC mp_int_t protomatter_protomatter_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {

@@ -53,7 +53,7 @@ void common_hal_protomatter_protomatter_construct(protomatter_protomatter_obj_t 
     self->oe_pin = oe_pin;
     self->latch_pin = latch_pin;
     self->doublebuffer = doublebuffer;
-    
+
     self->timer = timer ? timer : common_hal_protomatter_timer_allocate();
     if (self->timer == NULL) {
         mp_raise_ValueError(translate("No timer available"));
@@ -90,7 +90,7 @@ void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_
     }
 
     ProtomatterStatus stat = _PM_init(&self->core,
-        self->width, self->bit_depth, 
+        self->width, self->bit_depth,
         self->rgb_count/6, self->rgb_pins,
         self->addr_count, self->addr_pins,
         self->clock_pin, self->latch_pin, self->oe_pin,
@@ -192,3 +192,9 @@ void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t
 bool common_hal_protomatter_protomatter_get_paused(protomatter_protomatter_obj_t* self) {
     return self->paused;
 }
+
+void common_hal_protomatter_protomatter_refresh(protomatter_protomatter_obj_t* self) {
+    _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
+    _PM_swapbuffer_maybe(&self->core);
+}
+
