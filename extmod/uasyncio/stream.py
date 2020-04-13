@@ -32,10 +32,13 @@ class Stream:
 
     async def readexactly(self, n):
         l = b""
-        while len(l) < n:
+        while n:
             yield core._io_queue.queue_read(self.s)
-            l2 = self.s.read(n - len(l))
+            l2 = self.s.read(n)
+            if not l2:
+                raise EOFError
             l += l2
+            n = n - len(l2)
         return l
 
     async def readline(self):
