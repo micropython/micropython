@@ -68,7 +68,8 @@ Event Handling
     The optional *trigger* parameter allows you to set a mask of events that
     your program is interested in. The default is all events.
 
-    Note: the ``addr``, ``adv_data`` and ``uuid`` entries in the tuples are
+    Note: the ``addr``, ``adv_data``, ``char_data``, ``notify_data``, and
+    ``uuid`` entries in the tuples are
     references to data managed by the :mod:`ubluetooth` module (i.e. the same
     instance will be re-used across multiple calls to the event handler). If
     your program wants to use this data outside of the handler, then it must
