@@ -1316,7 +1316,7 @@ STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         timeout = -1;
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        timeout = 1000 * mp_obj_get_float(timeout_in);
+        timeout = (mp_uint_t)(MICROPY_FLOAT_CONST(1000.0) * mp_obj_get_float(timeout_in));
         #else
         timeout = 1000 * mp_obj_get_int(timeout_in);
         #endif

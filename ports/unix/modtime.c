@@ -96,8 +96,8 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
     mp_float_t ipart;
-    tv.tv_usec = MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
-    tv.tv_sec = ipart;
+    tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
+    tv.tv_sec = (suseconds_t)ipart;
     int res;
     while (1) {
         MP_THREAD_GIL_EXIT();

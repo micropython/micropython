@@ -287,9 +287,9 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
         }
         while (freq < 1 && prescaler < 6553) {
             prescaler *= 10;
-            freq *= 10;
+            freq *= 10.0f;
         }
-        period = (float)source_freq / freq;
+        period = (uint32_t)((float)source_freq / freq);
     #endif
     } else {
         mp_int_t freq = mp_obj_get_int(freq_in);
@@ -382,7 +382,7 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
         } else if (percent >= 100.0) {
             cmp = period;
         } else {
-            cmp = percent / 100.0 * ((mp_float_t)period);
+            cmp = (uint32_t)(percent / MICROPY_FLOAT_CONST(100.0) * ((mp_float_t)period));
         }
     #endif
     } else {

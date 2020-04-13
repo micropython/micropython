@@ -442,7 +442,7 @@ float expf(float x)
 	/* argument reduction */
 	if (hx > 0x3eb17218) {  /* if |x| > 0.5 ln2 */
 		if (hx > 0x3f851592)  /* if |x| > 1.5 ln2 */
-			k = invln2*x + half[sign];
+			k = (int)(invln2*x + half[sign]);
 		else
 			k = 1 - sign - sign;
 		hi = x - k*ln2hi;  /* k*ln2hi is exact here */
@@ -533,7 +533,7 @@ float expm1f(float x)
 				k = -1;
 			}
 		} else {
-			k  = invln2*x + (sign ? -0.5f : 0.5f);
+			k  = (int)(invln2*x + (sign ? -0.5f : 0.5f));
 			t  = k;
 			hi = x - t*ln2_hi;      /* t*ln2_hi is exact here */
 			lo = t*ln2_lo;
