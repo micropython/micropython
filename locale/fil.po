@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-30 17:03-0700\n"
+"POT-Creation-Date: 2020-04-13 19:22-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -905,6 +905,7 @@ msgid "Invalid number of bits"
 msgstr "Mali ang bilang ng bits"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid phase"
 msgstr "Mali ang phase"
 
@@ -936,6 +937,7 @@ msgid "Invalid pins for PWMOut"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid polarity"
 msgstr "Mali ang polarity"
 
@@ -1657,6 +1659,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
+#: extmod/ulab/code/numerical.c
+msgid "attempt to get argmin/argmax of an empty sequence"
+msgstr ""
+
 #: py/objstr.c
 msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
@@ -2179,10 +2185,6 @@ msgstr "kailangan ng format ng dict"
 msgid "full"
 msgstr "puno"
 
-#: extmod/ulab/code/linalg.c
-msgid "function defined for ndarrays only"
-msgstr ""
-
 #: py/argcheck.c
 msgid "function does not take keyword arguments"
 msgstr "ang function ay hindi kumukuha ng mga argumento ng keyword"
@@ -2195,10 +2197,6 @@ msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
-
-#: extmod/ulab/code/linalg.c
-msgid "function is defined for ndarrays only"
-msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -2685,14 +2683,6 @@ msgstr "wala sa sakop ang address"
 msgid "only bit_depth=16 is supported"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
-msgid "only ndarray objects can be inverted"
-msgstr ""
-
-#: extmod/ulab/code/linalg.c
-msgid "only ndarrays can be inverted"
-msgstr ""
-
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
@@ -2701,10 +2691,6 @@ msgstr ""
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
-
-#: extmod/ulab/code/linalg.c
-msgid "only square matrices can be inverted"
-msgstr ""
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
@@ -3125,7 +3111,7 @@ msgid "wrong argument type"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
-msgid "wrong input type"
+msgid "wrong index type"
 msgstr ""
 
 #: py/objstr.c
@@ -3137,7 +3123,7 @@ msgid "wrong number of values to unpack"
 msgstr "maling number ng value na i-unpack"
 
 #: extmod/ulab/code/ndarray.c
-msgid "wrong operand type on the right hand side"
+msgid "wrong operand type"
 msgstr ""
 
 #: shared-module/displayio/Shape.c
