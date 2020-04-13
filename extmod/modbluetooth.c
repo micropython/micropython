@@ -878,7 +878,10 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT) {
             // conn_handle, handle, uuid
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, &o->irq_data_uuid, NULL);
-        } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT || event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE) {
+        } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT) {
+            // conn_handle, value_handle, status, data
+            ringbuf_extract(&o->ringbuf, data_tuple, 2, 1, NULL, 0, NULL, &o->irq_data_data);
+        } else if (event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE) {
             // conn_handle, value_handle, data
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, &o->irq_data_data);
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS) {
@@ -1036,14 +1039,30 @@ void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t hand
     schedule_ringbuf(atomic_state);
 }
 
+void mp_bluetooth_gattc_read_error(uint16_t status, uint16_t conn_handle, uint16_t value_handle) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2 + 1 + 1, MP_BLUETOOTH_IRQ_GATTC_READ_RESULT)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, value_handle);
+        ringbuf_put(&o->ringbuf, status);
+        ringbuf_put(&o->ringbuf, 0 /* data_len */);
+    }
+    schedule_ringbuf(atomic_state);
+}
+
 size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out) {
     MICROPY_PY_BLUETOOTH_ENTER
     *atomic_state_out = atomic_state;
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    size_t status_len = (event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT) ? 1 : 0;
     data_len = MIN(o->irq_data_data_alloc, data_len);
-    if (enqueue_irq(o, 2 + 2 + 1 + data_len, event)) {
+    if (enqueue_irq(o, 2 + 2 + 1 + status_len + data_len, event)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
+        if (status_len) {
+            ringbuf_put(&o->ringbuf, 0 /* status */);
+        }
         ringbuf_put(&o->ringbuf, data_len);
         return data_len;
     } else {

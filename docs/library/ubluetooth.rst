@@ -117,7 +117,7 @@ Event Handling
                 conn_handle, dsc_handle, uuid = data
             elif event == _IRQ_GATTC_READ_RESULT:
                 # A gattc_read() has completed.
-                conn_handle, value_handle, char_data = data
+                conn_handle, value_handle, status, char_data = data
             elif event == _IRQ_GATTC_WRITE_STATUS:
                 # A gattc_write() has completed.
                 conn_handle, value_handle, status = data

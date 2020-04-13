@@ -820,9 +820,10 @@ STATIC int ble_gatt_attr_read_cb(uint16_t conn_handle, const struct ble_gatt_err
     if (!mp_bluetooth_is_active()) {
         return 0;
     }
-    // TODO: Maybe send NULL if error->status non-zero.
     if (error->status == 0) {
         gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, attr->om);
+    } else {
+        mp_bluetooth_gattc_read_error(error->status, conn_handle, attr ? attr->handle : -1);
     }
     return 0;
 }
