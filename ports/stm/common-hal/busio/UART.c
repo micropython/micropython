@@ -84,7 +84,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t rx_len = MP_ARRAY_SIZE(mcu_uart_rx_list);
     bool uart_taken = false;
     uint8_t periph_index = 0; //origin 0 corrected
-    bool search_done = false;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert == true)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
@@ -107,13 +106,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                         //store pins if not
                         self->tx = &mcu_uart_tx_list[i];
                         self->rx = &mcu_uart_rx_list[j];
-
-                        // Multi-level break to pick lowest peripheral
-                        search_done = true;
                         break;
                     }
                 }
-                if (search_done) {
+                if (self->tx != NULL) {
                     break;
                 }
             }
@@ -132,9 +128,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
                 //store pins if not
                 self->rx = &mcu_uart_rx_list[i];
-
-                // Multi-level break to pick lowest peripheral
-                search_done = true;
                 break;
             }
         }
@@ -152,9 +145,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 }
                 //store pins if not
                 self->tx = &mcu_uart_tx_list[i];
-
-                // Multi-level break to pick lowest peripheral
-                search_done = true;
                 break;
             }
         }

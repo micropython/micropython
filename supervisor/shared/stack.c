@@ -46,7 +46,7 @@ void allocate_stack(void) {
 
     mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
 
-    if (port_stack_get_top() != port_heap_get_top()) { //Why is this here? Doesn't apply to some chips. 
+    if (port_stack_get_top() != port_heap_get_top()) {
         return;
     }
 

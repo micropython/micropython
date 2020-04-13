@@ -31,14 +31,16 @@
 #include "tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
+
+#if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-
-#if defined(STM32F4)
-    #include "common-hal/pulseio/PWMOut.h"
-    #include "common-hal/pulseio/PulseOut.h"
-    #include "common-hal/pulseio/PulseIn.h"
+#endif
+#if CIRCUITPY_PULSEIO
+#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pulseio/PulseOut.h"
+#include "common-hal/pulseio/PulseIn.h"
 #endif
 
 #include "clocks.h"
@@ -114,7 +116,6 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 
     // The first number in RBAR is the region number. When searching for a policy, the region with
     // the highest number wins. If none match, then the default policy set at enable applies.
-    // TODO: what is the default policy? Where is that set? 
 
     // TODO: do I need to subdivide this up? 
     // Mark all the flash the same until instructed otherwise. 
@@ -124,7 +125,7 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
     // accidentally write the wrong value to 0x00000000 (aka NULL).
     MPU->RBAR = ARM_MPU_RBAR(12, 0x00000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_128KB);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_64KB);
 
     // This the DTCM.
     MPU->RBAR = ARM_MPU_RBAR(14, 0x20000000U);
@@ -187,17 +188,16 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
     reset_all_pins();
+#if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
-
-    // TODO: it'd be nice if this was more automatic
-    #if defined(STM32F4)
-
-        pwmout_reset();
-        pulseout_reset();
-        pulsein_reset();
-    #endif
+#endif
+#if CIRCUITPY_PULSEIO
+    pwmout_reset();
+    pulseout_reset();
+    pulsein_reset(); 
+#endif
 }
 
 void reset_to_bootloader(void) {

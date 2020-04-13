@@ -64,7 +64,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     uint8_t sda_len = MP_ARRAY_SIZE(mcu_i2c_sda_list);
     uint8_t scl_len = MP_ARRAY_SIZE(mcu_i2c_scl_list);
     bool i2c_taken = false;
-    bool search_done = false;
 
     for (uint i = 0; i < sda_len; i++) {
         if (mcu_i2c_sda_list[i].pin == sda) {
@@ -78,12 +77,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                     }
                     self->scl = &mcu_i2c_scl_list[j];
                     self->sda = &mcu_i2c_sda_list[i];
-                    // Multi-level break here, or it'll pick the highest numbered peripheral (inefficient)
-                    search_done = true;
                     break;
                 }
             }
-            if (search_done) {
+            if (self->scl != NULL) {
+                // Multi-level break to pick lowest peripheral
                 break;
             }
         }

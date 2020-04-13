@@ -118,7 +118,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
     bool spi_taken = false;
-    bool search_done = false;
 
     //SCK is not optional. MOSI and MISO are
     for (uint i = 0; i < sck_len; i++) {
@@ -142,18 +141,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                                 self->sck = &mcu_spi_sck_list[i];
                                 self->mosi = &mcu_spi_mosi_list[j];
                                 self->miso = &mcu_spi_miso_list[k];
-
-                                // Multi-level break to pick lowest peripheral
-                                search_done = true;
                                 break;
                             }
                         }
-                        if (search_done) {
-                            break;
+                        if (self->sck != NULL) {
+                            break; // Multi-level break to pick lowest peripheral
                         }
                     }
                 }
-                if (search_done) {
+                if (self->sck != NULL) {
                     break;
                 }
             // if just MISO, reduce search
@@ -161,22 +157,17 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 for (uint j = 0; j < miso_len; j++) {
                     if ((mcu_spi_miso_list[j].pin == miso) //only SCK and MISO need the same index
                         && (mcu_spi_sck_list[i].periph_index == mcu_spi_miso_list[j].periph_index)) {
-                        //keep looking if the SPI is taken, edge case
                         if (reserved_spi[mcu_spi_sck_list[i].periph_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
-                        //store pins if not
                         self->sck = &mcu_spi_sck_list[i];
                         self->mosi = NULL;
                         self->miso = &mcu_spi_miso_list[j];
-
-                        // Multi-level break to pick lowest peripheral
-                        search_done = true;
                         break;
                     }
                 }
-                if (search_done) {
+                if (self->sck != NULL) {
                     break;
                 }
             // if just MOSI, reduce search
@@ -184,22 +175,17 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 for (uint j = 0; j < mosi_len; j++) {
                     if ((mcu_spi_mosi_list[j].pin == mosi) //only SCK and MOSI need the same index
                         && (mcu_spi_sck_list[i].periph_index == mcu_spi_mosi_list[j].periph_index)) {
-                        //keep looking if the SPI is taken, edge case
                         if (reserved_spi[mcu_spi_sck_list[i].periph_index - 1]) {
                             spi_taken = true;
                             continue;
                         }
-                        //store pins if not
                         self->sck = &mcu_spi_sck_list[i];
                         self->mosi = &mcu_spi_mosi_list[j];
                         self->miso = NULL;
-
-                        // Multi-level break to pick lowest peripheral
-                        search_done = true;
                         break;
                     }
                 }
-                if (search_done) {
+                if (self->sck != NULL) {
                     break;
                 }
             } else {

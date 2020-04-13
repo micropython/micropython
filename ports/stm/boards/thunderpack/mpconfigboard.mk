@@ -13,5 +13,5 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F411xE
 MCU_PACKAGE = UFQFPN48
 
-LD_FILE = boards/common_nvm.ld
+LD_COMMON = boards/common_nvm.ld
 LD_FILE = boards/STM32F411_nvm.ld

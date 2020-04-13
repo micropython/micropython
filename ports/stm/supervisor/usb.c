@@ -78,58 +78,54 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    #if defined(STM32H7)
+    #if CPY_STM32H7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif defined(STM32F4) || defined(STM32F7)
+    #elif CPY_STM32F4 || CPY_STM32F7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    #else
-    #error Unsupported processor
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 11);
     never_reset_pin_number(0, 12);
 
     /* Configure VBUS Pin */
-#if  !(BOARD_NO_VBUS_SENSE)
+    #if  !(BOARD_NO_VBUS_SENSE)
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 9);
-#endif
+    #endif
 
     /* This for ID line debug */
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    #if defined(STM32H7)
+    #if CPY_STM32H7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
-    #elif defined(STM32F4) || defined(STM32F7)
+    #elif CPY_STM32F4 || CPY_STM32F7
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    #else
-    #error Unsupported processor
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 10);
 
-#ifdef STM32F412Zx
+    #ifdef STM32F412Zx
     /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
     GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
-#endif
+    #endif
 
 
-#if defined(STM32H7)
+    #if CPY_STM32H7
     HAL_PWREx_EnableUSBVoltageDetector();
     __HAL_RCC_USB2_OTG_FS_CLK_ENABLE();
-#else
+    #else
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
-#endif
+    #endif
 
     init_usb_vbus_sense();
 }

@@ -181,8 +181,6 @@ void supervisor_flash_flush(void) {
     EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
     EraseInitStruct.NbSectors = 1;
     if (sector_size > sizeof(_flash_cache)) {
-        __ASM volatile ("bkpt");
-        mp_printf(&mp_plat_print, "FLASH ERR: invalid sector\n");
         reset_into_safe_mode(FLASH_WRITE_FAIL);
     }
 
@@ -196,8 +194,6 @@ void supervisor_flash_flush(void) {
         if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
             // error occurred during sector erase
             HAL_FLASH_Lock(); // lock the flash
-            __ASM volatile ("bkpt");
-            mp_printf(&mp_plat_print, "FLASH ERR: erase failure\n");
             reset_into_safe_mode(FLASH_WRITE_FAIL);
         }
 
@@ -211,7 +207,6 @@ void supervisor_flash_flush(void) {
                                   (uint32_t)cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
-                __ASM volatile ("bkpt");
                 reset_into_safe_mode(FLASH_WRITE_FAIL);
             }
             // RAM memory is by word (4 byte), but flash memory is by byte
@@ -226,7 +221,6 @@ void supervisor_flash_flush(void) {
                                   (uint64_t)*cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
-                __ASM volatile ("bkpt");
                 reset_into_safe_mode(FLASH_WRITE_FAIL);
             }
             // RAM memory is by word (4 byte), but flash memory is by byte
@@ -267,8 +261,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
         int32_t dest = convert_block_to_flash_addr(block_num);
         if (dest == -1) {
             // bad block number
-            __ASM volatile ("bkpt");
-            mp_printf(&mp_plat_print, "BAD FLASH BLOCK ERROR");
             return false;
         }
 
@@ -281,8 +273,6 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
         // Fail for any sector outside the 16k ones for now
         if (sector_size > sizeof(_flash_cache)) {
-            __ASM volatile ("bkpt");
-            mp_printf(&mp_plat_print, "FLASH ERR: invalid sector\n");
             reset_into_safe_mode(FLASH_WRITE_FAIL);
         }
 
