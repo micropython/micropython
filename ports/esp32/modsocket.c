@@ -457,7 +457,7 @@ STATIC mp_obj_t socket_settimeout(const mp_obj_t arg0, const mp_obj_t arg1) {
         _socket_settimeout(self, UINT64_MAX);
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        _socket_settimeout(self, mp_obj_get_float(arg1) * 1000L);
+        _socket_settimeout(self, (uint64_t)(mp_obj_get_float(arg1) * MICROPY_FLOAT_CONST(1000.0)));
         #else
         _socket_settimeout(self, mp_obj_get_int(arg1) * 1000);
         #endif
