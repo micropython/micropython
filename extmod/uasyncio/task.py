@@ -151,7 +151,7 @@ class Task:
             return False
         # Can't cancel self (not supported yet).
         if self is core.cur_task:
-            raise RuntimeError("cannot cancel self")
+            raise RuntimeError("can't cancel self")
         # If Task waits on another task then forward the cancel to the one it's waiting on.
         while isinstance(self.data, Task):
             self = self.data
