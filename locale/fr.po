@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-13 19:22-0500\n"
+"POT-Creation-Date: 2020-04-14 18:26-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -54,6 +54,11 @@ msgstr " sortie:\n"
 #, c-format
 msgid "%%c requires int or char"
 msgstr "%%c nécessite un entier 'int' ou un caractère 'char'"
+
+#: shared-bindings/_protomatter/Protomatter.c
+#, c-format
+msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -288,7 +293,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/nrf/peripherals/nrf/timers.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
@@ -329,6 +334,10 @@ msgstr "Le tableau doit contenir des demi-mots (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
+#: shared-bindings/_protomatter/Protomatter.c
+msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
@@ -346,6 +355,7 @@ msgstr ""
 "lancer ou entrez sur REPL pour le désactiver.\n"
 
 #: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
 msgstr ""
 
@@ -361,7 +371,9 @@ msgstr "La profondeur de bit doit être un multiple de 8."
 msgid "Both pins must support hardware interrupts"
 msgstr "Les deux entrées doivent supporter les interruptions matérielles"
 
+#: shared-bindings/_protomatter/Protomatter.c
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness must be 0-1.0"
 msgstr ""
 
@@ -370,6 +382,7 @@ msgid "Brightness must be between 0 and 255"
 msgstr "La luminosité doit être entre 0 et 255"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
 msgstr "Luminosité non-ajustable"
 
@@ -384,10 +397,12 @@ msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr ""
 
@@ -645,11 +660,13 @@ msgid "DigitalInOut not supported on given pin"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
@@ -769,6 +786,7 @@ msgstr "La fonction nécessite un verrou"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -860,7 +878,7 @@ msgstr ""
 msgid "Invalid UART pin selection"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moduerrno.c shared-module/_protomatter/Protomatter.c
 msgid "Invalid argument"
 msgstr "Argument invalide"
 
@@ -917,7 +935,7 @@ msgstr "Phase invalide"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/_protomatter/Protomatter.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
 
@@ -1033,6 +1051,11 @@ msgstr ""
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
+#: shared-bindings/_protomatter/Protomatter.c
+#, c-format
+msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr ""
@@ -1115,6 +1138,10 @@ msgstr "Il n'y a plus d'espace libre sur le périphérique"
 #: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Fichier/dossier introuvable"
+
+#: shared-module/_protomatter/Protomatter.c
+msgid "No timer available"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
@@ -1202,6 +1229,14 @@ msgstr "La broche ne peut être utilisée pour l'ADC"
 msgid "Pin number already reserved by EXTI"
 msgstr ""
 
+#: shared-bindings/_protomatter/Protomatter.c
+#, c-format
+msgid ""
+"Pinout uses %d bytes per element, which consumes more than the ideal %d "
+"bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
+"constructor"
+msgstr ""
+
 #: py/builtinhelp.c
 #, fuzzy
 msgid "Plus any modules on the filesystem\n"
@@ -1218,6 +1253,11 @@ msgstr ""
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
+
+#: shared-module/_protomatter/Protomatter.c
+#, c-format
+msgid "Protomatter internal error #%d"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1414,13 +1454,11 @@ msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
 msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-module/displayio/__init__.c
 msgid "Too many display busses"
 msgstr "Trop de bus d'affichage"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Trop d'affichages"
 
@@ -2837,6 +2875,16 @@ msgstr "l'annotation de return doit être un identifiant"
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
 msgstr "return attendait '%q' mais a reçu '%q'"
+
+#: shared-bindings/_protomatter/Protomatter.c
+#, c-format
+msgid "rgb_pins[%d] duplicates another pin assignment"
+msgstr ""
+
+#: shared-bindings/_protomatter/Protomatter.c
+#, c-format
+msgid "rgb_pins[%d] is not on the same port as clock"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
