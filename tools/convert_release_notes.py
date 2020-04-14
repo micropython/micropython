@@ -52,6 +52,9 @@ class AdafruitBBCodeRenderer:
     def double_emphasis(self, text):
         return "[b]{}[/b]".format(text)
 
+    def emphasis(self, text):
+        return "[b]{}[/b]".format(text)
+
 bbcode = mistune.Markdown(renderer=AdafruitBBCodeRenderer())
 
 print()
