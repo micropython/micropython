@@ -36,3 +36,6 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_UART2_RXD)
 #define DEFAULT_UART_BUS_TX (&pin_UART2_TXD)
+
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
+
