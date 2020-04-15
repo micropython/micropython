@@ -52,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0xa0, // _MADCTL bottom to top refresh
+    0x36, 1, 0xa8, // _MADCTL bottom to top refresh
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
