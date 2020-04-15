@@ -321,7 +321,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_refresh_obj, protomatter_proto
 STATIC mp_obj_t protomatter_protomatter_get_width(mp_obj_t self_in) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(self->width);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_protomatter_protomatter_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_width_obj, protomatter_protomatter_get_width);
 const mp_obj_property_t protomatter_protomatter_width_obj = {
@@ -338,8 +338,7 @@ const mp_obj_property_t protomatter_protomatter_width_obj = {
 STATIC mp_obj_t protomatter_protomatter_get_height(mp_obj_t self_in) {
     protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
     check_for_deinit(self);
-    int computed_get_height = (self->rgb_count / 3) << (self->addr_count);
-    return MP_OBJ_NEW_SMALL_INT(computed_get_height);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_protomatter_protomatter_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_height_obj, protomatter_protomatter_get_height);
 

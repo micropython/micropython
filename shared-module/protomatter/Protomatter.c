@@ -198,3 +198,12 @@ void common_hal_protomatter_protomatter_refresh(protomatter_protomatter_obj_t* s
     _PM_swapbuffer_maybe(&self->core);
 }
 
+int common_hal_protomatter_protomatter_get_width(protomatter_protomatter_obj_t* self) {
+    return self->width;
+}
+
+int common_hal_protomatter_protomatter_get_height(protomatter_protomatter_obj_t* self) {
+    int computed_height = (self->rgb_count / 3) << (self->addr_count);
+    return computed_height;
+}
+
