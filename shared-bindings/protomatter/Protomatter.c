@@ -38,9 +38,9 @@
 #include "shared-module/framebufferio/__init__.h"
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
-//| .. currentmodule:: _protomatter
+//| .. currentmodule:: protomatter
 //|
-//| :class:`protomatter` --  Driver for HUB75-style RGB LED matrices
+//| :class:`Protomatter` --  Driver for HUB75-style RGB LED matrices
 //| ================================================================
 //|
 
@@ -133,7 +133,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//| :class:`~_protomatter.Protomatter` displays an in-memory framebuffer to an LED matrix.
+//| :class:`~protomatter.Protomatter` displays an in-memory framebuffer to an LED matrix.
 //|
 //| .. class:: Protomatter(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, *, doublebuffer=True, framebuffer=None)
 //|

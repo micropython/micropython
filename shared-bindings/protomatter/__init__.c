@@ -31,10 +31,10 @@
 
 #include "shared-bindings/protomatter/Protomatter.h"
 
-//| :mod:`_protomatter` --- Low-level routines for bitbanged LED matrices
+//| :mod:`protomatter` --- Low-level routines for bitbanged LED matrices
 //| =====================================================================
 //|
-//| .. module:: _protomatter
+//| .. module:: protomatter
 //|   :synopsis: Low-level routines for bitbanged LED matrices
 //|
 //| .. toctree::
