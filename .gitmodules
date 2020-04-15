@@ -109,7 +109,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
 [submodule "extmod/ulab"]
 	path = extmod/ulab
-	url = https://github.com/v923z/micropython-ulab/
+	url = https://github.com/v923z/micropython-ulab
 [submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
 	path = frozen/Adafruit_CircuitPython_ESP32SPI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI
@@ -119,3 +119,6 @@
 [submodule "ports/stm/st_driver"]
 	path = ports/stm/st_driver
 	url = https://github.com/hathach/st_driver.git
+[submodule "lib/protomatter"]
+	path = lib/protomatter
+	url = https://github.com/adafruit/Adafruit_Protomatter

@@ -83,7 +83,12 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
     } else if (colorspace->grayscale) {
         *color = self->colors[palette_index].luma >> (8 - colorspace->depth);
     } else {
-        *color = self->colors[palette_index].rgb565;
+        uint16_t packed = self->colors[palette_index].rgb565;
+        if (colorspace->reverse_bytes_in_word) {
+            // swap bytes
+            packed = __builtin_bswap16(packed);
+        }
+        *color = packed;
     }
 
     return true;

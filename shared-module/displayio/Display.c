@@ -44,7 +44,7 @@
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
         uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
-        uint8_t bytes_per_cell, bool reverse_pixels_in_byte, uint8_t set_column_command,
+        uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word, uint8_t set_column_command,
         uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
@@ -58,7 +58,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         ram_height = 0xff;
     }
     displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation,
-        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte);
+        color_depth, grayscale, pixels_in_byte_share_row, bytes_per_cell, reverse_pixels_in_byte, reverse_bytes_in_word);
 
     self->set_column_command = set_column_command;
     self->set_row_command = set_row_command;
@@ -67,6 +67,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->auto_brightness = auto_brightness;
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
+    self->backlight_on_high = backlight_on_high;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;
