@@ -137,8 +137,6 @@ endif
 LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-T,$(LD_COMMON) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
-LDFLAGS += -mthumb $(MCU_FLAGS_$(MCU_SERIES))
-
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
 LIBS += -lm

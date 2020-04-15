@@ -89,22 +89,6 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     __disable_irq();
     __set_MSP((uint32_t) &_ld_stack_top);
 
-    // TODO: Is any of this commented stuff actually required? 
-
-    /* Disable I cache and D cache */ 
-    // SCB_DisableICache();
-    // SCB_DisableDCache(); // this causes an instant hardfault if used
-
-    // #if ((__FPU_PRESENT == 1) && (__FPU_USED == 1))
-    //   SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));    /* set CP10, CP11 Full Access */
-    // #endif /* ((__FPU_PRESENT == 1) && (__FPU_USED == 1)) */
-
-    // /* Disable Systick which might be enabled by bootrom */
-    // if (SysTick->CTRL & SysTick_CTRL_ENABLE_Msk)
-    // {
-    //     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-    // }
-
     /* Disable MPU */
     ARM_MPU_Disable();
 
@@ -117,7 +101,6 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     // The first number in RBAR is the region number. When searching for a policy, the region with
     // the highest number wins. If none match, then the default policy set at enable applies.
 
-    // TODO: do I need to subdivide this up? 
     // Mark all the flash the same until instructed otherwise. 
     MPU->RBAR = ARM_MPU_RBAR(11, 0x08000000U);
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_2MB);
@@ -135,13 +118,8 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     MPU->RBAR = ARM_MPU_RBAR(15, 0x24000000U);
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
 
-    // TODO: what is the mask here doing? 
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
-
-    //  We're done mucking with memory so enable I cache and D cache 
-    // SCB_EnableDCache();
-    // SCB_EnableICache();
 
     // Copy all of the data to run from DTCM.
     for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_data_size) / 4; i++) {
@@ -226,8 +204,8 @@ uint32_t *port_stack_get_top(void) {
     return &_ld_stack_top;
 }
 
-// TODO: what even are these
 extern uint32_t _ebss;
+
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
     _ebss = value;
@@ -239,7 +217,6 @@ uint32_t port_get_saved_word(void) {
 
 __attribute__((used)) void MemManage_Handler(void)
 {
-    __ASM volatile ("bkpt");
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
         asm("nop;");
@@ -248,7 +225,6 @@ __attribute__((used)) void MemManage_Handler(void)
 
 __attribute__((used)) void BusFault_Handler(void)
 {
-    __ASM volatile ("bkpt");
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
         asm("nop;");
@@ -257,7 +233,6 @@ __attribute__((used)) void BusFault_Handler(void)
 
 __attribute__((used)) void UsageFault_Handler(void)
 {
-    __ASM volatile ("bkpt");
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
         asm("nop;");
@@ -266,7 +241,6 @@ __attribute__((used)) void UsageFault_Handler(void)
 
 __attribute__((used)) void HardFault_Handler(void)
 {
-    __ASM volatile ("bkpt");
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
         asm("nop;");

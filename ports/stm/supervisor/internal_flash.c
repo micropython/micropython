@@ -202,7 +202,6 @@ void supervisor_flash_flush(void) {
         #if defined(STM32H7)
         for (uint32_t i = 0; i < (sector_size / 32); i++) {
             // Note that the STM32H7 HAL interface differs by taking an address, not 64 bit data
-            // This is because ST's code is written by a large room of chimpanzees
             if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, sector_start_addr, 
                                   (uint32_t)cache_addr) != HAL_OK) {
                 // error occurred during flash write
