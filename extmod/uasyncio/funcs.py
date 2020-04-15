@@ -10,7 +10,7 @@ async def wait_for(aw, timeout):
     if timeout is None:
         return await aw
 
-    def cancel(aw, timeout):
+    async def cancel(aw, timeout):
         await core.sleep(timeout)
         nonlocal can
         can=True
