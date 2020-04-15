@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "shared-bindings/protomatter/Protomatter.h"
 
 //| :mod:`_protomatter` --- Low-level routines for bitbanged LED matrices
 //| =====================================================================
@@ -43,7 +43,7 @@
 //|     Protomatter
 
 STATIC const mp_rom_map_elem_t protomatter_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__protomatter) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_protomatter) },
     { MP_ROM_QSTR(MP_QSTR_Protomatter), MP_ROM_PTR(&protomatter_Protomatter_type) },
 };
 

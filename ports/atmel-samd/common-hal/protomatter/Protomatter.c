@@ -26,7 +26,7 @@
 
 #include <stddef.h>
 
-#include "common-hal/_protomatter/Protomatter.h"
+#include "common-hal/protomatter/Protomatter.h"
 
 #include "samd/timers.h"
 #include "timer_handler.h"

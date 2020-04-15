@@ -32,9 +32,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-#include "common-hal/_protomatter/Protomatter.h"
-#include "shared-module/_protomatter/allocator.h"
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "common-hal/protomatter/Protomatter.h"
+#include "shared-module/protomatter/allocator.h"
+#include "shared-bindings/protomatter/Protomatter.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"

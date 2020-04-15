@@ -29,8 +29,8 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
-#include "common-hal/_protomatter/Protomatter.h"
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "common-hal/protomatter/Protomatter.h"
+#include "shared-bindings/protomatter/Protomatter.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"

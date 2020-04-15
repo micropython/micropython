@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PROTOMATTER_PROTOMATTER_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_PROTOMATTER_PROTOMATTER_H
 
-#include "shared-module/_protomatter/Protomatter.h"
+#include "shared-module/protomatter/Protomatter.h"
 #include "lib/protomatter/core.h"
 
 extern const mp_obj_type_t protomatter_Protomatter_type;

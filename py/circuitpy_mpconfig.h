@@ -463,7 +463,7 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 
 #if CIRCUITPY_PROTOMATTER
 extern const struct _mp_obj_module_t protomatter_module;
-#define PROTOMATTER_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__protomatter),(mp_obj_t)&protomatter_module },
+#define PROTOMATTER_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_protomatter),(mp_obj_t)&protomatter_module },
 #else
 #define PROTOMATTER_MODULE
 #endif

@@ -182,7 +182,7 @@ ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_PROTOMATTER),1)
-SRC_PATTERNS += _protomatter/%
+SRC_PATTERNS += protomatter/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
@@ -248,8 +248,6 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/PacketBuffer.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
-	_protomatter/Protomatter.c \
-	_protomatter/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -279,6 +277,8 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	protomatter/Protomatter.c \
+	protomatter/__init__.c \
 	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
@@ -323,8 +323,6 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/ScanResults.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
-	_protomatter/Protomatter.c \
-	_protomatter/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
@@ -368,6 +366,8 @@ SRC_SHARED_MODULE_ALL = \
 	random/__init__.c \
 	socket/__init__.c \
 	network/__init__.c \
+	protomatter/Protomatter.c \
+	protomatter/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
 	terminalio/Terminal.c \
@@ -417,7 +417,7 @@ ifeq ($(CIRCUITPY_PROTOMATTER),1)
 SRC_MOD += $(addprefix lib/protomatter/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/_protomatter/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/protomatter/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

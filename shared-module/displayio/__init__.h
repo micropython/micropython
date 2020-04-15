@@ -36,7 +36,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "shared-bindings/protomatter/Protomatter.h"
 
 typedef struct {
     union {
