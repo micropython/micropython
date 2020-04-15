@@ -47,9 +47,7 @@ uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
     uint32_t r5 = (color_rgb888 >> 19);
     uint32_t g6 = (color_rgb888 >> 10) & 0x3f;
     uint32_t b5 = (color_rgb888 >> 3) & 0x1f;
-    uint32_t packed = r5 << 11 | g6 << 5 | b5;
-    // swap bytes
-    return __builtin_bswap16(packed);
+    return r5 << 11 | g6 << 5 | b5;
 }
 
 uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
@@ -156,7 +154,12 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     }
 
     if (colorspace->depth == 16) {
-        output_color->pixel = displayio_colorconverter_compute_rgb565(pixel);
+        uint16_t packed = displayio_colorconverter_compute_rgb565(pixel);
+        if (colorspace->reverse_bytes_in_word) {
+            // swap bytes
+            packed = __builtin_bswap16(packed);
+        }
+        output_color->pixel = packed;
         output_color->opaque = true;
         return;
     } else if (colorspace->tricolor) {

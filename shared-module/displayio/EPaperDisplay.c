@@ -58,7 +58,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         self->core.colorspace.tricolor_luma = displayio_colorconverter_compute_luma(highlight_color);
     }
 
-    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, 1, true, true, 1, true);
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, 1, true, true, 1, true, true);
 
     self->set_column_window_command = set_column_window_command;
     self->set_row_window_command = set_row_window_command;

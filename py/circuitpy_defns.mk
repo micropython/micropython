@@ -142,6 +142,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/% terminalio/% fontio/%
 endif
+ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
+SRC_PATTERNS += framebufferio/%
+endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
@@ -177,6 +180,9 @@ SRC_PATTERNS += os/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
+endif
+ifeq ($(CIRCUITPY_PROTOMATTER),1)
+SRC_PATTERNS += _protomatter/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
@@ -242,6 +248,8 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/PacketBuffer.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
+	_protomatter/Protomatter.c \
+	_protomatter/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -315,6 +323,8 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/ScanResults.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
+	_protomatter/Protomatter.c \
+	_protomatter/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
@@ -348,6 +358,8 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
+	framebufferio/FramebufferDisplay.c \
+	framebufferio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
@@ -400,6 +412,12 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 	trigtabs.c \
 )
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
+endif
+ifeq ($(CIRCUITPY_PROTOMATTER),1)
+SRC_MOD += $(addprefix lib/protomatter/, \
+	core.c \
+)
+$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/_protomatter/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
