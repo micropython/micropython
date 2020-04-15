@@ -79,12 +79,9 @@ static void pulsein_handler(uint8_t num) {
             self->first_edge = false;
         }
     } else {
-        uint32_t total_diff = current_count + 0xffff * (current_overflow - self->last_overflow) - self->last_count;
+        uint32_t total_diff = current_count + 0x10000 * (current_overflow - self->last_overflow) - self->last_count;
         // Cap duration at 16 bits.
-        uint16_t duration = 0xffff;
-        if (total_diff < duration) {
-            duration = total_diff;
-        }
+        uint16_t duration = MIN(0xffff, total_diff);
 
         uint16_t i = (self->start + self->len) % self->maxlen;
         self->buffer[i] = duration;
