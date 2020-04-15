@@ -8,6 +8,7 @@ __version__ = (3, 0, 0)
 _attrs = {
     "wait_for": "funcs",
     "gather": "funcs",
+    "shield": "funcs",
     "Event": "event",
     "Lock": "lock",
     "open_connection": "stream",
