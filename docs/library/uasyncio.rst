@@ -82,6 +82,14 @@ Additional functions
     Returns a list of return values of all *awaitables*.
 
     This is a coroutine.
+    
+.. function:: shield(\*awaitables)
+
+    Protect an awaitable object from being cancelled.
+    
+    Returns the return value of *awaitable*.
+
+    This is a coroutine.
 
 class Task
 ----------
