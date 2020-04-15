@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-01 12:29-0400\n"
+"POT-Creation-Date: 2020-04-15 10:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -889,6 +889,7 @@ msgid "Invalid number of bits"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid phase"
 msgstr ""
 
@@ -920,6 +921,7 @@ msgid "Invalid pins for PWMOut"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid polarity"
 msgstr ""
 

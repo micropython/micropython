@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-01 12:29-0400\n"
+"POT-Creation-Date: 2020-04-15 10:24-0400\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -897,6 +897,7 @@ msgid "Invalid number of bits"
 msgstr "Ungültige Anzahl von Bits"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid phase"
 msgstr "Ungültige Phase"
 
@@ -928,6 +929,7 @@ msgid "Invalid pins for PWMOut"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid polarity"
 msgstr "Ungültige Polarität"
 
