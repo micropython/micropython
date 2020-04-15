@@ -31,6 +31,16 @@ async def task_raise():
     raise ValueError
 
 
+async def wait_for_cancel(id, t, t2):
+    print("wait_for_cancel start")
+    try:
+        await asyncio.wait_for(task(id, t), t2)
+    except asyncio.CancelledError:
+        print("wait_for_cancel cancelled")
+    except Exception as e:
+        print(e)
+
+
 async def main():
     # When task finished before the timeout
     print(await asyncio.wait_for(task(1, 0.01), 10))
@@ -55,6 +65,12 @@ async def main():
 
     # Timeout of None means wait forever
     print(await asyncio.wait_for(task(3, 0.1), None))
+
+    # When wait_for gets cancelled
+    t = asyncio.create_task(wait_for_cancel(4, 1, 2))
+    await asyncio.sleep(0.1)
+    t.cancel()
+    await asyncio.sleep(0.1)
 
     print("finish")
 
