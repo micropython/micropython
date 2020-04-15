@@ -52,35 +52,21 @@ STATIC int get_int_property(mp_obj_t obj, qstr attr) {
 //| objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //| is called. This is done so that CircuitPython can use the display itself.
 //|
-//| .. class:: FramebufferDisplay(framebuffer, *, width, height, colstart=0, rowstart=0, rotation=0, color_depth=16, grayscale=False, pixels_in_byte_share_row=True, bytes_per_cell=1, reverse_pixels_in_byte=False, backlight_pin=None, brightness=1.0, auto_brightness=False, auto_refresh=True, native_frames_per_second=60)
+//| .. class:: FramebufferDisplay(framebuffer, *, rotation=0, auto_refresh=True)
 //|
 //|   Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
 //|   :param framebuffer: The framebuffer that the display is connected to
 //|   :type framebuffer: any core object implementing the framebuffer protocol
-//|   :param int width: Width in pixels
-//|   :param int height: Height in pixels
-//|   :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
-//|   :param int color_depth: The number of bits of color per pixel transmitted. (Some displays
-//|       support 18 bit but 16 is easier to transmit. The last bit is extrapolated.)
-//|   :param int bytes_per_cell: Number of bytes per addressable memory location when color_depth < 8. When greater than one, bytes share a row or column according to pixels_in_byte_share_row.
-//|   :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
-//|   :param bool brightness: Initial display brightness. This value is ignored if auto_brightness is True.
-//|   :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|   :param bool auto_refresh: Automatically refresh the screen
-//|   :param int native_frames_per_second: Number of display refreshes per second
+//|   :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_framebuffer, ARG_width, ARG_height, ARG_rotation, ARG_color_depth, ARG_bytes_per_cell, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
+    enum { ARG_framebuffer, ARG_rotation, ARG_auto_refresh, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_framebuffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
-        { MP_QSTR_bytes_per_cell, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
-        { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
     };
     MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -88,18 +74,16 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
 
-    if (args[ARG_width].u_int == 0) {
-        args[ARG_width].u_int = get_int_property(framebuffer, MP_QSTR_width);
-    }
-
-    if (args[ARG_height].u_int == 0) {
-        args[ARG_height].u_int = get_int_property(framebuffer, MP_QSTR_height);
-    }
-
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
+
+    int width = get_int_property(framebuffer, MP_QSTR_width);
+    int height = get_int_property(framebuffer, MP_QSTR_height);
+    int color_depth = get_int_property(framebuffer, MP_QSTR_color_depth);
+    int bytes_per_cell = get_int_property(framebuffer, MP_QSTR_bytes_per_cell);
+    int native_frames_per_second = get_int_property(framebuffer, MP_QSTR_native_frames_per_second);
 
     primary_display_t *disp = allocate_display_or_raise();
     framebufferio_framebufferdisplay_obj_t *self = &disp->framebuffer_display;
@@ -107,12 +91,13 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
     common_hal_framebufferio_framebufferdisplay_construct(
         self,
         framebuffer,
-        args[ARG_width].u_int, args[ARG_height].u_int,
+        width,
+        height,
         rotation,
-        args[ARG_color_depth].u_int,
-        args[ARG_bytes_per_cell].u_int,
+        color_depth,
+        bytes_per_cell,
         args[ARG_auto_refresh].u_bool,
-        args[ARG_native_frames_per_second].u_int
+        native_frames_per_second
         );
 
     return self;

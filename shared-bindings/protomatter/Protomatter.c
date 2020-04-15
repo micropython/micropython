@@ -350,6 +350,61 @@ const mp_obj_property_t protomatter_protomatter_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: bytes_per_cell
+//|
+//|     The bytes_per_cell of the display, in pixels.  Always equal to 1.
+//|
+STATIC mp_obj_t protomatter_protomatter_get_bytes_per_cell(mp_obj_t self_in) {
+    protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(1);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_bytes_per_cell_obj, protomatter_protomatter_get_bytes_per_cell);
+
+const mp_obj_property_t protomatter_protomatter_bytes_per_cell_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_bytes_per_cell_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: color_depth
+//|
+//|     The color_depth of the framebuffer, in bits.  Always equal to 16. This
+//|     is different than the constructor's "bit_depth".
+//|
+STATIC mp_obj_t protomatter_protomatter_get_color_depth(mp_obj_t self_in) {
+    protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(16);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_color_depth_obj, protomatter_protomatter_get_color_depth);
+
+const mp_obj_property_t protomatter_protomatter_color_depth_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_color_depth_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: native_frames_per_second
+//|
+//|     The native_frames_per_second of the display.  Always equal to 250.
+//|
+STATIC mp_obj_t protomatter_protomatter_get_native_frames_per_second(mp_obj_t self_in) {
+    protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(250);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_native_frames_per_second_obj, protomatter_protomatter_get_native_frames_per_second);
+
+const mp_obj_property_t protomatter_protomatter_native_frames_per_second_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_native_frames_per_second_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 
 STATIC const mp_rom_map_elem_t protomatter_protomatter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&protomatter_protomatter_deinit_obj) },
@@ -357,6 +412,9 @@ STATIC const mp_rom_map_elem_t protomatter_protomatter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&protomatter_protomatter_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&protomatter_protomatter_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&protomatter_protomatter_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_color_depth), MP_ROM_PTR(&protomatter_protomatter_color_depth_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bytes_per_cell), MP_ROM_PTR(&protomatter_protomatter_bytes_per_cell_obj) },
+    { MP_ROM_QSTR(MP_QSTR_native_frames_per_second), MP_ROM_PTR(&protomatter_protomatter_native_frames_per_second_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(protomatter_protomatter_locals_dict, protomatter_protomatter_locals_dict_table);
 
