@@ -181,7 +181,7 @@ endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
-ifeq ($(CIRCUITPY_PROTOMATTER),1)
+ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
@@ -413,7 +413,7 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 )
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
-ifeq ($(CIRCUITPY_PROTOMATTER),1)
+ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/, \
 	core.c \
 )

@@ -31,7 +31,7 @@
 #include "samd/timers.h"
 #include "timer_handler.h"
 
-void *common_hal_protomatter_timer_allocate() {
+void *common_hal_rgbmatrix_timer_allocate() {
     uint8_t timer_index = find_free_timer();
     if (timer_index == 0xff) {
         return NULL;
@@ -49,16 +49,16 @@ static uint8_t tc_index_from_ptr(void* ptr) {
     return 0xff;
 }
 
-void common_hal_protomatter_timer_enable(void* ptr) {
+void common_hal_rgbmatrix_timer_enable(void* ptr) {
     uint8_t timer_index = tc_index_from_ptr(ptr);
     if (timer_index == 0xff) {
         return;
     }
-    set_timer_handler(true, timer_index, TC_HANDLER_PROTOMATTER);
+    set_timer_handler(true, timer_index, TC_HANDLER_RGBMATRIX);
     turn_on_clocks(true, timer_index, 1);
 }
 
-void common_hal_protomatter_timer_disable(void* ptr) {
+void common_hal_rgbmatrix_timer_disable(void* ptr) {
     uint8_t timer_index = tc_index_from_ptr(ptr);
     if (timer_index == 0xff) {
         return;
@@ -67,7 +67,7 @@ void common_hal_protomatter_timer_disable(void* ptr) {
     tc_set_enable(ptr, false);
 }
 
-void common_hal_protomatter_timer_free(void* ptr) {
+void common_hal_rgbmatrix_timer_free(void* ptr) {
     uint8_t timer_index = tc_index_from_ptr(ptr);
     if (timer_index == 0xff) {
         return;
