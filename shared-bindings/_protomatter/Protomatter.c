@@ -314,10 +314,49 @@ STATIC mp_obj_t protomatter_protomatter_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_refresh_obj, protomatter_protomatter_refresh);
 
+//|   .. attribute:: width
+//|
+//|     The width of the display, in pixels
+//|
+STATIC mp_obj_t protomatter_protomatter_get_width(mp_obj_t self_in) {
+    protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(self->width);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_width_obj, protomatter_protomatter_get_width);
+const mp_obj_property_t protomatter_protomatter_width_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_width_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|   .. attribute:: height
+//|
+//|     The height of the display, in pixels
+//|
+STATIC mp_obj_t protomatter_protomatter_get_height(mp_obj_t self_in) {
+    protomatter_protomatter_obj_t *self = (protomatter_protomatter_obj_t*)self_in;
+    check_for_deinit(self);
+    int computed_get_height = (self->rgb_count / 3) << (self->addr_count);
+    return MP_OBJ_NEW_SMALL_INT(computed_get_height);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(protomatter_protomatter_get_height_obj, protomatter_protomatter_get_height);
+
+const mp_obj_property_t protomatter_protomatter_height_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&protomatter_protomatter_get_height_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 STATIC const mp_rom_map_elem_t protomatter_protomatter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&protomatter_protomatter_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&protomatter_protomatter_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&protomatter_protomatter_refresh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&protomatter_protomatter_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&protomatter_protomatter_height_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(protomatter_protomatter_locals_dict, protomatter_protomatter_locals_dict_table);
 
