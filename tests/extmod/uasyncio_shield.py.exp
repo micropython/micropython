@@ -3,13 +3,11 @@ test_await_shield
 awaiting t
 waiting
 waiting exited
-finally
 True
 True
 awaiting t
 waiting
 waiting exited
-finally
 True
 True
 ----------------------------
@@ -25,15 +23,10 @@ awaiting t
 awaiting t
 awaiting t
 wait cancelled
-finally
 awaiting cancelled
-finally
 awaiting cancelled
-finally
 awaiting cancelled
-finally
 awaiting cancelled
-finally
 awaiting cancelled
 stopping
 ----------------------------
@@ -44,16 +37,11 @@ awaiting t
 awaiting t
 awaiting t
 awaiting t
-finally
 awaiting cancelled
 waiting exited
-finally
 True
-finally
 True
-finally
 True
-finally
 True
 stopping
 ----------------------------
@@ -61,12 +49,10 @@ test_wait_for_shield
 awaiting t
 waiting
 waiting exited
-finally
 True
 True
 awaiting t
 waiting
-finally
 awaiting cancelled
 timeout
 waiting exited
@@ -75,7 +61,6 @@ test_cancel_wait_for_shield
 awaiting t
 waiting
 wait cancelled
-finally
 awaiting cancelled
 cancelled
 ----------------------------
@@ -83,7 +68,6 @@ test_reuse_shield_task
 awaiting t
 waiting
 waiting exited
-finally
 True
 True
 waiting
