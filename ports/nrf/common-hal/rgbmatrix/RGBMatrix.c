@@ -26,7 +26,7 @@
 
 #include <stddef.h>
 
-#include "common-hal/protomatter/Protomatter.h"
+#include "common-hal/rgbmatrix/RGBMatrix.h"
 
 #include "peripherals/nrf/timers.h"
 

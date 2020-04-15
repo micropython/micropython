@@ -38,7 +38,7 @@
 //| The `framebufferio` module contains classes to manage display output
 //| including synchronizing with refresh rates and partial updating.
 //| It is used in conjunction with classes from `displayio` to actually
-//| place items on the display; and classes like `Protomatter` to actually
+//| place items on the display; and classes like `RGBMatrix` to actually
 //| drive the display.
 //|
 //| Libraries

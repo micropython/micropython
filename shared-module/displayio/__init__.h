@@ -36,7 +36,7 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
-#include "shared-bindings/protomatter/Protomatter.h"
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
 
 typedef struct {
     union {

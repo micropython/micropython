@@ -29,8 +29,8 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
-#include "common-hal/protomatter/Protomatter.h"
-#include "shared-bindings/protomatter/Protomatter.h"
+#include "common-hal/rgbmatrix/RGBMatrix.h"
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
@@ -38,9 +38,9 @@
 #include "shared-module/framebufferio/__init__.h"
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
-//| .. currentmodule:: protomatter
+//| .. currentmodule:: rgbmatrix
 //|
-//| :class:`Protomatter` --  Driver for HUB75-style RGB LED matrices
+//| :class:`RGBMatrix` --  Driver for HUB75-style RGB LED matrices
 //| ================================================================
 //|
 
@@ -133,11 +133,11 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//| :class:`~protomatter.Protomatter` displays an in-memory framebuffer to an LED matrix.
+//| :class:`~rgbmatrix.RGBMatrix` displays an in-memory framebuffer to an LED matrix.
 //|
-//| .. class:: Protomatter(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, *, doublebuffer=True, framebuffer=None)
+//| .. class:: RGBMatrix(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, *, doublebuffer=True, framebuffer=None)
 //|
-//|   Create a Protomatter object with the given attributes.  The height of
+//|   Create a RGBMatrix object with the given attributes.  The height of
 //|   the display is determined by the number of rgb and address pins:
 //|   len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
 //|   address lines, the display will be 32 pixels tall.
@@ -171,7 +171,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|   If a framebuffer is not passed in, one is allocated internally.  To
 //|   retrieve it, pass the protomatter object to memoryview().
 //|
-//|   A Protomatter framebuffer is often used in conjunction with a
+//|   A RGBMatrix is often used in conjunction with a
 //|   `framebufferio.FramebufferDisplay`.
 //|
 
@@ -464,7 +464,7 @@ STATIC mp_int_t protomatter_protomatter_get_buffer(mp_obj_t self_in, mp_buffer_i
 
 const mp_obj_type_t protomatter_Protomatter_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Protomatter,
+    .name = MP_QSTR_RGBMatrix,
     .buffer_p = { .get_buffer = protomatter_protomatter_get_buffer, },
     .make_new = protomatter_protomatter_make_new,
     .protocol = &protomatter_protomatter_proto,
