@@ -42,10 +42,9 @@
 #include "tick.h"
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
-        mp_obj_t framebuffer, uint16_t width, uint16_t height,
-        uint16_t rotation, uint16_t color_depth,
-        uint8_t bytes_per_cell,
-        bool auto_refresh, uint16_t native_frames_per_second) {
+        mp_obj_t framebuffer,
+        uint16_t rotation,
+        bool auto_refresh) {
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
     self->framebuffer = framebuffer;
@@ -54,15 +53,29 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
 
-    displayio_display_core_construct(&self->core, NULL, width, height, ram_width, ram_height, 0, 0, rotation,
-        color_depth, false, false, bytes_per_cell, false, false);
+    displayio_display_core_construct(
+        &self->core,
+        NULL,
+        self->framebuffer_protocol->get_width(self->framebuffer),
+        self->framebuffer_protocol->get_height(self->framebuffer),
+        ram_width, 
+        ram_height,
+        0,
+        0,
+        rotation,
+        self->framebuffer_protocol->get_color_depth(self->framebuffer),
+        false,
+        false,
+        self->framebuffer_protocol->get_bytes_per_cell(self->framebuffer),
+        false,
+        false);
 
     self->first_manual_refresh = !auto_refresh;
 
-    self->native_frames_per_second = native_frames_per_second;
-    self->native_ms_per_frame = 1000 / native_frames_per_second;
+    self->native_frames_per_second = self->framebuffer_protocol->get_native_frames_per_second(self->framebuffer);
+    self->native_ms_per_frame = 1000 / self->native_frames_per_second;
 
-    supervisor_start_terminal(width, height);
+    supervisor_start_terminal(self->core.width, self->core.height);
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.

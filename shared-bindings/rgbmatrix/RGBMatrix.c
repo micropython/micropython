@@ -443,11 +443,37 @@ STATIC bool protomatter_protomatter_set_brightness_proto(mp_obj_t self_in, mp_fl
     return true;
 }
 
+STATIC int protomatter_protomatter_get_width_proto(mp_obj_t self_in) {
+    return common_hal_protomatter_protomatter_get_width(self_in);
+}
+
+STATIC int protomatter_protomatter_get_height_proto(mp_obj_t self_in) {
+    return common_hal_protomatter_protomatter_get_height(self_in);
+}
+
+STATIC int protomatter_protomatter_get_color_depth_proto(mp_obj_t self_in) {
+    return 16;
+}
+
+STATIC int protomatter_protomatter_get_bytes_per_cell_proto(mp_obj_t self_in) {
+    return 1;
+}
+
+STATIC int protomatter_protomatter_get_native_frames_per_second_proto(mp_obj_t self_in) {
+    return 250;
+}
+
+
 STATIC const framebuffer_p_t protomatter_protomatter_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = protomatter_protomatter_get_bufinfo,
     .set_brightness = protomatter_protomatter_set_brightness_proto,
     .get_brightness = protomatter_protomatter_get_brightness_proto,
+    .get_width = protomatter_protomatter_get_width_proto,
+    .get_height = protomatter_protomatter_get_height_proto,
+    .get_color_depth = protomatter_protomatter_get_color_depth_proto,
+    .get_bytes_per_cell = protomatter_protomatter_get_bytes_per_cell_proto,
+    .get_native_frames_per_second = protomatter_protomatter_get_native_frames_per_second_proto,
     .swapbuffers = protomatter_protomatter_swapbuffers,
     .deinit = protomatter_protomatter_deinit_proto,
 };

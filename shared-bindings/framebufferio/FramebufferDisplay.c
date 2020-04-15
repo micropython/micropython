@@ -39,10 +39,6 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-STATIC int get_int_property(mp_obj_t obj, qstr attr) {
-    return mp_obj_get_int(mp_load_attr(obj, attr));
-}
-
 //| .. currentmodule:: framebufferio
 //|
 //| :class:`FramebufferDisplay` -- Manage updating a display with framebuffer in RAM
@@ -79,25 +75,14 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
 
-    int width = get_int_property(framebuffer, MP_QSTR_width);
-    int height = get_int_property(framebuffer, MP_QSTR_height);
-    int color_depth = get_int_property(framebuffer, MP_QSTR_color_depth);
-    int bytes_per_cell = get_int_property(framebuffer, MP_QSTR_bytes_per_cell);
-    int native_frames_per_second = get_int_property(framebuffer, MP_QSTR_native_frames_per_second);
-
     primary_display_t *disp = allocate_display_or_raise();
     framebufferio_framebufferdisplay_obj_t *self = &disp->framebuffer_display;
     self->base.type = &framebufferio_framebufferdisplay_type;
     common_hal_framebufferio_framebufferdisplay_construct(
         self,
         framebuffer,
-        width,
-        height,
         rotation,
-        color_depth,
-        bytes_per_cell,
-        args[ARG_auto_refresh].u_bool,
-        native_frames_per_second
+        args[ARG_auto_refresh].u_bool
         );
 
     return self;
