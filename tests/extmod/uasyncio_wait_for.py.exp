@@ -12,4 +12,7 @@ ValueError
 task start 3
 task end 3
 6
+wait_for_cancel start
+task start 4
+wait_for_cancel cancelled
 finish
