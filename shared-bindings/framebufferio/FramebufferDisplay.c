@@ -39,6 +39,10 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
+STATIC int get_int_property(mp_obj_t obj, qstr attr) {
+    return mp_obj_get_int(mp_load_attr(obj, attr));
+}
+
 //| .. currentmodule:: framebufferio
 //|
 //| :class:`FramebufferDisplay` -- Manage updating a display with framebuffer in RAM
@@ -70,8 +74,8 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
     enum { ARG_framebuffer, ARG_width, ARG_height, ARG_rotation, ARG_color_depth, ARG_bytes_per_cell, ARG_auto_refresh, ARG_native_frames_per_second, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_framebuffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
-        { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, },
+        { MP_QSTR_width, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+        { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_rotation, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_color_depth, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 16} },
         { MP_QSTR_bytes_per_cell, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
@@ -83,6 +87,14 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
+
+    if (args[ARG_width].u_int == 0) {
+        args[ARG_width].u_int = get_int_property(framebuffer, MP_QSTR_width);
+    }
+
+    if (args[ARG_height].u_int == 0) {
+        args[ARG_height].u_int = get_int_property(framebuffer, MP_QSTR_height);
+    }
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
