@@ -135,12 +135,14 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
 //| :class:`~rgbmatrix.RGBMatrix` displays an in-memory framebuffer to an LED matrix.
 //|
-//| .. class:: RGBMatrix(width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, *, doublebuffer=True, framebuffer=None)
+//| .. class:: RGBMatrix(*, width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, doublebuffer=True, framebuffer=None, height=0)
 //|
 //|   Create a RGBMatrix object with the given attributes.  The height of
 //|   the display is determined by the number of rgb and address pins:
 //|   len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
-//|   address lines, the display will be 32 pixels tall.
+//|   address lines, the display will be 32 pixels tall.  If the optional height
+//|   parameter is specified and is not 0, it is checked against the calculated
+//|   height.
 //|
 //|   Up to 30 RGB pins and 8 address pins are supported.
 //|
