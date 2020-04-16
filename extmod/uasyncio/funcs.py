@@ -48,3 +48,17 @@ async def gather(*aws, return_exceptions=False):
             else:
                 raise er
     return ts
+
+
+def shield(aw):
+    aw = core._promote_to_task(aw)
+
+    async def shielded(t):
+        try:
+            return await t
+        finally:
+            t.shield = False
+
+    t = core.create_task(shielded(aw))
+    t.shield = True
+    return t
