@@ -65,7 +65,7 @@ cancelled
 awaiting cancelled
 waiting exited
 ----------------------------
-test_raise
+test_cancel_shield_task
 awaiting t
 waiting
 waiting exited
