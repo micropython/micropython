@@ -192,9 +192,6 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Because interrupt handlers point directly at rgbmatrix objects,
-    // it is NOT okay to move them to the long-lived pool later.  Allocate
-    // them there to begin with, since generally they'll be long-lived anyway.
     rgbmatrix_rgbmatrix_obj_t *self = &allocate_display_bus_or_raise()->rgbmatrix;
     self->base.type = &rgbmatrix_RGBMatrix_type;
 
