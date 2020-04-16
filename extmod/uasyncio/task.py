@@ -158,6 +158,7 @@ class Task:
             self = self.data
         # Reschedule Task as a cancelled task.
         if hasattr(self.data, "remove"):
+            # Not on the main running queue, remove the task from the queue it's on.
             self.data.remove(self)
             core._task_queue.push_head(self)
         elif hasattr(self, "shield") and self.shield:
