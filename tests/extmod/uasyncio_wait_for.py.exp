@@ -2,6 +2,7 @@ task start 1
 task end 1
 2
 task start 2
+task cancelled 2
 timeout
 task_catch start
 ignore cancel
@@ -12,4 +13,13 @@ ValueError
 task start 3
 task end 3
 6
+wait_for_cancel start
+task start 4
+wait_for_cancel cancelled
+task cancelled 4
+wait_for_cancel_ignore start
+task_catch start
+wait_for_cancel_ignore cancelled
+ignore cancel
+task_catch done
 finish
