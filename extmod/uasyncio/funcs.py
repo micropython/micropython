@@ -2,23 +2,30 @@
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
+from .shield import shield
 
 
 async def wait_for(aw, timeout):
     aw = core._promote_to_task(aw)
+    can = False
     if timeout is None:
         return await aw
 
-    def cancel(aw, timeout):
+    async def cancel(aw, timeout):
         await core.sleep(timeout)
+        nonlocal can
+        can = True
         aw.cancel()
 
     cancel_task = core.create_task(cancel(aw, timeout))
+    aw.no_exc = True  # prevent exception_handler()
     try:
-        ret = await aw
+        ret = await shield(aw)
     except core.CancelledError:
-        # Ignore CancelledError from aw, it's probably due to timeout
-        pass
+        if not can:
+            aw.cancel()
+            raise  # Raise CancelledError if wait_for itself got cancelled
+        # Ignore CancelledError from aw because it is due to timeout
     finally:
         # Cancel the "cancel" task if it's still active (optimisation instead of cancel_task.cancel())
         if cancel_task.coro is not None:
