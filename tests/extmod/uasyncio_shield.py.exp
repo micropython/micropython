@@ -13,6 +13,7 @@ True
 ----------------------------
 test_cancel_event
 waiting Event cancelled
+Got event
 stopping
 ----------------------------
 test_cancel_wait
@@ -60,15 +61,13 @@ waiting exited
 test_cancel_wait_for_shield
 awaiting t
 waiting
-wait cancelled
 awaiting cancelled
 cancelled
+waiting exited
 ----------------------------
-test_reuse_shield_task
+test_cancel_shield_task
 awaiting t
 waiting
 waiting exited
 True
 True
-waiting
-wait cancelled
