@@ -61,13 +61,17 @@ waiting exited
 test_cancel_wait_for_shield
 awaiting t
 waiting
-awaiting cancelled
 cancelled
+awaiting cancelled
 waiting exited
 ----------------------------
-test_cancel_shield_task
+test_raise
 awaiting t
 waiting
 waiting exited
 True
 True
+----------------------------
+test_raise
+ValueError
+ValueError
