@@ -39,8 +39,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
-
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
         mp_obj_t framebuffer, uint16_t width, uint16_t height,
         uint16_t rotation, uint16_t color_depth,
