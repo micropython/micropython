@@ -87,9 +87,7 @@ Additional functions
 
     Protect an awaitable object from being cancelled.
     
-    Returns the return value of *awaitable*.
-
-    This is a coroutine.
+    Returns a `Task` object.
 
 class Task
 ----------
