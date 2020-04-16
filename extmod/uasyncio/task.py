@@ -128,7 +128,6 @@ class Task:
         self.ph_child_last = None  # Paring heap
         self.ph_next = None  # Paring heap
         self.ph_rightmost_parent = None  # Paring heap
-        self.shield = False
 
     def __iter__(self):
         if not hasattr(self, "waiting"):
@@ -153,24 +152,21 @@ class Task:
         # Can't cancel self (not supported yet).
         if self is core.cur_task:
             raise RuntimeError("can't cancel self")
-        this = self # store original task that gets cancelled. Needed for shield
         # If Task waits on another task then forward the cancel to the one it's waiting on.
-        while isinstance(self.data, Task):
+        while isinstance(self.data, Task) and (not hasattr(self, "shield") or not self.shield):
+            # shielded Tasks are not being cancelled and therefore not removed
             self = self.data
         # Reschedule Task as a cancelled task.
         if hasattr(self.data, "remove"):
-            # Not on the main running queue, remove the task from the queue it's on.
             self.data.remove(self)
-            core._task_queue.push_head(self if not this.shield else this)
-        elif this.shield and self != this:
+            core._task_queue.push_head(self)
+        elif hasattr(self, "shield") and self.shield:
             # Shield task awaiting other task got cancelled
-            self.waiting.remove(this)
-            core._task_queue.push_head(this)
+            self.data.waiting.remove(self)
+            core._task_queue.push_head(self)
         elif core.ticks_diff(self.ph_key, core.ticks()) > 0:
             # On the main running queue but scheduled in the future, so bring it forward to now.
             core._task_queue.remove(self)
             core._task_queue.push_head(self)
-        if this.shield:
-            self = this
         self.data = core.CancelledError
         return True
