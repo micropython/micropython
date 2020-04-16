@@ -32,15 +32,18 @@ async def test_await_shield():
     print(await t)
 
 
-async def test_reuse_shield_task():
+async def test_cancel_shield_task():
     async def test():
-        print(await awaiter(wait()))
-        await wait()
+        try:
+            print(await awaiter(wait()))
+        except asyncio.CancelledError:
+            print("cancelled")
 
     t = asyncio.create_task(test())
-    await asyncio.sleep(0.5)
-    t.cancel()
-    await asyncio.sleep(0.5)
+    t2 = asyncio.shield(t)
+    await asyncio.sleep(0.1)
+    t2.cancel()
+    await asyncio.sleep(0.4)
 
 
 async def test_cancel_wait():
@@ -74,10 +77,18 @@ async def test_cancel_event():
             await ev.wait()
         except asyncio.CancelledError:
             print("waiting Event cancelled")
+            raise
+        print("Got event")
 
     t = asyncio.create_task(test())
     await asyncio.sleep(0.1)
     t.cancel()
+    await asyncio.sleep(0.1)
+    t = asyncio.shield(test())
+    await asyncio.sleep(0.1)
+    t.cancel()
+    await asyncio.sleep(0.1)
+    ev.set()
     await asyncio.sleep(0.1)
     print("stopping")
 
@@ -108,7 +119,7 @@ async def test_cancel_wait_for_shield():
     t = asyncio.create_task(test())
     await asyncio.sleep(0.1)
     t.cancel()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.4)
 
 
 print("----------------------------\ntest_await_shield")
@@ -123,5 +134,5 @@ print("----------------------------\ntest_wait_for_shield")
 asyncio.run(test_wait_for_shield())
 print("----------------------------\ntest_cancel_wait_for_shield")
 asyncio.run(test_cancel_wait_for_shield())
-print("----------------------------\ntest_reuse_shield_task")
-asyncio.run(test_reuse_shield_task())
+print("----------------------------\ntest_cancel_shield_task")
+asyncio.run(test_cancel_shield_task())
