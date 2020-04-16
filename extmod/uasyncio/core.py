@@ -195,7 +195,7 @@ def run_until_complete(main_task=None):
                     waiting = True
                 t.waiting = None  # Free waiting queue head
             # Print out exception for detached tasks
-            if not waiting and not isinstance(er, excs_stop):
+            if not waiting and not isinstance(er, excs_stop) and not hasattr(t, "no_exc"):
                 _exc_context["exception"] = er
                 _exc_context["future"] = t
                 Loop.call_exception_handler(_exc_context)
