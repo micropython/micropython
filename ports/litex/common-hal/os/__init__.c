@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Glenn Ruben Bakke
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Sean Cross
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +24,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef FPGA_MPCONFIGPORT_H__
-#define FPGA_MPCONFIGPORT_H__
+#include "genhdr/mpversion.h"
+#include "py/mpconfig.h"
+#include "py/objstr.h"
+#include "py/objtuple.h"
+#include "py/qstr.h"
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
-#define MICROPY_NLR_THUMB                   (0)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT  (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS  (1)
-#define MICROPY_PY_UBINASCII                (1)
-#define MICROPY_PY_UJSON                    (1)
-
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_PORT_ROOT_POINTERS \
-	CIRCUITPY_COMMON_ROOT_POINTERS
-#define MICROPY_NLR_SETJMP                  (1)
-#define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
+STATIC const qstr os_uname_info_fields[] = {
+    MP_QSTR_sysname, MP_QSTR_nodename,
+    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
+};
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "litex");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "litex");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
 
 
-#endif  // __INCLUDED_FPGA_MPCONFIGPORT_H
+STATIC MP_DEFINE_ATTRTUPLE(
+    os_uname_info_obj,
+    os_uname_info_fields,
+    5,
+    (mp_obj_t)&os_uname_info_sysname_obj,
+    (mp_obj_t)&os_uname_info_nodename_obj,
+    (mp_obj_t)&os_uname_info_release_obj,
+    (mp_obj_t)&os_uname_info_version_obj,
+    (mp_obj_t)&os_uname_info_machine_obj
+);
+
+mp_obj_t common_hal_os_uname(void) {
+    return (mp_obj_t)&os_uname_info_obj;
+}
+
+bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
+    return false;
+}

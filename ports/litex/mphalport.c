@@ -60,6 +60,10 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
+void mp_hal_delay_us(mp_uint_t delay) {
+    mp_hal_delay_ms(delay / 1000);
+}
+
 extern void SysTick_Handler(void);
 
 __attribute__((section(".ramtext")))
