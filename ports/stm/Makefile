@@ -93,8 +93,7 @@ endif
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 
-CFLAGS += $(INC) -Werror -Wall -std=gnu11 $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
-# Removed -nostdlib since it conflicts with stm32 startup files
+CFLAGS += $(INC) -Werror -Wall -std=gnu11 $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT) -nostdlib -nostartfiles
 
 # Undo some warnings.
 # STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
@@ -264,6 +263,12 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(S
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR +=
 
+# Bin section settings specific to the STM32H7
+ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32H743xx))
+MCU_SECTIONS = -j .isr_vector -j .text -j .data -j .itcm -j .dtcm_data $^ $@
+else
+MCU_SECTIONS = $^ $@
+endif
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
@@ -274,13 +279,11 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary $^ $@
-#   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
+	$(Q)$(OBJCOPY) -O binary $(MCU_SECTIONS)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O ihex $^ $@
-#   $(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
+	$(Q)$(OBJCOPY) -O ihex $(MCU_SECTIONS)
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
