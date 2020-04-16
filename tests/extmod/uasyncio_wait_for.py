@@ -46,7 +46,7 @@ async def wait_for_cancel(id, t, t2):
         print(e)
 
 
-async def wait_for_cancel_ignoe(t2):
+async def wait_for_cancel_ignore(t2):
     print("wait_for_cancel_ignore start")
     try:
         await asyncio.wait_for(task_catch(), t2)
@@ -89,7 +89,7 @@ async def main():
     await asyncio.sleep(0.1)
 
     # When wait_for gets cancelled and awaited task ignores the cancellation request
-    t = asyncio.create_task(wait_for_cancel_ignoe(2))
+    t = asyncio.create_task(wait_for_cancel_ignore(2))
     await asyncio.sleep(0.1)
     t.cancel()
     await asyncio.sleep(0.1)
