@@ -474,4 +474,4 @@ const mp_obj_module_t mp_module_ure = {
 #include "re1.5/recursiveloop.c"
 #include "re1.5/charclass.c"
 
-#endif //MICROPY_PY_URE
+#endif // MICROPY_PY_URE

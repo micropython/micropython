@@ -130,4 +130,4 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
     return ret;
 }
 
-#endif //MICROPY_USE_INTERNAL_PRINTF
+#endif // MICROPY_USE_INTERNAL_PRINTF

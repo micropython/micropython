@@ -50,8 +50,8 @@
 
 #if MICROPY_PY_MACHINE
 
-//#define MACHINE_WAKE_IDLE (0x01)
-//#define MACHINE_WAKE_SLEEP (0x02)
+// #define MACHINE_WAKE_IDLE (0x01)
+// #define MACHINE_WAKE_SLEEP (0x02)
 #define MACHINE_WAKE_DEEPSLEEP (0x04)
 
 extern const mp_obj_type_t esp_wdt_type;

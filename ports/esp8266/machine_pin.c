@@ -53,7 +53,7 @@
 #define GPIO_PULL_NONE (0)
 #define GPIO_PULL_UP (1)
 // Removed in SDK 1.1.0
-//#define GPIO_PULL_DOWN (2)
+// #define GPIO_PULL_DOWN (2)
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
@@ -442,7 +442,7 @@ STATIC const mp_rom_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT) },
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
-    //{ MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    // { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
 
     // IRQ triggers, can be or'd together
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },

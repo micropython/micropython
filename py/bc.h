@@ -216,7 +216,7 @@ typedef struct _mp_code_state_t {
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
-    //mp_exc_stack_t exc_state[0];
+    // mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
 
 mp_uint_t mp_decode_uint(const byte **ptr);

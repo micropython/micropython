@@ -141,7 +141,7 @@ typedef long mp_off_t;
 #else
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)(p)) //Avoid compiler warning about different const qualifiers
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)(p)) // Avoid compiler warning about different const qualifiers
 #define restrict
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)

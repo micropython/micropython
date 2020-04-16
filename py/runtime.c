@@ -152,8 +152,8 @@ void mp_deinit(void) {
     MICROPY_PORT_DEINIT_FUNC;
     #endif
 
-    //mp_obj_dict_free(&dict_main);
-    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
+    // mp_obj_dict_free(&dict_main);
+    // mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 }
 
 mp_obj_t mp_load_name(qstr qst) {

@@ -307,13 +307,13 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 
-//#if MICROPY_HW_ENABLE_RNG
+// #if MICROPY_HW_ENABLE_RNG
 //    { MP_ROM_QSTR(MP_QSTR_rng), MP_ROM_PTR(&pyb_rng_get_obj) },
-//#endif
+// #endif
 
-//#if MICROPY_HW_ENABLE_RTC
+// #if MICROPY_HW_ENABLE_RTC
 //    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
-//#endif
+// #endif
 
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
 //    { MP_ROM_QSTR(MP_QSTR_ExtInt), MP_ROM_PTR(&extint_type) },
@@ -328,9 +328,9 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type) },
     #endif
 
-//#if MICROPY_HW_HAS_SDCARD
+// #if MICROPY_HW_HAS_SDCARD
 //    { MP_ROM_QSTR(MP_QSTR_SD), MP_ROM_PTR(&pyb_sdcard_obj) },
-//#endif
+// #endif
 
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
 //    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
@@ -340,13 +340,13 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 //    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
 //    { MP_ROM_QSTR(MP_QSTR_ADCAll), MP_ROM_PTR(&pyb_adc_all_type) },
 
-//#if MICROPY_HW_ENABLE_DAC
+// #if MICROPY_HW_ENABLE_DAC
 //    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&pyb_dac_type) },
-//#endif
+// #endif
 
-//#if MICROPY_HW_HAS_MMA7660
+// #if MICROPY_HW_HAS_MMA7660
 //    { MP_ROM_QSTR(MP_QSTR_Accel), MP_ROM_PTR(&pyb_accel_type) },
-//#endif
+// #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);

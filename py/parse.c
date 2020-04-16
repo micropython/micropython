@@ -56,7 +56,7 @@
 #define RULE_ARG_OPT_RULE       (0x3000)
 
 // (un)comment to use rule names; for debugging
-//#define USE_RULE_NAME (1)
+// #define USE_RULE_NAME (1)
 
 // *FORMAT-OFF*
 

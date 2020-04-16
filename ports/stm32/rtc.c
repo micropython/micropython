@@ -227,9 +227,9 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct
         uint32_t tickstart = HAL_GetTick();
 
         #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
-        //__HAL_RCC_PWR_CLK_ENABLE();
+        // __HAL_RCC_PWR_CLK_ENABLE();
         // Enable write access to Backup domain
-        //PWR->CR1 |= PWR_CR1_DBP;
+        // PWR->CR1 |= PWR_CR1_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR1 & PWR_CR1_DBP) == RESET) {
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
@@ -238,7 +238,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct
         }
         #else
         // Enable write access to Backup domain
-        //PWR->CR |= PWR_CR_DBP;
+        // PWR->CR |= PWR_CR_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR & PWR_CR_DBP) == RESET) {
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
@@ -405,7 +405,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
     }
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        //Error_Handler();
+        // Error_Handler();
         return HAL_ERROR;
     }
 
@@ -681,7 +681,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
-        //printf("wut=%d wucksel=%d\n", wut, wucksel);
+        // printf("wut=%d wucksel=%d\n", wut, wucksel);
     } else {
         // clear WUTIE to disable interrupts
         RTC->CR &= ~RTC_CR_WUTIE;

@@ -248,4 +248,4 @@ const mp_obj_module_t mp_module_ubinascii = {
     .globals = (mp_obj_dict_t *)&mp_module_binascii_globals,
 };
 
-#endif //MICROPY_PY_UBINASCII
+#endif // MICROPY_PY_UBINASCII

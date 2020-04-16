@@ -121,7 +121,7 @@ STATIC mp_obj_t pyb_pwm_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pwm_deinit_obj, pyb_pwm_deinit);
 
 STATIC mp_obj_t pyb_pwm_freq(size_t n_args, const mp_obj_t *args) {
-    //pyb_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    // pyb_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get
         return MP_OBJ_NEW_SMALL_INT(pwm_get_freq(0));

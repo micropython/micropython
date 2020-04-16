@@ -41,7 +41,7 @@
 #define SPI_BYTE_ORDER_HIGH_TO_LOW 1
 #define SPI_BYTE_ORDER_LOW_TO_HIGH 0
 
-#ifndef CPU_CLK_FREQ //Should already be defined in eagle_soc.h
+#ifndef CPU_CLK_FREQ // Should already be defined in eagle_soc.h
 #define CPU_CLK_FREQ (80 * 1000000)
 #endif
 

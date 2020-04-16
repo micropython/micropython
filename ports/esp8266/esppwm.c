@@ -20,7 +20,7 @@
 
 #include "py/mpprint.h"
 #define PWM_DBG(...)
-//#define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+// #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define ICACHE_RAM_ATTR // __attribute__((section(".text")))
 
@@ -58,7 +58,7 @@ STATIC uint8_t pwm_current_channel = 0;
 STATIC uint16_t pwm_gpio = 0;
 STATIC uint8_t pwm_channel_num = 0;
 
-//XXX: 0xffffffff/(80000000/16)=35A
+// XXX: 0xffffffff/(80000000/16)=35A
 #define US_TO_RTC_TIMER_TICKS(t)          \
     ((t) ?                                   \
     (((t) > 0x35A) ?                   \
@@ -66,7 +66,7 @@ STATIC uint8_t pwm_channel_num = 0;
     (((t) * (APB_CLK_FREQ >> 4)) / 1000000)) :    \
     0)
 
-//FRC1
+// FRC1
 #define FRC1_ENABLE_TIMER  BIT7
 
 typedef enum {
@@ -333,7 +333,7 @@ void ICACHE_FLASH_ATTR
 pwm_init(void) {
     uint8 i;
 
-    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
+    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  // FRC2_AUTO_RELOAD|
         DIVDED_BY_16
         | FRC1_ENABLE_TIMER
         | TM_EDGE_INT);
@@ -379,7 +379,7 @@ pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func) {
             pwm.duty[i] = 0;
             pwm_gpio |= (1 << pin_num[channel]);
             PIN_FUNC_SELECT(pin_mux, pin_func);
-            GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel])), GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel]))) & (~GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)));  //disable open drain;
+            GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel])), GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin_num[channel]))) & (~GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)));  // disable open drain;
             pwm_channel_num++;
             UNLOCK_PWM(critical);   // leave critical
             return channel;
@@ -399,7 +399,7 @@ pwm_delete(uint8 channel) {
         if (pwm_out_io_num[i] == channel) { // exist
             LOCK_PWM(critical);   // enter critical
             pwm_out_io_num[i] = -1;
-            pwm_gpio &= ~(1 << pin_num[channel]);   //clear the bit
+            pwm_gpio &= ~(1 << pin_num[channel]);   // clear the bit
             for (j = i; j < pwm_channel_num - 1; j++) {
                 pwm_out_io_num[j] = pwm_out_io_num[j + 1];
                 pwm.duty[j] = pwm.duty[j + 1];

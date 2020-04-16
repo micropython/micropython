@@ -852,7 +852,7 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
 
     z->len = 0;
     for (; cur < top; ++cur) { // XXX UTF8 next char
-        //mp_uint_t v = char_to_numeric(cur#); // XXX UTF8 get char
+        // mp_uint_t v = char_to_numeric(cur#); // XXX UTF8 get char
         mp_uint_t v = *cur;
         if ('0' <= v && v <= '9') {
             v -= '0';

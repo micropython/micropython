@@ -359,7 +359,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 /// \method deinit()
 /// Turn off the UART bus.
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
-    //pyb_uart_obj_t *self = self_in;
+    // pyb_uart_obj_t *self = self_in;
     // TODO
     return mp_const_none;
 }

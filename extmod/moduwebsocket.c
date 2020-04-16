@@ -200,7 +200,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                             return 0;
                         }
 
-                        //DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
+                        // DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
                         continue;
                     }
                 }

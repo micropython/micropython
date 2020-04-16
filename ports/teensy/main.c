@@ -150,7 +150,7 @@ mp_obj_t pyb_gc(void) {
 }
 
 mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
-    //assert(1 <= n_args && n_args <= 2);
+    // assert(1 <= n_args && n_args <= 2);
 
     uint pin = mp_obj_get_int(args[0]);
     if (pin > CORE_NUM_DIGITAL) {

@@ -110,7 +110,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
             break;
         }
         mp_handle_pending(true);
-        //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
+        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
         #endif

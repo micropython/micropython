@@ -1556,7 +1556,7 @@ typedef double mp_float_t;
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #endif
-#endif //INT_FMT
+#endif // INT_FMT
 
 // Modifier for function which doesn't return
 #ifndef NORETURN

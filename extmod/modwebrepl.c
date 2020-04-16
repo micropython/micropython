@@ -190,7 +190,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *sock_stream = mp_get_stream(self->sock);
     mp_uint_t out_sz = sock_stream->read(self->sock, buf, size, errcode);
-    //DEBUG_printf("webrepl: Read %d initial bytes from websocket\n", out_sz);
+    // DEBUG_printf("webrepl: Read %d initial bytes from websocket\n", out_sz);
     if (out_sz == 0 || out_sz == MP_STREAM_ERROR) {
         return out_sz;
     }

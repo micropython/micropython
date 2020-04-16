@@ -283,7 +283,7 @@ STATIC void mptask_pre_init (void) {
     // this one allocates memory for the socket semaphore
     modusocket_pre_init();
 
-    //CRYPTOHASH_Init();
+    // CRYPTOHASH_Init();
 
     #ifndef DEBUG
     OsiTaskHandle svTaskHandle;
