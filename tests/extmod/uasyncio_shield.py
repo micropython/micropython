@@ -122,6 +122,25 @@ async def test_cancel_wait_for_shield():
     await asyncio.sleep(0.4)
 
 
+async def test_raise():
+    async def test():
+        await asyncio.sleep(0.1)
+        raise ValueError
+
+    try:
+        print(await asyncio.shield(test()))
+    except ValueError:
+        print("ValueError")
+    await asyncio.sleep(0.1)
+
+    t = asyncio.create_task(test())
+    try:
+        print(await asyncio.shield(t))
+    except ValueError:
+        print("ValueError")
+    await asyncio.sleep(0.1)
+
+
 print("----------------------------\ntest_await_shield")
 asyncio.run(test_await_shield())
 print("----------------------------\ntest_cancel_event")
@@ -136,3 +155,5 @@ print("----------------------------\ntest_cancel_wait_for_shield")
 asyncio.run(test_cancel_wait_for_shield())
 print("----------------------------\ntest_cancel_shield_task")
 asyncio.run(test_cancel_shield_task())
+print("----------------------------\ntest_raise")
+asyncio.run(test_raise())
