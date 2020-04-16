@@ -51,7 +51,7 @@ STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
     if (machine_rtc_config.ext0_pin != -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
-    //mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("touchpad wakeup not available for this version of ESP-IDF"));
+    // mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("touchpad wakeup not available for this version of ESP-IDF"));
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;

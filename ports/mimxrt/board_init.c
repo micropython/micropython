@@ -66,7 +66,7 @@ void board_init(void) {
     GPIO_PinInit(MICROPY_HW_LED_PORT, MICROPY_HW_LED_PIN, &led_config);
     board_led_write(true);
 
-    //------------- USB0 -------------//
+    // ------------- USB0 ------------- //
 
     // Clock
     CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);

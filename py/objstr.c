@@ -284,11 +284,11 @@ const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle,
         }
         for (;;) {
             if (memcmp(&haystack[str_index], needle, nlen) == 0) {
-                //found
+                // found
                 return haystack + str_index;
             }
             if (str_index == str_index_end) {
-                //not found
+                // not found
                 break;
             }
             str_index += direction;
@@ -396,7 +396,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         case MP_BINARY_OP_CONTAINS:
             return mp_obj_new_bool(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
 
-        //case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
+        // case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
         case MP_BINARY_OP_EQUAL: // This will be passed only for bytes, str is dealt with in mp_obj_equal()
         case MP_BINARY_OP_LESS:
         case MP_BINARY_OP_LESS_EQUAL:
@@ -849,7 +849,7 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
-    //+1 to accommodate the last character
+    // +1 to accommodate the last character
     size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     if (stripped_len == orig_str_len) {
         // If nothing was stripped, don't bother to dup original string

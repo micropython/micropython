@@ -35,7 +35,7 @@
 #include "nimble/nimble_port_freertos.h"
 
 STATIC void ble_host_task(void *param) {
-    nimble_port_run();  //This function will return only when nimble_port_stop() is executed.
+    nimble_port_run(); // This function will return only when nimble_port_stop() is executed.
     nimble_port_freertos_deinit();
 }
 

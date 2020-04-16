@@ -48,7 +48,7 @@ STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
     const qstr *fields = ((mp_obj_namedtuple_type_t *)self->tuple.base.type)->fields;
     mp_obj_t dict = mp_obj_new_dict(self->tuple.len);
-    //make it an OrderedDict
+    // make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
     dictObj->base.type = &mp_type_ordereddict;
     dictObj->map.is_ordered = 1;

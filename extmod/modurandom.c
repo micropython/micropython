@@ -224,4 +224,4 @@ const mp_obj_module_t mp_module_urandom = {
 };
 #endif
 
-#endif //MICROPY_PY_URANDOM
+#endif // MICROPY_PY_URANDOM

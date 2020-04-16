@@ -891,8 +891,8 @@ void pyb_can_handle_callback(pyb_can_obj_t *self, uint fifo_id, mp_obj_t callbac
 }
 
 STATIC const mp_stream_p_t can_stream_p = {
-    //.read = can_read, // is read sensible for CAN?
-    //.write = can_write, // is write sensible for CAN?
+    // .read = can_read, // is read sensible for CAN?
+    // .write = can_write, // is write sensible for CAN?
     .ioctl = can_ioctl,
     .is_text = false,
 };

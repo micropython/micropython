@@ -31,7 +31,7 @@
 #define MICROPY_USE_READLINE        (1)
 #endif
 
-#define MICROPY_ALLOC_PATH_MAX      (260) //see minwindef.h for msvc or limits.h for mingw
+#define MICROPY_ALLOC_PATH_MAX      (260) // see minwindef.h for msvc or limits.h for mingw
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -220,7 +220,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } //can't have zero-sized array
+#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } // can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else
@@ -259,7 +259,7 @@ typedef mp_off_t off_t;
 
 // System headers (needed e.g. for nlr.h)
 
-#include <stddef.h> //for NULL
-#include <assert.h> //for assert
+#include <stddef.h> // for NULL
+#include <assert.h> // for assert
 
 #endif

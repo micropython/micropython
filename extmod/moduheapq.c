@@ -119,4 +119,4 @@ const mp_obj_module_t mp_module_uheapq = {
 };
 #endif
 
-#endif //MICROPY_PY_UHEAPQ
+#endif // MICROPY_PY_UHEAPQ

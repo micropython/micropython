@@ -44,7 +44,7 @@ const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 int uart_attached_to_dupterm;
 
 void mp_hal_init(void) {
-    //ets_wdt_disable(); // it's a pain while developing
+    // ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
     uart_attached_to_dupterm = 0;

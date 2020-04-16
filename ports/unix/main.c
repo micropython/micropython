@@ -699,7 +699,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     free(heap);
     #endif
 
-    //printf("total bytes = %d\n", m_get_total_bytes_allocated());
+    // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
 

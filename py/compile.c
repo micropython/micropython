@@ -682,7 +682,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
             pn_id = pns->nodes[0];
-            //pn_colon = pns->nodes[1]; // unused
+            // pn_colon = pns->nodes[1]; // unused
             pn_equal = pns->nodes[2];
 
         } else {
@@ -2874,7 +2874,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                 // bare star
                 // TODO see http://www.python.org/dev/peps/pep-3102/
-                //assert(comp->scope_cur->num_dict_params == 0);
+                // assert(comp->scope_cur->num_dict_params == 0);
                 pns = NULL;
             } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
                 // named star
@@ -3192,7 +3192,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)scope->pn;
     assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_funcdef);
 
-    //qstr f_id = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // function name
+    // qstr f_id = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // function name
 
     // parameters are in pns->nodes[1]
     if (comp->pass == MP_PASS_CODE_SIZE) {

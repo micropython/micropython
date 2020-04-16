@@ -70,7 +70,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_stacks_analyze_obj, mod_stacks_analyze);
 
 #ifdef CONFIG_NET_SHELL
 
-//int net_shell_cmd_iface(int argc, char *argv[]);
+// int net_shell_cmd_iface(int argc, char *argv[]);
 
 STATIC mp_obj_t mod_shell_net_iface(void) {
     net_shell_cmd_iface(0, NULL);

@@ -91,7 +91,7 @@ typedef struct _mp_obj_fficallback_t {
     ffi_type *params[];
 } mp_obj_fficallback_t;
 
-//STATIC const mp_obj_type_t opaque_type;
+// STATIC const mp_obj_type_t opaque_type;
 STATIC const mp_obj_type_t ffimod_type;
 STATIC const mp_obj_type_t ffifunc_type;
 STATIC const mp_obj_type_t fficallback_type;

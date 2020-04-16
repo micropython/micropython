@@ -51,7 +51,7 @@
 
 #if defined(NRF52840)
 // for tinyusb
-//#define NRFX_IRQ_IS_ENABLED 1
+// #define NRFX_IRQ_IS_ENABLED 1
 #define NRFX_POWER_ENABLED 1
 #define NRFX_POWER_CONFIG_IRQ_PRIORITY 2
 #define NRFX_SYSTICK_ENABLED 1

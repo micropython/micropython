@@ -223,7 +223,7 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
 
     // return ip and port
     // it seems CC3000 returns little endian for accept??
-    //UNPACK_SOCKADDR(addr, ip, *port);
+    // UNPACK_SOCKADDR(addr, ip, *port);
     *port = (addr.sa_data[1] << 8) | addr.sa_data[0];
     ip[3] = addr.sa_data[2];
     ip[2] = addr.sa_data[3];

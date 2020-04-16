@@ -940,4 +940,4 @@ const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops = {
 };
 #endif
 
-#endif //MICROPY_ENABLE_COMPILER
+#endif // MICROPY_ENABLE_COMPILER

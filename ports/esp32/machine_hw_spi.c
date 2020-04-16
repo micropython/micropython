@@ -188,7 +188,7 @@ STATIC void machine_hw_spi_init_internal(
         .pre_cb = NULL
     };
 
-    //Initialize the SPI bus
+    // Initialize the SPI bus
 
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;

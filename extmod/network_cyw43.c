@@ -153,7 +153,7 @@ STATIC int network_cyw43_scan_cb(void *env, const cyw43_ev_scan_result_t *res) {
             MP_OBJ_NEW_SMALL_INT(res->channel),
             MP_OBJ_NEW_SMALL_INT(res->rssi),
             MP_OBJ_NEW_SMALL_INT(res->auth_mode),
-            //mp_const_false, // hidden
+            // mp_const_false, // hidden
             MP_OBJ_NEW_SMALL_INT(1), // N
         };
         mp_obj_list_append(list, mp_obj_new_tuple(6, tuple));

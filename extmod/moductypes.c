@@ -431,7 +431,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
-//printf("scalar type=%d offset=%x\n", val_type, offset);
+// printf("scalar type=%d offset=%x\n", val_type, offset);
 
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
 //            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
@@ -501,7 +501,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
-//printf("agg type=%d offset=%x\n", agg_type, offset);
+// printf("agg type=%d offset=%x\n", agg_type, offset);
 
     switch (agg_type) {
         case STRUCT: {
@@ -525,7 +525,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
-//printf("PTR/ARR base addr=%p\n", o->addr);
+// printf("PTR/ARR base addr=%p\n", o->addr);
             return MP_OBJ_FROM_PTR(o);
         }
     }

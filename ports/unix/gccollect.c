@@ -165,7 +165,7 @@ MP_NOINLINE void gc_collect_regs_and_stack(void) {
 }
 
 void gc_collect(void) {
-    //gc_dump_info();
+    // gc_dump_info();
 
     gc_collect_start();
     gc_collect_regs_and_stack();
@@ -177,8 +177,8 @@ void gc_collect(void) {
     #endif
     gc_collect_end();
 
-    //printf("-----\n");
-    //gc_dump_info();
+    // printf("-----\n");
+    // gc_dump_info();
 }
 
-#endif //MICROPY_ENABLE_GC
+#endif // MICROPY_ENABLE_GC

@@ -168,7 +168,7 @@ typedef struct _repl_t {
     // but it was moved to MP_STATE_VM(repl_line) as containing
     // root pointer. Still keep structure in case more state
     // will be added later.
-    //vstr_t line;
+    // vstr_t line;
     bool cont_line;
     bool paste_mode;
 } repl_t;

@@ -150,7 +150,7 @@ STATIC item_t keyCodeMap[] = {
     {VK_HOME, "[H"},
     {VK_END, "[F"},
     {VK_DELETE, "[3~"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
 };
 
 // likewise, but with Ctrl key down
@@ -159,7 +159,7 @@ STATIC item_t ctrlKeyCodeMap[] = {
     {VK_RIGHT, "f"},
     {VK_DELETE, "d"},
     {VK_BACK, "\x7F"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
 };
 
 STATIC const char *cur_esc_seq = NULL;

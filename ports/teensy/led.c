@@ -51,7 +51,7 @@ void led_state(pyb_led_t led, int state) {
         return;
     }
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
-    //printf("led_state(%d,%d)\n", led, state);
+    // printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
         // turn LED off
         MICROPY_HW_LED_OFF(led_pin);

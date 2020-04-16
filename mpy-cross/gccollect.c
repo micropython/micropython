@@ -146,4 +146,4 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-#endif //MICROPY_ENABLE_GC
+#endif // MICROPY_ENABLE_GC

@@ -323,4 +323,4 @@ const mp_obj_module_t mp_module_ujson = {
     .globals = (mp_obj_dict_t *)&mp_module_ujson_globals,
 };
 
-#endif //MICROPY_PY_UJSON
+#endif // MICROPY_PY_UJSON

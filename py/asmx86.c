@@ -41,13 +41,13 @@
 
 #define OPCODE_NOP               (0x90)
 #define OPCODE_PUSH_R32          (0x50)
-//#define OPCODE_PUSH_I32          (0x68)
-//#define OPCODE_PUSH_M32          (0xff) /* /6 */
+// #define OPCODE_PUSH_I32          (0x68)
+// #define OPCODE_PUSH_M32          (0xff) /* /6 */
 #define OPCODE_POP_R32           (0x58)
 #define OPCODE_RET               (0xc3)
-//#define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
+// #define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
 #define OPCODE_MOV_I32_TO_R32    (0xb8)
-//#define OPCODE_MOV_I32_TO_RM32   (0xc7)
+// #define OPCODE_MOV_I32_TO_RM32   (0xc7)
 #define OPCODE_MOV_R8_TO_RM8     (0x88) /* /r */
 #define OPCODE_MOV_R32_TO_RM32   (0x89) /* /r */
 #define OPCODE_MOV_RM32_TO_R32   (0x8b) /* /r */
@@ -63,15 +63,15 @@
 #define OPCODE_SUB_R32_FROM_RM32 (0x29)
 #define OPCODE_SUB_I32_FROM_RM32 (0x81) /* /5 */
 #define OPCODE_SUB_I8_FROM_RM32  (0x83) /* /5 */
-//#define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
-//#define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
-//#define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
+// #define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
+// #define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
+// #define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
 #define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
 #define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
-//#define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
-//#define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
+// #define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
+// #define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
 #define OPCODE_CMP_R32_WITH_RM32 (0x39)
-//#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
+// #define OPCODE_CMP_RM32_WITH_R32 (0x3b)
 #define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
 #define OPCODE_TEST_R32_WITH_RM32 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)

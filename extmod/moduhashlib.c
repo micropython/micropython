@@ -346,4 +346,4 @@ const mp_obj_module_t mp_module_uhashlib = {
     .globals = (mp_obj_dict_t *)&mp_module_uhashlib_globals,
 };
 
-#endif //MICROPY_PY_UHASHLIB
+#endif // MICROPY_PY_UHASHLIB

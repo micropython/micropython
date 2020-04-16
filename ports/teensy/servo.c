@@ -72,7 +72,7 @@ pin_error:
 }
 
 static mp_obj_t servo_obj_detach(mp_obj_t self_in) {
-    //pyb_servo_obj_t *self = self_in;
+    // pyb_servo_obj_t *self = self_in;
     return mp_const_none;
 }
 

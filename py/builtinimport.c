@@ -440,7 +440,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (stat_file_py_or_mpy(&path) != MP_IMPORT_STAT_FILE) {
-                        //mp_warning("%s is imported as namespace package", vstr_str(&path));
+                        // mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {
                         do_load(module_obj, &path);
                     }

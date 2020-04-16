@@ -98,7 +98,7 @@ STATIC bool is_object_type(const char *jtypesig) {
 STATIC void check_exception(void) {
     jobject exc = JJ1(ExceptionOccurred);
     if (exc) {
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         mp_obj_t py_e = new_jobject(exc);
         JJ1(ExceptionClear);
         if (JJ(IsInstanceOf, exc, IndexException_class)) {
@@ -142,7 +142,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = new_jobject(obj);
             return;
         }
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
@@ -220,7 +220,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = new_jobject(obj);
             return;
         }
-        //JJ1(ExceptionDescribe);
+        // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
@@ -246,7 +246,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     mp_uint_t idx = mp_obj_get_int(index);
     char class_name[64];
     get_jclass_name(self->obj, class_name);
-    //printf("class: %s\n", class_name);
+    // printf("class: %s\n", class_name);
 
     if (class_name[0] == '[') {
         if (class_name[1] == 'L' || class_name[1] == '[') {
@@ -412,7 +412,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         if (!MATCH(expected_type, "java.lang.Object")) {
             char class_name[64];
             get_jclass_name(jo->obj, class_name);
-            //printf("Arg class: %s\n", class_name);
+            // printf("Arg class: %s\n", class_name);
             if (strcmp(class_name, expected_type) != 0) {
                 return false;
             }
@@ -425,7 +425,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
             return false;
         }
     } else if (arg == mp_const_none) {
-        //printf("TODO: Check java arg type!!\n");
+        // printf("TODO: Check java arg type!!\n");
         while (isalpha(*arg_type) || *arg_type == '.') {
             arg_type++;
         }
@@ -470,7 +470,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
         jobject name_o = JJ(CallObjectMethod, meth, Object_toString_mid);
         const char *decl = JJ(GetStringUTFChars, name_o, NULL);
         const char *arg_types = strchr(decl, '(') + 1;
-        //const char *arg_types_end = strchr(arg_types, ')');
+        // const char *arg_types_end = strchr(arg_types, ')');
 //        printf("method[%d]=%p %s\n", i, meth, decl);
 
         const char *meth_name = NULL;

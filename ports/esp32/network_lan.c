@@ -130,7 +130,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     if (args[ARG_clock_mode].u_int != -1 &&
         args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_IN &&
         // Disabled due ESP-IDF (see modnetwork.c note)
-        //args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_OUT &&
+        // args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO0_OUT &&
         args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO16_OUT &&
         args[ARG_clock_mode].u_int != ETH_CLOCK_GPIO17_OUT) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid clock mode"));

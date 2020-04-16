@@ -158,7 +158,7 @@ void MP_FASTCODE(nlr_jump_fail)(void *val) {
     }
 }
 
-//void __assert(const char *file, int line, const char *func, const char *expr) {
+// void __assert(const char *file, int line, const char *func, const char *expr) {
 void __assert(const char *file, int line, const char *expr) {
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     for (;;) {

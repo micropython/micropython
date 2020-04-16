@@ -280,14 +280,14 @@ void SystemClock_Config(void) {
         b1 <<= 10;
         b2 <<= 10;
     }
-    RCC_OscInitStruct.PLL.PLLM = m; //MICROPY_HW_CLK_PLLM;
-    RCC_OscInitStruct.PLL.PLLN = n; //MICROPY_HW_CLK_PLLN;
-    RCC_OscInitStruct.PLL.PLLP = p; //MICROPY_HW_CLK_PLLP;
-    RCC_OscInitStruct.PLL.PLLQ = q; //MICROPY_HW_CLK_PLLQ;
+    RCC_OscInitStruct.PLL.PLLM = m; // MICROPY_HW_CLK_PLLM;
+    RCC_OscInitStruct.PLL.PLLN = n; // MICROPY_HW_CLK_PLLN;
+    RCC_OscInitStruct.PLL.PLLP = p; // MICROPY_HW_CLK_PLLP;
+    RCC_OscInitStruct.PLL.PLLQ = q; // MICROPY_HW_CLK_PLLQ;
 
-    RCC_ClkInitStruct.AHBCLKDivider = h;  //RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = b1; //RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = b2; //RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.AHBCLKDivider = h; // RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = b1; // RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = b2; // RCC_HCLK_DIV2;
     #else // defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
@@ -393,7 +393,7 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_CLK_USE_HSE
     PeriphClkInitStruct.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSE;
-    PeriphClkInitStruct.PLLSAI1.PLLSAI1M = 1; //MICROPY_HW_CLK_PLLSAIM;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1M = 1; // MICROPY_HW_CLK_PLLSAIM;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1N = MICROPY_HW_CLK_PLLSAIN;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1P = MICROPY_HW_CLK_PLLSAIP;
     PeriphClkInitStruct.PLLSAI1.PLLSAI1Q = MICROPY_HW_CLK_PLLSAIQ;

@@ -146,7 +146,7 @@ STATIC mp_float_t MICROPY_FLOAT_C_FUN(fabs_func)(mp_float_t x) {
 }
 MATH_FUN_1(fabs, fabs_func)
 // floor(x)
-MATH_FUN_1_TO_INT(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
+MATH_FUN_1_TO_INT(floor, floor) // TODO: delegate to x.__floor__() if x is not a float
 // fmod(x, y)
 MATH_FUN_2(fmod, fmod)
 // isfinite(x)
@@ -169,7 +169,7 @@ MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
-//TODO: fsum
+// TODO: fsum
 
 #if MICROPY_PY_MATH_ISCLOSE
 STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
