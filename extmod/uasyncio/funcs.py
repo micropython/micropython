@@ -2,7 +2,6 @@
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
 from . import core
-from .shield import shield
 
 
 async def wait_for(aw, timeout):
