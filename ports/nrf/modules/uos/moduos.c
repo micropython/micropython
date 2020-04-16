@@ -37,9 +37,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
-//#include "timeutils.h"
 #include "uart.h"
-//#include "portmodules.h"
 
 #if MICROPY_HW_ENABLE_RNG
 #include "drivers/rng.h"
