@@ -23,7 +23,6 @@
  */
 
 #include "fdlibm.h"
-//#include <errno.h>
 
 #ifdef __STDC__
 	float ldexpf(float value, int exp)
