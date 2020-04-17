@@ -69,6 +69,8 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uu
 }
 
 STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
     DEBUG_EVENT_printf("btstack_packet_handler(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
     if (packet_type != HCI_EVENT_PACKET) {
         return;
@@ -204,6 +206,8 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
     DEBUG_EVENT_printf("btstack_packet_handler_write_with_response(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
     if (packet_type != HCI_EVENT_PACKET) {
         return;
@@ -402,6 +406,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 }
 
 STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    (void)connection_handle;
     DEBUG_EVENT_printf("btstack: att_read_callback (handle: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
@@ -413,6 +418,8 @@ STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 }
 
 STATIC int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    (void)offset;
+    (void)transaction_mode;
     DEBUG_EVENT_printf("btstack: att_write_callback (handle: %u, mode: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, transaction_mode, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
@@ -483,9 +490,9 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
         ++handle_index;
 
         for (size_t j = 0; j < num_descriptors[i]; ++j) {
-            uint16_t props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
-            uint16_t read_permission = ATT_SECURITY_NONE;
-            uint16_t write_permission = ATT_SECURITY_NONE;
+            props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
+            read_permission = ATT_SECURITY_NONE;
+            write_permission = ATT_SECURITY_NONE;
 
             if (descriptor_uuids[descriptor_index]->type == MP_BLUETOOTH_UUID_TYPE_16) {
                 handles[handle_index] = att_db_util_add_descriptor_uuid16(get_uuid16(descriptor_uuids[descriptor_index]), props, read_permission, write_permission, NULL, 0);
@@ -558,6 +565,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 STATIC btstack_timer_source_t scan_duration_timeout;
 
 STATIC void hci_initialization_timeout_handler(btstack_timer_source_t *ds) {
+    (void)ds;
     mp_bluetooth_gap_scan_stop();
 }
 
