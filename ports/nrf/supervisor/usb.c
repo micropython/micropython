@@ -87,3 +87,7 @@ void init_usb_hardware(void) {
         }
     }
 }
+
+void USBD_IRQHandler(void) {
+  tud_int_handler(0);
+}

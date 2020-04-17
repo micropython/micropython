@@ -37,7 +37,6 @@
 #include "irq.h"
 
 #ifdef CFG_TUSB_MCU
-    void hal_dcd_isr(uint8_t rhport);
 #endif
 
 /*------------------------------------------------------------------*/
@@ -72,7 +71,7 @@ void isr(void) {
 
 #ifdef CFG_TUSB_MCU
     if (irqs & (1 << USB_INTERRUPT))
-        hal_dcd_isr(0);
+        tud_int_handler(0);
 #endif
     if (irqs & (1 << TIMER0_INTERRUPT))
         SysTick_Handler();
