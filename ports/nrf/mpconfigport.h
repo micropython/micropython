@@ -41,6 +41,16 @@
 #ifdef NRF52840
 #define MICROPY_PY_SYS_PLATFORM "nRF52840"
 #define FLASH_SIZE                  (0x100000)  // 1MiB
+#define RAM_SIZE                    (0x40000)   // 256 KiB
+// Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
+// See common.template.ld.
+#define SPIM3_BUFFER_SIZE           (8192)
+#endif
+
+#ifdef NRF52833
+#define MICROPY_PY_SYS_PLATFORM "nRF52833"
+#define FLASH_SIZE                  (0x80000)  // 512 KiB
+#define RAM_SIZE                    (0x20000)  // 128 KiB
 // Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
 // See common.template.ld.
 #define SPIM3_BUFFER_SIZE           (8192)
@@ -112,14 +122,15 @@
 // Define these regions starting down from the bootloader:
 
 // Bootloader values from https://github.com/adafruit/Adafruit_nRF52_Bootloader/blob/master/src/linker/s140_v6.ld
-#define BOOTLOADER_START_ADDR          (0x000F4000)
+#define BOOTLOADER_START_ADDR          (FLASH_SIZE - BOOTLOADER_SIZE - BOOTLOADER_SETTINGS_SIZE - BOOTLOADER_MBR_SIZE)
+#define BOOTLOADER_MBR_SIZE            (0x1000)     // 4kib
 #define BOOTLOADER_SIZE                (0xA000)     // 40kiB
-#define BOOTLOADER_SETTINGS_START_ADDR (0x000FF000)
+#define BOOTLOADER_SETTINGS_START_ADDR (FLASH_SIZE - BOOTLOADER_SETTINGS_SIZE)
 #define BOOTLOADER_SETTINGS_SIZE       (0x1000)     // 4kiB
 
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR (BOOTLOADER_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
 
-#if CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE > 0 && CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR != (BOOTLOADER_START_ADDR - 256*1024)
+#if CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE > 0 && CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR != (BOOTLOADER_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
 #warning Internal flash filesystem location has moved!
 #endif
 

@@ -41,7 +41,7 @@
 #define NRFX_SPIM1_ENABLED 1
 #endif
 #define NRFX_SPIM2_ENABLED 1
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
     #define NRFX_SPIM_EXTENDED_ENABLED 1
     #define NRFX_SPIM3_ENABLED 1
 #elif CIRCUITPY_NRF_NUM_I2C == 2
@@ -53,7 +53,9 @@
 #define NRFX_SPIM_MISO_PULL_CFG 1
 
 // QSPI
+#if defined(NRF52840_XXAA)
 #define NRFX_QSPI_ENABLED                          1
+#endif
 
 // TWI aka. I2C; always enable TWIM0 (no conflict with SPIM1 and SPIM2)
 #if CIRCUITPY_NRF_NUM_I2C == 1 || CIRCUITPY_NRF_NUM_I2C == 2
