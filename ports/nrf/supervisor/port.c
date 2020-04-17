@@ -104,7 +104,10 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+
+#if CIRCUITPY_NEOPIXEL_WRITE
     neopixel_write_reset();
+#endif
 
 #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();
