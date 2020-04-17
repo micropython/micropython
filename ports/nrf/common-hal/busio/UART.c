@@ -70,7 +70,9 @@ static uint32_t get_nrf_baud (uint32_t baudrate) {
         { 14400, NRF_UARTE_BAUDRATE_14400 },
         { 19200, NRF_UARTE_BAUDRATE_19200 },
         { 28800, NRF_UARTE_BAUDRATE_28800 },
+	{ 31250, NRF_UARTE_BAUDRATE_31250 },
         { 38400, NRF_UARTE_BAUDRATE_38400 },
+	{ 56000, NRF_UARTE_BAUDRATE_56000 },
         { 57600, NRF_UARTE_BAUDRATE_57600 },
         { 76800, NRF_UARTE_BAUDRATE_76800 },
         { 115200, NRF_UARTE_BAUDRATE_115200 },
@@ -128,10 +130,17 @@ void uart_reset(void) {
     }
 }
 
-void common_hal_busio_uart_construct (busio_uart_obj_t *self,
-                                      const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-                                      uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-                                      uint16_t receiver_buffer_size) {
+void common_hal_busio_uart_construct(busio_uart_obj_t *self,
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size) {
+
+    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    }
+
     // Find a free UART peripheral.
     self->uarte = NULL;
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
@@ -145,7 +154,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         mp_raise_ValueError(translate("All UART peripherals are in use"));
     }
 
-    if ( (tx == mp_const_none) && (rx == mp_const_none) ) {
+    if ( (tx == NULL) && (rx == NULL) ) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
@@ -158,8 +167,8 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     }
 
     nrfx_uarte_config_t config = {
-        .pseltxd = (tx == mp_const_none) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
-        .pselrxd = (rx == mp_const_none) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
+        .pseltxd = (tx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
+        .pselrxd = (rx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
         .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
         .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
         .p_context = self,
@@ -174,7 +183,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
     _VERIFY_ERR(nrfx_uarte_init(self->uarte, &config, uart_callback_irq));
 
     // Init buffer for rx
-    if ( rx != mp_const_none ) {
+    if ( rx != NULL ) {
         // Initially allocate the UART's buffer in the long-lived part of the
         // heap.  UARTs are generally long-lived objects, but the "make long-
         // lived" machinery is incapable of moving internal pointers like
@@ -193,7 +202,7 @@ void common_hal_busio_uart_construct (busio_uart_obj_t *self,
         claim_pin(rx);
     }
 
-    if ( tx != mp_const_none ) {
+    if ( tx != NULL ) {
         self->tx_pin_number = tx->number;
         claim_pin(tx);
     } else {

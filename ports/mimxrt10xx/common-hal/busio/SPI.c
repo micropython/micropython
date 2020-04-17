@@ -95,8 +95,7 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
             | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-#define LPSPI_CLOCK_SOURCE_DIVIDER (7U)
-#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (LPSPI_CLOCK_SOURCE_DIVIDER + 1U))
+#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv)))
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
@@ -211,6 +210,18 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+
+    LPSPI_Enable(self->spi, false);
+    uint32_t tcrPrescaleValue;
+    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, baudrate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
+    LPSPI_Enable(self->spi, true);
+
+    if ((polarity == common_hal_busio_spi_get_polarity(self)) &&
+        (phase == common_hal_busio_spi_get_phase(self)) &&
+        (bits == ((self->spi->TCR & LPSPI_TCR_FRAMESZ_MASK) >> LPSPI_TCR_FRAMESZ_SHIFT)) + 1) {
+        return true;
+    }
+
     lpspi_master_config_t config = { 0 };
     LPSPI_MasterGetDefaultConfig(&config);
 
@@ -221,11 +232,6 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     LPSPI_Deinit(self->spi);
     LPSPI_MasterInit(self->spi, &config, LPSPI_MASTER_CLK_FREQ);
-
-    LPSPI_Enable(self->spi, false);
-    uint32_t tcrPrescaleValue;
-    self->baudrate = LPSPI_MasterSetBaudRate(self->spi, config.baudRate, LPSPI_MASTER_CLK_FREQ, &tcrPrescaleValue);
-    LPSPI_Enable(self->spi, true);
 
     return true;
 }

@@ -15,4 +15,4 @@ while s:
     print(s.pop()) # last pop() should trigger the optimisation
 for i in range(N):
     s.add(i) # check that we can add the numbers back to the set
-print(list(s))
+print(sorted(s))

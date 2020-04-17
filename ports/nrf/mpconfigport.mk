@@ -51,6 +51,9 @@ endif
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
 
+CIRCUITPY_PROTOMATTER = 1
+CIRCUITPY_FRAMEBUFFERIO = 1
+
 # nRF52840-specific
 
 ifeq ($(MCU_CHIP),nrf52840)
@@ -69,4 +72,5 @@ NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
+CIRCUITPY_ULAB = 1
 endif

@@ -29,9 +29,18 @@
 #include "shared-bindings/time/__init__.h"
 
 #include "supervisor/shared/tick.h"
+#include "tick.h"
 
-inline uint64_t common_hal_time_monotonic() {
+inline uint64_t common_hal_time_monotonic(void) {
     return supervisor_ticks_ms64();
+}
+
+uint64_t common_hal_time_monotonic_ns(void) {
+    uint64_t ms;
+    uint32_t us_until_ms;
+    current_tick(&ms, &us_until_ms);
+    // us counts down.
+    return 1000 * (ms * 1000 + (1000 - us_until_ms));
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {

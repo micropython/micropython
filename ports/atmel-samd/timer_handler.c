@@ -33,6 +33,8 @@
 #include "shared-module/_pew/PewPew.h"
 #include "common-hal/frequencyio/FrequencyIn.h"
 
+extern void _PM_IRQ_HANDLER(void);
+
 static uint8_t tc_handler[TC_INST_NUM];
 
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler) {
@@ -60,6 +62,11 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
             case TC_HANDLER_FREQUENCYIN:
             #if CIRCUITPY_FREQUENCYIO
                 frequencyin_interrupt_handler(index);
+            #endif
+                break;
+            case TC_HANDLER_PROTOMATTER:
+            #if CIRCUITPY_PROTOMATTER
+                _PM_IRQ_HANDLER();
             #endif
                 break;
             default:

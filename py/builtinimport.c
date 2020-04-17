@@ -400,21 +400,31 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             DEBUG_printf("Current path: %.*s\n", vstr_len(&path), vstr_str(&path));
 
             if (stat == MP_IMPORT_STAT_NO_EXIST) {
-                #if MICROPY_MODULE_WEAK_LINKS
-                // check if there is a weak link to this module
-                if (i == mod_len) {
-                    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(mod_name), MP_MAP_LOOKUP);
+                // This is just the module name after the previous .
+                qstr current_module_name = qstr_from_strn(mod_str + last, i - last);
+                mp_map_elem_t *el = NULL;
+                if (outer_module_obj == MP_OBJ_NULL) {
+                    el = mp_map_lookup((mp_map_t*)&mp_builtin_module_map,
+                                       MP_OBJ_NEW_QSTR(current_module_name),
+                                       MP_MAP_LOOKUP);
+                    #if MICROPY_MODULE_WEAK_LINKS
+                    // check if there is a weak link to this module
                     if (el == NULL) {
-                        goto no_exist;
+                        el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map,
+                                           MP_OBJ_NEW_QSTR(current_module_name),
+                                           MP_MAP_LOOKUP);
                     }
-                    // found weak linked module
+                    #endif
+                } else {
+                    el = mp_map_lookup(&((mp_obj_module_t*) outer_module_obj)->globals->map,
+                                       MP_OBJ_NEW_QSTR(current_module_name),
+                                       MP_MAP_LOOKUP);
+                }
+
+                if (el != NULL && MP_OBJ_IS_TYPE(el->value, &mp_type_module)) {
                     module_obj = el->value;
                     mp_module_call_init(mod_name, module_obj);
                 } else {
-                    no_exist:
-                #else
-                {
-                #endif
                     // couldn't find the file, so fail
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_raise_ImportError(translate("module not found"));

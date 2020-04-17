@@ -47,6 +47,7 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/neopixel_write/__init__.h"
 #include "tick.h"
 
 #include "shared-bindings/rtc/__init__.h"
@@ -103,6 +104,7 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+    neopixel_write_reset();
 
 #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();

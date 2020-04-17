@@ -71,12 +71,10 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    assert_pin(args[ARG_clock].u_obj, false);
-    assert_pin(args[ARG_MOSI].u_obj, true);
-    assert_pin(args[ARG_MISO].u_obj, true);
-    const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
-    const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
-    const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
+
+    const mcu_pin_obj_t* clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t* mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t* miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
 
     bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
     self->base.type = &bitbangio_spi_type;

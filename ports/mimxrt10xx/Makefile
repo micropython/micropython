@@ -228,11 +228,13 @@ $(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
+	$(Q)$(OBJCOPY) -O binary -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@
 
-$(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $^
+	$(Q)$(OBJCOPY) -O binary -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $^ $@-binpart
+	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -f MIMXRT10XX -c -o $@ $@-binpart
+	$(Q)rm $@-binpart
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -j .flash_config -j .ivt -j .text -j .ARM.exidx -j .data -j .itcm -j .dtcm_data $< $@

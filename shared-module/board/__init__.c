@@ -100,8 +100,30 @@ mp_obj_t common_hal_board_create_uart(void) {
 
     const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
     const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
+#ifdef DEFAULT_UART_BUS_RTS
+    const mcu_pin_obj_t* rts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RTS);
+#else
+    const mcu_pin_obj_t* rts = NULL;
+#endif
+#ifdef DEFAULT_UART_BUS_CTS
+    const mcu_pin_obj_t* cts = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_CTS);
+#else
+    const mcu_pin_obj_t* cts = NULL;
+#endif
+#ifdef DEFAULT_UART_IS_RS485
+    const mcu_pin_obj_t* rs485_dir = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RS485DIR);
+#ifdef DEFAULT_UART_RS485_INVERT
+    const bool rs485_invert = true;
+#else
+    const bool rs485_invert = false;
+#endif
+#else
+    const mcu_pin_obj_t* rs485_dir = NULL;
+    const bool rs485_invert = false;
+#endif
 
-    common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1.0f, 64);
+    common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
+                                    9600, 8, PARITY_NONE, 1, 1.0f, 64);
     MP_STATE_VM(shared_uart_bus) = MP_OBJ_FROM_PTR(self);
     return MP_STATE_VM(shared_uart_bus);
 }

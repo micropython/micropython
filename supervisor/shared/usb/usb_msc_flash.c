@@ -39,7 +39,7 @@
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
-static bool ejected[1];
+static bool ejected[1] = {true};
 
 void usb_msc_mount(void) {
     // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
@@ -51,6 +51,14 @@ void usb_msc_mount(void) {
 
 void usb_msc_umount(void) {
 
+}
+
+bool usb_msc_ejected(void) {
+    bool all_ejected = true;
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        all_ejected &= ejected[i];
+    }
+    return all_ejected;
 }
 
 // The root FS is always at the end of the list.
@@ -200,6 +208,8 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
         return false;
     }
     if (ejected[lun]) {
+        // Set 0x3a for media not present.
+        tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3A, 0x00);
         return false;
     }
 
@@ -235,10 +245,8 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
             if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
                 return false;
             }
-        } else {
-            // Start the unit, but only if not ejected.
-            return !ejected[lun];
         }
+        // Always start the unit, even if ejected. Whether media is present is a separate check.
     }
 
     return true;

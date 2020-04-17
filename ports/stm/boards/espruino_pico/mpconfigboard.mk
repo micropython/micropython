@@ -1,0 +1,15 @@
+USB_VID = 0x239A
+USB_PID = 0x808E
+USB_PRODUCT = "Espruino Pico"
+USB_MANUFACTURER = "Espruino"
+USB_DEVICES = "CDC,MSC"
+
+INTERNAL_FLASH_FILESYSTEM = 1
+
+MCU_SERIES = F4
+MCU_VARIANT = STM32F401xE
+MCU_PACKAGE = UFQFPN48
+
+LD_COMMON = boards/common_default.ld
+LD_FILE = boards/STM32F401xd_fs.ld # use for internal flash
+

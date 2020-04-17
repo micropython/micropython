@@ -40,9 +40,11 @@ typedef enum {
 
 // Construct an underlying UART object.
 extern void common_hal_busio_uart_construct(busio_uart_obj_t *self,
-    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
-    uint8_t bits, uart_parity_t parity, uint8_t stop, mp_float_t timeout,
-    uint16_t receiver_buffer_size);
+    const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
+    const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
+    const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
+    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size);
 
 extern void common_hal_busio_uart_deinit(busio_uart_obj_t *self);
 extern bool common_hal_busio_uart_deinited(busio_uart_obj_t *self);

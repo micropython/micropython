@@ -129,30 +129,15 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     mp_get_buffer_raise(args[ARG_stop_sequence].u_obj, &stop_bufinfo, MP_BUFFER_READ);
 
 
-    mp_obj_t busy_pin_obj = args[ARG_busy_pin].u_obj;
-    assert_pin(busy_pin_obj, true);
-    const mcu_pin_obj_t* busy_pin = NULL;
-    if (busy_pin_obj != NULL && busy_pin_obj != mp_const_none) {
-        busy_pin = MP_OBJ_TO_PTR(busy_pin_obj);
-        assert_pin_free(busy_pin);
-    }
+    const mcu_pin_obj_t* busy_pin = validate_obj_is_free_pin_or_none(args[ARG_busy_pin].u_obj);
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
 
-    displayio_epaperdisplay_obj_t *self = NULL;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL ||
-            displays[i].display.base.type == &mp_type_NoneType) {
-            self = &displays[i].epaper_display;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many displays"));
-    }
+    primary_display_t *disp = allocate_display_or_raise();
+    displayio_epaperdisplay_obj_t *self = &disp->epaper_display;;
 
     mp_float_t refresh_time = mp_obj_get_float(args[ARG_refresh_time].u_obj);
     mp_float_t seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);

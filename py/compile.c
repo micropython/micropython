@@ -1711,6 +1711,16 @@ STATIC void compile_yield_from(compiler_t *comp) {
 }
 
 #if MICROPY_PY_ASYNC_AWAIT
+STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    int scope_flags = comp->scope_cur->scope_flags;
+    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        return true;
+    }
+    compile_syntax_error(comp, (mp_parse_node_t)pns,
+        translate("'async for' or 'async with' outside async function"));
+    return false;
+}
+
 STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
     EMIT_ARG(load_method, method, false);
     EMIT_ARG(call_method, 0, 0, 0);
@@ -1719,6 +1729,10 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
+
+    if(!compile_require_async_context(comp, pns)) {
+        return;
+    }
 
     qstr context = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
     uint while_else_label = comp_next_label(comp);
@@ -1857,6 +1871,9 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
 }
 
 STATIC void compile_async_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    if(!compile_require_async_context(comp, pns)) {
+        return;
+    }
     // get the nodes for the pre-bit of the with (the a as b, c as d, ... bit)
     mp_parse_node_t *nodes;
     int n = mp_parse_node_extract_list(&pns->nodes[0], PN_with_stmt_list, &nodes);

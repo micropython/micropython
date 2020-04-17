@@ -178,9 +178,28 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
+//|   .. method:: fill(value)
+//|
+//|      Fills the bitmap with the supplied palette index value.
+//|
+STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t value = mp_obj_get_int(value_obj);
+    if (value >= 1 << common_hal_displayio_bitmap_get_bits_per_value(self)) {
+            mp_raise_ValueError(translate("pixel value requires too many bits"));
+    }
+    common_hal_displayio_bitmap_fill(self, value);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
+
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
+
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_bitmap_locals_dict, displayio_bitmap_locals_dict_table);
 

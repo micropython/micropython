@@ -148,6 +148,7 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
             // A client wrote to this server characteristic.
 
             ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
+
             // Event handle must match the handle for my characteristic.
             if (evt_write->handle == self->characteristic->handle) {
                 if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
@@ -156,8 +157,7 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
                     return false;
                 }
                 write_to_ringbuf(self, evt_write->data, evt_write->len);
-            } else if (evt_write->handle == self->characteristic->cccd_handle &&
-                       self->conn_handle == BLE_CONN_HANDLE_INVALID) {
+            } else if (evt_write->handle == self->characteristic->cccd_handle) {
                 uint16_t cccd = *((uint16_t*) evt_write->data);
                 if (cccd & BLE_GATT_HVX_NOTIFICATION) {
                     self->conn_handle = conn_handle;
@@ -166,6 +166,11 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
                 }
             }
             break;
+        }
+        case BLE_GAP_EVT_DISCONNECTED: {
+            if (self->conn_handle == conn_handle) {
+                self->conn_handle = BLE_CONN_HANDLE_INVALID;
+            }
         }
         case BLE_GATTS_EVT_HVN_TX_COMPLETE: {
             queue_next_write(self);
@@ -192,6 +197,8 @@ void common_hal_bleio_packet_buffer_construct(
         incoming = outgoing;
         outgoing = temp;
         self->conn_handle = bleio_connection_get_conn_handle(MP_OBJ_TO_PTR(self->characteristic->service->connection));
+    } else {
+        self->conn_handle = BLE_CONN_HANDLE_INVALID;
     }
 
     if (incoming) {
@@ -255,8 +262,7 @@ int common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uin
     sd_nvic_critical_region_enter(&is_nested_critical_region);
 
     if (packet_length > len) {
-        // TODO: raise an exception.
-        packet_length = len;
+        return len - packet_length;
     }
 
     ringbuf_get_n(&self->ringbuf, data, packet_length);

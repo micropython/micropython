@@ -69,6 +69,13 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
         if (dict->map.is_fixed) {
+            mp_map_elem_t *elem = mp_map_lookup(&dict->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            // Return success if the given value is already in the dictionary. This is the case for
+            // native packages with native submodules.
+            if (elem != NULL && elem->value == dest[1]) {
+                dest[0] = MP_OBJ_NULL; // indicate success
+                return;
+            } else
             #if MICROPY_CAN_OVERRIDE_BUILTINS
             if (dict == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
@@ -204,6 +211,14 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 // TODO: move to shared-bindings/
 #else
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
+#endif
+#endif
+#if CIRCUITPY_ULAB
+#if CIRCUITPY
+// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
+// TODO: move to shared-bindings/
+#else
+    { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #endif
 #endif
 #if MICROPY_PY_URE

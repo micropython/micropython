@@ -59,7 +59,7 @@ int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, m
 void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket);
 void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket);
 mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in);
-mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in);
+mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, const mcu_pin_obj_t *rst_in);
 
 int wiznet5k_start_dhcp(void);
 int wiznet5k_stop_dhcp(void);

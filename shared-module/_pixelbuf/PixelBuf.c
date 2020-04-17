@@ -243,6 +243,7 @@ mp_obj_t common_hal__pixelbuf_pixelbuf_get_pixel(mp_obj_t self_in, size_t index)
     if (self->pre_brightness_buffer != NULL) {
         pixel_buffer = self->pre_brightness_buffer;
     }
+    pixel_buffer += self->byteorder.bpp * index;
 
     pixelbuf_rgbw_t *rgbw_order = &self->byteorder.byteorder;
     elems[0] = MP_OBJ_NEW_SMALL_INT(pixel_buffer[rgbw_order->r]);

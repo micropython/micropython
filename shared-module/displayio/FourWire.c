@@ -40,7 +40,8 @@
 
 void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
-    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate) {
+    const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate,
+    uint8_t polarity, uint8_t phase) {
 
     self->bus = spi;
     common_hal_busio_spi_never_reset(self->bus);
@@ -49,8 +50,8 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     gc_never_free(self->bus);
 
     self->frequency = baudrate;
-    self->polarity = 0;
-    self->phase = 0;
+    self->polarity = polarity;
+    self->phase = phase;
 
     common_hal_digitalio_digitalinout_construct(&self->command, command);
     common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);

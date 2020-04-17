@@ -16,24 +16,29 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Set up Python 3.5
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls Sphinx sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
     - name: Versions
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-    - name: CircuitPython version
-      run: git describe --dirty --always --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -42,7 +47,7 @@ jobs:
         make -C ports/unix -j2
         make -C ports/unix coverage -j2
     - name: Test all
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1
       working-directory: tests
     - name: Print failure info
       run: |
@@ -54,10 +59,10 @@ jobs:
       working-directory: tests
       if: failure()
     - name: Native Tests
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.5 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
     - name: Docs
       run: sphinx-build -E -W -b html . _build/html
@@ -103,11 +108,16 @@ jobs:
         gcc --version
         python3 --version
         msgfmt --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --always --tags
+      run: git describe --dirty --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v1.0.0
@@ -122,14 +132,20 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "8086_commander"
+        - "TG-Watch02A"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
         - "arduino_nano_33_ble"
+        - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
+        - "bdmicro_vina_m0"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
+        - "circuitbrains_basic_m0"
+        - "circuitbrains_deluxe_m4"
         - "circuitplayground_bluefruit"
         - "circuitplayground_express"
         - "circuitplayground_express_crickit"
@@ -144,6 +160,8 @@ jobs:
         - "electronut_labs_blip"
         - "electronut_labs_papyr"
         - "escornabot_makech"
+        - "espruino_pico"
+        - "espruino_wifi"
         - "feather_bluefruit_sense"
         - "feather_m0_adalogger"
         - "feather_m0_basic"
@@ -153,6 +171,7 @@ jobs:
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
         - "feather_m4_express"
+        - "feather_m7_1011"
         - "feather_mimxrt1011"
         - "feather_mimxrt1062"
         - "feather_nrf52840_express"
@@ -180,6 +199,9 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "nfc_copy_cat"
+        - "nucleo_f767zi"
+        - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
         - "particle_argon"
@@ -194,6 +216,7 @@ jobs:
         - "pybadge"
         - "pybadge_airlift"
         - "pyboard_v11"
+        - "pycubed"
         - "pygamer"
         - "pygamer_advance"
         - "pyportal"
@@ -212,27 +235,32 @@ jobs:
         - "sparkfun_redboard_turbo"
         - "sparkfun_samd21_dev"
         - "sparkfun_samd21_mini"
+        - "sparkfun_samd51_thing_plus"
         - "spresense"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
+        - "stm32f4_discovery"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
+        - "thunderpack"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"
+        - "uartlogger2"
         - "uchip"
         - "ugame10"
+        - "winterbloom_big_honking_button"
         - "winterbloom_sol"
         - "xinabox_cc03"
         - "xinabox_cs11"
 
     steps:
-    - name: Set up Python 3.5
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.5
+        python-version: 3.8
     - name: Install deps
       run: |
         sudo apt-get install -y gettext
@@ -243,6 +271,57 @@ jobs:
       run: |
         gcc --version
         arm-none-eabi-gcc --version
+        python3 --version
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: build
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+  build-riscv:
+    runs-on: ubuntu-16.04
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+        - "fomu"
+
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install deps
+      run: |
+        sudo apt-get install -y gettext
+        pip install requests sh click setuptools awscli
+        wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+        sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
+    - name: Versions
+      run: |
+        gcc --version
+        riscv64-unknown-elf-gcc --version
         python3 --version
     - uses: actions/checkout@v1
       with:
@@ -264,13 +343,3 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-    - name: Install upload deps
-      run: |
-        pip install uritemplate
-    - name: Upload to Release
-      run: "[ -z \"$ADABOT_GITHUB_ACCESS_TOKEN\" ] || python3 -u upload_release_files.py"
-      working-directory: tools
-      env:
-        UPLOAD_URL: ${{ github.event.release.upload_url }}
-        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.BLINKA_GITHUB_ACCESS_TOKEN }}
-      if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested')

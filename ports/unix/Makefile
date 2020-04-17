@@ -277,6 +277,18 @@ coverage_test: coverage
 coverage_clean:
 	$(MAKE) V=2 BUILD=build-coverage PROG=micropython_coverage clean
 
+# build an interpreter for fuzzing
+fuzz:
+	$(MAKE) \
+	    CC=afl-clang-fast DEBUG=1 \
+	    CFLAGS_EXTRA='$(CFLAGS_EXTRA) -ffunction-sections' \
+	    LDFLAGS_EXTRA='$(LDFLAGS_EXTRA)' \
+	    BUILD=build-fuzz PROG=micropython_fuzz
+
+fuzz_clean:
+	$(MAKE) V=2 BUILD=build-fuzz PROG=micropython_fuzz clean
+
+
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)

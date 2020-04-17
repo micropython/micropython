@@ -52,7 +52,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0x00, // _MADCTL top to bottom refresh in vsync aligned order.
+    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -72,7 +72,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, mp_const_none);
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -82,7 +82,9 @@ void board_init(void) {
         &pin_PB05, // TFT_DC Command or data
         &pin_PB12, // TFT_CS Chip select
         &pin_PA00, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -92,12 +94,13 @@ void board_init(void) {
         128, // Height
         0, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // pixels in a byte share a row. Only valid for depths < 8
         1, // bytes per cell. Only valid for depths < 8
         false, // reverse_pixels_in_byte. Only valid for depths < 8
+        true, // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -111,7 +114,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

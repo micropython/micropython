@@ -723,7 +723,10 @@ void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
 
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     common_hal_bleio_adapter_stop_scan(adapter);
-    common_hal_bleio_adapter_stop_advertising(adapter);
+    if (adapter->current_advertising_data != NULL) {
+        common_hal_bleio_adapter_stop_advertising(adapter);
+    }
+
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];

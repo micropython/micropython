@@ -24,12 +24,20 @@
  * THE SOFTWARE.
  */
 
+#include <sys/time.h>
+
 #include "py/mphal.h"
 
 #include "supervisor/shared/tick.h"
 
 uint64_t common_hal_time_monotonic(void) {
     return supervisor_ticks_ms64();
+}
+
+uint64_t common_hal_time_monotonic_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return 1000 * ((uint64_t) tv.tv_sec * 1000000 + (uint64_t) tv.tv_usec);
 }
 
 void common_hal_time_delay_ms(uint32_t delay) {

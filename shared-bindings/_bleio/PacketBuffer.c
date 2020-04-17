@@ -109,7 +109,12 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer_obj, &bufinfo, MP_BUFFER_WRITE);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len));
+    int size = common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len);
+    if (size < 0) {
+        mp_raise_ValueError_varg(translate("Buffer too short by %d bytes"), size * -1);
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 

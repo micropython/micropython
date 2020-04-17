@@ -72,6 +72,7 @@
 #define MICROPY_HELPER_REPL              (1)
 #define MICROPY_KBD_EXCEPTION            (1)
 #define MICROPY_MEM_STATS                (0)
+#define MICROPY_MODULE_BUILTIN_INIT      (1)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
@@ -185,6 +186,9 @@ typedef long mp_off_t;
 //TODO: replace this with a rework of the FULL_BUILD system
 #if !defined(MICROPY_CPYTHON_COMPAT)
 	#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
+#if !defined(MICROPY_COMP_FSTRING_LITERAL)
+#define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
 #endif
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
@@ -341,6 +345,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
+#if CIRCUITPY_FRAMEBUFFERIO
+extern const struct _mp_obj_module_t framebufferio_module;
+#define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
+#else
+#define FRAMEBUFFERIO_MODULE
+#endif
+
 #if CIRCUITPY_FREQUENCYIO
 extern const struct _mp_obj_module_t frequencyio_module;
 #define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
@@ -382,6 +393,13 @@ extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
 #else
 #define MATH_MODULE
+#endif
+
+#if CIRCUITPY__EVE
+extern const struct _mp_obj_module_t _eve_module;
+#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
+#else
+#define _EVE_MODULE
 #endif
 
 #if CIRCUITPY_MICROCONTROLLER
@@ -441,6 +459,13 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
 #else
 #define PIXELBUF_MODULE
+#endif
+
+#if CIRCUITPY_PROTOMATTER
+extern const struct _mp_obj_module_t protomatter_module;
+#define PROTOMATTER_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__protomatter),(mp_obj_t)&protomatter_module },
+#else
+#define PROTOMATTER_MODULE
 #endif
 
 #if CIRCUITPY_PULSEIO
@@ -570,6 +595,12 @@ extern const struct _mp_obj_module_t ustack_module;
 #define JSON_MODULE
 #endif
 
+#if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
+#define ULAB_MODULE \
+    { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
+#else
+#define ULAB_MODULE
+#endif
 #if MICROPY_PY_URE
 #define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
 #else
@@ -611,12 +642,14 @@ extern const struct _mp_obj_module_t ustack_module;
       FONTIO_MODULE \
       TERMINALIO_MODULE \
     ERRNO_MODULE \
+    FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
+    _EVE_MODULE \
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
@@ -625,6 +658,7 @@ extern const struct _mp_obj_module_t ustack_module;
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
+    PROTOMATTER_MODULE \
     PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \

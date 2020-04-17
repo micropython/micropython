@@ -92,6 +92,7 @@
 //|   :param bool pixels_in_byte_share_row: True when pixels are less than a byte and a byte includes pixels from the same row of the display. When False, pixels share a column.
 //|   :param int bytes_per_cell: Number of bytes per addressable memory location when color_depth < 8. When greater than one, bytes share a row or column according to pixels_in_byte_share_row.
 //|   :param bool reverse_pixels_in_byte: Reverses the pixel order within each byte when color_depth < 8. Does not apply across multiple bytes even if there is more than one byte per cell (bytes_per_cell.)
+//|   :param bool reverse_bytes_in_word: Reverses the order of bytes within a word when color_depth == 16
 //|   :param int set_column_command: Command used to set the start and end columns to update
 //|   :param int set_row_command: Command used so set the start and end rows to update
 //|   :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
@@ -104,9 +105,10 @@
 //|   :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
 //|   :param bool auto_refresh: Automatically refresh the screen
 //|   :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
+//|   :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on.
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands, ARG_auto_refresh, ARG_native_frames_per_second };
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands, ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -120,6 +122,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_pixels_in_byte_share_row, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_bytes_per_cell, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
         { MP_QSTR_reverse_pixels_in_byte, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_reverse_bytes_in_word, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_set_column_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2a} },
         { MP_QSTR_set_row_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2b} },
         { MP_QSTR_write_ram_command, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x2c} },
@@ -132,6 +135,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_data_as_commands, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
+        { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -141,13 +145,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    mp_obj_t backlight_pin_obj = args[ARG_backlight_pin].u_obj;
-    assert_pin(backlight_pin_obj, true);
-    const mcu_pin_obj_t* backlight_pin = NULL;
-    if (backlight_pin_obj != NULL && backlight_pin_obj != mp_const_none) {
-        backlight_pin = MP_OBJ_TO_PTR(backlight_pin_obj);
-        assert_pin_free(backlight_pin);
-    }
+    const mcu_pin_obj_t* backlight_pin = validate_obj_is_free_pin_or_none(args[ARG_backlight_pin].u_obj);
 
     mp_float_t brightness = mp_obj_get_float(args[ARG_brightness].u_obj);
 
@@ -156,23 +154,17 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
 
-    displayio_display_obj_t *self = NULL;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].display.base.type == NULL ||
-            displays[i].display.base.type == &mp_type_NoneType) {
-            self = &displays[i].display;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many displays"));
-    }
+    primary_display_t *disp = allocate_display_or_raise();
+    displayio_display_obj_t *self = &disp->display;;
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         self,
         display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
         args[ARG_color_depth].u_int, args[ARG_grayscale].u_bool,
-        args[ARG_pixels_in_byte_share_row].u_bool, args[ARG_bytes_per_cell].u_bool, args[ARG_reverse_pixels_in_byte].u_bool,
+        args[ARG_pixels_in_byte_share_row].u_bool,
+        args[ARG_bytes_per_cell].u_bool,
+        args[ARG_reverse_pixels_in_byte].u_bool,
+        args[ARG_reverse_bytes_in_word].u_bool,
         args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
         args[ARG_write_ram_command].u_int,
         args[ARG_set_vertical_scroll].u_int,
@@ -184,7 +176,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_single_byte_bounds].u_bool,
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
-        args[ARG_native_frames_per_second].u_int
+        args[ARG_native_frames_per_second].u_int,
+        args[ARG_backlight_on_high].u_bool
         );
 
     return self;

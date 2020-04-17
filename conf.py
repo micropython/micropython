@@ -17,7 +17,7 @@ import json
 import sys
 import os
 
-from recommonmark.parser import CommonMarkParser
+import recommonmark
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,16 +55,20 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'rstjinja',
-    'c2rst'
+    'c2rst',
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
 # The suffix of source filenames.
-source_suffix = ['.rst', '.md', '.c', '.h']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+    '.c': ''
+}
 
-source_parsers = {'.md': CommonMarkParser}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -121,16 +125,9 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/peripherals",
                     "ports/atmel-samd/QTouch",
                     "ports/atmel-samd/tools",
-                    "ports/bare-arm",
-                    "ports/cc3200",
-                    "ports/cc3200/FreeRTOS",
-                    "ports/cc3200/hal",
                     "ports/cxd56/mkspk",
                     "ports/cxd56/spresense-exported-sdk",
-                    "ports/esp32",
-                    "ports/esp8266/boards",
-                    "ports/esp8266/common-hal",
-                    "ports/esp8266/modules",
+                    "ports/litex/hw",
                     "ports/minimal",
                     "ports/mimxrt10xx/peripherals",
                     "ports/mimxrt10xx/sdk",
@@ -140,20 +137,11 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
-                    "ports/stm32f4/stm32f4",
-                    "ports/stm32f4/peripherals",
-                    "ports/stm32f4/ref",
-                    "ports/pic16bit",
-                    "ports/qemu-arm",
-                    "ports/stm32",
-                    "ports/stm32/hal",
-                    "ports/stm32/cmsis",
-                    "ports/stm32/usbdev",
-                    "ports/stm32/usbhost",
-                    "ports/teensy",
+                    "ports/stm/st_driver",
+                    "ports/stm/packages",
+                    "ports/stm/peripherals",
+                    "ports/stm/ref",
                     "ports/unix",
-                    "ports/windows",
-                    "ports/zephyr",
                     "py",
                     "shared-bindings/util.*",
                     "shared-module",
@@ -374,4 +362,4 @@ intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
 
 def setup(app):
-    app.add_stylesheet("customstyle.css")
+    app.add_css_file("customstyle.css")

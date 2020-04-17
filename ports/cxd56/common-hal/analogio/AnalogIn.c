@@ -83,7 +83,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
 
     // start ADC
     ioctl(analogin_dev[self->number].fd, ANIOC_CXD56_START, 0);
-    
+
     self->pin = pin;
 }
 
@@ -97,7 +97,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     close(analogin_dev[self->number].fd);
     analogin_dev[self->number].fd = -1;
 
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {

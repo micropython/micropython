@@ -345,14 +345,21 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-    mp_uint_t seconds = timeutils_seconds_since_epoch(
-        1980 + ((fno.fdate >> 9) & 0x7f),
-        (fno.fdate >> 5) & 0x0f,
-        fno.fdate & 0x1f,
-        (fno.ftime >> 11) & 0x1f,
-        (fno.ftime >> 5) & 0x3f,
-        2 * (fno.ftime & 0x1f)
-    );
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    // On non-longint builds, the number of seconds since 1970 (epoch) is too
+    // large to fit in a smallint, so just return 31-DEC-1999 (0).
+    mp_obj_t seconds = MP_OBJ_NEW_SMALL_INT(946684800);
+#else
+    mp_obj_t seconds = mp_obj_new_int_from_uint(
+        timeutils_seconds_since_epoch(
+            1980 + ((fno.fdate >> 9) & 0x7f),
+            (fno.fdate >> 5) & 0x0f,
+            fno.fdate & 0x1f,
+            (fno.ftime >> 11) & 0x1f,
+            (fno.ftime >> 5) & 0x3f,
+            2 * (fno.ftime & 0x1f)
+            ));
+#endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -360,9 +367,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(fno.fsize); // st_size
-    t->items[7] = mp_obj_new_int_from_uint(seconds); // st_atime
-    t->items[8] = mp_obj_new_int_from_uint(seconds); // st_mtime
-    t->items[9] = mp_obj_new_int_from_uint(seconds); // st_ctime
+    t->items[7] = seconds;                 // st_atime
+    t->items[8] = seconds;                 // st_mtime
+    t->items[9] = seconds;                 // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
