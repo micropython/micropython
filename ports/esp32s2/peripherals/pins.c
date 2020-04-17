@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,58 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#include "peripherals/pins.h"
 
-#include <stddef.h>
+#define NO_ADC 0xff
 
-#include "supervisor/memory.h"
+// This macro is used to simplify pin definition in boards/<board>/pins.c
+#define PIN(p_name, p_number) \
+const mcu_pin_obj_t pin_## p_name = { \
+    PIN_PREFIX_VALUES \
+    .number = p_number, \
+}
 
-extern supervisor_allocation* stack_alloc;
+PIN(GPIO0, 0);
+PIN(GPIO1, 1);
+PIN(GPIO2, 2);
+PIN(GPIO3, 3);
+PIN(GPIO4, 4);
+PIN(GPIO5, 5);
+PIN(GPIO6, 6);
+PIN(GPIO7, 7);
+PIN(GPIO8, 8);
+PIN(GPIO9, 9);
+PIN(GPIO10, 10);
+PIN(GPIO11, 11);
+PIN(GPIO12, 12);
+PIN(GPIO13, 13);
+PIN(GPIO14, 14);
+PIN(GPIO15, 15);
+PIN(GPIO16, 16);
+PIN(GPIO17, 17);
+PIN(GPIO18, 18);
 
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
-
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
-
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
-#endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+PIN(GPIO19, 19);
+PIN(GPIO20, 20);
+PIN(GPIO21, 21);
+PIN(GPIO26, 26);
+PIN(GPIO27, 27);
+PIN(GPIO28, 28);
+PIN(GPIO29, 29);
+PIN(GPIO30, 30);
+PIN(GPIO31, 31);
+PIN(GPIO32, 32);
+PIN(GPIO33, 33);
+PIN(GPIO34, 34);
+PIN(GPIO35, 35);
+PIN(GPIO36, 36);
+PIN(GPIO37, 37);
+PIN(GPIO38, 38);
+PIN(GPIO39, 39);
+PIN(GPIO40, 40);
+PIN(GPIO41, 41);
+PIN(GPIO42, 42);
+PIN(GPIO43, 43);
+PIN(GPIO44, 44);
+PIN(GPIO45, 45);
+PIN(GPIO46, 46);

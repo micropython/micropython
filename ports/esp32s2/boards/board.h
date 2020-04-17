@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+// This file defines board specific functions.
 
-#include <stddef.h>
+#ifndef MICROPY_INCLUDED_ESP32S2_BOARDS_BOARD_H
+#define MICROPY_INCLUDED_ESP32S2_BOARDS_BOARD_H
 
-#include "supervisor/memory.h"
+#include <stdbool.h>
 
-extern supervisor_allocation* stack_alloc;
+// Initializes board related state once on start up.
+void board_init(void);
 
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
+// Returns true if the user initiates safe mode in a board specific way.
+// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
+// way.
+bool board_requests_safe_mode(void);
 
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
+// Reset the state of off MCU components such as neopixels.
+void reset_board(void);
 
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
-#endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#endif  // MICROPY_INCLUDED_ESP32S2_BOARDS_BOARD_H

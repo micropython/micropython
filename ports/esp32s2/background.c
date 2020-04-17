@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#include "py/runtime.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/shared/stack.h"
 
-#include <stddef.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#include "supervisor/memory.h"
-
-extern supervisor_allocation* stack_alloc;
-
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
-
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
-
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
 #endif
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+static bool running_background_tasks = false;
+
+void background_tasks_reset(void) {
+    running_background_tasks = false;
+}
+
+void run_background_tasks(void) {
+    // Don't call ourselves recursively.
+    if (running_background_tasks) {
+        return;
+    }
+
+    // Delay for 1 tick so that we don't starve the idle task.
+    // TODO: 1 tick is 10ms which is a long time! Can we delegate to idle for a minimal amount of
+    // time?
+    vTaskDelay(1);
+    running_background_tasks = true;
+    filesystem_background();
+
+    // #if CIRCUITPY_DISPLAYIO
+    // displayio_background();
+    // #endif
+    running_background_tasks = false;
+
+    assert_heap_ok();
+}

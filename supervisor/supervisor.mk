@@ -3,7 +3,6 @@ SRC_SUPERVISOR = \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/board.c \
-	supervisor/shared/display.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
@@ -104,6 +103,14 @@ else
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
+SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
+
+ifeq ($(CIRCUITPY_DISPLAYIO), 1)
+	SRC_SUPERVISOR += \
+		supervisor/shared/display.c
+
+	SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+endif
 ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
 endif
@@ -181,8 +188,6 @@ USB_DESCRIPTOR_ARGS = \
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
 endif
-
-SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
 

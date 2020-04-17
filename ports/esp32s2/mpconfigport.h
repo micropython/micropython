@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +25,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#ifndef ESP32S2_MPCONFIGPORT_H__
+#define ESP32S2_MPCONFIGPORT_H__
 
-#include <stddef.h>
+#define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
+#define MICROPY_NLR_THUMB                   (0)
 
-#include "supervisor/memory.h"
+#define MICROPY_PY_UJSON            (0)
 
-extern supervisor_allocation* stack_alloc;
+#include "py/circuitpy_mpconfig.h"
 
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
 
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
+#define MICROPY_PORT_ROOT_POINTERS \
+	CIRCUITPY_COMMON_ROOT_POINTERS
+#define MICROPY_NLR_SETJMP                  (1)
+#define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
-#endif
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#endif  // __INCLUDED_ESP32S2_MPCONFIGPORT_H

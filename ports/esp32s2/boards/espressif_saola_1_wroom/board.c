@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
 
-#include <stddef.h>
+void board_init(void) {
+}
 
-#include "supervisor/memory.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern supervisor_allocation* stack_alloc;
+void reset_board(void) {
 
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
-
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
-
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
-#endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+}

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +25,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include <stddef.h>
+#include "py/mphal.h"
 
-#include "supervisor/memory.h"
+// Mark pin as free and return it to a quiescent state.
+void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
+}
 
-extern supervisor_allocation* stack_alloc;
 
-void stack_init(void);
-void stack_resize(void);
-void set_next_stack_size(uint32_t size);
-uint32_t get_current_stack_size(void);
-bool stack_ok(void);
+void claim_pin(const mcu_pin_obj_t* pin) {
+}
 
-// Use this after any calls into a library which may use a lot of stack. This will raise a Python
-// exception when the stack has likely overwritten a portion of the heap.
-void assert_heap_ok(void);
+bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
+    return true;
+}
 
-#ifndef STACK_CANARY_VALUE
-#define STACK_CANARY_VALUE 0x017829ef
-#endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
+    return pin_number_is_free(0, pin->number);
+}

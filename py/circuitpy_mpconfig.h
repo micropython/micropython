@@ -216,6 +216,10 @@ typedef long mp_off_t;
 #define MP_SSIZE_MAX (0x7fffffff)
 #endif
 
+#ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_FULL_BUILD)
+#endif
+
 #if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
 #error No *_FLASH_FILESYSTEM set!
 #endif
@@ -610,6 +614,10 @@ extern const struct _mp_obj_module_t ustack_module;
 #endif
 
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
+// ulab requires reverse special methods
+#if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
+#error "ulab requires MICROPY_PY_REVERSE_SPECIAL_METHODS"
+#endif
 #define ULAB_MODULE \
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
