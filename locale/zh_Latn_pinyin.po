@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-15 10:24-0400\n"
+"POT-Creation-Date: 2020-04-17 18:44-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -60,7 +60,7 @@ msgstr " shūchū:\n"
 msgid "%%c requires int or char"
 msgstr "%%c xūyào zhěngshù huò char"
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
@@ -333,7 +333,7 @@ msgstr "Shùzǔ bìxū bāohán bàn zìshù (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Shùzǔ zhí yīnggāi shì dāngè zì jié."
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
@@ -370,9 +370,9 @@ msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
 msgid "Both pins must support hardware interrupts"
 msgstr "Liǎng gè yǐn jiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
-#: shared-bindings/_protomatter/Protomatter.c
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Liàngdù bìxū wèi 0-1.0"
 
@@ -836,6 +836,11 @@ msgstr "Jiāmì bùzú"
 msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Internal error #%d"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -871,7 +876,7 @@ msgstr "Wúxiào de SPI yǐn jiǎo xuǎnzé"
 msgid "Invalid UART pin selection"
 msgstr "Wúxiào de UART yǐn jiǎo xuǎnzé"
 
-#: py/moduerrno.c shared-module/_protomatter/Protomatter.c
+#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -926,7 +931,7 @@ msgstr "Jiēduàn wúxiào"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_protomatter/Protomatter.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Wúxiào de yǐn jiǎo"
 
@@ -1041,7 +1046,7 @@ msgstr "Bìxū shì %q zi lèi."
 msgid "Must provide MISO or MOSI pin"
 msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr ""
@@ -1129,7 +1134,7 @@ msgstr "Shèbèi shàng méiyǒu kònggé"
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
-#: shared-module/_protomatter/Protomatter.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr ""
 
@@ -1214,7 +1219,7 @@ msgstr "Pin méiyǒu ADC nénglì"
 msgid "Pin number already reserved by EXTI"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
@@ -1237,11 +1242,6 @@ msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
-
-#: shared-module/_protomatter/Protomatter.c
-#, c-format
-msgid "Protomatter internal error #%d"
-msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2831,12 +2831,12 @@ msgstr "fǎnhuí zhùshì bìxū shì biāozhì fú"
 msgid "return expected '%q' but got '%q'"
 msgstr "fǎnhuí yùqí de '%q' dàn huòdéle '%q'"
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""
