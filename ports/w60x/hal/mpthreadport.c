@@ -64,8 +64,8 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     thread->id = xTaskGetCurrentTaskHandle();
     thread->ready = 1;
     thread->arg = NULL;
-    thread->stack = mpy_task_stk;
-    thread->stack_len = MPY_TASK_SIZE;
+    thread->stack = stack;
+    thread->stack_len = stack_len;
     thread->next = NULL;
 
     mp_thread_set_state(&mp_state_ctx.thread);
@@ -162,7 +162,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
                                 freertos_entry,
                                 (void *)arg,
                                 (void *)stack,          /* 任务栈的起始地址 */
-                                *stack_size, /* 任务栈的大小     */
+                                *stack_size / sizeof(OS_STK), /* 任务栈的大小     */
                                 MPY_TASK_PRIO + (thread_cnt + 2),
                                 0);
     if (id == NULL) {

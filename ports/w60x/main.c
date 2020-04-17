@@ -8,6 +8,7 @@
 * All rights reserved.
 *
 *****************************************************************************/
+#include <string.h>
 #include "wm_include.h"
 #include "wm_mem.h"
 #include "wm_watchdog.h"
@@ -50,14 +51,13 @@ static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static void init_spiflash_fs (void) {
     // Initialise the local flash filesystem.
     // init the vfs object
-    spi_fls_vfs = tls_mem_alloc(sizeof(*spi_fls_vfs));
+    spi_fls_vfs = m_new_obj_maybe(fs_user_mount_t);
     if (!spi_fls_vfs) {
         printf("failed to init filesystem\r\n");
         return;
     }
 
     fs_user_mount_t *vfs_fs = spi_fls_vfs;
-    memset(vfs_fs, 0, sizeof(*vfs_fs));
 
 #if MICROPY_VFS_FAT
     FILINFO fno;
@@ -132,17 +132,7 @@ static void init_spiflash_fs (void) {
     // It is set to the internal flash filesystem by default.
     MP_STATE_PORT(vfs_cur) = vfs;
 
-    // create /flash/sys, /flash/lib and /flash/cert if they don't exist
 #if MICROPY_VFS_FAT
-    if (FR_OK != f_chdir(&vfs_fs->fatfs, "/sys")) {
-        f_mkdir(&vfs_fs->fatfs, "/sys");
-    }
-    if (FR_OK != f_chdir(&vfs_fs->fatfs, "/lib")) {
-        f_mkdir(&vfs_fs->fatfs, "/lib");
-    }
-    if (FR_OK != f_chdir(&vfs_fs->fatfs, "/cert")) {
-        f_mkdir(&vfs_fs->fatfs, "/cert");
-    }
 
     f_chdir(&vfs_fs->fatfs, "/");
 
@@ -172,6 +162,10 @@ static void init_spiflash_fs (void) {
        each directory occupies at least 2 sectors, 
        and each file occupies at least 1 sector. 
     */
+
+    //Initialize the current working directory (cwd)
+    vstr_init(&(vfs_fs->cur_dir), 16);
+    vstr_add_str(&(vfs_fs->cur_dir), "/");
 
     // Make sure we have a /flash/boot.py.  Create it if needed.
     res = lfs2_stat(&vfs_fs->lfs, "/boot.py", &fno);
@@ -204,7 +198,7 @@ static void mpy_task(void *param) {
     volatile uint32_t sp = (uint32_t)get_sp();
 
 #if MICROPY_PY_THREAD
-    mp_thread_init(&mpy_task_stk[0], MPY_TASK_SIZE * sizeof(OS_STK));
+    mp_thread_init(mpy_task_stk, MPY_TASK_SIZE);
 #endif
 
     uart_init();
@@ -278,5 +272,6 @@ void UserMain(void) {
 
 void nlr_jump_fail(void *val) {
     tls_sys_reset();
+    for (;;); // Just to silence the compiler warning
 }
 
