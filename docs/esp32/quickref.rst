@@ -334,8 +334,21 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
+    rtc.datetime((2017, 8, 23, 0, 12, 48, 0, 0)) # set a specific date and time
     rtc.datetime() # get date and time
+
+The ``esp32`` RTC implementation expects a different set of values than those
+described in the documentation for :ref:`machine.RTC <machine.RTC>`. To set the
+time, pass in an 8-tuple with the following fields:
+
+1. year
+2. month
+3. day-of-month
+4. day-of-week (set to 0 and it will be corrected)
+5. hours
+6. minutes
+7. seconds
+8. subseconds
 
 Deep-sleep mode
 ---------------
