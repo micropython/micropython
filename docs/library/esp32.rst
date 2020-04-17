@@ -38,9 +38,9 @@ Functions
 
     Read the raw value of the internal Hall sensor, returning an integer.
 
-.. function:: espidf_heap_info()
+.. function:: idf_heap_info(capabilities)
 
-    Returns information about the ESP-IDF heaps. One of them contains
+    Returns information about the ESP-IDF heap memory regions. One of them contains
     the MicroPython heap and the others are used by ESP-IDF, e.g., for network
     buffers and other data. This data is useful to get a sense of how much memory
     is available to ESP-IDF and the networking stack in particular. It may shed
@@ -48,13 +48,17 @@ Functions
     The information returned is *not* useful to troubleshoot Python allocation failures,
     use ``micropython.mem_info()`` instead.
 
+    The capabilities parameter corresponds to ESP-IDF's ``MALLOC_CAP_XXX`` values but the
+    two most useful ones are predefined as ``esp32.MEM_DATA`` for data heap regions and
+    ``esp32.MEM_EXEC`` for executable regions as used by the native code emitter.
+
     The return value is a list of 4-tuples, where each 4-tuple corresponds to one heap
     and contains: the total bytes, the free bytes, the largest free block, and
     the minimum free seen over time.
 
     Example after booting::
 
-    >>> import esp32; esp32.heap_info()
+    >>> import esp32; esp32.idf_heap_info(esp32.MEM_DATA)
     [(240, 0, 0, 0), (7288, 0, 0, 0), (16648, 4, 4, 4), (79912, 35712, 35512, 35108),
      (15072, 15036, 15036, 15036), (113840, 0, 0, 0)]
 
@@ -108,6 +112,10 @@ Constants
 
     Used in `Partition.find` to specify the partition type.
 
+.. data:: MEM_DATA
+          MEM_EXEC
+
+    Used in `idf_heap_info`.
 
 .. _esp32.RMT:
 
