@@ -30,23 +30,22 @@
 #include "supervisor/shared/rgb_led_status.h"
 
 #include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4xx_hal.h"
+#include "pins.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;
 #endif
 
-#if MCU_PACKAGE == 144
+#if defined(LQFP144)
     #define GPIO_PORT_COUNT 7
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG};
-#elif MCU_PACKAGE == 100
+#elif defined(LQFP100_f4) || (LQFP100_x7)
     #define GPIO_PORT_COUNT 5
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE};
-#elif MCU_PACKAGE == 64
+#elif defined(LQFP64)
     #define GPIO_PORT_COUNT 3
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
-#elif MCU_PACKAGE == 48
+#elif defined(UFQFPN48)
     #define GPIO_PORT_COUNT 3
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
 #endif

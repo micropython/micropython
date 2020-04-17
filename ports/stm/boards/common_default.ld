@@ -1,33 +1,19 @@
-/*
-    GNU linker script for STM32F411 via Micropython
+/* Memory layout for default case. 
+
+    FLASH_ISR   .isr_vector
+    FLASH_TEXT  .text
+    FLASH_TEXT  .data
+    FLASH_FS    // ignored for fs use
+
+    RAM         .data
+    RAM         .bss
+    RAM         .heap
+    RAM         .stack
 */
 
-/* Specify the memory areas */
-MEMORY
-{
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* entire flash */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
-    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 48K /* sectors 1,2,3 are 16K */
-    FLASH_TEXT (rx) : ORIGIN = 0x08010000, LENGTH = 448K /* sector 4 is 64K, sectors 5,6,7 are 128K */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
-}
-
-/* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 2K;
-_minimum_heap_size = 16K;
-
-/* Define tho top end of the stack.  The stack is full descending so begins just
-   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
-   aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
-
-/* RAM extents for the garbage collector */
-_ram_start = ORIGIN(RAM);
-_ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = 0x2001c000; /* tunable */
-
 ENTRY(Reset_Handler)
+
+_ld_default_stack_size = _minimum_stack_size;
 
 /* define output sections */
 SECTIONS
@@ -91,19 +77,23 @@ SECTIONS
     .heap :
     {
         . = ALIGN(4);
+        _ld_heap_start = .;
         . = . + _minimum_heap_size;
         . = ALIGN(4);
     } >RAM
+    _ld_heap_end = ORIGIN(RAM) + LENGTH(RAM);
 
     /* this just checks there is enough RAM for the stack */
     .stack :
     {
         . = ALIGN(4);
+        _ld_stack_bottom = .;
         . = . + _minimum_stack_size;
         . = ALIGN(4);
     } >RAM
+    _ld_stack_top = ORIGIN(RAM) + LENGTH(RAM);
+
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
 

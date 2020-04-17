@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,11 @@
  * THE SOFTWARE.
  */
 
-void stm32f4_peripherals_clocks_init(void);
+//Micropython setup
+
+#define MICROPY_HW_BOARD_NAME       "NUCLEO STM32H743"
+#define MICROPY_HW_MCU_NAME         "STM32H743"
+
+#define FLASH_PAGE_SIZE             (0x4000)
+
+#define BOARD_OSC_DIV (8)

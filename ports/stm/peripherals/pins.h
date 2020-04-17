@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +27,13 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
-#define __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
+#ifndef __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__
+#define __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 typedef struct {
     mp_obj_base_t base;
@@ -76,21 +75,31 @@ extern const mp_obj_type_t mcu_pin_type;
 // Use illegal pin value to mark unassigned pins.
 #define NO_PIN 0xff
 
-// Choose based on chip
+// F4 Series
 #ifdef STM32F401xE
-#include "stm32f401xe/pins.h"
+#include "stm32f4/stm32f401xe/pins.h"
 #endif
 #ifdef STM32F411xE
-#include "stm32f411xe/pins.h"
+#include "stm32f4/stm32f411xe/pins.h"
 #endif
 #ifdef STM32F412Zx
-#include "stm32f412zx/pins.h"
+#include "stm32f4/stm32f412zx/pins.h"
 #endif
 #ifdef STM32F405xx
-#include "stm32f405xx/pins.h"
+#include "stm32f4/stm32f405xx/pins.h"
 #endif
 #ifdef STM32F407xx
-#include "stm32f407xx/pins.h"
+#include "stm32f4/stm32f407xx/pins.h"
 #endif
 
-#endif // __MICROPY_INCLUDED_STM32F4_PERIPHERALS_PINS_H__
+// F7 Series
+#ifdef STM32F767xx
+#include "stm32f7/stm32f767xx/pins.h"
+#endif
+
+// H7 Series
+#ifdef STM32H743xx
+#include "stm32h7/stm32h743xx/pins.h"
+#endif
+
+#endif // __MICROPY_INCLUDED_STM32_PERIPHERALS_PINS_H__

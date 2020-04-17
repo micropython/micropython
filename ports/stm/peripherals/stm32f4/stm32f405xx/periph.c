@@ -26,97 +26,97 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "stm32f4/pins.h"
-#include "stm32f4/periph.h"
+#include "peripherals/pins.h"
+#include "peripherals/periph.h"
 
 // I2C
 
 I2C_TypeDef * mcu_i2c_banks[3] = {I2C1, I2C2, I2C3};
 
-const mcu_i2c_sda_obj_t mcu_i2c_sda_list[4] = {
-    I2C_SDA(1, 4, &pin_PB07),
-    I2C_SDA(1, 4, &pin_PB09),
-    I2C_SDA(2, 4, &pin_PB11),
-    I2C_SDA(3, 4, &pin_PC09),
+const mcu_periph_obj_t mcu_i2c_sda_list[4] = {
+    PERIPH(1, 4, &pin_PB07),
+    PERIPH(1, 4, &pin_PB09),
+    PERIPH(2, 4, &pin_PB11),
+    PERIPH(3, 4, &pin_PC09),
 };
 
-const mcu_i2c_scl_obj_t mcu_i2c_scl_list[4] = {
-    I2C_SCL(1, 4, &pin_PB06),
-    I2C_SCL(1, 4, &pin_PB08),
-    I2C_SCL(2, 4, &pin_PB10),
-    I2C_SCL(3, 4, &pin_PA08)
+const mcu_periph_obj_t mcu_i2c_scl_list[4] = {
+    PERIPH(1, 4, &pin_PB06),
+    PERIPH(1, 4, &pin_PB08),
+    PERIPH(2, 4, &pin_PB10),
+    PERIPH(3, 4, &pin_PA08)
 };
 
 SPI_TypeDef * mcu_spi_banks[3] = {SPI1, SPI2, SPI3};
 
-const mcu_spi_sck_obj_t mcu_spi_sck_list[7] = {
-    SPI(1, 5, &pin_PA05),
-    SPI(1, 5, &pin_PB03),
-    SPI(2, 5, &pin_PB10),
-    SPI(2, 5, &pin_PB13),
-    SPI(2, 5, &pin_PC07),
-    SPI(3, 6, &pin_PB03),
-    SPI(3, 6, &pin_PC10),
+const mcu_periph_obj_t mcu_spi_sck_list[7] = {
+    PERIPH(1, 5, &pin_PA05),
+    PERIPH(1, 5, &pin_PB03),
+    PERIPH(2, 5, &pin_PB10),
+    PERIPH(2, 5, &pin_PB13),
+    PERIPH(2, 5, &pin_PC07),
+    PERIPH(3, 6, &pin_PB03),
+    PERIPH(3, 6, &pin_PC10),
 };
 
-const mcu_spi_mosi_obj_t mcu_spi_mosi_list[6] = {
-    SPI(1, 5, &pin_PA07),
-    SPI(1, 5, &pin_PB05),
-    SPI(2, 5, &pin_PB15),
-    SPI(2, 5, &pin_PC03),
-    SPI(3, 6, &pin_PB05),
-    SPI(3, 6, &pin_PC12),
+const mcu_periph_obj_t mcu_spi_mosi_list[6] = {
+    PERIPH(1, 5, &pin_PA07),
+    PERIPH(1, 5, &pin_PB05),
+    PERIPH(2, 5, &pin_PB15),
+    PERIPH(2, 5, &pin_PC03),
+    PERIPH(3, 6, &pin_PB05),
+    PERIPH(3, 6, &pin_PC12),
 };
 
-const mcu_spi_miso_obj_t mcu_spi_miso_list[6] = {
-    SPI(1, 5, &pin_PA06),
-    SPI(1, 5, &pin_PB04),
-    SPI(2, 5, &pin_PB14),
-    SPI(2, 5, &pin_PC02),
-    SPI(3, 6, &pin_PB04),
-    SPI(3, 6, &pin_PC11),
+const mcu_periph_obj_t mcu_spi_miso_list[6] = {
+    PERIPH(1, 5, &pin_PA06),
+    PERIPH(1, 5, &pin_PB04),
+    PERIPH(2, 5, &pin_PB14),
+    PERIPH(2, 5, &pin_PC02),
+    PERIPH(3, 6, &pin_PB04),
+    PERIPH(3, 6, &pin_PC11),
 };
 
-const mcu_spi_nss_obj_t mcu_spi_nss_list[6] = {
-    SPI(1, 5, &pin_PA04),
-    SPI(1, 5, &pin_PA15),
-    SPI(2, 5, &pin_PB09),
-    SPI(2, 5, &pin_PB12),
-    SPI(3, 6, &pin_PA04),
-    SPI(3, 6, &pin_PA15),
+const mcu_periph_obj_t mcu_spi_nss_list[6] = {
+    PERIPH(1, 5, &pin_PA04),
+    PERIPH(1, 5, &pin_PA15),
+    PERIPH(2, 5, &pin_PB09),
+    PERIPH(2, 5, &pin_PB12),
+    PERIPH(3, 6, &pin_PA04),
+    PERIPH(3, 6, &pin_PA15),
 };
 
 USART_TypeDef * mcu_uart_banks[MAX_UART] = {USART1, USART2, USART3, UART4, UART5, USART6};
 bool mcu_uart_has_usart[MAX_UART] = {true, true, true, false, false, true};
 
-const mcu_uart_tx_obj_t mcu_uart_tx_list[12] = {
-    UART(4, 8, &pin_PA00),
-    UART(2, 7, &pin_PA02),
-    UART(1, 7, &pin_PA09),
-    UART(1, 7, &pin_PB06),
-    UART(3, 7, &pin_PB10),
-    UART(6, 8, &pin_PC06),
-    UART(3, 7, &pin_PC10),
-    UART(4, 8, &pin_PC10),
-    UART(5, 8, &pin_PC12),
-    UART(2, 7, &pin_PD05),
-    UART(3, 7, &pin_PD08),
-    UART(6, 8, &pin_PG14),
+const mcu_periph_obj_t mcu_uart_tx_list[12] = {
+    PERIPH(4, 8, &pin_PA00),
+    PERIPH(2, 7, &pin_PA02),
+    PERIPH(1, 7, &pin_PA09),
+    PERIPH(1, 7, &pin_PB06),
+    PERIPH(3, 7, &pin_PB10),
+    PERIPH(6, 8, &pin_PC06),
+    PERIPH(3, 7, &pin_PC10),
+    PERIPH(4, 8, &pin_PC10),
+    PERIPH(5, 8, &pin_PC12),
+    PERIPH(2, 7, &pin_PD05),
+    PERIPH(3, 7, &pin_PD08),
+    PERIPH(6, 8, &pin_PG14),
 };
 
-const mcu_uart_rx_obj_t mcu_uart_rx_list[12] = {
-    UART(4, 8, &pin_PA01),
-    UART(2, 7, &pin_PA03),
-    UART(1, 7, &pin_PA10),
-    UART(1, 7, &pin_PB07),
-    UART(3, 7, &pin_PB11),
-    UART(6, 8, &pin_PC07),
-    UART(3, 7, &pin_PC11),
-    UART(4, 8, &pin_PC11),
-    UART(5, 8, &pin_PD02),
-    UART(2, 7, &pin_PD06),
-    UART(3, 7, &pin_PD09),
-    UART(6, 8, &pin_PG09),
+const mcu_periph_obj_t mcu_uart_rx_list[12] = {
+    PERIPH(4, 8, &pin_PA01),
+    PERIPH(2, 7, &pin_PA03),
+    PERIPH(1, 7, &pin_PA10),
+    PERIPH(1, 7, &pin_PB07),
+    PERIPH(3, 7, &pin_PB11),
+    PERIPH(6, 8, &pin_PC07),
+    PERIPH(3, 7, &pin_PC11),
+    PERIPH(4, 8, &pin_PC11),
+    PERIPH(5, 8, &pin_PD02),
+    PERIPH(2, 7, &pin_PD06),
+    PERIPH(3, 7, &pin_PD09),
+    PERIPH(6, 8, &pin_PG09),
 };
 
 //Timers

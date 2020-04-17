@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,5 +24,4 @@
  * THE SOFTWARE.
  */
 
-void stm32f4_peripherals_gpio_init(void);
-void stm32f4_peripherals_status_led(uint8_t led, uint8_t state);
+void stm32_peripherals_clocks_init(void);
