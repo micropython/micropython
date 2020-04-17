@@ -44,13 +44,11 @@ endif
 
 LIB_SRC_C += $(SRC_BTSTACK)
 
-#$(BUILD)/lib/btstack/src/classic/btstack_link_key_db_static.o: CFLAGS += -Wno-error=pointer-arith
-
-# Incorrect %u, should be %lu.
-$(BUILD)/lib/btstack/src/classic/a2dp_source.o: CFLAGS += -Wno-error=format=
-$(BUILD)/lib/btstack/src/classic/btstack_sbc_decoder_bluedroid.o: CFLAGS += -Wno-error=format=
-$(BUILD)/lib/btstack/src/classic/btstack_link_key_db_tlv.o: CFLAGS += -Wno-error=format=
-$(BUILD)/lib/btstack/src/classic/goep_client.o: CFLAGS += -Wno-error=format=
-$(BUILD)/lib/btstack/src/ble/le_device_db_tlv.o: CFLAGS += -Wno-error=format=
+# Suppress some warnings.
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter
+ifneq ($(CC),clang)
+BTSTACK_WARNING_CFLAGS += -Wno-format
+endif
+$(BUILD)/lib/btstack/src/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
 
 endif

@@ -35,6 +35,8 @@
 
 #include "lib/btstack/src/btstack.h"
 #include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
+#include "lib/btstack/platform/embedded/hal_cpu.h"
+#include "lib/btstack/platform/embedded/hal_time_ms.h"
 
 #include "extmod/btstack/modbluetooth_btstack.h"
 
