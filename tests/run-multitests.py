@@ -324,6 +324,8 @@ def run_tests(test_files, instances_truth, instances_test):
         if not skip:
             # Check if truth exists in a file, and read it in
             test_file_expected = test_file + ".exp"
+            if cmd_args.show_output:
+                print("### TRUTH ###")
             if os.path.isfile(test_file_expected):
                 with open(test_file_expected) as f:
                     output_truth = f.read()
@@ -333,7 +335,6 @@ def run_tests(test_files, instances_truth, instances_test):
                     test_file, num_instances, instances_truth
                 )
             if cmd_args.show_output:
-                print("### TRUTH ###")
                 print(output_truth, end="")
 
         # Print result of test
