@@ -297,21 +297,26 @@ jobs:
         - make ${MAKEOPTS} -C ports/nrf submodules
         - make ${MAKEOPTS} -C ports/nrf
 
-    # bare-arm and minimal ports
+    # bare-arm and minimal ports, with size-diff check
     - stage: test
-      env: NAME="bare-arm and minimal ports build"
+      env: NAME="bare-arm and minimal ports build and size-diff check"
       install:
+        - sudo apt-get install gcc-multilib libffi-dev:i386
         - sudo apt-get install gcc-arm-none-eabi
         - sudo apt-get install libnewlib-arm-none-eabi
+        - gcc --version
         - arm-none-eabi-gcc --version
       script:
-        - make ${MAKEOPTS} -C ports/bare-arm
-        - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
-        - ls -l ports/minimal/build/firmware.bin
-        - tools/check_code_size.sh
-        - mkdir -p ${HOME}/persist
-        # Save new firmware for reference, but only if building a main branch, not a pull request
-        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
+        - git checkout -b pull_request
+        - git checkout master
+        - git show -s
+        - tools/metrics.py clean bm
+        - tools/metrics.py build bm | tee ~/size0 || travis_terminate 1
+        - git checkout pull_request
+        - git show -s
+        - tools/metrics.py clean bm
+        - tools/metrics.py build bm | tee ~/size1 || travis_terminate 1
+        - tools/metrics.py diff --error-threshold 0 ~/size0 ~/size1
 
     # cc3200 port
     - stage: test
