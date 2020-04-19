@@ -54,6 +54,7 @@ class PortData:
         self.dir = dir
         self.output = output
         self.make_flags = make_flags
+        self.needs_mpy_cross = dir not in ("bare-arm", "minimal")
 
 
 port_data = {
@@ -185,8 +186,9 @@ def do_build(args):
 
     ports = parse_port_list(args)
 
-    print("BUILDING MPY-CROSS")
-    syscmd("make", "-C", "mpy-cross", MAKE_FLAGS)
+    if any(port.needs_mpy_cross for port in ports):
+        print("BUILDING MPY-CROSS")
+        syscmd("make", "-C", "mpy-cross", MAKE_FLAGS)
 
     print("BUILDING PORTS")
     for port in ports:
