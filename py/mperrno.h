@@ -68,7 +68,6 @@
 #define MP_EDOM              (33) // Math argument out of domain of func
 #define MP_ERANGE            (34) // Math result not representable
 #define MP_EWOULDBLOCK  MP_EAGAIN // Operation would block
-#define MP_EOTHER            (55) // Other error (posix ENOANO)
 #define MP_EOPNOTSUPP        (95) // Operation not supported on transport endpoint
 #define MP_EAFNOSUPPORT      (97) // Address family not supported by protocol
 #define MP_EADDRINUSE        (98) // Address already in use
@@ -124,11 +123,6 @@
 #define MP_EDOM             EDOM
 #define MP_ERANGE           ERANGE
 #define MP_EWOULDBLOCK      EWOULDBLOCK
-#ifdef ENOANO
-#define MP_EOTHER           ENOANO
-#else
-#define MP_EOTHER           (55)
-#endif
 #define MP_EOPNOTSUPP       EOPNOTSUPP
 #define MP_EAFNOSUPPORT     EAFNOSUPPORT
 #define MP_EADDRINUSE       EADDRINUSE
