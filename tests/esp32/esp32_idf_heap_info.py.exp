@@ -1,3 +1,5 @@
-Data has (7288, 0, 0, 0)
-Code has (15072, 15036, 15036, 15036)
+HEAP_DATA >3: True
+HEAP_DATA [True, True, True, True]
+HEAP_EXEC >3: True
+HEAP_EXEC [True, True, True, True]
 []

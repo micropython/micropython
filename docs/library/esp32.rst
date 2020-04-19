@@ -49,8 +49,8 @@ Functions
     use ``micropython.mem_info()`` instead.
 
     The capabilities parameter corresponds to ESP-IDF's ``MALLOC_CAP_XXX`` values but the
-    two most useful ones are predefined as ``esp32.MEM_DATA`` for data heap regions and
-    ``esp32.MEM_EXEC`` for executable regions as used by the native code emitter.
+    two most useful ones are predefined as ``esp32.HEAP_DATA`` for data heap regions and
+    ``esp32.HEAP_EXEC`` for executable regions as used by the native code emitter.
 
     The return value is a list of 4-tuples, where each 4-tuple corresponds to one heap
     and contains: the total bytes, the free bytes, the largest free block, and
@@ -58,7 +58,7 @@ Functions
 
     Example after booting::
 
-    >>> import esp32; esp32.idf_heap_info(esp32.MEM_DATA)
+    >>> import esp32; esp32.idf_heap_info(esp32.HEAP_DATA)
     [(240, 0, 0, 0), (7288, 0, 0, 0), (16648, 4, 4, 4), (79912, 35712, 35512, 35108),
      (15072, 15036, 15036, 15036), (113840, 0, 0, 0)]
 
@@ -112,8 +112,8 @@ Constants
 
     Used in `Partition.find` to specify the partition type.
 
-.. data:: MEM_DATA
-          MEM_EXEC
+.. data:: HEAP_DATA
+          HEAP_EXEC
 
     Used in `idf_heap_info`.
 

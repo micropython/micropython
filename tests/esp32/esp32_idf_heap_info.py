@@ -1,24 +1,35 @@
+# Test the esp32's esp32.idf_heap_info to return sane data
 try:
     import esp32
 except ImportException:
     print("SKIP")
     raise SystemExit
 
+# region tuple is: (size, free, largest free, min free)
+# we check that each region's size is > 0 and that the free amounts are smaller than the size
+def chk_heap(kind, regions):
+    chk = [True, True, True, True]
+    for r in regions:
+        chk = [
+            chk[0] and r[0] > 0,
+            chk[1] and r[1] <= r[0],
+            chk[2] and r[2] <= r[0],
+            chk[3] and r[3] <= r[0],
+        ]
+    print(kind, chk)
+
+
 # try getting heap regions, looks like a couple of small regions are always taken?
-heap = esp32.idf_heap_info(esp32.MEM_DATA)
-# print("heap:", heap)
-if heap[1] == (7288, 0, 0, 0):
-    print("Data has", heap[1])
-else:
-    print("OOPS, data doesn't have (7288, 0, 0, 0):", heap)
+regions = esp32.idf_heap_info(esp32.HEAP_DATA)
+print("HEAP_DATA >5:", len(regions) > 5)
+chk_heap("HEAP_DATA", regions)
+# print(regions)
 
 # try getting code regions, looks like a big region is always free?
-code = esp32.idf_heap_info(esp32.MEM_EXEC)
-# print("code:", code)
-if code[0] == (15072, 15036, 15036, 15036):
-    print("Code has", code[0])
-else:
-    print("OOPS, code doesn't have (15072, 15036, 15036, 15036):", code)
+regions = esp32.idf_heap_info(esp32.HEAP_EXEC)
+print("HEAP_EXEC >2:", len(regions) > 2)
+chk_heap("HEAP_EXEC", regions)
+# print(regions)
 
 # try invalid param
 print(esp32.idf_heap_info(-1))
