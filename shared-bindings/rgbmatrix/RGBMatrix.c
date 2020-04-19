@@ -284,7 +284,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
     if (brightness < 0.0f || brightness > 1.0f) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
     }
-    common_hal_rgbmatrix_rgbmatrix_set_paused(self_in, brightness <= 0);
+    common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
 
     return mp_const_none;
 }
