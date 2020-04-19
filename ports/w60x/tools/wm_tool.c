@@ -2895,7 +2895,7 @@ static char *wm_tool_get_name(const char *name)
         }
     } while (p);
 
-    strncpy(sz_name, q, WM_TOOL_PATH_MAX);
+    strncpy(sz_name, q, WM_TOOL_PATH_MAX - 1);
 
 #ifdef __MINGW32__
     p = wm_tool_strcasestr(sz_name, ".exe");
