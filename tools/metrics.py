@@ -121,13 +121,20 @@ def read_build_log(filename):
 def do_diff(args):
     """Compute the difference between firmware sizes."""
 
+    # Parse arguments.
+    error_threshold = None
+    if len(args) >= 2 and args[0] == "--error-threshold":
+        args.pop(0)
+        error_threshold = int(args.pop(0))
+
     if len(args) != 2:
-        print("usage: %s diff <out1> <out2>" % sys.argv[0])
+        print("usage: %s diff [--error-threshold <x>] <out1> <out2>" % sys.argv[0])
         sys.exit(1)
 
     data1 = read_build_log(args[0])
     data2 = read_build_log(args[1])
 
+    max_delta = None
     for key, value1 in data1.items():
         value2 = data2[key]
         for port in port_data.values():
@@ -156,6 +163,11 @@ def do_diff(args):
         if warn:
             warn = "[incl%s]" % warn
         print("%11s: %+5u %+.3f%% %s%s" % (name, delta, percent, board, warn))
+        max_delta = delta if max_delta is None else max(max_delta, delta)
+
+    if error_threshold is not None and max_delta is not None:
+        if max_delta > error_threshold:
+            sys.exit(1)
 
 
 def do_clean(args):
