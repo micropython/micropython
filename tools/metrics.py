@@ -43,7 +43,7 @@ Other commands:
 
 """
 
-import sys, re, subprocess
+import collections, sys, re, subprocess
 
 MAKE_FLAGS = ["-j3", "CFLAGS_EXTRA=-DNDEBUG"]
 
@@ -98,7 +98,7 @@ def parse_port_list(args):
 
 
 def read_build_log(filename):
-    data = dict()
+    data = collections.OrderedDict()
     lines = []
     found_sizes = False
     with open(filename) as f:
