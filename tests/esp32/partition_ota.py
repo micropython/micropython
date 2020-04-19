@@ -1,3 +1,7 @@
+# Test ESP32 OTA updates, including automatic roll-back.
+# Running this test requires firmware with an OTA Partition, such as the GENERIC_OTA "board".
+# This test also requires patience as it copies the boot partition into the other OTA slot.
+
 import machine
 from esp32 import Partition
 
@@ -90,6 +94,9 @@ def copy_partition(src, dest):
     while addr < sz:
         if sz - addr < 4096:
             blk = blk[: sz - addr]
+        if addr & 0xFFFF == 0:
+            # need to show progress to run-tests else it times out
+            print("   ... 0x{:06x}".format(addr))
         src.readblocks(addr >> 12, blk)
         dest.writeblocks(addr >> 12, blk)
         addr += len(blk)
