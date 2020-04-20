@@ -206,8 +206,3 @@ int ets_esf_free_bufs(int idx) {
     }
     return cnt;
 }
-
-extern int mp_stream_errno;
-int *__errno() {
-    return &mp_stream_errno;
-}

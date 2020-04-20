@@ -195,13 +195,6 @@ void mp_hal_delay_us(uint32_t us) {
     }
 }
 
-/*
-extern int mp_stream_errno;
-int *__errno() {
-    return &mp_stream_errno;
-}
-*/
-
 // Wake up the main task if it is sleeping
 void mp_hal_wake_main_task_from_isr(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
