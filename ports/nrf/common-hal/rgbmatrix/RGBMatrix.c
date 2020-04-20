@@ -26,53 +26,41 @@
 
 #include <stddef.h>
 
-#include "common-hal/_protomatter/Protomatter.h"
+#include "common-hal/rgbmatrix/RGBMatrix.h"
 
-#include "samd/timers.h"
-#include "timer_handler.h"
+#include "peripherals/nrf/timers.h"
 
-void *common_hal_protomatter_timer_allocate() {
-    uint8_t timer_index = find_free_timer();
-    if (timer_index == 0xff) {
-        return NULL;
-    }
-    timer_never_reset(timer_index, true);
-    return tc_insts[timer_index];
+extern void _PM_IRQ_HANDLER(void);
+
+void *common_hal_rgbmatrix_timer_allocate() {
+    nrfx_timer_t *timer = nrf_peripherals_allocate_timer_or_throw();
+    nrf_peripherals_timer_never_reset(timer);
+    return timer->p_reg;
 }
 
-static uint8_t tc_index_from_ptr(void* ptr) {
-    for (uint8_t i = TC_INST_NUM; i > 0; i--) {
-        if (tc_insts[i] == ptr) {
-            return i;
-        }
-    }
-    return 0xff;
+
+static void rgbmatrix_event_handler(nrf_timer_event_t event_type, void *p_context) {
+    _PM_IRQ_HANDLER();
 }
 
-void common_hal_protomatter_timer_enable(void* ptr) {
-    uint8_t timer_index = tc_index_from_ptr(ptr);
-    if (timer_index == 0xff) {
-        return;
-    }
-    set_timer_handler(true, timer_index, TC_HANDLER_PROTOMATTER);
-    turn_on_clocks(true, timer_index, 1);
+void common_hal_rgbmatrix_timer_enable(void* ptr) {
+    nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
+    static const nrfx_timer_config_t timer_config = {
+        .frequency = NRF_TIMER_FREQ_16MHz,
+        .mode = NRF_TIMER_MODE_TIMER,
+        .bit_width = NRF_TIMER_BIT_WIDTH_16,
+        .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
+        .p_context = NULL,
+    };
+    nrfx_timer_init(timer, &timer_config, &rgbmatrix_event_handler);
 }
 
-void common_hal_protomatter_timer_disable(void* ptr) {
-    uint8_t timer_index = tc_index_from_ptr(ptr);
-    if (timer_index == 0xff) {
-        return;
-    }
-    set_timer_handler(true, timer_index, TC_HANDLER_NO_INTERRUPT);
-    tc_set_enable(ptr, false);
+void common_hal_rgbmatrix_timer_disable(void* ptr) {
+    nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
+    nrfx_timer_uninit(timer);
 }
 
-void common_hal_protomatter_timer_free(void* ptr) {
-    uint8_t timer_index = tc_index_from_ptr(ptr);
-    if (timer_index == 0xff) {
-        return;
-    }
-    tc_set_enable(ptr, false);
-    tc_reset(ptr);
-    timer_reset_ok(timer_index, true);
+void common_hal_rgbmatrix_timer_free(void* ptr) {
+    nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
+    nrf_peripherals_free_timer(timer);
 }

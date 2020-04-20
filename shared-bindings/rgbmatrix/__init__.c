@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,12 +24,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
+#include <stdint.h>
 
-void *common_hal_protomatter_timer_allocate(void);
-void common_hal_protomatter_timer_enable(void*);
-void common_hal_protomatter_timer_disable(void*);
-void common_hal_protomatter_timer_free(void*);
+#include "py/obj.h"
+#include "py/runtime.h"
 
-#endif
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
+
+//| :mod:`rgbmatrix` --- Low-level routines for bitbanged LED matrices
+//| =====================================================================
+//|
+//| .. module:: rgbmatrix
+//|   :synopsis: Low-level routines for bitbanged LED matrices
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     RGBMatrix
+
+STATIC const mp_rom_map_elem_t rgbmatrix_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rgbmatrix) },
+    { MP_ROM_QSTR(MP_QSTR_RGBMatrix), MP_ROM_PTR(&rgbmatrix_RGBMatrix_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(rgbmatrix_module_globals, rgbmatrix_module_globals_table);
+
+const mp_obj_module_t rgbmatrix_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&rgbmatrix_module_globals,
+};

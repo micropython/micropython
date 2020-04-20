@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-void *common_hal_protomatter_timer_allocate(void);
-void common_hal_protomatter_timer_enable(void*);
-void common_hal_protomatter_timer_disable(void*);
-void common_hal_protomatter_timer_free(void*);
+void *common_hal_rgbmatrix_timer_allocate(void);
+void common_hal_rgbmatrix_timer_enable(void*);
+void common_hal_rgbmatrix_timer_disable(void*);
+void common_hal_rgbmatrix_timer_free(void*);
 
 #endif
