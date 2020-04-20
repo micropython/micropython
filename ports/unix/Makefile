@@ -31,7 +31,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -146,6 +146,8 @@ MICROPY_BLUETOOTH_BTSTACK ?= 1
 MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+GIT_SUBMODULES += lib/btstack
+
 include $(TOP)/extmod/btstack/btstack.mk
 endif
 

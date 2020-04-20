@@ -52,6 +52,7 @@ jobs:
         # OSX has poor time resolution and the following tests do not have the correct output
         - (cd tests && ./run-tests --exclude 'uasyncio_(basic|heaplock|lock|wait_task)')
         # check for additional compiler errors/warnings
+        - make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
         - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
       after_failure:
         - tests/run-tests --print-failures
@@ -108,8 +109,8 @@ jobs:
         - python3 --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix submodules
-        - make ${MAKEOPTS} -C ports/unix deplibs
+        - make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
+        - make ${MAKEOPTS} -C ports/unix VARIANT=coverage deplibs
         - make ${MAKEOPTS} -C ports/unix VARIANT=coverage
         # run the main test suite
         - make -C ports/unix VARIANT=coverage test_full
@@ -143,8 +144,8 @@ jobs:
         - python3 --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
-        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 submodules
-        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 deplibs
+        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage submodules
+        - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage deplibs
         - make ${MAKEOPTS} -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage
         # run the main test suite
         - make -C ports/unix MICROPY_FORCE_32BIT=1 VARIANT=coverage test_full || travis_terminate 1
@@ -183,8 +184,8 @@ jobs:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
         - make ${MAKEOPTS} -C mpy-cross PYTHON=python2
-        - make ${MAKEOPTS} -C ports/unix submodules
-        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 deplibs
+        - make ${MAKEOPTS} -C ports/unix VARIANT=nanbox submodules
+        - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox deplibs
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox
         - make ${MAKEOPTS} -C ports/unix PYTHON=python2 VARIANT=nanbox test_full || travis_terminate 1
         - make ${MAKEOPTS} -C ports/unix clean

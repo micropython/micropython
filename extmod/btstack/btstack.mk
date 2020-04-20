@@ -14,6 +14,8 @@ CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK=1
 
 BTSTACK_DIR = $(TOP)/lib/btstack
 
+ifneq ($(wildcard $(BTSTACK_DIR)/src),)
+
 include $(BTSTACK_DIR)/src/Makefile.inc
 include $(BTSTACK_DIR)/src/ble/Makefile.inc
 
@@ -51,4 +53,5 @@ BTSTACK_WARNING_CFLAGS += -Wno-format
 endif
 $(BUILD)/lib/btstack/src/%.o: CFLAGS += $(BTSTACK_WARNING_CFLAGS)
 
+endif
 endif
