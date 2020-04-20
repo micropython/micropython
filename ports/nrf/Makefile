@@ -419,6 +419,24 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).elf
 	    -ex 'quit' \
 	    $<
 
+else ifeq ($(FLASHER), openocd)
+
+OPENOCD ?= openocd
+
+ifeq ($(MCU_VARIANT), nrf51)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else ifeq ($(MCU_VARIANT), nrf52)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else
+$(error Unsupported openocd target)
+endif
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $< verify reset" -c "exit"
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $(SOFTDEV_HEX) verify reset" -c "exit"
+
 endif
 
 flash: deploy
