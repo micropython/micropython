@@ -33,6 +33,7 @@
 #include "eth_phy/phy.h"
 #include "eth_phy/phy_tlk110.h"
 #include "eth_phy/phy_lan8720.h"
+#include "eth_phy/phy_ip101.h"
 #include "tcpip_adapter.h"
 
 #include "modnetwork.h"
@@ -123,7 +124,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy address"));
     }
 
-    if (args[ARG_phy_type].u_int != PHY_LAN8720 && args[ARG_phy_type].u_int != PHY_TLK110) {
+    if (args[ARG_phy_type].u_int != PHY_LAN8720 &&
+        args[ARG_phy_type].u_int != PHY_TLK110 &&
+        args[ARG_phy_type].u_int != PHY_IP101) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
     }
 
@@ -144,6 +147,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
             break;
         case PHY_LAN8720:
             config = phy_lan8720_default_ethernet_config;
+            break;
+        case PHY_IP101:
+            config = phy_ip101_default_ethernet_config;
             break;
     }
 

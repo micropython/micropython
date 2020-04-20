@@ -776,6 +776,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_IP101), MP_ROM_INT(PHY_IP101) },
 
     // ETH Clock modes from ESP-IDF
     #if !MICROPY_ESP_IDF_4
