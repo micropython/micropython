@@ -84,6 +84,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
     displayio_fourwire_obj_t* self = &allocate_display_bus_or_raise()->fourwire_bus;
+    self->base.type = &displayio_fourwire_type;
 
     uint8_t polarity = args[ARG_polarity].u_int;
     if (polarity != 0 && polarity != 1) {
