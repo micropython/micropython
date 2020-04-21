@@ -137,22 +137,21 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 // pin.init(direction, attribute, value)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_direc, ARG_attr, ARG_value };
+    enum { ARG_mode, ARG_pull, ARG_value };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_pull, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_value, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode, MP_ARG_INT, {.u_int = WM_GPIO_DIR_INPUT} },
+        { MP_QSTR_pull, MP_ARG_INT, {.u_int = WM_GPIO_ATTR_FLOATING} },
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (n_args >= 2)
-        tls_gpio_cfg(self->id, args[ARG_direc].u_int, args[ARG_attr].u_int);
+    tls_gpio_cfg(self->id, args[ARG_mode].u_int, args[ARG_pull].u_int);
 
-    if (n_args == 3)
-        tls_gpio_write(self->id, args[ARG_value].u_int);
+    if (args[ARG_value].u_obj != MP_OBJ_NULL)
+        tls_gpio_write(self->id,  mp_obj_is_true(args[ARG_value].u_obj));
 
     return mp_const_none;
 }
@@ -207,11 +206,28 @@ STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
+// pin.off()
+STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    tls_gpio_write(self->id,  0);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
+
+// pin.on()
+STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    tls_gpio_write(self->id, 1);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
+
 STATIC void machine_pin_irq_callback(void *p) {
     machine_pin_obj_t *self = p;
     tls_clr_gpio_irq_status(self->id);
     machine_pin_isr_handler(self);
 }
+
 
 // pin.irq(trigger_mode)
 STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -246,6 +262,8 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&machine_pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class constants
