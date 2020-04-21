@@ -26,7 +26,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "stm32f4/pins.h"
+#include "peripherals/pins.h"
 
 const mcu_pin_obj_t pin_PE02 = PIN(4, 2, NO_ADC);
 const mcu_pin_obj_t pin_PE03 = PIN(4, 3, NO_ADC);

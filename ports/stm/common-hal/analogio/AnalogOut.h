@@ -32,7 +32,7 @@
 
 #include "py/obj.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4/periph.h"
+#include "peripherals/periph.h"
 
 typedef struct {
     mp_obj_base_t base;

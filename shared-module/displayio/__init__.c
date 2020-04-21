@@ -21,8 +21,8 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
-#if CIRCUITPY_PROTOMATTER
-STATIC bool any_display_uses_this_protomatter(protomatter_protomatter_obj_t* pm) {
+#if CIRCUITPY_RGBMATRIX
+STATIC bool any_display_uses_this_rgbmatrix(rgbmatrix_rgbmatrix_obj_t* pm) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_obj_t* display = &displays[i].framebuffer_display;
@@ -103,8 +103,8 @@ void common_hal_displayio_release_displays(void) {
         } else if (bus_type == &displayio_parallelbus_type) {
             common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
 #if CIRCUITPY_FRAMEBUFFERIO
-        } else if (bus_type == &protomatter_Protomatter_type) {
-            common_hal_protomatter_protomatter_deinit(&displays[i].protomatter);
+        } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
+            common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
 #endif
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
@@ -167,11 +167,11 @@ void reset_displays(void) {
                     }
                 }
             }
-#if CIRCUITPY_PROTOMATTER
-        } else if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
-            protomatter_protomatter_obj_t * pm = &displays[i].protomatter;
-            if(!any_display_uses_this_protomatter(pm)) {
-                common_hal_protomatter_protomatter_deinit(pm);
+#if CIRCUITPY_RGBMATRIX
+        } else if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+            rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
+            if(!any_display_uses_this_rgbmatrix(pm)) {
+                common_hal_rgbmatrix_rgbmatrix_deinit(pm);
             }
 #endif
         } else {
@@ -200,9 +200,9 @@ void reset_displays(void) {
 
 void displayio_gc_collect(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-#if CIRCUITPY_PROTOMATTER
-        if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
-            protomatter_protomatter_collect_ptrs(&displays[i].protomatter);
+#if CIRCUITPY_RGBMATRIX
+        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+            rgbmatrix_rgbmatrix_collect_ptrs(&displays[i].rgbmatrix);
         }
 #endif
 

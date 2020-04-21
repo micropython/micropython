@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_UART_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "stm32f4/periph.h"
-#include "stm32f4xx_hal.h" 
+#include "peripherals/periph.h"
 
 #include "py/obj.h"
 #include "py/ringbuf.h"
@@ -45,8 +44,8 @@ typedef struct {
     mp_obj_base_t base;
     UART_HandleTypeDef handle;
     IRQn_Type irq;
-    const mcu_uart_tx_obj_t *tx;
-    const mcu_uart_rx_obj_t *rx;
+    const mcu_periph_obj_t *tx;
+    const mcu_periph_obj_t *rx;
 
     ringbuf_t rbuf;
     uint8_t rx_char;

@@ -31,17 +31,124 @@
 #include "lib/timeutils/timeutils.h"
 
 #include "common-hal/microcontroller/Pin.h"
+
+#if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
+#endif
+#if CIRCUITPY_PULSEIO
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#endif
 
-#include "stm32f4/clocks.h"
-#include "stm32f4/gpio.h"
+#include "clocks.h"
+#include "gpio.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
+
+//only enable the Reset Handler overwrite for the H7 for now
+#if defined(STM32H7)
+
+// Device memories must be accessed in order.
+#define DEVICE 2
+// Normal memory can have accesses reorder and prefetched.
+#define NORMAL 0
+// Prevents instruction access.
+#define NO_EXECUTION 1
+#define EXECUTION 0
+// Shareable if the memory system manages coherency.
+#define NOT_SHAREABLE 0
+#define SHAREABLE 1
+#define NOT_CACHEABLE 0
+#define CACHEABLE 1
+#define NOT_BUFFERABLE 0
+#define BUFFERABLE 1
+#define NO_SUBREGIONS 0
+
+extern uint32_t _ld_stack_top;
+
+extern uint32_t _ld_d1_ram_bss_start;
+extern uint32_t _ld_d1_ram_bss_size;
+extern uint32_t _ld_d1_ram_data_destination;
+extern uint32_t _ld_d1_ram_data_size;
+extern uint32_t _ld_d1_ram_data_flash_copy;
+extern uint32_t _ld_dtcm_bss_start;
+extern uint32_t _ld_dtcm_bss_size;
+extern uint32_t _ld_dtcm_data_destination;
+extern uint32_t _ld_dtcm_data_size;
+extern uint32_t _ld_dtcm_data_flash_copy;
+extern uint32_t _ld_itcm_destination;
+extern uint32_t _ld_itcm_size;
+extern uint32_t _ld_itcm_flash_copy;
+
+extern void main(void);
+extern void SystemInit(void);
+
+// This replaces the Reset_Handler in startup_*.S and SystemInit in system_*.c.
+__attribute__((used, naked)) void Reset_Handler(void) {
+    __disable_irq();
+    __set_MSP((uint32_t) &_ld_stack_top);
+
+    /* Disable MPU */
+    ARM_MPU_Disable();
+
+    // Copy all of the itcm code to run from ITCM. Do this while the MPU is disabled because we write
+    // protect it.
+    for (uint32_t i = 0; i < ((size_t) &_ld_itcm_size) / 4; i++) {
+        (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
+    }
+
+    // The first number in RBAR is the region number. When searching for a policy, the region with
+    // the highest number wins. If none match, then the default policy set at enable applies.
+
+    // Mark all the flash the same until instructed otherwise.
+    MPU->RBAR = ARM_MPU_RBAR(11, 0x08000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_2MB);
+
+    // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
+    // accidentally write the wrong value to 0x00000000 (aka NULL).
+    MPU->RBAR = ARM_MPU_RBAR(12, 0x00000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_64KB);
+
+    // This the DTCM.
+    MPU->RBAR = ARM_MPU_RBAR(14, 0x20000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_128KB);
+
+    // This is AXI SRAM (D1).
+    MPU->RBAR = ARM_MPU_RBAR(15, 0x24000000U);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
+
+    /* Enable MPU */
+    ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
+
+    // Copy all of the data to run from DTCM.
+    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_data_size) / 4; i++) {
+        (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
+    }
+
+    // Clear DTCM bss.
+    for (uint32_t i = 0; i < ((size_t) &_ld_dtcm_bss_size) / 4; i++) {
+        (&_ld_dtcm_bss_start)[i] = 0;
+    }
+
+    // Copy all of the data to run from D1 RAM.
+    for (uint32_t i = 0; i < ((size_t) &_ld_d1_ram_data_size) / 4; i++) {
+        (&_ld_d1_ram_data_destination)[i] = (&_ld_d1_ram_data_flash_copy)[i];
+    }
+
+    // Clear D1 RAM bss.
+    for (uint32_t i = 0; i < ((size_t) &_ld_d1_ram_bss_size) / 4; i++) {
+        (&_ld_d1_ram_bss_start)[i] = 0;
+    }
+
+    SystemInit();
+    __enable_irq();
+    main();
+}
+
+#endif //end H7 specific code
 
 static RTC_HandleTypeDef _hrtc;
 
@@ -54,10 +161,13 @@ static RTC_HandleTypeDef _hrtc;
 safe_mode_t port_init(void) {
     HAL_Init();
     __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
 
-    stm32f4_peripherals_clocks_init();
-    stm32f4_peripherals_gpio_init();
+    #if defined(STM32F4)
+        __HAL_RCC_PWR_CLK_ENABLE();
+    #endif
+
+    stm32_peripherals_clocks_init();
+    stm32_peripherals_gpio_init();
 
     HAL_PWR_EnableBkUpAccess();
     #if BOARD_RTC_CLOCK == RCC_RTCCLKSOURCE_LSE
@@ -92,12 +202,16 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+#if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
+#endif
+#if CIRCUITPY_PULSEIO
     pwmout_reset();
     pulseout_reset();
     pulsein_reset();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -108,23 +222,26 @@ void reset_cpu(void) {
     NVIC_SystemReset();
 }
 
+extern uint32_t _ld_heap_start, _ld_heap_end, _ld_stack_top, _ld_stack_bottom;
+
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_ld_heap_start;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return port_stack_get_top();
+    return &_ld_heap_end;
 }
 
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    return &_ld_stack_bottom;
 }
 
 uint32_t *port_stack_get_top(void) {
-    return &_estack;
+    return &_ld_stack_top;
 }
 
 extern uint32_t _ebss;
+
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
     _ebss = value;
@@ -134,7 +251,32 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
-void HardFault_Handler(void) {
+__attribute__((used)) void MemManage_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
+}
+
+__attribute__((used)) void BusFault_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
+}
+
+__attribute__((used)) void UsageFault_Handler(void)
+{
+    reset_into_safe_mode(MEM_MANAGE);
+    while (true) {
+        asm("nop;");
+    }
+}
+
+__attribute__((used)) void HardFault_Handler(void)
+{
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
         asm("nop;");
@@ -244,5 +386,12 @@ void port_sleep_until_interrupt(void) {
         return;
     }
     __WFI();
+}
+
+// Required by __libc_init_array in startup code if we are compiling using
+// -nostdlib/-nostartfiles.
+void _init(void)
+{
+
 }
 

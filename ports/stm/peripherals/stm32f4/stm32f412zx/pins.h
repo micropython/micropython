@@ -24,10 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F412ZG_PINS_H
-#define MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F412ZG_PINS_H
+#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F412ZX_PINS_H
+#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F412ZX_PINS_H
 
-//Pins in datasheet order: DocID028087 Rev 7 page 50. LQFP100 only
 //pg 50
 extern const mcu_pin_obj_t pin_PE02;
 extern const mcu_pin_obj_t pin_PE03;
@@ -155,4 +154,4 @@ extern const mcu_pin_obj_t pin_PB09;
 extern const mcu_pin_obj_t pin_PE00;
 extern const mcu_pin_obj_t pin_PE01;
 
-#endif // MICROPY_INCLUDED_STM32F4_PERIPHERALS_STM32F412ZG_PINS_H
+#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F412ZX_PINS_H

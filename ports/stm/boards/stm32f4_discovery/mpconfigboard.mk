@@ -5,14 +5,11 @@ USB_MANUFACTURER = "STMicroelectronics"
 USB_DEVICES = "CDC,MSC"
 
 INTERNAL_FLASH_FILESYSTEM = 1
-LONGINT_IMPL = NONE
 
-# This is technically a F407 but there's no difference
-# other than the camera and ethernet, which aren't supported. 
-MCU_SERIES = m4
-MCU_VARIANT = stm32f4
-MCU_SUB_VARIANT = stm32f407xx
-MCU_PACKAGE = 100
-CMSIS_MCU = STM32F407xx
+MCU_SERIES = F4
+MCU_VARIANT = STM32F407xx
+MCU_PACKAGE = LQFP100_f4
+
+LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F407_fs.ld
 

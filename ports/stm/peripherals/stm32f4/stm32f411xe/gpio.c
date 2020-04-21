@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
+#include "peripherals/gpio.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4/gpio.h"
-#include "py/mpconfig.h"
 #include "common-hal/microcontroller/Pin.h"
 
-void stm32f4_peripherals_gpio_init(void) {
+void stm32_peripherals_gpio_init(void) {
     //* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOE_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -39,16 +38,18 @@ void stm32f4_peripherals_gpio_init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     //Never reset pins
+    // TODO: Move this out of peripherals. These helpers shouldn't reference anything CircuitPython
+    // specific.
     never_reset_pin_number(2,14); //PC14 OSC32_IN
     never_reset_pin_number(2,15); //PC15 OSC32_OUT
 
-    #if !(BOARD_OVERWRITE_SWD) 
+    #if !(BOARD_OVERWRITE_SWD)
     never_reset_pin_number(0,13); //PA13 SWDIO
     never_reset_pin_number(0,14); //PA14 SWCLK
     #endif
 
     // Port H is not included in GPIO port array
-    // never_reset_pin_number(5,0); //PH0 JTDO   
+    // never_reset_pin_number(5,0); //PH0 JTDO
     // never_reset_pin_number(5,1); //PH1 JTRST
 }
 

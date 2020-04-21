@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-14 17:13-0700\n"
+"POT-Creation-Date: 2020-04-20 16:57-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: Pascal Deneaux\n"
 "Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
@@ -55,7 +55,7 @@ msgstr " Ausgabe:\n"
 msgid "%%c requires int or char"
 msgstr "%%c erwartet int oder char"
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
@@ -329,7 +329,7 @@ msgstr "Array muss Halbwörter enthalten (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Array-Werte sollten aus Einzelbytes bestehen."
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
@@ -366,9 +366,9 @@ msgstr "Bit depth muss ein Vielfaches von 8 sein."
 msgid "Both pins must support hardware interrupts"
 msgstr "Beide pins müssen Hardware Interrupts unterstützen"
 
-#: shared-bindings/_protomatter/Protomatter.c
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
 
@@ -832,6 +832,11 @@ msgstr ""
 msgid "Internal define error"
 msgstr ""
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Internal error #%d"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -867,7 +872,7 @@ msgstr ""
 msgid "Invalid UART pin selection"
 msgstr ""
 
-#: py/moduerrno.c shared-module/_protomatter/Protomatter.c
+#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ungültiges Argument"
 
@@ -922,7 +927,7 @@ msgstr "Ungültige Phase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_protomatter/Protomatter.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Ungültiger Pin"
 
@@ -1038,7 +1043,7 @@ msgstr "Muss eine %q Unterklasse sein."
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr ""
@@ -1126,7 +1131,7 @@ msgstr "Kein Speicherplatz mehr verfügbar auf dem Gerät"
 msgid "No such file/directory"
 msgstr "Keine solche Datei/Verzeichnis"
 
-#: shared-module/_protomatter/Protomatter.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr ""
 
@@ -1211,7 +1216,7 @@ msgstr "Pin hat keine ADC Funktionalität"
 msgid "Pin number already reserved by EXTI"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "Pinout uses %d bytes per element, which consumes more than the ideal %d "
@@ -1236,11 +1241,6 @@ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
 "laden"
-
-#: shared-module/_protomatter/Protomatter.c
-#, c-format
-msgid "Protomatter internal error #%d"
-msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2835,12 +2835,12 @@ msgstr "return annotation muss ein identifier sein"
 msgid "return expected '%q' but got '%q'"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
 msgstr ""
 
-#: shared-bindings/_protomatter/Protomatter.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""

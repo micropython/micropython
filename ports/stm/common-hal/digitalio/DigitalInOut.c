@@ -29,8 +29,14 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "stm32f4xx_hal.h"
+// The HAL is sparse on obtaining register information, so we use the LLs here. 
+#if (CPY_STM32H7)
+#include "stm32h7xx_ll_gpio.h"
+#elif (CPY_STM32F7)
+#include "stm32f7xx_ll_gpio.h"
+#elif (CPY_STM32F4)
 #include "stm32f4xx_ll_gpio.h"
+#endif
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
@@ -145,7 +151,6 @@ void common_hal_digitalio_digitalinout_set_pull(
 
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t *self) {
-
 
     switch (LL_GPIO_GetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number))) {
         case LL_GPIO_PULL_UP:

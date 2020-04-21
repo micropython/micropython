@@ -154,7 +154,7 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     /* Disable MPU */
     ARM_MPU_Disable();
 
-    // Copy all of the code to run from ITCM. Do this while the MPU is disabled because we write
+    // Copy all of the itcm code to run from ITCM. Do this while the MPU is disabled because we write
     // protect it.
     for (uint32_t i = 0; i < ((size_t) &_ld_itcm_size) / 4; i++) {
         (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];

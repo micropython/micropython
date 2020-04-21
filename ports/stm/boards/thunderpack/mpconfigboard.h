@@ -45,6 +45,7 @@
 #define BOARD_NO_VBUS_SENSE         (1)
 
 #define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSI
+#define HSE_VALUE                   ((uint32_t)24000000U)
 
 // Status LEDs
 #define MICROPY_HW_LED_STATUS  (&pin_PA02)

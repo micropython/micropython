@@ -24,10 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "stm32f4xx_hal.h"
-#include "py/mpconfig.h"
 
-void stm32f4_peripherals_clocks_init(void) {
+#include "stm32f4xx_hal.h"
+
+void stm32_peripherals_clocks_init(void) {
     //System clock init
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
