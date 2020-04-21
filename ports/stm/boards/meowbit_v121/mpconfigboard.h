@@ -36,7 +36,7 @@
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
 #define BOARD_OSC_DIV (12)
-#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSE
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 #define HSE_VALUE       ((uint32_t)12000000U)
 #define LSE_VALUE       ((uint32_t)32000U)
 

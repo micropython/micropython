@@ -152,7 +152,7 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 
 static RTC_HandleTypeDef _hrtc;
 
-#if BOARD_RTC_CLOCK == RCC_RTCCLKSOURCE_LSE
+#if BOARD_HAS_LOW_SPEED_CRYSTAL
 #define RTC_CLOCK_FREQUENCY LSE_VALUE
 #else
 #define RTC_CLOCK_FREQUENCY LSI_VALUE
@@ -170,14 +170,17 @@ safe_mode_t port_init(void) {
     stm32_peripherals_gpio_init();
 
     HAL_PWR_EnableBkUpAccess();
-    #if BOARD_RTC_CLOCK == RCC_RTCCLKSOURCE_LSE
+    #if BOARD_HAS_LOW_SPEED_CRYSTAL
     __HAL_RCC_LSE_CONFIG(RCC_LSE_ON);
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {}
     #else
     __HAL_RCC_LSI_ENABLE();
     #endif
-
-    __HAL_RCC_RTC_CONFIG(BOARD_RTC_CLOCK);
+    #if BOARD_HAS_LOW_SPEED_CRYSTAL
+    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
+    #else
+    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSI);
+    #endif
     __HAL_RCC_RTC_ENABLE();
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;

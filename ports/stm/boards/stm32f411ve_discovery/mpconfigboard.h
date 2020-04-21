@@ -34,8 +34,8 @@
 
 #define BOARD_OSC_DIV (8)
 
-#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSI
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 
 // The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
-// #define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSI
+// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 // #define LSE_VALUE  ((uint32_t)32000U)

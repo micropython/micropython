@@ -36,7 +36,7 @@
 
 #define BOARD_OSC_DIV (12)
 
-#define BOARD_RTC_CLOCK RCC_RTCCLKSOURCE_LSE
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)
