@@ -481,6 +481,25 @@ typedef struct {
     .single_status_byte = true, \
 }
 
+// Settings for the Macronix MX25R1635F 8MiB SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7595/MX25R1635F,%20Wide%20Range,%2016Mb,%20v1.6.pdf
+// In low power mode, quad operations can only run at 8 MHz.
+#define MX25R1635F  {\
+    .total_size = (1 << 21), /* 2 MiB */ \
+    .start_up_time_us = 800, \
+    .manufacturer_id = 0xc2, \
+    .memory_type = 0x28, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 33, /* 8 mhz for dual/quad */ \
+    .quad_enable_bit_mask = 0x80, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
 // Settings for the Macronix MX25L51245G 64MiB SPI flash.
 // Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7437/MX25L51245G,%203V,%20512Mb,%20v1.6.pdf
 #define MX25L51245G  {\

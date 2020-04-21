@@ -36,15 +36,15 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
 
 typedef struct {
     union {
         displayio_fourwire_obj_t fourwire_bus;
         displayio_i2cdisplay_obj_t i2cdisplay_bus;
         displayio_parallelbus_obj_t parallel_bus;
-#if CIRCUITPY_PROTOMATTER
-        protomatter_protomatter_obj_t protomatter;
+#if CIRCUITPY_RGBMATRIX
+        rgbmatrix_rgbmatrix_obj_t rgbmatrix;
 #endif
     };
     union {

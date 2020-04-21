@@ -24,13 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PROTOMATTER_PROTOMATTER_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_PROTOMATTER_PROTOMATTER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_RGBMATRIX_RGBMATRIX_H
 
-#include "shared-module/_protomatter/Protomatter.h"
+#include "shared-module/rgbmatrix/RGBMatrix.h"
 #include "lib/protomatter/core.h"
 
-extern const mp_obj_type_t protomatter_Protomatter_type;
+extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t framebuffer;
@@ -46,14 +46,16 @@ typedef struct {
     bool core_is_initialized;
     bool paused;
     bool doublebuffer;
-} protomatter_protomatter_obj_t;
+} rgbmatrix_rgbmatrix_obj_t;
 
-void common_hal_protomatter_protomatter_construct(protomatter_protomatter_obj_t* self, int width, int bit_depth, uint8_t rgb_count, uint8_t* rgb_pins, uint8_t addr_count, uint8_t* addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, void* timer);
-void common_hal_protomatter_protomatter_deinit(protomatter_protomatter_obj_t*);
-void protomatter_protomatter_collect_ptrs(protomatter_protomatter_obj_t*);
-void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_t* self, mp_obj_t framebuffer);
-void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t* self, bool paused);
-bool common_hal_protomatter_protomatter_get_paused(protomatter_protomatter_obj_t* self);
-void common_hal_protomatter_protomatter_refresh(protomatter_protomatter_obj_t* self);
+void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t* self, int width, int bit_depth, uint8_t rgb_count, uint8_t* rgb_pins, uint8_t addr_count, uint8_t* addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, void* timer);
+void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t*);
+void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t*);
+void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self, mp_obj_t framebuffer);
+void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused);
+bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t* self);
+void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t* self);
+int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self);
+int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self);
 
 #endif

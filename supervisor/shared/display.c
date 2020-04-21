@@ -34,7 +34,7 @@
 #include "shared-bindings/displayio/TileGrid.h"
 #include "supervisor/memory.h"
 
-#if CIRCUITPY_PROTOMATTER
+#if CIRCUITPY_RGBMATRIX
 #include "shared-module/displayio/__init__.h"
 #endif
 
@@ -116,11 +116,11 @@ void supervisor_display_move_memory(void) {
         grid->inline_tiles = false;
     }
     MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
-    #if CIRCUITPY_PROTOMATTER
+    #if CIRCUITPY_RGBMATRIX
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].protomatter.base.type == &protomatter_Protomatter_type) {
-            protomatter_protomatter_obj_t * pm = &displays[i].protomatter;
-                common_hal_protomatter_protomatter_reconstruct(pm, NULL);
+        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+            rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
+                common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
         }
     }
     #endif

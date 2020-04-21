@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,32 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-#include "py/obj.h"
-#include "py/runtime.h"
+void *common_hal_rgbmatrix_timer_allocate(void);
+void common_hal_rgbmatrix_timer_enable(void*);
+void common_hal_rgbmatrix_timer_disable(void*);
+void common_hal_rgbmatrix_timer_free(void*);
 
-#include "shared-bindings/_protomatter/Protomatter.h"
-
-//| :mod:`_protomatter` --- Low-level routines for bitbanged LED matrices
-//| =====================================================================
-//|
-//| .. module:: _protomatter
-//|   :synopsis: Low-level routines for bitbanged LED matrices
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Protomatter
-
-STATIC const mp_rom_map_elem_t protomatter_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__protomatter) },
-    { MP_ROM_QSTR(MP_QSTR_Protomatter), MP_ROM_PTR(&protomatter_Protomatter_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(protomatter_module_globals, protomatter_module_globals_table);
-
-const mp_obj_module_t protomatter_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&protomatter_module_globals,
-};
+#endif
