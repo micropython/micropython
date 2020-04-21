@@ -30,8 +30,6 @@
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "stm32f4xx.h"
-
 void SysTick_Handler(void) {
     // SysTick interrupt handler called when the SysTick timer reaches zero
     // (every millisecond).

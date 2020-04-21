@@ -51,6 +51,9 @@ endif
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
 
+CIRCUITPY_RGBMATRIX = 1
+CIRCUITPY_FRAMEBUFFERIO = 1
+
 # nRF52840-specific
 
 ifeq ($(MCU_CHIP),nrf52840)

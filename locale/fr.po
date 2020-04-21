@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-30 17:03-0700\n"
+"POT-Creation-Date: 2020-04-17 18:44-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -54,6 +54,11 @@ msgstr " sortie:\n"
 #, c-format
 msgid "%%c requires int or char"
 msgstr "%%c nécessite un entier 'int' ou un caractère 'char'"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -288,7 +293,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/common-hal/pulseio/PulseOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/nrf/peripherals/nrf/timers.c shared-bindings/pulseio/PWMOut.c
 #: shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Tous les timers sont utilisés"
@@ -329,6 +334,10 @@ msgstr "Le tableau doit contenir des demi-mots (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
@@ -346,6 +355,7 @@ msgstr ""
 "lancer ou entrez sur REPL pour le désactiver.\n"
 
 #: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
 msgstr ""
 
@@ -362,6 +372,8 @@ msgid "Both pins must support hardware interrupts"
 msgstr "Les deux entrées doivent supporter les interruptions matérielles"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr ""
 
@@ -370,6 +382,7 @@ msgid "Brightness must be between 0 and 255"
 msgstr "La luminosité doit être entre 0 et 255"
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
 msgstr "Luminosité non-ajustable"
 
@@ -384,10 +397,12 @@ msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Tampon de taille incorrect. Devrait être de %d octets."
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr ""
 
@@ -645,11 +660,13 @@ msgid "DigitalInOut not supported on given pin"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 
@@ -769,6 +786,7 @@ msgstr "La fonction nécessite un verrou"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr ""
 
@@ -824,6 +842,11 @@ msgstr ""
 msgid "Internal define error"
 msgstr ""
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Internal error #%d"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -860,7 +883,7 @@ msgstr ""
 msgid "Invalid UART pin selection"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argument invalide"
 
@@ -911,12 +934,13 @@ msgid "Invalid number of bits"
 msgstr "Nombre de bits invalide"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid phase"
 msgstr "Phase invalide"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Broche invalide"
 
@@ -942,6 +966,7 @@ msgid "Invalid pins for PWMOut"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
 msgid "Invalid polarity"
 msgstr "Polarité invalide"
 
@@ -1031,6 +1056,11 @@ msgstr ""
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr ""
@@ -1113,6 +1143,10 @@ msgstr "Il n'y a plus d'espace libre sur le périphérique"
 #: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Fichier/dossier introuvable"
+
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "No timer available"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
@@ -1198,6 +1232,14 @@ msgstr "La broche ne peut être utilisée pour l'ADC"
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid ""
+"Pinout uses %d bytes per element, which consumes more than the ideal %d "
+"bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
+"constructor"
 msgstr ""
 
 #: py/builtinhelp.c
@@ -1412,13 +1454,11 @@ msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
 msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-module/displayio/__init__.c
 msgid "Too many display busses"
 msgstr "Trop de bus d'affichage"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Trop d'affichages"
 
@@ -1673,6 +1713,10 @@ msgstr ""
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
+
+#: extmod/ulab/code/numerical.c
+msgid "attempt to get argmin/argmax of an empty sequence"
+msgstr ""
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -2204,10 +2248,6 @@ msgstr "le format nécessite un dict"
 msgid "full"
 msgstr "plein"
 
-#: extmod/ulab/code/linalg.c
-msgid "function defined for ndarrays only"
-msgstr ""
-
 #: py/argcheck.c
 msgid "function does not take keyword arguments"
 msgstr "la fonction ne prend pas d'arguments nommés"
@@ -2220,10 +2260,6 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
-
-#: extmod/ulab/code/linalg.c
-msgid "function is defined for ndarrays only"
-msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -2712,14 +2748,6 @@ msgstr "adresse hors limites"
 msgid "only bit_depth=16 is supported"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
-msgid "only ndarray objects can be inverted"
-msgstr ""
-
-#: extmod/ulab/code/linalg.c
-msgid "only ndarrays can be inverted"
-msgstr ""
-
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr ""
@@ -2728,10 +2756,6 @@ msgstr ""
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
-
-#: extmod/ulab/code/linalg.c
-msgid "only square matrices can be inverted"
-msgstr ""
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
@@ -2851,6 +2875,16 @@ msgstr "l'annotation de return doit être un identifiant"
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
 msgstr "return attendait '%q' mais a reçu '%q'"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "rgb_pins[%d] duplicates another pin assignment"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "rgb_pins[%d] is not on the same port as clock"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
@@ -3159,7 +3193,7 @@ msgid "wrong argument type"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
-msgid "wrong input type"
+msgid "wrong index type"
 msgstr ""
 
 #: py/objstr.c
@@ -3171,7 +3205,7 @@ msgid "wrong number of values to unpack"
 msgstr "mauvais nombre de valeurs à dégrouper"
 
 #: extmod/ulab/code/ndarray.c
-msgid "wrong operand type on the right hand side"
+msgid "wrong operand type"
 msgstr ""
 
 #: shared-module/displayio/Shape.c

@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_BACKGROUND_H
-#define MICROPY_INCLUDED_STM32F4_BACKGROUND_H
+#ifndef MICROPY_INCLUDED_STM32_BACKGROUND_H
+#define MICROPY_INCLUDED_STM32_BACKGROUND_H
 
 #include <stdbool.h>
 
 void background_tasks_reset(void);
 void run_background_tasks(void);
 
-#endif  // MICROPY_INCLUDED_STM32F4_BACKGROUND_H
+#endif  // MICROPY_INCLUDED_STM32_BACKGROUND_H

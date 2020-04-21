@@ -29,14 +29,14 @@
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "stm32f4xx_hal.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
-//arrays use 0 based numbering: I2C1 is stored at index 0
-#define MAX_I2C 3
+// Arrays use 0 based numbering: I2C1 is stored at index 0
+#define MAX_I2C 4
+
 STATIC bool reserved_i2c[MAX_I2C];
 STATIC bool never_reset_i2c[MAX_I2C];
 
@@ -59,7 +59,7 @@ void i2c_reset(void) {
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
 
-    //match pins to I2C objects
+    // Match pins to I2C objects
     I2C_TypeDef * I2Cx;
     uint8_t sda_len = MP_ARRAY_SIZE(mcu_i2c_sda_list);
     uint8_t scl_len = MP_ARRAY_SIZE(mcu_i2c_scl_list);
@@ -69,9 +69,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (mcu_i2c_sda_list[i].pin == sda) {
             for (uint j = 0; j < scl_len; j++) {
                 if ((mcu_i2c_scl_list[j].pin == scl)
-                    && (mcu_i2c_scl_list[j].i2c_index == mcu_i2c_sda_list[i].i2c_index)) {
-                    //keep looking if the I2C is taken, could be another SCL that works
-                    if (reserved_i2c[mcu_i2c_scl_list[i].i2c_index - 1]) {
+                    && (mcu_i2c_scl_list[j].periph_index == mcu_i2c_sda_list[i].periph_index)) {
+                    // Keep looking if the I2C is taken, could be another SCL that works
+                    if (reserved_i2c[mcu_i2c_scl_list[j].periph_index - 1]) {
                         i2c_taken = true;
                         continue;
                     }
@@ -80,12 +80,16 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                     break;
                 }
             }
+            if (self->scl != NULL) {
+                // Multi-level break to pick lowest peripheral
+                break;
+            }
         }
     }
 
-    //handle typedef selection, errors
+    // Handle typedef selection, errors
     if (self->sda != NULL && self->scl != NULL ) {
-        I2Cx = mcu_i2c_banks[self->sda->i2c_index - 1];
+        I2Cx = mcu_i2c_banks[self->sda->periph_index - 1];
     } else {
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
@@ -94,7 +98,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         }
     }
 
-    //Start GPIO for each pin
+    // Start GPIO for each pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(sda->number);
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -110,13 +114,19 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     GPIO_InitStruct.Alternate = self->scl->altfn_index;
     HAL_GPIO_Init(pin_port(scl->port), &GPIO_InitStruct);
 
-    //Note: due to I2C soft reboot issue, do not relocate clock init.
-    i2c_clock_enable(1 << (self->sda->i2c_index - 1));
-    reserved_i2c[self->sda->i2c_index - 1] = true;
+    // Note: due to I2C soft reboot issue, do not relocate clock init.
+    i2c_clock_enable(1 << (self->sda->periph_index - 1));
+    reserved_i2c[self->sda->periph_index - 1] = true;
 
-    self->handle.Instance = I2Cx;
+    // Handle the HAL handle differences
+    #if (CPY_STM32H7 || CPY_STM32F7)
+    self->handle.Init.Timing = 0x40604E73; //Taken from STCube examples
+    #else
     self->handle.Init.ClockSpeed = 100000;
     self->handle.Init.DutyCycle = I2C_DUTYCYCLE_2;
+    #endif
+
+    self->handle.Instance = I2Cx;
     self->handle.Init.OwnAddress1 = 0;
     self->handle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     self->handle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -152,9 +162,9 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_clock_disable(1 << (self->sda->i2c_index - 1));
-    reserved_i2c[self->sda->i2c_index - 1] = false;
-    never_reset_i2c[self->sda->i2c_index - 1] = false;
+    i2c_clock_disable(1 << (self->sda->periph_index - 1));
+    reserved_i2c[self->sda->periph_index - 1] = false;
+    never_reset_i2c[self->sda->periph_index - 1] = false;
 
     reset_pin_number(self->sda->pin->port,self->sda->pin->number);
     reset_pin_number(self->scl->pin->port,self->scl->pin->number);
@@ -207,7 +217,7 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
 }
 
 STATIC void i2c_clock_enable(uint8_t mask) {
-    //Note: hard reset required due to soft reboot issue.
+    // Note: hard reset required due to soft reboot issue.
     #ifdef I2C1
     if (mask & (1 << 0)) {
         __HAL_RCC_I2C1_CLK_ENABLE();
@@ -229,6 +239,13 @@ STATIC void i2c_clock_enable(uint8_t mask) {
         __HAL_RCC_I2C3_RELEASE_RESET();
     }
     #endif
+    #ifdef I2C4
+    if (mask & (1 << 3)) {
+        __HAL_RCC_I2C4_CLK_ENABLE();
+        __HAL_RCC_I2C4_FORCE_RESET();
+        __HAL_RCC_I2C4_RELEASE_RESET();
+    }
+    #endif
 }
 
 STATIC void i2c_clock_disable(uint8_t mask) {
@@ -245,6 +262,11 @@ STATIC void i2c_clock_disable(uint8_t mask) {
     #ifdef I2C3
     if (mask & (1 << 2)) {
         __HAL_RCC_I2C3_CLK_DISABLE();
+    }
+    #endif
+    #ifdef I2C4
+    if (mask & (1 << 3)) {
+        __HAL_RCC_I2C4_CLK_DISABLE();
     }
     #endif
 }
