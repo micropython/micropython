@@ -24,7 +24,7 @@ CIRCUITPY_AUDIOIO = 0
 
 # The ifndef's allow overriding in mpconfigboard.mk.
 
-ifndef
+ifndef CIRCUITPY_BLEIO
 CIRCUITPY_BLEIO = 1
 endif
 
@@ -51,8 +51,17 @@ endif
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
 
+ifndef CIRCUITPY_PROTOMATTER
 CIRCUITPY_PROTOMATTER = 1
+endif
+
+ifndef CIRCUITPY_FRAMEBUFFERIO
 CIRCUITPY_FRAMEBUFFERIO = 1
+endif
+
+ifndef CIRCUITPY_ULAB
+CIRCUITPY_ULAB = 1
+endif
 
 # nRF52840-specific
 
@@ -72,5 +81,4 @@ NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 
-CIRCUITPY_ULAB = 1
 endif

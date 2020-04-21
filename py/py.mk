@@ -257,6 +257,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	repl.o \
 	smallint.o \
 	frozenmod.o \
+	ringbuf.o \
 	)
 
 PY_EXTMOD_O_BASENAME = \

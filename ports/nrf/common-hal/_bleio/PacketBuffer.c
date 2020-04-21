@@ -43,7 +43,7 @@
 #include "supervisor/shared/tick.h"
 
 STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uint16_t len) {
-    if (len + sizeof(uint16_t) > self->ringbuf.size) {
+    if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
         // This shouldn't happen.
         return;
     }
@@ -51,7 +51,7 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
     // Make room for the new value by dropping the oldest packets first.
-    while (self->ringbuf.size - ringbuf_count(&self->ringbuf) < (int) (len + sizeof(uint16_t))) {
+    while (ringbuf_capacity(&self->ringbuf) - ringbuf_avail(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
         ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
@@ -250,27 +250,33 @@ void common_hal_bleio_packet_buffer_construct(
 }
 
 int common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
-    if (ringbuf_count(&self->ringbuf) < 2) {
+    if (ringbuf_avail(&self->ringbuf) < 2) {
         return 0;
     }
 
     uint16_t packet_length;
-    ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
+    int ret;
 
     // Copy received data. Lock out write interrupt handler while copying.
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
 
-    if (packet_length > len) {
-        return len - packet_length;
-    }
+    // Get packet length first.
+    ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
 
-    ringbuf_get_n(&self->ringbuf, data, packet_length);
+    if (packet_length > len) {
+        // Packet is longer than requested. Return negative of overrun value.
+        ret = len - packet_length;
+    } else {
+        // Read as much as possible, but might be shorter than len.
+        ringbuf_get_n(&self->ringbuf, data, packet_length);
+        ret = packet_length;
+    }
 
     // Writes now OK.
     sd_nvic_critical_region_exit(is_nested_critical_region);
 
-    return packet_length;
+    return ret;
 }
 
 void common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len, uint8_t* header, size_t header_len) {

@@ -206,6 +206,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
 
         LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);
+        // Pass actual allocated size; the LPUART routines are cognizant that
+        // the capacity is one less than the size.
         LPUART_TransferStartRingBuffer(self->uart, &self->handle, self->rbuf.buf, self->rbuf.size);
 
         claim_pin(self->rx_pin->pin);

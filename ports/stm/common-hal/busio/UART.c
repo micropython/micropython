@@ -262,7 +262,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout, same as nrf
-    while ( (ringbuf_count(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_avail(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         //restart if it failed in the callback
         if (errflag != HAL_OK) {
@@ -276,12 +276,8 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
-    // copy received data
-    rx_bytes = ringbuf_count(&self->rbuf);
-    rx_bytes = MIN(rx_bytes, len);
-    for (uint16_t i = 0; i < rx_bytes; i++) {
-        data[i] = ringbuf_get(&self->rbuf);
-    }
+    // Copy as much received data as available, up to len bytes.
+    size_t rx_bytes = ringbuf_get_n(&self->rbuf, data, len);
     HAL_NVIC_EnableIRQ(self->irq);
 
     if (rx_bytes == 0) {
@@ -380,7 +376,7 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return ringbuf_count(&self->rbuf);
+    return ringbuf_avail(&self->rbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
