@@ -56,9 +56,19 @@ class Stream:
                 return l
 
     def write(self, buf):
+        if not self.out_buf:
+            # Try to write immediately to the underlying stream.
+            ret = self.s.write(buf)
+            if ret == len(buf):
+                return
+            if ret is not None:
+                buf = buf[ret:]
         self.out_buf += buf
 
     async def drain(self):
+        if not self.out_buf:
+            # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
+            return await core.sleep_ms(0)
         mv = memoryview(self.out_buf)
         off = 0
         while off < len(mv):
