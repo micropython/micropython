@@ -44,13 +44,15 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
     size_t max = dict->map.alloc;
     mp_map_t *map = &dict->map;
 
-    for (size_t i = *cur; i < max; i++) {
+    size_t i = *cur;
+    for (; i < max; i++) {
         if (mp_map_slot_is_filled(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
         }
     }
 
+    assert(map->used == 0 || i == max);
     return NULL;
 }
 
@@ -321,11 +323,17 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_type(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
-    size_t cur = 0;
-    mp_map_elem_t *next = dict_iter_next(self, &cur);
-    if (next == NULL) {
+    if (self->map.used == 0) {
         mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("popitem(): dictionary is empty"));
     }
+    size_t cur = 0;
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    if (self->map.is_ordered) {
+        cur = self->map.used - 1;
+    }
+    #endif
+    mp_map_elem_t *next = dict_iter_next(self, &cur);
+    assert(next);
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};
     next->key = MP_OBJ_SENTINEL; // must mark key as sentinel to indicate that it was deleted
