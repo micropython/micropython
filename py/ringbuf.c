@@ -37,6 +37,12 @@ bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
     return r->buf != NULL;
 }
 
+void ringbuf_free(ringbuf_t *r) {
+    gc_free(r->buf);
+    r->size = 0;
+    ringbuf_clear(r);
+}
+
 size_t ringbuf_capacity(ringbuf_t *r) {
     return r->size - 1;
 }
@@ -72,12 +78,12 @@ void ringbuf_clear(ringbuf_t *r) {
 }
 
 // Number of free slots that can be written.
-size_t ringbuf_free(ringbuf_t *r) {
+size_t ringbuf_num_empty(ringbuf_t *r) {
     return (r->size + r->iget - r->iput - 1) % r->size;
 }
 
 // Number of bytes available to read.
-size_t ringbuf_avail(ringbuf_t *r) {
+size_t ringbuf_num_filled(ringbuf_t *r) {
     return (r->size + r->iput - r->iget) % r->size;
 }
 

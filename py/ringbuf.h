@@ -45,12 +45,13 @@ typedef struct _ringbuf_t {
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 
 bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived);
+void ringbuf_free(ringbuf_t *r);
 size_t ringbuf_capacity(ringbuf_t *r);
 int ringbuf_get(ringbuf_t *r);
 int ringbuf_put(ringbuf_t *r, uint8_t v);
 void ringbuf_clear(ringbuf_t *r);
-size_t ringbuf_free(ringbuf_t *r);
-size_t ringbuf_avail(ringbuf_t *r);
+size_t ringbuf_num_empty(ringbuf_t *r);
+size_t ringbuf_num_filled(ringbuf_t *r);
 size_t ringbuf_put_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
 size_t ringbuf_get_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
 

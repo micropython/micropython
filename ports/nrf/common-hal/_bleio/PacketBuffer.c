@@ -51,7 +51,7 @@ STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, uint8_t *data, uin
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
     // Make room for the new value by dropping the oldest packets first.
-    while (ringbuf_capacity(&self->ringbuf) - ringbuf_avail(&self->ringbuf) < len + sizeof(uint16_t)) {
+    while (ringbuf_capacity(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
         uint16_t packet_length;
         ringbuf_get_n(&self->ringbuf, (uint8_t*) &packet_length, sizeof(uint16_t));
         for (uint16_t i = 0; i < packet_length; i++) {
@@ -202,10 +202,7 @@ void common_hal_bleio_packet_buffer_construct(
     }
 
     if (incoming) {
-        // This is a macro.
-        ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + characteristic->max_length), false);
-
-        if (self->ringbuf.buf == NULL) {
+        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + characteristic->max_length), false)) {
             mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
         }
     }
@@ -250,7 +247,7 @@ void common_hal_bleio_packet_buffer_construct(
 }
 
 int common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self, uint8_t *data, size_t len) {
-    if (ringbuf_avail(&self->ringbuf) < 2) {
+    if (ringbuf_num_filled(&self->ringbuf) < 2) {
         return 0;
     }
 
@@ -315,25 +312,25 @@ void common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8
 }
 
 uint16_t common_hal_bleio_packet_buffer_get_packet_size(bleio_packet_buffer_obj_t *self) {
-    uint16_t mtu;
-    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
-        return 0;
-    }
-    bleio_connection_internal_t *connection;
-    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        connection = &bleio_connections[i];
-        if (connection->conn_handle == self->conn_handle) {
-            break;
+    // First, assume default MTU size.
+    uint16_t mtu = BLE_GATT_ATT_MTU_DEFAULT;
+
+    // If there's a connection, get its actual MTU.
+    if (self->conn_handle != BLE_CONN_HANDLE_INVALID) {
+        bleio_connection_internal_t *connection;
+        for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+            connection = &bleio_connections[i];
+            if (connection->conn_handle == self->conn_handle) {
+                if (connection->mtu != 0) {
+                    mtu = connection->mtu;
+                }
+                break;
+            }
         }
     }
-    if (connection->mtu == 0) {
-        mtu = BLE_GATT_ATT_MTU_DEFAULT;
-    }
-    if (self->characteristic->max_length > mtu) {
-        mtu = self->characteristic->max_length;
-    }
-    uint16_t att_overhead = 3;
-    return mtu - att_overhead;
+
+    // 3 is bytes of ATT overhead.
+    return MIN(mtu - 3, self->characteristic->max_length);
 }
 
 bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {

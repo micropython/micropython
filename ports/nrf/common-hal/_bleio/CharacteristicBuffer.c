@@ -102,7 +102,7 @@ uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while ( (ringbuf_avail(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
@@ -125,7 +125,7 @@ uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer
 uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
     uint8_t is_nested_critical_region;
     sd_nvic_critical_region_enter(&is_nested_critical_region);
-    uint16_t count = ringbuf_avail(&self->ringbuf);
+    uint16_t count = ringbuf_num_filled(&self->ringbuf);
     sd_nvic_critical_region_exit(is_nested_critical_region);
     return count;
 }
