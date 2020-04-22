@@ -57,6 +57,7 @@ STATIC uint8_t pwm_timer_down = 1;
 STATIC uint8_t pwm_current_channel = 0;
 STATIC uint16_t pwm_gpio = 0;
 STATIC uint8_t pwm_channel_num = 0;
+STATIC volatile uint8_t pwm_toggle_request = 0;
 
 // XXX: 0xffffffff/(80000000/16)=35A
 #define US_TO_RTC_TIMER_TICKS(t)          \
@@ -126,6 +127,9 @@ pwm_start(void) {
 
     LOCK_PWM(critical);   // enter critical
 
+    // if a toggle is pending, we reset it since we're changing the settings again
+    pwm_toggle_request = 0;
+
     struct pwm_single_param *local_single = pwm_single_toggle[pwm_toggle ^ 0x01];
     uint8 *local_channel = &pwm_channel_toggle[pwm_toggle ^ 0x01];
 
@@ -188,14 +192,14 @@ pwm_start(void) {
         // start
         gpio_output_set(local_single[0].gpio_set, local_single[0].gpio_clear, pwm_gpio, 0);
 
+        // do the first toggle because timer has to have a valid set to do it's job
+        pwm_toggle ^= 0x01;
+
         pwm_timer_down = 0;
         RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
-    }
-
-    if (pwm_toggle == 1) {
-        pwm_toggle = 0;
     } else {
-        pwm_toggle = 1;
+        // request pwm_tim1_intr_handler to swap the timing buffers
+        pwm_toggle_request = 1;
     }
 
     UNLOCK_PWM(critical);   // leave critical
@@ -297,12 +301,18 @@ pwm_get_freq(uint8 channel) {
 STATIC void ICACHE_RAM_ATTR
 pwm_tim1_intr_handler(void *dummy) {
     (void)dummy;
-    uint8 local_toggle = pwm_toggle;                        // pwm_toggle may change outside
+
     RTC_CLR_REG_MASK(FRC1_INT_ADDRESS, FRC1_INT_CLR_MASK);
 
     if (pwm_current_channel >= (*pwm_channel - 1)) {        // *pwm_channel may change outside
-        pwm_single = pwm_single_toggle[local_toggle];
-        pwm_channel = &pwm_channel_toggle[local_toggle];
+
+        if (pwm_toggle_request != 0) {
+            pwm_toggle ^= 1;
+            pwm_toggle_request = 0;
+        }
+
+        pwm_single = pwm_single_toggle[pwm_toggle];
+        pwm_channel = &pwm_channel_toggle[pwm_toggle];
 
         gpio_output_set(pwm_single[*pwm_channel - 1].gpio_set,
             pwm_single[*pwm_channel - 1].gpio_clear,
