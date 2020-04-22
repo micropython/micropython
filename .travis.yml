@@ -308,6 +308,7 @@ jobs:
         - arm-none-eabi-gcc --version
       script:
         - cat .git/config
+        - git show-ref
         - git checkout -b pull_request
         - git checkout master
         - git show -s
