@@ -36,7 +36,7 @@
 
 #define BOARD_OSC_DIV (12)
 
-#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)

@@ -321,7 +321,8 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
         *subticks = subseconds % 32;
     }
 
-    return ((uint64_t) 1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
+    uint64_t raw_ticks = ((uint64_t) 1024) * (seconds_to_date + seconds_to_minute + seconds) + subseconds / 32;
+    return raw_ticks;
 }
 
 void RTC_WKUP_IRQHandler(void) {
@@ -329,11 +330,12 @@ void RTC_WKUP_IRQHandler(void) {
     __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&_hrtc, RTC_FLAG_WUTF);
     __HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
 }
+
 volatile bool alarmed_already = false;
 void RTC_Alarm_IRQHandler(void) {
-    __HAL_RTC_ALARM_CLEAR_FLAG(&_hrtc, RTC_FLAG_ALRAF);
-    __HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
     HAL_RTC_DeactivateAlarm(&_hrtc, RTC_ALARM_A);
+    __HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
+    __HAL_RTC_ALARM_CLEAR_FLAG(&_hrtc, RTC_FLAG_ALRAF);
     alarmed_already = true;
 }
 
@@ -362,15 +364,19 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         alarm.AlarmTime.Minutes = tm.tm_min;
         alarm.AlarmTime.Seconds = tm.tm_sec;
         alarm.AlarmDateWeekDay = tm.tm_mday;
-        alarm.AlarmMask = RTC_ALARMMASK_ALL;
-    } else {
+        // Masking here means that the value is ignored so we set none.
         alarm.AlarmMask = RTC_ALARMMASK_NONE;
+    } else {
+        // Masking here means that the value is ignored so we set them all. Only the subseconds
+        // value matters.
+        alarm.AlarmMask = RTC_ALARMMASK_ALL;
     }
 
     alarm.AlarmTime.SubSeconds = RTC_CLOCK_FREQUENCY -
-                                 ((raw_ticks % (1024)) * 32);
+                                 ((raw_ticks % 1024) * 32);
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
+    // Masking here means that the bits are ignored so we set none of them.
     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_NONE;
     alarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
     alarm.Alarm = RTC_ALARM_A;
