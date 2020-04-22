@@ -21,7 +21,7 @@ def chk_heap(kind, regions):
 
 # try getting heap regions, looks like a couple of small regions are always taken?
 regions = esp32.idf_heap_info(esp32.HEAP_DATA)
-print("HEAP_DATA >5:", len(regions) > 5)
+print("HEAP_DATA >2:", len(regions) > 2)
 chk_heap("HEAP_DATA", regions)
 # print(regions)
 

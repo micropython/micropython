@@ -1,5 +1,5 @@
-HEAP_DATA >3: True
+HEAP_DATA >2: True
 HEAP_DATA [True, True, True, True]
-HEAP_EXEC >3: True
+HEAP_EXEC >2: True
 HEAP_EXEC [True, True, True, True]
 []
