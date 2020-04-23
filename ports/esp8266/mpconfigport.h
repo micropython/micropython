@@ -192,5 +192,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
 #define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) MP_FASTCODE(f)
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) MP_FASTCODE(f)
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))
