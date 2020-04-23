@@ -65,12 +65,14 @@ static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     tls_gpio_cfg(pin, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
 }
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
-    tls_gpio_cfg(pin, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_FLOATING);
+    tls_gpio_cfg(pin, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_PULLHIGH);
 }
 static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
+    tls_gpio_cfg(pin, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_PULLHIGH);
     tls_gpio_write(pin, 0);
 }
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
+    tls_gpio_cfg(pin, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_PULLHIGH);
     tls_gpio_write(pin, 1);
 }
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {

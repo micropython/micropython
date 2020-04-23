@@ -81,6 +81,9 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
+// return value:
+//    WM_SUCCESS - success
+//    WM_FAILED - Error: No ack received
 STATIC int w600_i2c_send_address(uint16_t addr, bool bit10, bool read) {
     u8 flags = 0;
     u8 addr_msb;
@@ -113,92 +116,79 @@ STATIC int w600_i2c_send_address(uint16_t addr, bool bit10, bool read) {
     return ret;
 }
 
+// return value:
+// 0: Success
+STATIC int machine_hard_i2c_read(uint16_t addr, uint8_t *dest, size_t len, bool nack) {
 
-STATIC int machine_hard_i2c_read(uint16_t addr, uint8_t *dest, size_t len, bool stop) {
-    int ret;
-
-    ret = w600_i2c_send_address(addr, false, true);
-    if (ret) {
-        return -MP_EIO;
-    }
-
-    ret = len;
-
-    while (ret > 1) {
+    while (len > 1) {
         *dest++ = tls_i2c_read_byte(1, 0);
-        ret--;
+        len--;
     }
-    *dest = tls_i2c_read_byte(0, 0);
-
-    if (stop) {
-        tls_i2c_stop();
-    }
-
-    return len;
+    *dest = tls_i2c_read_byte(! nack, 0);
+    return 0; // success
 }
 
-STATIC int machine_hard_i2c_write(uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+// return value:
+//   >=0 - len bytes written and # acks received
+//   <0 - error, with errno being the negative of the return value
+STATIC int machine_hard_i2c_write(uint16_t addr, const uint8_t *src, size_t len) {
     int ret;
-    int txl = 0;
-    uint8_t *buf;
+    int ack_received = 0;
+    uint8_t *buf = (uint8_t *)src;
 
-    ret = w600_i2c_send_address(addr, false, false);
-    if (ret) {
-        return -MP_EIO;
-    }
-
-    buf = (uint8_t *)src;
-    txl = len;
-
-    while (txl > 0) {
+    while (len > 0) {
         tls_i2c_write_byte(*buf, 0);
         ret = tls_i2c_wait_ack();
-        if (ret) {
-            ret = -MP_EIO;
-            break;
+        if (ret != WM_SUCCESS) {
+            return -MP_EIO;
         } else {
-            ret = len;
+            ack_received++;  // 1 ACK received
         }
-        txl--;
+        len--;
         buf++;
     }
-
-    if (stop) {
-        tls_i2c_stop();
-    }
-
-    return ret;
+    return ack_received;
 }
 
+// required return value:
+//  >=0 - success; for read it's 0, for write it's number of acks received
+//   <0 - error, with errno being the negative of the return value
 int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
-    int err = 0;
-    int data_len = 0;
+    int ret = 0;
+    int wait;
+    int transfer_ret = 0;
+
+    wait = 1000; // Experimental value, just guessed. 
+    while(tls_reg_read32((HR_I2C_CR_SR) & I2C_SR_BUSY) && wait > 0) { // Wait while the device is busy
+        wait--;      // but not forever
+    }
+
+    ret = w600_i2c_send_address(addr, false, flags & MP_MACHINE_I2C_FLAG_READ);
+
+    if (ret != WM_SUCCESS) {  // Send address fails
+        tls_i2c_stop();
+        return -MP_ENODEV;
+    }
+
     for (; n--; ++bufs) {
         if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            err = machine_hard_i2c_read(addr, bufs->buf, bufs->len, n == 0);
-            if (err < 0) {
-                break;
-            }
+            machine_hard_i2c_read(addr, bufs->buf, bufs->len, n == 0);
         } else {
             if (bufs->len != 0) {
-                err = machine_hard_i2c_write(addr, bufs->buf, bufs->len, true);
-                if (err < 0) {
-                    break;
+                ret = machine_hard_i2c_write(addr, bufs->buf, bufs->len);
+                if (ret < 0) {
+                    return ret;
                 }
+                transfer_ret += ret; // count the number of acks
             }
         }
-        data_len += bufs->len;
     }
 
     if (flags & MP_MACHINE_I2C_FLAG_STOP) {
         tls_i2c_stop();
     }
 
-    if (0 == err) {
-        return data_len;
-    } else {
-        return err;
-    }
+    return transfer_ret;
 }
 
 STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
