@@ -114,6 +114,10 @@
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 
+#include "xtirq.h"
+#define MICROPY_BEGIN_ATOMIC_SECTION() disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state) enable_irq(state)
+
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
