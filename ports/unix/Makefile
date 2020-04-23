@@ -205,6 +205,7 @@ SRC_C = \
 LIB_SRC_C += $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
+	utils/gchelper_generic.c \
 	)
 
 OBJ = $(PY_O)

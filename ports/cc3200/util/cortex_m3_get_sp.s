@@ -24,19 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+    .syntax unified
+    .cpu cortex-m3
+    .thumb
 
-#include "py/mpstate.h"
-#include "py/gc.h"
+    .section .text
+    .align  2
 
-#include "lib/utils/gchelper.h"
+    .global cortex_m3_get_sp
+    .type cortex_m3_get_sp, %function
 
-#if MICROPY_ENABLE_GC
+@ uint cortex_m3_get_sp(void)
+cortex_m3_get_sp:
+    @ return the sp
+    mov     r0, sp
+    bx      lr
 
-void gc_collect(void) {
-    gc_collect_start();
-    gc_helper_collect_regs_and_stack();
-    gc_collect_end();
-}
-
-#endif // MICROPY_ENABLE_GC
+    .size cortex_m3_get_sp, .-cortex_m3_get_sp

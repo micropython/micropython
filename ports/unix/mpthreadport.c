@@ -39,6 +39,8 @@
 #include <sched.h>
 #include <semaphore.h>
 
+#include "lib/utils/gchelper.h"
+
 // Some platforms don't have SIGRTMIN but if we do have it, use it to avoid
 // potential conflict with other uses of the more commonly used SIGUSR1.
 #ifdef SIGRTMIN
@@ -88,8 +90,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     (void)info; // unused
     (void)context; // unused
     if (signo == MP_THREAD_GC_SIGNAL) {
-        void gc_collect_regs_and_stack(void);
-        gc_collect_regs_and_stack();
+        gc_helper_collect_regs_and_stack();
         // We have access to the context (regs, stack) of the thread but it seems
         // that we don't need the extra information, enough is captured by the
         // gc_collect_regs_and_stack function above

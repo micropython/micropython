@@ -94,6 +94,7 @@ LIB_SRC_C += $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/roundf.c \
+	utils/gchelper_native.c \
 	utils/sys_stdio_mphal.c \
 	)
 

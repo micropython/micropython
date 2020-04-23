@@ -65,9 +65,7 @@ void samd_main(void) {
 
 void gc_collect(void) {
     gc_collect_start();
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-    gc_collect_root((void **)sp, ((uintptr_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
 }
 

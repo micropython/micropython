@@ -148,6 +148,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/trace.c \
 	netutils/dhcpserver.c \
 	timeutils/timeutils.c \
+	utils/gchelper_native.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
