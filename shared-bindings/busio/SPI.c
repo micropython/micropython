@@ -40,18 +40,6 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-class SPI:
-    def __init__(self, clock: microcontroller.Pin, MOSI: microcontroller.Pin = None, MISO: microcontroller.Pin = None): ...
-    def deinit(self, ) -> Any: ...
-    def __enter__(self, ) -> Any: ...
-    def __exit__(self, ) -> Any: ...
-    def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any: ...
-    def try_lock(self, ) -> Any: ...
-    def unlock(self, ) -> Any: ...
-    def write(self, buffer: bytearray, *, start: Any = 0, end: int = None) -> Any: ...
-    def readinto(self, buffer: bytearray, *, start: Any = 0, end: int = None, write_value: int = 0) -> Any: ...
-    def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: Any = 0, out_end: int = None, in_start: Any = 0, in_end: int = None) -> Any: ...
-    frequency: Any = ...
 
 //| .. currentmodule:: busio
 //|
@@ -89,6 +77,8 @@ class SPI:
 //|   :param ~microcontroller.Pin MOSI: the Master Out Slave In pin.
 //|   :param ~microcontroller.Pin MISO: the Master In Slave Out pin.
 //|
+// class SPI:
+//     def __init__(self, clock: microcontroller.Pin, MOSI: microcontroller.Pin = None, MISO: microcontroller.Pin = None): ...
 
 // TODO(tannewt): Support LSB SPI.
 STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -115,6 +105,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
 //|
 //|      Turn off the SPI bus.
 //|
+//     def deinit(self, ) -> Any: ...
 STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_spi_deinit(self);
@@ -127,12 +118,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 //|     No-op used by Context Managers.
 //|
 //  Provided by context manager helper.
+//     def __enter__(self, ) -> Any: ...
 
 //|   .. method:: __exit__()
 //|
 //|     Automatically deinitializes the hardware when exiting a context. See
 //|     :ref:`lifetime-and-contextmanagers` for more info.
 //|
+//     def __exit__(self, ) -> Any: ...
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_spi_deinit(args[0]);
@@ -176,6 +169,7 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|      Two SPI objects may be created, except on the Circuit Playground Bluefruit,
 //|      which allows only one (to allow for an additional I2C object).
 //|
+//     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any: ...
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
     static const mp_arg_t allowed_args[] = {
@@ -218,6 +212,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|     :return: True when lock has been grabbed
 //|     :rtype: bool
 //|
+//     def try_lock(self, ) -> Any: ...
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(common_hal_busio_spi_try_lock(self));
@@ -228,6 +223,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|
 //|     Releases the SPI lock.
 //|
+//     def unlock(self, ) -> Any: ...
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -245,6 +241,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|     :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|
+//     def write(self, buffer: bytearray, *, start: Any = 0, end: int = None) -> Any: ...
 STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -288,6 +285,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|     :param int write_value: Value to write while reading. (Usually ignored.)
 //|
+//     def readinto(self, buffer: bytearray, *, start: Any = 0, end: int = None, write_value: int = 0) -> Any: ...
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
     static const mp_arg_t allowed_args[] = {
@@ -335,6 +333,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 //|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|     :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
 //|
+//     def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: Any = 0, out_end: int = None, in_start: Any = 0, in_end: int = None) -> Any: ...
 STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
@@ -387,6 +386,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 2, busio_spi_write_read
 //|     The actual SPI bus frequency. This may not match the frequency requested
 //|     due to internal limitations.
 //|
+//     frequency: Any = ...
 STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
