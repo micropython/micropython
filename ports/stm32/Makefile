@@ -151,6 +151,7 @@ SRC_LIB = $(addprefix lib/,\
 	utils/pyexec.c \
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
+	utils/gchelper_native.c \
 	utils/mpirq.c \
 	)
 
@@ -243,7 +244,7 @@ LIBM_O = $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 
 # Too many warnings in libm_dbl, disable for now.
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS)) 
+$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
