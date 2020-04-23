@@ -26,17 +26,14 @@
 # Boards default to all modules enabled (with exceptions)
 # Manually disable by overriding in #mpconfigboard.mk
 
-# Smaller builds can be forced for resource constrained chips, typically SAMD21s
-# without external flash. Avoid using this for incomplete ports, as it changes
-# settings in other files.
+# Smaller builds can be forced for resource constrained chips (typically SAMD21s
+# without external flash) by setting CIRCUITPY_FULL_BUILD=0. Avoid using this 
+# for merely incomplete ports, as it changes settings in other files.
 ifndef CIRCUITPY_FULL_BUILD
-  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
-    CIRCUITPY_FULL_BUILD = 0
-  else
     CIRCUITPY_FULL_BUILD = 1
-  endif
 endif
 CFLAGS += -DCIRCUITPY_FULL_BUILD=$(CIRCUITPY_FULL_BUILD)
+
 
 ifndef CIRCUITPY_ANALOGIO
 CIRCUITPY_ANALOGIO = 1

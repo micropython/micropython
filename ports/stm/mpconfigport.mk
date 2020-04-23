@@ -4,7 +4,7 @@ INTERNAL_LIBM = 1
 USB_SERIAL_NUMBER_LENGTH = 24
 
 ifeq ($(MCU_SERIES),F4)
-	# Items requiring common-hal implementation:
+	# Not yet implemented common-hal modules:
 	CIRCUITPY_AUDIOBUSIO = 0
 	CIRCUITPY_AUDIOIO = 0
 	CIRCUITPY_ROTARYIO = 0
@@ -18,7 +18,7 @@ ifeq ($(MCU_SERIES),F4)
 endif
 
 ifeq ($(MCU_SERIES),H7)
-	# Items requiring common-hal implementation:
+	# Not yet implemented common-hal modules:
 	CIRCUITPY_ANALOGIO = 0
 	CIRCUITPY_NEOPIXEL_WRITE = 0
 	CIRCUITPY_PULSEIO = 0
@@ -30,14 +30,14 @@ ifeq ($(MCU_SERIES),H7)
 	CIRCUITPY_RTC = 0
 	CIRCUITPY_FREQUENCYIO = 0
 	CIRCUITPY_I2CSLAVE = 0
-	# Modules with no common-hal implementation that depend on something else
+	# shared-module modules that still need prerequisites filled
 	CIRCUITPY_DISPLAYIO = 0 # Requires SPI, PulseIO, and common-hal module (stub ok)
 	CIRCUITPY_RANDOM = 0	# Requires OS
 	CIRCUITPY_STORAGE = 0	# Requires OS, filesystem
 endif
 
 ifeq ($(MCU_SERIES),F7)
-	# Items requiring common-hal implementation:
+	# Not yet implemented common-hal modules:
 	CIRCUITPY_ANALOGIO = 0
 	CIRCUITPY_NEOPIXEL_WRITE = 0
 	CIRCUITPY_PULSEIO = 0
@@ -49,7 +49,7 @@ ifeq ($(MCU_SERIES),F7)
 	CIRCUITPY_RTC = 0
 	CIRCUITPY_FREQUENCYIO = 0
 	CIRCUITPY_I2CSLAVE = 0
-	# Modules with no common-hal implementation that depend on something else
+	# shared-module modules that still need prerequisites filled
 	CIRCUITPY_DISPLAYIO = 0 # Requires SPI, PulseIO, and common-hal module (stub ok)
 	CIRCUITPY_RANDOM = 0	# Requires OS
 	CIRCUITPY_STORAGE = 0	# Requires OS, filesystem

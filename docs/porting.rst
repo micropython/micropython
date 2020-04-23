@@ -50,7 +50,7 @@ as a natural "TODO" list. An example minimal build list is shown below:
 
 .. code-block:: makefile
 
-    # Items requiring ports/<port>/common-hal implementation:
+    # These modules are implemented in ports/<port>/common-hal:
     CIRCUITPY_MICROCONTROLLER = 0 # Typically the first module to create
     CIRCUITPY_DIGITALIO = 0       # Typically the second module to create
     CIRCUITPY_ANALOGIO = 0
@@ -67,10 +67,11 @@ as a natural "TODO" list. An example minimal build list is shown below:
     CIRCUITPY_I2CSLAVE = 0
     CIRCUITPY_DISPLAYIO = 0       # Requires SPI, PulseIO (stub ok)
 
-    # Modules with no common-hal implementation, but depend on something else
+    # These modules are implemented in shared-module/ - they can be included in
+    # any port once their prerequisites in common-hal are complete.
     CIRCUITPY_BITBANGIO = 0       # Requires DigitalIO
     CIRCUITPY_GAMEPAD = 0         # Requires DigitalIO
-    CIRCUITPY_PIXELBUF = 0        # Does nothing without a neopixel or dotstar
+    CIRCUITPY_PIXELBUF = 0        # Requires neopixel_write or SPI (dotstar)
     CIRCUITPY_RANDOM = 0          # Requires OS
     CIRCUITPY_STORAGE = 0         # Requires OS, filesystem
     CIRCUITPY_TOUCHIO = 0         # Requires Microcontroller
