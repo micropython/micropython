@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +25,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
+#ifndef MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PERIPH_H
+#define MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PERIPH_H
 
-void *common_hal_protomatter_timer_allocate(void);
-void common_hal_protomatter_timer_enable(void*);
-void common_hal_protomatter_timer_disable(void*);
-void common_hal_protomatter_timer_free(void*);
+//I2C
+extern I2C_TypeDef * mcu_i2c_banks[4];
 
-#endif
+const mcu_periph_obj_t mcu_i2c_sda_list[10];
+const mcu_periph_obj_t mcu_i2c_scl_list[10];
+
+//SPI
+extern SPI_TypeDef * mcu_spi_banks[6];
+
+const mcu_periph_obj_t mcu_spi_sck_list[14];
+const mcu_periph_obj_t mcu_spi_mosi_list[15];
+const mcu_periph_obj_t mcu_spi_miso_list[12];
+
+//UART
+extern USART_TypeDef * mcu_uart_banks[MAX_UART];
+extern bool mcu_uart_has_usart[MAX_UART];
+
+const mcu_periph_obj_t mcu_uart_tx_list[15];
+const mcu_periph_obj_t mcu_uart_rx_list[15];
+
+//Timers
+#define TIM_BANK_ARRAY_LEN 14
+#define TIM_PIN_ARRAY_LEN 55
+extern TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
+
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
+
+#endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F746XX_PERIPH_H

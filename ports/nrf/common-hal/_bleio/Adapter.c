@@ -56,6 +56,26 @@
 #define BLE_SLAVE_LATENCY            0
 #define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
 
+#ifndef BLEIO_VS_UUID_COUNT
+#define BLEIO_VS_UUID_COUNT 75
+#endif
+
+#ifndef BLEIO_HVN_TX_QUEUE_SIZE
+#define BLEIO_HVN_TX_QUEUE_SIZE 9
+#endif
+
+#ifndef BLEIO_CENTRAL_ROLE_COUNT
+#define BLEIO_CENTRAL_ROLE_COUNT 4
+#endif
+
+#ifndef BLEIO_PERIPH_ROLE_COUNT
+#define BLEIO_PERIPH_ROLE_COUNT 4
+#endif
+
+#ifndef BLEIO_ATTR_TAB_SIZE
+#define BLEIO_ATTR_TAB_SIZE (BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 5)
+#endif
+
 const nvm_bytearray_obj_t common_hal_bleio_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,
@@ -124,9 +144,9 @@ STATIC uint32_t ble_stack_enable(void) {
     // adv_set_count must be == 1 for S140. Cannot be increased.
     ble_conf.gap_cfg.role_count_cfg.adv_set_count = 1;
     // periph_role_count costs 1232 bytes for 2 to 3, then ~1840 for each further increment.
-    ble_conf.gap_cfg.role_count_cfg.periph_role_count = 4;
+    ble_conf.gap_cfg.role_count_cfg.periph_role_count = BLEIO_PERIPH_ROLE_COUNT;
     // central_role_count costs 648 bytes for 1 to 2, then ~1250 for each further increment.
-    ble_conf.gap_cfg.role_count_cfg.central_role_count = 4;
+    ble_conf.gap_cfg.role_count_cfg.central_role_count = BLEIO_CENTRAL_ROLE_COUNT;
     err_code = sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -137,7 +157,7 @@ STATIC uint32_t ble_stack_enable(void) {
     // Each increment to hvn_tx_queue_size costs 2064 bytes.
     // DevZone recommends not setting this directly, but instead changing gap_conn_cfg.event_length.
     // However, we are setting connection extension, so this seems to make sense.
-    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = 9;
+    ble_conf.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEIO_HVN_TX_QUEUE_SIZE;
     err_code = sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -156,7 +176,7 @@ STATIC uint32_t ble_stack_enable(void) {
     // and anything the user does.
     memset(&ble_conf, 0, sizeof(ble_conf));
     // Each increment to the BLE_GATTS_ATTR_TAB_SIZE_DEFAULT multiplier costs 1408 bytes.
-    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 5;
+    ble_conf.gatts_cfg.attr_tab_size.attr_tab_size = BLEIO_ATTR_TAB_SIZE;
     err_code = sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -166,7 +186,7 @@ STATIC uint32_t ble_stack_enable(void) {
     // service and characteristic.
     memset(&ble_conf, 0, sizeof(ble_conf));
     // Each additional vs_uuid_count costs 16 bytes.
-    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = 75; // Defaults to 10.
+    ble_conf.common_cfg.vs_uuid_cfg.vs_uuid_count = BLEIO_VS_UUID_COUNT; // Defaults to 10.
     err_code = sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &ble_conf, app_ram_start);
     if (err_code != NRF_SUCCESS) {
         return err_code;

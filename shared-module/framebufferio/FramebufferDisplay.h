@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,12 +67,22 @@ typedef bool (*framebuffer_set_brightness_fun)(mp_obj_t, mp_float_t);
 typedef mp_float_t (*framebuffer_get_brightness_fun)(mp_obj_t);
 typedef bool (*framebuffer_set_auto_brightness_fun)(mp_obj_t, bool);
 typedef bool (*framebuffer_get_auto_brightness_fun)(mp_obj_t);
+typedef int (*framebuffer_get_width_fun)(mp_obj_t);
+typedef int (*framebuffer_get_height_fun)(mp_obj_t);
+typedef int (*framebuffer_get_color_depth_fun)(mp_obj_t);
+typedef int (*framebuffer_get_bytes_per_cell_fun)(mp_obj_t);
+typedef int (*framebuffer_get_native_frames_per_second_fun)(mp_obj_t);
 
 typedef struct _framebuffer_p_t {
     MP_PROTOCOL_HEAD // MP_QSTR_protocol_framebuffer
     framebuffer_get_bufinfo_fun get_bufinfo;
     framebuffer_swapbuffers_fun swapbuffers;
     framebuffer_deinit_fun deinit;
+    framebuffer_get_width_fun get_width;
+    framebuffer_get_height_fun get_height;
+    framebuffer_get_color_depth_fun get_color_depth;
+    framebuffer_get_bytes_per_cell_fun get_bytes_per_cell;
+    framebuffer_get_native_frames_per_second_fun get_native_frames_per_second;
     framebuffer_get_brightness_fun get_brightness;
     framebuffer_set_brightness_fun set_brightness;
     framebuffer_get_auto_brightness_fun get_auto_brightness;

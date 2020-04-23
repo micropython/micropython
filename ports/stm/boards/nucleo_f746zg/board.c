@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PROTOMATTER_PROTOMATTER_H
+#include "boards/board.h"
 
-void *common_hal_protomatter_timer_allocate(void);
-void common_hal_protomatter_timer_enable(void*);
-void common_hal_protomatter_timer_disable(void*);
-void common_hal_protomatter_timer_free(void*);
+void board_init(void) {
+}
 
-#endif
+bool board_requests_safe_mode(void) {
+  return false;
+}
+
+void reset_board(void) {
+
+}

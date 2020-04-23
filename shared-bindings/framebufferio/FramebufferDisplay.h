@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +40,9 @@ extern const mp_obj_type_t framebufferio_framebufferdisplay_type;
 #define NO_BRIGHTNESS_COMMAND 0x100
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
-        mp_obj_t framebuffer, uint16_t width, uint16_t height,
-        uint16_t rotation, uint16_t color_depth,
-        uint8_t bytes_per_cell,
-        bool auto_refresh, uint16_t native_frames_per_second);
+        mp_obj_t framebuffer,
+        uint16_t rotation,
+        bool auto_refresh);
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t* self,
                                        displayio_group_t* root_group);

@@ -84,6 +84,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
     displayio_parallelbus_obj_t* self = &allocate_display_bus_or_raise()->parallel_bus;
+    self->base.type = &displayio_parallelbus_type;
 
     common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);
     return self;

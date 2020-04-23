@@ -32,9 +32,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-#include "common-hal/_protomatter/Protomatter.h"
-#include "shared-module/_protomatter/allocator.h"
-#include "shared-bindings/_protomatter/Protomatter.h"
+#include "common-hal/rgbmatrix/RGBMatrix.h"
+#include "shared-module/rgbmatrix/allocator.h"
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
@@ -42,7 +42,7 @@
 
 extern Protomatter_core *_PM_protoPtr;
 
-void common_hal_protomatter_protomatter_construct(protomatter_protomatter_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, void *timer) {
+void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, void *timer) {
     self->width = width;
     self->bit_depth = bit_depth;
     self->rgb_count = rgb_count;
@@ -54,7 +54,7 @@ void common_hal_protomatter_protomatter_construct(protomatter_protomatter_obj_t 
     self->latch_pin = latch_pin;
     self->doublebuffer = doublebuffer;
 
-    self->timer = timer ? timer : common_hal_protomatter_timer_allocate();
+    self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate();
     if (self->timer == NULL) {
         mp_raise_ValueError(translate("No timer available"));
     }
@@ -62,10 +62,10 @@ void common_hal_protomatter_protomatter_construct(protomatter_protomatter_obj_t 
     self->width = width;
     self->bufsize = 2 * width * rgb_count / 3 * (1 << addr_count);
 
-    common_hal_protomatter_protomatter_reconstruct(self, framebuffer);
+    common_hal_rgbmatrix_rgbmatrix_reconstruct(self, framebuffer);
 }
 
-void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_t* self, mp_obj_t framebuffer) {
+void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self, mp_obj_t framebuffer) {
     if (framebuffer) {
         self->framebuffer = framebuffer;
         framebuffer = mp_obj_new_bytearray_of_zeros(self->bufsize);
@@ -99,7 +99,7 @@ void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_
     if (stat == PROTOMATTER_OK) {
         _PM_protoPtr = &self->core;
         common_hal_mcu_disable_interrupts();
-        common_hal_protomatter_timer_enable(self->timer);
+        common_hal_rgbmatrix_timer_enable(self->timer);
         stat = _PM_begin(&self->core);
         _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
         common_hal_mcu_enable_interrupts();
@@ -109,7 +109,7 @@ void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_
     if (stat != PROTOMATTER_OK) {
         // XXX this deinit() actually makes crashy-crashy
         // can trigger it by sending inappropriate pins
-        common_hal_protomatter_protomatter_deinit(self);
+        common_hal_rgbmatrix_rgbmatrix_deinit(self);
         switch (stat) {
         case PROTOMATTER_ERR_PINS:
             mp_raise_ValueError(translate("Invalid pin"));
@@ -120,7 +120,7 @@ void common_hal_protomatter_protomatter_reconstruct(protomatter_protomatter_obj_
         case PROTOMATTER_ERR_MALLOC: /// should have already been signaled as NLR
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError,
-                translate("Protomatter internal error #%d"), (int)stat);
+                translate("Internal error #%d"), (int)stat);
             break;
         }
     }
@@ -142,9 +142,9 @@ STATIC void free_pin_seq(uint8_t *seq, int count) {
     }
 }
 
-void common_hal_protomatter_protomatter_deinit(protomatter_protomatter_obj_t* self) {
+void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
     if (self->timer) {
-        common_hal_protomatter_timer_free(self->timer);
+        common_hal_rgbmatrix_timer_free(self->timer);
         self->timer = 0;
     }
 
@@ -173,14 +173,14 @@ void common_hal_protomatter_protomatter_deinit(protomatter_protomatter_obj_t* se
     self->framebuffer = NULL;
 }
 
-void protomatter_protomatter_collect_ptrs(protomatter_protomatter_obj_t* self) {
+void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
     gc_collect_ptr(self->core.rgbPins);
     gc_collect_ptr(self->core.addr);
     gc_collect_ptr(self->core.screenData);
 }
 
-void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t* self, bool paused) {
+void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused) {
     if (paused && !self->paused) {
         _PM_stop(&self->core);
     } else if (!paused && self->paused) {
@@ -189,12 +189,21 @@ void common_hal_protomatter_protomatter_set_paused(protomatter_protomatter_obj_t
     self->paused = paused;
 }
 
-bool common_hal_protomatter_protomatter_get_paused(protomatter_protomatter_obj_t* self) {
+bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t* self) {
     return self->paused;
 }
 
-void common_hal_protomatter_protomatter_refresh(protomatter_protomatter_obj_t* self) {
+void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t* self) {
     _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
     _PM_swapbuffer_maybe(&self->core);
+}
+
+int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
+    return self->width;
+}
+
+int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
+    int computed_height = (self->rgb_count / 3) << (self->addr_count);
+    return computed_height;
 }
 

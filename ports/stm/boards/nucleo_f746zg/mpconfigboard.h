@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +25,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+//Micropython setup
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#define MICROPY_HW_BOARD_NAME       "NUCLEO STM32F746"
+#define MICROPY_HW_MCU_NAME         "STM32F746"
 
-#include "shared-bindings/_protomatter/Protomatter.h"
+#define FLASH_SIZE                  (0x100000)
+#define FLASH_PAGE_SIZE             (0x4000)
 
-//| :mod:`_protomatter` --- Low-level routines for bitbanged LED matrices
-//| =====================================================================
-//|
-//| .. module:: _protomatter
-//|   :synopsis: Low-level routines for bitbanged LED matrices
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Protomatter
-
-STATIC const mp_rom_map_elem_t protomatter_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__protomatter) },
-    { MP_ROM_QSTR(MP_QSTR_Protomatter), MP_ROM_PTR(&protomatter_Protomatter_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(protomatter_module_globals, protomatter_module_globals_table);
-
-const mp_obj_module_t protomatter_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&protomatter_module_globals,
-};
+#define BOARD_OSC_DIV (8)

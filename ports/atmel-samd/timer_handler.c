@@ -64,8 +64,8 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
                 frequencyin_interrupt_handler(index);
             #endif
                 break;
-            case TC_HANDLER_PROTOMATTER:
-            #if CIRCUITPY_PROTOMATTER
+            case TC_HANDLER_RGBMATRIX:
+            #if CIRCUITPY_RGBMATRIX
                 _PM_IRQ_HANDLER();
             #endif
                 break;
