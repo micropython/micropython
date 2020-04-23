@@ -1449,6 +1449,10 @@ typedef double mp_float_t;
 #define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) f
 #endif
 
+#ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) f
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

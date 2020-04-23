@@ -120,7 +120,7 @@ void mp_sched_unlock(void) {
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
 
-bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg) {
+bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj_t arg) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     bool ret;
     if (!mp_sched_full()) {
