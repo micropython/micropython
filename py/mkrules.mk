@@ -189,7 +189,7 @@ ifneq ($(GIT_SUBMODULES),)
 endif
 .PHONY: submodules
 
-LIBMICROPYTHON = libmicropython.a
+LIBMICROPYTHON ?= libmicropython.a
 
 # We can execute extra commands after library creation using
 # LIBMICROPYTHON_EXTRA_CMD. This may be needed e.g. to integrate

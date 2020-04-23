@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +33,16 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
+#include "py/qstr.h"
 
+// Use a fixed static buffer for the heap.
 static char heap[16384];
 
 mp_obj_t execute_from_str(const char *str) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        qstr src_name = 1/*MP_QSTR_*/;
+        // Use the empty string as the "filename".
+        qstr src_name = MP_QSTR_;
         mp_lexer_t *lex = mp_lexer_new_from_str_len(src_name, str, strlen(str), false);
         mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
         mp_obj_t module_fun = mp_compile(&pt, src_name, false);
@@ -51,22 +55,56 @@ mp_obj_t execute_from_str(const char *str) {
     }
 }
 
-int main() {
-    // Initialized stack limit
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
-    // Initialize heap
-    gc_init(heap, heap + sizeof(heap));
-    // Initialize interpreter
-    mp_init();
-
-    const char str[] = "print('Hello world of easy embedding!')";
-    if (execute_from_str(str)) {
-        printf("Error\n");
-    }
+void shutdown_hook(void) {
+    printf("Shutdown hook called.\n");
 }
 
-uint mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
+int main() {
+    // Configure stack limit and heap (with our static buffer).
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    gc_init(heap, heap + sizeof(heap));
+
+    // Initialise MicroPython.
+    mp_init();
+
+    nlr_buf_t nlr;
+
+    // Execute a print statement.
+    const char str_print[] = "print('Hello, MicroPython World!')";
+    if (execute_from_str(str_print)) {
+        printf("Error\n");
+    }
+
+    // Set a global variable.
+    const char str_set_global[] = "hello_embed_world = 22";
+    if (execute_from_str(str_set_global)) {
+        printf("Error\n");
+    }
+
+    // Read back the global variable (see qstrdefsembed.h for where the QSTR is defined).
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_dict_t *globals = mp_globals_get();
+        mp_obj_t v = mp_obj_dict_get(MP_OBJ_FROM_PTR(globals), MP_ROM_QSTR(MP_QSTR_hello_embed_world));
+        printf("hello_embed_world = %d\n", mp_obj_get_int(v));
+        nlr_pop();
+    } else {
+        // uncaught exception
+        printf("Error\n");
+    }
+
+    // Simple exception handling.
+    if (nlr_push(&nlr) == 0) {
+        printf("Raising a test exception...");
+        mp_raise_ValueError(MP_ERROR_TEXT("embed exception"));
+        nlr_pop();
+    } else {
+        printf(" caught: ");
+        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+        mp_obj_print_exception(&mp_plat_print, exc);
+    }
+
+    // Deinitialise MicroPython.
+    mp_deinit();
 }
 
 void nlr_jump_fail(void *val) {

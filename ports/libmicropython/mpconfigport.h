@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,17 @@
  * THE SOFTWARE.
  */
 
-// options to control how MicroPython is built
+// Options to control how MicroPython is built.
+
+// Allow mpconfigembed.h to be provided by the embedder.
+#ifdef MICROPY_MPCONFIGEMBED_H
+#include MICROPY_MPCONFIGEMBED_H
+#endif
+
+// Default options for libmicropython.a (based originally on unix/minimal).
+
+// TODO: Remove any that already match the mpconfig.h default, and allow
+// overriding in mpconfigembed.h by wrapping them with #ifndefs.
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_ENABLE_GC           (1)
@@ -89,18 +100,8 @@
 extern const struct _mp_obj_module_t mp_module_os;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
 
 #define MICROPY_PORT_ROOT_POINTERS \
-
-//////////////////////////////////////////
-// Do not change anything beyond this line
-//////////////////////////////////////////
-
-#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
-// Fall back to setjmp() implementation for discovery of GC pointers in registers.
-#define MICROPY_GCREGS_SETJMP (1)
-#endif
 
 // type definitions for the specific machine
 
