@@ -34,7 +34,7 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "tick.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 #define STM32_GPIO_PORT_SIZE 16
 
