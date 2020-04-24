@@ -78,31 +78,33 @@ struct ftp_session *ftp_new_session(void) {
 
     session = (struct ftp_session *)tls_mem_alloc(sizeof(struct ftp_session));
 
-    session->sockfd = -1;
-    session->pasv_sockfd = -1;
-    session->pasv_acpt_sockfd = -1;
+    if (session != NULL) {
+        session->sockfd = -1;
+        session->pasv_sockfd = -1;
+        session->pasv_acpt_sockfd = -1;
 
-    session->next = session_list;
-    session_list = session;
-
+        session->next = session_list;
+        session_list = session;
+    }
     return session;
 }
 
 void ftp_close_session(struct ftp_session *session) {
-    struct ftp_session *list;
+    struct ftp_session *list = session_list;
+    struct ftp_session *prev = NULL;
 
-    if (session_list == session) {
-        session_list = session_list->next;
-        session->next = NULL;
-    } else {
-        list = session_list;
-        while (list->next != session) list = list->next;
-
-        list->next = session->next;
-        session->next = NULL;
+    while (list != NULL) { // walk though the list
+        if (list == session) { // match
+            if (prev == NULL) {  // at the head; remove it
+                session_list = list->next; // tail will get the list
+            } else { // Middle element
+                prev->next = list->next; // link the tail to the head
+            }
+            tls_mem_free(session);
+            break;
+        }
+        list = list->next;
     }
-
-    tls_mem_free(session);
 }
 
 int ftp_get_filesize(char *filename) {
@@ -156,6 +158,9 @@ static void w600_ftps_task(void *param) {
     int ret;
     u32 addr_len = sizeof(struct sockaddr);
     char *buffer = (char *) tls_mem_alloc(FTP_BUFFER_SIZE);
+    if (buffer == NULL) { // Alloc failed
+        return;
+    }
 
     local.sin_port = htons(ftpsport);
     local.sin_family = PF_INET;
@@ -167,6 +172,7 @@ static void w600_ftps_task(void *param) {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         FTPS_DBG("create socket failed\n");
+        tls_mem_free(buffer);
         return ;
     }
 
@@ -446,6 +452,9 @@ int ftp_get_pasv_sock(struct ftp_session *session) {
         return 0;
 
     sbuf = (char *)tls_mem_alloc(FTP_BUFFER_SIZE);
+    if (sbuf == NULL) {
+        return -1;
+    }
 
     tv.tv_sec = 3, tv.tv_usec = 0;
     FD_ZERO(&readfds);
@@ -492,6 +501,9 @@ int ftp_process_request(struct ftp_session *session, char *buf) {
     struct sockaddr_in local, pasvremote;
 
     sbuf = (char *)tls_mem_alloc(FTP_BUFFER_SIZE);
+    if (sbuf == NULL) { // Alloc failed
+        return -1;
+    }
 
     tv.tv_sec = 3, tv.tv_usec = 0;
     local.sin_family = PF_INET;
@@ -531,6 +543,7 @@ int ftp_process_request(struct ftp_session *session, char *buf) {
             tls_mem_free(sbuf);
             return -1;
         }
+        tls_mem_free(sbuf);
         return 0;
     } else if (str_begin_with(buf, "PASS") == 0) {
         FTPS_DBG("%s sent password \"%s\"\n", inet_ntoa(session->remote.sin_addr), parameter_ptr);
