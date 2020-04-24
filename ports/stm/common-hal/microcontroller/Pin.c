@@ -36,7 +36,10 @@
 bool neopixel_in_use;
 #endif
 
-#if defined(LQFP144)
+#if defined(TFBGA216)
+    #define GPIO_PORT_COUNT 11
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG, GPIOH, GPIOI, GPIOJ, GPIOK};
+#elif defined(LQFP144)
     #define GPIO_PORT_COUNT 7
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG};
 #elif defined(LQFP100_f4) || (LQFP100_x7)
