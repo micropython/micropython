@@ -354,7 +354,6 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	machine_sdcard.c \
-	lwip_err.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
@@ -494,7 +493,7 @@ ESPIDF_SPI_FLASH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/spi_flash/*.c))
 ESPIDF_ULP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/ulp/*.c))
 
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
-ESPIDF_LWIP_O = $(patsubst %.c,%.o, $(filter-out %lwip/src/api/err.c, \
+ESPIDF_LWIP_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/lwip/apps/dhcpserver/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/api/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/apps/sntp/*.c) \
@@ -505,7 +504,7 @@ ESPIDF_LWIP_O = $(patsubst %.c,%.o, $(filter-out %lwip/src/api/err.c, \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/netif/*/*/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/port/esp32/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/port/esp32/*/*.c) \
-	))
+	)
 
 ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/mbedtls/mbedtls/library/*.c) \
