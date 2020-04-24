@@ -67,6 +67,6 @@ err_to_errno(err_t err) {
     if ((err > 0) || (-err >= (err_t)LWIP_ARRAYSIZE(err_to_errno_table))) {
         return EIO;
     }
-    //printf("lwip err_to_errno %d->%d\n", err, err_to_errno_table[-err]);
+    // printf("lwip err_to_errno %d->%d\n", err, err_to_errno_table[-err]);
     return err_to_errno_table[-err];
 }

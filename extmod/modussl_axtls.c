@@ -88,18 +88,18 @@ STATIC const struct ssl_errs ssl_error_tab[] = {
 STATIC NORETURN void ussl_raise_error(int err) {
     for (int i = 0; ssl_error_tab[i].errnum != 0; i++) {
         if (ssl_error_tab[i].errnum == err) {
-	    // construct string object
-	    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-	    if (o_str == NULL) {
-		break;
-	    }
-	    o_str->base.type = &mp_type_str;
-	    o_str->data = (const byte *)ssl_error_tab[i].errstr;
-	    o_str->len = strlen((char *)o_str->data);
-	    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-	    // raise
-	    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
-	    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+            // construct string object
+            mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+            if (o_str == NULL) {
+                break;
+            }
+            o_str->base.type = &mp_type_str;
+            o_str->data = (const byte *)ssl_error_tab[i].errstr;
+            o_str->len = strlen((char *)o_str->data);
+            o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+            // raise
+            mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
+            nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
         }
     }
     mp_raise_OSError(err);

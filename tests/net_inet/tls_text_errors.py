@@ -16,12 +16,16 @@ def test(addr):
         # mbedtls produces "mbedtls -0x7200: SSL - An invalid SSL record was received"
         # axtls produces "RECORD_OVERFLOW"
         # CPython produces "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)"
-        ok = "invalid SSL record" in str(e) or "RECORD_OVERFLOW" in str(e) or \
-                "wrong version" in str(e)
+        ok = (
+            "invalid SSL record" in str(e)
+            or "RECORD_OVERFLOW" in str(e)
+            or "wrong version" in str(e)
+        )
         print("wrap:", ok)
         if not ok:
             print("got exception:", e)
     s.close()
+
 
 if __name__ == "__main__":
     # connect to plain HTTP port, oops!

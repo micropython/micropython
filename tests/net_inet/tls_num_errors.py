@@ -22,7 +22,7 @@ def test(addr):
         heap_lock()
         print("heap is locked")
         while True:
-            ret = s.write('foo')
+            ret = s.write("foo")
             if ret:
                 break
         heap_unlock()
