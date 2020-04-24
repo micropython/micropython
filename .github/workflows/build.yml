@@ -102,6 +102,7 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - name: Make gettext programs available
       run: |
+        brew install gettext
         echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
