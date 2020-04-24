@@ -362,3 +362,12 @@ jobs:
       script:
         - make ${MAKEOPTS} -C ports/powerpc UART=potato
         - make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial
+
+    # libmicropython via examples/embedding
+    - stage: test
+      env: NAME="examples/embedding build"
+      install:
+        - gcc --version
+        - python3 --version
+      script:
+        - make ${MAKEOPTS} -C examples/embedding
