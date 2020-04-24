@@ -30,6 +30,7 @@
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+#include "lib/tinyusb/src/device/usbd.h"
 
 #include "py/mpconfig.h"
 
