@@ -1,4 +1,4 @@
-wrap_socket: OSError('AXTLS -256: CONN_LOST',)
+wrap_socket: OSError(-256, 'CONN_LOST')
 <_SSLSocket 
 4
 b''
