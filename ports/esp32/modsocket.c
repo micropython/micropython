@@ -153,6 +153,13 @@ void usocket_events_handler(void) {
 
 #endif // MICROPY_PY_USOCKET_EVENTS
 
+// EXXX error constants in ESP-IDF v4.0 and prior come from a newlib errno.h which has some
+// non-posix values, i.e., different from mperrno.h. This used to get fixed incompletely in
+// exception_from_errno, but it turns out to be easier to fix in lwip's err.c which maps lwip's
+// netif error codes into EXXX. The old code is left in here until the whole problem really
+// goes away with ESP-IDF v4.1 (we hope).
+#define exception_from_errno(errno) mp_raise_OSError(errno)
+#if 0
 NORETURN static void exception_from_errno(int _errno) {
     // Here we need to convert from lwip errno values to MicroPython's standard ones
     if (_errno == EADDRINUSE) {
@@ -162,6 +169,7 @@ NORETURN static void exception_from_errno(int _errno) {
     }
     mp_raise_OSError(_errno);
 }
+#endif
 
 static inline void check_for_exceptions(void) {
     mp_handle_pending(true);
