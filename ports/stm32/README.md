@@ -76,6 +76,12 @@ Or using `dfu-util` directly:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV11/firmware.dfu
 
+For the pyboard D-series you must enter the mboot DFU bootloader by holding down
+the USR button, pressing and releasing the RST button, and continuing to hold
+down USR until the LED is white (4th in the cycle), then let go of USR while
+the LED is white. The LED will then flash red once per second to indicate it
+is in USB DFU mode. You can then program the firmware using a DFU programmer,
+eg dfu-util or pydfu.py.
 
 ### Flashing the Firmware with stlink
 
