@@ -52,4 +52,6 @@ const mcu_periph_obj_t mcu_uart_rx_list[25];
 #define TIM_PIN_ARRAY_LEN 55
 TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
 
+const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
+
 #endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F767XX_PERIPH_H
