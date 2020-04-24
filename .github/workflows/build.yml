@@ -94,15 +94,15 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
 
   mpy-cross-mac:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install deps
+    - name: Make gettext programs available
       run: |
-        brew link --force gettext
+        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
         gcc --version
