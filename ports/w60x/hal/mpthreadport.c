@@ -162,7 +162,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
                                 freertos_entry,
                                 (void *)arg,
                                 (void *)stack,          /* 任务栈的起始地址 */
-                                *stack_size / sizeof(OS_STK), /* 任务栈的大小     */
+                                *stack_size, /* 任务栈的大小  stack size to be given in bytes   */
                                 MPY_TASK_PRIO + (thread_cnt + 2),
                                 0);
     if (id == NULL) {

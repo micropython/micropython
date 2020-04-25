@@ -3,7 +3,7 @@
 #SERIAL_NAME=ttyUSB3
 #SERIAL_NAME=tty.usbserial3
 #you can use "wm_tool -l" to view the locally available serial port number.
-SERIAL_NAME=
+SERIAL_NAME=ttyUSB0
 
 TARGET=wm_w600
 _ENV_TARGET=""

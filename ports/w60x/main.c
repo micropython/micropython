@@ -266,7 +266,7 @@ soft_reset:
 
 void UserMain(void) {
     tls_os_task_create(NULL, "w60xmpy", mpy_task, NULL,
-                       (void *)mpy_task_stk, MPY_TASK_SIZE * sizeof(OS_STK),
+                       (void *)mpy_task_stk, sizeof(mpy_task_stk),
                        MPY_TASK_PRIO, 0);
 }
 
