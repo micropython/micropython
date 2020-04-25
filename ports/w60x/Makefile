@@ -7,6 +7,9 @@ $(info See README.md for installation instructions.)
 $(error WMSDK_PATH not set)
 endif
 
+# Select the cross compile prefix
+CROSS_COMPILE ?= arm-none-eabi-
+
 include ../../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
@@ -209,6 +212,7 @@ LIB_SRC_C += \
 endif
 
 ifeq ($(MICROPY_USE_LITTLEFS), 1)
+CFLAGS += -DLFS2_NO_DEBUG
 LIB_SRC_C += \
 	lib/littlefs/lfs2.c \
 	lib/littlefs/lfs2_util.c
@@ -302,6 +306,9 @@ MBEDTLS_SRC_C = mbedtls/library/aes.c \
     mbedtls/ports/tls_net.c
 endif
 
+SRC_O += \
+	lib/utils/gchelper_m3.o
+
 OBJ_MP =
 OBJ_MP += $(PY_O)
 #OBJ_MP += $(PY_CORE_O)
@@ -309,6 +316,8 @@ OBJ_MP += $(addprefix $(BUILD)/, $(MPY_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ_MP += $(addprefix $(BUILD)/, $(SRC_O:.s=.o))
+
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 OBJ_MP += $(addprefix $(BUILD)/, $(MBEDTLS_SRC_C:.c=.o))
 endif

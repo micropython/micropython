@@ -29,28 +29,30 @@
 
 #include "py/obj.h"
 #include "py/gc.h"
+#include "py/mpstate.h"
 #include "py/mpthread.h"
+#include "lib/utils/gchelper.h"
+#include "py/runtime.h"
 
-extern uint32_t _ram_end;
 
-static inline void *get_sp(void) {
-    void *sp;
-    asm volatile ("mov %0, sp;" : "=r" (sp));
-    return sp;
-}
+#if MICROPY_USE_INTERVAL_FLS_FS
+extern void *spi_fls_vfs;  // The type does not matter here
+#endif
+
 
 void gc_collect(void) {
     // start the GC
     gc_collect_start();
 
-    uintptr_t sp = get_sp();
+    // get the registers and the sp
+    uintptr_t regs[10];
+    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
 
-    // trace the stack, including the registers (since they live on the stack in this function)
-#if MICROPY_PY_THREAD
-    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
-#else
-    gc_collect_root((void **)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+#if MICROPY_USE_INTERVAL_FLS_FS
+    gc_collect_root((void **)&spi_fls_vfs, 1);  // maybe not needed
 #endif
+    // trace the stack, including the registers (since they live [now] on the stack in this function)
+    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
 
     // trace root pointers from any threads
 #if MICROPY_PY_THREAD
@@ -60,4 +62,3 @@ void gc_collect(void) {
     // end the GC
     gc_collect_end();
 }
-
