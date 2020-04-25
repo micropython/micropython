@@ -39,8 +39,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-
-
 //|class UART:
 //|    """.. currentmodule:: busio
 //|
