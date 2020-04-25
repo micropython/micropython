@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "lib/tinyusb/src/device/usbd.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
