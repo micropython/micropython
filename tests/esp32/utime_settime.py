@@ -29,22 +29,22 @@ SAMPLE_TIMES = [
 
 # set time zone, set time, then read time and expect it to be as set
 # for tz in [
-    # "PST+8PDT,M3.2.0/2,M11.1.0/2",
-    # "CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00",
-    # "AEST-10AEDT-11,M10.5.0/02:00:00,M4.1.0/03:00:00",
+# "PST+8PDT,M3.2.0/2,M11.1.0/2",
+# "CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00",
+# "AEST-10AEDT-11,M10.5.0/02:00:00,M4.1.0/03:00:00",
 # ]:
-    # print("---", tz)
-    # time.tzset(tz)
+# print("---", tz)
+# time.tzset(tz)
 
-    # for st in SAMPLE_TIMES:
-        # ptup(st)
-        # t = time.mktime(st)
-        # print(" ", int(t))
-        # time.settime(t)
-        # print("  ", end="")
-        # ptup(time.gmtime())
-        # print("  ", end="")
-        # ptup(time.localtime())
+# for st in SAMPLE_TIMES:
+# ptup(st)
+# t = time.mktime(st)
+# print(" ", int(t))
+# time.settime(t)
+# print("  ", end="")
+# ptup(time.gmtime())
+# print("  ", end="")
+# ptup(time.localtime())
 
 # set time zone, set time, set adjtime, expect it to report change back
 for adj in [1000, 0, -1000, 1000000, -1000000, 2300000, -2800000]:
@@ -58,13 +58,12 @@ for adj in [1000, 0, -1000, 1000000, -1000000, 2300000, -2800000]:
     print(adj == 0 or abs(oadj) < abs(adj))
     time.sleep_ms(400)
     oadj = time.adjtime(0)
-    #print(oadj)
+    # print(oadj)
     print(adj == 0 or abs(oadj) < abs(adj))
     ptup(time.localtime())
 
 try:
-    oadj = time.adjtime(0x7fffffff)
+    oadj = time.adjtime(0x7FFFFFFF)
     print(oadj)
 except ValueError as e:
     print(e)
-

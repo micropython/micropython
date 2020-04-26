@@ -1,6 +1,7 @@
 try:
     import sys, os, time
     from time import gmtime  # trigger exception if old utime
+
     MP = sys.implementation.name == "micropython"
 except:
     print("SKIP")
