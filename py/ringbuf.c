@@ -71,3 +71,44 @@ int ringbuf_put16(ringbuf_t *r, uint16_t v) {
     r->iput = iput_b;
     return 0;
 }
+
+int ringbuf_get32(ringbuf_t *r) {
+    int v = ringbuf_peek32(r);
+    if (v == -1) {
+        return v;
+    }
+    r->iget += 4;
+    if (r->iget >= r->size) {
+        r->iget -= r->size;
+    }
+    return v;
+}
+
+int ringbuf_peek32(ringbuf_t *r) {
+    if (ringbuf_avail(r) < 4) {
+        return -1;
+    }
+    uint32_t iget = r->iget;
+    uint32_t v = 0;
+    for (int i = 0; i < 4; i++) {
+        v <<= 8;
+        v |= r->buf[iget++];
+        if (iget == r->size) {
+            iget = 0;
+        }
+    }
+    return v;
+}
+
+int ringbuf_put32(ringbuf_t *r, uint32_t v) {
+    if (ringbuf_free(r) < 4) {
+        return -1;
+    }
+    for (int i = 3; i >= 0; i--) {
+        r->buf[r->iput++] = (v >> (i * 8)) & 0xff;
+        if (r->iput == r->size) {
+            r->iput = 0;
+        }
+    }
+    return 0;
+}

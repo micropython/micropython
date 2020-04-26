@@ -578,6 +578,111 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf.iget = 0;
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+
+        mp_printf(&mp_plat_print, "# ringbuf: 32-bit put/get\n");
+
+        // Four-byte put/get with empty ringbuf.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put32(&ringbuf, 0x11223344);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Four-byte put/get byte order check.
+        ringbuf_put32(&ringbuf, 0x11223344);
+        for (int i = 0; i < 4; ++i) {
+            mp_printf(&mp_plat_print, "%02x\n", ringbuf_get(&ringbuf));
+        }
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Four-byte put with full ringbuf.
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+        }
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x11223344));
+
+        // Four-byte put with one byte free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x55667788));
+
+        // Four-byte put with two bytes free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x99aabbcc));
+
+        // Four-byte put with three bytes free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0xddeeff00));
+
+        // Four-byte put with four bytes free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x12345678));
+        for (int i = 0; i < 95; ++i) {
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Four-byte put with wrap around on first byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x11223344));
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+
+        // Four-byte put with wrap around on second byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 98; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x55667788));
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+
+        // Four-byte put with wrap around on third byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 97; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0x99aabbcc));
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+
+        // Four-byte put with wrap around on fourth byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 96; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put32(&ringbuf, 0xddeeff00));
+        mp_printf(&mp_plat_print, "%08x\n", ringbuf_get32(&ringbuf));
+
+        // Four-byte get from ringbuf with zero/one/two/three bytes available.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put(&ringbuf, 0xaa);
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put(&ringbuf, 0xbb);
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put(&ringbuf, 0xcc);
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get32(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
     }
 
     // pairheap

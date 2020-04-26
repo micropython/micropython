@@ -80,9 +80,12 @@ static inline size_t ringbuf_avail(ringbuf_t *r) {
     return (r->size + r->iput - r->iget) % r->size;
 }
 
-// Note: big-endian. No-op if not enough room available for both bytes.
+// Note: big-endian. No-op if not enough room available for all bytes.
 int ringbuf_get16(ringbuf_t *r);
 int ringbuf_peek16(ringbuf_t *r);
 int ringbuf_put16(ringbuf_t *r, uint16_t v);
+int ringbuf_get32(ringbuf_t *r);
+int ringbuf_peek32(ringbuf_t *r);
+int ringbuf_put32(ringbuf_t *r, uint32_t v);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H
