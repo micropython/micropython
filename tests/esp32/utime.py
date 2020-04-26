@@ -1,16 +1,7 @@
 try:
     import sys, os, time
-
+    from time import gmtime  # trigger exception if old utime
     MP = sys.implementation.name == "micropython"
-    if MP:
-        from utime import gmtime  # trigger exception if old utime
-        from time import sleep_ms
-    else:
-
-        def sleep_ms(ms):
-            time.sleep(ms / 1000.0)
-
-
 except:
     print("SKIP")
     raise SystemExit

@@ -150,34 +150,38 @@ STATIC mp_obj_t time_tzset(mp_obj_t tz) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_tzset_obj, time_tzset);
 
-STATIC mp_obj_t time_set_time(const mp_obj_t seconds_in) {
+STATIC mp_obj_t time_settime(const mp_obj_t seconds_in) {
     struct timeval tv = { mp_obj_get_int(seconds_in), 0 };
     if (settimeofday(&tv, NULL) != 0) {
         mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(time_set_time_obj, time_set_time);
+MP_DEFINE_CONST_FUN_OBJ_1(time_settime_obj, time_settime);
 
 STATIC mp_obj_t time_adjtime(const mp_obj_t microseconds_in) {
-    struct timeval tv = {
-        .tv_sec = 0,
-        .tv_usec = mp_obj_get_int(microseconds_in),
-    };
-    // turn microseconds into seconds+microseconds
-    if (tv.tv_usec >= 1000000) {
-        tv.tv_sec = tv.tv_usec / 1000000;
-        tv.tv_usec = tv.tv_usec - tv.tv_sec * 1000000;
-    } else if (tv.tv_usec <= -1000000) {
-        tv.tv_sec = -(-tv.tv_usec / 1000000); // round to zero
-        tv.tv_usec = tv.tv_usec - tv.tv_sec * 1000000; // negative remainder
+    // esp-idf is adjtime is broken in that it returns the current adjustment instead of
+    // the previous adjustement in outdelta. So we need to call it twice
+    struct timeval tv_old;
+    adjtime(NULL, &tv_old);
+
+    // now make the new adjustment
+    if (microseconds_in != mp_const_none) {
+        // esp32 esp-idf adjtime allows NULL delta to retrieve old delta remaining
+        // not sure this is std...
+        struct timeval tv = { 0, mp_obj_get_int(microseconds_in) };
+        // handle microseconds "overflow"
+        if (tv.tv_usec >= 1000000 || tv.tv_usec <= -1000000) {
+            tv.tv_sec = tv.tv_usec / 1000000;
+            tv.tv_usec = tv.tv_usec % 1000000;
+        }
+        // call adjtime
+        if (adjtime(&tv, NULL) != 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("adjustment too big"));
+        }
     }
 
-    struct timeval tv_old;
-    if (adjtime(&tv, &tv_old) != 0) {
-        mp_raise_OSError(errno);
-    }
-    return mp_obj_new_int(tv.tv_sec * 1000000 + tv.tv_usec);
+    return mp_obj_new_int(tv_old.tv_sec * 1000000 + tv_old.tv_usec);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_adjtime_obj, time_adjtime);
 
@@ -189,7 +193,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_tzset), MP_ROM_PTR(&time_tzset_obj) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_time), MP_ROM_PTR(&time_set_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_settime), MP_ROM_PTR(&time_settime_obj) },
     { MP_ROM_QSTR(MP_QSTR_adjtime), MP_ROM_PTR(&time_adjtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
