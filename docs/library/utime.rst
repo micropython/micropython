@@ -9,37 +9,33 @@
 The ``utime`` module provides functions for getting the current time and date,
 measuring time intervals, and for delays.
 
-**Time Epoch**: Unix port uses standard for POSIX systems epoch of
-1970-01-01 00:00:00 UTC. However, embedded ports use epoch of
+**Time Epoch**: The Unix and esp32 ports use the POSIX standard epoch of
+1970-01-01 00:00:00 UTC. However, other ports use an epoch of
 2000-01-01 00:00:00 UTC.
 
-**Maintaining actual calendar date/time**: This requires a
-Real Time Clock (RTC). On systems with underlying OS (including some
-RTOS), an RTC may be implicit. Setting and maintaining actual calendar
-time is responsibility of OS/RTOS and is done outside of MicroPython,
-it just uses OS API to query date/time. On baremetal ports however
-system time depends on ``machine.RTC()`` object. The current calendar time
-may be set using ``machine.RTC().datetime(tuple)`` function, and maintained
-by following means:
-
-* By a backup battery (which may be an additional, optional component for
-  a particular board).
-* Using networked time protocol (requires setup by a port/user).
-* Set manually by a user on each power-up (many boards then maintain
-  RTC time across hard resets, though some may require setting it again
-  in such case).
-
-If actual calendar time is not maintained with a system/MicroPython RTC,
-functions below which require reference to current absolute time may
-behave not as expected.
+**Maintaining actual calendar date/time** is port-dependent.
+* On operating systems, such as Unix, that manage time on their own
+  MicroPython simply makes the appropriate system calls to retrieve
+  time and it cannot set the time.
+* On ports with an RTOS that can manage time the Real Time Clock (RTC)
+  is managed by the RTOS and MicroPython leverages the RTOS' functionality
+  to retrieve and set time. On those ports the ``machine.RTC`` object
+  should not be used to set/get time, however the `set_time()` and
+  `adjtime()` methods in this module may be used. On some ports the
+  ``network.SNTP`` class may also be used to automatically adjust time.
+* On baremetal ports the Real Time Clock (RTC) must be initialized by
+  the application using either the ``machine.RTC`` class or the `set_time()`
+  method. On those ports `adjtime()`` and time zones are not available
+  and `localtime()` as well as `gmtime()` return the same time as set
+  in the RTC.
 
 Functions
 ---------
 
 .. function:: localtime([secs])
 
-   Convert a time expressed in seconds since the Epoch (see above) into an 8-tuple which
-   contains: (year, month, mday, hour, minute, second, weekday, yearday)
+   Convert a time expressed in seconds since the Epoch (see above) into a 9-tuple which
+   contains: (year, month, mday, hour, minute, second, weekday, yearday, isdst)
    If secs is not provided or None, then the current time from the RTC is used.
 
    * year includes the century (for example 2014).
@@ -50,12 +46,54 @@ Functions
    * second  is 0-59
    * weekday is 0-6 for Mon-Sun
    * yearday is 1-366
+   * isdst   is 0=no daylight savings in effect, 1=dst in effect, -1=unknown
+
+.. function:: gmtime([secs])
+
+   Gmtime is identical to localtime except that it returns UTC time.
 
 .. function:: mktime()
 
-   This is inverse function of localtime. It's argument is a full 8-tuple
-   which expresses a time as per localtime. It returns an integer which is
-   the number of seconds since Jan 1, 2000.
+   This is inverse function of localtime. Its argument is a full 9-tuple
+   which expresses a time as per localtime. The values for weekday and yearday are
+   ignored.
+   It returns an integer which is the number of seconds since the Epoch.
+
+.. function:: tzset(zone)
+
+   Set the conversion rules between UTC time and local time used by `mktime()` and
+   `localtime()`.
+   The argument is a string that specifies the name of the zones with/without daylight
+   savings, the standard offset to UTC, and the start/end times of daylight savings.
+   The full rules are described in CPython's `time` module, except that there is no
+   zoneinfo database.
+
+   As an example, the America/Los_Angeles time zone can be specified as
+   `PST+8PDT,M3.2.0/2,M11.1.0/2` where:
+   * PST is the standard time zone name
+   * +8 is the offset to convert from PST to UTC
+   * PDT is the daylight savings time zone name
+   * M3.2.0/2 designates that daylight savings starts at 2am ("/2") on sunday (".0")
+     of the second week (".2") of the third month ("M3.")
+   * M11.1.0/2 designates that daylight savings ends at 2am on sunday of the first week
+     of the eleventh month
+
+.. function:: set_time(secs)
+
+   Sets the current time to the specified number of seconds since the Epoch.
+
+   `set_time()` is an extension to CPython's time module.
+
+.. function:: adjtime(microseconds)
+
+   Gradually adjusts the current time by the number of microseconds specified
+   and returns the adjustment that still remains if one is in progress. The
+   semantics are the same as for the POSIX adjtime call.
+
+   There is an implementation-dependent maximum adjustment, but in general, if
+   the step is large set_time should be used.
+
+   `adjtime()` is an extension to CPython's time module.
 
 .. function:: sleep(seconds)
 
@@ -219,11 +257,11 @@ Functions
 
       In CPython, this function returns number of
       seconds since Unix epoch, 1970-01-01 00:00 UTC, as a floating-point,
-      usually having microsecond precision. With MicroPython, only Unix port
-      uses the same Epoch, and if floating-point precision allows,
-      returns sub-second precision. Embedded hardware usually doesn't have
+      usually having microsecond precision. With MicroPython, some ports
+      use the same Epoch, and if floating-point precision allows,
+      return sub-second precision. Embedded hardware usually doesn't have
       floating-point precision to represent both long time ranges and subsecond
-      precision, so they use integer value with second precision. Some embedded
-      hardware also lacks battery-powered RTC, so returns number of seconds
-      since last power-up or from other relative, hardware-specific point
+      precision, so they use an integer value with second precision. Some embedded
+      hardware also lacks battery-powered RTC, and returns the number of seconds
+      since the last power-up or from another relative, hardware-specific, point
       (e.g. reset).
