@@ -93,7 +93,7 @@ void ftp_close_session(struct ftp_session *session) {
     struct ftp_session *list = session_list;
     struct ftp_session *prev = NULL;
 
-    while (list != NULL) { // walk though the list
+    while (list != NULL) { // walk through the list
         if (list == session) { // match
             if (prev == NULL) {  // at the head; remove it
                 session_list = list->next; // tail will get the list
@@ -139,11 +139,15 @@ int build_full_path(struct ftp_session *session, char *path, char *new_path, siz
     if (is_absolute_path(path) == TRUE) {
         strcpy(new_path, path);
     } else {
-        sprintf(new_path, "%s/%s", session->currentdir, path);
+        if (session->currentdir[strlen(session->currentdir) - 1] == '/') { // CWD ends in '/'?
+            sprintf(new_path, "%s%s", session->currentdir, path);  // Yes: do not add '/'
+        } else {
+            sprintf(new_path, "%s/%s", session->currentdir, path); // No: add '/'
+        }
     }
 
     if ((strlen(new_path) > 2) && new_path[strlen(new_path) - 1] == '/')
-        new_path[strlen(new_path) - 1] = '\0';
+        new_path[strlen(new_path) - 1] = '\0'; // drop trailing '/'
 
     return 0;
 }
@@ -184,7 +188,7 @@ static void w600_ftps_task(void *param) {
         return;
     }
 
-    printf("ftpserver is running.\r\n");
+    FTPS_DBG("ftpserver is running.\r\n");
     FD_SET(sockfd, &readfds);
     tv.tv_sec  = 0;
     tv.tv_usec = 100 * 1000;
@@ -225,6 +229,7 @@ static void w600_ftps_task(void *param) {
                     f_chdir (&vfs_fs->fatfs, "/");
 #endif
                     strcpy(session->currentdir, FTP_SRV_ROOT);
+                    session->offset = 0; // Initialize offset
                     session->sockfd = com_socket;
                     session->remote = remote;
 
@@ -570,7 +575,7 @@ int ftp_process_request(struct ftp_session *session, char *buf) {
         closesocket(session->pasv_sockfd);
         session->pasv_sockfd = -1;
         session->pasv_active = 0;
-        sprintf(sbuf, "226 Transfert Complete.\r\n");
+        sprintf(sbuf, "226 Transfer complete.\r\n");
         send(session->sockfd, sbuf, strlen(sbuf), 0);
     } else if (str_begin_with(buf, "NLST") == 0 ) {
         memset(sbuf, 0, FTP_BUFFER_SIZE);
@@ -581,7 +586,7 @@ int ftp_process_request(struct ftp_session *session, char *buf) {
         closesocket(session->pasv_sockfd);
         session->pasv_sockfd = -1;
         session->pasv_active = 0;
-        sprintf(sbuf, "226 Transfert Complete.\r\n");
+        sprintf(sbuf, "226 Transfer complete.\r\n");
         send(session->sockfd, sbuf, strlen(sbuf), 0);
     } else if (str_begin_with(buf, "PWD") == 0 || str_begin_with(buf, "XPWD") == 0) {
         sprintf(sbuf, "257 \"%s\" is current directory.\r\n", session->currentdir);
@@ -745,6 +750,7 @@ err1:
 #endif
         closesocket(session->pasv_sockfd);
         session->pasv_sockfd = -1;
+        session->offset = 0;  // Reset offset after a download
     } else if (str_begin_with(buf, "STOR") == 0) {
         if (session->is_anonymous == TRUE) {
             sprintf(sbuf, "550 Permission denied.\r\n");
@@ -905,7 +911,7 @@ err1:
     } else if (str_begin_with(buf, "REST") == 0) {
         if (atoi(parameter_ptr) >= 0) {
             session->offset = atoi(parameter_ptr);
-            sprintf(sbuf, "350 Send RETR or STOR to start transfert.\r\n");
+            sprintf(sbuf, "350 Send RETR or STOR to start a transfer.\r\n");
             send(session->sockfd, sbuf, strlen(sbuf), 0);
         }
     } else if (str_begin_with(buf, "MKD") == 0) {
