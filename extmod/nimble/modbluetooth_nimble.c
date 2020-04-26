@@ -805,6 +805,16 @@ int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t s
     return ble_hs_err_to_errno(err);
 }
 
+int mp_bluetooth_gattc_discover_characteristic_by_uuid(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *charactristic_uuid)
+{
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+    ble_uuid_t *nimble_uuid = create_nimble_uuid(charactristic_uuid);
+    int err = ble_gattc_disc_chrs_by_uuid(conn_handle, start_handle, end_handle, nimble_uuid, &ble_gatt_characteristic_cb, NULL);
+    return ble_hs_err_to_errno(err);
+}
+
 STATIC int ble_gatt_descriptor_cb(uint16_t conn_handle, const struct ble_gatt_error *error, uint16_t characteristic_val_handle, const struct ble_gatt_dsc *descriptor, void *arg) {
     DEBUG_EVENT_printf("ble_gatt_descriptor_cb: conn_handle=%d status=%d chr_handle=%d dsc_handle=%d\n", conn_handle, error->status, characteristic_val_handle, descriptor ? descriptor->handle : -1);
     if (!mp_bluetooth_is_active()) {

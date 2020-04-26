@@ -692,6 +692,18 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristics(size_t n_args, cons
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_characteristics_obj, 4, 4, bluetooth_ble_gattc_discover_characteristics);
 
+STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristic_by_uuid(size_t n_args, const mp_obj_t *args) {
+    mp_int_t conn_handle = mp_obj_get_int(args[1]);
+    mp_int_t start_handle = mp_obj_get_int(args[2]);
+    mp_int_t end_handle = mp_obj_get_int(args[3]);
+    if (!mp_obj_is_type(args[4], &bluetooth_uuid_type)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid characteristic UUID"));
+    }
+    mp_obj_bluetooth_uuid_t *charactristic_uuid = MP_OBJ_TO_PTR(args[4]);
+    return bluetooth_handle_errno(mp_bluetooth_gattc_discover_characteristic_by_uuid(conn_handle, start_handle, end_handle, charactristic_uuid));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_characteristic_by_uuid_obj, 5, 5, bluetooth_ble_gattc_discover_characteristic_by_uuid);
+
 STATIC mp_obj_t bluetooth_ble_gattc_discover_descriptors(size_t n_args, const mp_obj_t *args) {
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t start_handle = mp_obj_get_int(args[2]);
@@ -751,6 +763,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_services), MP_ROM_PTR(&bluetooth_ble_gattc_discover_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_service_by_uuid), MP_ROM_PTR(&bluetooth_ble_gattc_discover_service_by_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_characteristics), MP_ROM_PTR(&bluetooth_ble_gattc_discover_characteristics_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gattc_discover_characteristics), MP_ROM_PTR(&bluetooth_ble_gattc_discover_characteristic_by_uuid_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_descriptors), MP_ROM_PTR(&bluetooth_ble_gattc_discover_descriptors_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_read), MP_ROM_PTR(&bluetooth_ble_gattc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_write), MP_ROM_PTR(&bluetooth_ble_gattc_write_obj) },

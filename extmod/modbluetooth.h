@@ -223,6 +223,9 @@ int mp_bluetooth_gattc_discover_primary_service_by_uuid(uint16_t conn_handle, co
 // Find all characteristics on the specified service on a connected peripheral.
 int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle);
 
+// Find characteristic by UUID on the specified service on a connected peripheral.
+int mp_bluetooth_gattc_discover_characteristic_by_uuid(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *charactristic_uuid);
+
 // Find all descriptors on the specified characteristic on a connected peripheral.
 int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle);
 
