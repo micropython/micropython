@@ -90,8 +90,9 @@
 // Event codes for the IRQ handler.
 // Can also be combined to pass to the trigger param to select which events you
 // are interested in.
-// Note this is currently stored in a uint16_t (in irq_trigger, and the event
-// arg to the irq handler), so one spare value remaining.
+// Note this is currently stored in a uint32_t (in irq_trigger, and the event
+// arg to the irq handler), and exposed to the irq handler as a smallint, so
+// there are at least 30 values available.
 #define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT              (1 << 0)
 #define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT           (1 << 1)
 #define MP_BLUETOOTH_IRQ_GATTS_WRITE                  (1 << 2)
@@ -107,7 +108,7 @@
 #define MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS           (1 << 12)
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                 (1 << 13)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE               (1 << 14)
-#define MP_BLUETOOTH_IRQ_ALL                          (0xffff)
+#define MP_BLUETOOTH_IRQ_ALL                          (0x3fffffff)
 
 /*
 These aren't included in the module for space reasons, but can be used
@@ -234,7 +235,7 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
 // API implemented by modbluetooth (called by port-specific implementations):
 
 // Notify modbluetooth that a connection/disconnection event has occurred.
-void mp_bluetooth_gap_on_connected_disconnected(uint16_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
+void mp_bluetooth_gap_on_connected_disconnected(uint32_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
@@ -263,7 +264,7 @@ void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t hand
 // Notify modbluetooth that a read has completed with data (or notify/indicate data available, use `event` to disambiguate).
 // Note: these functions are to be called in a group protected by MICROPY_PY_BLUETOOTH_ENTER/EXIT.
 // _start returns the number of bytes to submit to the calls to _chunk, followed by a call to _end.
-size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out);
+size_t mp_bluetooth_gattc_on_data_available_start(uint32_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out);
 void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len);
 void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state);
 
