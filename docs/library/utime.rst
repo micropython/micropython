@@ -78,6 +78,8 @@ Functions
    * M11.1.0/2 designates that daylight savings ends at 2am on sunday of the first week
      of the eleventh month
 
+   See https://sites.google.com/a/usapiens.com/opnode/time-zones for a lit of zone specs.
+
 .. function:: set_time(secs)
 
    Sets the current time to the specified number of seconds since the Epoch.

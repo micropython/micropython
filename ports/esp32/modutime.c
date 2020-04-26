@@ -85,11 +85,11 @@ STATIC mp_obj_t *time_tm_to_tuple(const struct tm *tm) {
         tuple[3] = mp_obj_new_int(tm->tm_hour),
         tuple[4] = mp_obj_new_int(tm->tm_min),
         tuple[5] = mp_obj_new_int(tm->tm_sec),
-        tuple[6] = mp_obj_new_int(tm->tm_wday == 0 ? 7 : tm->tm_wday - 1),
+        tuple[6] = mp_obj_new_int(tm->tm_wday == 0 ? 6 : tm->tm_wday - 1),
         tuple[7] = mp_obj_new_int(tm->tm_yday + 1),
         tuple[8] = mp_obj_new_int(tm->tm_isdst),
     };
-    return mp_obj_new_tuple(8, tuple);
+    return mp_obj_new_tuple(9, tuple);
 }
 
 STATIC time_t time_get_seconds(size_t n_args, const mp_obj_t *args) {
@@ -128,7 +128,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     if (seconds == -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid input"));
     }
-    return MP_OBJ_NEW_SMALL_INT(seconds);
+    return mp_obj_new_int(seconds);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
