@@ -61,30 +61,32 @@ STATIC void time_tm_from_tuple(const mp_obj_t tuple, struct tm *tm) {
         mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("9-tuple required (%d given)"), len);
     }
 
-    time_t wday = mp_obj_get_int(elem[6])+1;
-    if (wday > 7) wday = 0;
-    tm->tm_year = mp_obj_get_int(elem[0])-1900;
-    tm->tm_mon = mp_obj_get_int(elem[1])-1;
+    time_t wday = mp_obj_get_int(elem[6]) + 1;
+    if (wday > 7) {
+        wday = 0;
+    }
+    tm->tm_year = mp_obj_get_int(elem[0]) - 1900;
+    tm->tm_mon = mp_obj_get_int(elem[1]) - 1;
     tm->tm_mday = mp_obj_get_int(elem[2]);
     tm->tm_hour = mp_obj_get_int(elem[3]);
     tm->tm_min = mp_obj_get_int(elem[4]);
     tm->tm_sec = mp_obj_get_int(elem[5]);
     tm->tm_wday = wday;
-    tm->tm_yday = mp_obj_get_int(elem[7])-1;
+    tm->tm_yday = mp_obj_get_int(elem[7]) - 1;
     tm->tm_isdst = mp_obj_get_int(elem[8]);
 }
 
 // convert a struct tm to a python 9-tuple
 STATIC mp_obj_t *time_tm_to_tuple(const struct tm *tm) {
     mp_obj_t tuple[9] = {
-        tuple[0] = mp_obj_new_int(1900+tm->tm_year),
-        tuple[1] = mp_obj_new_int(tm->tm_mon+1),
+        tuple[0] = mp_obj_new_int(1900 + tm->tm_year),
+        tuple[1] = mp_obj_new_int(tm->tm_mon + 1),
         tuple[2] = mp_obj_new_int(tm->tm_mday),
         tuple[3] = mp_obj_new_int(tm->tm_hour),
         tuple[4] = mp_obj_new_int(tm->tm_min),
         tuple[5] = mp_obj_new_int(tm->tm_sec),
-        tuple[6] = mp_obj_new_int(tm->tm_wday==0 ? 7 : tm->tm_wday-1),
-        tuple[7] = mp_obj_new_int(tm->tm_yday+1),
+        tuple[6] = mp_obj_new_int(tm->tm_wday == 0 ? 7 : tm->tm_wday - 1),
+        tuple[7] = mp_obj_new_int(tm->tm_yday + 1),
         tuple[8] = mp_obj_new_int(tm->tm_isdst),
     };
     return mp_obj_new_tuple(8, tuple);
@@ -175,7 +177,7 @@ STATIC mp_obj_t time_adjtime(const mp_obj_t microseconds_in) {
     if (adjtime(&tv, &tv_old) != 0) {
         mp_raise_OSError(errno);
     }
-    return mp_obj_new_int(tv.tv_sec*1000000 + tv.tv_usec);
+    return mp_obj_new_int(tv.tv_sec * 1000000 + tv.tv_usec);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_adjtime_obj, time_adjtime);
 
