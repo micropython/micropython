@@ -217,6 +217,9 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
 // Find all primary services on the connected peripheral.
 int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle);
 
+// Find primary service by UUID on the connected peripheral.
+int mp_bluetooth_gattc_discover_primary_service_by_uuid(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *service_uuid);
+
 // Find all characteristics on the specified service on a connected peripheral.
 int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle);
 

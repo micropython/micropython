@@ -776,6 +776,15 @@ int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
     return ble_hs_err_to_errno(err);
 }
 
+int mp_bluetooth_gattc_discover_primary_service_by_uuid(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid) {
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+    ble_uuid_t *nimble_uuid = create_nimble_uuid(uuid);
+    int err = ble_gattc_disc_svc_by_uuid(conn_handle, nimble_uuid, &peripheral_discover_service_cb, NULL);
+    return ble_hs_err_to_errno(err);
+}
+
 STATIC int ble_gatt_characteristic_cb(uint16_t conn_handle, const struct ble_gatt_error *error, const struct ble_gatt_chr *characteristic, void *arg) {
     DEBUG_EVENT_printf("ble_gatt_characteristic_cb: conn_handle=%d status=%d def_handle=%d val_handle=%d\n", conn_handle, error->status, characteristic ? characteristic->def_handle : -1, characteristic ? characteristic->val_handle : -1);
     if (!mp_bluetooth_is_active()) {
