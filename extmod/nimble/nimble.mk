@@ -40,7 +40,6 @@ SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_hs.c \
 		ble_hs_cfg.c \
 		ble_hs_conn.c \
-		ble_hs_dbg.c \
 		ble_hs_flow.c \
 		ble_hs_hci.c \
 		ble_hs_hci_cmd.c \
