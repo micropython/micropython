@@ -33,7 +33,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4/periph.h"
+#include "peripherals/periph.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,

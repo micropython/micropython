@@ -43,6 +43,7 @@ typedef struct {
 
 void memory_init(void);
 void free_memory(supervisor_allocation* allocation);
+supervisor_allocation* allocation_from_ptr(void *ptr);
 supervisor_allocation* allocate_remaining_memory(void);
 
 // Allocate a piece of a given length in bytes. If high_address is true then it should be allocated

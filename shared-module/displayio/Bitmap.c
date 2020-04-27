@@ -162,3 +162,24 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = 0;
 }
+
+void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+    // Update the dirty area.
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = self->width;
+    self->dirty_area.y1 = 0;
+    self->dirty_area.y2 = self->height;
+
+    // build the packed word
+    uint32_t word = 0;
+    for (uint8_t i=0; i<32 / self->bits_per_value; i++) {
+        word |= (value & self->bitmask) << (32 - ((i+1)*self->bits_per_value));
+    }
+    // copy it in
+    for (uint32_t i=0; i<self->stride * self->height; i++) {
+        self->data[i] = word;
+    }
+}

@@ -114,7 +114,7 @@ else
 
   # Do a default shrink for small builds.
   ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    ifeq ($(CIRCUITPY_FULL_BUILD),0)
       CFLAGS_INLINE_LIMIT = 50
     endif
   endif
@@ -125,7 +125,7 @@ else
 
   CFLAGS += -flto -flto-partition=none
 
-  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
   endif
 

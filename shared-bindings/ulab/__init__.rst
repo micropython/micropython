@@ -79,26 +79,30 @@ ulab.array -- 1- and 2- dimensional array
    .. method:: __add__()
 
       Adds corresponding elements of the two arrays, or adds a number to all
-      elements of the array.  A number must be on the right hand side.  If
-      both arguments are arrays, their sizes must match.
+      elements of the array.  If both arguments are arrays, their sizes must match.
 
    .. method:: __sub__()
 
-      Subtracts corresponding elements of the two arrays, or subtracts a
-      number from all elements of the array.  A number must be on the right
-      hand side.  If both arguments are arrays, their sizes must match.
+      Subtracts corresponding elements of the two arrays, or adds a number to all
+      elements of the array.  If both arguments are arrays, their sizes must match.
 
    .. method:: __mul__()
 
       Multiplies corresponding elements of the two arrays, or multiplies
-      all elements of the array by a number.  A number must be on the right
-      hand side.  If both arguments are arrays, their sizes must match.
+      all elements of the array by a number.  If both arguments are arrays,
+      their sizes must match.
 
    .. method:: __div__()
 
       Multiplies corresponding elements of the two arrays, or divides
-      all elements of the array by a number.  A number must be on the right
-      hand side.  If both arguments are arrays, their sizes must match.
+      all elements of the array by a number.  If both arguments are arrays,
+      their sizes must match.
+
+   .. method:: __pow__()
+
+      Computes the power (x**y) of corresponding elements of the the two arrays,
+      or one number and one array.  If both arguments are arrays, their sizes
+      must match.
 
    .. method:: __getitem__()
 
@@ -126,7 +130,7 @@ Array type codes
 
    Type code for unsigned integers in the range 0 .. 255 inclusive, like the 'H' typecode of `array.array`
 
-.. attribute:: uint8
+.. attribute:: uint16
 
    Type code for unsigned integers in the range 0 .. 65535 inclusive, like the 'h' typecode of `array.array`
 
@@ -186,6 +190,38 @@ Basic Array defining functions
 
    Return a new 1-D array with ``num`` elements ranging from ``start`` to ``stop`` linearly.
 
+
+:mod:`ulab.compare` --- Comparison functions
+============================================
+
+.. module::ulab.compare
+
+.. method:: clip(x1, x2, x3)
+
+   Constrain the values from ``x1`` to be between ``x2`` and ``x3``.
+   ``x2`` is assumed to be less than or equal to ``x3``.
+
+   Arguments may be ulab arrays or numbers.  All array arguments
+   must be the same size.  If the inputs are all scalars, a 1-element
+   array is returned.
+
+   Shorthand for ``ulab.maximum(x2, ulab.minimum(x1, x3))``
+
+.. method:: maximum(x1, x2)
+
+   Compute the element by element maximum of the arguments.
+
+   Arguments may be ulab arrays or numbers.  All array arguments
+   must be the same size.  If the inputs are both scalars, a number is
+   returned
+
+.. method:: minimum(x1, x2)
+
+   Compute the element by element minimum of the arguments.
+
+   Arguments may be ulab arrays or numbers.  All array arguments
+   must be the same size.  If the inputs are both scalars, a number is
+   returned
 
 
 :mod:`ulab.vector` --- Element-by-element functions
@@ -348,6 +384,12 @@ much more efficient than expressing the same operation as a Python loop.
 
    Return the total number of elements in the array, as an integer.
 
+.. method:: trace(m)
+
+   :param m: a square matrix
+
+   Compute the trace of the matrix, the sum of its diagonal elements.
+
 :mod:`ulab.filter` --- Filtering functions
 ==========================================
 
@@ -404,11 +446,11 @@ operate over the flattened array (None), rows (0), or columns (1).
 
 .. method:: argmax(array, \*, axis=None)
 
-   Return the index of the maximum element of the 1D array, as an array with 1 element
+   Return the index of the maximum element of the 1D array
 
 .. method:: argmin(array, \*, axis=None)
 
-   Return the index of the minimum element of the 1D array, as an array with 1 element
+   Return the index of the minimum element of the 1D array
 
 .. method:: argsort(array, \*, axis=None)
 
@@ -426,7 +468,7 @@ operate over the flattened array (None), rows (0), or columns (1).
 
 .. method:: max(array, \*, axis=None)
 
-   Return the maximum element of the 1D array, as an array with 1 element
+   Return the maximum element of the 1D array
 
 .. method:: mean(array, \*, axis=None)
 
@@ -434,7 +476,7 @@ operate over the flattened array (None), rows (0), or columns (1).
 
 .. method:: min(array, \*, axis=None)
 
-   Return the minimum element of the 1D array, as an array with 1 element
+   Return the minimum element of the 1D array
 
 .. method:: roll(array, distance, \*, axis=None)
 

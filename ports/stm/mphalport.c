@@ -33,7 +33,6 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/tick.h"
-#include "stm32f4xx_hal.h"
 
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = supervisor_ticks_ms64();

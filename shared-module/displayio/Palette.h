@@ -41,6 +41,7 @@ typedef struct {
     bool tricolor;
     bool pixels_in_byte_share_row;
     bool reverse_pixels_in_byte;
+    bool reverse_bytes_in_word;
     bool dither;
 } _displayio_colorspace_t;
 

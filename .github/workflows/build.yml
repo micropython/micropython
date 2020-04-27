@@ -16,6 +16,16 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -24,16 +34,11 @@ jobs:
       run: |
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<3" sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinxcontrib-svg2pdfconverter polib pyyaml
     - name: Versions
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-    - name: CircuitPython version
-      run: git describe --dirty --always --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -89,25 +94,31 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
 
   mpy-cross-mac:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install deps
+    - name: Make gettext programs available
       run: |
-        brew link --force gettext
+        brew install gettext
+        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
         gcc --version
         python3 --version
         msgfmt --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --always --tags
+      run: git describe --dirty --tags
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v1.0.0
@@ -189,6 +200,10 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "nfc_copy_cat"
+        - "nucleo_f746zg"
+        - "nucleo_f767zi"
+        - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
         - "particle_argon"
@@ -229,6 +244,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
+        - "stm32f746g_disco"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
@@ -260,9 +276,14 @@ jobs:
         gcc --version
         arm-none-eabi-gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build

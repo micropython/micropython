@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H
 
 #include "py/mphal.h"
 
-#include "peripherals/stm32f4/pins.h"
+#include "peripherals/pins.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 extern bool neopixel_in_use;
@@ -49,4 +49,4 @@ void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 GPIO_TypeDef * pin_port(uint8_t pin_port);
 uint16_t pin_mask(uint8_t pin_number);
 
-#endif // MICROPY_INCLUDED_STM34F4_COMMON_HAL_MICROCONTROLLER_PIN_H
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_MICROCONTROLLER_PIN_H

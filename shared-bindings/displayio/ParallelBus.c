@@ -83,18 +83,8 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
     mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
-    displayio_parallelbus_obj_t* self = NULL;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].parallel_bus.base.type== NULL ||
-            displays[i].parallel_bus.base.type == &mp_type_NoneType) {
-            self = &displays[i].parallel_bus;
-            self->base.type = &displayio_parallelbus_type;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many display busses"));
-    }
+    displayio_parallelbus_obj_t* self = &allocate_display_bus_or_raise()->parallel_bus;
+    self->base.type = &displayio_parallelbus_type;
 
     common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);
     return self;

@@ -71,19 +71,9 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
 
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
-    displayio_i2cdisplay_obj_t* self = NULL;
     mp_obj_t i2c = args[ARG_i2c_bus].u_obj;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].i2cdisplay_bus.base.type == NULL ||
-            displays[i].i2cdisplay_bus.base.type == &mp_type_NoneType) {
-            self = &displays[i].i2cdisplay_bus;
-            self->base.type = &displayio_i2cdisplay_type;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many display busses"));
-    }
+    displayio_i2cdisplay_obj_t* self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
+    self->base.type = &displayio_i2cdisplay_type;
 
     common_hal_displayio_i2cdisplay_construct(self,
         MP_OBJ_TO_PTR(i2c), args[ARG_device_address].u_int, reset);

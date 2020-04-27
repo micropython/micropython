@@ -17,7 +17,7 @@ import json
 import sys
 import os
 
-from recommonmark.parser import CommonMarkParser
+import recommonmark
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,16 +55,20 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'rstjinja',
-    'c2rst'
+    'c2rst',
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
 # The suffix of source filenames.
-source_suffix = ['.rst', '.md', '.c', '.h']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+    '.c': ''
+}
 
-source_parsers = {'.md': CommonMarkParser}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -134,6 +138,7 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
                     "ports/stm/st_driver",
+                    "ports/stm/packages",
                     "ports/stm/peripherals",
                     "ports/stm/ref",
                     "ports/unix",
@@ -357,4 +362,4 @@ intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
 
 def setup(app):
-    app.add_stylesheet("customstyle.css")
+    app.add_css_file("customstyle.css")

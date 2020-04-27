@@ -29,20 +29,30 @@
 
 #include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/EPaperDisplay.h"
+#if CIRCUITPY_FRAMEBUFFERIO
+#include "shared-bindings/framebufferio/FramebufferDisplay.h"
+#endif
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/rgbmatrix/RGBMatrix.h"
 
 typedef struct {
     union {
         displayio_fourwire_obj_t fourwire_bus;
         displayio_i2cdisplay_obj_t i2cdisplay_bus;
         displayio_parallelbus_obj_t parallel_bus;
+#if CIRCUITPY_RGBMATRIX
+        rgbmatrix_rgbmatrix_obj_t rgbmatrix;
+#endif
     };
     union {
         displayio_display_obj_t display;
         displayio_epaperdisplay_obj_t epaper_display;
+#if CIRCUITPY_FRAMEBUFFERIO
+        framebufferio_framebufferdisplay_obj_t framebuffer_display;
+#endif
     };
 } primary_display_t;
 
@@ -53,5 +63,10 @@ extern displayio_group_t circuitpython_splash;
 void displayio_background(void);
 void reset_displays(void);
 void displayio_gc_collect(void);
+
+primary_display_t *allocate_display(void);
+primary_display_t *allocate_display_or_raise(void);
+primary_display_t *allocate_display_bus(void);
+primary_display_t *allocate_display_bus_or_raise(void);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H

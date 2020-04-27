@@ -56,5 +56,5 @@ void init_usb_hardware(void) {
 }
 
 void USB_OTG1_IRQHandler(void) {
-    tud_isr(0);
+    tud_int_handler(0);
 }

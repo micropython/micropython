@@ -58,7 +58,7 @@ typedef struct {
 
 void displayio_display_core_construct(displayio_display_core_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
-        uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte);
+        uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word);
 
 bool displayio_display_core_show(displayio_display_core_t* self, displayio_group_t* root_group);
 

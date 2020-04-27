@@ -179,17 +179,10 @@ typedef long mp_off_t;
 // board-specific definitions, which control and may override definitions below.
 #include "mpconfigboard.h"
 
-// CIRCUITPY_FULL_BUILD is defined in a *.mk file.
-
-// Remove some lesser-used functionality to make small builds fit.
+// Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-//TODO: replace this with a rework of the FULL_BUILD system
-#if !defined(MICROPY_CPYTHON_COMPAT)
-	#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
-#endif
-#if !defined(MICROPY_COMP_FSTRING_LITERAL)
+#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
-#endif
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
@@ -223,7 +216,7 @@ typedef long mp_off_t;
 #define MP_SSIZE_MAX (0x7fffffff)
 #endif
 
-#if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !CIRCUITPY_MINIMAL_BUILD
+#if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
 #error No *_FLASH_FILESYSTEM set!
 #endif
 
@@ -345,6 +338,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
+#if CIRCUITPY_FRAMEBUFFERIO
+extern const struct _mp_obj_module_t framebufferio_module;
+#define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
+#else
+#define FRAMEBUFFERIO_MODULE
+#endif
+
 #if CIRCUITPY_FREQUENCYIO
 extern const struct _mp_obj_module_t frequencyio_module;
 #define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
@@ -452,6 +452,13 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
 #else
 #define PIXELBUF_MODULE
+#endif
+
+#if CIRCUITPY_RGBMATRIX
+extern const struct _mp_obj_module_t rgbmatrix_module;
+#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#else
+#define RGBMATRIX_MODULE
 #endif
 
 #if CIRCUITPY_PULSEIO
@@ -628,6 +635,7 @@ extern const struct _mp_obj_module_t ustack_module;
       FONTIO_MODULE \
       TERMINALIO_MODULE \
     ERRNO_MODULE \
+    FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
@@ -646,6 +654,7 @@ extern const struct _mp_obj_module_t ustack_module;
     PULSEIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
+    RGBMATRIX_MODULE \
     ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
