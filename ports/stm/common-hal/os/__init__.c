@@ -32,15 +32,15 @@
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 #include "peripherals/periph.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
 };
-STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "stm32f4");
-STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "stm32f4");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, STM32_SERIES_LOWER);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, STM32_SERIES_LOWER);
 
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
