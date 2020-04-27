@@ -7,8 +7,9 @@ ENTRY(_start)
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x20040000, LENGTH = 0x100000 /* entire flash, 1 MiB */
-    RAM (xrw)       : ORIGIN = 0x10000000, LENGTH = 0x00020000 /* 128 KiB */
+    FLASH (rx)               : ORIGIN = 0x20040000, LENGTH = 0x100000 /* entire flash, 1 MiB */
+    FLASH_FIRMWARE (rx)      : ORIGIN = 0x20040000, LENGTH = 0x100000 /* entire flash, 1 MiB */
+    RAM (xrw)                : ORIGIN = 0x10000000, LENGTH = 0x00020000 /* 128 KiB */
 }
 
 /* top end of the stack */
@@ -19,7 +20,7 @@ SECTIONS
 {
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
-    but the loader puts the initial values in the FLASH (inidata).
+    but the loader puts the initial values in the FLASH_FIRMWARE (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
     .data :  AT ( _sidata )
     {
@@ -73,7 +74,7 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
 
-    /* The program code and other data goes into FLASH */
+    /* The program code and other data goes into FLASH_FIRMWARE */
     .text :
     {
         . = ALIGN(4);
@@ -88,7 +89,7 @@ SECTIONS
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
         _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
-    } >FLASH
+    } >FLASH_FIRMWARE
 
     /* Uninitialized data section */
     .bss :
