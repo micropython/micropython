@@ -463,13 +463,15 @@ STATIC mp_obj_t sd_info(mp_obj_t self) {
     }
     HAL_SD_CardInfoTypeDef cardinfo;
     HAL_SD_GetCardInfo(&sd_handle, &cardinfo);
-    // cardinfo.SD_csd and cardinfo.SD_cid have lots of info but we don't use them
-    mp_obj_t tuple[3] = {
+    // cardinfo.SD_csd and cardinfo.SD_cid have lots of info, so let's share them
+    mp_obj_t tuple[5] = {
         mp_obj_new_int_from_ull((uint64_t)cardinfo.LogBlockNbr * (uint64_t)cardinfo.LogBlockSize),
         mp_obj_new_int_from_uint(cardinfo.LogBlockSize),
         mp_obj_new_int(cardinfo.CardType),
+        mp_obj_new_bytes((const uint8_t *)&sd_handle.CSD, 16),
+        mp_obj_new_bytes((const uint8_t *)&sd_handle.CID, 16)
     };
-    return mp_obj_new_tuple(3, tuple);
+    return mp_obj_new_tuple(5, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
 
