@@ -12,6 +12,13 @@ def ptup(tup):
     print([i for i in tup])
 
 
+# adjust a seconds-since-epoch timestamp to the MP 2000/1/1 epoch
+def adj(secs):
+    if sys.platform == "linux":
+        secs -= 946684800
+    return int(secs)
+
+
 SAMPLE_TIMES = [
     (2000, 1, 1, 1, 0, 0, 0, 0, -1),
     (2000, 1, 31, 1, 0, 0, 0, 0, -1),
@@ -27,6 +34,7 @@ SAMPLE_TIMES = [
     (2016, 12, 31, 7, 23, 59, 1, 0, -1),
     (2016, 12, 31, 7, 23, 59, 59, 0, -1),
     (2037, 12, 31, 7, 23, 59, 59, 0, -1),
+    (2016, 6, 1, 7, 0, 0, 0, 0, -1),  # PDT
 ]
 
 # set time zones and test mktime/localtime/gmtime
@@ -44,16 +52,10 @@ for tz in [
 
     for st in SAMPLE_TIMES:
         t = time.mktime(st)
-        print(int(t))
+        print("-- ", st)
+        print(adj(t))
         ptup(time.gmtime(t))
         ptup(time.localtime(t))
-
-# test daylight savings
-for st in [(2019, 6, 1, 1, 0, 0, 0, 0, 1)]:
-    t = time.mktime(st)
-    print(int(t))
-    ptup(time.localtime(t))
-    ptup(time.gmtime(t))
 
 # test 8-tuple error
 try:
@@ -61,14 +63,14 @@ try:
 except Exception as e:
     print("8-tuple exception")
 
-# can't get mktime to produce an error...
-try:
-    print(int(time.mktime((2000, 99, 99, -99, -99, -99, 99, 99, 99))))
-except Exception as e:
-    print(e)
-
-# can't get gmtime to produce an error...
-try:
-    ptup(time.gmtime(-2147483646))
-except Exception as e:
-    print(e)
+## can't get mktime to produce an error...
+# try:
+#    print(int(time.mktime((2000, 99, 99, -99, -99, -99, 99, 99, 99))))
+# except Exception as e:
+#    print(e)
+#
+## can't get gmtime to produce an error...
+# try:
+#    ptup(time.gmtime(-2147483646))
+# except Exception as e:
+#    print(e)

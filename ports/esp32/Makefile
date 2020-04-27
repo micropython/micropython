@@ -162,7 +162,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/tcpip_adapter/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/lwip/src/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/port/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps
-INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps/sntp
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/mdns/include
@@ -186,7 +185,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/esp_event/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_rom/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_wifi/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_wifi/esp32/include
-INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps/sntp
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include/esp_supplicant
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa/include
@@ -496,7 +494,6 @@ $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-u
 ESPIDF_LWIP_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/lwip/apps/dhcpserver/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/api/*.c) \
-	$(wildcard $(ESPCOMP)/lwip/lwip/src/apps/sntp/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/core/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/core/*/*.c) \
 	$(wildcard $(ESPCOMP)/lwip/lwip/src/netif/*.c) \

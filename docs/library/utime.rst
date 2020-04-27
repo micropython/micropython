@@ -9,20 +9,21 @@
 The ``utime`` module provides functions for getting the current time and date,
 measuring time intervals, and for delays.
 
-**Time Epoch**: The Unix and esp32 ports use the POSIX standard epoch of
-1970-01-01 00:00:00 UTC. However, other ports use an epoch of
-2000-01-01 00:00:00 UTC.
+**Time Epoch**: The Unix port uses the POSIX standard epoch of
+1970-01-01 00:00:00 UTC. However, all other ports use an epoch of
+2000-01-01 00:00:00 UTC. The reason for the unconventional epoch
+is that, at least until 2034, the time fits into a 31-bit "small int"
+and thus a call to `time.time()` does not involve memory allocation.
 
 **Maintaining actual calendar date/time** is port-dependent.
 * On operating systems, such as Unix, that manage time on their own
   MicroPython simply makes the appropriate system calls to retrieve
   time and it cannot set the time.
-* On ports with an RTOS that can manage time the Real Time Clock (RTC)
+* On ports with an RTOS that can manage time, the Real Time Clock (RTC)
   is managed by the RTOS and MicroPython leverages the RTOS' functionality
   to retrieve and set time. On those ports the ``machine.RTC`` object
   should not be used to set/get time, however the `set_time()` and
-  `adjtime()` methods in this module may be used. On some ports the
-  ``network.SNTP`` class may also be used to automatically adjust time.
+  `adjtime()` methods in this module may be used.
 * On baremetal ports the Real Time Clock (RTC) must be initialized by
   the application using either the ``machine.RTC`` class or the `set_time()`
   method. On those ports `adjtime()`` and time zones are not available

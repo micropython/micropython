@@ -51,6 +51,14 @@
 // N/A   tm_gmtoff offset east of UTC in seconds
 // This module supports the first 9 elements (i.e. a 9-tuple) without names.
 
+// THE EPOCH: this module conforms to the MicroPython "standard" of having the time
+// epoch defined as 2000/1/1 instead of the POSIX std of 1970/1/1. The reason for this
+// decision is that it allows time values up to 2034 to fit into a small int (31 signed bits)
+// and thus time.time() does not require memory allocation. In order to make things work,
+// time values are shifted from one epoch to the other around calls to localtime, gmtime,
+// and mktime.
+#define EPOCH_DELTA 946684800  // seconds between 1970/1/1 and 2000/1/1
+
 // convert a python 9-tuple to a struct tm
 STATIC void time_tm_from_tuple(const mp_obj_t tuple, struct tm *tm) {
     size_t len;
@@ -92,7 +100,9 @@ STATIC mp_obj_t *time_tm_to_tuple(const struct tm *tm) {
     return mp_obj_new_tuple(9, tuple);
 }
 
-STATIC time_t time_get_seconds(size_t n_args, const mp_obj_t *args) {
+// time_get_posix_seconds is a helper and either returns the seconds_since_posix_epoch as
+// passed in args or it queries the system clock for that
+STATIC time_t time_get_posix_seconds(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         struct timeval tv;
         if (gettimeofday(&tv, NULL) != 0) {
@@ -100,12 +110,12 @@ STATIC time_t time_get_seconds(size_t n_args, const mp_obj_t *args) {
         }
         return tv.tv_sec;
     } else {
-        return mp_obj_get_int(args[0]);
+        return mp_obj_get_int(args[0]) + EPOCH_DELTA;
     }
 }
 
 STATIC mp_obj_t time_gmtime(size_t n_args, const mp_obj_t *args) {
-    time_t seconds = time_get_seconds(n_args, args);
+    time_t seconds = time_get_posix_seconds(n_args, args);
     struct tm tm;
     gmtime_r(&seconds, &tm);
     return time_tm_to_tuple(&tm);
@@ -113,7 +123,7 @@ STATIC mp_obj_t time_gmtime(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_gmtime_obj, 0, 1, time_gmtime);
 
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
-    time_t seconds = time_get_seconds(n_args, args);
+    time_t seconds = time_get_posix_seconds(n_args, args);
     struct tm tm;
     localtime_r(&seconds, &tm);
     return time_tm_to_tuple(&tm);
@@ -128,7 +138,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     if (seconds == -1) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid input"));
     }
-    return mp_obj_new_int(seconds);
+    return mp_obj_new_int(seconds - EPOCH_DELTA); // MP_OBJ_NEW_SMALL_INT? e.g. allow pre 1964?
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
@@ -137,7 +147,7 @@ STATIC mp_obj_t time_time(void) {
     if (gettimeofday(&tv, NULL) != 0) {
         mp_raise_OSError(errno);
     }
-    return mp_obj_new_int(tv.tv_sec);
+    return MP_OBJ_NEW_SMALL_INT(tv.tv_sec - EPOCH_DELTA);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
@@ -151,7 +161,7 @@ STATIC mp_obj_t time_tzset(mp_obj_t tz) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_tzset_obj, time_tzset);
 
 STATIC mp_obj_t time_settime(const mp_obj_t seconds_in) {
-    struct timeval tv = { mp_obj_get_int(seconds_in), 0 };
+    struct timeval tv = { mp_obj_get_int(seconds_in) + EPOCH_DELTA, 0 };
     if (settimeofday(&tv, NULL) != 0) {
         mp_raise_OSError(errno);
     }
@@ -161,7 +171,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_settime_obj, time_settime);
 
 STATIC mp_obj_t time_adjtime(const mp_obj_t microseconds_in) {
     // esp-idf is adjtime is broken in that it returns the current adjustment instead of
-    // the previous adjustement in outdelta. So we need to call it twice
+    // the previous adjustement in outdelta. So we need to call it twice.
     struct timeval tv_old;
     adjtime(NULL, &tv_old);
 
