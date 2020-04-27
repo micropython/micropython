@@ -48,41 +48,25 @@
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
+// Any BLE_HS_xxx code not in this table will default to MP_EIO.
 STATIC int8_t ble_hs_err_to_errno_table[] = {
     [BLE_HS_EAGAIN] = MP_EAGAIN,
     [BLE_HS_EALREADY] = MP_EALREADY,
     [BLE_HS_EINVAL] = MP_EINVAL,
-    [BLE_HS_EMSGSIZE] = MP_EIO,
     [BLE_HS_ENOENT] = MP_ENOENT,
     [BLE_HS_ENOMEM] = MP_ENOMEM,
     [BLE_HS_ENOTCONN] = MP_ENOTCONN,
     [BLE_HS_ENOTSUP] = MP_EOPNOTSUPP,
-    [BLE_HS_EAPP] = MP_EIO,
-    [BLE_HS_EBADDATA] = MP_EIO,
-    [BLE_HS_EOS] = MP_EIO,
-    [BLE_HS_ECONTROLLER] = MP_EIO,
     [BLE_HS_ETIMEOUT] = MP_ETIMEDOUT,
     [BLE_HS_EDONE] = MP_EIO,               // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
     [BLE_HS_EBUSY] = MP_EBUSY,
-    [BLE_HS_EREJECT] = MP_EIO,
-    [BLE_HS_EUNKNOWN] = MP_EIO,
-    [BLE_HS_EROLE] = MP_EIO,
-    [BLE_HS_ETIMEOUT_HCI] = MP_EIO,
-    [BLE_HS_ENOMEM_EVT] = MP_EIO,
-    [BLE_HS_ENOADDR] = MP_EIO,
-    [BLE_HS_ENOTSYNCED] = MP_EIO,
-    [BLE_HS_EAUTHEN] = MP_EIO,
-    [BLE_HS_EAUTHOR] = MP_EIO,
-    [BLE_HS_EENCRYPT] = MP_EIO,
-    [BLE_HS_EENCRYPT_KEY_SZ] = MP_EIO,
-    [BLE_HS_ESTORE_CAP] = MP_EIO,
-    [BLE_HS_ESTORE_FAIL] = MP_EIO,
-    [BLE_HS_EPREEMPTED] = MP_EIO,
-    [BLE_HS_EDISABLED] = MP_EIO,
 };
 
 STATIC int ble_hs_err_to_errno(int err) {
-    if (0 <= err && err < MP_ARRAY_SIZE(ble_hs_err_to_errno_table)) {
+    if (!err) {
+        return 0;
+    }
+    if (0 <= err && err < MP_ARRAY_SIZE(ble_hs_err_to_errno_table) && ble_hs_err_to_errno_table[err]) {
         return ble_hs_err_to_errno_table[err];
     } else {
         return MP_EIO;
