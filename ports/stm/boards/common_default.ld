@@ -1,8 +1,8 @@
 /* Memory layout for default case. 
 
     FLASH_ISR   .isr_vector
-    FLASH_TEXT  .text
-    FLASH_TEXT  .data
+    FLASH_FIRMWARE  .text
+    FLASH_FIRMWARE  .data
     FLASH_FS    // ignored for fs use
 
     RAM         .data
@@ -42,7 +42,7 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-    } >FLASH_TEXT
+    } >FLASH_FIRMWARE
 
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
@@ -59,7 +59,7 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_TEXT
+    } >RAM AT> FLASH_FIRMWARE
 
     /* Uninitialized data section */
     .bss :

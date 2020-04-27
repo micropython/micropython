@@ -7,7 +7,7 @@ MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08010000, LENGTH = 1024K - 64K         /* entire flash, sans bootloader region */
     FLASH_ISR (rx)  : ORIGIN = 0x08010000, LENGTH = 64K                 /* sector 0 */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 1024K - 64K - 64K   /* sectors 5+ */
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x08020000, LENGTH = 1024K - 64K - 64K   /* sectors 5+ */
     CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 64K
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
 }
