@@ -111,6 +111,8 @@ CFLAGS += $(MCU_FLAGS_$(MCU_SERIES))
 # Select HAL file for distribution via mpconfigport
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 
+CFLAGS += -DSTM32_SERIES_LOWER='"stm32$(MCU_SERIES_LOWER)"'
+
 # Floating point settings
 ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard

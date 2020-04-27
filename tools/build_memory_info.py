@@ -52,7 +52,7 @@ regions = {}
 with open(sys.argv[1], "r") as f:
     for line in f:
         line = line.strip()
-        if line.startswith(("FLASH_FIRMWARE", "FLASH", "RAM")):
+        if line.startswith(("FLASH_FIRMWARE", "RAM")):
             regions[line.split()[0]] = line.split("=")[-1]
 
 for region in regions:
@@ -63,17 +63,15 @@ for region in regions:
     space = M_PATTERN.sub(M_REPLACE, space)
     regions[region] = int(eval(space))
 
-# TODO Remove check for both FLASH_FIRMWARE and FLASH after all ports are converted to use FLASH_FIRMWARE.
-try:
-    firmware_region = regions["FLASH_FIRMWARE"]
-except KeyError:
-    firmware_region = regions["FLASH"]
+firmware_region = regions["FLASH_FIRMWARE"]
 ram_region = regions["RAM"]
 
-free_flash = firmware_region - text - data
-free_ram = ram_region - data - bss
-print("{} bytes free in flash firmware space out of {} bytes ({}kB).".format(free_flash, firmware_region, firmware_region / 1024))
-print("{} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(free_ram, ram_region, ram_region / 1024))
+used_flash = data + text
+free_flash = firmware_region - used_flash
+used_ram = data + bss
+free_ram = ram_region - used_ram
+print("{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(used_flash, free_flash, firmware_region, firmware_region / 1024))
+print("{} bytes used, {} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(used_ram, free_ram, ram_region, ram_region / 1024))
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data

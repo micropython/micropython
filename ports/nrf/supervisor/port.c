@@ -132,10 +132,15 @@ void reset_port(void) {
     gamepad_reset();
 #endif
 
+#if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
     uart_reset();
+#endif
+
+#if CIRCUITPY_NEOPIXEL_WRITE
     neopixel_write_reset();
+#endif
 
 #if CIRCUITPY_AUDIOBUSIO
     i2s_reset();

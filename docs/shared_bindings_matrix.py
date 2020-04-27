@@ -26,7 +26,7 @@ import os
 import re
 
 
-SUPPORTED_PORTS = ["atmel-samd", "nrf", "mimxrt10xx"]
+SUPPORTED_PORTS = ["atmel-samd", "nrf", "stm", "mimxrt10xx"]
 
 
 def parse_port_config(contents, chip_keyword=None):
@@ -139,7 +139,10 @@ def get_excluded_boards(base):
             re_board_chip = re.compile("CHIP_FAMILY\s=\s(\w+)")
             chip_keyword = "CHIP_FAMILY"
         elif port in ["nrf"]:
-            re_board_chip = re.compile("MCU_VARIANT\s=\s(\w+)")
+            re_board_chip = re.compile(r"MCU_VARIANT\s=\s(\w+)")
+        elif port in ["stm"]:
+            re_board_chip = re.compile(r"MCU_SERIES\s*=\s*(\w+)")
+            chip_keyword = "MCU_SERIES"
 
         port_dir = "ports/{}".format(port)
 
@@ -158,10 +161,10 @@ def get_excluded_boards(base):
                 contents = board.read()
 
             board_chip = re_board_chip.search(contents)
-            #print(entry.name, board_chip.group(1))
             if not board_chip:
                 board_chip = "Unknown Chip"
             else:
+                #print(entry.name, board_chip.group(1))
                 board_chip = board_chip.group(1)
 
             # add port_config results to contents
@@ -172,16 +175,10 @@ def get_excluded_boards(base):
             check_dependent_modules = dict()
             for module in modules:
                 board_is_excluded = False
-                # check if board uses `SMALL_BUILD`. if yes, and current
+                # check if board turns off `FULL_BUILD`. if yes, and current
                 # module is marked as `FULL_BUILD`, board is excluded
-                small_build = re.search("CIRCUITPY_SMALL_BUILD = 1", contents)
+                small_build = re.search("CIRCUITPY_FULL_BUILD = 0", contents)
                 if small_build and base[module]["full_build"] == "1":
-                    board_is_excluded = True
-
-                # check if board uses `MINIMAL_BUILD`. if yes, and current
-                # module is marked as `DEFAULT_BUILD`, board is excluded
-                min_build = re.search("CIRCUITPY_MINIMAL_BUILD = 1", contents)
-                if min_build and base[module]["default_value"] == "CIRCUITPY_DEFAULT_BUILD":
                     board_is_excluded = True
 
                 # check if module is specifically disabled for this board

@@ -73,6 +73,7 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
 
     mp_obj_t i2c = args[ARG_i2c_bus].u_obj;
     displayio_i2cdisplay_obj_t* self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
+    self->base.type = &displayio_i2cdisplay_type;
 
     common_hal_displayio_i2cdisplay_construct(self,
         MP_OBJ_TO_PTR(i2c), args[ARG_device_address].u_int, reset);

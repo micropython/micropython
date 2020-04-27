@@ -35,7 +35,7 @@
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 #include "common-hal/microcontroller/Pin.h"
 
 // A single timer is shared amongst all PulseOut objects under the assumption that

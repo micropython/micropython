@@ -29,6 +29,7 @@
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+#include "lib/tinyusb/src/device/usbd.h"
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdm.h"
@@ -85,4 +86,8 @@ void init_usb_hardware(void) {
             tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
         }
     }
+}
+
+void USBD_IRQHandler(void) {
+  tud_int_handler(0);
 }

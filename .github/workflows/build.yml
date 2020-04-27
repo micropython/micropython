@@ -94,15 +94,16 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
 
   mpy-cross-mac:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install deps
+    - name: Make gettext programs available
       run: |
-        brew link --force gettext
+        brew install gettext
+        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
         gcc --version
@@ -200,6 +201,7 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "nfc_copy_cat"
+        - "nucleo_f746zg"
         - "nucleo_f767zi"
         - "nucleo_h743zi_2"
         - "ohs2020_badge"
@@ -241,6 +243,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
+        - "stm32f746g_disco"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"

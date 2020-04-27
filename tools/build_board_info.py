@@ -48,6 +48,7 @@ extension_by_board = {
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN_UF2,
     "feather_m0_rfm9x": BIN_UF2,
+    "uchip": BIN_UF2,
 
     # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,
