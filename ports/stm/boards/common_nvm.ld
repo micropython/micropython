@@ -1,16 +1,16 @@
 /* Memory layout for case with dedicated nvm sector (inefficient)
 TODO: rewrite nvm module, remove this file entirely
 
-    FLASH_ISR   .isr_vector
+    FLASH_ISR       .isr_vector
     FLASH_FIRMWARE  .text
     FLASH_FIRMWARE  .data
-    FLASH_NVM   .nvm_data
-    FLASH_FS    // ignored for fs use
+    FLASH_NVM       .nvm_data
+    FLASH_FS        // ignored for fs use
 
-    RAM         .data
-    RAM         .bss
-    RAM         .heap
-    RAM         .stack
+    RAM             .data
+    RAM             .bss
+    RAM             .heap
+    RAM             .stack
 */
 
 ENTRY(Reset_Handler)

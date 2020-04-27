@@ -1,18 +1,18 @@
 /* Memory layout for cases with itcm and dtcm
 
-    FLASH_ISR   .isr_vector
+    FLASH_ISR       .isr_vector
     FLASH_FIRMWARE  .text
     FLASH_FIRMWARE  .data
-    FLASH_FS    // ignored for fs use
+    FLASH_FS        // ignored for fs use
 
-    RAM         .data
-    RAM         .bss
-    RAM         .heap
+    RAM             .data
+    RAM             .bss
+    RAM             .heap
 
-    ITCM        .itcm
-    DTCM        .dtcm_data
-    DTCM        .dtcm_bss
-    DTCM        .stack
+    ITCM            .itcm
+    DTCM            .dtcm_data
+    DTCM            .dtcm_bss
+    DTCM            .stack
 */
 
 ENTRY(Reset_Handler)

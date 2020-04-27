@@ -1,14 +1,14 @@
 /* Memory layout for default case. 
 
-    FLASH_ISR   .isr_vector
+    FLASH_ISR       .isr_vector
     FLASH_FIRMWARE  .text
     FLASH_FIRMWARE  .data
-    FLASH_FS    // ignored for fs use
+    FLASH_FS        // ignored for fs use
 
-    RAM         .data
-    RAM         .bss
-    RAM         .heap
-    RAM         .stack
+    RAM             .data
+    RAM             .bss
+    RAM             .heap
+    RAM             .stack
 */
 
 ENTRY(Reset_Handler)

@@ -21,7 +21,7 @@ MEMORY
     /* This can't move because the bootrom looks at this address. */
     FLASH_IVT (rx)        : ORIGIN = 0x60001000, LENGTH = 4K
     /* Place the ISRs 48k in to leave room for the bootloader when it is available. */
-    FLASH_FIRMWARE (rx)        : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
+    FLASH_FIRMWARE (rx)   : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
     FLASH_FATFS (r)       : ORIGIN = 0x60100000, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
     /* Teensy uses the last bit of flash for recovery. */
     RESERVED_FLASH        : ORIGIN = 0x60100000 + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
