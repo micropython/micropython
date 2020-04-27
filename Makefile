@@ -213,8 +213,8 @@ check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
 
 stubs:
-	rst2pyi $(VALIDATE) shared-bindings/ $(STUBDIR)
-	python setup.py sdist
+	python tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	#python setup.py sdist
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
