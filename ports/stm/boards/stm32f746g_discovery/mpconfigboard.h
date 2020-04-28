@@ -35,6 +35,7 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (25)
+#define HSE_VALUE    ((uint32_t)25000000)
 #define BOARD_OSC_PLLN (400)
 #define BOARD_OSC_PLLQ (9)
 

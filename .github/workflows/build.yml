@@ -243,7 +243,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
-        - "stm32f746g_disco"
+        - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
