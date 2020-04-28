@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-17 18:44-0500\n"
+"POT-Creation-Date: 2020-04-26 14:46-0500\n"
 "PO-Revision-Date: 2018-08-24 22:56-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2222,6 +2222,10 @@ msgstr "la función esperaba minimo %d argumentos, tiene %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "la función tiene múltiples valores para el argumento '%q'"
 
+#: extmod/ulab/code/compare.c
+msgid "function is implemented for scalars and ndarrays only"
+msgstr ""
+
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
@@ -2717,7 +2721,8 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
