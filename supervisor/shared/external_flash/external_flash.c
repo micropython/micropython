@@ -59,16 +59,16 @@ static supervisor_allocation* supervisor_cache = NULL;
 static bool wait_for_flash_ready(void) {
     bool ok = true;
     // Both the write enable and write in progress bits should be low.
-    #ifdef EXTERNAL_FLASH_QSPI_SINGLE
+    if (flash_device->no_ready_bit){
         // For NVM without a ready bit in status register
         return ok;
-    #else
+    } else {
         uint8_t read_status_response[1] = {0x00};
         do {
             ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
         } while (ok && (read_status_response[0] & 0x3) != 0);
         return ok;
-    #endif
+    }
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
@@ -96,7 +96,8 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
     }
     // Don't bother writing if the data is all 1s. Thats equivalent to the flash
     // state after an erase.
-    #ifndef EXTERNAL_FLASH_QSPI_SINGLE    
+    if (!flash_device->no_erase_cmd){
+        // Only do this if the device has an erase command
         bool all_ones = true;
         for (uint16_t i = 0; i < data_length; i++) {
             if (data[i] != 0xff) {
@@ -107,7 +108,7 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         if (all_ones) {
             return true;
         }
-    #endif
+    }
 
     for (uint32_t bytes_written = 0;
         bytes_written < data_length;
@@ -127,29 +128,34 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
 static bool page_erased(uint32_t sector_address) {
     // Check the first few bytes to catch the common case where there is data
     // without using a bunch of memory.
-    uint8_t short_buffer[4];
-    if (read_flash(sector_address, short_buffer, 4)) {
-        for (uint16_t i = 0; i < 4; i++) {
-            if (short_buffer[i] != 0xff) {
-                return false;
-            }
-        }
+    if (flash_device->no_erase_cmd){
+        // skip this if device doesn't have an erase command.
+        return true;
     } else {
-        return false;
-    }
+        uint8_t short_buffer[4];
+        if (read_flash(sector_address, short_buffer, 4)) {
+            for (uint16_t i = 0; i < 4; i++) {
+                if (short_buffer[i] != 0xff) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
 
-    // Now check the full length.
-    uint8_t full_buffer[FILESYSTEM_BLOCK_SIZE];
-    if (read_flash(sector_address, full_buffer, FILESYSTEM_BLOCK_SIZE)) {
-        for (uint16_t i = 0; i < FILESYSTEM_BLOCK_SIZE; i++) {
-            if (short_buffer[i] != 0xff) {
-                return false;
+        // Now check the full length.
+        uint8_t full_buffer[FILESYSTEM_BLOCK_SIZE];
+        if (read_flash(sector_address, full_buffer, FILESYSTEM_BLOCK_SIZE)) {
+            for (uint16_t i = 0; i < FILESYSTEM_BLOCK_SIZE; i++) {
+                if (short_buffer[i] != 0xff) {
+                    return false;
+                }
             }
+        } else {
+            return false;
         }
-    } else {
-        return false;
+        return true;
     }
-    return true;
 }
 
 // Erases the given sector. Make sure you copied all of the data out of it you
@@ -157,12 +163,20 @@ static bool page_erased(uint32_t sector_address) {
 static bool erase_sector(uint32_t sector_address) {
     // Before we erase the sector we need to wait for any writes to finish and
     // and then enable the write again.
-    if (!wait_for_flash_ready() || !write_enable()) {
-        return false;
+    if (flash_device->no_erase_cmd){
+        // skip this if device doesn't have an erase command.
+        return true;
+    } else {
+        if (!wait_for_flash_ready() || !write_enable()) {
+            return false;
+        }
+        if (flash_device->no_erase_cmd) {
+            return true;
+        } else {
+        spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
+        return true;
+        }
     }
-
-    spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
-    return true;
 }
 
 // Sector is really 24 bits.
@@ -198,20 +212,31 @@ void supervisor_flash_init(void) {
 
     spi_flash_init();
 
-#ifdef EXTERNAL_FLASH_QSPI_SINGLE
-        // For NVM that don't have JEDEC response
-        spi_flash_command(CMD_WAKE);
-        for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
-            const external_flash_device* possible_device = &possible_devices[i];
+#ifdef EXTERNAL_FLASH_NO_JEDEC
+    // For NVM that don't have JEDEC response
+    spi_flash_command(CMD_WAKE);
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+        const external_flash_device* possible_device = &possible_devices[i];
+        flash_device = possible_device;
+        break;
+    }
+#else
+    // The response will be 0xff if the flash needs more time to start up.
+    uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
+    while (jedec_id_response[0] == 0xff) {
+        spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
+    }
+
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+        const external_flash_device* possible_device = &possible_devices[i];
+        if (jedec_id_response[0] == possible_device->manufacturer_id &&
+            jedec_id_response[1] == possible_device->memory_type &&
+            jedec_id_response[2] == possible_device->capacity) {
             flash_device = possible_device;
             break;
+            }
         }
-#else
-        // The response will be 0xff if the flash needs more time to start up.
-        uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
-        while (jedec_id_response[0] == 0xff) {
-            spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
-        }
+#endif
 
         for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
             const external_flash_device* possible_device = &possible_devices[i];
@@ -227,20 +252,23 @@ void supervisor_flash_init(void) {
             return;
         }
 
-        // We don't know what state the flash is in so wait for any remaining writes and then reset.
-        uint8_t read_status_response[1] = {0x00};
-        // The write in progress bit should be low.
-        do {
-            spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
-        } while ((read_status_response[0] & 0x1) != 0);
-#ifndef EXTERNAL_FLASH_QSPI_SINGLE
+    // We don't know what state the flash is in so wait for any remaining writes and then reset.
+    uint8_t read_status_response[1] = {0x00};
+    // The write in progress bit should be low.
+    do {
+        spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+    } while ((read_status_response[0] & 0x1) != 0);
+
+    if (!(flash_device->no_reset_cmd)){
         // The suspended write/erase bit should be low.
         do {
             spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
         } while ((read_status_response[0] & 0x80) != 0);
+    } else {
         spi_flash_command(CMD_ENABLE_RESET);
         spi_flash_command(CMD_RESET);
-#endif
+    }
+
     // Wait 30us for the reset
     common_hal_mcu_delay_us(30);
 

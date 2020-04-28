@@ -1,4 +1,3 @@
-
 #define MICROPY_HW_BOARD_NAME "PyCubedv04-MRAM"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 #define CIRCUITPY_MCU_FAMILY samd51
@@ -11,8 +10,12 @@
 #define MICROPY_PORT_C        (0)
 #define MICROPY_PORT_D 		  (0)
 
+#define SPI_FLASH_WP_PIN            &pin_PA10
+#define SPI_FLASH_HOLD_PIN          &pin_PA11
+
 // External flash MR2xH40 MRAM
 #define EXTERNAL_FLASH_QSPI_SINGLE
+#define EXTERNAL_FLASH_NO_JEDEC
 
 #define AUTORESET_DELAY_MS 500
 
@@ -34,4 +37,3 @@
 
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
-
