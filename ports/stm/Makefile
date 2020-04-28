@@ -291,6 +291,10 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
 	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
+flash: $(BUILD)/firmware.bin
+	$(ECHO) "Writing $< to the board"
+	dfu-util -a 0 --dfuse-address 0x08000000 -D $(BUILD)/firmware.bin
+
 include $(TOP)/py/mkrules.mk
 
 # Print out the value of a make variable.
