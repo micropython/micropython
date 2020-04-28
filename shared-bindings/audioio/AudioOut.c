@@ -37,63 +37,63 @@
 #include "supervisor/shared/translate.h"
 
 //|class AudioOut:
-//|    """.. currentmodule:: audioio
+//|""".. currentmodule:: audioio
 //|
-//|    :class:`AudioOut` -- Output an analog audio signal
-//|    ========================================================
+//|:class:`AudioOut` -- Output an analog audio signal
+//|========================================================
 //|
-//|    AudioOut can be used to output an analog audio signal on a given pin."""
+//|AudioOut can be used to output an analog audio signal on a given pin."""
 //|
-//|    def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
-//|        """Create a AudioOut object associated with the given pin(s). This allows you to
-//|        play audio signals out on the given pin(s).
+//|def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
+//|"""Create a AudioOut object associated with the given pin(s). This allows you to
+//|play audio signals out on the given pin(s).
 //|
-//|        :param ~microcontroller.Pin left_channel: The pin to output the left channel to
-//|        :param ~microcontroller.Pin right_channel: The pin to output the right channel to
-//|        :param int quiescent_value: The output value when no signal is present. Samples should start
-//|            and end with this value to prevent audible popping.
+//|:param ~microcontroller.Pin left_channel: The pin to output the left channel to
+//|:param ~microcontroller.Pin right_channel: The pin to output the right channel to
+//|:param int quiescent_value: The output value when no signal is present. Samples should start
+//|and end with this value to prevent audible popping.
 //|
-//|        Simple 8ksps 440 Hz sin wave::
+//|Simple 8ksps 440 Hz sin wave::
 //|
-//|          import audiocore
-//|          import audioio
-//|          import board
-//|          import array
-//|          import time
-//|          import math
+//|import audiocore
+//|import audioio
+//|import board
+//|import array
+//|import time
+//|import math
 //|
-//|          # Generate one period of sine wav.
-//|          length = 8000 // 440
-//|          sine_wave = array.array("H", [0] * length)
-//|          for i in range(length):
-//|              sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
+//|# Generate one period of sine wav.
+//|length = 8000 // 440
+//|sine_wave = array.array("H", [0] * length)
+//|for i in range(length):
+//|sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|          dac = audioio.AudioOut(board.SPEAKER)
-//|          sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
-//|          dac.play(sine_wave, loop=True)
-//|          time.sleep(1)
-//|          dac.stop()
+//|dac = audioio.AudioOut(board.SPEAKER)
+//|sine_wave = audiocore.RawSample(sine_wave, sample_rate=8000)
+//|dac.play(sine_wave, loop=True)
+//|time.sleep(1)
+//|dac.stop()
 //|
-//|        Playing a wave file from flash::
+//|Playing a wave file from flash::
 //|
-//|          import board
-//|          import audioio
-//|          import digitalio
+//|import board
+//|import audioio
+//|import digitalio
 //|
-//|          # Required for CircuitPlayground Express
-//|          speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
-//|          speaker_enable.switch_to_output(value=True)
+//|# Required for CircuitPlayground Express
+//|speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
+//|speaker_enable.switch_to_output(value=True)
 //|
-//|          data = open("cplay-5.1-16bit-16khz.wav", "rb")
-//|          wav = audiocore.WaveFile(data)
-//|          a = audioio.AudioOut(board.A0)
+//|data = open("cplay-5.1-16bit-16khz.wav", "rb")
+//|wav = audiocore.WaveFile(data)
+//|a = audioio.AudioOut(board.A0)
 //|
-//|          print("playing")
-//|          a.play(wav)
-//|          while a.playing:
-//|            pass
-//|          print("stopped")"""
-//|        ...
+//|print("playing")
+//|a.play(wav)
+//|while a.playing:
+//|pass
+//|print("stopped")"""
+//|...
 STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
@@ -115,9 +115,9 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|    def deinit(self, ) -> Any:
-//|        """Deinitialises the AudioOut and releases any hardware resources for reuse."""
-//|        ...
+//|def deinit(self, ) -> Any:
+//|"""Deinitialises the AudioOut and releases any hardware resources for reuse."""
+//|...
 STATIC mp_obj_t audioio_audioout_deinit(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audioio_audioout_deinit(self);
@@ -130,15 +130,15 @@ STATIC void check_for_deinit(audioio_audioout_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|    def __enter__(self, ) -> Any:
-//|        """No-op used by Context Managers."""
-//|        ...
+//|def __enter__(self, ) -> Any:
+//|"""No-op used by Context Managers."""
+//|...
 //  Provided by context manager helper.
 
-//|    def __exit__(self, ) -> Any:
-//|        """Automatically deinitializes the hardware when exiting a context. See
-//|        :ref:`lifetime-and-contextmanagers` for more info."""
-//|        ...
+//|def __exit__(self, ) -> Any:
+//|"""Automatically deinitializes the hardware when exiting a context. See
+//|:ref:`lifetime-and-contextmanagers` for more info."""
+//|...
 STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audioio_audioout_deinit(args[0]);
@@ -147,16 +147,16 @@ STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, audioio_audioout_obj___exit__);
 
 
-//|    def play(self, sample: Any, *, loop: Any = False) -> Any:
-//|        """Plays the sample once when loop=False and continuously when loop=True.
-//|        Does not block. Use `playing` to block.
+//|def play(self, sample: Any, *, loop: Any = False) -> Any:
+//|"""Plays the sample once when loop=False and continuously when loop=True.
+//|Does not block. Use `playing` to block.
 //|
-//|        Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
+//|Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
 //|
-//|        The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
-//|        resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
-//|        DAC that ignores the lowest 6 bits when playing 16 bit samples."""
-//|        ...
+//|The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
+//|resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
+//|DAC that ignores the lowest 6 bits when playing 16 bit samples."""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
@@ -175,9 +175,9 @@ STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_play);
 
-//|    def stop(self, ) -> Any:
-//|        """Stops playback and resets to the start of the sample."""
-//|        ...
+//|def stop(self, ) -> Any:
+//|"""Stops playback and resets to the start of the sample."""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -186,9 +186,9 @@ STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
-//|    playing: Any =
-//|        """True when an audio sample is being output even if `paused`. (read-only)"""
-//|        ...
+//|playing: Any =
+//|"""True when an audio sample is being output even if `paused`. (read-only)"""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -203,9 +203,9 @@ const mp_obj_property_t audioio_audioout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|    def pause(self, ) -> Any:
-//|        """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
-//|        ...
+//|def pause(self, ) -> Any:
+//|"""Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -218,9 +218,9 @@ STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_pause_obj, audioio_audioout_obj_pause);
 
-//|    def resume(self, ) -> Any:
-//|        """Resumes sample playback after :py:func:`pause`."""
-//|        ...
+//|def resume(self, ) -> Any:
+//|"""Resumes sample playback after :py:func:`pause`."""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -233,9 +233,9 @@ STATIC mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_resume_obj, audioio_audioout_obj_resume);
 
-//|    paused: Any =
-//|        """True when playback is paused. (read-only)"""
-//|        ...
+//|paused: Any =
+//|"""True when playback is paused. (read-only)"""
+//|...
 STATIC mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
