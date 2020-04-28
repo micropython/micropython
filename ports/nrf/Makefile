@@ -182,6 +182,11 @@ SRC_C += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
 
+ifeq ($(MCU_SUB_VARIANT),nrf52833)
+SRC_C += \
+	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
+endif
+
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1
 

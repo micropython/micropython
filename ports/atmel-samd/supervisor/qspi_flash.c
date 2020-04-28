@@ -169,7 +169,7 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
     #ifdef EXTERNAL_FLASH_QSPI_SINGLE
     QSPI->INSTRCTRL.bit.INSTR = CMD_READ_DATA;
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI;
-    #elif defined EXTERNAL_FLASH_QSPI_DUAL
+    #elif defined(EXTERNAL_FLASH_QSPI_DUAL)
     QSPI->INSTRCTRL.bit.INSTR = CMD_DUAL_READ;
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_DUAL_OUTPUT;
     #else

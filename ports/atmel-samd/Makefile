@@ -53,7 +53,7 @@ include $(TOP)/supervisor/supervisor.mk
 # Include make rules and variables common across CircuitPython builds.
 include $(TOP)/py/circuitpy_defns.mk
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE = ~/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
@@ -114,7 +114,7 @@ else
 
   # Do a default shrink for small builds.
   ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    ifeq ($(CIRCUITPY_FULL_BUILD),0)
       CFLAGS_INLINE_LIMIT = 50
     endif
   endif
@@ -125,7 +125,7 @@ else
 
   CFLAGS += -flto -flto-partition=none
 
-  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
   endif
 
