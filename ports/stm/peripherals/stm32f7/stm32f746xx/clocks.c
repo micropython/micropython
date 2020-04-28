@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include STM32_HAL_H
 
 #ifndef BOARD_OSC_DIV
 #define BOARD_OSC_DIV (8)
