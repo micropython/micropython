@@ -244,19 +244,24 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     int res = _socket_getaddrinfo3(host_str, port_str, &hints, resp);
     MP_THREAD_GIL_ENTER();
 
+    // Per docs: instead of raising gaierror getaddrinfo raises negative error number
+    if (res != 0) {
+        mp_raise_OSError(res > 0 ? -res : res);
+    }
+    // Somehow LwIP returns a resolution of 0.0.0.0 for failed lookups, traced it as far back
+    // as netconn_gethostbyname_addrtype returning OK instead of error.
+    if (*resp == NULL ||
+        (strcmp(resp[0]->ai_canonname, "0.0.0.0") == 0 && strcmp(host_str, "0.0.0.0") != 0)) {
+        mp_raise_OSError(-2); // name or service not known
+    }
+
     return res;
 }
 
 STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
     mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
-    int res = _socket_getaddrinfo2(elem[0], elem[1], resp);
-    if (res != 0) {
-        mp_raise_OSError(res);
-    }
-    if (*resp == NULL) {
-        mp_raise_OSError(-2); // name or service not known
-    }
+    _socket_getaddrinfo2(elem[0], elem[1], resp);
 }
 
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
