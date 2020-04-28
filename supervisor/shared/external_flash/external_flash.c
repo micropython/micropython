@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 #include <string.h>
-
+#include "mpconfigboard.h"
 #include "supervisor/spi_flash_api.h"
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "extmod/vfs.h"
@@ -57,13 +57,18 @@ static supervisor_allocation* supervisor_cache = NULL;
 
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
-    uint8_t read_status_response[1] = {0x00};
     bool ok = true;
     // Both the write enable and write in progress bits should be low.
-    do {
-        ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
-    } while (ok && (read_status_response[0] & 0x3) != 0);
-    return ok;
+    #ifdef EXTERNAL_FLASH_QSPI_SINGLE
+        // For NVM without a ready bit in status register
+        return ok;
+    #else
+        uint8_t read_status_response[1] = {0x00};
+        do {
+            ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+        } while (ok && (read_status_response[0] & 0x3) != 0);
+        return ok;
+    #endif
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
@@ -91,16 +96,18 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
     }
     // Don't bother writing if the data is all 1s. Thats equivalent to the flash
     // state after an erase.
-    bool all_ones = true;
-    for (uint16_t i = 0; i < data_length; i++) {
-        if (data[i] != 0xff) {
-            all_ones = false;
-            break;
+    #ifndef EXTERNAL_FLASH_QSPI_SINGLE    
+        bool all_ones = true;
+        for (uint16_t i = 0; i < data_length; i++) {
+            if (data[i] != 0xff) {
+                all_ones = false;
+                break;
+            }
         }
-    }
-    if (all_ones) {
-        return true;
-    }
+        if (all_ones) {
+            return true;
+        }
+    #endif
 
     for (uint32_t bytes_written = 0;
         bytes_written < data_length;
@@ -191,41 +198,49 @@ void supervisor_flash_init(void) {
 
     spi_flash_init();
 
-    // The response will be 0xff if the flash needs more time to start up.
-    uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
-    while (jedec_id_response[0] == 0xff) {
-        spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
-    }
-
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
-        const external_flash_device* possible_device = &possible_devices[i];
-        if (jedec_id_response[0] == possible_device->manufacturer_id &&
-            jedec_id_response[1] == possible_device->memory_type &&
-            jedec_id_response[2] == possible_device->capacity) {
+#ifdef EXTERNAL_FLASH_QSPI_SINGLE
+        // For NVM that don't have JEDEC response
+        spi_flash_command(CMD_WAKE);
+        for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+            const external_flash_device* possible_device = &possible_devices[i];
             flash_device = possible_device;
             break;
         }
-    }
+#else
+        // The response will be 0xff if the flash needs more time to start up.
+        uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
+        while (jedec_id_response[0] == 0xff) {
+            spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
+        }
 
-    if (flash_device == NULL) {
-        return;
-    }
+        for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+            const external_flash_device* possible_device = &possible_devices[i];
+            if (jedec_id_response[0] == possible_device->manufacturer_id &&
+                jedec_id_response[1] == possible_device->memory_type &&
+                jedec_id_response[2] == possible_device->capacity) {
+                flash_device = possible_device;
+                break;
+            }
+        }
+#endif
+        if (flash_device == NULL) {
+            return;
+        }
 
-    // We don't know what state the flash is in so wait for any remaining writes and then reset.
-    uint8_t read_status_response[1] = {0x00};
-    // The write in progress bit should be low.
-    do {
-        spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
-    } while ((read_status_response[0] & 0x1) != 0);
-    // The suspended write/erase bit should be low.
-    do {
-        spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
-    } while ((read_status_response[0] & 0x80) != 0);
-
-
-    spi_flash_command(CMD_ENABLE_RESET);
-    spi_flash_command(CMD_RESET);
-
+        // We don't know what state the flash is in so wait for any remaining writes and then reset.
+        uint8_t read_status_response[1] = {0x00};
+        // The write in progress bit should be low.
+        do {
+            spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+        } while ((read_status_response[0] & 0x1) != 0);
+#ifndef EXTERNAL_FLASH_QSPI_SINGLE
+        // The suspended write/erase bit should be low.
+        do {
+            spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
+        } while ((read_status_response[0] & 0x80) != 0);
+        spi_flash_command(CMD_ENABLE_RESET);
+        spi_flash_command(CMD_RESET);
+#endif
     // Wait 30us for the reset
     common_hal_mcu_delay_us(30);
 
