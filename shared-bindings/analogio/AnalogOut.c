@@ -37,26 +37,25 @@
 #include "supervisor/shared/translate.h"
 
 //|class AnalogOut:
-//|    """.. currentmodule:: analogio
+//|""".. currentmodule:: analogio
 //|
-//|    :class:`AnalogOut` -- output analog voltage
-//|    ============================================
+//|:class:`AnalogOut` -- output analog voltage
+//|============================================
 //|
-//|    The AnalogOut is used to output analog values (a specific voltage).
+//|The AnalogOut is used to output analog values (a specific voltage).
 //|
-//|    Example usage::
+//|Example usage::
 //|
-//|        import analogio
-//|        from microcontroller import pin
+//|import analogio
+//|from microcontroller import pin
 //|
-//|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
-//|        dac.value = 32768                           # makes PA02 1.65V"""
-//|    def __init__(self, pin: microcontroller.Pin):
+//|dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
+//|dac.value = 32768                           # makes PA02 1.65V"""
+//|def __init__(self, pin: microcontroller.Pin):
+//|"""Use the AnalogOut on the given pin.
 //|
-//|        """Use the AnalogOut on the given pin.
-//|
-//|        :param ~microcontroller.Pin pin: the pin to output to"""
-//|        ...
+//|:param ~microcontroller.Pin pin: the pin to output to"""
+//|...
 STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check arguments
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
@@ -70,9 +69,9 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|    def deinit(self, ) -> Any:
-//|        """Turn off the AnalogOut and release the pin for other use."""
-//|        ...
+//|def deinit(self, ) -> Any:
+//|"""Turn off the AnalogOut and release the pin for other use."""
+//|...
 STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
     analogio_analogout_obj_t *self = self_in;
 
@@ -82,15 +81,15 @@ STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
-//|    def __enter__(self, ) -> Any:
-//|        """No-op used by Context Managers."""
-//|        ...
+//|def __enter__(self, ) -> Any:
+//|"""No-op used by Context Managers."""
+//|...
 //  Provided by context manager helper.
 
-//|    def __exit__(self, ) -> Any:
-//|      """Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info."""
-//|      ...
+//|def __exit__(self, ) -> Any:
+//|"""Automatically deinitializes the hardware when exiting a context. See
+//|:ref:`lifetime-and-contextmanagers` for more info."""
+//|...
 STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_analogio_analogout_deinit(args[0]);
@@ -98,12 +97,12 @@ STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
 
-//|    value: Any =
-//|        """The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
+//|value: Any =
+//|"""The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
 //|
-//|        Even if the underlying digital to analog converter (DAC) is lower
-//|        resolution, the value is 16-bit."""
-//|        ...
+//|Even if the underlying digital to analog converter (DAC) is lower
+//|resolution, the value is 16-bit."""
+//|...
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
    analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    if (common_hal_analogio_analogout_deinited(self)) {
