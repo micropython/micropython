@@ -135,6 +135,9 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs);
 
 static inline size_t mpz_max_num_bits(const mpz_t *z) { return z->len * MPZ_DIG_SIZE; }
+static inline size_t mpz_num_bits(const mpz_t *z) {
+    size_t last_bits = (8 * (sizeof(long) - sizeof(mpz_dig_t))) - __builtin_clzl(z->dig[z->len-1]);
+    return z->len * MPZ_DIG_SIZE + last_bits; }
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);
