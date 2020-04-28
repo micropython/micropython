@@ -122,3 +122,21 @@
 [submodule "lib/protomatter"]
 	path = lib/protomatter
 	url = https://github.com/adafruit/Adafruit_Protomatter
+[submodule "frozen/Adafruit_CircuitPython_LSM6DS"]
+	path = frozen/Adafruit_CircuitPython_LSM6DS
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LSM6DS
+[submodule "frozen/Adafruit_CircuitPython_FocalTouch"]
+	path = frozen/Adafruit_CircuitPython_FocalTouch
+	url = https://github.com/adafruit/Adafruit_CircuitPython_FocalTouch
+[submodule "frozen/Adafruit_CircuitPython_DS3231"]
+	path = frozen/Adafruit_CircuitPython_DS3231
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DS3231
+[submodule "frozen/Adafruit_CircuitPython_DRV2605"]
+	path = frozen/Adafruit_CircuitPython_DRV2605
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DRV2605
+[submodule "frozen/Adafruit_CircuitPython_BLE"]
+	path = frozen/Adafruit_CircuitPython_BLE
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE
+[submodule "frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center"]
+	path = frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE_Apple_Notification_Center
