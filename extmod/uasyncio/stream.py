@@ -40,17 +40,18 @@ class Stream:
                 return l
 
     def write(self, buf):
-        if self.out_buf == b'':
+        if self.out_buf == b"":
             ret = self.s.write(buf)
+            if ret == len(buf):
+                return
             if ret is None:
                 ret = 0
-            elif ret == len(buf):
-                return
-            self.out_buf = buf[ret:] # must make a copy
+            self.out_buf = buf[ret:]  # must make a copy
         else:
             self.out_buf += buf
 
     async def drain(self):
+        if self.out_buf == b"": return
         mv = memoryview(self.out_buf)
         off = 0
         while off < len(mv):
