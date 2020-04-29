@@ -101,9 +101,9 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
     return MP_OBJ_FROM_PTR(self);
 }
 
-//| def deinit(self, ) -> Any:
-//|     """Turn off the SPI bus."""
-//|     ...
+//|     def deinit(self, ) -> Any:
+//|         """Turn off the SPI bus."""
+//|         ...
 STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_spi_deinit(self);
@@ -111,15 +111,15 @@ STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 
-//| def __enter__(self, ) -> Any:
-//|     """No-op used by Context Managers.
-//|     Provided by context manager helper."""
-//|     ...
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers.
+//|         Provided by context manager helper."""
+//|         ...
 
-//| def __exit__(self, ) -> Any:
-//|     """Automatically deinitializes the hardware when exiting a context. See
-//|     :ref:`lifetime-and-contextmanagers` for more info."""
-//|     ...
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_spi_deinit(args[0]);
@@ -140,28 +140,28 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
     }
 }
 
-//| def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any:
-//|     """Configures the SPI bus. The SPI object must be locked.
+//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any:
+//|         """Configures the SPI bus. The SPI object must be locked.
 //|
-//|     :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
-//|       due to the granularity of available clock settings.
-//|       Check the `frequency` attribute for the actual clock rate.
-//|     :param int polarity: the base state of the clock line (0 or 1)
-//|     :param int phase: the edge of the clock that data is captured. First (0)
-//|       or second (1). Rising or falling depends on clock polarity.
-//|     :param int bits: the number of bits per word
+//|        :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
+//|           due to the granularity of available clock settings.
+//|           Check the `frequency` attribute for the actual clock rate.
+//|         :param int polarity: the base state of the clock line (0 or 1)
+//|         :param int phase: the edge of the clock that data is captured. First (0)
+//|           or second (1). Rising or falling depends on clock polarity.
+//|         :param int bits: the number of bits per word
 //|
-//|     .. note:: On the SAMD21, it is possible to set the baudrate to 24 MHz, but that
-//|        speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
-//|        within spec for the SAMD21.
+//|        .. note:: On the SAMD21, it is possible to set the baudrate to 24 MHz, but that
+//|            speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
+//|            within spec for the SAMD21.
 //|
-//|     .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
-//|       and 8MHz.
-//|       If you pick a a baudrate other than one of these, the nearest lower
-//|       baudrate will be chosen, with a minimum of 125kHz.
-//|       Two SPI objects may be created, except on the Circuit Playground Bluefruit,
-//|       which allows only one (to allow for an additional I2C object)."""
-//|     ...
+//|         .. note:: On the nRF52840, these baudrates are available: 125kHz, 250kHz, 1MHz, 2MHz, 4MHz,
+//|           and 8MHz.
+//|           If you pick a a baudrate other than one of these, the nearest lower
+//|           baudrate will be chosen, with a minimum of 125kHz.
+//|           Two SPI objects may be created, except on the Circuit Playground Bluefruit,
+//|           which allows only one (to allow for an additional I2C object)."""
+//|         ...
 
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
@@ -198,12 +198,12 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 
-//| def try_lock(self, ) -> Any:
-//|     """Attempts to grab the SPI lock. Returns True on success.
+//|     def try_lock(self, ) -> Any:
+//|         """Attempts to grab the SPI lock. Returns True on success.
 //|
-//|     :return: True when lock has been grabbed
-//|     :rtype: bool"""
-//|     ...
+//|         :return: True when lock has been grabbed
+//|         :rtype: bool"""
+//|         ...
 
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -211,9 +211,9 @@ STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 
-//| def unlock(self, ) -> Any:
-//|     """Releases the SPI lock."""
-//|     ...
+//|     def unlock(self, ) -> Any:
+//|         """Releases the SPI lock."""
+//|         ...
 
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -223,14 +223,14 @@ STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 
-//| def write(self, buffer: bytearray, *, start: Any = 0, end: int = None) -> Any:
-//|     """Write the data contained in ``buffer``. The SPI object must be locked.
-//|     If the buffer is empty, nothing happens.
+//|     def write(self, buffer: bytearray, *, start: Any = 0, end: int = None) -> Any:
+//|         """Write the data contained in ``buffer``. The SPI object must be locked.
+//|         If the buffer is empty, nothing happens.
 //|
-//|     :param bytearray buffer: Write out the data in this buffer
-//|     :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
-//|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
-//|     ...
+//|         :param bytearray buffer: Write out the data in this buffer
+//|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         ...
 
 STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
@@ -264,16 +264,16 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 
 
-//| def readinto(self, buffer: bytearray, *, start: Any = 0, end: int = None, write_value: int = 0) -> Any:
-//|     """Read into ``buffer`` while writing ``write_value`` for each byte read.
-//|     The SPI object must be locked.
-//|     If the number of bytes to read is 0, nothing happens.
+//|     def readinto(self, buffer: bytearray, *, start: Any = 0, end: int = None, write_value: int = 0) -> Any:
+//|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
+//|         The SPI object must be locked.
+//|         If the number of bytes to read is 0, nothing happens.
 //|
-//|     :param bytearray buffer: Read data into this buffer
-//|     :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
-//|     :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
-//|     :param int write_value: Value to write while reading. (Usually ignored.)"""
-//|     ...
+//|         :param bytearray buffer: Read data into this buffer
+//|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
+//|         :param int write_value: Value to write while reading. (Usually ignored.)"""
+//|         ...
 
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
@@ -307,20 +307,20 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 
-//| def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: Any = 0, out_end: int = None, in_start: Any = 0, in_end: int = None) -> Any:
-//|     """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
-//|     The SPI object must be locked.
-//|     The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
-//|     must be equal.
-//|     If buffer slice lengths are both 0, nothing happens.
+//|     def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: Any = 0, out_end: int = None, in_start: Any = 0, in_end: int = None) -> Any:
+//|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
+//|         The SPI object must be locked.
+//|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
+//|         must be equal.
+//|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|     :param bytearray buffer_out: Write out the data in this buffer
-//|     :param bytearray buffer_in: Read data into this buffer
-//|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
-//|     :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
-//|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
-//|     :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
-//|     ...
+//|         :param bytearray buffer_out: Write out the data in this buffer
+//|         :param bytearray buffer_in: Read data into this buffer
+//|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
+//|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
+//|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
+//|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
+//|         ...
 
 STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
@@ -369,9 +369,9 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 2, busio_spi_write_readinto);
 
-//| frequency: Any = ...
-//| """The actual SPI bus frequency. This may not match the frequency requested
-//| due to internal limitations."""
+//|     frequency: Any = ...
+//|     """The actual SPI bus frequency. This may not match the frequency requested
+//|     due to internal limitations."""
 //|
 
 STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
