@@ -38,7 +38,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`busio` --- Hardware accelerated behavior
+//| """:mod:`busio` --- Hardware accelerated behavior
 //| =================================================
 //|
 //| .. module:: busio
@@ -81,7 +81,7 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes.
+//| resets hardware after a program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
