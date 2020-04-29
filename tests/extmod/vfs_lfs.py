@@ -101,6 +101,14 @@ def test(bdev, vfs_class):
     print(vfs.getcwd())
     vfs.chdir("/testdir")
     print(vfs.getcwd())
+
+    # create file in directory to make sure paths are relative
+    vfs.open("test2", "w").close()
+    print(vfs.stat("test2"))
+    print(vfs.stat("/testdir/test2"))
+    vfs.remove("test2")
+
+    # chdir back to root and remove testdir
     vfs.chdir("/")
     print(vfs.getcwd())
     vfs.rmdir("testdir")
