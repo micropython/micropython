@@ -226,18 +226,6 @@ void supervisor_flash_init(void) {
     while (jedec_id_response[0] == 0xff) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
     }
-
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
-        const external_flash_device* possible_device = &possible_devices[i];
-        if (jedec_id_response[0] == possible_device->manufacturer_id &&
-            jedec_id_response[1] == possible_device->memory_type &&
-            jedec_id_response[2] == possible_device->capacity) {
-            flash_device = possible_device;
-            break;
-            }
-        }
-#endif
-
         for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
             const external_flash_device* possible_device = &possible_devices[i];
             if (jedec_id_response[0] == possible_device->manufacturer_id &&
