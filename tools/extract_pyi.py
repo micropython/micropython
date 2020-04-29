@@ -20,12 +20,22 @@ for module in modules:
     if not os.path.isdir(module_path):
         continue
     pyi_lines = []
-    for class_file in os.listdir(module_path):
+    classes = os.listdir(module_path)
+    classes = [x for x in sorted(classes) if x.endswith(".c")]
+    if classes[-1] == "__init__.c":
+        classes.insert(0, classes.pop())
+    for class_file in classes:
         class_path = os.path.join(module_path, class_file)
         with open(class_path, "r") as f:
             for line in f:
-                if line.startswith("//| "):
-                    pyi_lines.append(line[4:])
+                if line.startswith("//|"):
+                    if line[3] == " ":
+                        line = line[4:]
+                    elif line[3] == "\n":
+                        line = line[3:]
+                    else:
+                        continue
+                    pyi_lines.append(line)
 
     stub_filename = os.path.join(stub_directory, module + ".pyi")
     print(stub_filename)
