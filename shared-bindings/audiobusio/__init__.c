@@ -34,7 +34,7 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 
-//| :mod:`audiobusio` --- Support for audio input and output over digital bus
+//| """:mod:`audiobusio` --- Support for audio input and output over digital bus
 //| =========================================================================
 //|
 //| .. module:: audiobusio
@@ -56,7 +56,7 @@
 //|
 //| All libraries change hardware state and should be deinitialized when they
 //| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| context manager."""
 //|
 
 STATIC const mp_rom_map_elem_t audiobusio_module_globals_table[] = {

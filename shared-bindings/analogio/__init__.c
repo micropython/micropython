@@ -34,7 +34,7 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 
-//| :mod:`analogio` --- Analog hardware support
+//| """:mod:`analogio` --- Analog hardware support
 //| =================================================
 //|
 //| .. module:: analogio
@@ -70,7 +70,7 @@
 //| This example will initialize the the device, read
 //| :py:data:`~analogio.AnalogIn.value` and then
 //| :py:meth:`~analogio.AnalogIn.deinit` the hardware. The last step is optional
-//| because CircuitPython will do it automatically after the program finishes.
+//| because CircuitPython will do it automatically after the program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {

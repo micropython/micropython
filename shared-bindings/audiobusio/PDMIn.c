@@ -36,57 +36,58 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//|class PDMIn:
-//|""".. currentmodule:: audiobusio
+//| class PDMIn:
+//|     """.. currentmodule:: audiobusio
 //|
-//|:class:`PDMIn` -- Record an input PDM audio stream
-//|========================================================
+//|     :class:`PDMIn` -- Record an input PDM audio stream
+//|     ========================================================
 //|
-//|PDMIn can be used to record an input audio signal on a given set of pins."""
+//|     PDMIn can be used to record an input audio signal on a given set of pins."""
 //|
-//|def __init__(self, clock_pin: microcontroller.Pin, data_pin: microcontroller.Pin, *, sample_rate: int = 16000, bit_depth: int = 8, mono: bool = True, oversample: int = 64, startup_delay: float = 0.11):
-//|"""Create a PDMIn object associated with the given pins. This allows you to
-//|record audio signals from the given pins. Individual ports may put further
-//|restrictions on the recording parameters. The overall sample rate is
-//|determined by `sample_rate` x ``oversample``, and the total must be 1MHz or
-//|higher, so `sample_rate` must be a minimum of 16000.
+//|     def __init__(self, clock_pin: microcontroller.Pin, data_pin: microcontroller.Pin, *, sample_rate: int = 16000, bit_depth: int = 8, mono: bool = True, oversample: int = 64, startup_delay: float = 0.11):
+//|         """Create a PDMIn object associated with the given pins. This allows you to
+//|         record audio signals from the given pins. Individual ports may put further
+//|         restrictions on the recording parameters. The overall sample rate is
+//|         determined by `sample_rate` x ``oversample``, and the total must be 1MHz or
+//|         higher, so `sample_rate` must be a minimum of 16000.
 //|
-//|:param ~microcontroller.Pin clock_pin: The pin to output the clock to
-//|:param ~microcontroller.Pin data_pin: The pin to read the data from
-//|:param int sample_rate: Target sample_rate of the resulting samples. Check `sample_rate` for actual value.
-//|Minimum sample_rate is about 16000 Hz.
-//|:param int bit_depth: Final number of bits per sample. Must be divisible by 8
-//|:param bool mono: True when capturing a single channel of audio, captures two channels otherwise
-//|:param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
-//|:param float startup_delay: seconds to wait after starting microphone clock
-//|to allow microphone to turn on. Most require only 0.01s; some require 0.1s. Longer is safer.
-//|Must be in range 0.0-1.0 seconds."""
-//|...
+//|         :param ~microcontroller.Pin clock_pin: The pin to output the clock to
+//|         :param ~microcontroller.Pin data_pin: The pin to read the data from
+//|         :param int sample_rate: Target sample_rate of the resulting samples. Check `sample_rate` for actual value.
+//|           Minimum sample_rate is about 16000 Hz.
+//|         :param int bit_depth: Final number of bits per sample. Must be divisible by 8
+//|         :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
+//|         :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
+//|         :param float startup_delay: seconds to wait after starting microphone clock
+//|          to allow microphone to turn on. Most require only 0.01s; some require 0.1s. Longer is safer.
+//|          Must be in range 0.0-1.0 seconds."""
+//|
 
-//|Record 8-bit unsigned samples to buffer::
+//|         """Record 8-bit unsigned samples to buffer::
 //|
-//|import audiobusio
-//|import board
+//|           import audiobusio
+//|           import board
 //|
-//|# Prep a buffer to record into
-//|b = bytearray(200)
-//|with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000) as mic:
-//|mic.record(b, len(b))
+//|           # Prep a buffer to record into
+//|           b = bytearray(200)
+//|           with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000) as mic:
+//|               mic.record(b, len(b))
 //|
-//|Record 16-bit unsigned samples to buffer::
+//|         Record 16-bit unsigned samples to buffer::
 //|
-//|import audiobusio
-//|import board
+//|           import audiobusio
+//|           import board
 //|
-//|# Prep a buffer to record into. The array interface doesn't allow for
-//|# constructing with a set size so we append to it until we have the size
-//|# we want.
-//|b = array.array("H")
-//|for i in range(200):
-//|b.append(0)
-//|with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
-//|mic.record(b, len(b))
-//|     
+//|           # Prep a buffer to record into. The array interface doesn't allow for
+//|           # constructing with a set size so we append to it until we have the size
+//|           # we want.
+//|           b = array.array("H")
+//|           for i in range(200):
+//|               b.append(0)
+//|           with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
+//|               mic.record(b, len(b))"""
+//|         ...
+//|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
@@ -138,9 +139,10 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|def deinit(self, ) -> Any:
-//|"""Deinitialises the PDMIn and releases any hardware resources for reuse."""
-//|...
+//|     def deinit(self, ) -> Any:
+//|         """Deinitialises the PDMIn and releases any hardware resources for reuse."""
+//|         ...
+//|
 STATIC mp_obj_t audiobusio_pdmin_deinit(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audiobusio_pdmin_deinit(self);
@@ -153,14 +155,16 @@ STATIC void check_for_deinit(audiobusio_pdmin_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|def __enter__(self, ) -> Any:
-//|"""No-op used by Context Managers."""
-//|...
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
+//|
 //  Provided by context manager helper.
 
-//|def __exit__(self, ) -> Any:
-//|"""Automatically deinitializes the hardware when exiting a context."""
-//|...
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context."""
+//|         ...
+//|
 STATIC mp_obj_t audiobusio_pdmin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_audiobusio_pdmin_deinit(args[0]);
@@ -169,17 +173,18 @@ STATIC mp_obj_t audiobusio_pdmin_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, audiobusio_pdmin_obj___exit__);
 
 
-//|def record(self, destination: Any, destination_length: Any) -> Any:
-//|"""Records destination_length bytes of samples to destination. This is
-//|blocking.
+//|     def record(self, destination: Any, destination_length: Any) -> Any:
+//|         """Records destination_length bytes of samples to destination. This is
+//|         blocking.
 //|
-//|An IOError may be raised when the destination is too slow to record the
-//|audio at the given rate. For internal flash, writing all 1s to the file
-//|before recording is recommended to speed up writes.
+//|         An IOError may be raised when the destination is too slow to record the
+//|         audio at the given rate. For internal flash, writing all 1s to the file
+//|         before recording is recommended to speed up writes.
 //|
-//|:return: The number of samples recorded. If this is less than ``destination_length``,
-//|some samples were missed due to processing time."""
-//|...
+//|         :return: The number of samples recorded. If this is less than ``destination_length``,
+//|           some samples were missed due to processing time."""
+//|         ...
+//|
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     check_for_deinit(self);
@@ -210,10 +215,10 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
 }
 MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_record);
 
-//|sample_rate: Any =
-//|"""The actual sample_rate of the recording. This may not match the constructed
-//|sample rate due to internal clock limitations."""
-//|...
+//|     sample_rate: Any = ...
+//|     """The actual sample_rate of the recording. This may not match the constructed
+//|     sample rate due to internal clock limitations."""
+//|
 STATIC mp_obj_t audiobusio_pdmin_obj_get_sample_rate(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);

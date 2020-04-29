@@ -35,7 +35,7 @@
 #include "shared-bindings/audiocore/WaveFile.h"
 //#include "shared-bindings/audiomixer/Mixer.h"
 
-//| :mod:`audiocore` --- Support for audio samples and mixer
+//| """:mod:`audiocore` --- Support for audio samples and mixer
 //| ========================================================
 //|
 //| .. module:: audiocore
@@ -50,7 +50,7 @@
 //|     :maxdepth: 3
 //|
 //|     RawSample
-//|     WaveFile
+//|     WaveFile"""
 //|
 
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
