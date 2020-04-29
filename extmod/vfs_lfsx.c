@@ -98,17 +98,40 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
     #endif
 }
 
+
 const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
-    const char *path = mp_obj_str_get_str(path_in);
-    if (path[0] != '/') {
-        size_t l = vstr_len(&self->cur_dir);
-        if (l > 0) {
-            vstr_add_str(&self->cur_dir, path);
-            path = vstr_null_terminated_str(&self->cur_dir);
-            self->cur_dir.len = l;
+    char *path = strdup(mp_obj_str_get_str(path_in)); // strdup allocates, so path must be free'd
+    char *cwd = vstr_null_terminated_str(&self->cur_dir);
+    char *new_path = m_malloc(strlen(cwd) + strlen(path) + 1); // worst case
+    char *token;
+
+    // Initiliaze new path
+    // If cwd was empty (unlikely) or path starts with /, start with "/""
+    // otherwise set if to cwd, but of off trailing a '/', which is added by chdir
+    if (path[0] == '/' || cwd[0] == '\0') {
+        strcpy(new_path, "/");
+    } else {
+        strcpy(new_path, cwd);
+        size_t l = strlen(new_path) - 1; // remove trailing /, if any
+        if (l > 0 && new_path[l] == '/') {
+            new_path[l] = '\0';
         }
     }
-    return path;
+    for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {  // leave it with a break
+        if (strcmp(token, "..") == 0) { // double slash, backup new_path
+            char *p = strrchr(new_path, '/'); // should always work
+            if (p) { // just for being sure
+                p[p == new_path ? 1 : 0] = '\0'; // cut off the tail, but not the head
+            }
+        } else if (strcmp(token, ".") != 0) {
+            if (strcmp(new_path, "/") != 0) { // not at the start
+                strcat(new_path, "/");
+            }
+            strcat(new_path, token);
+        }
+    }
+    free(path); // strdup allocates!
+    return new_path;
 }
 
 STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
