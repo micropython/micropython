@@ -206,6 +206,7 @@ jobs:
         - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
+        - "openmv_h7"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
