@@ -38,7 +38,7 @@ def advertising_payload(limited_disc=False, br_edr=False, name=None, services=No
 
     if services:
         for uuid in services:
-            b = bytes(uuid)
+            b = bytes(uuid, 'utf-8')
             if len(b) == 2:
                 _append(_ADV_TYPE_UUID16_COMPLETE, b)
             elif len(b) == 4:
