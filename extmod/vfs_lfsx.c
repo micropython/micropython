@@ -304,7 +304,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(MP_VFS_LFSx(getcwd_obj), MP_VFS_LFSx(getcwd));
 
 STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = mp_obj_str_get_str(path_in);
+    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     struct LFSx_API (info) info;
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret < 0) {
