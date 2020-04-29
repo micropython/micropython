@@ -78,6 +78,7 @@
 //|         :param ~microcontroller.Pin MOSI: the Master Out Slave In pin.
 //|         :param ~microcontroller.Pin MISO: the Master In Slave Out pin."""
 //|         ...
+//|
 
 
 // TODO(tannewt): Support LSB SPI.
@@ -104,6 +105,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
 //|     def deinit(self, ) -> Any:
 //|         """Turn off the SPI bus."""
 //|         ...
+//|
 STATIC mp_obj_t busio_spi_obj_deinit(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_spi_deinit(self);
@@ -115,11 +117,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
+//|
 
 //|     def __exit__(self, ) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_spi_deinit(args[0]);
@@ -162,6 +166,7 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|           Two SPI objects may be created, except on the Circuit Playground Bluefruit,
 //|           which allows only one (to allow for an additional I2C object)."""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
@@ -204,6 +209,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -214,6 +220,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|     def unlock(self, ) -> Any:
 //|         """Releases the SPI lock."""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -231,6 +238,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
@@ -274,6 +282,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|         :param int write_value: Value to write while reading. (Usually ignored.)"""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
@@ -321,6 +330,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
 //|         ...
+//|
 
 STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

@@ -64,6 +64,7 @@
 //|         *New in CircuitPython 4.0:* ``timeout`` has incompatibly changed units from milliseconds to seconds.
 //|         The new upper limit on ``timeout`` is meant to catch mistaken use of milliseconds."""
 //|         ...
+//|
 typedef struct {
     mp_obj_base_t base;
 } busio_uart_parity_obj_t;
@@ -144,6 +145,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
 //|     def deinit(self, ) -> Any:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
 //|         ...
+//|
 STATIC mp_obj_t busio_uart_obj_deinit(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_uart_deinit(self);
@@ -160,12 +162,14 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
 //|     def __enter__(self, ) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
+//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self, ) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t busio_uart_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_uart_deinit(args[0]);
@@ -184,6 +188,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 
 //|     def readinto(self, buf: Any) -> Any:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
@@ -193,6 +198,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|
 //|         *New in CircuitPython 4.0:* No length parameter is permitted."""
 //|         ...
+//|
 
 //|     def readline(self, ) -> Any:
 //|         """Read a line, ending in a newline character.
@@ -200,6 +206,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         :return: the line read
 //|         :rtype: int or None"""
 //|         ...
+//|
 
 //|     def write(self, buf: Any) -> Any:
 //|         """Write the buffer of bytes to the bus.
@@ -209,6 +216,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         :return: the number of bytes written
 //|         :rtype: int or None"""
 //|         ...
+//|
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -344,6 +352,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //|         EVEN: Any = ...
 //|         """Total number of ones should be even."""
 //|         ...
+//|
 const mp_obj_type_t busio_uart_parity_type;
 
 const busio_uart_parity_obj_t busio_uart_parity_odd_obj = {

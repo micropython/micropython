@@ -65,6 +65,7 @@
 //|            except on the Circuit Playground Bluefruit, which allows two,
 //|            one for the onboard accelerometer, and one for offboard use."""
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
     self->base.type = &busio_i2c_type;
@@ -88,6 +89,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
 //|     def deinit(self, ) -> Any:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_obj_deinit(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busio_i2c_deinit(self);
@@ -104,12 +106,14 @@ STATIC void check_for_deinit(busio_i2c_obj_t *self) {
 //|     def __enter__(self, ) -> Any:
 //|         """No-op used in Context Managers."""
 //|         ...
+//|
 //  Provided by context manager helper.
 
 //|     def __exit__(self, ) -> Any:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     common_hal_busio_i2c_deinit(args[0]);
@@ -132,6 +136,7 @@ static void check_lock(busio_i2c_obj_t *self) {
 //|          :return: List of device ids on the I2C bus
 //|          :rtype: list"""
 //|          ...
+//|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -154,6 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 //|         :return: True when lock has been grabbed
 //|         :rtype: bool"""
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -164,6 +170,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 //|     def unlock(self, ) -> Any:
 //|         """Releases the I2C lock."""
 //|         ...
+//|
 STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -186,6 +193,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|          :param int start: Index to start writing at
 //|          :param int end: Index to write up to but not include. Defaults to ``len(buffer)``"""
 //|          ...
+//|
 // Shared arg parsing for readfrom_into and writeto_then_readfrom.
 STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end) {
     mp_buffer_info_t bufinfo;
@@ -243,6 +251,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|          :param bool stop: If true, output an I2C stop condition after the buffer is written.
 //|                            Deprecated. Will be removed in 6.x and act as stop=True."""
 //|          ...
+//|
 // Shared arg parsing for writeto and writeto_then_readfrom.
 STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end, bool stop) {
     // get the buffer to write the data from
@@ -298,6 +307,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 //|          :param int in_start: Index to start writing at
 //|          :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``"""
 //|          ...
+//|
 STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
