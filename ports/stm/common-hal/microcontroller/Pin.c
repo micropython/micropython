@@ -134,3 +134,15 @@ GPIO_TypeDef * pin_port(uint8_t pin_port) {
 uint16_t pin_mask(uint8_t pin_number) {
     return 1<<pin_number;
 }
+
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
+    return pin->port * 16 + pin->number;
+}
+
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+    claim_pin(pin);
+}
+
+void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
+    reset_pin_number(pin_no / 16, pin_no % 16);
+}
