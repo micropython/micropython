@@ -32,6 +32,7 @@
 #include "py/binary.h"
 #include "py/objarray.h"
 #include "py/mperrno.h"
+#include "py/gc.h"
 #include "extmod/vfs.h"
 
 STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
@@ -243,6 +244,7 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
             is_str_type = false;
         }
         path = MP_VFS_LFSx(make_path)(self, args[1]);
+        free_path = true;
     } else {
         path = vstr_null_terminated_str(&self->cur_dir);
     }
@@ -253,6 +255,9 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
     iter->is_str = is_str_type;
     iter->vfs = self;
     int ret = LFSx_API(dir_open)(&self->lfs, &iter->dir, path);
+    if (free_path) {
+        gc_free(path);
+    }
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -264,6 +269,7 @@ STATIC mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
+    gc_free(path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -275,6 +281,7 @@ STATIC mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
+    gc_free(path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -291,6 +298,7 @@ STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_o
     vstr_add_str(&path_new, mp_obj_str_get_str(path_new_in));
     int ret = LFSx_API(rename)(&self->lfs, path_old, vstr_null_terminated_str(&path_new));
     vstr_clear(&path_new);
+    gc_free(path_old);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
@@ -302,6 +310,7 @@ STATIC mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     char *path = MP_VFS_LFSx(make_path)(self, path_o);
     int ret = LFSx_API(mkdir)(&self->lfs, path);
+    gc_free(path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
