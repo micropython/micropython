@@ -166,27 +166,27 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|   .. attribute:: incoming_packet_length
+//|   .. attribute:: packet_size
 //|
 //|     Maximum size of a packet.
 //|     If the packet is arriving from a remote service via notify or indicate,
 //|     the maximum size is `Connection.max_packet_length`.
 //|     Otherwise it is the ``max_length`` of the `Characteristic`.
 //|
-STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
+STATIC mp_obj_t bleio_packet_buffer_get_packet_size(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
+    mp_int_t size = common_hal_bleio_packet_buffer_get_packet_size(self);
     if (size < 0) {
         mp_raise_ValueError(translate("No connection: size cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_packet_size_obj, bleio_packet_buffer_get_packet_size);
 
-const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
+const mp_obj_property_t bleio_packet_buffer_packet_size_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj,
+    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_packet_size_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
@@ -198,7 +198,7 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),             MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),                MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_incoming_packet_length), MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size), MP_ROM_PTR(&bleio_packet_buffer_packet_size_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);

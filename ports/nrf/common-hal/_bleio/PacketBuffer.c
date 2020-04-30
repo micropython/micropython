@@ -285,7 +285,7 @@ void common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8
     if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
         return;
     }
-    uint16_t packet_size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
+    uint16_t packet_size = common_hal_bleio_packet_buffer_get_packet_size(self);
     uint16_t max_size = packet_size - len;
     while (max_size < self->pending_size && self->conn_handle != BLE_CONN_HANDLE_INVALID) {
         RUN_BACKGROUND_TASKS;
@@ -313,9 +313,9 @@ void common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, uint8
     }
 }
 
-mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_buffer_obj_t *self) {
+mp_int_t common_hal_bleio_packet_buffer_get_packet_size(bleio_packet_buffer_obj_t *self) {
     // If this PacketBuffer is being used for NOTIFY or INDICATE from
-    // a remote service, the maximum size is what can be sent in one
+    // the maximum size is what can be sent in one
     // BLE packet. But we must be connected to know that value.
     //
     // Otherwise it can be a long as the characteristic
@@ -323,7 +323,6 @@ mp_int_t common_hal_bleio_packet_buffer_get_incoming_packet_length(bleio_packet_
 
     if (self->characteristic != NULL &&
         self->characteristic->service != NULL &&
-        self->characteristic->service->is_remote &&
         (common_hal_bleio_characteristic_get_properties(self->characteristic) &
          (CHAR_PROP_INDICATE | CHAR_PROP_NOTIFY)) &&
         self->conn_handle != BLE_CONN_HANDLE_INVALID) {
