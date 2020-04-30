@@ -31,7 +31,7 @@
 
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 
-//| :mod:`audiomp3` --- Support for MP3-compressed audio files
+//| """:mod:`audiomp3` --- Support for MP3-compressed audio files
 //| ==========================================================
 //|
 //| .. module:: audiomp3
@@ -44,7 +44,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     MP3Decoder
+//|     MP3Decoder"""
 //|
 
 STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {

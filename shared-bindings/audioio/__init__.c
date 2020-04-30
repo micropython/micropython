@@ -42,7 +42,7 @@
 #include "shared-bindings/audiomixer/Mixer.h"
 #endif
 
-//| :mod:`audioio` --- Support for audio input and output
+//| """:mod:`audioio` --- Support for audio input and output
 //| ======================================================
 //|
 //| .. module:: audioio
@@ -68,7 +68,7 @@
 //|
 //| For compatibility with CircuitPython 4.x, some builds allow the items in
 //| `audiocore` to be imported from `audioio`.  This will be removed for all
-//| boards in a future build of CircuitPython.
+//| boards in a future build of CircuitPython."""
 //|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {

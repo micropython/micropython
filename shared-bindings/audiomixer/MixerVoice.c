@@ -37,18 +37,18 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//|class MixerVoice:
-//|""".. currentmodule:: audiomixer
+//| class MixerVoice:
+//|     """.. currentmodule:: audiomixer
 //|
-//|:class:`MixerVoice` -- Voice objects used with Mixer
-//|=====================================================
+//|     :class:`MixerVoice` -- Voice objects used with Mixer
+//|     =====================================================
 //|
-//|Used to access and control samples with `audiomixer.Mixer`."""
+//|     Used to access and control samples with `audiomixer.Mixer`."""
 //|
-//|def __init__(self, ):
+//|     def __init__(self, ):
+//|         """MixerVoice instance object(s) created by `audiomixer.Mixer`."""
+//|         ...
 //|
-//|"""MixerVoice instance object(s) created by `audiomixer.Mixer`."""
-//|...
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     audiomixer_mixervoice_obj_t *self = m_new_obj(audiomixer_mixervoice_obj_t);
@@ -59,14 +59,15 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|def play(self, sample: Any, *, loop: Any = False) -> Any:
-//|"""Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
-//|Does not block. Use `playing` to block.
+//|     def play(self, sample: Any, *, loop: Any = False) -> Any:
+//|         """Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
+//|         Does not block. Use `playing` to block.
 //|
-//|Sample must be an `audiocore.WaveFile`, `audiomixer.Mixer` or `audiocore.RawSample`.
+//|         Sample must be an `audiocore.WaveFile`, `audiomixer.Mixer` or `audiocore.RawSample`.
 //|
-//|The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
-//|...
+//|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
+//|         ...
+//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
@@ -83,9 +84,10 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_play_obj, 1, audiomixer_mixervoice_obj_play);
 
-//|def stop(self, ) -> Any:
-//|"""Stops playback of the sample on this voice."""
-//|...
+//|     def stop(self, ) -> Any:
+//|         """Stops playback of the sample on this voice."""
+//|         ...
+//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_stop(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_voice };
     static const mp_arg_t allowed_args[] = {
@@ -101,9 +103,9 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_stop(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_stop_obj, 1, audiomixer_mixervoice_obj_stop);
 
-//|level(): Any =
-//|"""The volume level of a voice, as a floating point number between 0 and 1."""
-//|...
+//|     level: Any = ...
+//|     """The volume level of a voice, as a floating point number between 0 and 1."""
+//|
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_level(mp_obj_t self_in) {
     return mp_obj_new_float(common_hal_audiomixer_mixervoice_get_level(self_in));
 }
@@ -137,9 +139,9 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|playing: Any =
-//|"""True when this voice is being output. (read-only)"""
-//|...
+//|     playing: Any = ...
+//|     """True when this voice is being output. (read-only)"""
+//|
 
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_playing(mp_obj_t self_in) {
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(self_in);

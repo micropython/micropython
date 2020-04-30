@@ -32,7 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiomixer/Mixer.h"
 
-//| :mod:`audiomixer` --- Support for audio mixer
+//| """:mod:`audiomixer` --- Support for audio mixer
 //| ========================================================
 //|
 //| .. module:: audiomixer
@@ -46,7 +46,7 @@
 //|     :maxdepth: 3
 //|
 //|     Mixer
-//|     MixerVoice
+//|     MixerVoice"""
 //|
 
 STATIC const mp_rom_map_elem_t audiomixer_module_globals_table[] = {
