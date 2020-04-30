@@ -97,7 +97,7 @@ extern const struct _mp_obj_module_t mp_module_os;
 // Do not change anything beyond this line
 //////////////////////////////////////////
 
-#if !defined(__x86_64__) || !defined(__i386__) || !defined(__thumb2__) || !defined(__thumb__) || !defined(__arm__)
+#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 // Fall back to setjmp() implementation for discovery of GC pointers in registers.
 #define MICROPY_GCREGS_SETJMP (1)
 #endif
