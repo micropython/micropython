@@ -7,8 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-26 14:46-0500\n"
-"PO-Revision-Date: 2018-07-27 11:55-0700\n"
+"POT-Creation-Date: 2020-04-30 09:11-0400\n"
 "Last-Translator: \n"
 "Language-Team: @sommersoft, @MrCertainly\n"
 "Language: en_x_pirate\n"
@@ -1086,6 +1085,10 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
+msgstr ""
+
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: size cannot be determined"
 msgstr ""
 
 #: shared-bindings/board/__init__.c

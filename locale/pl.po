@@ -7,8 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-26 14:46-0500\n"
-"PO-Revision-Date: 2019-03-19 18:37-0700\n"
+"POT-Creation-Date: 2020-04-30 09:11-0400\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -1088,6 +1087,10 @@ msgstr "Brak nóżki TX"
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
 msgstr "Brak wolnych zegarów"
+
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: size cannot be determined"
+msgstr ""
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"

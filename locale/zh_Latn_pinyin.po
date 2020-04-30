@@ -7,8 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-26 14:46-0500\n"
-"PO-Revision-Date: 2019-04-13 10:10-0700\n"
+"POT-Creation-Date: 2020-04-30 09:11-0400\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh\n"
@@ -1096,6 +1095,10 @@ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
 msgstr "Méiyǒu kěyòng de shízhōng"
+
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: size cannot be determined"
+msgstr ""
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
