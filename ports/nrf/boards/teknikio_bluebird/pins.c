@@ -47,12 +47,12 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A4),                      MP_ROM_PTR(&pin_P0_03) },
     { MP_ROM_QSTR(MP_QSTR_D4),                      MP_ROM_PTR(&pin_P0_03) },
 
-    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL),                MP_ROM_PTR(&pin_P0_26) },
+    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL),                MP_ROM_PTR(&pin_P1_15) },
 
     { MP_ROM_QSTR(MP_QSTR_LIGHT),                   MP_ROM_PTR(&pin_P0_28) },
     { MP_ROM_QSTR(MP_QSTR_LIGHT_ENABLE),            MP_ROM_PTR(&pin_P0_30) },
 
-    { MP_ROM_QSTR(MP_QSTR_SPEAKER),                 MP_ROM_PTR(&pin_P1_15) },
+    { MP_ROM_QSTR(MP_QSTR_SPEAKER),                 MP_ROM_PTR(&pin_P1_14) },
 
     { MP_ROM_QSTR(MP_QSTR_ACCELEROMETER_INTERRUPT), MP_ROM_PTR(&pin_P1_10) },
     { MP_ROM_QSTR(MP_QSTR_ACCELEROMETER_SDA),       MP_ROM_PTR(&pin_P1_12) },
