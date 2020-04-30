@@ -101,8 +101,7 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
 
 // replacement for strtok, which does not modify the source string
 // but returns instead the length of the token
-static const char *get_token(const char *path, char sep, size_t *len)
-{
+static char *get_token(const char *path, char sep, size_t *len) {
     static const char *ptr = ""; // safe initial state
     const char *start;
     if (path != NULL) {  // get initial start
@@ -120,13 +119,13 @@ static const char *get_token(const char *path, char sep, size_t *len)
         ptr++;
     }
     *len = (ptr - start);
-    return start;
+    return (char *)start;
 }
 
 char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     char *cwd = vstr_null_terminated_str(&self->cur_dir);
     char *new_path;
-    const char *path = mp_obj_str_get_str(path_in); 
+    const char *path = mp_obj_str_get_str(path_in);
 
     // Initiliaze new path
     // If cwd was empty (unlikely) or path starts with /, start with "/"
@@ -142,20 +141,24 @@ char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
         }
     }
 
-    const char *token;
-    size_t len;
-    for (token = get_token(path, '/', &len); token != NULL; token = get_token(NULL, '/', &len)) { 
-        if (len == 2 && token[0] == '.' && token[1] == '.') { // double dot, backup new_path
-            char *p = strrchr(new_path, '/'); // should always work
-            if (p) { // just for being sure
-                p[p == new_path ? 1 : 0] = '\0'; // cut off the tail, but not the head
+    size_t len_token;
+    size_t len_path = strlen(new_path);
+    for (char *token = get_token(path, '/', &len_token); token != NULL;) {
+        if (len_token == 2 && token[0] == '.' && token[1] == '.') { // double dot, skip back in new_path
+            while (len_path > 0 && new_path[len_path] != '/') { // skip back w/o strrchr
+                len_path--;
             }
-        } else if (len != 1 || token[0] != '.') {
-            if (strcmp(new_path, "/") != 0) { // not at the start
-                strcat(new_path, "/");
+            new_path[len_path == 0 ? 1 : len_path] = '\0';
+        } else if (len_token != 1 || token[0] != '.') {
+            if (len_path > 1) { // not at the start
+                new_path[len_path++] = '/';
             }
-            strncat(new_path, token, len);
+            for (size_t i = 0; i < len_token; i++) { // avoid strncat and strncpy
+                new_path[len_path++] = token[i];
+            }
+            new_path[len_path] = '\0';
         }
+        token = get_token(NULL, '/', &len_token);
     }
     return new_path;
 }
