@@ -52,7 +52,7 @@ uint8_t const * tud_hid_descriptor_report_cb(void) {
 
 // Invoked when received GET STRING DESCRIPTOR request
 // Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
-uint16_t const* tud_descriptor_string_cb(uint8_t index) {
+uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     uint8_t const max_index = sizeof(string_desc_arr)/sizeof(string_desc_arr[0]);
     return (index < max_index) ? string_desc_arr[index] : NULL;
 }

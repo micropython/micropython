@@ -30,6 +30,7 @@
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+#include "lib/tinyusb/src/device/usbd.h"
 
 #include "py/mpconfig.h"
 
@@ -63,13 +64,13 @@ STATIC void init_usb_vbus_sense(void) {
 }
 
 void init_usb_hardware(void) {
-    //TODO: if future chips overload this with options, move to peripherals management. 
+    //TODO: if future chips overload this with options, move to peripherals management.
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     /**USB_OTG_FS GPIO Configuration
     PA10     ------> USB_OTG_FS_ID
     PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP 
+    PA12     ------> USB_OTG_FS_DP
     */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -128,4 +129,8 @@ void init_usb_hardware(void) {
     #endif
 
     init_usb_vbus_sense();
+}
+
+void OTG_FS_IRQHandler(void) {
+  tud_int_handler(0);
 }

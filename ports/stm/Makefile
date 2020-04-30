@@ -110,6 +110,8 @@ CFLAGS += $(MCU_FLAGS_$(MCU_SERIES))
 # Select HAL file for distribution via mpconfigport
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES_LOWER)xx_hal.h>'
 
+CFLAGS += -DSTM32_SERIES_LOWER='"stm32$(MCU_SERIES_LOWER)"'
+
 # Floating point settings
 ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS += -mfpu=fpv5-d16 -mfloat-abi=hard
@@ -288,6 +290,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
 	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
+
+flash: $(BUILD)/firmware.bin
+	$(ECHO) "Writing $< to the board"
+	dfu-util -a 0 --dfuse-address 0x08000000 -D $(BUILD)/firmware.bin
 
 include $(TOP)/py/mkrules.mk
 

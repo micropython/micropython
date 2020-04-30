@@ -9,7 +9,7 @@ CHIP_FAMILY = samd51
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 
-CIRCUITPY_SMALL_BUILD = 1
+CIRCUITPY_FULL_BUILD = 0
 # TODO: Turn off analogio for now for space reasons, but restore it
 # when frozen module gets smaller.
 CIRCUITPY_ANALOGIO = 0

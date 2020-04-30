@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "lib/tinyusb/src/device/usbd.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
@@ -35,10 +36,6 @@
 #include "generated/soc.h"
 
 #include "irq.h"
-
-#ifdef CFG_TUSB_MCU
-    void hal_dcd_isr(uint8_t rhport);
-#endif
 
 /*------------------------------------------------------------------*/
 /* delay
@@ -72,7 +69,7 @@ void isr(void) {
 
 #ifdef CFG_TUSB_MCU
     if (irqs & (1 << USB_INTERRUPT))
-        hal_dcd_isr(0);
+        tud_int_handler(0);
 #endif
     if (irqs & (1 << TIMER0_INTERRUPT))
         SysTick_Handler();

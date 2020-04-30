@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-17 18:44-0500\n"
+"POT-Creation-Date: 2020-04-26 14:46-0500\n"
 "PO-Revision-Date: 2019-04-14 20:05+0100\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
@@ -2261,6 +2261,10 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
+#: extmod/ulab/code/compare.c
+msgid "function is implemented for scalars and ndarrays only"
+msgstr ""
+
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
@@ -2757,7 +2761,8 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
