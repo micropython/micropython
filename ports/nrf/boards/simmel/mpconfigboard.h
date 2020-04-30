@@ -25,24 +25,30 @@
  * THE SOFTWARE.
  */
 
-//https://github.com/Teknikio/TKInventionBuilderFramework
-
-
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "Teknikio Bluebird"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
+#define MICROPY_HW_BOARD_NAME       "Simmel"
+#define MICROPY_HW_MCU_NAME         "nRF52833"
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P1_15)
+#define MICROPY_HW_LED_STATUS          (&pin_P0_06)
 
-#define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
-#define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)
+#if SPI_FLASH_FILESYSTEM
+#define SPI_FLASH_MOSI_PIN &pin_P0_09
+#define SPI_FLASH_MISO_PIN &pin_P1_04
+#define SPI_FLASH_SCK_PIN &pin_P0_10
+#define SPI_FLASH_CS_PIN &pin_P1_06
+#endif
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_P1_15)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_13)
-#define DEFAULT_SPI_BUS_MISO        (&pin_P1_14)
+#define CIRCUITPY_INTERNAL_NVM_SIZE 0
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (84*1024)
 
-#define DEFAULT_UART_BUS_RX         (&pin_P1_07)
-#define DEFAULT_UART_BUS_TX         (&pin_P1_08)
+#define BOOTLOADER_SIZE                 (0x4000)  // 12 kiB
+#define CIRCUITPY_BLE_CONFIG_SIZE       (12*1024)
 
-#define BOARD_HAS_CRYSTAL 1  // according to the schematic we do
+// Reduce nRF SoftRadio memory usage
+#define BLEIO_VS_UUID_COUNT 10
+#define BLEIO_HVN_TX_QUEUE_SIZE 2
+#define BLEIO_CENTRAL_ROLE_COUNT 2
+#define BLEIO_PERIPH_ROLE_COUNT 2
+#define BLEIO_TOTAL_CONNECTION_COUNT 2
+#define BLEIO_ATTR_TAB_SIZE (BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 2)

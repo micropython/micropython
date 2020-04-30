@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +24,11 @@
  * THE SOFTWARE.
  */
 
-//https://github.com/Teknikio/TKInventionBuilderFramework
+//Micropython setup
 
+#define MICROPY_HW_BOARD_NAME       "OPENMV-H7 R1"
+#define MICROPY_HW_MCU_NAME         "STM32H743"
 
-#include "nrfx/hal/nrf_gpio.h"
+#define FLASH_PAGE_SIZE             (0x4000)
 
-#define MICROPY_HW_BOARD_NAME       "Teknikio Bluebird"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
-
-#define MICROPY_HW_NEOPIXEL         (&pin_P1_15)
-
-#define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
-#define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)
-
-#define DEFAULT_SPI_BUS_SCK         (&pin_P1_15)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_13)
-#define DEFAULT_SPI_BUS_MISO        (&pin_P1_14)
-
-#define DEFAULT_UART_BUS_RX         (&pin_P1_07)
-#define DEFAULT_UART_BUS_TX         (&pin_P1_08)
-
-#define BOARD_HAS_CRYSTAL 1  // according to the schematic we do
+#define BOARD_OSC_DIV (12)
