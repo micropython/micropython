@@ -14,39 +14,21 @@ USB_SERIAL_NUMBER_LENGTH = 16
 # All nRF ports have longints.
 LONGINT_IMPL = MPZ
 
+# The ?='s allow overriding in mpconfigboard.mk.
+
 # Audio via PWM
-ifndef CIRCUITPY_AUDIOCORE
-CIRCUITPY_AUDIOCORE = 1
-endif
-
 CIRCUITPY_AUDIOIO = 0
+CIRCUITPY_AUDIOBUSIO ?= 1
+CIRCUITPY_AUDIOCORE ?= 1
+CIRCUITPY_AUDIOMIXER ?= 1
+CIRCUITPY_AUDIOPWMIO ?= 1
 
-
-# The ifndef's allow overriding in mpconfigboard.mk.
-
-ifndef CIRCUITPY_BLEIO
-CIRCUITPY_BLEIO = 1
-endif
-
-ifndef CIRCUITPY_AUDIOMIXER
-CIRCUITPY_AUDIOMIXER = 1
-endif
-
-ifndef CIRCUITPY_AUDIOPWMIO
-CIRCUITPY_AUDIOPWMIO = 1
-endif
-
-ifndef CIRCUITPY_AUDIOBUSIO
-CIRCUITPY_AUDIOBUSIO = 1
-endif
+CIRCUITPY_BLEIO ?= 1
 
 # No I2CSlave implementation
 CIRCUITPY_I2CSLAVE = 0
 
-# enable RTC
-ifndef CIRCUITPY_RTC
-CIRCUITPY_RTC = 1
-endif
+CIRCUITPY_RTC ?= 1
 
 # frequencyio not yet implemented
 CIRCUITPY_FREQUENCYIO = 0
@@ -71,8 +53,6 @@ NRF_DEFINES += -DNRF52840_XXAA -DNRF52840
 # See https://github.com/adafruit/circuitpython/issues/1300
 # Defined here because system_nrf52840.c doesn't #include any of our own include files.
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
-
-CIRCUITPY_ULAB = 1
 
 else
 ifeq ($(MCU_CHIP),nrf52833)
