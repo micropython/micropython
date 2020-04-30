@@ -98,16 +98,39 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
     #endif
 }
 
+// replacement for strtok, which does not modify the source string
+// but returns instead the length of the token
+static const char *get_token(const char *path, char sep, size_t *len)
+{
+    static const char *ptr = ""; // safe initial state
+    const char *start;
+    if (path != NULL) {  // get initial start
+        ptr = (char *)path;
+    }
+    while (*ptr == sep && *ptr != '\0') { // scan for the start
+        ptr++;
+    }
+    if (*ptr == '\0') {  // End of the scan
+        ptr = ""; // safe parking
+        return NULL;
+    }
+    start = ptr;
+    while (*ptr != '\0' && *ptr != sep) {
+        ptr++;
+    }
+    *len = (ptr - start);
+    return start;
+}
 
-const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
-    char *path = strdup(mp_obj_str_get_str(path_in)); // strdup allocates, so path must be free'd
+char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     char *cwd = vstr_null_terminated_str(&self->cur_dir);
-    char *new_path = m_malloc(strlen(cwd) + strlen(path) + 1); // worst case
-    char *token;
+    char *new_path;
+    const char *path = mp_obj_str_get_str(path_in); 
 
     // Initiliaze new path
-    // If cwd was empty (unlikely) or path starts with /, start with "/""
-    // otherwise set if to cwd, but of off trailing a '/', which is added by chdir
+    // If cwd was empty (unlikely) or path starts with /, start with "/"
+    // otherwise set if to cwd, but cut off a trailing '/', which is added by chdir
+    new_path = m_malloc(strlen(cwd) + strlen(path) + 1);  // worst case
     if (path[0] == '/' || cwd[0] == '\0') {
         strcpy(new_path, "/");
     } else {
@@ -117,20 +140,22 @@ const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
             new_path[l] = '\0';
         }
     }
-    for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {  // leave it with a break
-        if (strcmp(token, "..") == 0) { // double slash, backup new_path
+
+    const char *token;
+    size_t len;
+    for (token = get_token(path, '/', &len); token != NULL; token = get_token(NULL, '/', &len)) { 
+        if (len == 2 && token[0] == '.' && token[1] == '.') { // double dot, backup new_path
             char *p = strrchr(new_path, '/'); // should always work
             if (p) { // just for being sure
                 p[p == new_path ? 1 : 0] = '\0'; // cut off the tail, but not the head
             }
-        } else if (strcmp(token, ".") != 0) {
+        } else if (len != 1 || token[0] != '.') {
             if (strcmp(new_path, "/") != 0) { // not at the start
                 strcat(new_path, "/");
             }
-            strcat(new_path, token);
+            strncat(new_path, token, len);
         }
     }
-    free(path); // strdup allocates!
     return new_path;
 }
 
@@ -211,7 +236,8 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(args[0]);
     bool is_str_type = true;
-    const char *path;
+    char *path;
+    bool free_path = false;
     if (n_args == 2) {
         if (mp_obj_get_type(args[1]) == &mp_type_bytes) {
             is_str_type = false;
@@ -236,7 +262,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(ilistdir_obj), 1, 2, MP_V
 
 STATIC mp_obj_t MP_VFS_LFSx(remove)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
+    char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -247,7 +273,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(remove_obj), MP_VFS_LFSx(remove));
 
 STATIC mp_obj_t MP_VFS_LFSx(rmdir)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
+    char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(remove)(&self->lfs, path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -258,7 +284,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(rmdir_obj), MP_VFS_LFSx(rmdir));
 
 STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_obj_t path_new_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path_old = MP_VFS_LFSx(make_path)(self, path_old_in);
+    char *path_old = MP_VFS_LFSx(make_path)(self, path_old_in);
     vstr_t path_new;
     vstr_init(&path_new, vstr_len(&self->cur_dir));
     vstr_add_strn(&path_new, vstr_str(&self->cur_dir), vstr_len(&self->cur_dir));
@@ -274,7 +300,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(rename_obj), MP_VFS_LFSx(rename));
 
 STATIC mp_obj_t MP_VFS_LFSx(mkdir)(mp_obj_t self_in, mp_obj_t path_o) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = MP_VFS_LFSx(make_path)(self, path_o);
+    char *path = MP_VFS_LFSx(make_path)(self, path_o);
     int ret = LFSx_API(mkdir)(&self->lfs, path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
@@ -287,7 +313,7 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
 
     // Check path exists
-    const char *path = MP_VFS_LFSx(make_path)(self, path_in);
+    char *path = MP_VFS_LFSx(make_path)(self, path_in);
     if (path[1] != '\0') {
         // Not at root, check it exists
         struct LFSx_API (info) info;
@@ -298,12 +324,9 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     }
 
     // Update cur_dir with new path
-    if (path == vstr_str(&self->cur_dir)) {
-        self->cur_dir.len = strlen(path);
-    } else {
-        vstr_reset(&self->cur_dir);
-        vstr_add_str(&self->cur_dir, path);
-    }
+    vstr_reset(&self->cur_dir);
+    vstr_add_str(&self->cur_dir, path);
+    gc_free(path);
 
     // If not at root add trailing / to make it easy to build paths
     if (vstr_len(&self->cur_dir) != 1) {

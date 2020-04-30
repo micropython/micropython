@@ -68,7 +68,7 @@ typedef struct _mp_obj_vfs_lfs1_file_t {
     uint8_t file_buffer[0];
 } mp_obj_vfs_lfs1_file_t;
 
-const char *mp_vfs_lfs1_make_path(mp_obj_vfs_lfs1_t *self, mp_obj_t path_in);
+char *mp_vfs_lfs1_make_path(mp_obj_vfs_lfs1_t *self, mp_obj_t path_in);
 mp_obj_t mp_vfs_lfs1_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
 
 #include "extmod/vfs_lfsx.c"
@@ -114,7 +114,7 @@ typedef struct _mp_obj_vfs_lfs2_file_t {
     uint8_t file_buffer[0];
 } mp_obj_vfs_lfs2_file_t;
 
-const char *mp_vfs_lfs2_make_path(mp_obj_vfs_lfs2_t *self, mp_obj_t path_in);
+char *mp_vfs_lfs2_make_path(mp_obj_vfs_lfs2_t *self, mp_obj_t path_in);
 mp_obj_t mp_vfs_lfs2_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
 
 #include "extmod/vfs_lfsx.c"
