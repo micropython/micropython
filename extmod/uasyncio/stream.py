@@ -51,7 +51,8 @@ class Stream:
             self.out_buf += buf
 
     async def drain(self):
-        if self.out_buf == b"": return
+        if self.out_buf == b"":
+            return
         mv = memoryview(self.out_buf)
         off = 0
         while off < len(mv):
