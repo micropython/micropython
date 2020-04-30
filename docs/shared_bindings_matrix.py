@@ -98,7 +98,7 @@ def build_module_map():
     for module in modules:
         full_name = module
         search_name = module.lstrip("_")
-        re_pattern = "CIRCUITPY_{}\s=\s(.+)".format(search_name.upper())
+        re_pattern = "CIRCUITPY_{}\s*\??=\s*(.+)".format(search_name.upper())
         find_config = re.findall(re_pattern, configs)
         if not find_config:
             continue
