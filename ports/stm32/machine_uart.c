@@ -95,20 +95,11 @@ STATIC const pyb_uart_irq_map_t mp_irq_map[] = {
     #endif
 };
 
-// OR-ed IRQ flags which should not be touched by the user
-STATIC const uint32_t mp_irq_reserved = UART_FLAG_RXNE;
-
-// OR-ed IRQ flags which are allowed to be used by the user
-STATIC const uint32_t mp_irq_allowed = UART_FLAG_IDLE;
-
 STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
 STATIC void pyb_uart_irq_config(pyb_uart_obj_t *self, bool enable) {
     if (self->mp_irq_trigger) {
         for (size_t entry = 0; entry < MP_ARRAY_SIZE(mp_irq_map); ++entry) {
-            if (mp_irq_map[entry].flag & mp_irq_reserved) {
-                continue;
-            }
             if (mp_irq_map[entry].flag & self->mp_irq_trigger) {
                 if (enable) {
                     self->uartx->CR1 |= mp_irq_map[entry].irq_en;
@@ -520,18 +511,11 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
         }
 
-        // Check the trigger
-        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
-        mp_uint_t not_supported = trigger & ~mp_irq_allowed;
-        if (trigger != 0 && not_supported) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
-        }
-
         // Reconfigure user IRQs
         pyb_uart_irq_config(self, false);
         self->mp_irq_obj->handler = handler;
         self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
-        self->mp_irq_trigger = trigger;
+        self->mp_irq_trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         pyb_uart_irq_config(self, true);
     }
 
@@ -566,6 +550,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 
     // IRQ flags
     { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_FLAG_IDLE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXNE), MP_ROM_INT(UART_FLAG_RXNE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
