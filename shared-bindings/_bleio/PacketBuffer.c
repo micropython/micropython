@@ -42,7 +42,7 @@
 //|
 //| Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
 //| outgoing writes. A packet's size is either the characteristic length or the maximum transmission
-//| unit (MTU), whichever is smaller. The MTU can change so check `incoming_packet_length` before creating a
+//| unit (MTU), whichever is smaller. The MTU can change so check `packet_size` before creating a
 //| buffer to store data.
 //|
 //| When we're the server, we ignore all connections besides the first to subscribe to
@@ -97,7 +97,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 //|   .. method:: readinto(buf)
 //|
 //|     Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
-//|     than the given buffer. Use `incoming_packet_length` to read the maximum length of a single packet.
+//|     than the given buffer. Use `packet_size` to read the maximum length of a single packet.
 //|
 //|     :return: number of bytes read and stored into ``buf``
 //|     :rtype: int
@@ -171,7 +171,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 //|     Maximum size of a packet.
 //|     If the packet is arriving from a remote service via notify or indicate,
 //|     the maximum size is `Connection.max_packet_length`.
-//|     Otherwise it is the ``max_length`` of the `Characteristic`.
+//|     Otherwise it is the ``max_length`` of the :py:class:`~_bleio.Characteristic`.
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_packet_size(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
