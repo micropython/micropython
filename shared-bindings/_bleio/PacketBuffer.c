@@ -42,7 +42,7 @@
 //|
 //| Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
 //| outgoing writes. A packet's size is either the characteristic length or the maximum transmission
-//| unit (MTU), whichever is smaller. The MTU can change so check `packet_size` before creating a
+//| unit (MTU), whichever is smaller. The MTU can change so check `incoming_packet_length` before creating a
 //| buffer to store data.
 //|
 //| When we're the server, we ignore all connections besides the first to subscribe to
@@ -71,7 +71,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
 
     const mp_obj_t characteristic = args[ARG_characteristic].u_obj;
 
-    const int buffer_size = args[ARG_buffer_size].u_int;
+    const mp_int_t buffer_size = args[ARG_buffer_size].u_int;
     if (buffer_size < 1) {
         mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
     }
@@ -97,7 +97,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
 //|   .. method:: readinto(buf)
 //|
 //|     Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
-//|     than the given buffer. Use `packet_size` to read the maximum length of a single packet.
+//|     than the given buffer. Use `incoming_packet_length` to read the maximum length of a single packet.
 //|
 //|     :return: number of bytes read and stored into ``buf``
 //|     :rtype: int
@@ -109,7 +109,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer_obj, &bufinfo, MP_BUFFER_WRITE);
 
-    int size = common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len);
+    mp_int_t size = common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len);
     if (size < 0) {
         mp_raise_ValueError_varg(translate("Buffer too short by %d bytes"), size * -1);
     }
@@ -168,13 +168,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 
 //|   .. attribute:: packet_size
 //|
-//|     Maximum size of each packet in bytes. This is the minimum of the Characteristic length and
-//|     the negotiated Maximum Transfer Unit (MTU).
+//|     Maximum size of a packet.
+//|     If the packet is arriving from a remote service via notify or indicate,
+//|     the maximum size is `Connection.max_packet_length`.
+//|     Otherwise it is the ``max_length`` of the `Characteristic`.
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_packet_size(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return MP_OBJ_NEW_SMALL_INT(common_hal_bleio_packet_buffer_get_packet_size(self));
+    mp_int_t size = common_hal_bleio_packet_buffer_get_packet_size(self);
+    if (size < 0) {
+        mp_raise_ValueError(translate("No connection: size cannot be determined"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_packet_size_obj, bleio_packet_buffer_get_packet_size);
 
@@ -186,13 +192,13 @@ const mp_obj_property_t bleio_packet_buffer_packet_size_obj = {
 };
 
 STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),             MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },
 
     // Standard stream methods.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),       MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write),          MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),             MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write),                MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size),    MP_ROM_PTR(&bleio_packet_buffer_packet_size_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size), MP_ROM_PTR(&bleio_packet_buffer_packet_size_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);
