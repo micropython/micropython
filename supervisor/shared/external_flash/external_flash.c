@@ -23,11 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "external_flash.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 #include <stdint.h>
 #include <string.h>
 
+#include "supervisor/flash.h"
 #include "supervisor/spi_flash_api.h"
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "extmod/vfs.h"
@@ -451,7 +452,7 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #endif
 }
 
-void supervisor_flash_flush(void) {
+void supervisor_external_flash_flush(void) {
     spi_flash_flush_keep_cache(true);
 }
 

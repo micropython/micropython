@@ -59,7 +59,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return CXD56_SPIFLASHSIZE >> PAGE_SHIFT;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
     if (flash_sector == NO_SECTOR) {
         return;
     }

@@ -49,7 +49,6 @@
 #include "samd/dma.h"
 
 #include "audio_dma.h"
-#include "tick.h"
 
 #define OVERSAMPLING 64
 #define SAMPLES_PER_BUFFER 32

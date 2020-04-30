@@ -67,7 +67,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE ;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
     if (_flash_page_addr == NO_CACHE) return;
 
     // Skip if data is the same

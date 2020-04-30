@@ -428,7 +428,7 @@ int __attribute__((used)) main(void) {
     filesystem_init(safe_mode == NO_SAFE_MODE, false);
 
     // displays init after filesystem, since they could share the flash SPI
-    board_init(); 
+    board_init();
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();

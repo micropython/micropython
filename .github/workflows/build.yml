@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
     - name: Dump GitHub context
       env:
@@ -127,7 +127,7 @@ jobs:
         path: mpy-cross/mpy-cross
 
   build-arm:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -245,7 +245,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
-        - "stm32f746g_disco"
+        - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
@@ -304,7 +304,7 @@ jobs:
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false

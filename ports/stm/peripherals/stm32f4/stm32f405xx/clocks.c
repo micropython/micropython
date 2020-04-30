@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "stm32f4xx_hal.h"
 
 void stm32_peripherals_clocks_init(void) {
     //System clock init
@@ -56,7 +56,9 @@ void stm32_peripherals_clocks_init(void) {
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    // APB1 must always be on so that we can talk to the RTC for timing.
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    // TODO: Only turn on APB2 when it is needed to save power.
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 }

@@ -28,6 +28,7 @@
 #include "extmod/vfs_fat.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/shared/tick.h"
 
 #define VFS_INDEX 0
 
@@ -110,6 +111,8 @@ mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
     return supervisor_flash_read_blocks(dest, block_num - PART1_START_BLOCK, num_blocks);
 }
 
+volatile bool filesystem_dirty = false;
+
 mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         if (num_blocks > 1) {
@@ -118,8 +121,26 @@ mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t nu
         // can't write MBR, but pretend we did
         return 0;
     } else {
+        if (!filesystem_dirty) {
+            // Turn on ticks so that we can flush after a period of time elapses.
+            supervisor_enable_tick();
+            filesystem_dirty = true;
+        }
         return supervisor_flash_write_blocks(src, block_num - PART1_START_BLOCK, num_blocks);
     }
+}
+
+void supervisor_flash_flush(void) {
+    #if INTERNAL_FLASH_FILESYSTEM
+    port_internal_flash_flush();
+    #else
+    supervisor_external_flash_flush();
+    #endif
+    // Turn off ticks now that our filesystem has been flushed.
+    if (filesystem_dirty) {
+        supervisor_disable_tick();
+    }
+    filesystem_dirty = false;
 }
 
 STATIC mp_obj_t supervisor_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {

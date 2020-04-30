@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_TICK_H
-#define MICROPY_INCLUDED_STM32_TICK_H
 
-#include "py/mpconfig.h"
+#include "py/mphal.h"
+#include "supervisor/port.h"
+#include "supervisor/shared/tick.h"
 
-#include <stdint.h>
+uint64_t common_hal_time_monotonic(void) {
+    return supervisor_ticks_ms64();
+}
 
-extern struct timer_descriptor ms_timer;
+uint64_t common_hal_time_monotonic_ns(void) {
+    uint8_t subticks = 0;
+    uint64_t ticks = port_get_raw_ticks(&subticks);
+    // A tick is 976562.5 nanoseconds so multiply it by the base and add half instead of doing float
+    // math.
+    return 976562 * ticks + ticks / 2 + 30518 * subticks;
+}
 
-void tick_init(void);
-
-void tick_delay(uint32_t us);
-
-void current_tick(uint64_t* ms, uint32_t* us_until_ms);
-// Do not call this with interrupts disabled because it may be waiting for
-// ticks_ms to increment.
-void wait_until(uint64_t ms, uint32_t us_until_ms);
-
-#endif  // MICROPY_INCLUDED_STM32_TICK_H
+void common_hal_time_delay_ms(uint32_t delay) {
+    mp_hal_delay_ms(delay);
+}

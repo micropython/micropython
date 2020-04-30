@@ -15,7 +15,9 @@
   *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
-  */ 
+  */
+
+#include "stm32_hal_conf.h"
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32H7xx_HAL_CONF_H
@@ -28,82 +30,14 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-/* ########################## Module Selection ############################## */
-/**
-  * @brief This is the list of modules to be used in the HAL driver 
-  */
-#define HAL_MODULE_ENABLED  
-
-#define HAL_ADC_MODULE_ENABLED
-/* #define HAL_FDCAN_MODULE_ENABLED   */
-/* #define HAL_CEC_MODULE_ENABLED   */
-/* #define HAL_COMP_MODULE_ENABLED   */
-/* #define HAL_CRC_MODULE_ENABLED   */
-/* #define HAL_CRYP_MODULE_ENABLED   */
-#define HAL_DAC_MODULE_ENABLED
-/* #define HAL_DCMI_MODULE_ENABLED   */
-/* #define HAL_DMA2D_MODULE_ENABLED   */
-#define HAL_ETH_MODULE_ENABLED
-/* #define HAL_NAND_MODULE_ENABLED   */
-/* #define HAL_NOR_MODULE_ENABLED   */
-/* #define HAL_OTFDEC_MODULE_ENABLED   */
-/* #define HAL_SRAM_MODULE_ENABLED   */
-/* #define HAL_SDRAM_MODULE_ENABLED   */
-/* #define HAL_HASH_MODULE_ENABLED   */
-/* #define HAL_HRTIM_MODULE_ENABLED   */
-/* #define HAL_HSEM_MODULE_ENABLED   */
-/* #define HAL_GFXMMU_MODULE_ENABLED   */
-/* #define HAL_JPEG_MODULE_ENABLED   */
-/* #define HAL_OPAMP_MODULE_ENABLED   */
-/* #define HAL_OSPI_MODULE_ENABLED   */
-/* #define HAL_OSPI_MODULE_ENABLED   */
-/* #define HAL_I2S_MODULE_ENABLED   */
-/* #define HAL_SMBUS_MODULE_ENABLED   */
-/* #define HAL_IWDG_MODULE_ENABLED   */
-/* #define HAL_LPTIM_MODULE_ENABLED   */
-/* #define HAL_LTDC_MODULE_ENABLED   */
-/* #define HAL_QSPI_MODULE_ENABLED   */
-#define HAL_RNG_MODULE_ENABLED
-/* #define HAL_RTC_MODULE_ENABLED   */
-/* #define HAL_SAI_MODULE_ENABLED   */
-/* #define HAL_SD_MODULE_ENABLED   */
-/* #define HAL_MMC_MODULE_ENABLED   */
-/* #define HAL_SPDIFRX_MODULE_ENABLED   */
-#define HAL_SPI_MODULE_ENABLED
-/* #define HAL_SWPMI_MODULE_ENABLED   */
-#define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
-/* #define HAL_USART_MODULE_ENABLED   */
-/* #define HAL_IRDA_MODULE_ENABLED   */
-/* #define HAL_SMARTCARD_MODULE_ENABLED   */
-/* #define HAL_WWDG_MODULE_ENABLED   */
-#define HAL_PCD_MODULE_ENABLED
-/* #define HAL_HCD_MODULE_ENABLED   */
-/* #define HAL_DFSDM_MODULE_ENABLED   */
-/* #define HAL_DSI_MODULE_ENABLED   */
-/* #define HAL_JPEG_MODULE_ENABLED   */
-/* #define HAL_MDIOS_MODULE_ENABLED   */
-/* #define HAL_PSSI_MODULE_ENABLED   */
-/* #define HAL_DTS_MODULE_ENABLED   */
-#define HAL_GPIO_MODULE_ENABLED
-#define HAL_DMA_MODULE_ENABLED
-#define HAL_MDMA_MODULE_ENABLED
-#define HAL_RCC_MODULE_ENABLED
-#define HAL_FLASH_MODULE_ENABLED
-#define HAL_EXTI_MODULE_ENABLED
-#define HAL_PWR_MODULE_ENABLED
-#define HAL_I2C_MODULE_ENABLED
-#define HAL_CORTEX_MODULE_ENABLED
-#define HAL_HSEM_MODULE_ENABLED
-
 /* ########################## Oscillator Values adaptation ####################*/
 /**
   * @brief Adjust the value of External High Speed oscillator (HSE) used in your application.
   *        This value is used by the RCC HAL module to compute the system frequency
-  *        (when HSE is used as system clock source, directly or through the PLL).  
+  *        (when HSE is used as system clock source, directly or through the PLL).
   */
-#if !defined  (HSE_VALUE) 
-#define HSE_VALUE    ((uint32_t)12000000) /*!< Value of the External oscillator in Hz : FPGA case fixed to 60MHZ */
+#if !defined  (HSE_VALUE)
+#define HSE_VALUE    ((uint32_t)8000000) /*!< Value of the External oscillator in Hz : FPGA case fixed to 60MHZ */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSE_STARTUP_TIMEOUT)
@@ -117,15 +51,24 @@
 #if !defined  (CSI_VALUE)
   #define CSI_VALUE    ((uint32_t)4000000) /*!< Value of the Internal oscillator in Hz*/
 #endif /* CSI_VALUE */
-   
+
 /**
   * @brief Internal High Speed oscillator (HSI) value.
   *        This value is used by the RCC HAL module to compute the system frequency
-  *        (when HSI is used as system clock source, directly or through the PLL). 
+  *        (when HSI is used as system clock source, directly or through the PLL).
   */
 #if !defined  (HSI_VALUE)
   #define HSI_VALUE    ((uint32_t)64000000) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
+
+/**
+  * @brief Internal Low Speed oscillator (LSI) value.
+  */
+#if !defined  (LSI_VALUE)
+ #define LSI_VALUE  ((uint32_t)32000U)       /*!< LSI Typical Value in Hz*/
+#endif /* LSI_VALUE */                      /*!< Value of the Internal Low Speed oscillator in Hz
+                                             The real value may vary depending on the variations
+                                             in voltage and temperature.*/
 
 /**
   * @brief External Low Speed oscillator (LSE) value.
@@ -141,8 +84,8 @@
 
 /**
   * @brief External clock source for I2S peripheral
-  *        This value is used by the I2S HAL module to compute the I2S clock source 
-  *        frequency, this source is inserted directly through I2S_CKIN pad. 
+  *        This value is used by the I2S HAL module to compute the I2S clock source
+  *        frequency, this source is inserted directly through I2S_CKIN pad.
   */
 #if !defined  (EXTERNAL_CLOCK_VALUE)
   #define EXTERNAL_CLOCK_VALUE    12288000U /*!< Value of the External clock in Hz*/
@@ -154,7 +97,7 @@
 /* ########################### System Configuration ######################### */
 /**
   * @brief This is the HAL system configuration section
-  */     
+  */
 #define  VDD_VALUE                    ((uint32_t)3300U) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            ((uint32_t)0U) /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
@@ -220,14 +163,14 @@
 
 /* ########################## Assert Selection ############################## */
 /**
-  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
+  * @brief Uncomment the line below to expanse the "assert_param" macro in the
   *        HAL drivers code
   */
-/* #define USE_FULL_ASSERT    1U */ 
+/* #define USE_FULL_ASSERT    1U */
 
 /* Includes ------------------------------------------------------------------*/
 /**
-  * @brief Include module's header file 
+  * @brief Include module's header file
   */
 
 #ifdef HAL_RCC_MODULE_ENABLED
@@ -373,7 +316,7 @@
 #ifdef HAL_OSPI_MODULE_ENABLED
   #include "stm32h7xx_hal_ospi.h"
 #endif /* HAL_OSPI_MODULE_ENABLED */
-   
+
 #ifdef HAL_OTFDEC_MODULE_ENABLED
 #include "stm32h7xx_hal_otfdec.h"
 #endif /* HAL_OTFDEC_MODULE_ENABLED */
@@ -472,7 +415,7 @@
   * @brief  The assert_param macro is used for function's parameters check.
   * @param  expr: If expr is false, it calls assert_failed function
   *         which reports the name of the source file and the source
-  *         line number of the call that failed. 
+  *         line number of the call that failed.
   *         If expr is true, it returns no value.
   * @retval None
   */
@@ -487,7 +430,14 @@
 }
 #endif
 
+// CircuitPython specific conditionals. Using a value is better than checking
+// defined because undefined variable happen when a file isn't included when it
+// should have been.
+#define CPY_STM32F4 0
+#define CPY_STM32F7 0
+#define CPY_STM32H7 1
+
 #endif /* __STM32H7xx_HAL_CONF_H */
- 
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -35,6 +35,8 @@
 #define MICROPY_HW_NEOPIXEL (&pin_PC00)
 
 #define BOARD_OSC_DIV (12)
+#define HSE_VALUE       ((uint32_t)12000000U)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB05)

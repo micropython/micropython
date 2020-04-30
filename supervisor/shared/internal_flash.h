@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2020 Scott Shawcroft, for Adafruit Industries LLC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_INTERNAL_FLASH_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_INTERNAL_FLASH_H
 
-#include <sys/time.h>
+#include "supervisor/internal_flash.h" // This is per-port.
 
-#include "py/mphal.h"
+void port_internal_flash_flush(void);
 
-#include "supervisor/shared/tick.h"
-
-uint64_t common_hal_time_monotonic(void) {
-    return supervisor_ticks_ms64();
-}
-
-uint64_t common_hal_time_monotonic_ns(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return 1000 * ((uint64_t) tv.tv_sec * 1000000 + (uint64_t) tv.tv_usec);
-}
-
-void common_hal_time_delay_ms(uint32_t delay) {
-    mp_hal_delay_ms(delay);
-}
+#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_INTERNAL_FLASH_H
