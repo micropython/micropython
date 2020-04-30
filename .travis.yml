@@ -308,15 +308,22 @@ jobs:
         - gcc --version
         - arm-none-eabi-gcc --version
       script:
-        - git checkout -b pull_request
-        - git checkout master
+        # starts off at either the ref/pull/N/merge FETCH_HEAD, or the current branch HEAD
+        - git checkout -b pull_request # save the current location
+        - git remote add upstream https://github.com/micropython/micropython.git
+        - git fetch --depth=100 upstream
+        # build reference, save to size0
+        # ignore any errors with this build, in case master is failing
+        - git checkout `git merge-base --fork-point upstream/master pull_request`
         - git show -s
         - tools/metrics.py clean bm
-        - tools/metrics.py build bm | tee ~/size0 || travis_terminate 1
+        - tools/metrics.py build bm | tee ~/size0 || true
+        # build PR/branch, save to size1
         - git checkout pull_request
-        - git show -s
+        - git log upstream/master..HEAD
         - tools/metrics.py clean bm
         - tools/metrics.py build bm | tee ~/size1 || travis_terminate 1
+        # compute diff of the code sizes
         - tools/metrics.py diff --error-threshold 0 ~/size0 ~/size1
 
     # cc3200 port
