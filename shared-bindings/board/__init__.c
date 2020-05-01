@@ -113,7 +113,7 @@ mp_obj_t board_uart(void) {
 }
 #else
 mp_obj_t board_uart(void) {
-    mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_SPI);
+    mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_UART);
     return NULL;
 }
 #endif
