@@ -42,5 +42,4 @@ ifeq ($(MCU_SERIES),F7)
 	CIRCUITPY_RTC = 0
 	CIRCUITPY_FREQUENCYIO = 0
 	CIRCUITPY_I2CSLAVE = 0
-	# shared-module modules that still need prerequisites filled
 endif
