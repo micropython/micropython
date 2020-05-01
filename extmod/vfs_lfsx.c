@@ -148,7 +148,11 @@ char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
             while (len_path > 0 && new_path[len_path] != '/') { // skip back w/o strrchr
                 len_path--;
             }
-            new_path[len_path == 0 ? 1 : len_path] = '\0';
+            if (len_path == 0) { // backed up to the tip
+                new_path[++len_path] = '\0';
+            } else {
+                new_path[len_path] = '\0';
+            }
         } else if (len_token != 1 || token[0] != '.') {
             if (len_path > 1) { // not at the start
                 new_path[len_path++] = '/';
