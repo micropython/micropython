@@ -1,5 +1,6 @@
-USB_VID = 0x239A
-USB_PID = 0x802A
+# Using Nordic's VID - https://devzone.nordicsemi.com/f/nordic-q-a/50638/usb-pid-for-nrf52840
+USB_VID = 0x1915
+USB_PID = 0xb001
 USB_PRODUCT = "Pitaya Go"
 USB_MANUFACTURER = "Makerdiary"
 
