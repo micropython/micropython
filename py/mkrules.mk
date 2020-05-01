@@ -14,6 +14,9 @@ OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
 CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
 endif
 
+# see 'fused multiply-add' problem
+CFLAGS += -ffp-contract=off
+
 # QSTR generation uses the same CFLAGS, with these modifications.
 # Note: := to force evalulation immediately.
 QSTR_GEN_CFLAGS := $(CFLAGS)
