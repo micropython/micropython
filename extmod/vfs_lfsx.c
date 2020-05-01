@@ -101,7 +101,7 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
 
 // replacement for strtok, which does not modify the source string
 // but returns instead the length of the token
-static char *get_token(const char *path, char sep, size_t *len) {
+char *MP_VFS_LFSx(get_token)(const char *path, char sep, size_t *len) {
     static const char *ptr = ""; // safe initial state
     const char *start;
     if (path != NULL) {  // get initial start
@@ -143,7 +143,7 @@ char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
 
     size_t len_token;
     size_t len_path = strlen(new_path);
-    for (char *token = get_token(path, '/', &len_token); token != NULL;) {
+    for (char *token = MP_VFS_LFSx(get_token)(path, '/', &len_token); token != NULL;) {
         if (len_token == 2 && token[0] == '.' && token[1] == '.') { // double dot, skip back in new_path
             while (len_path > 0 && new_path[len_path] != '/') { // skip back w/o strrchr
                 len_path--;
@@ -162,7 +162,7 @@ char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
             }
             new_path[len_path] = '\0';
         }
-        token = get_token(NULL, '/', &len_token);
+        token = MP_VFS_LFSx(get_token)(NULL, '/', &len_token);
     }
     return new_path;
 }
