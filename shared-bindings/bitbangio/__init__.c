@@ -40,7 +40,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`bitbangio` --- Digital protocols implemented by the CPU
+//| """:mod:`bitbangio` --- Digital protocols implemented by the CPU
 //| =============================================================
 //|
 //| .. module:: bitbangio
@@ -81,7 +81,7 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~bitbangio.I2C.scan` and then :py:meth:`~bitbangio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes.
+//| resets hardware after a program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t bitbangio_module_globals_table[] = {

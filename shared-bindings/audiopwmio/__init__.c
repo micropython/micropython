@@ -33,7 +33,7 @@
 #include "shared-bindings/audiopwmio/__init__.h"
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 
-//| :mod:`audiopwmio` --- Support for audio input and output
+//| """:mod:`audiopwmio` --- Support for audio input and output
 //| ========================================================
 //|
 //| .. module:: audiopwmio
@@ -55,7 +55,7 @@
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| Since CircuitPython 5, `Mixer`, `RawSample` and `WaveFile` are moved
-//| to :mod:`audiocore`.
+//| to :mod:`audiocore`."""
 //|
 
 STATIC const mp_rom_map_elem_t audiopwmio_module_globals_table[] = {
