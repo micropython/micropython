@@ -93,6 +93,9 @@ endif
 
 CFLAGS += $(INC) -Wall -Wno-cast-align -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
+# Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
+CFLAGS += -Wno-undef -Wno-cast-align
+
 CFLAGS += \
 	-mthumb \
 	-mapcs \
