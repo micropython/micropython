@@ -27,9 +27,22 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_LED_H
 #define MICROPY_INCLUDED_MIMXRT_LED_H
 
+#include "pin.h"
+
+
 typedef enum {
     MACHINE_BOARD_LED = 1,
 } machine_led_t;
+
+typedef struct _machine_led_obj_t
+{
+    mp_obj_base_t base;
+    mp_uint_t led_id;
+    const pin_obj_t *led_pin;
+} machine_led_obj_t;
+
+extern const machine_led_obj_t machine_led_obj[1];
+#define NUM_LEDS MP_ARRAY_SIZE(machine_led_obj)
 
 void led_init(void);
 void led_state(machine_led_t led, int state);

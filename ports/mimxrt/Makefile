@@ -55,6 +55,8 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
 CFLAGS += -O0 -ggdb
+LDFLAGS += --gc-sections
+CFLAGS += -fdata-sections -ffunction-sections
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
@@ -89,6 +91,7 @@ SRC_TINYUSB_IMX_C += \
 SRC_C = \
 	main.c \
 	led.c \
+	machine_led.c \
 	pin.c \
 	tusb_port.c \
 	board_init.c \
@@ -115,6 +118,7 @@ SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
 	led.c \
+	machine_led.c \
 	pin.c \
 	$(BOARD_DIR)/pins.c \
 

@@ -44,9 +44,6 @@ int main(void) {
     tusb_init();
     led_init();
 
-    // Enable board LED after initialization
-    led_state(MACHINE_BOARD_LED, 1U);
-
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
 
