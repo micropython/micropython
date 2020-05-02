@@ -212,6 +212,7 @@ jobs:
         - "particle_xenon"
         - "pca10056"
         - "pca10059"
+        - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
